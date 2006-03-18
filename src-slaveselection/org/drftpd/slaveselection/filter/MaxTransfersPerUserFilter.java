@@ -49,40 +49,32 @@ public class MaxTransfersPerUserFilter extends Filter {
 
 	public void process(ScoreChart scorechart, char direction, User user)
 			throws NoAvailableSlaveException {
-// Again, need to move session data to BaseFtpConnection
-/*		for (BaseFtpConnection conn : _gctx.getConnectionManager()
-				.getConnections()) {
-
-			if (!conn.getDataConnectionHandler().isTransfering())
-				continue;
-			try {
-				if (!conn.getUser().equals(user))
-					continue;
-			} catch (NoSuchUserException e) {
-				continue;
-			}
-
-			for (Iterator<ScoreChart.SlaveScore> iter2 = scorechart
-					.getSlaveScores().iterator(); iter2.hasNext();) {
-				ScoreChart.SlaveScore score = iter2.next();
-
-				if (score.getRSlave().equals(
-						conn.getDataConnectionHandler().getTranferSlave())
-						&& direction == conn.getDirection()) {
-					logger.debug("Already has a transfer for slave "
-							+ score.getRSlave().getName());
-					iter2.remove();
-				}
-			}
-		}*/
+		// Again, need to move session data to BaseFtpConnection
+		/*
+		 * for (BaseFtpConnection conn : _gctx.getConnectionManager()
+		 * .getConnections()) {
+		 * 
+		 * if (!conn.getDataConnectionHandler().isTransfering()) continue; try {
+		 * if (!conn.getUser().equals(user)) continue; } catch
+		 * (NoSuchUserException e) { continue; }
+		 * 
+		 * for (Iterator<ScoreChart.SlaveScore> iter2 = scorechart
+		 * .getSlaveScores().iterator(); iter2.hasNext();) {
+		 * ScoreChart.SlaveScore score = iter2.next();
+		 * 
+		 * if (score.getRSlave().equals(
+		 * conn.getDataConnectionHandler().getTranferSlave()) && direction ==
+		 * conn.getDirection()) { logger.debug("Already has a transfer for slave " +
+		 * score.getRSlave().getName()); iter2.remove(); } } }
+		 */
 		if (scorechart.isEmpty())
 			throw new NoAvailableSlaveException(
 					"All slaves were unavailable cause you already had open transfers to the available slaves");
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandle dir,
-			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
+			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
 		process(scorechart, direction, user);
 	}
 }

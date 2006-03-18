@@ -38,73 +38,79 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id$
- * This addon needs a little reworking, consider it and its
- * related packages unstable
+ * @version $Id$ This addon needs
+ *          a little reworking, consider it and its related packages unstable
  */
 public class Archive extends FtpListener {
-    private static final Logger logger = Logger.getLogger(Archive.class);
-    private Properties _props;
-    private long _cycleTime;
-    private HashSet<ArchiveHandler> _archiveHandlers = new HashSet<ArchiveHandler>();
-    private TimerTask _runHandler = null;
-    public Archive() {
-        logger.info("Archive plugin loaded successfully");
-    }
+	private static final Logger logger = Logger.getLogger(Archive.class);
 
-    public Properties getProperties() {
-        return _props;
-    }
+	private Properties _props;
 
-    public void actionPerformed(Event event) {
-        if (event.getCommand().equals("RELOAD")) {
-            reload();
-            return;
-        }
-    }
+	private long _cycleTime;
 
-    /**
-     * @return the correct ArchiveType for the @section - it will return null if that section does not have an archiveType loaded for it
-     */
-    public ArchiveType getArchiveType(SectionInterface section) {
-        ArchiveType archiveType = null;
-        String name = null;
+	private HashSet<ArchiveHandler> _archiveHandlers = new HashSet<ArchiveHandler>();
 
-        try {
-            name = PropertyHelper.getProperty(_props,
-                    section.getName() + ".archiveType");
-        } catch (NullPointerException e) {
-            return null; // excluded, not setup
-        }
+	private TimerTask _runHandler = null;
 
-        Constructor constructor = null;
-        Class[] classParams = {
-                Archive.class, SectionInterface.class, Properties.class
-            };
-        Object[] objectParams = { this, section, _props };
-        try {
-            constructor = Class.forName("org.drftpd.mirroring.archivetypes." +
-                    name).getConstructor(classParams);
-            archiveType = (ArchiveType) constructor.newInstance(objectParams);
-        } catch (Exception e2) {
-            logger.error("Unable to load ArchiveType for section "
+	public Archive() {
+		logger.info("Archive plugin loaded successfully");
+	}
+
+	public Properties getProperties() {
+		return _props;
+	}
+
+	public void actionPerformed(Event event) {
+		if (event.getCommand().equals("RELOAD")) {
+			reload();
+			return;
+		}
+	}
+
+	/**
+	 * @return the correct ArchiveType for the
+	 * @section - it will return null if that section does not have an
+	 *          archiveType loaded for it
+	 */
+	public ArchiveType getArchiveType(SectionInterface section) {
+		ArchiveType archiveType = null;
+		String name = null;
+
+		try {
+			name = PropertyHelper.getProperty(_props, section.getName()
+					+ ".archiveType");
+		} catch (NullPointerException e) {
+			return null; // excluded, not setup
+		}
+
+		Constructor constructor = null;
+		Class[] classParams = { Archive.class, SectionInterface.class,
+				Properties.class };
+		Object[] objectParams = { this, section, _props };
+		try {
+			constructor = Class.forName(
+					"org.drftpd.mirroring.archivetypes." + name)
+					.getConstructor(classParams);
+			archiveType = (ArchiveType) constructor.newInstance(objectParams);
+		} catch (Exception e2) {
+			logger.error("Unable to load ArchiveType for section "
 					+ section.getName(), e2);
-        }
+		}
 
-        return archiveType;
-    }
+		return archiveType;
+	}
 
-    /**
-     * Returns the getCycleTime setting
-     */
-    public long getCycleTime() {
-        return _cycleTime;
-    }
+	/**
+	 * Returns the getCycleTime setting
+	 */
+	public long getCycleTime() {
+		return _cycleTime;
+	}
 
-    public void init() {
-        reload();
-    }
-    
+	public void init() {
+		reload();
+	}
+
 	public void reload() {
 		_props = new Properties();
 		FileInputStream fis = null;
@@ -151,54 +157,54 @@ public class Archive extends FtpListener {
 		getGlobalContext().getTimer().schedule(_runHandler, 0, _cycleTime);
 	}
 
-    public void unload() {
-        if (_runHandler != null) {
-        	_runHandler.cancel();
-        }
-    }
+	public void unload() {
+		if (_runHandler != null) {
+			_runHandler.cancel();
+		}
+	}
 
-    public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
-        for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
-            ArchiveHandler ah = (ArchiveHandler) iter.next();
+	public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
+		for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
+			ArchiveHandler ah = (ArchiveHandler) iter.next();
 
-            if (ah == handler) {
-                iter.remove();
+			if (ah == handler) {
+				iter.remove();
 
-                return true;
-            }
-        }
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    public Collection<ArchiveHandler> getArchiveHandlers() {
-        return Collections.unmodifiableCollection(_archiveHandlers);
-    }
+	public Collection<ArchiveHandler> getArchiveHandlers() {
+		return Collections.unmodifiableCollection(_archiveHandlers);
+	}
 
-    public synchronized void addArchiveHandler(ArchiveHandler handler)
-        throws DuplicateArchiveException {
-        checkPathForArchiveStatus(handler.getArchiveType().getDirectory()
-                                         .getPath());
-        _archiveHandlers.add(handler);
-    }
+	public synchronized void addArchiveHandler(ArchiveHandler handler)
+			throws DuplicateArchiveException {
+		checkPathForArchiveStatus(handler.getArchiveType().getDirectory()
+				.getPath());
+		_archiveHandlers.add(handler);
+	}
 
-    public void checkPathForArchiveStatus(String handlerPath)
-        throws DuplicateArchiveException {
-        for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
-            ArchiveHandler ah = (ArchiveHandler) iter.next();
-            String ahPath = ah.getArchiveType().getDirectory().getPath();
+	public void checkPathForArchiveStatus(String handlerPath)
+			throws DuplicateArchiveException {
+		for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
+			ArchiveHandler ah = (ArchiveHandler) iter.next();
+			String ahPath = ah.getArchiveType().getDirectory().getPath();
 
-            if (ahPath.length() > handlerPath.length()) {
-                if (ahPath.startsWith(handlerPath)) {
-                    throw new DuplicateArchiveException(ahPath +
-                        " is already being archived");
-                }
-            } else {
-                if (handlerPath.startsWith(ahPath)) {
-                    throw new DuplicateArchiveException(handlerPath +
-                        " is already being archived");
-                }
-            }
-        }
-    }
+			if (ahPath.length() > handlerPath.length()) {
+				if (ahPath.startsWith(handlerPath)) {
+					throw new DuplicateArchiveException(ahPath
+							+ " is already being archived");
+				}
+			} else {
+				if (handlerPath.startsWith(ahPath)) {
+					throw new DuplicateArchiveException(handlerPath
+							+ " is already being archived");
+				}
+			}
+		}
+	}
 }

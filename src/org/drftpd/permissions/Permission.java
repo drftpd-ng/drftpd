@@ -22,59 +22,60 @@ import java.util.Iterator;
 
 import org.drftpd.usermanager.Entity;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class Permission {
-    private Collection<String> _users;
-    private boolean _invert = false;
+	private Collection<String> _users;
 
-    public Permission(Collection<String> users) {
-        _users = users;
-    }
+	private boolean _invert = false;
 
-    public Permission(Collection<String> users, boolean invert) {
-        this(users);
-        _invert = invert;
-    }
+	public Permission(Collection<String> users) {
+		_users = users;
+	}
 
-    public boolean check(Entity user) {
-        boolean allow = false;
+	public Permission(Collection<String> users, boolean invert) {
+		this(users);
+		_invert = invert;
+	}
 
-        for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
-            String aclUser = (String) iter.next();
-            allow = true;
+	public boolean check(Entity user) {
+		boolean allow = false;
 
-            if (aclUser.charAt(0) == '!') {
-                allow = false;
-                aclUser = aclUser.substring(1);
-            }
+		for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
+			String aclUser = (String) iter.next();
+			allow = true;
 
-            if (aclUser.equals("*")) {
-                return allow;
-            } else if (aclUser.charAt(0) == '-') {
-                //USER
-                if (aclUser.substring(1).equals(user.getName())) {
-                    return allow;
-                }
+			if (aclUser.charAt(0) == '!') {
+				allow = false;
+				aclUser = aclUser.substring(1);
+			}
 
-                continue;
-            } else if (aclUser.charAt(0) == '=') {
-                //GROUP
-                if (user.isMemberOf(aclUser.substring(1))) {
-                    return allow;
-                }
-            } else {
-                //FLAG, we don't have flags, we have groups and that's the same but multiple letters
-                if (user.isMemberOf(aclUser)) {
-                    return allow;
-                }
-            }
-        }
+			if (aclUser.equals("*")) {
+				return allow;
+			} else if (aclUser.charAt(0) == '-') {
+				// USER
+				if (aclUser.substring(1).equals(user.getName())) {
+					return allow;
+				}
 
-        // didn't match.. 
-        return _invert ? (!allow) : false;
-    }
+				continue;
+			} else if (aclUser.charAt(0) == '=') {
+				// GROUP
+				if (user.isMemberOf(aclUser.substring(1))) {
+					return allow;
+				}
+			} else {
+				// FLAG, we don't have flags, we have groups and that's the same
+				// but multiple letters
+				if (user.isMemberOf(aclUser)) {
+					return allow;
+				}
+			}
+		}
+
+		// didn't match..
+		return _invert ? (!allow) : false;
+	}
 }

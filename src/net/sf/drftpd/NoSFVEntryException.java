@@ -17,30 +17,29 @@
  */
 package net.sf.drftpd;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class NoSFVEntryException extends Exception {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 8633152529110607274L;
 
 	public NoSFVEntryException() {
-        super();
-    }
+		super();
+	}
 
-    public NoSFVEntryException(String message) {
-        super(message);
-    }
+	public NoSFVEntryException(String message) {
+		super(message);
+	}
 
-    public NoSFVEntryException(Throwable cause) {
-        super(cause);
-    }
+	public NoSFVEntryException(Throwable cause) {
+		super(cause);
+	}
 
-    public NoSFVEntryException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public NoSFVEntryException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

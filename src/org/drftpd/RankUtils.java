@@ -29,17 +29,18 @@ import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
 
 /**
  * Set of usefull commnads to sort users/groups.
+ * 
  * @author fr0w
  * @version $Id$
  */
 public class RankUtils {
-	public static Collection<GroupPosition> topFileGroup(Collection<FileHandle> files) {
+	public static Collection<GroupPosition> topFileGroup(
+			Collection<FileHandle> files) {
 		ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
-		
+
 		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
 			FileHandle file = iter.next();
 			String groupname;
@@ -49,23 +50,23 @@ public class RankUtils {
 				continue;
 				// file was deleted or moved
 			}
-			
+
 			GroupPosition stat = null;
-			
+
 			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
 				GroupPosition stat2 = (GroupPosition) iter2.next();
-				
+
 				if (stat2.getGroupname().equals(groupname)) {
 					stat = stat2;
-					
+
 					break;
 				}
 			}
-			
+
 			if (stat == null) {
 				try {
-					stat = new GroupPosition(groupname, file.getSize(), 1,
-							file.getXfertime());
+					stat = new GroupPosition(groupname, file.getSize(), 1, file
+							.getXfertime());
 				} catch (FileNotFoundException e) {
 					continue;
 					// file was deleted or moved
@@ -82,26 +83,27 @@ public class RankUtils {
 				}
 			}
 		}
-		
+
 		Collections.sort(ret);
-		
+
 		return ret;
 	}
-	
-	public static Collection userSort(Collection<FileHandle> files, String type, String sort) {
+
+	public static Collection userSort(Collection<FileHandle> files,
+			String type, String sort) {
 		ArrayList<UploaderPosition> ret = new ArrayList<UploaderPosition>();
-		
+
 		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
 			FileHandle file = iter.next();
 			UploaderPosition stat = null;
-			
+
 			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
 				UploaderPosition stat2 = (UploaderPosition) iter2.next();
-				
+
 				try {
 					if (stat2.getUsername().equals(file.getUsername())) {
 						stat = stat2;
-						
+
 						break;
 					}
 				} catch (FileNotFoundException e) {
@@ -109,11 +111,11 @@ public class RankUtils {
 					// file was deleted or moved
 				}
 			}
-			
+
 			if (stat == null) {
 				try {
-					stat = new UploaderPosition(file.getUsername(), file.getSize(),
-							1, file.getXfertime());
+					stat = new UploaderPosition(file.getUsername(), file
+							.getSize(), 1, file.getXfertime());
 				} catch (FileNotFoundException e) {
 					continue;
 					// file was deleted or moved
@@ -130,22 +132,23 @@ public class RankUtils {
 				}
 			}
 		}
-		
+
 		Collections.sort(ret, new UserComparator(type, sort));
-		
+
 		return ret;
 	}
 }
 
 class UserComparator implements Comparator {
 	private String _sort;
+
 	private String _type;
-	
+
 	public UserComparator(String type, String sort) {
 		_type = type;
 		_sort = sort;
 	}
-	
+
 	static long getType(String type, UploaderPosition user) {
 		if (type.equals("bytes")) {
 			return user.getBytes();
@@ -154,22 +157,23 @@ class UserComparator implements Comparator {
 		} else if (type.equals("xfertime")) {
 			return user.getXfertime();
 		}
-		
+
 		return 0;
 	}
-	
+
 	public int compare(Object o1, Object o2) {
 		UploaderPosition u1 = (UploaderPosition) o1;
 		UploaderPosition u2 = (UploaderPosition) o2;
-		
+
 		long thisVal = getType(_type, u1);
 		long anotherVal = getType(_type, u2);
-		
+
 		if (_sort.equals("low")) {
 			return ((thisVal < anotherVal) ? (-1)
 					: ((thisVal == anotherVal) ? 0 : 1));
 		}
-		
-		return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
+
+		return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0
+				: 1));
 	}
 }

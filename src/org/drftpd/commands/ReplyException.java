@@ -36,9 +36,10 @@ public class ReplyException extends Exception {
 	public ReplyException(Throwable cause) {
 		super(cause);
 	}
-	
+
 	/**
 	 * The return code for the error.
+	 * 
 	 * @return code for the error.
 	 */
 	public int getReplyCode() {

@@ -19,32 +19,33 @@ package org.drftpd.slave.async;
 
 import java.io.Serializable;
 
-
 /**
  * @author jbarrett
  * @author zubov
- * @version $Id: AsyncCommand.java,v 1.6 2004/11/02 07:32:53 zubov Exp $
+ * @version $Id$
  */
 public class AsyncCommand implements Serializable {
-    private static final long serialVersionUID = 2937803123798047158L;
-    protected String _name;
-    protected String _index;
+	private static final long serialVersionUID = 2937803123798047158L;
 
-    public AsyncCommand(String index, String name) {
-        _index = index;
-        _name = name;
-    }
+	protected String _name;
 
-    public String toString() {
-        return getClass().getName() + "[index=" + getIndex() + ",name=" +
-        getName() + "]";
-    }
+	protected String _index;
 
-    public String getIndex() {
-        return _index;
-    }
+	public AsyncCommand(String index, String name) {
+		_index = index;
+		_name = name;
+	}
 
-    public String getName() {
-        return _name;
-    }
+	public String toString() {
+		return getClass().getName() + "[index=" + getIndex() + ",name="
+				+ getName() + "]";
+	}
+
+	public String getIndex() {
+		return _index;
+	}
+
+	public String getName() {
+		return _name;
+	}
 }

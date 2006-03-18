@@ -37,13 +37,16 @@ import se.mog.io.PermissionDeniedException;
 /**
  * This is the base class of all the user manager classes. If we want to add a
  * new user manager, we have to override this class.
- *
+ * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
-    protected Hashtable<String, User> _users = new Hashtable<String, User>();
-	private static final Logger logger = Logger.getLogger(AbstractUserManager.class);
+	protected Hashtable<String, User> _users = new Hashtable<String, User>();
+
+	private static final Logger logger = Logger
+			.getLogger(AbstractUserManager.class);
+
 	private GlobalContext _gctx;
 
 	/**
@@ -53,246 +56,250 @@ public abstract class AbstractUserManager implements UserManager {
 	}
 
 	/**
-	 * <p>Cannot be a constructor because the child class fields don't get
-	 * initialized until super (this) class gets run.</p> 
+	 * <p>
+	 * Cannot be a constructor because the child class fields don't get
+	 * initialized until super (this) class gets run.
+	 * </p>
 	 */
-    protected void init(boolean createIfNoUser) throws UserFileException {
-        if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
-            throw new UserFileException(new IOException(
-                    "Error creating directories: " + getUserpathFile()));
-        }
-        if (createIfNoUser) {
-            String[] userfilenames = getUserpathFile().list();
-            boolean hasUsers = false;
+	protected void init(boolean createIfNoUser) throws UserFileException {
+		if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
+			throw new UserFileException(new IOException(
+					"Error creating directories: " + getUserpathFile()));
+		}
+		if (createIfNoUser) {
+			String[] userfilenames = getUserpathFile().list();
+			boolean hasUsers = false;
 
-            for (int i = 0; i < userfilenames.length; i++) {
-                String string = userfilenames[i];
+			for (int i = 0; i < userfilenames.length; i++) {
+				String string = userfilenames[i];
 
-                if (string.endsWith(".xml")) {
-                    hasUsers = true;
+				if (string.endsWith(".xml")) {
+					hasUsers = true;
 
-                    break;
-                }
-            }
+					break;
+				}
+			}
 
-            if (!hasUsers) {
-                createSiteopUser();
-            }
-        }
-    }
+			if (!hasUsers) {
+				createSiteopUser();
+			}
+		}
+	}
 
 	protected abstract File getUserpathFile();
 
 	protected void createSiteopUser() throws UserFileException {
-        User user = createUser("drftpd");
-        user.setGroup("drftpd");
-        user.setPassword("drftpd");
-        user.getKeyedMap().setObject(UserManagement.RATIO, new Float(0));
-        user.getKeyedMap().setObject(UserManagement.GROUPSLOTS,0);
-        user.getKeyedMap().setObject(UserManagement.LEECHSLOTS,0);
-        user.getKeyedMap().setObject(UserManagement.MAXLOGINS,0);
-        user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,0);
-        user.getKeyedMap().setObject(UserManagement.MAXSIMUP,0);
-        user.getKeyedMap().setObject(UserManagement.MAXSIMDN,0);
-//        user.getKeyedMap().setObject(Statistics.LOGINS,0);
-        user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-        user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
-        user.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
-        user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
-        user.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
-        user.getKeyedMap().setObject(UserManagement.TAGLINE,"drftpd");
-        user.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
-//        user.getKeyedMap().setObject(Nuke.NUKED,0);
-//        user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
+		User user = createUser("drftpd");
+		user.setGroup("drftpd");
+		user.setPassword("drftpd");
+		user.getKeyedMap().setObject(UserManagement.RATIO, new Float(0));
+		user.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
+		user.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
+		user.getKeyedMap().setObject(UserManagement.MAXLOGINS, 0);
+		user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, 0);
+		user.getKeyedMap().setObject(UserManagement.MAXSIMUP, 0);
+		user.getKeyedMap().setObject(UserManagement.MAXSIMDN, 0);
+		// user.getKeyedMap().setObject(Statistics.LOGINS,0);
+		user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
+		user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
+		user.getKeyedMap()
+				.setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
+		user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
+		user.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
+		user.getKeyedMap().setObject(UserManagement.TAGLINE, "drftpd");
+		user.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
+		// user.getKeyedMap().setObject(Nuke.NUKED,0);
+		// user.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
 
-        try {
-            user.addIPMask("*@127.0.0.1");
-            user.addIPMask("*@0:0:0:0:0:0:0:1");
-        } catch (DuplicateElementException e) {
-        }
+		try {
+			user.addIPMask("*@127.0.0.1");
+			user.addIPMask("*@0:0:0:0:0:0:0:1");
+		} catch (DuplicateElementException e) {
+		}
 
-        try {
-            user.addSecondaryGroup("siteop");
-        } catch (DuplicateElementException e1) {
-        }
+		try {
+			user.addSecondaryGroup("siteop");
+		} catch (DuplicateElementException e1) {
+		}
 
-        user.commit();
-    }
+		user.commit();
+	}
 
-    public User create(String username) throws UserFileException {
-        try {
-            getUserByName(username);
+	public User create(String username) throws UserFileException {
+		try {
+			getUserByName(username);
 
-            //bad
-            throw new FileExistsException("User " + username +
-                " already exists");
-        } catch (IOException e) {
-            //bad
-            throw new UserFileException(e);
-        } catch (NoSuchUserException e) {
-            //good
-        }
+			// bad
+			throw new FileExistsException("User " + username
+					+ " already exists");
+		} catch (IOException e) {
+			// bad
+			throw new UserFileException(e);
+		} catch (NoSuchUserException e) {
+			// good
+		}
 
-        //User user = _connManager.getGlobalContext().getUserManager().createUser(username);
-        User user = createUser(username);
-        user.commit();
+		// User user =
+		// _connManager.getGlobalContext().getUserManager().createUser(username);
+		User user = createUser(username);
+		user.commit();
 
-        return user;
-    }
+		return user;
+	}
 
-    protected abstract User createUser(String username);
+	protected abstract User createUser(String username);
 
-    /**
-     * final for now to remove duplicate implementations
-     */
-    public void delete(String username) {
-        if(!getUserFile(username).delete())
-        	throw new RuntimeException(new PermissionDeniedException());
-        _users.remove(username);
-    }
+	/**
+	 * final for now to remove duplicate implementations
+	 */
+	public void delete(String username) {
+		if (!getUserFile(username).delete())
+			throw new RuntimeException(new PermissionDeniedException());
+		_users.remove(username);
+	}
 
 	protected abstract File getUserFile(String username);
 
 	public Collection getAllGroups() throws UserFileException {
-        Collection users = getAllUsers();
-        ArrayList<String> ret = new ArrayList<String>();
+		Collection users = getAllUsers();
+		ArrayList<String> ret = new ArrayList<String>();
 
-        for (Iterator iter = users.iterator(); iter.hasNext();) {
-            User myUser = (User) iter.next();
-            Collection myGroups = myUser.getGroups();
+		for (Iterator iter = users.iterator(); iter.hasNext();) {
+			User myUser = (User) iter.next();
+			Collection myGroups = myUser.getGroups();
 
-            for (Iterator iterator = myGroups.iterator(); iterator.hasNext();) {
-                String myGroup = (String) iterator.next();
+			for (Iterator iterator = myGroups.iterator(); iterator.hasNext();) {
+				String myGroup = (String) iterator.next();
 
-                if (!ret.contains(myGroup)) {
-                    ret.add(myGroup);
-                }
-            }
+				if (!ret.contains(myGroup)) {
+					ret.add(myGroup);
+				}
+			}
 
-            if (!ret.contains(myUser.getGroup())) {
-                ret.add(myUser.getGroup());
-            }
-        }
-
-        return ret;
-    }
-
-    /**
-     * Get all user names in the system.
-     */
-    public Collection getAllUsers() throws UserFileException {
-        ArrayList<AbstractUser> users = new ArrayList<AbstractUser>();
-        String[] userpaths = getUserpathFile().list();
-
-        for (int i = 0; i < userpaths.length; i++) {
-            String userpath = userpaths[i];
-
-            if (!userpath.endsWith(".xml")) {
-                continue;
-            }
-
-            String username = userpath.substring(0,
-                    userpath.length() - ".xml".length());
-
-            try {
-                users.add((AbstractUser) getUserByNameUnchecked(username));
-
-                // throws IOException
-            } catch (NoSuchUserException e) {
-            } // continue
-        }
-
-        return users;
-    }
-
-    public Collection getAllUsersByGroup(String group)
-        throws UserFileException {
-        Collection<User> c = new ArrayList<User>();
-
-        for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
-            User user = (User) iter.next();
-
-            if (user.isMemberOf(group)) {
-                c.add(user);
-            }
-        }
-
-        return c;
-    }
-
-    //TODO garbage collected Map of users.
-    public User getUserByNameIncludeDeleted(String username)
-    	throws NoSuchUserException, UserFileException {
-        User user = getUserByNameUnchecked(username);
-        user.reset(getGlobalContext());
-        return user;
-    }
-
-    public User getUserByName(String username)
-        throws NoSuchUserException, UserFileException {
-        User user = getUserByNameIncludeDeleted(username);
-
-        if (user.isDeleted()) {
-            throw new NoSuchUserException(user.getName() + " is deleted");
-        }
-
-        return user;
-    }
-
-    public GlobalContext getGlobalContext() {
-    	return _gctx;
-    }
-    public User getUserByIdent(String ident)
-		throws NoSuchUserException, UserFileException { 
-        for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
-		    User user = (User) iter.next();
-	        try {
-                String uident = (String) user.getKeyedMap().getObject(UserManagement.IRCIDENT);
-                if (uident.equals(ident)) {
-                    return user;
-                }
-            } catch (KeyNotFoundException e1) {
-            }	       
+			if (!ret.contains(myUser.getGroup())) {
+				ret.add(myUser.getGroup());
+			}
 		}
-        throw new NoSuchUserException("No user found with ident = " + ident);
-    }
 
-    public abstract User getUserByNameUnchecked(String username)
-        throws NoSuchUserException, UserFileException;
+		return ret;
+	}
 
-    /**
-     * A kind of constuctor defined in the interface for allowing the
-     * usermanager to get a hold of the ConnectionManager object for dispatching
-     * events etc.
-     */
-    public void init(GlobalContext gctx) {
-        _gctx = gctx;
-    }
+	/**
+	 * Get all user names in the system.
+	 */
+	public Collection getAllUsers() throws UserFileException {
+		ArrayList<AbstractUser> users = new ArrayList<AbstractUser>();
+		String[] userpaths = getUserpathFile().list();
 
-    public void remove(User user) {
-        _users.remove(user.getName());
-    }
+		for (int i = 0; i < userpaths.length; i++) {
+			String userpath = userpaths[i];
 
-    protected void rename(User oldUser, String newUsername)
-        throws UserExistsException, UserFileException {
-        if (!_users.contains(newUsername)) {
-            try {
-                getUserByNameUnchecked(newUsername);
-            } catch (NoSuchUserException e) {
-                _users.remove(oldUser.getName());
-                _users.put(newUsername, oldUser);
-                return;
-            }
-        }
+			if (!userpath.endsWith(".xml")) {
+				continue;
+			}
 
-        throw new UserExistsException("user " + newUsername + " exists");
-    }
+			String username = userpath.substring(0, userpath.length()
+					- ".xml".length());
 
+			try {
+				users.add((AbstractUser) getUserByNameUnchecked(username));
 
-    public void saveAll() throws UserFileException {
-        logger.info("Saving userfiles");
-        for(User user : _users.values()) {
-            user.commit();
-        }
-    }
+				// throws IOException
+			} catch (NoSuchUserException e) {
+			} // continue
+		}
+
+		return users;
+	}
+
+	public Collection getAllUsersByGroup(String group) throws UserFileException {
+		Collection<User> c = new ArrayList<User>();
+
+		for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
+			User user = (User) iter.next();
+
+			if (user.isMemberOf(group)) {
+				c.add(user);
+			}
+		}
+
+		return c;
+	}
+
+	// TODO garbage collected Map of users.
+	public User getUserByNameIncludeDeleted(String username)
+			throws NoSuchUserException, UserFileException {
+		User user = getUserByNameUnchecked(username);
+		user.reset(getGlobalContext());
+		return user;
+	}
+
+	public User getUserByName(String username) throws NoSuchUserException,
+			UserFileException {
+		User user = getUserByNameIncludeDeleted(username);
+
+		if (user.isDeleted()) {
+			throw new NoSuchUserException(user.getName() + " is deleted");
+		}
+
+		return user;
+	}
+
+	public GlobalContext getGlobalContext() {
+		return _gctx;
+	}
+
+	public User getUserByIdent(String ident) throws NoSuchUserException,
+			UserFileException {
+		for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
+			User user = (User) iter.next();
+			try {
+				String uident = (String) user.getKeyedMap().getObject(
+						UserManagement.IRCIDENT);
+				if (uident.equals(ident)) {
+					return user;
+				}
+			} catch (KeyNotFoundException e1) {
+			}
+		}
+		throw new NoSuchUserException("No user found with ident = " + ident);
+	}
+
+	public abstract User getUserByNameUnchecked(String username)
+			throws NoSuchUserException, UserFileException;
+
+	/**
+	 * A kind of constuctor defined in the interface for allowing the
+	 * usermanager to get a hold of the ConnectionManager object for dispatching
+	 * events etc.
+	 */
+	public void init(GlobalContext gctx) {
+		_gctx = gctx;
+	}
+
+	public void remove(User user) {
+		_users.remove(user.getName());
+	}
+
+	protected void rename(User oldUser, String newUsername)
+			throws UserExistsException, UserFileException {
+		if (!_users.contains(newUsername)) {
+			try {
+				getUserByNameUnchecked(newUsername);
+			} catch (NoSuchUserException e) {
+				_users.remove(oldUser.getName());
+				_users.put(newUsername, oldUser);
+				return;
+			}
+		}
+
+		throw new UserExistsException("user " + newUsername + " exists");
+	}
+
+	public void saveAll() throws UserFileException {
+		logger.info("Saving userfiles");
+		for (User user : _users.values()) {
+			user.commit();
+		}
+	}
 }

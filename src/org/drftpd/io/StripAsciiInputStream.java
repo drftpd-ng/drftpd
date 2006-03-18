@@ -20,64 +20,65 @@ package org.drftpd.io;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 /**
  * Not thread-safe (is any-In/OutputStream thread-safe?).
- *
+ * 
  * @author mog
  * @version $Id$
  */
 public class StripAsciiInputStream extends InputStream {
-    private InputStream _in;
-    private int peekChar = -1;
-    boolean _lastWasCarriageReturn = false;
+	private InputStream _in;
 
-    public StripAsciiInputStream(InputStream in) {
-        _in = in;
-    }
+	private int peekChar = -1;
 
-    public int read() throws IOException {
-        if (peekChar != -1) {
-            int ret = peekChar;
-            peekChar = -1;
-            System.err.println("return peeked " + ret);
+	boolean _lastWasCarriageReturn = false;
 
-            return ret;
-        }
+	public StripAsciiInputStream(InputStream in) {
+		_in = in;
+	}
 
-        while (true) {
-            int b = _in.read();
-            System.err.println("read: " + (char) b + "(" + b + ")");
+	public int read() throws IOException {
+		if (peekChar != -1) {
+			int ret = peekChar;
+			peekChar = -1;
+			System.err.println("return peeked " + ret);
 
-            if (b == '\r') {
-                System.err.println("read: was \\r");
-                _lastWasCarriageReturn = true;
+			return ret;
+		}
 
-                continue;
-            }
+		while (true) {
+			int b = _in.read();
+			System.err.println("read: " + (char) b + "(" + b + ")");
 
-            if (b == '\n') {
-                System.err.println("read: was \\n");
-            }
+			if (b == '\r') {
+				System.err.println("read: was \\r");
+				_lastWasCarriageReturn = true;
 
-            if (_lastWasCarriageReturn) {
-                _lastWasCarriageReturn = false;
+				continue;
+			}
 
-                if (b != '\n') {
-                    peekChar = b;
-                    System.err.println("return \\r");
+			if (b == '\n') {
+				System.err.println("read: was \\n");
+			}
 
-                    return '\r';
-                }
-            }
+			if (_lastWasCarriageReturn) {
+				_lastWasCarriageReturn = false;
 
-            System.err.println("return " + (char) b + " (" + b + ")");
+				if (b != '\n') {
+					peekChar = b;
+					System.err.println("return \\r");
 
-            return b;
-        }
-    }
+					return '\r';
+				}
+			}
 
-    public void close() throws IOException {
-        _in.close();
-    }
+			System.err.println("return " + (char) b + " (" + b + ")");
+
+			return b;
+		}
+	}
+
+	public void close() throws IOException {
+		_in.close();
+	}
 }

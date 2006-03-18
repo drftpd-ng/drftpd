@@ -17,42 +17,41 @@
  */
 package org.drftpd.master;
 
-
 import org.drftpd.slave.CaseInsensitiveHashtable;
 import org.drftpd.slave.async.AsyncResponseRemerge;
-
 
 /**
  * @author mog
  * @version $Id$
  */
 public class RemergeMessage {
-    private RemoteSlave _rslave;
-    private AsyncResponseRemerge _response;
+	private RemoteSlave _rslave;
 
-    public RemergeMessage(AsyncResponseRemerge response, RemoteSlave slave) {
-        _rslave = slave;
-        _response = response;
-    }
+	private AsyncResponseRemerge _response;
 
-    public RemergeMessage(RemoteSlave slave) {
-        _rslave = slave;
-        _response = null;
-    }
+	public RemergeMessage(AsyncResponseRemerge response, RemoteSlave slave) {
+		_rslave = slave;
+		_response = response;
+	}
 
-    public boolean isCompleted() {
-        return _response == null;
-    }
+	public RemergeMessage(RemoteSlave slave) {
+		_rslave = slave;
+		_response = null;
+	}
 
-    public String getDirectory() {
-        return _response.getDirectory();
-    }
+	public boolean isCompleted() {
+		return _response == null;
+	}
 
-    public RemoteSlave getRslave() {
-        return _rslave;
-    }
+	public String getDirectory() {
+		return _response.getDirectory();
+	}
 
-    public CaseInsensitiveHashtable getFiles() {
-        return _response.getFiles();
-    }
+	public RemoteSlave getRslave() {
+		return _rslave;
+	}
+
+	public CaseInsensitiveHashtable getFiles() {
+		return _response.getFiles();
+	}
 }

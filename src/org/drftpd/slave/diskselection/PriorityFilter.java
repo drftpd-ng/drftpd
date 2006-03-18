@@ -24,21 +24,27 @@ import java.util.Properties;
 import org.drftpd.PropertyHelper;
 
 /**
- * This filter works this way (may look foolish)<pre>
- * x.filter=priority
- * x.assign=1+10 2+5</pre>
- * This means that slave.root.1 will have more chances
- * to receive a file then slave.root.2
+ * This filter works this way (may look foolish)
+ * 
+ * <pre>
+ *  x.filter=priority
+ *  x.assign=1+10 2+5
+ * </pre>
+ * 
+ * This means that slave.root.1 will have more chances to receive a file then
+ * slave.root.2
+ * 
  * @author fr0w
  */
 
 public class PriorityFilter extends DiskFilter {
 
-	private ArrayList _assignList;  
-	
+	private ArrayList _assignList;
+
 	public PriorityFilter(Properties p, Integer i) {
 		super(p, i);
-		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
+		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i
+				+ ".assign"));
 	}
 
 	public void process(ScoreChart sc, String path) {

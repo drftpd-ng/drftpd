@@ -19,34 +19,33 @@ package org.drftpd.commands;
 
 import net.sf.drftpd.master.FtpRequest;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class UnhandledCommandException extends ReplyException {
-    public UnhandledCommandException() {
-        super();
-    }
+	public UnhandledCommandException() {
+		super();
+	}
 
-    public UnhandledCommandException(String message) {
-        super(message);
-    }
+	public UnhandledCommandException(String message) {
+		super(message);
+	}
 
-    public UnhandledCommandException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public UnhandledCommandException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public UnhandledCommandException(Throwable cause) {
-        super(cause);
-    }
+	public UnhandledCommandException(Throwable cause) {
+		super(cause);
+	}
 
-    public static UnhandledCommandException create(Class clazz, FtpRequest req) {
-        return create(clazz, req.getCommand());
-    }
+	public static UnhandledCommandException create(Class clazz, FtpRequest req) {
+		return create(clazz, req.getCommand());
+	}
 
-    public static UnhandledCommandException create(Class clazz, String command) {
-        return new UnhandledCommandException(clazz.getName() +
-            " doesn't know how to handle " + command);
-    }
+	public static UnhandledCommandException create(Class clazz, String command) {
+		return new UnhandledCommandException(clazz.getName()
+				+ " doesn't know how to handle " + command);
+	}
 }

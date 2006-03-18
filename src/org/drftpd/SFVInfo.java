@@ -30,67 +30,68 @@ import org.drftpd.vfs.VirtualFileSystemFileSFV;
  * @version $Id$
  */
 public class SFVInfo implements Serializable {
-	
+
 	private CaseInsensitiveHashtable _entries = null;
-	
+
 	public static final Key SFV = new Key(VirtualFileSystemFileSFV.class,
 			"sfv", SFVInfo.class);
-    /**
-     * Constructor for SFVFile.
-     */
+
+	/**
+	 * Constructor for SFVFile.
+	 */
 	public SFVInfo() {
-		
+
 	}
-	
+
 	public CaseInsensitiveHashtable getEntries() {
 		return _entries;
 	}
-	
+
 	public void setEntries(CaseInsensitiveHashtable entries) {
 		_entries = entries;
 	}
-	
+
 	public int getSize() {
 		return _entries.size();
 	}
-	
-    public static SFVInfo getSFVInfo(BufferedReader in) throws IOException {
-        String line;
-        CaseInsensitiveHashtable entries = new CaseInsensitiveHashtable();
-        try {
-            while ((line = in.readLine()) != null) {
-                if (line.length() == 0) {
-                    continue;
-                }
 
-                if (line.charAt(0) == ';') {
-                    continue;
-                }
+	public static SFVInfo getSFVInfo(BufferedReader in) throws IOException {
+		String line;
+		CaseInsensitiveHashtable entries = new CaseInsensitiveHashtable();
+		try {
+			while ((line = in.readLine()) != null) {
+				if (line.length() == 0) {
+					continue;
+				}
 
-                int separator = line.indexOf(" ");
+				if (line.charAt(0) == ';') {
+					continue;
+				}
 
-                if (separator == -1) {
-                    continue;
-                }
+				int separator = line.indexOf(" ");
 
-                String fileName = line.substring(0, separator);
-                String checkSumString = line.substring(separator + 1);
-                Long checkSum;
+				if (separator == -1) {
+					continue;
+				}
 
-                try {
-                    checkSum = Long.valueOf(checkSumString, 16);
-                } catch (NumberFormatException e) {
-                    continue;
-                }
-                entries.put(fileName, checkSum);
-            }
-        } finally {
-        	if (in != null) {
-        		in.close();
-        	}
-        }
-        SFVInfo tmp = new SFVInfo();
-        tmp.setEntries(entries);
-        return tmp;
-    }
+				String fileName = line.substring(0, separator);
+				String checkSumString = line.substring(separator + 1);
+				Long checkSum;
+
+				try {
+					checkSum = Long.valueOf(checkSumString, 16);
+				} catch (NumberFormatException e) {
+					continue;
+				}
+				entries.put(fileName, checkSum);
+			}
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+		SFVInfo tmp = new SFVInfo();
+		tmp.setEntries(entries);
+		return tmp;
+	}
 }

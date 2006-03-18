@@ -17,49 +17,48 @@
  */
 package org.drftpd.usermanager;
 
-
 import java.util.Collection;
 
 import org.drftpd.GlobalContext;
-
 
 /**
  * @author mog
  * @version $Id$
  */
 public interface UserManager {
-    public abstract User create(String username) throws UserFileException;
+	public abstract User create(String username) throws UserFileException;
 
-    public abstract Collection getAllGroups() throws UserFileException;
+	public abstract Collection getAllGroups() throws UserFileException;
 
-    /**
-     * Get all user names in the system.
-     */
-    public abstract Collection<User> getAllUsers() throws UserFileException;
+	/**
+	 * Get all user names in the system.
+	 */
+	public abstract Collection<User> getAllUsers() throws UserFileException;
 
-    public abstract Collection getAllUsersByGroup(String group)
-        throws UserFileException;
+	public abstract Collection getAllUsersByGroup(String group)
+			throws UserFileException;
 
-    /**
-     * Get user by name.
-     */
-    public abstract User getUserByName(String username)
-        throws NoSuchUserException, UserFileException;
+	/**
+	 * Get user by name.
+	 */
+	public abstract User getUserByName(String username)
+			throws NoSuchUserException, UserFileException;
 
-    public abstract User getUserByIdent(String ident)
-    	throws NoSuchUserException, UserFileException;
+	public abstract User getUserByIdent(String ident)
+			throws NoSuchUserException, UserFileException;
 
-    public abstract User getUserByNameUnchecked(String username)
-        throws NoSuchUserException, UserFileException;
+	public abstract User getUserByNameUnchecked(String username)
+			throws NoSuchUserException, UserFileException;
 
-    /**
-     * A kind of constuctor defined in the interface for allowing the
-     * usermanager to get a hold of the ConnectionManager object for dispatching
-     * events etc.
-     */
-    public abstract void init(GlobalContext mgr);
+	/**
+	 * A kind of constuctor defined in the interface for allowing the
+	 * usermanager to get a hold of the ConnectionManager object for dispatching
+	 * events etc.
+	 */
+	public abstract void init(GlobalContext mgr);
 
-    public abstract void saveAll() throws UserFileException;
+	public abstract void saveAll() throws UserFileException;
 
-	public abstract User getUserByNameIncludeDeleted(String argument) throws NoSuchUserException, UserFileException;
+	public abstract User getUserByNameIncludeDeleted(String argument)
+			throws NoSuchUserException, UserFileException;
 }

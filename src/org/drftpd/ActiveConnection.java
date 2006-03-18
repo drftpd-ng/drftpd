@@ -28,56 +28,60 @@ import javax.net.ssl.SSLSocket;
 import org.apache.log4j.Logger;
 import org.drftpd.slave.Connection;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class ActiveConnection extends Connection {
-    private static final Logger logger = Logger.getLogger(ActiveConnection.class);
-    private SSLContext _ctx;
-    private InetSocketAddress _addr;
-    private Socket _sock;
-    private boolean _useSSLClientHandshake;
-    
-    public ActiveConnection(SSLContext ctx, InetSocketAddress addr,
+	private static final Logger logger = Logger
+			.getLogger(ActiveConnection.class);
+
+	private SSLContext _ctx;
+
+	private InetSocketAddress _addr;
+
+	private Socket _sock;
+
+	private boolean _useSSLClientHandshake;
+
+	public ActiveConnection(SSLContext ctx, InetSocketAddress addr,
 			boolean useSSLClientHandshake) {
-        _addr = addr;
-        _ctx = ctx;
-        _useSSLClientHandshake = useSSLClientHandshake;
+		_addr = addr;
+		_ctx = ctx;
+		_useSSLClientHandshake = useSSLClientHandshake;
 	}
 
-    public Socket connect() throws IOException {
-        logger.debug("Connecting to " + _addr.getHostName() + ":" +
-            _addr.getPort());
+	public Socket connect() throws IOException {
+		logger.debug("Connecting to " + _addr.getHostName() + ":"
+				+ _addr.getPort());
 
-        if (_ctx != null) {
-            SSLSocket sslsock;
-            sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
-            sslsock.connect(_addr, TIMEOUT);
-            setSockOpts(sslsock);
-            sslsock.setUseClientMode(_useSSLClientHandshake);
-            sslsock.startHandshake();
-            _sock = sslsock;
-        } else {
-            _sock = SocketFactory.getDefault().createSocket();
-            _sock.connect(_addr, TIMEOUT);
-            setSockOpts(_sock);
-        }
+		if (_ctx != null) {
+			SSLSocket sslsock;
+			sslsock = (SSLSocket) _ctx.getSocketFactory().createSocket();
+			sslsock.connect(_addr, TIMEOUT);
+			setSockOpts(sslsock);
+			sslsock.setUseClientMode(_useSSLClientHandshake);
+			sslsock.startHandshake();
+			_sock = sslsock;
+		} else {
+			_sock = SocketFactory.getDefault().createSocket();
+			_sock.connect(_addr, TIMEOUT);
+			setSockOpts(_sock);
+		}
 
-        Socket sock = _sock;
-        _sock = null;
+		Socket sock = _sock;
+		_sock = null;
 
-        return sock;
-    }
+		return sock;
+	}
 
-    public void abort() {
-        try {
-            if (_sock != null) {
-                _sock.close();
-            }
-        } catch (IOException e) {
-            logger.warn("abort() failed to close() socket", e);
-        }
-    }
+	public void abort() {
+		try {
+			if (_sock != null) {
+				_sock.close();
+			}
+		} catch (IOException e) {
+			logger.warn("abort() failed to close() socket", e);
+		}
+	}
 }

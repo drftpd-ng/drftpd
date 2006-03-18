@@ -17,27 +17,25 @@
  */
 package org.drftpd.permissions;
 
-
 import java.util.Collection;
 
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
-
 
 /**
  * @author mog
  * @version $Id$
  */
 public class StringPathPermission extends PathPermission {
-    private InodeHandle _path;
+	private InodeHandle _path;
 
-    public StringPathPermission(DirectoryHandle path, Collection<String> users) {
-        super(users);
-        _path = path;
-    }
+	public StringPathPermission(DirectoryHandle path, Collection<String> users) {
+		super(users);
+		_path = path;
+	}
 
-    public boolean checkPath(DirectoryHandle path) {
+	public boolean checkPath(DirectoryHandle path) {
 
-        return (path.getPath()).startsWith(_path.getPath());
-    }
+		return (path.getPath()).startsWith(_path.getPath());
+	}
 }

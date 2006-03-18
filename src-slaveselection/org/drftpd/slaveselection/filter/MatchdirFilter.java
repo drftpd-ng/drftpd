@@ -34,134 +34,142 @@ import org.drftpd.master.SlaveManager;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * Example slaveselection entry:
+ * 
  * <pre>
- * <n>.filter=matchdir
- * <n>.assign=<slavename>+100000
- * <n>.match=<path glob match>
+ *  &lt;n&gt;.filter=matchdir
+ *  &lt;n&gt;.assign=&lt;slavename&gt;+100000
+ *  &lt;n&gt;.match=&lt;path glob match&gt;
  * </pre>
- *
+ * 
  * @author mog
  * @version $Id: MatchdirFilter.java 847 2004-12-02 03:32:41Z mog $
  */
 public class MatchdirFilter extends Filter {
-    private ArrayList<AssignSlave> _assigns;
-    private Pattern _p;
-    private Perl5Matcher _m = new Perl5Matcher();
+	private ArrayList<AssignSlave> _assigns;
 
-    public MatchdirFilter(FilterChain fc, int i, Properties p) {
-        try {
-            _assigns = parseAssign(PropertyHelper.getProperty(p, i + ".assign"), fc.getGlobalContext().getSlaveManager());
-            _p = new GlobCompiler().compile(PropertyHelper.getProperty(p,
-                        i + ".match"));
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
-            throw new RuntimeException(e);
-        }
-    }
+	private Pattern _p;
 
-    static ArrayList<AssignSlave> parseAssign(String assign, SlaveManager sm) throws ObjectNotFoundException {
-        StringTokenizer st = new StringTokenizer(assign, ", ");
-        ArrayList<AssignSlave> assigns = new ArrayList<AssignSlave>();
+	private Perl5Matcher _m = new Perl5Matcher();
 
-        while (st.hasMoreTokens()) {
-            assigns.add(new AssignSlave(st.nextToken(), sm));
-        }
+	public MatchdirFilter(FilterChain fc, int i, Properties p) {
+		try {
+			_assigns = parseAssign(
+					PropertyHelper.getProperty(p, i + ".assign"), fc
+							.getGlobalContext().getSlaveManager());
+			_p = new GlobCompiler().compile(PropertyHelper.getProperty(p, i
+					+ ".match"));
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException) e;
+			}
+			throw new RuntimeException(e);
+		}
+	}
 
-        return assigns;
-    }
+	static ArrayList<AssignSlave> parseAssign(String assign, SlaveManager sm)
+			throws ObjectNotFoundException {
+		StringTokenizer st = new StringTokenizer(assign, ", ");
+		ArrayList<AssignSlave> assigns = new ArrayList<AssignSlave>();
 
-    static void doAssign(ArrayList<AssignSlave> assigns, ScoreChart scorechart) {
-    	for(AssignSlave assign : assigns) {
-            if (assign.isAll()) {
-                for (Iterator iterator = scorechart.getSlaveScores().iterator();
-                        iterator.hasNext();) {
-                    ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iterator.next();
+		while (st.hasMoreTokens()) {
+			assigns.add(new AssignSlave(st.nextToken(), sm));
+		}
 
-                    if (assign.getScore() == 0) {
-                        iterator.remove();
-                    } else {
-                        score.addScore(assign.getScore());
-                    }
-                }
-            } else {
-                if (assign.getScore() == 0) {
-                    scorechart.removeSlaveScore(assign.getRSlave());
-                } else {
-                    try {
-                        scorechart.getSlaveScore(assign.getRSlave()).addScore(assign.getScore());
+		return assigns;
+	}
 
-                        //not in scorechart, this is OK
-                    } catch (ObjectNotFoundException e) {
-                    }
-                }
-            }
-        }
-    }
+	static void doAssign(ArrayList<AssignSlave> assigns, ScoreChart scorechart) {
+		for (AssignSlave assign : assigns) {
+			if (assign.isAll()) {
+				for (Iterator iterator = scorechart.getSlaveScores().iterator(); iterator
+						.hasNext();) {
+					ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iterator
+							.next();
 
-    public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, InodeHandle file, RemoteSlave sourceSlave) {
-        if (_m.matches(file.getPath(), _p)) {
-            doAssign(_assigns, scorechart);
-        }
-    }
+					if (assign.getScore() == 0) {
+						iterator.remove();
+					} else {
+						score.addScore(assign.getScore());
+					}
+				}
+			} else {
+				if (assign.getScore() == 0) {
+					scorechart.removeSlaveScore(assign.getRSlave());
+				} else {
+					try {
+						scorechart.getSlaveScore(assign.getRSlave()).addScore(
+								assign.getScore());
 
-    static class AssignSlave {
-        private RemoteSlave _rslave;
-        private long _score;
+						// not in scorechart, this is OK
+					} catch (ObjectNotFoundException e) {
+					}
+				}
+			}
+		}
+	}
 
-        public AssignSlave(String s, SlaveManager slaveManager)
-            throws ObjectNotFoundException {
-            boolean isAdd;
-            int pos = s.indexOf("+");
+	public void process(ScoreChart scorechart, User user, InetAddress source,
+			char direction, InodeHandle file, RemoteSlave sourceSlave) {
+		if (_m.matches(file.getPath(), _p)) {
+			doAssign(_assigns, scorechart);
+		}
+	}
 
-            if (pos != -1) {
-                isAdd = true;
-            } else {
-                pos = s.indexOf("-");
+	static class AssignSlave {
+		private RemoteSlave _rslave;
 
-                if (pos == -1) {
-                    throw new IllegalArgumentException(s +
-                        " is not a valid assign slave expression");
-                }
+		private long _score;
 
-                isAdd = false;
-            }
+		public AssignSlave(String s, SlaveManager slaveManager)
+				throws ObjectNotFoundException {
+			boolean isAdd;
+			int pos = s.indexOf("+");
 
-            String slavename = s.substring(0, pos);
+			if (pos != -1) {
+				isAdd = true;
+			} else {
+				pos = s.indexOf("-");
 
-            if (!slavename.equalsIgnoreCase("all")) {
-                _rslave = slaveManager.getRemoteSlave(slavename);
-            }
+				if (pos == -1) {
+					throw new IllegalArgumentException(s
+							+ " is not a valid assign slave expression");
+				}
 
-            String assign = s.substring(pos + 1);
+				isAdd = false;
+			}
 
-            if (assign.equals("remove")) {
-                _score = 0;
-                isAdd = false;
-            } else {
-                _score = Long.parseLong(s.substring(pos + 1));
+			String slavename = s.substring(0, pos);
 
-                if (!isAdd) {
-                    _score = -_score;
-                }
-            }
-        }
+			if (!slavename.equalsIgnoreCase("all")) {
+				_rslave = slaveManager.getRemoteSlave(slavename);
+			}
 
-        public RemoteSlave getRSlave() {
-            return _rslave;
-        }
+			String assign = s.substring(pos + 1);
 
-        public long getScore() {
-            return _score;
-        }
+			if (assign.equals("remove")) {
+				_score = 0;
+				isAdd = false;
+			} else {
+				_score = Long.parseLong(s.substring(pos + 1));
 
-        public boolean isAll() {
-            return _rslave == null;
-        }
-    }
+				if (!isAdd) {
+					_score = -_score;
+				}
+			}
+		}
+
+		public RemoteSlave getRSlave() {
+			return _rslave;
+		}
+
+		public long getScore() {
+			return _score;
+		}
+
+		public boolean isAll() {
+			return _rslave == null;
+		}
+	}
 }

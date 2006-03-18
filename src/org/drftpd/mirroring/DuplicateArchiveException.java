@@ -17,25 +17,24 @@
  */
 package org.drftpd.mirroring;
 
-
 /**
  * @author zubov
  * @version $Id$
  */
 public class DuplicateArchiveException extends Exception {
-    public DuplicateArchiveException() {
-        super();
-    }
+	public DuplicateArchiveException() {
+		super();
+	}
 
-    public DuplicateArchiveException(String message) {
-        super(message);
-    }
+	public DuplicateArchiveException(String message) {
+		super(message);
+	}
 
-    public DuplicateArchiveException(Throwable cause) {
-        super(cause);
-    }
+	public DuplicateArchiveException(Throwable cause) {
+		super(cause);
+	}
 
-    public DuplicateArchiveException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public DuplicateArchiveException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

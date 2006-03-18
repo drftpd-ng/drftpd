@@ -16,25 +16,24 @@
  */
 package net.sf.drftpd.mirroring;
 
-
 /**
  * @author zubov
- * @version $Id: SourceSlaveException.java,v 1.4 2004/09/13 15:04:58 zubov Exp $
+ * @version $Id$
  */
 public class SourceSlaveException extends SlaveException {
-    public SourceSlaveException() {
-        super();
-    }
+	public SourceSlaveException() {
+		super();
+	}
 
-    public SourceSlaveException(Exception e) {
-        super(e);
-    }
+	public SourceSlaveException(Exception e) {
+		super(e);
+	}
 
-    public SourceSlaveException(String s) {
-        super(s);
-    }
+	public SourceSlaveException(String s) {
+		super(s);
+	}
 
-    public SourceSlaveException(Throwable throwable) {
-        super(throwable);
-    }
+	public SourceSlaveException(Throwable throwable) {
+		super(throwable);
+	}
 }

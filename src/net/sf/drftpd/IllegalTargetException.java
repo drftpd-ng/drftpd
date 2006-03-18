@@ -19,29 +19,28 @@ package net.sf.drftpd;
 
 import java.io.IOException;
 
-
 /**
  * @author mog
- *
+ * 
  * @version $Id$
  */
 public class IllegalTargetException extends IOException {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 9073839433603984027L;
 
 	/**
-     *
-     */
-    public IllegalTargetException() {
-        super();
-    }
+	 * 
+	 */
+	public IllegalTargetException() {
+		super();
+	}
 
-    /**
-     * @param message
-     */
-    public IllegalTargetException(String message) {
-        super(message);
-    }
+	/**
+	 * @param message
+	 */
+	public IllegalTargetException(String message) {
+		super(message);
+	}
 }

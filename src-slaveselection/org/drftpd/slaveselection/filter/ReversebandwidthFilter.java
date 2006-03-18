@@ -17,7 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Iterator;
@@ -29,42 +28,42 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /*
  * @author zubov
+ * 
  * @version $Id: ReversebandwidthFilter.java 879 2004-12-29 03:39:22Z mog $
  */
 public class ReversebandwidthFilter extends BandwidthFilter {
-    public ReversebandwidthFilter(FilterChain ssm, int i, Properties p) {
-        super(ssm, i, p);
-    }
+	public ReversebandwidthFilter(FilterChain ssm, int i, Properties p) {
+		super(ssm, i, p);
+	}
 
-    public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, InodeHandle file, RemoteSlave sourceSlave) {
-        char oppositeDirection;
+	public void process(ScoreChart scorechart, User user, InetAddress source,
+			char direction, InodeHandle file, RemoteSlave sourceSlave) {
+		char oppositeDirection;
 
-        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-            oppositeDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
-        } else {
-            oppositeDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
-        }
+		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			oppositeDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
+		} else {
+			oppositeDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
+		}
 
-        Collection slavescores = scorechart.getSlaveScores();
+		Collection slavescores = scorechart.getSlaveScores();
 
-        for (Iterator iter = slavescores.iterator(); iter.hasNext();) {
-            ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
-            SlaveStatus status;
+		for (Iterator iter = slavescores.iterator(); iter.hasNext();) {
+			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
+			SlaveStatus status;
 
-            try {
-                status = score.getRSlave().getSlaveStatusAvailable();
-            } catch (Exception e) {
-                iter.remove();
+			try {
+				status = score.getRSlave().getSlaveStatusAvailable();
+			} catch (Exception e) {
+				iter.remove();
 
-                continue;
-            }
+				continue;
+			}
 
-            score.addScore(-(long) (status.getThroughputDirection(
-                    oppositeDirection) * _multiplier));
-        }
-    }
+			score.addScore(-(long) (status
+					.getThroughputDirection(oppositeDirection) * _multiplier));
+		}
+	}
 }

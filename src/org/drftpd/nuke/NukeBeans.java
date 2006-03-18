@@ -39,9 +39,10 @@ import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 /**
- * NukeBeans handles the logging of nukes.
- * Using a TreeMap, it sorts all nukes in alphabetical order using the path.
- * To save/load the current nukelog, we are using JavaBeans XMLEncoder/XMLDecoder. 
+ * NukeBeans handles the logging of nukes. Using a TreeMap, it sorts all nukes
+ * in alphabetical order using the path. To save/load the current nukelog, we
+ * are using JavaBeans XMLEncoder/XMLDecoder.
+ * 
  * @author fr0w
  */
 public class NukeBeans {
@@ -49,39 +50,45 @@ public class NukeBeans {
 	/**
 	 * Singleton.
 	 */
-	private NukeBeans() { }
-	
+	private NukeBeans() {
+	}
+
 	protected static final Logger logger = Logger.getLogger(NukeBeans.class);
-	
+
 	private static NukeBeans _nukeBeans = null;
+
 	private static String nukeFile = "nukebeans.xml";
 
-	private CaseInsensitiveTreeMap<String, NukeData> _nukes = 
-		new CaseInsensitiveTreeMap<String, NukeData>();
-	
+	private CaseInsensitiveTreeMap<String, NukeData> _nukes = new CaseInsensitiveTreeMap<String, NukeData>();
+
 	/**
 	 * Get the NukeData Object of the given path.
+	 * 
 	 * @param path
-	 * @throws ObjectNotFoundException, if not object is found.
+	 * @throws ObjectNotFoundException,
+	 *             if not object is found.
 	 */
-	public synchronized NukeData get(String path) throws ObjectNotFoundException {
+	public synchronized NukeData get(String path)
+			throws ObjectNotFoundException {
 		NukeData ne = (NukeData) _nukes.get(path);
 		if (ne == null)
 			throw new ObjectNotFoundException("No nukelog for: " + path);
 		return ne;
 	}
-	
+
 	/**
 	 * See add(String, NukeData).
+	 * 
 	 * @param nd
 	 */
 	public void add(NukeData nd) {
 		add(nd.getPath(), nd);
 	}
-	
+
 	/**
-	 * Adds the given NukeData Object to the TreeMap and
-	 * then serializes the TreeMap.
+	 * Adds the given NukeData Object to the TreeMap and then serializes the
+	 * TreeMap.
+	 * 
 	 * @param path
 	 * @param nd
 	 */
@@ -91,14 +98,17 @@ public class NukeBeans {
 		try {
 			commit();
 		} catch (IOException e) {
-			logger.debug("Couldn't save the nukelog deu to: " + e.getMessage(), e);
-		} 
+			logger.debug("Couldn't save the nukelog deu to: " + e.getMessage(),
+					e);
+		}
 	}
-	
+
 	/**
 	 * This method will try to remove the given path from the nukelog.
+	 * 
 	 * @param path
-	 * @throws ObjectNotFoundException, if this path is not on the nukelog.
+	 * @throws ObjectNotFoundException,
+	 *             if this path is not on the nukelog.
 	 */
 	public synchronized void remove(String path) throws ObjectNotFoundException {
 		NukeData ne = (NukeData) _nukes.remove(path);
@@ -107,10 +117,11 @@ public class NukeBeans {
 		try {
 			commit();
 		} catch (IOException e) {
-			logger.debug("Couldn't save the nukelog deu to: " + e.getMessage(), e);
-		} 
+			logger.debug("Couldn't save the nukelog deu to: " + e.getMessage(),
+					e);
+		}
 	}
-	
+
 	/**
 	 * @return all NukeData Objects stored on the TreeMap.
 	 */
@@ -118,12 +129,12 @@ public class NukeBeans {
 	public synchronized Collection<NukeData> getAll() {
 		return (Collection<NukeData>) _nukes.values();
 	}
-	
+
 	/**
-	 * This method iterate through the Map of the users
-	 * which have been nuked on the NukeData.getPath(),
-	 * and create a List<Nukee> Object.
-	 * See: net.sf.drftpd.Nukee for more info.
+	 * This method iterate through the Map of the users which have been nuked on
+	 * the NukeData.getPath(), and create a List<Nukee> Object. See:
+	 * net.sf.drftpd.Nukee for more info.
+	 * 
 	 * @param nd
 	 * @return
 	 */
@@ -133,14 +144,13 @@ public class NukeBeans {
 			String user = (String) entry.getKey();
 			Long l = (Long) entry.getValue();
 			list.add(new Nukee(user, l.longValue()));
-		}		
+		}
 		return list;
 	}
-	
+
 	/**
 	 * @param path
-	 * @return true if the given path is on the nukelog
-	 * or false if it isnt.
+	 * @return true if the given path is on the nukelog or false if it isnt.
 	 */
 	public synchronized boolean findPath(String path) {
 		try {
@@ -150,16 +160,17 @@ public class NukeBeans {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Serializes the TreeMap.
+	 * 
 	 * @throws IOException
 	 */
 	public void commit() throws IOException {
 		if (_nukes.size() == 0) {
 			return;
 		}
-		
+
 		XMLEncoder enc = null;
 		try {
 			enc = new XMLEncoder(new SafeFileOutputStream(nukeFile));
@@ -168,20 +179,23 @@ public class NukeBeans {
 					logger.error(e, e);
 				}
 			});
-			enc.setPersistenceDelegate(NukeData.class, new DefaultPersistenceDelegate(new String[] {
-				"user", "path", "reason", "nukees", "multiplier", "amount", "size", "time" } ));
-			
+			enc.setPersistenceDelegate(NukeData.class,
+					new DefaultPersistenceDelegate(new String[] { "user",
+							"path", "reason", "nukees", "multiplier", "amount",
+							"size", "time" }));
+
 			enc.writeObject(_nukes);
 		} catch (IOException ex) {
 			throw new IOException(ex.getMessage());
 		} finally {
-			if (enc != null) 
+			if (enc != null)
 				enc.close();
-		}		
+		}
 	}
-	
+
 	/**
 	 * Singleton method.
+	 * 
 	 * @return NukeBeans.
 	 */
 	public static NukeBeans getNukeBeans() {
@@ -189,26 +203,25 @@ public class NukeBeans {
 			System.out.println("DEBUG: Instantiating NukeBeans.");
 			newInstance();
 		}
-		
+
 		return _nukeBeans;
 	}
-	
+
 	/**
-	 * Creates a new instance of NukeBeans.
-	 * De-serialize the .xml.
+	 * Creates a new instance of NukeBeans. De-serialize the .xml.
 	 */
 	@SuppressWarnings("unchecked")
 	public static void newInstance() {
 		_nukeBeans = new NukeBeans();
-		
-		//de-serializing the Hashtable.
+
+		// de-serializing the Hashtable.
 		XMLDecoder xd = null;
 		try {
 			xd = new XMLDecoder(new FileInputStream(nukeFile));
-			
-			CaseInsensitiveTreeMap<String, NukeData> nukees = 
-				(CaseInsensitiveTreeMap<String, NukeData>) xd.readObject();
-			
+
+			CaseInsensitiveTreeMap<String, NukeData> nukees = (CaseInsensitiveTreeMap<String, NukeData>) xd
+					.readObject();
+
 			logger.debug("Loading Hashtable from .xml, size: " + nukees.size());
 			_nukeBeans.setTreeMap(nukees);
 		} catch (FileNotFoundException e) {
@@ -218,21 +231,22 @@ public class NukeBeans {
 				xd.close();
 		}
 	}
-	
+
 	/**
 	 * @param TreeMap
 	 */
 	public void setTreeMap(CaseInsensitiveTreeMap<String, NukeData> nukes) {
 		_nukes = nukes;
 	}
-	
+
 	/**
 	 * Testing purposes.
+	 * 
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		System.out.println("DEBUG: Testing NukeBeans");
-		
+
 		for (int i = 0; i < 100; i++) {
 			// settings...
 			String user = "test" + String.valueOf(i);
@@ -241,25 +255,26 @@ public class NukeBeans {
 			int multiplier = 3;
 			long nukedAmount = multiplier * size;
 			String reason = "Testing";
-			Map<String,Long> nukees = new Hashtable<String,Long>();
+			Map<String, Long> nukees = new Hashtable<String, Long>();
 			nukees.put("test" + String.valueOf(i), nukedAmount);
-			
+
 			// actual NukeEvent
-			NukeData nd = new NukeData(user, path, reason, nukees, multiplier, nukedAmount, size);
-			
-			//System.out.println(nd.toString());
+			NukeData nd = new NukeData(user, path, reason, nukees, multiplier,
+					nukedAmount, size);
+
+			// System.out.println(nd.toString());
 			// adding
 			getNukeBeans().add(nd);
 		}
-		
+
 		// commiting.
 		try {
 			getNukeBeans().commit();
 		} catch (IOException e) {
 			System.out.println("ERROR: " + e.getMessage());
 		}
-		
-		//finished!
+
+		// finished!
 		System.out.println("DEBUG: Test ran successfully");
-	}	
+	}
 }

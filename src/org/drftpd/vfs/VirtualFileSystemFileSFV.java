@@ -20,14 +20,12 @@ package org.drftpd.vfs;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.drftpd.NoSFVEntryException;
 
 import org.drftpd.SFVInfo;
 import org.drftpd.SFVStatus;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 
 public class VirtualFileSystemFileSFV extends VirtualFileSystemFile {
@@ -94,35 +92,27 @@ public class VirtualFileSystemFileSFV extends VirtualFileSystemFile {
 		return checksum.longValue();
 	}
 
-	
 	// I don't know what these are used for, so I could not write them properly
-/*	public long getTotalBytes() {
-		long totalBytes = 0;
-
-		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			totalBytes += ((LinkedRemoteFileInterface) iter.next()).length();
-		}
-
-		return totalBytes;
-	}
-
-	public long getTotalXfertime() {
-		long totalXfertime = 0;
-
-		for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
-			totalXfertime += ((LinkedRemoteFileInterface) iter.next())
-					.getXfertime();
-		}
-
-		return totalXfertime;
-	}
-
-	public long getXferspeed() {
-		if ((getTotalXfertime() / 1000) == 0) {
-			return 0;
-		}
-
-		return getTotalBytes() / (getTotalXfertime() / 1000);
-	}*/
+	/*
+	 * public long getTotalBytes() { long totalBytes = 0;
+	 * 
+	 * for (Iterator iter = getFiles().iterator(); iter.hasNext();) { totalBytes +=
+	 * ((LinkedRemoteFileInterface) iter.next()).length(); }
+	 * 
+	 * return totalBytes; }
+	 * 
+	 * public long getTotalXfertime() { long totalXfertime = 0;
+	 * 
+	 * for (Iterator iter = getFiles().iterator(); iter.hasNext();) {
+	 * totalXfertime += ((LinkedRemoteFileInterface) iter.next())
+	 * .getXfertime(); }
+	 * 
+	 * return totalXfertime; }
+	 * 
+	 * public long getXferspeed() { if ((getTotalXfertime() / 1000) == 0) {
+	 * return 0; }
+	 * 
+	 * return getTotalBytes() / (getTotalXfertime() / 1000); }
+	 */
 
 }

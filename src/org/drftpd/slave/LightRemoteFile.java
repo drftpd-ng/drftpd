@@ -17,73 +17,74 @@
  */
 package org.drftpd.slave;
 
-
 import java.io.Serializable;
-
 
 /**
  * @author zubov
- * @version $Id$
- * For use in sending the filelist from the slave to the master
+ * @version $Id$ For use
+ *          in sending the filelist from the slave to the master
  */
 public final class LightRemoteFile implements Serializable {
-    private String _filename;
-    private long _lastModified;
-    private long _length;
+	private String _filename;
 
-    private boolean _isDirectory;
-    
-    private void setName(String name) {
-    	if (name.indexOf("\\") != -1) {
-    		throw new RuntimeException("\\ is not an allowed character in filenames");
-    	}
-    	_filename = name;
-    }
-    
-    public LightRemoteFile(LightRemoteFileInterface file) {
-        setName(file.getName());
-        _lastModified = file.lastModified();
-        _length = file.length();
-        _isDirectory = file.isDirectory();
-    }
-    
-    /**
-     * Will create a directory
-     */
-    public LightRemoteFile(String filename, long lastModified) {
-    	setName(filename);
-    	_lastModified = lastModified;
-    	_length = 0;
-    	_isDirectory = true;
-    }
+	private long _lastModified;
 
-    /**
-     * Will create a file
-     */
-    public LightRemoteFile(String filename, long lastModified, long length) {
-    	setName(filename);
-        _lastModified = lastModified;
-        _length = length;
-        _isDirectory = false;
-    }
+	private long _length;
 
-    public boolean isDirectory() {
-        return _isDirectory;
-    }
+	private boolean _isDirectory;
 
-    public boolean isFile() {
-        return !_isDirectory;
-    }
+	private void setName(String name) {
+		if (name.indexOf("\\") != -1) {
+			throw new RuntimeException(
+					"\\ is not an allowed character in filenames");
+		}
+		_filename = name;
+	}
 
-    public long lastModified() {
-        return _lastModified;
-    }
+	public LightRemoteFile(LightRemoteFileInterface file) {
+		setName(file.getName());
+		_lastModified = file.lastModified();
+		_length = file.length();
+		_isDirectory = file.isDirectory();
+	}
 
-    public long length() {
-        return _length;
-    }
+	/**
+	 * Will create a directory
+	 */
+	public LightRemoteFile(String filename, long lastModified) {
+		setName(filename);
+		_lastModified = lastModified;
+		_length = 0;
+		_isDirectory = true;
+	}
 
-    public String getName() {
-        return _filename;
-    }
+	/**
+	 * Will create a file
+	 */
+	public LightRemoteFile(String filename, long lastModified, long length) {
+		setName(filename);
+		_lastModified = lastModified;
+		_length = length;
+		_isDirectory = false;
+	}
+
+	public boolean isDirectory() {
+		return _isDirectory;
+	}
+
+	public boolean isFile() {
+		return !_isDirectory;
+	}
+
+	public long lastModified() {
+		return _lastModified;
+	}
+
+	public long length() {
+		return _length;
+	}
+
+	public String getName() {
+		return _filename;
+	}
 }

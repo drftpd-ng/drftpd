@@ -48,11 +48,11 @@ public class JobManager {
 	private Set<Job> _queuedJobSet;
 
 	private boolean _useCRC;
-	
+
 	private long _sleepSeconds;
 
 	private GlobalContext _gctx;
-	
+
 	private TimerTask _runJob = null;
 
 	/**
@@ -159,7 +159,7 @@ public class JobManager {
 
 		Set<RemoteSlave> busySlavesDown = new HashSet<RemoteSlave>();
 		Set<Job> skipJobs = new HashSet<Job>();
-		
+
 		synchronized (this) {
 			while (!busySlavesDown.containsAll(availableSlaves)) {
 				job = getNextJob(busySlavesDown, skipJobs);
@@ -191,11 +191,11 @@ public class JobManager {
 				}
 				try {
 					availableSlaves.removeAll(job.getFile().getSlaves());
-					destSlave = getGlobalContext().getSlaveSelectionManager().getASlaveForJobUpload(
-									job, sourceSlave);
+					destSlave = getGlobalContext().getSlaveSelectionManager()
+							.getASlaveForJobUpload(job, sourceSlave);
 
 					break; // we have a source slave and a destination
-									// slave,
+					// slave,
 
 					// transfer!
 				} catch (NoAvailableSlaveException e) {
@@ -210,14 +210,14 @@ public class JobManager {
 				}
 			}
 			// sourceSlave will always be null if destSlave is null
-			if (destSlave == null /*|| sourceSlave == null*/) {
+			if (destSlave == null /* || sourceSlave == null */) {
 				// all slaves are offline or busy
 				return;
 			}
 		}
 
 		// file is not deleted and is available, we are ready to process
-		
+
 		try {
 			job.transfer(useCRC(), sourceSlave, destSlave);
 		} catch (FileNotFoundException e) {
@@ -261,7 +261,8 @@ public class JobManager {
 			}
 		}
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
-		_sleepSeconds = 1000 * Integer.parseInt(PropertyHelper.getProperty(p,"sleepSeconds"));
+		_sleepSeconds = 1000 * Integer.parseInt(PropertyHelper.getProperty(p,
+				"sleepSeconds"));
 		if (_runJob != null) {
 			_runJob.cancel();
 		}
@@ -283,11 +284,10 @@ public class JobManager {
 	public void startJobs() {
 		_isStopped = false;
 	}
-	
+
 	private JobManager getJobManager() {
 		return this;
 	}
-
 
 	public void stopJob(Job job) {
 		removeJobFromQueue(job);

@@ -27,8 +27,6 @@ import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
-
 
 /**
  * @author mog
@@ -36,131 +34,140 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class SlaveTransfer {
-    private RemoteSlave _destSlave;
-    private FileHandle _file;
-    private RemoteSlave _srcSlave;
-    private RemoteTransfer _destTransfer = null;
-    private RemoteTransfer _srcTransfer = null;
+	private RemoteSlave _destSlave;
 
-    /**
-     * Slave to Slave Transfers
-     */
-    public SlaveTransfer(FileHandle file,
-        RemoteSlave sourceSlave, RemoteSlave destSlave) {
-        _file = file;
-        _srcSlave = sourceSlave;
-        _destSlave = destSlave;
-    }
+	private FileHandle _file;
 
-    long getTransfered() {
-    	if(_srcTransfer == null || _destTransfer == null) return 0;
-        return (_srcTransfer.getTransfered() + _destTransfer.getTransfered()) / 2;
-    }
-    
-    public void abort(String reason) {
-    	if (_srcTransfer != null) {
-    		_srcTransfer.abort(reason);
-    	}
-    	if (_destTransfer != null) {
-    		_destTransfer.abort(reason);
-    	}
-    }
+	private RemoteSlave _srcSlave;
 
-    long getXferSpeed() {
-    	if(_srcTransfer == null || _destTransfer == null) return 0;
-        return (_srcTransfer.getXferSpeed() + _destTransfer.getXferSpeed()) / 2;
-    }
+	private RemoteTransfer _destTransfer = null;
 
-    /**
-     * Returns the crc checksum of the destination transfer
-     * If CRC is disabled on the destination slave, checksum = 0
-     */
-    protected boolean transfer() throws SlaveException {
-    	// can do encrypted slave2slave transfers by modifying the
-    	// first argument in issueListenToSlave() and the third option
-    	// in issueConnectToSlave(), maybe do an option later, is this wanted?
-    	
-        try {
-            String destIndex = _destSlave.issueListenToSlave(false, false);
-            ConnectInfo ci = _destSlave.fetchTransferResponseFromIndex(destIndex);
-            _destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
-        } catch (SlaveUnavailableException e) {
-            throw new DestinationSlaveException(e);
-        } catch (RemoteIOException e) {
-            throw new DestinationSlaveException(e);
-        }
+	private RemoteTransfer _srcTransfer = null;
 
-        try {
-            String srcIndex = _srcSlave.issueConnectToSlave(_destTransfer
+	/**
+	 * Slave to Slave Transfers
+	 */
+	public SlaveTransfer(FileHandle file, RemoteSlave sourceSlave,
+			RemoteSlave destSlave) {
+		_file = file;
+		_srcSlave = sourceSlave;
+		_destSlave = destSlave;
+	}
+
+	long getTransfered() {
+		if (_srcTransfer == null || _destTransfer == null)
+			return 0;
+		return (_srcTransfer.getTransfered() + _destTransfer.getTransfered()) / 2;
+	}
+
+	public void abort(String reason) {
+		if (_srcTransfer != null) {
+			_srcTransfer.abort(reason);
+		}
+		if (_destTransfer != null) {
+			_destTransfer.abort(reason);
+		}
+	}
+
+	long getXferSpeed() {
+		if (_srcTransfer == null || _destTransfer == null)
+			return 0;
+		return (_srcTransfer.getXferSpeed() + _destTransfer.getXferSpeed()) / 2;
+	}
+
+	/**
+	 * Returns the crc checksum of the destination transfer If CRC is disabled
+	 * on the destination slave, checksum = 0
+	 */
+	protected boolean transfer() throws SlaveException {
+		// can do encrypted slave2slave transfers by modifying the
+		// first argument in issueListenToSlave() and the third option
+		// in issueConnectToSlave(), maybe do an option later, is this wanted?
+
+		try {
+			String destIndex = _destSlave.issueListenToSlave(false, false);
+			ConnectInfo ci = _destSlave
+					.fetchTransferResponseFromIndex(destIndex);
+			_destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
+		} catch (SlaveUnavailableException e) {
+			throw new DestinationSlaveException(e);
+		} catch (RemoteIOException e) {
+			throw new DestinationSlaveException(e);
+		}
+
+		try {
+			String srcIndex = _srcSlave.issueConnectToSlave(_destTransfer
 					.getAddress().getAddress().getHostAddress(), _destTransfer
 					.getLocalPort(), false, true);
-            ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
-            _srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
-        } catch (SlaveUnavailableException e) {
-            throw new SourceSlaveException(e);
-        } catch (RemoteIOException e) {
-            throw new SourceSlaveException(e);
-        }
+			ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
+			_srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
+		} catch (SlaveUnavailableException e) {
+			throw new SourceSlaveException(e);
+		} catch (RemoteIOException e) {
+			throw new SourceSlaveException(e);
+		}
 
-        try {
-            _destTransfer.receiveFile(_file.getPath(), 'I', 0);
-        } catch (IOException e1) {
-            throw new DestinationSlaveException(e1);
-        } catch (SlaveUnavailableException e1) {
-            throw new DestinationSlaveException(e1);
-        }
+		try {
+			_destTransfer.receiveFile(_file.getPath(), 'I', 0);
+		} catch (IOException e1) {
+			throw new DestinationSlaveException(e1);
+		} catch (SlaveUnavailableException e1) {
+			throw new DestinationSlaveException(e1);
+		}
 
-        try {
-            _srcTransfer.sendFile(_file.getPath(), 'I', 0);
-        } catch (IOException e2) {
-            throw new SourceSlaveException(e2);
-        } catch (SlaveUnavailableException e2) {
-            throw new SourceSlaveException(e2);
-        }
+		try {
+			_srcTransfer.sendFile(_file.getPath(), 'I', 0);
+		} catch (IOException e2) {
+			throw new SourceSlaveException(e2);
+		} catch (SlaveUnavailableException e2) {
+			throw new SourceSlaveException(e2);
+		}
 
-        boolean srcIsDone = false;
-        boolean destIsDone = false;
+		boolean srcIsDone = false;
+		boolean destIsDone = false;
 
-        while (!(srcIsDone && destIsDone)) {
-            try {
-                if (_srcTransfer.getTransferStatus().isFinished()) {
-                    srcIsDone = true;
-                }
-            } catch (TransferFailedException e7) {
-                _destTransfer.abort("srcSlave had an error");
-                throw new SourceSlaveException(e7.getCause());
-            }
+		while (!(srcIsDone && destIsDone)) {
+			try {
+				if (_srcTransfer.getTransferStatus().isFinished()) {
+					srcIsDone = true;
+				}
+			} catch (TransferFailedException e7) {
+				_destTransfer.abort("srcSlave had an error");
+				throw new SourceSlaveException(e7.getCause());
+			}
 
-            try {
-                if (_destTransfer.getTransferStatus().isFinished()) {
-                    destIsDone = true;
-                }
-            } catch (TransferFailedException e6) {
-                _srcTransfer.abort("destSlave had an error");
-                throw new DestinationSlaveException(e6.getCause());
-            }
+			try {
+				if (_destTransfer.getTransferStatus().isFinished()) {
+					destIsDone = true;
+				}
+			} catch (TransferFailedException e6) {
+				_srcTransfer.abort("destSlave had an error");
+				throw new DestinationSlaveException(e6.getCause());
+			}
 
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e5) {
-            }
-        }
-        // may as well set the checksum, we know this one is right
-        if (_srcTransfer.getChecksum() != 0) {
-        	try {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e5) {
+			}
+		}
+		// may as well set the checksum, we know this one is right
+		if (_srcTransfer.getChecksum() != 0) {
+			try {
 				_file.setCheckSum(_srcTransfer.getChecksum());
 			} catch (FileNotFoundException e) {
 				// file was moved during transfer
 				// can't set the checksum
 			}
-        }
-        
-        if (_srcTransfer.getChecksum() == _destTransfer.getChecksum() || _destTransfer.getChecksum() == 0 || _srcTransfer.getChecksum() == 0 ) {
-        	return true;
-        } else {
-        	return false;
-        }
-    }
+		}
+
+		if (_srcTransfer.getChecksum() == _destTransfer.getChecksum()
+				|| _destTransfer.getChecksum() == 0
+				|| _srcTransfer.getChecksum() == 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	/**
 	 * @return Returns the _destSlave.

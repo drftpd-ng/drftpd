@@ -30,110 +30,110 @@ import org.apache.oro.text.regex.MalformedPatternException;
 
 import socks.server.Ident;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class HostMaskCollection extends ArrayList {
 
-    public HostMaskCollection() {
-    }
+	public HostMaskCollection() {
+	}
 
-    /**
-     * Converts an existing Collection of String-based masks to a
-     * HostMaskCollection
-     *
-     * @param masks
-     */
-    public HostMaskCollection(Collection<String> masks) {
-    	for (String mask : masks) {
+	/**
+	 * Converts an existing Collection of String-based masks to a
+	 * HostMaskCollection
+	 * 
+	 * @param masks
+	 */
+	public HostMaskCollection(Collection<String> masks) {
+		for (String mask : masks) {
 			add(new HostMask(mask));
 		}
-    }
+	}
 
-    public void addAllMasks(HostMaskCollection hostMaskCollection) {
-        for (Iterator i = hostMaskCollection.iterator(); i.hasNext();) {
-            HostMask mask = (HostMask) i.next();
+	public void addAllMasks(HostMaskCollection hostMaskCollection) {
+		for (Iterator i = hostMaskCollection.iterator(); i.hasNext();) {
+			HostMask mask = (HostMask) i.next();
 
-            if (!contains(mask)) {
-                add(mask);
-            }
-        }
-    }
+			if (!contains(mask)) {
+				add(mask);
+			}
+		}
+	}
 
-    public void addMask(String mask) throws DuplicateElementException {
-        HostMask newMask = new HostMask(mask);
+	public void addMask(String mask) throws DuplicateElementException {
+		HostMask newMask = new HostMask(mask);
 
-        for (Iterator i = iterator(); i.hasNext();) {
-            HostMask hostMask = (HostMask) i.next();
+		for (Iterator i = iterator(); i.hasNext();) {
+			HostMask hostMask = (HostMask) i.next();
 
-            if (hostMask.equals(newMask)) {
-            	throw new DuplicateElementException();
-            }
-        }
+			if (hostMask.equals(newMask)) {
+				throw new DuplicateElementException();
+			}
+		}
 
-        add(newMask);
-    }
+		add(newMask);
+	}
 
-    public boolean check(Socket s) throws MalformedPatternException {
-        return check(null, s.getInetAddress(), s);
-    }
+	public boolean check(Socket s) throws MalformedPatternException {
+		return check(null, s.getInetAddress(), s);
+	}
 
-    public boolean check(String ident, InetAddress a, Socket s)
-        throws MalformedPatternException {
-        if (a == null) {
-            throw new NullPointerException();
-        }
-        for (Iterator iter = this.iterator(); iter.hasNext();) {
-            HostMask mask = (HostMask) iter.next();
+	public boolean check(String ident, InetAddress a, Socket s)
+			throws MalformedPatternException {
+		if (a == null) {
+			throw new NullPointerException();
+		}
+		for (Iterator iter = this.iterator(); iter.hasNext();) {
+			HostMask mask = (HostMask) iter.next();
 
-            if (!mask.matchesHost(a)) {
-                continue;
-            }
+			if (!mask.matchesHost(a)) {
+				continue;
+			}
 
-            // host matched
-            // request ident if no IDNT, ident hasn't been requested
-            // and ident matters in this hostmask
-            if (mask.isIdentMaskSignificant() && (ident == null)) {
-                try {
-                    ident = new Ident(s).getUserName();
-                } catch (IOException e) {
-                    ident = "";
-                }
-            }
+			// host matched
+			// request ident if no IDNT, ident hasn't been requested
+			// and ident matters in this hostmask
+			if (mask.isIdentMaskSignificant() && (ident == null)) {
+				try {
+					ident = new Ident(s).getUserName();
+				} catch (IOException e) {
+					ident = "";
+				}
+			}
 
-            if (mask.matchesIdent(ident)) {
-                return true;
-            }
-        }
+			if (mask.matchesIdent(ident)) {
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    /**
-     * @param mask
-     * @return
-     */
-    public boolean removeMask(String mask) {
-        for (Iterator iter = iterator(); iter.hasNext();) {
-            if (((HostMask) iter.next()).getMask().equals(mask)) {
-                iter.remove();
-                return true;
-            }
-        }
+	/**
+	 * @param mask
+	 * @return
+	 */
+	public boolean removeMask(String mask) {
+		for (Iterator iter = iterator(); iter.hasNext();) {
+			if (((HostMask) iter.next()).getMask().equals(mask)) {
+				iter.remove();
+				return true;
+			}
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    public String toString() {
-    	if(isEmpty()) return "";
-        String masks = "";
+	public String toString() {
+		if (isEmpty())
+			return "";
+		String masks = "";
 
-        for (Iterator iter = iterator(); iter.hasNext();) {
-            masks = masks + iter.next() + ", ";
-        }
+		for (Iterator iter = iterator(); iter.hasNext();) {
+			masks = masks + iter.next() + ", ";
+		}
 
-        return masks.substring(0, masks.length() - 2);
-    }
+		return masks.substring(0, masks.length() - 2);
+	}
 }

@@ -44,197 +44,206 @@ import org.drftpd.vfs.InodeHandle;
  * @author mog
  * @version $Id: DefaultSlaveSelectionManager.java 874 2004-12-23 17:43:28Z mog $
  */
-public class DefaultSlaveSelectionManager
-    implements SlaveSelectionManagerInterface {
-    private GlobalContext _gctx;
-    private long _minfreespace;
-    private int _maxTransfers;
-    private long _maxBandwidth;
+public class DefaultSlaveSelectionManager implements
+		SlaveSelectionManagerInterface {
+	private GlobalContext _gctx;
 
-    public DefaultSlaveSelectionManager(GlobalContext gctx)
-        throws FileNotFoundException, IOException {
-        super();
-        _gctx = gctx;
-    }
+	private long _minfreespace;
 
-    public void reload() throws FileNotFoundException, IOException {
-        Properties p = new Properties();
-        FileInputStream fis = null;
-        try {
-        fis = new FileInputStream("conf/slaveselection-old.conf");
-        p.load(fis);
-        } finally {
-        	if (fis != null) {
-        		fis.close();
-        		fis = null;
-        	}
-        }
-        _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, "minfreespace"));
+	private int _maxTransfers;
 
-        _maxTransfers = Integer.parseInt(PropertyHelper.getProperty(p,
-                            "maxTransfers"));
-        _maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
-                            "maxBandwidth"));
-    }
+	private long _maxBandwidth;
 
-    public RemoteSlave getASlave(Collection rslaves, char direction,
-        BaseFtpConnection conn, InodeHandle file)
-        throws NoAvailableSlaveException {
-        return getASlaveInternal(rslaves, direction);
-    }
+	public DefaultSlaveSelectionManager(GlobalContext gctx)
+			throws FileNotFoundException, IOException {
+		super();
+		_gctx = gctx;
+	}
 
-    public RemoteSlave getASlaveForMaster(FileHandle file,
-        ConfigInterface cfg) throws NoAvailableSlaveException, FileNotFoundException {
-        return getASlaveInternal(file.getAvailableSlaves(),
-            Transfer.TRANSFER_SENDING_DOWNLOAD);
-    }
+	public void reload() throws FileNotFoundException, IOException {
+		Properties p = new Properties();
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream("conf/slaveselection-old.conf");
+			p.load(fis);
+		} finally {
+			if (fis != null) {
+				fis.close();
+				fis = null;
+			}
+		}
+		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p,
+				"minfreespace"));
 
-    public RemoteSlave getASlaveForJobDownload(Job job)
-        throws NoAvailableSlaveException, FileNotFoundException {
-        return getASlaveInternal(job.getFile().getAvailableSlaves(),
-            Transfer.TRANSFER_SENDING_DOWNLOAD);
-    }
+		_maxTransfers = Integer.parseInt(PropertyHelper.getProperty(p,
+				"maxTransfers"));
+		_maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
+				"maxBandwidth"));
+	}
 
-    private RemoteSlave getASlaveInternal(Collection slaves, char direction)
-        throws NoAvailableSlaveException {
-        RemoteSlave bestslave;
-        SlaveStatus beststatus;
+	public RemoteSlave getASlave(Collection rslaves, char direction,
+			BaseFtpConnection conn, InodeHandle file)
+			throws NoAvailableSlaveException {
+		return getASlaveInternal(rslaves, direction);
+	}
 
-        {
-            Iterator i = slaves.iterator();
-            int bestthroughput;
+	public RemoteSlave getASlaveForMaster(FileHandle file, ConfigInterface cfg)
+			throws NoAvailableSlaveException, FileNotFoundException {
+		return getASlaveInternal(file.getAvailableSlaves(),
+				Transfer.TRANSFER_SENDING_DOWNLOAD);
+	}
 
-            while (true) {
-                if (!i.hasNext()) {
-                    throw new NoAvailableSlaveException();
-                }
+	public RemoteSlave getASlaveForJobDownload(Job job)
+			throws NoAvailableSlaveException, FileNotFoundException {
+		return getASlaveInternal(job.getFile().getAvailableSlaves(),
+				Transfer.TRANSFER_SENDING_DOWNLOAD);
+	}
 
-                bestslave = (RemoteSlave) i.next();
+	private RemoteSlave getASlaveInternal(Collection slaves, char direction)
+			throws NoAvailableSlaveException {
+		RemoteSlave bestslave;
+		SlaveStatus beststatus;
 
-                try {
-                    beststatus = bestslave.getSlaveStatusAvailable();
+		{
+			Iterator i = slaves.iterator();
+			int bestthroughput;
 
-                    // throws SlaveUnavailableException
-                } catch (SlaveUnavailableException ex) {
-                    continue;
-                }
+			while (true) {
+				if (!i.hasNext()) {
+					throw new NoAvailableSlaveException();
+				}
 
-                bestthroughput = beststatus.getThroughputDirection(direction);
+				bestslave = (RemoteSlave) i.next();
 
-                break;
-            }
+				try {
+					beststatus = bestslave.getSlaveStatusAvailable();
 
-            while (i.hasNext()) {
-                RemoteSlave slave = (RemoteSlave) i.next();
-                SlaveStatus status;
+					// throws SlaveUnavailableException
+				} catch (SlaveUnavailableException ex) {
+					continue;
+				}
 
-                try {
-                    status = slave.getSlaveStatusAvailable();
-                } catch (SlaveUnavailableException ex) {
-                    continue;
-                }
+				bestthroughput = beststatus.getThroughputDirection(direction);
 
-                int throughput = status.getThroughputDirection(direction);
+				break;
+			}
 
-                if ((beststatus.getDiskSpaceAvailable() < _minfreespace) &&
-                        (beststatus.getDiskSpaceAvailable() < status.getDiskSpaceAvailable())) {
-                    // best slave has less space than "freespace.min" &&
-                    // best slave has less space available than current slave 
-                    bestslave = slave;
-                    bestthroughput = throughput;
-                    beststatus = status;
+			while (i.hasNext()) {
+				RemoteSlave slave = (RemoteSlave) i.next();
+				SlaveStatus status;
 
-                    continue;
-                }
+				try {
+					status = slave.getSlaveStatusAvailable();
+				} catch (SlaveUnavailableException ex) {
+					continue;
+				}
 
-                if (status.getDiskSpaceAvailable() < _minfreespace) {
-                    // current slave has less space available than "freespace.min"
-                    // above check made sure bestslave has more space than us
-                    continue;
-                }
+				int throughput = status.getThroughputDirection(direction);
 
-                if (throughput == bestthroughput) {
-                    if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-                        if (bestslave.getLastUploadReceiving() > slave.getLastUploadReceiving()) {
-                            bestslave = slave;
-                            bestthroughput = throughput;
-                            beststatus = status;
-                        }
-                    } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                        if (bestslave.getLastDownloadSending() > slave.getLastDownloadSending()) {
-                            bestslave = slave;
-                            bestthroughput = throughput;
-                            beststatus = status;
-                        }
-                    } else if (direction == Transfer.TRANSFER_THROUGHPUT) {
-                        if (bestslave.getLastTransfer() > slave.getLastTransfer()) {
-                            bestslave = slave;
-                            bestthroughput = throughput;
-                            beststatus = status;
-                        }
-                    }
-                }
+				if ((beststatus.getDiskSpaceAvailable() < _minfreespace)
+						&& (beststatus.getDiskSpaceAvailable() < status
+								.getDiskSpaceAvailable())) {
+					// best slave has less space than "freespace.min" &&
+					// best slave has less space available than current slave
+					bestslave = slave;
+					bestthroughput = throughput;
+					beststatus = status;
 
-                if (throughput < bestthroughput) {
-                    bestslave = slave;
-                    bestthroughput = throughput;
-                    beststatus = status;
-                }
-            }
-        }
+					continue;
+				}
 
-        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-            bestslave.setLastUploadReceiving(System.currentTimeMillis());
-        } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-            bestslave.setLastDownloadSending(System.currentTimeMillis());
-        } else {
-            bestslave.setLastUploadReceiving(System.currentTimeMillis());
-            bestslave.setLastDownloadSending(System.currentTimeMillis());
-        }
+				if (status.getDiskSpaceAvailable() < _minfreespace) {
+					// current slave has less space available than
+					// "freespace.min"
+					// above check made sure bestslave has more space than us
+					continue;
+				}
 
-        return bestslave;
-    }
+				if (throughput == bestthroughput) {
+					if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+						if (bestslave.getLastUploadReceiving() > slave
+								.getLastUploadReceiving()) {
+							bestslave = slave;
+							bestthroughput = throughput;
+							beststatus = status;
+						}
+					} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+						if (bestslave.getLastDownloadSending() > slave
+								.getLastDownloadSending()) {
+							bestslave = slave;
+							bestthroughput = throughput;
+							beststatus = status;
+						}
+					} else if (direction == Transfer.TRANSFER_THROUGHPUT) {
+						if (bestslave.getLastTransfer() > slave
+								.getLastTransfer()) {
+							bestslave = slave;
+							bestthroughput = throughput;
+							beststatus = status;
+						}
+					}
+				}
 
-    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException, FileNotFoundException {
-        Collection<RemoteSlave> slaves = job.getDestinationSlaves();
-        slaves.removeAll(job.getFile().getAvailableSlaves());
+				if (throughput < bestthroughput) {
+					bestslave = slave;
+					bestthroughput = throughput;
+					beststatus = status;
+				}
+			}
+		}
 
-        return getASlaveForJob(slaves, Transfer.TRANSFER_RECEIVING_UPLOAD);
-    }
+		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			bestslave.setLastUploadReceiving(System.currentTimeMillis());
+		} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			bestslave.setLastDownloadSending(System.currentTimeMillis());
+		} else {
+			bestslave.setLastUploadReceiving(System.currentTimeMillis());
+			bestslave.setLastDownloadSending(System.currentTimeMillis());
+		}
 
-    public RemoteSlave getASlaveForJob(Collection slaves, char direction)
-        throws NoAvailableSlaveException {
-        RemoteSlave rslave = this.getASlaveInternal(slaves, direction);
-        SlaveStatus status = null;
+		return bestslave;
+	}
 
-        try {
-            status = rslave.getSlaveStatusAvailable();
-        } catch (SlaveUnavailableException e) {
-            throw new NoAvailableSlaveException();
-        }
+	public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException, FileNotFoundException {
+		Collection<RemoteSlave> slaves = job.getDestinationSlaves();
+		slaves.removeAll(job.getFile().getAvailableSlaves());
 
-        if (status.getThroughputDirection(direction) > _maxBandwidth) {
-            throw new NoAvailableSlaveException();
-        }
+		return getASlaveForJob(slaves, Transfer.TRANSFER_RECEIVING_UPLOAD);
+	}
 
-        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-            if (status.getTransfersReceiving() > _maxTransfers) {
-                throw new NoAvailableSlaveException();
-            }
-        }
+	public RemoteSlave getASlaveForJob(Collection slaves, char direction)
+			throws NoAvailableSlaveException {
+		RemoteSlave rslave = this.getASlaveInternal(slaves, direction);
+		SlaveStatus status = null;
 
-        if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-            if (status.getTransfersSending() > _maxTransfers) {
-                throw new NoAvailableSlaveException();
-            }
-        }
+		try {
+			status = rslave.getSlaveStatusAvailable();
+		} catch (SlaveUnavailableException e) {
+			throw new NoAvailableSlaveException();
+		}
 
-        return rslave;
-    }
+		if (status.getThroughputDirection(direction) > _maxBandwidth) {
+			throw new NoAvailableSlaveException();
+		}
 
-    public GlobalContext getGlobalContext() {
-        return _gctx;
-    }
+		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			if (status.getTransfersReceiving() > _maxTransfers) {
+				throw new NoAvailableSlaveException();
+			}
+		}
+
+		if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			if (status.getTransfersSending() > _maxTransfers) {
+				throw new NoAvailableSlaveException();
+			}
+		}
+
+		return rslave;
+	}
+
+	public GlobalContext getGlobalContext() {
+		return _gctx;
+	}
 
 }

@@ -18,7 +18,6 @@
 package org.drftpd.sections.conf;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -26,43 +25,44 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class PlainSection implements SectionInterface {
-    private DirectoryHandle _dir;
-    private SectionManager _mgr;
-    private String _name;
+	private DirectoryHandle _dir;
 
-    public PlainSection(SectionManager mgr, int i, Properties p) {
-        this(mgr, PropertyHelper.getProperty(p, i + ".name"),
-            new DirectoryHandle(PropertyHelper.getProperty(p, i + ".path")));
-    }
+	private SectionManager _mgr;
 
-    public PlainSection(SectionManager mgr, String name, DirectoryHandle path) {
-        _mgr = mgr;
-        _name = name;
-        _dir = path;
+	private String _name;
 
-    }
+	public PlainSection(SectionManager mgr, int i, Properties p) {
+		this(mgr, PropertyHelper.getProperty(p, i + ".name"),
+				new DirectoryHandle(PropertyHelper.getProperty(p, i + ".path")));
+	}
 
-    public DirectoryHandle getCurrentDirectory() {
-    	return _dir;
-    }
+	public PlainSection(SectionManager mgr, String name, DirectoryHandle path) {
+		_mgr = mgr;
+		_name = name;
+		_dir = path;
 
-    public Set<DirectoryHandle> getDirectories() {
-        return Collections.singleton(getCurrentDirectory());
-    }
+	}
 
-    public String getName() {
-        return _name;
-    }
+	public DirectoryHandle getCurrentDirectory() {
+		return _dir;
+	}
 
-    public String getPath() {
-        return _dir.getPath();
-    }
+	public Set<DirectoryHandle> getDirectories() {
+		return Collections.singleton(getCurrentDirectory());
+	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public String getPath() {
+		return _dir.getPath();
+	}
 
 	public String getBasePath() {
 		return getPath();

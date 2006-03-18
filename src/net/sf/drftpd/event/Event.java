@@ -19,36 +19,36 @@ package net.sf.drftpd.event;
 
 import org.apache.log4j.Logger;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class Event {
-    private String _command;
-    private long _time;
-    
-    protected static final Logger logger = Logger.getLogger(Event.class);
+	private String _command;
 
-    public Event(String command) {
-        super();
-        _command = command;
-    }
+	private long _time;
 
-    public Event(String command, long time) {
-        this(command);
-        _time = time;
-    }
+	protected static final Logger logger = Logger.getLogger(Event.class);
 
-    public String getCommand() {
-        return _command;
-    }
+	public Event(String command) {
+		super();
+		_command = command;
+	}
 
-    public long getTime() {
-        return _time;
-    }
+	public Event(String command, long time) {
+		this(command);
+		_time = time;
+	}
 
-    public void setCommand(String command) {
-        _command = command;
-    }
+	public String getCommand() {
+		return _command;
+	}
+
+	public long getTime() {
+		return _time;
+	}
+
+	public void setCommand(String command) {
+		_command = command;
+	}
 }

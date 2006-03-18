@@ -22,14 +22,13 @@ import java.io.IOException;
 
 import org.drftpd.GlobalContext;
 
-
 /**
  * @author mog
  * @deprecated Renamed to DefaultSlaveSelectionManager
  */
 public class SlaveSelectionManager extends DefaultSlaveSelectionManager {
-    public SlaveSelectionManager(GlobalContext gctx)
-        throws FileNotFoundException, IOException {
-        super(gctx);
-    }
+	public SlaveSelectionManager(GlobalContext gctx)
+			throws FileNotFoundException, IOException {
+		super(gctx);
+	}
 }

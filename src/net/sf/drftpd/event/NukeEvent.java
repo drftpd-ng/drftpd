@@ -22,54 +22,53 @@ import java.util.Map;
 import org.drftpd.nuke.NukeData;
 import org.drftpd.usermanager.User;
 
-
 /**
  * @author mog
- *
+ * 
  * @version $Id$
  */
 public class NukeEvent extends UserEvent {
-	
+
 	private NukeData _nukeData;
 
-    public NukeEvent(User user, String command, long time, NukeData nd) {
-    	super(user, command, time);
-    	_nukeData = nd;
-    }
-    
-    public NukeEvent(User user, String command, NukeData nd) {
-    	this(user, command, System.currentTimeMillis(), nd);
-    }
+	public NukeEvent(User user, String command, long time, NukeData nd) {
+		super(user, command, time);
+		_nukeData = nd;
+	}
 
-    public NukeData getNukeData() {
-    	return _nukeData;
-    }
-    
-    public int getMultiplier() {
-        return getNukeData().getMultiplier();
-    }
+	public NukeEvent(User user, String command, NukeData nd) {
+		this(user, command, System.currentTimeMillis(), nd);
+	}
 
-    public long getNukedAmount() {
-        return getNukeData().getAmount();
-    }
+	public NukeData getNukeData() {
+		return _nukeData;
+	}
 
-    public Map<String, Long> getNukees() {
-        return getNukeData().getNukees();
-    }
+	public int getMultiplier() {
+		return getNukeData().getMultiplier();
+	}
 
-    public String getPath() {
-        return getNukeData().getPath();
-    }
+	public long getNukedAmount() {
+		return getNukeData().getAmount();
+	}
 
-    public String getReason() {
-        return getNukeData().getReason();
-    }
+	public Map<String, Long> getNukees() {
+		return getNukeData().getNukees();
+	}
 
-    public long getSize() {
-        return getNukeData().getSize();
-    }
+	public String getPath() {
+		return getNukeData().getPath();
+	}
 
-    public String toString() {
-        return "[NUKE:" + getPath() + ",multiplier=" + getMultiplier() + "]";
-    }
+	public String getReason() {
+		return getNukeData().getReason();
+	}
+
+	public long getSize() {
+		return getNukeData().getSize();
+	}
+
+	public String toString() {
+		return "[NUKE:" + getPath() + ",multiplier=" + getMultiplier() + "]";
+	}
 }

@@ -26,6 +26,7 @@ import java.util.Set;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.CaseInsensitiveHashtable;
+
 /**
  * @author zubov
  * @version $Id$
@@ -35,15 +36,17 @@ public class DirectoryHandle extends InodeHandle {
 	public DirectoryHandle(String path) {
 		super(path);
 	}
-	
-	protected VirtualFileSystemDirectory getInode() throws FileNotFoundException {
+
+	protected VirtualFileSystemDirectory getInode()
+			throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
 		if (inode instanceof VirtualFileSystemLink) {
 			return (VirtualFileSystemDirectory) inode;
 		}
-		throw new ClassCastException("DirectoryHandle object pointing to Inode:" + inode);
+		throw new ClassCastException(
+				"DirectoryHandle object pointing to Inode:" + inode);
 	}
-	
+
 	public Set<FileHandle> getFiles() throws FileNotFoundException {
 		Set<FileHandle> set = new HashSet<FileHandle>();
 		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter
@@ -55,14 +58,15 @@ public class DirectoryHandle extends InodeHandle {
 		}
 		return (Set<FileHandle>) set;
 	}
-	
+
 	public Set<InodeHandle> getAllHandles() throws FileNotFoundException {
 		return getInode().getInodes();
 	}
-	
+
 	public Set<DirectoryHandle> getDirectories() throws FileNotFoundException {
 		Set<DirectoryHandle> set = new HashSet<DirectoryHandle>();
-		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter.hasNext();) {
+		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter
+				.hasNext();) {
 			InodeHandle handle = iter.next();
 			if (handle instanceof DirectoryHandle) {
 				set.add((DirectoryHandle) handle);
@@ -70,35 +74,38 @@ public class DirectoryHandle extends InodeHandle {
 		}
 		return (Set<DirectoryHandle>) set;
 	}
-	
-	public DirectoryHandle getDirectory(String name) throws FileNotFoundException {
+
+	public DirectoryHandle getDirectory(String name)
+			throws FileNotFoundException {
 		return null;
 	}
-	
+
 	public FileHandle getFile(String string) throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	public void remerge(CaseInsensitiveHashtable files, RemoteSlave rslave) throws IOException {
+
+	public void remerge(CaseInsensitiveHashtable files, RemoteSlave rslave)
+			throws IOException {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	public void unmergeDir(RemoteSlave rslave) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	/**
 	 * Creates a Directory object in the FileSystem with this path
+	 * 
 	 * @param user
 	 * @param group
 	 * @return
 	 */
-	public void createDirectory(String user,String group) {
+	public void createDirectory(String user, String group) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public boolean isRoot() {

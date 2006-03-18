@@ -25,16 +25,15 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
- * if upload, the inetaddress would be the source.
- * if download, the inetaddress would be the dest.
- *
+ * if upload, the inetaddress would be the source. if download, the inetaddress
+ * would be the dest.
+ * 
  * @author mog
  * @version $Id: Filter.java 847 2004-12-02 03:32:41Z mog $
  */
 public abstract class Filter {
-    public abstract void process(ScoreChart scorechart, User user,
-        InetAddress peer, char direction, InodeHandle dir, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException;
+	public abstract void process(ScoreChart scorechart, User user,
+			InetAddress peer, char direction, InodeHandle dir,
+			RemoteSlave sourceSlave) throws NoAvailableSlaveException;
 }

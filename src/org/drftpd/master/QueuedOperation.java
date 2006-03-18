@@ -24,22 +24,24 @@ import java.io.Serializable;
  * @version $Id$
  */
 public class QueuedOperation implements Serializable {
-	
+
 	private static final long serialVersionUID = 3258125869099659321L;
-	
+
 	private String _source;
 
 	private String _destination;
-	
+
 	public boolean equals(Object arg0) {
-		if (arg0 == null) return false;
+		if (arg0 == null)
+			return false;
 		QueuedOperation arg = (QueuedOperation) arg0;
 		return arg.getSource().equals(getSource());
 	}
-	
+
 	public int hashCode() {
 		return _source.hashCode();
 	}
+
 	public QueuedOperation(String src, String dest) {
 		if (src == null) {
 			throw new IllegalStateException("Source cannot be null");
@@ -47,11 +49,11 @@ public class QueuedOperation implements Serializable {
 		this._source = src;
 		this._destination = dest;
 	}
-	
+
 	public String getSource() {
 		return _source;
 	}
-	
+
 	public String getDestination() {
 		return _destination;
 	}

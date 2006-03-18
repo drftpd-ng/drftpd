@@ -25,33 +25,32 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class ReplacerUtils {
-    private static final Logger logger = Logger.getLogger(ReplacerUtils.class);
+	private static final Logger logger = Logger.getLogger(ReplacerUtils.class);
 
-    private ReplacerUtils() {
-        super();
-    }
+	private ReplacerUtils() {
+		super();
+	}
 
-    public static ReplacerFormat finalFormat(Class baseName, String key)
-        throws FormatterException {
-        ResourceBundle bundle = ResourceBundle.getBundle(baseName.getName());
+	public static ReplacerFormat finalFormat(Class baseName, String key)
+			throws FormatterException {
+		ResourceBundle bundle = ResourceBundle.getBundle(baseName.getName());
 
-        return ReplacerFormat.createFormat(bundle.getString(key));
-    }
+		return ReplacerFormat.createFormat(bundle.getString(key));
+	}
 
-    public static String jprintf(String key, ReplacerEnvironment env,
-        Class class1) {
-        try {
-            return SimplePrintf.jprintf(finalFormat(class1, key), env);
-        } catch (Exception e) {
-            logger.warn("basename: " + class1.getName(), e);
+	public static String jprintf(String key, ReplacerEnvironment env,
+			Class class1) {
+		try {
+			return SimplePrintf.jprintf(finalFormat(class1, key), env);
+		} catch (Exception e) {
+			logger.warn("basename: " + class1.getName(), e);
 
-            return key;
-        }
-    }
+			return key;
+		}
+	}
 }

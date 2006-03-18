@@ -19,22 +19,21 @@ package net.sf.drftpd;
 
 import java.io.IOException;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class IllegalFileNameException extends IOException {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6757210098358700968L;
 
 	public IllegalFileNameException() {
-        super();
-    }
+		super();
+	}
 
-    public IllegalFileNameException(String s) {
-        super(s);
-    }
+	public IllegalFileNameException(String s) {
+		super(s);
+	}
 }

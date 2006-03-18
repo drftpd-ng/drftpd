@@ -26,6 +26,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.master.RemoteSlave;
+
 /**
  * @author zubov
  * @version $Id$
@@ -35,28 +36,31 @@ public class FileHandle extends InodeHandle {
 	public FileHandle(String path) {
 		super(path);
 	}
-	
+
 	protected VirtualFileSystemFile getInode() throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
 		if (inode instanceof VirtualFileSystemLink) {
 			return (VirtualFileSystemFile) inode;
 		}
-		throw new ClassCastException("FileHandle object pointing to Inode:" + inode);
+		throw new ClassCastException("FileHandle object pointing to Inode:"
+				+ inode);
 	}
-	
+
 	public Set<RemoteSlave> getSlaves() throws FileNotFoundException {
 		HashSet<RemoteSlave> slaves = new HashSet<RemoteSlave>();
 		for (String slave : getInode().getSlaves()) {
 			try {
-				slaves.add(getGlobalContext().getSlaveManager().getRemoteSlave(slave));
+				slaves.add(getGlobalContext().getSlaveManager().getRemoteSlave(
+						slave));
 			} catch (ObjectNotFoundException e) {
 				getInode().removeSlave(slave);
 			}
 		}
 		return slaves;
 	}
-	
-	public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException, FileNotFoundException {
+
+	public Collection<RemoteSlave> getAvailableSlaves()
+			throws NoAvailableSlaveException, FileNotFoundException {
 		HashSet<RemoteSlave> rslaves = new HashSet<RemoteSlave>();
 		for (RemoteSlave rslave : getSlaves()) {
 			if (rslave.isAvailable()) {
@@ -68,23 +72,26 @@ public class FileHandle extends InodeHandle {
 		}
 		return rslaves;
 	}
-	
+
 	public void setCheckSum(long checksum) throws FileNotFoundException {
 		getInode().setChecksum(checksum);
 	}
-	
-	public void removeSlave(RemoteSlave sourceSlave) throws FileNotFoundException {
+
+	public void removeSlave(RemoteSlave sourceSlave)
+			throws FileNotFoundException {
 		getInode().removeSlave(sourceSlave.getName());
 	}
 
-	public long getCheckSum() throws NoAvailableSlaveException, FileNotFoundException {
+	public long getCheckSum() throws NoAvailableSlaveException,
+			FileNotFoundException {
 		return getInode().getChecksum();
 	}
 
-	public void addSlave(RemoteSlave destinationSlave) throws FileNotFoundException {
+	public void addSlave(RemoteSlave destinationSlave)
+			throws FileNotFoundException {
 		getInode().addSlave(destinationSlave.getName());
 	}
-	
+
 	public long getXfertime() throws FileNotFoundException {
 		return getInode().getXfertime();
 	}
@@ -96,10 +103,9 @@ public class FileHandle extends InodeHandle {
 			return false;
 		}
 	}
-	
-	
+
 	public void createFile(String user, String group) {
-		
+
 	}
 
 }

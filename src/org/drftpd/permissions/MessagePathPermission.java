@@ -17,7 +17,6 @@
  */
 package org.drftpd.permissions;
 
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -28,40 +27,39 @@ import java.util.Iterator;
 import org.drftpd.commands.Reply;
 import org.drftpd.vfs.DirectoryHandle;
 
-
 /**
  * @author mog
- *
+ * 
  * @version $Id$
  */
 public class MessagePathPermission extends StringPathPermission {
-    private ArrayList<String> _message;
+	private ArrayList<String> _message;
 
-    public MessagePathPermission(DirectoryHandle path, String messageFile,
-        Collection<String> users) throws IOException {
-        super(path, users);
-        _message= new ArrayList<String>();
+	public MessagePathPermission(DirectoryHandle path, String messageFile,
+			Collection<String> users) throws IOException {
+		super(path, users);
+		_message = new ArrayList<String>();
 
-        BufferedReader in = new BufferedReader(new FileReader(messageFile));
-        String line;
+		BufferedReader in = new BufferedReader(new FileReader(messageFile));
+		String line;
 
-        try {
-            while ((line = in.readLine()) != null) {
-                _message.add(line);
-            }
-        } finally {
-        	if (in != null) {
-        		in.close();
-        	}
-        }
+		try {
+			while ((line = in.readLine()) != null) {
+				_message.add(line);
+			}
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
 
-        _message.trimToSize();
-    }
+		_message.trimToSize();
+	}
 
-    public void printMessage(Reply response) {
-        for (Iterator iter = _message.iterator(); iter.hasNext();) {
-            String line = (String) iter.next();
-            response.addComment(line);
-        }
-    }
+	public void printMessage(Reply response) {
+		for (Iterator iter = _message.iterator(); iter.hasNext();) {
+			String line = (String) iter.next();
+			response.addComment(line);
+		}
+	}
 }

@@ -44,9 +44,7 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
-
 
 /**
  * @author mog
@@ -54,32 +52,44 @@ import org.drftpd.vfs.VirtualFileSystem;
  */
 /**
  * @author zubov
- *
+ * 
  */
 public class GlobalContext {
-    private static final Logger logger = Logger.getLogger(GlobalContext.class);
+	private static final Logger logger = Logger.getLogger(GlobalContext.class);
+
 	private static GlobalContext _gctx;
-    protected ZipscriptConfig _zsConfig;
-    private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
-    protected JobManager _jm;
-    protected SectionManagerInterface _sections;
-    private String _shutdownMessage = null;
-    protected SlaveManager _slaveManager;
-    protected AbstractUserManager _usermanager;
-    private Timer _timer = new Timer("GlobalContextTimer");
-    protected SlaveSelectionManagerInterface _slaveSelectionManager;
-	private static DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.pathSeparator);
 
-    public void reloadFtpConfig() throws IOException {
-    	_zsConfig = new ZipscriptConfig(this);
-    	FtpConfig.reload();
-    }
+	protected ZipscriptConfig _zsConfig;
 
-    private GlobalContext() {
-    }
+	private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
 
-    public ConfigInterface getConfig() {
-    	return FtpConfig.getFtpConfig();
+	protected JobManager _jm;
+
+	protected SectionManagerInterface _sections;
+
+	private String _shutdownMessage = null;
+
+	protected SlaveManager _slaveManager;
+
+	protected AbstractUserManager _usermanager;
+
+	private Timer _timer = new Timer("GlobalContextTimer");
+
+	protected SlaveSelectionManagerInterface _slaveSelectionManager;
+
+	private static DirectoryHandle root = new DirectoryHandle(
+			VirtualFileSystem.pathSeparator);
+
+	public void reloadFtpConfig() throws IOException {
+		_zsConfig = new ZipscriptConfig(this);
+		FtpConfig.reload();
+	}
+
+	private GlobalContext() {
+	}
+
+	public ConfigInterface getConfig() {
+		return FtpConfig.getFtpConfig();
 	}
 
 	private void loadJobManager() {
@@ -87,38 +97,40 @@ public class GlobalContext {
 	}
 
 	/**
-         *
-         */
-    private void loadSlaveSelectionManager(Properties cfg) {
-        try {
-            Constructor c = Class.forName(cfg.getProperty("slaveselection",
-                        "org.drftpd.slaveselection.def.DefaultSlaveSelectionManager"))
-                                 .getConstructor(new Class[] { GlobalContext.class });
-            _slaveSelectionManager = (SlaveSelectionManagerInterface) c.newInstance(new Object[] {
-                        this
-                    });
-        } catch (Exception e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
+	 * 
+	 */
+	private void loadSlaveSelectionManager(Properties cfg) {
+		try {
+			Constructor c = Class
+					.forName(
+							cfg
+									.getProperty("slaveselection",
+											"org.drftpd.slaveselection.def.DefaultSlaveSelectionManager"))
+					.getConstructor(new Class[] { GlobalContext.class });
+			_slaveSelectionManager = (SlaveSelectionManagerInterface) c
+					.newInstance(new Object[] { this });
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException) e;
+			}
 
-            throw new FatalException(e);
-        }
-    }
+			throw new FatalException(e);
+		}
+	}
 
-    /**
-    * Calls init(this) on the argument
-    */
-    public synchronized void addFtpListener(FtpListener listener) {
-        listener.init();
-        _ftpListeners.add(listener);
-    }
-    
-    public synchronized void delFtpListener(FtpListener listener) {
-    	_ftpListeners.remove(listener);
-    }
+	/**
+	 * Calls init(this) on the argument
+	 */
+	public synchronized void addFtpListener(FtpListener listener) {
+		listener.init();
+		_ftpListeners.add(listener);
+	}
 
-    public void dispatchFtpEvent(Event event) {
+	public synchronized void delFtpListener(FtpListener listener) {
+		_ftpListeners.remove(listener);
+	}
+
+	public void dispatchFtpEvent(Event event) {
 		logger.debug("Dispatching " + event + " to " + getFtpListeners());
 
 		for (FtpListener handler : getFtpListeners()) {
@@ -130,157 +142,165 @@ public class GlobalContext {
 		}
 	}
 
-    public ZipscriptConfig getZsConfig() {
-        assert _zsConfig != null;
-        return _zsConfig;
-    }
-    
-    public ConnectionManager getConnectionManager() {
-    	return ConnectionManager.getConnectionManager();
-    }
+	public ZipscriptConfig getZsConfig() {
+		assert _zsConfig != null;
+		return _zsConfig;
+	}
 
-    public List<FtpListener> getFtpListeners() {
+	public ConnectionManager getConnectionManager() {
+		return ConnectionManager.getConnectionManager();
+	}
+
+	public List<FtpListener> getFtpListeners() {
 		return new ArrayList<FtpListener>(_ftpListeners);
 	}
 
-    /**
-     * JobManager is now loaded as an integral part of the daemon
-     * If no Jobs are sent, it utilizes very little resources
-     */    
-    public JobManager getJobManager() {
-        return _jm;
-    }
+	/**
+	 * JobManager is now loaded as an integral part of the daemon If no Jobs are
+	 * sent, it utilizes very little resources
+	 */
+	public JobManager getJobManager() {
+		return _jm;
+	}
 
-    public SectionManagerInterface getSectionManager() {
-        if (_sections == null) {
-            throw new NullPointerException();
-        }
+	public SectionManagerInterface getSectionManager() {
+		if (_sections == null) {
+			throw new NullPointerException();
+		}
 
-        return _sections;
-    }
+		return _sections;
+	}
 
-    public String getShutdownMessage() {
-        return _shutdownMessage;
-    }
+	public String getShutdownMessage() {
+		return _shutdownMessage;
+	}
 
-    public SlaveManager getSlaveManager() {
-        if (_slaveManager == null) {
-            throw new NullPointerException();
-        }
+	public SlaveManager getSlaveManager() {
+		if (_slaveManager == null) {
+			throw new NullPointerException();
+		}
 
-        return _slaveManager;
-    }
+		return _slaveManager;
+	}
 
-    public UserManager getUserManager() {
-        if (_usermanager == null) {
-            throw new NullPointerException();
-        }
+	public UserManager getUserManager() {
+		if (_usermanager == null) {
+			throw new NullPointerException();
+		}
 
-        return _usermanager;
-    }
+		return _usermanager;
+	}
 
-    public boolean isJobManagerLoaded() {
-        return (_jm != null);
-    }
+	public boolean isJobManagerLoaded() {
+		return (_jm != null);
+	}
 
-    public boolean isShutdown() {
-        return _shutdownMessage != null;
-    }
+	public boolean isShutdown() {
+		return _shutdownMessage != null;
+	}
 
-    protected void loadPlugins(Properties cfg) {
-        for (int i = 1;; i++) {
-            String classname = cfg.getProperty("plugins." + i);
+	protected void loadPlugins(Properties cfg) {
+		for (int i = 1;; i++) {
+			String classname = cfg.getProperty("plugins." + i);
 
-            if (classname == null) {
-                break;
-            }
+			if (classname == null) {
+				break;
+			}
 
-            try {
-                FtpListener ftpListener = (FtpListener) Class.forName(classname)
-                                                             .newInstance();
-                addFtpListener(ftpListener);
-            } catch (Exception e) {
-                throw new FatalException("Error loading plugins", e);
-            }
-        }
-    }
+			try {
+				FtpListener ftpListener = (FtpListener) Class
+						.forName(classname).newInstance();
+				addFtpListener(ftpListener);
+			} catch (Exception e) {
+				throw new FatalException("Error loading plugins", e);
+			}
+		}
+	}
 
-    /**
-     * Depends on slavemanager being loaded.
-     *
-     */
-    private void loadRSlaves() {
-    	List rslaves = _slaveManager.getSlaves();
-    }
+	/**
+	 * Depends on slavemanager being loaded.
+	 * 
+	 */
+	private void loadRSlaves() {
+		List rslaves = _slaveManager.getSlaves();
+	}
 
-    // depends on having getRoot() working
-    private void loadSectionManager(Properties cfg) {
-        try {
-            Class cl = Class.forName(cfg.getProperty("sectionmanager",
-                        "org.drftpd.sections.def.SectionManager"));
-            Constructor c = cl.getConstructor();
-            _sections = (SectionManagerInterface) c.newInstance();
-        } catch (Exception e) {
-            throw new FatalException(e);
-        }
-    }
+	// depends on having getRoot() working
+	private void loadSectionManager(Properties cfg) {
+		try {
+			Class cl = Class.forName(cfg.getProperty("sectionmanager",
+					"org.drftpd.sections.def.SectionManager"));
+			Constructor c = cl.getConstructor();
+			_sections = (SectionManagerInterface) c.newInstance();
+		} catch (Exception e) {
+			throw new FatalException(e);
+		}
+	}
 
-    /**
-     * Depends on root loaded if any slaves connect early.
-     */
-    private void loadSlaveManager(Properties cfg) throws SlaveFileException {
-        /** register slavemanager **/
-        _slaveManager = new SlaveManager(cfg);
-    }
+	/**
+	 * Depends on root loaded if any slaves connect early.
+	 */
+	private void loadSlaveManager(Properties cfg) throws SlaveFileException {
+		/** register slavemanager * */
+		_slaveManager = new SlaveManager(cfg);
+	}
 
-    private void listenForSlaves() {
-    	new Thread(_slaveManager, "Listening for slave connections - " + _slaveManager.toString()).start();
-    }
+	private void listenForSlaves() {
+		new Thread(_slaveManager, "Listening for slave connections - "
+				+ _slaveManager.toString()).start();
+	}
 
-    protected void loadUserManager(Properties cfg) {
-        try {
-            _usermanager = (AbstractUserManager) Class.forName(PropertyHelper.getProperty(
-                        cfg, "master.usermanager")).newInstance();
+	protected void loadUserManager(Properties cfg) {
+		try {
+			_usermanager = (AbstractUserManager) Class.forName(
+					PropertyHelper.getProperty(cfg, "master.usermanager"))
+					.newInstance();
 
-            // if the below method is not run, JSXUserManager fails when trying to do a reset() on the user logging in
-            _usermanager.init(this);
-        } catch (Exception e) {
-            throw new FatalException(
-                "Cannot create instance of usermanager, check master.usermanager in config file", e);
-        }
-    }
+			// if the below method is not run, JSXUserManager fails when trying
+			// to do a reset() on the user logging in
+			_usermanager.init(this);
+		} catch (Exception e) {
+			throw new FatalException(
+					"Cannot create instance of usermanager, check master.usermanager in config file",
+					e);
+		}
+	}
 
-    /**
-     * Doesn't close connections like ConnectionManager.close() does
-     * ConnectionManager.close() calls this method.
-     * @see org.drftpd.master.ConnectionManager#shutdown(String)
-     */
-    public void shutdown(String message) {
-        _shutdownMessage = message;
-        dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
-        getConnectionManager().shutdownPrivate(message);
-    }
+	/**
+	 * Doesn't close connections like ConnectionManager.close() does
+	 * ConnectionManager.close() calls this method.
+	 * 
+	 * @see org.drftpd.master.ConnectionManager#shutdown(String)
+	 */
+	public void shutdown(String message) {
+		_shutdownMessage = message;
+		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
+		getConnectionManager().shutdownPrivate(message);
+	}
 
-    public Timer getTimer() {
-        return _timer;
-    }
+	public Timer getTimer() {
+		return _timer;
+	}
 
-    public SlaveSelectionManagerInterface getSlaveSelectionManager() {
-        return _slaveSelectionManager;
-    }
-    public PortRange getPortRange() {
-        return getConfig().getPortRange();
-    }
+	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
+		return _slaveSelectionManager;
+	}
 
-	public FtpListener getFtpListener(Class clazz) throws ObjectNotFoundException {
-        for (FtpListener listener : new ArrayList<FtpListener>(getFtpListeners())) {
+	public PortRange getPortRange() {
+		return getConfig().getPortRange();
+	}
 
-            if (clazz.isInstance(listener)) {
-                return listener;
-            }
-        }
+	public FtpListener getFtpListener(Class clazz)
+			throws ObjectNotFoundException {
+		for (FtpListener listener : new ArrayList<FtpListener>(
+				getFtpListeners())) {
 
-        throw new ObjectNotFoundException();
+			if (clazz.isInstance(listener)) {
+				return listener;
+			}
+		}
+
+		throw new ObjectNotFoundException();
 	}
 
 	public static GlobalContext getGlobalContext() {
@@ -295,34 +315,35 @@ public class GlobalContext {
 	}
 
 	public void init() {
-        try {
+		try {
 			reloadFtpConfig();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			logger.debug("",e);
+			logger.debug("", e);
 		}
-        loadUserManager(getConfig().getProperties());
+		loadUserManager(getConfig().getProperties());
 
-        try {
+		try {
 			loadSlaveManager(getConfig().getProperties());
 		} catch (SlaveFileException e) {
 			throw new RuntimeException(e);
 		}
-        listenForSlaves();
-        loadJobManager();
-        getJobManager().startJobs();
-        loadSlaveSelectionManager(getConfig().getProperties());
-        loadSectionManager(getConfig().getProperties());
-        loadPlugins(getConfig().getProperties());
+		listenForSlaves();
+		loadJobManager();
+		getJobManager().startJobs();
+		loadSlaveSelectionManager(getConfig().getProperties());
+		loadSectionManager(getConfig().getProperties());
+		loadPlugins(getConfig().getProperties());
 	}
-	
-/*	*//**
-	 * @return the Bot instance
-	 * @throws ObjectNotFoundException if the Bot isnt loaded.
-	 *//*
-	public SiteBot getIRCBot() throws ObjectNotFoundException {
-		return (SiteBot) getFtpListener(SiteBot.class);
-	}*/
-	// Can enable functions for major plugins after the VFS is integrated
 
+	/*	*//**
+			 * @return the Bot instance
+			 * @throws ObjectNotFoundException
+			 *             if the Bot isnt loaded.
+			 */
+	/*
+	 * public SiteBot getIRCBot() throws ObjectNotFoundException { return
+	 * (SiteBot) getFtpListener(SiteBot.class); }
+	 */
+	// Can enable functions for major plugins after the VFS is integrated
 }

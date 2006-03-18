@@ -31,23 +31,28 @@ import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.master.RemoteSlave;
 
 public class VirtualFileSystemFile extends VirtualFileSystemInode {
-	
-	protected static final Collection<String> transientListFile = Arrays
-	.asList(new String[] { "lastModified", "name", "parent", "xfertime", "checksum" });
 
-	public static final Key CRC = new Key(VirtualFileSystemFile.class, "checksum", Long.class);
-	public static final Key MD5 = new Key(VirtualFileSystemFile.class, "md5", Long.class);
-	public static final Key XFERTIME = new Key(VirtualFileSystemFile.class, "xfertime", Long.class);
+	protected static final Collection<String> transientListFile = Arrays
+			.asList(new String[] { "lastModified", "name", "parent",
+					"xfertime", "checksum" });
+
+	public static final Key CRC = new Key(VirtualFileSystemFile.class,
+			"checksum", Long.class);
+
+	public static final Key MD5 = new Key(VirtualFileSystemFile.class, "md5",
+			Long.class);
+
+	public static final Key XFERTIME = new Key(VirtualFileSystemFile.class,
+			"xfertime", Long.class);
 
 	protected Set<String> _slaves;
-	
+
 	public synchronized Set<String> getSlaves() {
 		return new HashSet<String>(_slaves);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
@@ -55,19 +60,22 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		for (String slave : getSlaves()) {
 			ret.append(slave + ",");
 		}
-		ret.replace(ret.length()-1,ret.length()-1, "]");
+		ret.replace(ret.length() - 1, ret.length() - 1, "]");
 		return ret.toString();
 	}
-	
+
 	public synchronized void setSlaves(Set<String> slaves) {
 		_slaves = slaves;
 	}
 
-	public VirtualFileSystemFile(String username, String group, long size, String initialSlave) {
-		this(username, group, size, new HashSet<String>(Arrays.asList(new String[] { initialSlave })));
+	public VirtualFileSystemFile(String username, String group, long size,
+			String initialSlave) {
+		this(username, group, size, new HashSet<String>(Arrays
+				.asList(new String[] { initialSlave })));
 	}
-	
-	public VirtualFileSystemFile(String username, String group, long size, Set<String> slaves) {
+
+	public VirtualFileSystemFile(String username, String group, long size,
+			Set<String> slaves) {
 		super(username, group, size);
 		_slaves = slaves;
 	}
@@ -117,11 +125,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		}
 		enc.setPersistenceDelegate(VirtualFileSystemFile.class,
 				new DefaultPersistenceDelegate(new String[] { "username",
-						"group", "size" , "slaves" }));
+						"group", "size", "slaves" }));
 	}
 
 	public void setXfertime(long xfertime) {
-		getKeyedMap().setObject(XFERTIME,xfertime);
+		getKeyedMap().setObject(XFERTIME, xfertime);
 	}
 
 	public boolean isUploading() {
@@ -132,7 +140,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 	public synchronized boolean isAvailable() {
 		for (String slave : _slaves) {
 			try {
-				if (GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slave).isAvailable()) {
+				if (GlobalContext.getGlobalContext().getSlaveManager()
+						.getRemoteSlave(slave).isAvailable()) {
 					return true;
 				}
 			} catch (ObjectNotFoundException e) {

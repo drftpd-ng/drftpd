@@ -29,55 +29,57 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * Example slaveselection.conf entry:
+ * 
  * <pre>
- * <n>.filter=minfreespace
- * <n>.multiplier=1
- * <n>.minfreespace=1GB
+ *  &lt;n&gt;.filter=minfreespace
+ *  &lt;n&gt;.multiplier=1
+ *  &lt;n&gt;.minfreespace=1GB
  * </pre>
- *
- * Works like this:
- * if(diskfree < minfreespace) {
- *   addScore(-((minfreespace - diskfree) * multiplier))
- * }
+ * 
+ * Works like this: if(diskfree < minfreespace) { addScore(-((minfreespace -
+ * diskfree) * multiplier)) }
+ * 
  * @author mog
  * @version $Id: MinfreespaceFilter.java 847 2004-12-02 03:32:41Z mog $
  */
 public class MinfreespaceFilter extends Filter {
-    private long _minfreespace;
-    private float _multiplier;
+	private long _minfreespace;
 
-    public MinfreespaceFilter(FilterChain ssm, int i, Properties p) {
-        //_multiplier = -Integer.parseInt(FtpConfig.getProperty(p, i + ".multiplier"));
-        _multiplier = BandwidthFilter.parseMultiplier(PropertyHelper.getProperty(p,
-                    i + ".multiplier"));
-        _minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p,
-                    i + ".minfreespace"));
-    }
+	private float _multiplier;
 
-    public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, InodeHandle file, RemoteSlave sourceSlave) {
-        for (Iterator iter = scorechart.getSlaveScores().iterator();
-                iter.hasNext();) {
-            ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
-            long df;
+	public MinfreespaceFilter(FilterChain ssm, int i, Properties p) {
+		// _multiplier = -Integer.parseInt(FtpConfig.getProperty(p, i +
+		// ".multiplier"));
+		_multiplier = BandwidthFilter.parseMultiplier(PropertyHelper
+				.getProperty(p, i + ".multiplier"));
+		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i
+				+ ".minfreespace"));
+	}
 
-            try {
-                df = score.getRSlave().getSlaveStatusAvailable()
-                          .getDiskSpaceAvailable();
+	public void process(ScoreChart scorechart, User user, InetAddress source,
+			char direction, InodeHandle file, RemoteSlave sourceSlave) {
+		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
+				.hasNext();) {
+			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
+			long df;
 
-                if (df < _minfreespace) {
-                    if (_multiplier == 0) {
-                        iter.remove();
-                    } else {
-                        score.addScore(-(long) ((_minfreespace - df) * _multiplier));
-                    }
-                }
-            } catch (SlaveUnavailableException e) {
-                iter.remove();
-            }
-        }
-    }
+			try {
+				df = score.getRSlave().getSlaveStatusAvailable()
+						.getDiskSpaceAvailable();
+
+				if (df < _minfreespace) {
+					if (_multiplier == 0) {
+						iter.remove();
+					} else {
+						score
+								.addScore(-(long) ((_minfreespace - df) * _multiplier));
+					}
+				}
+			} catch (SlaveUnavailableException e) {
+				iter.remove();
+			}
+		}
+	}
 }

@@ -19,28 +19,26 @@ package org.drftpd.slave;
 
 import java.io.IOException;
 
-
-
 /**
- *
+ * 
  * @author mog
- * @version $Id: TransferFailedException.java,v 1.1 2004/11/09 18:59:58 mog Exp $
+ * @version $Id$
  */
 public class TransferFailedException extends IOException {
-    private TransferStatus _status;
+	private TransferStatus _status;
 
-    public TransferFailedException(IOException e, TransferStatus status) {
-        super(e.getMessage());
-        initCause(e);
-        _status = status;
-    }
+	public TransferFailedException(IOException e, TransferStatus status) {
+		super(e.getMessage());
+		initCause(e);
+		_status = status;
+	}
 
-    public TransferFailedException(String message, TransferStatus status) {
-        super(message);
-        _status = status;
-    }
+	public TransferFailedException(String message, TransferStatus status) {
+		super(message);
+		_status = status;
+	}
 
-    public TransferStatus getStatus() {
-        return _status;
-    }
+	public TransferStatus getStatus() {
+		return _status;
+	}
 }

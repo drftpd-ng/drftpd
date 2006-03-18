@@ -17,40 +17,42 @@
  */
 package org.drftpd.nuke;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class Nukee implements Comparable<Nukee> {
-    private String _username;
-    private long _amount;
+	private String _username;
 
-    public Nukee(String user, long amount) {
-        _username = user;
-        _amount = amount;
-    }
+	private long _amount;
 
-    public long getBytes() {
-        return _amount;
-    }
+	public Nukee(String user, long amount) {
+		_username = user;
+		_amount = amount;
+	}
 
-    public int compareTo(Nukee o) {
-        long thisVal = getBytes();
-        long anotherVal = o.getBytes();
+	public long getBytes() {
+		return _amount;
+	}
 
-        return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0 : (-1)));
-    }
+	public int compareTo(Nukee o) {
+		long thisVal = getBytes();
+		long anotherVal = o.getBytes();
 
-    public String getUsername() {
-        return _username;
-    }
+		return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0
+				: (-1)));
+	}
 
-    /**
-     * Returns the amount nuked without multiplier.
-     * @return the amount nuked without multiplier.
-     */
-    public long getAmount() {
-        return _amount;
-    }
+	public String getUsername() {
+		return _username;
+	}
+
+	/**
+	 * Returns the amount nuked without multiplier.
+	 * 
+	 * @return the amount nuked without multiplier.
+	 */
+	public long getAmount() {
+		return _amount;
+	}
 }

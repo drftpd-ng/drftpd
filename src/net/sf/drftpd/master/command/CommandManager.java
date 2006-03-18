@@ -37,56 +37,53 @@ import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.usermanager.NoSuchUserException;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class CommandManager {
-    private CommandManagerFactory _factory;
+	private CommandManagerFactory _factory;
 
-    /**
-     * String => CommandHandler
-     * Mapping commands to commandhandlers.
-     */
-    private Map commands = new Hashtable();
+	/**
+	 * String => CommandHandler Mapping commands to commandhandlers.
+	 */
+	private Map commands = new Hashtable();
 
-    /**
-     * Class => CommandHandler
-     * Kept so that CommandHandlers can look up each other.
-     */
-    private Hashtable hnds = new Hashtable();
+	/**
+	 * Class => CommandHandler Kept so that CommandHandlers can look up each
+	 * other.
+	 */
+	private Hashtable hnds = new Hashtable();
 
-    public CommandManager(BaseFtpConnection conn,
-        CommandManagerFactory initializer) {
-        _factory = initializer;
+	public CommandManager(BaseFtpConnection conn,
+			CommandManagerFactory initializer) {
+		_factory = initializer;
 
-        for (Iterator iter = _factory.getHandlersMap().entrySet().iterator();
-                iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            hnds.put(entry.getKey(),
-                ((CommandHandlerFactory) entry.getValue()).initialize(conn, this));
-        }
+		for (Iterator iter = _factory.getHandlersMap().entrySet().iterator(); iter
+				.hasNext();) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			hnds.put(entry.getKey(), ((CommandHandlerFactory) entry.getValue())
+					.initialize(conn, this));
+		}
 
-        for (Iterator iter = _factory.getCommandsMap().entrySet().iterator();
-                iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            commands.put((String) entry.getKey(),
-                (CommandHandler) hnds.get((Class) entry.getValue()));
-        }
-    }
+		for (Iterator iter = _factory.getCommandsMap().entrySet().iterator(); iter
+				.hasNext();) {
+			Map.Entry entry = (Map.Entry) iter.next();
+			commands.put((String) entry.getKey(), (CommandHandler) hnds
+					.get((Class) entry.getValue()));
+		}
+	}
 
-    public Reply execute(BaseFtpConnection conn)
-        throws ReplyException {
-        String command = conn.getRequest().getCommand();
-        CommandHandler handler = (CommandHandler) commands.get(command);
+	public Reply execute(BaseFtpConnection conn) throws ReplyException {
+		String command = conn.getRequest().getCommand();
+		CommandHandler handler = (CommandHandler) commands.get(command);
 
-        if (handler == null) {
-            throw new UnhandledCommandException("No command handler for " +
-                command);
-        }
-        
-        try {
+		if (handler == null) {
+			throw new UnhandledCommandException("No command handler for "
+					+ command);
+		}
+
+		try {
 			if (conn.getUser().isDeleted()) {
 				conn.stop("You are deleted");
 				return new Reply(500, "You are deleted");
@@ -95,18 +92,19 @@ public class CommandManager {
 			// user hasn't authenticated yet
 		}
 
-        try {
-            command = command.substring("SITE ".length()).toLowerCase();
+		try {
+			command = command.substring("SITE ".length()).toLowerCase();
 
-            if (!conn.getGlobalContext().getConfig().checkPathPermission(command,
-                        conn.getUserNull(), conn.getCurrentDirectory(), true)) {
-                //logger.debug("Blocking access to execute : SITE "+command);
-                return Reply.RESPONSE_530_ACCESS_DENIED;
-            }
-        } catch (java.lang.StringIndexOutOfBoundsException e) {
-        }
+			if (!conn.getGlobalContext().getConfig().checkPathPermission(
+					command, conn.getUserNull(), conn.getCurrentDirectory(),
+					true)) {
+				// logger.debug("Blocking access to execute : SITE "+command);
+				return Reply.RESPONSE_530_ACCESS_DENIED;
+			}
+		} catch (java.lang.StringIndexOutOfBoundsException e) {
+		}
 
-        try {
+		try {
 			return handler.execute(conn);
 		} catch (ImproperUsageException e2) {
 			Reply response = (Reply) Reply.RESPONSE_501_SYNTAX_ERROR.clone();
@@ -123,36 +121,36 @@ public class CommandManager {
 			return (response);
 
 		}
-    }
+	}
 
-    public CommandHandler getCommandHandler(Class clazz)
-        throws ObjectNotFoundException {
-        CommandHandler ret = (CommandHandler) hnds.get(clazz);
+	public CommandHandler getCommandHandler(Class clazz)
+			throws ObjectNotFoundException {
+		CommandHandler ret = (CommandHandler) hnds.get(clazz);
 
-        if (ret == null) {
-            throw new ObjectNotFoundException();
-        }
-        return ret;
-    }
+		if (ret == null) {
+			throw new ObjectNotFoundException();
+		}
+		return ret;
+	}
 
-    public List<String> getHandledCommands(Class class1) {
-        ArrayList<String> list = new ArrayList<String>();
+	public List<String> getHandledCommands(Class class1) {
+		ArrayList<String> list = new ArrayList<String>();
 
-        for (Iterator iter = commands.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry element = (Map.Entry) iter.next();
+		for (Iterator iter = commands.entrySet().iterator(); iter.hasNext();) {
+			Map.Entry element = (Map.Entry) iter.next();
 
-            if (element.getValue().getClass().equals(class1)) {
-                list.add((String) element.getKey());
-            }
-        }
+			if (element.getValue().getClass().equals(class1)) {
+				list.add((String) element.getKey());
+			}
+		}
 
-        return list;
-    }
+		return list;
+	}
 
-    /**
-     * Class => CommandHandler
-     */
-    public Map getCommandHandlersMap() {
-        return Collections.unmodifiableMap(hnds);
-    }
+	/**
+	 * Class => CommandHandler
+	 */
+	public Map getCommandHandlersMap() {
+		return Collections.unmodifiableMap(hnds);
+	}
 }

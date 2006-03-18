@@ -29,40 +29,41 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * @author mog
  * @version $Id: MintimeonlineFilter.java 936 2005-01-31 22:25:52Z mog $
  */
 public class MintimeonlineFilter extends Filter {
-    private long _minTime;
-    private float _multiplier;
+	private long _minTime;
 
-    public MintimeonlineFilter(FilterChain fc, int i, Properties p) {
-        _minTime = Time.parseTime(PropertyHelper.getProperty(p, i + ".mintime"));
-        _multiplier = BandwidthFilter.parseMultiplier(PropertyHelper.getProperty(p,
-                    i + ".multiplier"));
-    }
+	private float _multiplier;
 
-    public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, InodeHandle dir, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
-        process(scorechart, user, peer, direction, dir,
-            System.currentTimeMillis());
-    }
+	public MintimeonlineFilter(FilterChain fc, int i, Properties p) {
+		_minTime = Time
+				.parseTime(PropertyHelper.getProperty(p, i + ".mintime"));
+		_multiplier = BandwidthFilter.parseMultiplier(PropertyHelper
+				.getProperty(p, i + ".multiplier"));
+	}
 
-    protected void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, InodeHandle dir, long currentTime)
-        throws NoAvailableSlaveException {
-        for (Iterator iter = scorechart.getSlaveScores().iterator();
-                iter.hasNext();) {
-            ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
-            long lastTransfer = currentTime -
-                score.getRSlave().getLastTransferForDirection(direction);
+	public void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
+		process(scorechart, user, peer, direction, dir, System
+				.currentTimeMillis());
+	}
 
-            if (lastTransfer < _minTime) {
-                score.addScore(-(long) (lastTransfer * _multiplier));
-            }
-        }
-    }
+	protected void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, InodeHandle dir, long currentTime)
+			throws NoAvailableSlaveException {
+		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
+				.hasNext();) {
+			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
+			long lastTransfer = currentTime
+					- score.getRSlave().getLastTransferForDirection(direction);
+
+			if (lastTransfer < _minTime) {
+				score.addScore(-(long) (lastTransfer * _multiplier));
+			}
+		}
+	}
 }

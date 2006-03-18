@@ -36,110 +36,114 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * @author mog
  * @version $Id: SlaveSelectionManager.java 930 2005-01-30 15:16:42Z zubov $
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
-    private GlobalContext _gctx;
-    private FilterChain _ssmiDown;
-    private FilterChain _ssmiJobDown;
-    private FilterChain _ssmiJobUp;
-    private FilterChain _ssmiUp;
+	private GlobalContext _gctx;
 
-    public SlaveSelectionManager(GlobalContext gctx)
-        throws FileNotFoundException, IOException {
-        _gctx = gctx;
-        reload();
-    }
+	private FilterChain _ssmiDown;
 
-    /**
-     * Checksums call us with null BaseFtpConnection.
-     */
-    public RemoteSlave getASlave(Collection<RemoteSlave> rslaves, char direction,
-        BaseFtpConnection conn, InodeHandle file)
-        throws NoAvailableSlaveException {
-        InetAddress source = ((conn != null) ? conn.getClientAddress() : null);
-        String status;
+	private FilterChain _ssmiJobDown;
 
-        if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-            status = "up";
-        } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-            status = "down";
-        } else {
-            throw new IllegalArgumentException();
-        }
+	private FilterChain _ssmiJobUp;
 
-        return process(status, new ScoreChart(rslaves),
-            (conn != null) ? conn.getUserNull() : null, source, direction, file, null);
-    }
+	private FilterChain _ssmiUp;
 
-    public RemoteSlave getASlaveForJobDownload(Job job)
-        throws NoAvailableSlaveException, FileNotFoundException {
-        ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getFile().getAvailableSlaves());
-        slaves.removeAll(job.getDestinationSlaves());
+	public SlaveSelectionManager(GlobalContext gctx)
+			throws FileNotFoundException, IOException {
+		_gctx = gctx;
+		reload();
+	}
 
-        if (slaves.isEmpty()) {
-            throw new NoAvailableSlaveException();
-        }
+	/**
+	 * Checksums call us with null BaseFtpConnection.
+	 */
+	public RemoteSlave getASlave(Collection<RemoteSlave> rslaves,
+			char direction, BaseFtpConnection conn, InodeHandle file)
+			throws NoAvailableSlaveException {
+		InetAddress source = ((conn != null) ? conn.getClientAddress() : null);
+		String status;
 
-        return process("jobdown", new ScoreChart(slaves), null, null,
-            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), null);
-    }
+		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			status = "up";
+		} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			status = "down";
+		} else {
+			throw new IllegalArgumentException();
+		}
 
-    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException, FileNotFoundException {
-        ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
-        slaves.removeAll(job.getFile().getAvailableSlaves());
+		return process(status, new ScoreChart(rslaves), (conn != null) ? conn
+				.getUserNull() : null, source, direction, file, null);
+	}
 
-        for (Iterator iter = slaves.iterator(); iter.hasNext();) {
-            if (!((RemoteSlave) iter.next()).isAvailable()) {
-                iter.remove();
-            }
-        }
+	public RemoteSlave getASlaveForJobDownload(Job job)
+			throws NoAvailableSlaveException, FileNotFoundException {
+		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job
+				.getFile().getAvailableSlaves());
+		slaves.removeAll(job.getDestinationSlaves());
 
-        if (slaves.isEmpty()) {
-            throw new NoAvailableSlaveException();
-        }
+		if (slaves.isEmpty()) {
+			throw new NoAvailableSlaveException();
+		}
 
-        return process("jobup", new ScoreChart(slaves), null, null,
-            Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), sourceSlave);
-    }
+		return process("jobdown", new ScoreChart(slaves), null, null,
+				Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), null);
+	}
 
-    public SlaveManager getSlaveManager() {
-        return getGlobalContext().getSlaveManager();
-    }
+	public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException, FileNotFoundException {
+		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job
+				.getDestinationSlaves());
+		slaves.removeAll(job.getFile().getAvailableSlaves());
 
-    private RemoteSlave process(String filterchain, ScoreChart sc, User user,
-        InetAddress peer, char direction, InodeHandle file, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
-        FilterChain ssmi;
+		for (Iterator iter = slaves.iterator(); iter.hasNext();) {
+			if (!((RemoteSlave) iter.next()).isAvailable()) {
+				iter.remove();
+			}
+		}
 
-        if (filterchain.equals("down")) {
-            ssmi = _ssmiDown;
-        } else if (filterchain.equals("up")) {
-            ssmi = _ssmiUp;
-        } else if (filterchain.equals("jobup")) {
-            ssmi = _ssmiJobUp;
-        } else if (filterchain.equals("jobdown")) {
-            ssmi = _ssmiJobDown;
-        } else {
-            throw new IllegalArgumentException();
-        }
+		if (slaves.isEmpty()) {
+			throw new NoAvailableSlaveException();
+		}
 
-        return ssmi.getBestSlave(sc, user, peer, direction, file, sourceSlave);
-    }
+		return process("jobup", new ScoreChart(slaves), null, null,
+				Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), sourceSlave);
+	}
 
-    public void reload() throws FileNotFoundException, IOException {
-        _ssmiDown = new FilterChain(this, "conf/slaveselection-down.conf");
-        _ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
-        _ssmiJobUp = new FilterChain(this, "conf/slaveselection-jobup.conf");
-        _ssmiJobDown = new FilterChain(this,
-                    "conf/slaveselection-jobdown.conf");
-    }
+	public SlaveManager getSlaveManager() {
+		return getGlobalContext().getSlaveManager();
+	}
 
-    public GlobalContext getGlobalContext() {
-        return _gctx;
-    }
+	private RemoteSlave process(String filterchain, ScoreChart sc, User user,
+			InetAddress peer, char direction, InodeHandle file,
+			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
+		FilterChain ssmi;
+
+		if (filterchain.equals("down")) {
+			ssmi = _ssmiDown;
+		} else if (filterchain.equals("up")) {
+			ssmi = _ssmiUp;
+		} else if (filterchain.equals("jobup")) {
+			ssmi = _ssmiJobUp;
+		} else if (filterchain.equals("jobdown")) {
+			ssmi = _ssmiJobDown;
+		} else {
+			throw new IllegalArgumentException();
+		}
+
+		return ssmi.getBestSlave(sc, user, peer, direction, file, sourceSlave);
+	}
+
+	public void reload() throws FileNotFoundException, IOException {
+		_ssmiDown = new FilterChain(this, "conf/slaveselection-down.conf");
+		_ssmiUp = new FilterChain(this, "conf/slaveselection-up.conf");
+		_ssmiJobUp = new FilterChain(this, "conf/slaveselection-jobup.conf");
+		_ssmiJobDown = new FilterChain(this, "conf/slaveselection-jobdown.conf");
+	}
+
+	public GlobalContext getGlobalContext() {
+		return _gctx;
+	}
 }

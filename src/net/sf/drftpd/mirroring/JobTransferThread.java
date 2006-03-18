@@ -24,23 +24,26 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class JobTransferThread extends Thread {
-    private static final Logger logger = Logger.getLogger(JobTransferThread.class);
-    private JobManager _jm;
-    private static int count = 1;
+	private static final Logger logger = Logger
+			.getLogger(JobTransferThread.class);
 
-    /**
-     * This class sends a JobTransfer if it is available
-     */
-    public JobTransferThread(JobManager jm) {
-    	super("JobTransferThread - " + count++);
-        _jm = jm;
-    }
+	private JobManager _jm;
 
-    public void run() {
-        try {
-            _jm.processJob();
-        } catch (Exception e) {
-            logger.debug("", e);
-        }
-    }
+	private static int count = 1;
+
+	/**
+	 * This class sends a JobTransfer if it is available
+	 */
+	public JobTransferThread(JobManager jm) {
+		super("JobTransferThread - " + count++);
+		_jm = jm;
+	}
+
+	public void run() {
+		try {
+			_jm.processJob();
+		} catch (Exception e) {
+			logger.debug("", e);
+		}
+	}
 }

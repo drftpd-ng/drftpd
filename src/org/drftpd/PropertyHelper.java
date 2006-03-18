@@ -22,20 +22,20 @@ import java.util.Properties;
 
 /**
  * @author mog
- * @version $Id: PropertyHelper.java,v 1.1 2004/11/09 18:59:53 mog Exp $
+ * @version $Id$
  */
 public class PropertyHelper {
 	private PropertyHelper() {
 	}
 
 	public static String getProperty(Properties p, String name)
-	    throws NullPointerException {
-	    String result = p.getProperty(name);
-	
-	    if (result == null) {
-	        throw new NullPointerException("Error getting setting " + name);
-	    }
-	
-	    return result;
+			throws NullPointerException {
+		String result = p.getProperty(name);
+
+		if (result == null) {
+			throw new NullPointerException("Error getting setting " + name);
+		}
+
+		return result;
 	}
 }

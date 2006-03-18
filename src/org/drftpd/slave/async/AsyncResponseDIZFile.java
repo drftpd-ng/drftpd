@@ -17,21 +17,18 @@
  */
 package org.drftpd.slave.async;
 
-
 /**
  * @author dark
  */
-public class AsyncResponseDIZFile extends AsyncResponse
-{
-    String _DIZ;
+public class AsyncResponseDIZFile extends AsyncResponse {
+	String _DIZ;
 
-    public AsyncResponseDIZFile(String index, String DIZ)
-    {
-        super(index);
-        _DIZ = DIZ;
-    }
+	public AsyncResponseDIZFile(String index, String DIZ) {
+		super(index);
+		_DIZ = DIZ;
+	}
 
-    public String getDIZ() {
-        return _DIZ;
-    }
+	public String getDIZ() {
+		return _DIZ;
+	}
 }

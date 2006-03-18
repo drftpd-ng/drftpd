@@ -16,25 +16,24 @@
  */
 package net.sf.drftpd.mirroring;
 
-
 /**
  * @author zubov
- * @version $Id: DestinationSlaveException.java,v 1.3 2004/08/03 20:14:01 zubov Exp $
+ * @version $Id$
  */
 public class DestinationSlaveException extends SlaveException {
-    public DestinationSlaveException() {
-        super();
-    }
+	public DestinationSlaveException() {
+		super();
+	}
 
-    public DestinationSlaveException(Exception e) {
-        super(e);
-    }
+	public DestinationSlaveException(Exception e) {
+		super(e);
+	}
 
-    public DestinationSlaveException(String s) {
-        super(s);
-    }
+	public DestinationSlaveException(String s) {
+		super(s);
+	}
 
-    public DestinationSlaveException(Throwable throwable) {
-        super(throwable);
-    }
+	public DestinationSlaveException(Throwable throwable) {
+		super(throwable);
+	}
 }

@@ -21,51 +21,52 @@ import java.io.IOException;
 
 import se.mog.io.File;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class Root {
-    private File _rootFile;
-    private String _root;
-    private long _lastModified;
+	private File _rootFile;
 
-    public Root(String root) throws IOException {
-        _rootFile = new File(new File(root).getCanonicalFile());
-        _root = _rootFile.getPath();
-        _lastModified = getFile().lastModified();
-    }
+	private String _root;
 
-    public File getFile() {
-        return _rootFile;
-    }
+	private long _lastModified;
 
-    public String getPath() {
-        return _root;
-    }
+	public Root(String root) throws IOException {
+		_rootFile = new File(new File(root).getCanonicalFile());
+		_root = _rootFile.getPath();
+		_lastModified = getFile().lastModified();
+	}
 
-    public long lastModified() {
-        return _lastModified;
-    }
+	public File getFile() {
+		return _rootFile;
+	}
 
-    public void touch() {
-        getFile().setLastModified(_lastModified = System.currentTimeMillis());
-    }
+	public String getPath() {
+		return _root;
+	}
 
-    public String toString() {
-        return "[root=" + getPath() + "]";
-    }
+	public long lastModified() {
+		return _lastModified;
+	}
 
-    public long getDiskSpaceAvailable() {
-        return getFile().getDiskSpaceAvailable();
-    }
+	public void touch() {
+		getFile().setLastModified(_lastModified = System.currentTimeMillis());
+	}
 
-    public long getDiskSpaceCapacity() {
-        return getFile().getDiskSpaceCapacity();
-    }
+	public String toString() {
+		return "[root=" + getPath() + "]";
+	}
 
-    public File getFile(String path) {
-        return new File(_root + File.separator + path);
-    }
+	public long getDiskSpaceAvailable() {
+		return getFile().getDiskSpaceAvailable();
+	}
+
+	public long getDiskSpaceCapacity() {
+		return getFile().getDiskSpaceCapacity();
+	}
+
+	public File getFile(String path) {
+		return new File(_root + File.separator + path);
+	}
 }

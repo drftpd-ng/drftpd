@@ -28,35 +28,42 @@ import org.drftpd.PropertyHelper;
 
 /**
  * Sample configuration.
+ * 
  * <pre>
- * X.filter=matchdir
- * X.assign=<rootNumber>+100000
- * X.match=<path glob match>
+ *  X.filter=matchdir
+ *  X.assign=&lt;rootNumber&gt;+100000
+ *  X.match=&lt;path glob match&gt;
  * </pre>
+ * 
  * @author fr0w
- **/
+ */
 public class MatchdirFilter extends DiskFilter {
-	
+
 	private Pattern _p;
+
 	private Perl5Matcher _m = new Perl5Matcher();
+
 	private ArrayList _assignList;
+
 	private String _pattern;
-	
+
 	public MatchdirFilter(Properties p, Integer i) {
 		super(p, i);
-		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
+		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i
+				+ ".assign"));
 		_pattern = PropertyHelper.getProperty(p, i + ".match");
-		
+
 		try {
-			_p = new GlobCompiler().compile(_pattern, GlobCompiler.CASE_INSENSITIVE_MASK);
+			_p = new GlobCompiler().compile(_pattern,
+					GlobCompiler.CASE_INSENSITIVE_MASK);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public void process(ScoreChart sc, String path) {
 		if (_m.matches(path, _p)) {
 			AssignRoot.addScoresToChart(_assignList, sc);
 		}
-	}	
+	}
 }

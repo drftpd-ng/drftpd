@@ -54,546 +54,567 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
 /**
- * This is a generic ftp connection handler. It delegates
- * the request to appropriate methods in subclasses.
- *
+ * This is a generic ftp connection handler. It delegates the request to
+ * appropriate methods in subclasses.
+ * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @author mog
  * @version $Id$
  */
 public class BaseFtpConnection implements Runnable {
-    private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() +
-            ".service");
-    private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
-    public static final String NEWLINE = "\r\n";
+	private static final Logger debuglogger = Logger
+			.getLogger(BaseFtpConnection.class.getName() + ".service");
 
-    /**
-     * Is the current password authenticated?
-     */
-    protected boolean _authenticated = false;
+	private static final Logger logger = Logger
+			.getLogger(BaseFtpConnection.class);
 
-    //protected ConnectionManager _cm;
-    private CommandManager _commandManager;
-    protected Socket _controlSocket;
-    protected DirectoryHandle _currentDirectory;
+	public static final String NEWLINE = "\r\n";
 
-    /**
-     * Is the client running a command?
-     */
-    protected boolean _executing;
-    private BufferedReader _in;
+	/**
+	 * Is the current password authenticated?
+	 */
+	protected boolean _authenticated = false;
 
-    /**
-     * time when last command from the client finished execution
-     */
-    protected long _lastActive;
-    protected PrintWriter _out;
-    protected FtpRequest _request;
+	// protected ConnectionManager _cm;
+	private CommandManager _commandManager;
 
-    /**
-     * Should this thread stop insted of continue looping?
-     */
-    protected boolean _stopRequest = false;
-    protected String _stopRequestMessage;
-    protected Thread _thread;
-    protected String _user;
+	protected Socket _controlSocket;
 
-    protected BaseFtpConnection() {
-    }
+	protected DirectoryHandle _currentDirectory;
 
-    public BaseFtpConnection(Socket soc)
-        throws IOException {
-        _commandManager = getGlobalContext().getConnectionManager()
-                              .getCommandManagerFactory().initialize(this);
-        setControlSocket(soc);
-        _lastActive = System.currentTimeMillis();
-        setCurrentDirectory(getGlobalContext().getRoot());
-    }
+	/**
+	 * Is the client running a command?
+	 */
+	protected boolean _executing;
 
-    public static ReplacerEnvironment getReplacerEnvironment(
-        ReplacerEnvironment env, User user) {
-        env = new ReplacerEnvironment(env);
+	private BufferedReader _in;
 
-        if (user != null) {
-        	for(Map.Entry<Key, Object> o : user.getKeyedMap().getAllObjects().entrySet()) {
-        		env.add(o.getKey().toString(), o.getKey().toString(o.getValue()));
-        		//logger.debug("Added "+o.getKey().toString()+" "+o.getKey().toString(o.getValue()));
-        	}
-            env.add("user", user.getName());
-            env.add("username", user.getName());
-            env.add("idletime",""+user.getIdleTime());
-            env.add("credits", Bytes.formatBytes(user.getCredits()));
-            env.add("ratio", "" + user.getKeyedMap().get((UserManagement.RATIO)));
-            env.add("tagline", user.getKeyedMap().get((UserManagement.TAGLINE)));
-            env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
-            env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-            env.add("group", user.getGroup());
-            env.add("groups", user.getGroups());
-            env.add("averagespeed",
-                Bytes.formatBytes(user.getUploadedTime() +
-                    (user.getDownloadedTime() / 2)));
-            env.add("ipmasks",user.getHostMaskCollection().toString());
-            env.add("isbanned",""+
-                    ((user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME)).getTime() > 
-                    		System.currentTimeMillis()));
-//        } else {
-//            env.add("user", "<unknown>");
-        }
-        return env;
-    }
+	/**
+	 * time when last command from the client finished execution
+	 */
+	protected long _lastActive;
 
-    public static String jprintf(ReplacerFormat format,
-        ReplacerEnvironment env, User user) throws FormatterException {
-        env = getReplacerEnvironment(env, user);
+	protected PrintWriter _out;
 
-        return SimplePrintf.jprintf(format, env);
-    }
+	protected FtpRequest _request;
 
-    public static String jprintf(Class class1, String key,
-        ReplacerEnvironment env, User user) {
-        env = getReplacerEnvironment(env, user);
+	/**
+	 * Should this thread stop insted of continue looping?
+	 */
+	protected boolean _stopRequest = false;
 
-        return ReplacerUtils.jprintf(key, env, class1);
-    }
+	protected String _stopRequestMessage;
 
-    public static String jprintfExceptionStatic(Class class1, String key,
-        ReplacerEnvironment env, User user) throws FormatterException {
-        env = getReplacerEnvironment(env, user);
+	protected Thread _thread;
 
-        return SimplePrintf.jprintf(ReplacerUtils.finalFormat(class1, key), env);
-    }
+	protected String _user;
 
-    /**
-     * Get client address
-     */
-    public InetAddress getClientAddress() {
-        return _controlSocket.getInetAddress();
-    }
+	protected BaseFtpConnection() {
+	}
 
-    public CommandManager getCommandManager() {
-        return _commandManager;
-    }
+	public BaseFtpConnection(Socket soc) throws IOException {
+		_commandManager = getGlobalContext().getConnectionManager()
+				.getCommandManagerFactory().initialize(this);
+		setControlSocket(soc);
+		_lastActive = System.currentTimeMillis();
+		setCurrentDirectory(getGlobalContext().getRoot());
+	}
 
-    public GlobalContext getGlobalContext() {
-        return GlobalContext.getGlobalContext();
-    }
+	public static ReplacerEnvironment getReplacerEnvironment(
+			ReplacerEnvironment env, User user) {
+		env = new ReplacerEnvironment(env);
 
-    public BufferedReader getControlReader() {
-        return _in;
-    }
+		if (user != null) {
+			for (Map.Entry<Key, Object> o : user.getKeyedMap().getAllObjects()
+					.entrySet()) {
+				env.add(o.getKey().toString(), o.getKey()
+						.toString(o.getValue()));
+				// logger.debug("Added "+o.getKey().toString()+"
+				// "+o.getKey().toString(o.getValue()));
+			}
+			env.add("user", user.getName());
+			env.add("username", user.getName());
+			env.add("idletime", "" + user.getIdleTime());
+			env.add("credits", Bytes.formatBytes(user.getCredits()));
+			env.add("ratio", ""
+					+ user.getKeyedMap().get((UserManagement.RATIO)));
+			env
+					.add("tagline", user.getKeyedMap().get(
+							(UserManagement.TAGLINE)));
+			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
+			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+			env.add("group", user.getGroup());
+			env.add("groups", user.getGroups());
+			env.add("averagespeed", Bytes.formatBytes(user.getUploadedTime()
+					+ (user.getDownloadedTime() / 2)));
+			env.add("ipmasks", user.getHostMaskCollection().toString());
+			env.add("isbanned",
+					""
+							+ ((user.getKeyedMap()
+									.getObjectDate(UserManagement.BAN_TIME))
+									.getTime() > System.currentTimeMillis()));
+			// } else {
+			// env.add("user", "<unknown>");
+		}
+		return env;
+	}
 
-    public Socket getControlSocket() {
-        return _controlSocket;
-    }
+	public static String jprintf(ReplacerFormat format,
+			ReplacerEnvironment env, User user) throws FormatterException {
+		env = getReplacerEnvironment(env, user);
 
-    public PrintWriter getControlWriter() {
-        return _out;
-    }
+		return SimplePrintf.jprintf(format, env);
+	}
 
-    public DirectoryHandle getCurrentDirectory() {
-        return _currentDirectory;
-    }
+	public static String jprintf(Class class1, String key,
+			ReplacerEnvironment env, User user) {
+		env = getReplacerEnvironment(env, user);
 
-    public char getDirection() {
-        String cmd = getRequest().getCommand();
+		return ReplacerUtils.jprintf(key, env, class1);
+	}
 
-        if ("RETR".equals(cmd)) {
-            return Transfer.TRANSFER_SENDING_DOWNLOAD;
-        }
+	public static String jprintfExceptionStatic(Class class1, String key,
+			ReplacerEnvironment env, User user) throws FormatterException {
+		env = getReplacerEnvironment(env, user);
 
-        if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
-            return Transfer.TRANSFER_RECEIVING_UPLOAD;
-        }
+		return SimplePrintf
+				.jprintf(ReplacerUtils.finalFormat(class1, key), env);
+	}
 
-        return Transfer.TRANSFER_UNKNOWN;
-    }
+	/**
+	 * Get client address
+	 */
+	public InetAddress getClientAddress() {
+		return _controlSocket.getInetAddress();
+	}
 
-    /**
-     * Returns the "currentTimeMillis" when last command finished executing.
-     */
-    public long getLastActive() {
-        return _lastActive;
-    }
+	public CommandManager getCommandManager() {
+		return _commandManager;
+	}
 
-    /**
-     * Returns the FtpRequest of current or last command executed.
-     */
-    public FtpRequest getRequest() {
-        return _request;
-    }
+	public GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
+	}
 
-    /**
-     * Returns Transfer.TRANSFER_SENDING_DOWNLOAD if this connection is processing a RETR command
-     * or Transfer.TRANSFER_RECEIVING_UPLOAD if this connection is processing a STOR command.
-     * @throws IllegalStateException if the connection isn't processing a STOR or RETR command.
-     */
-    public char getTransferDirection() {
-        String cmd = getRequest().getCommand();
+	public BufferedReader getControlReader() {
+		return _in;
+	}
 
-        if (cmd.equals("RETR")) {
-            return Transfer.TRANSFER_SENDING_DOWNLOAD;
-        } else if (cmd.equals("STOR")) {
-            return Transfer.TRANSFER_RECEIVING_UPLOAD;
-        } else {
-            throw new IllegalStateException("Not transfering");
-        }
-    }
+	public Socket getControlSocket() {
+		return _controlSocket;
+	}
 
-    /**
-     * Get user object
-     */
-    public User getUser() throws NoSuchUserException {
-        if ((_user == null) || !isAuthenticated()) {
-            throw new NoSuchUserException("no user logged in for connection");
-        }
-    	try {
-			return getGlobalContext().getUserManager().getUserByNameUnchecked(_user);
+	public PrintWriter getControlWriter() {
+		return _out;
+	}
+
+	public DirectoryHandle getCurrentDirectory() {
+		return _currentDirectory;
+	}
+
+	public char getDirection() {
+		String cmd = getRequest().getCommand();
+
+		if ("RETR".equals(cmd)) {
+			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		}
+
+		if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
+		}
+
+		return Transfer.TRANSFER_UNKNOWN;
+	}
+
+	/**
+	 * Returns the "currentTimeMillis" when last command finished executing.
+	 */
+	public long getLastActive() {
+		return _lastActive;
+	}
+
+	/**
+	 * Returns the FtpRequest of current or last command executed.
+	 */
+	public FtpRequest getRequest() {
+		return _request;
+	}
+
+	/**
+	 * Returns Transfer.TRANSFER_SENDING_DOWNLOAD if this connection is
+	 * processing a RETR command or Transfer.TRANSFER_RECEIVING_UPLOAD if this
+	 * connection is processing a STOR command.
+	 * 
+	 * @throws IllegalStateException
+	 *             if the connection isn't processing a STOR or RETR command.
+	 */
+	public char getTransferDirection() {
+		String cmd = getRequest().getCommand();
+
+		if (cmd.equals("RETR")) {
+			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		} else if (cmd.equals("STOR")) {
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
+		} else {
+			throw new IllegalStateException("Not transfering");
+		}
+	}
+
+	/**
+	 * Get user object
+	 */
+	public User getUser() throws NoSuchUserException {
+		if ((_user == null) || !isAuthenticated()) {
+			throw new NoSuchUserException("no user logged in for connection");
+		}
+		try {
+			return getGlobalContext().getUserManager().getUserByNameUnchecked(
+					_user);
 		} catch (UserFileException e) {
 			throw new NoSuchUserException(e);
 		}
-    }
+	}
 
-    public User getUserNull() {
-    	if (_user == null) {
-    		return null;
-    	}
-    	try {
-			return getGlobalContext().getUserManager().getUserByNameUnchecked(_user);
+	public User getUserNull() {
+		if (_user == null) {
+			return null;
+		}
+		try {
+			return getGlobalContext().getUserManager().getUserByNameUnchecked(
+					_user);
 		} catch (NoSuchUserException e) {
-				return null;
+			return null;
 		} catch (UserFileException e) {
 			return null;
 		}
 	}
 
-    protected boolean hasPermission(FtpRequest request) {
-        if (isAuthenticated()) {
-            return true;
-        }
+	protected boolean hasPermission(FtpRequest request) {
+		if (isAuthenticated()) {
+			return true;
+		}
 
-        String cmd = request.getCommand();
+		String cmd = request.getCommand();
 
-        if ("USER".equals(cmd) || "PASS".equals(cmd) || "QUIT".equals(cmd) ||
-                "HELP".equals(cmd) || "AUTH".equals(cmd) || "PBSZ".equals(cmd) ||
-                "IDNT".equals(cmd)) {
-            return true;
-        }
+		if ("USER".equals(cmd) || "PASS".equals(cmd) || "QUIT".equals(cmd)
+				|| "HELP".equals(cmd) || "AUTH".equals(cmd)
+				|| "PBSZ".equals(cmd) || "IDNT".equals(cmd)) {
+			return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    public boolean isAuthenticated() {
-        return _authenticated;
-    }
+	public boolean isAuthenticated() {
+		return _authenticated;
+	}
 
-    /**
-     * Returns true if client is executing a command.
-     */
-    public boolean isExecuting() {
-        return _executing;
-    }
+	/**
+	 * Returns true if client is executing a command.
+	 */
+	public boolean isExecuting() {
+		return _executing;
+	}
 
-    public boolean isSecure() {
-        return _controlSocket instanceof SSLSocket;
-    }
+	public boolean isSecure() {
+		return _controlSocket instanceof SSLSocket;
+	}
 
-    public String jprintf(Class baseName, String key) {
-        return jprintf(baseName, key, null, getUserNull());
-    }
+	public String jprintf(Class baseName, String key) {
+		return jprintf(baseName, key, null, getUserNull());
+	}
 
-    public String jprintf(Class class1, String string, ReplacerEnvironment env) {
-        return jprintf(class1, string, env, getUserNull());
-    }
+	public String jprintf(Class class1, String string, ReplacerEnvironment env) {
+		return jprintf(class1, string, env, getUserNull());
+	}
 
-    public String jprintfException(Class class1, String key,
-        ReplacerEnvironment env) throws FormatterException {
-        env = getReplacerEnvironment(env, getUserNull());
+	public String jprintfException(Class class1, String key,
+			ReplacerEnvironment env) throws FormatterException {
+		env = getReplacerEnvironment(env, getUserNull());
 
-        return jprintfExceptionStatic(class1, key, env, getUserNull());
-    }
+		return jprintfExceptionStatic(class1, key, env, getUserNull());
+	}
 
-    /**
-     * Server one FTP connection.
-     */
-    public void run() {
-        _lastActive = System.currentTimeMillis();
-        if (!GlobalContext.getGlobalContext()
-                     .getConfig().getHideIps()) {
-            logger.info("Handling new request from " +
-                    getClientAddress().getHostAddress());
-            _thread.setName("FtpConn thread " + _thread.getId() + 
-					" from " + getClientAddress().getHostAddress());
-        } else {
-            logger.info("Handling new request from <iphidden>");
-        	_thread.setName("FtpConn thread " + _thread.getId() + " from <iphidden>");
-        }
+	/**
+	 * Server one FTP connection.
+	 */
+	public void run() {
+		_lastActive = System.currentTimeMillis();
+		if (!GlobalContext.getGlobalContext().getConfig().getHideIps()) {
+			logger.info("Handling new request from "
+					+ getClientAddress().getHostAddress());
+			_thread.setName("FtpConn thread " + _thread.getId() + " from "
+					+ getClientAddress().getHostAddress());
+		} else {
+			logger.info("Handling new request from <iphidden>");
+			_thread.setName("FtpConn thread " + _thread.getId()
+					+ " from <iphidden>");
+		}
 
-        try {
-            //			in =
-            //				new BufferedReader(
-            //					new InputStreamReader(_controlSocket.getInputStream()));
-            //			out = new PrintWriter(
-            //				//new FtpWriter( no need for spying :P
-            //	new BufferedWriter(
-            //		new OutputStreamWriter(_controlSocket.getOutputStream())));
-            _controlSocket.setSoTimeout(1000);
+		try {
+			// in =
+			// new BufferedReader(
+			// new InputStreamReader(_controlSocket.getInputStream()));
+			// out = new PrintWriter(
+			// //new FtpWriter( no need for spying :P
+			// new BufferedWriter(
+			// new OutputStreamWriter(_controlSocket.getOutputStream())));
+			_controlSocket.setSoTimeout(1000);
 
-            if (GlobalContext.getGlobalContext()
-                        .isShutdown()) {
-                stop(GlobalContext.getGlobalContext()
-                         .getShutdownMessage());
-            } else {
-                Reply response = new Reply(220,
-                		GlobalContext.getGlobalContext().getConfig().getLoginPrompt());
-                _out.print(response);
-            }
+			if (GlobalContext.getGlobalContext().isShutdown()) {
+				stop(GlobalContext.getGlobalContext().getShutdownMessage());
+			} else {
+				Reply response = new Reply(220, GlobalContext
+						.getGlobalContext().getConfig().getLoginPrompt());
+				_out.print(response);
+			}
 
-            while (!_stopRequest) {
-                _out.flush();
+			while (!_stopRequest) {
+				_out.flush();
 
-                //notifyObserver();
-                String commandLine = null;
+				// notifyObserver();
+				String commandLine = null;
 
-                try {
-                    commandLine = _in.readLine();
-                    // will block for a maximum of _controlSocket.getSoTimeout() milliseconds
-                } catch (InterruptedIOException ex) {
-                	if (_controlSocket == null) {
-                		stop("Control socket is null");
-                		break;
-                	}
-                	if (!_controlSocket.isConnected()) {
-                		stop("Socket unexpectedly closed");
-                		break;
-                	}
-                	int idleTime;
-                	try {
-                		idleTime = getUser().getIdleTime();
-                	} catch (NoSuchUserException e) {
-                		idleTime = 60;
-                		// user not logged in yet
-                	}
-                	if (idleTime > 0
+				try {
+					commandLine = _in.readLine();
+					// will block for a maximum of _controlSocket.getSoTimeout()
+					// milliseconds
+				} catch (InterruptedIOException ex) {
+					if (_controlSocket == null) {
+						stop("Control socket is null");
+						break;
+					}
+					if (!_controlSocket.isConnected()) {
+						stop("Socket unexpectedly closed");
+						break;
+					}
+					int idleTime;
+					try {
+						idleTime = getUser().getIdleTime();
+					} catch (NoSuchUserException e) {
+						idleTime = 60;
+						// user not logged in yet
+					}
+					if (idleTime > 0
 							&& ((System.currentTimeMillis() - _lastActive) / 1000 >= idleTime)) {
 						stop("IdleTimeout");
 						break;
 					}
-                	continue;
-                }
+					continue;
+				}
 
-                if (_stopRequest) {
-                    break;
-                }
+				if (_stopRequest) {
+					break;
+				}
 
-                // test command line
-                if (commandLine == null) {
-                    break;
-                }
+				// test command line
+				if (commandLine == null) {
+					break;
+				}
 
-                //spyRequest(commandLine);
-                if (commandLine.equals("")) {
-                    continue;
-                }
+				// spyRequest(commandLine);
+				if (commandLine.equals("")) {
+					continue;
+				}
 
-                _request = new FtpRequest(commandLine);
+				_request = new FtpRequest(commandLine);
 
-                if (!_request.getCommand().equals("PASS")) {
-                    debuglogger.debug("<< " + _request.getCommandLine());
-                }
+				if (!_request.getCommand().equals("PASS")) {
+					debuglogger.debug("<< " + _request.getCommandLine());
+				}
 
-                if (!hasPermission(_request)) {
-                    _out.print(Reply.RESPONSE_530_NOT_LOGGED_IN);
+				if (!hasPermission(_request)) {
+					_out.print(Reply.RESPONSE_530_NOT_LOGGED_IN);
 
-                    continue;
-                }
+					continue;
+				}
 
-                // execute command
-                _executing = true;
-                service(_request, _out);
-                _executing = false;
-                _lastActive = System.currentTimeMillis();
-            }
+				// execute command
+				_executing = true;
+				service(_request, _out);
+				_executing = false;
+				_lastActive = System.currentTimeMillis();
+			}
 
-            if (_stopRequestMessage != null) {
-                _out.print(new Reply(421, _stopRequestMessage));
-            } else {
-                _out.println("421 Connection closing");
-            }
+			if (_stopRequestMessage != null) {
+				_out.print(new Reply(421, _stopRequestMessage));
+			} else {
+				_out.println("421 Connection closing");
+			}
 
-            _out.flush();
-        } catch (SocketException ex) {
-            logger.log(Level.INFO,
-                ex.getMessage() + ", closing for user " +
-                ((_user == null) ? "<not logged in>" : _user), ex);
-        } catch (Exception ex) {
-            logger.log(Level.INFO, "Exception, closing", ex);
-        } finally {
-            try {
-                _in.close();
-                _out.close();
-            } catch (Exception ex2) {
-                logger.log(Level.WARN, "Exception closing stream", ex2);
-            }
+			_out.flush();
+		} catch (SocketException ex) {
+			logger.log(Level.INFO, ex.getMessage() + ", closing for user "
+					+ ((_user == null) ? "<not logged in>" : _user), ex);
+		} catch (Exception ex) {
+			logger.log(Level.INFO, "Exception, closing", ex);
+		} finally {
+			try {
+				_in.close();
+				_out.close();
+			} catch (Exception ex2) {
+				logger.log(Level.WARN, "Exception closing stream", ex2);
+			}
 
-            if (isAuthenticated()) {
-                try {
+			if (isAuthenticated()) {
+				try {
 					getUser().updateLastAccessTime();
 				} catch (NoSuchUserException e) {
-					logger.error("User does not exist, yet user is authenticated, this is a bug");
+					logger
+							.error("User does not exist, yet user is authenticated, this is a bug");
 				}
-                getGlobalContext().dispatchFtpEvent(new ConnectionEvent(getUserNull(), "LOGOUT"));
-            }
+				getGlobalContext().dispatchFtpEvent(
+						new ConnectionEvent(getUserNull(), "LOGOUT"));
+			}
 
-            getGlobalContext().getConnectionManager().remove(this);
-        }
-    }
+			getGlobalContext().getConnectionManager().remove(this);
+		}
+	}
 
-    /**
-     * Execute the ftp command.
-     */
-    public void service(FtpRequest request, PrintWriter out)
-        throws IOException {
-        Reply reply;
+	/**
+	 * Execute the ftp command.
+	 */
+	public void service(FtpRequest request, PrintWriter out) throws IOException {
+		Reply reply;
 
-        try {
-            reply = _commandManager.execute(this);
-        } catch (Throwable e) {
-        	int replycode = e instanceof ReplyException ? ((ReplyException)e).getReplyCode() : 500;
-    		reply = new Reply(replycode, e.getMessage());
-        	try {
-				if(getUser().getKeyedMap().getObjectBoolean(UserManagement.DEBUG)) {
+		try {
+			reply = _commandManager.execute(this);
+		} catch (Throwable e) {
+			int replycode = e instanceof ReplyException ? ((ReplyException) e)
+					.getReplyCode() : 500;
+			reply = new Reply(replycode, e.getMessage());
+			try {
+				if (getUser().getKeyedMap().getObjectBoolean(
+						UserManagement.DEBUG)) {
 					StringWriter sw = new StringWriter();
 					e.printStackTrace(new PrintWriter(sw));
 					reply.addComment(sw.toString());
 				}
 			} catch (NoSuchUserException e1) {
 			}
-            logger.warn("", e);
-        }
+			logger.warn("", e);
+		}
 
-        if (reply != null) {
-            out.print(reply);
-        }
-    }
+		if (reply != null) {
+			out.print(reply);
+		}
+	}
 
-    public void setAuthenticated(boolean authenticated) {
-        _authenticated = authenticated;
+	public void setAuthenticated(boolean authenticated) {
+		_authenticated = authenticated;
 
-        if (isAuthenticated()) {
-            try {
-            	// If hideips is on, hide ip but not user/group
-            	if (GlobalContext.getGlobalContext()
-                        .getConfig().getHideIps()) {
-    				_thread.setName("FtpConn thread " + _thread.getId() + 
-    						" servicing " +
-        				    _user + "/" + getUser().getGroup());
-                } else {
-    				_thread.setName("FtpConn thread " + _thread.getId() + 
-    						" from " + getClientAddress().getHostAddress() + " " +
-        				    _user + "/" + getUser().getGroup());
-                }
-			} catch (NoSuchUserException e) {
-				logger.error("User does not exist, yet user is authenticated, this is a bug");
-			}
-        }
-    }
-
-    public void setControlSocket(Socket socket) {
-        try {
-            _controlSocket = socket;
-            _in = new BufferedReader(new InputStreamReader(
-                        _controlSocket.getInputStream(), "ISO-8859-1"));
-
-            _out = new PrintWriter(new OutputStreamWriter(
-                        new AddAsciiOutputStream(
-                            new BufferedOutputStream(
-                                _controlSocket.getOutputStream())), "ISO-8859-1"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void setCurrentDirectory(DirectoryHandle path) {
-        _currentDirectory = path;
-    }
-
-    public void setUser(String user) {
-        _user = user;
-    }
-
-    public void start() {
-        _thread = new Thread(this);
-        _thread.start();
-
-        // start() calls run() and execution will start in the background.
-    }
-
-    /**
-     *  returns a two-line status
-     */
-    public String status() {
-        return jprintf(BaseFtpConnection.class, "statusline");
-    }
-
-    /**
-     * User logout and stop this thread.
-     */
-    public void stop() {
-/*        synchronized (getDataConnectionHandler()) {
-			if (getDataConnectionHandler().isTransfering()) {
-				try {
-					getDataConnectionHandler().getTransfer().abort(
-							"Control connection dropped");
-				} catch (ObjectNotFoundException e) {
-					logger.debug("This is a bug, please report it", e);
+		if (isAuthenticated()) {
+			try {
+				// If hideips is on, hide ip but not user/group
+				if (GlobalContext.getGlobalContext().getConfig().getHideIps()) {
+					_thread.setName("FtpConn thread " + _thread.getId()
+							+ " servicing " + _user + "/"
+							+ getUser().getGroup());
+				} else {
+					_thread.setName("FtpConn thread " + _thread.getId()
+							+ " from " + getClientAddress().getHostAddress()
+							+ " " + _user + "/" + getUser().getGroup());
 				}
+			} catch (NoSuchUserException e) {
+				logger
+						.error("User does not exist, yet user is authenticated, this is a bug");
 			}
-		}*/
-    	// This needs to be addressed after session
-    	// information is stored in BaseFtpConnection and not DataConnectionHandler
-        _stopRequest = true;
-    }
+		}
+	}
 
-    public void stop(String message) {
-        _stopRequestMessage = message;
-        stop();
-    }
+	public void setControlSocket(Socket socket) {
+		try {
+			_controlSocket = socket;
+			_in = new BufferedReader(new InputStreamReader(_controlSocket
+					.getInputStream(), "ISO-8859-1"));
 
-    public String toString() {
-        StringBuffer buf = new StringBuffer("[BaseFtpConnection");
+			_out = new PrintWriter(new OutputStreamWriter(
+					new AddAsciiOutputStream(new BufferedOutputStream(
+							_controlSocket.getOutputStream())), "ISO-8859-1"));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-        if (_user != null) {
-            buf.append("[user: " + _user + "]");
-        }
+	public void setCurrentDirectory(DirectoryHandle path) {
+		_currentDirectory = path;
+	}
 
-        if (_request != null) {
-            buf.append("[command: " + _request.getCommand() + "]");
-        }
+	public void setUser(String user) {
+		_user = user;
+	}
 
-        if (isExecuting()) {
-            buf.append("[executing]");
-        } else {
-            buf.append("[idle: " +
-                Time.formatTime(System.currentTimeMillis() - getLastActive()));
-        }
+	public void start() {
+		_thread = new Thread(this);
+		_thread.start();
 
-        buf.append("]");
+		// start() calls run() and execution will start in the background.
+	}
 
-        return buf.toString();
-    }
+	/**
+	 * returns a two-line status
+	 */
+	public String status() {
+		return jprintf(BaseFtpConnection.class, "statusline");
+	}
 
-    public OutputStream getOutputStream() throws IOException {
-        return _controlSocket.getOutputStream();
-    }
-    
-    public int transferCounter(char transferDirection) {
+	/**
+	 * User logout and stop this thread.
+	 */
+	public void stop() {
+		/*
+		 * synchronized (getDataConnectionHandler()) { if
+		 * (getDataConnectionHandler().isTransfering()) { try {
+		 * getDataConnectionHandler().getTransfer().abort( "Control connection
+		 * dropped"); } catch (ObjectNotFoundException e) { logger.debug("This
+		 * is a bug, please report it", e); } } }
+		 */
+		// This needs to be addressed after session
+		// information is stored in BaseFtpConnection and not
+		// DataConnectionHandler
+		_stopRequest = true;
+	}
+
+	public void stop(String message) {
+		_stopRequestMessage = message;
+		stop();
+	}
+
+	public String toString() {
+		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
+
+		if (_user != null) {
+			buf.append("[user: " + _user + "]");
+		}
+
+		if (_request != null) {
+			buf.append("[command: " + _request.getCommand() + "]");
+		}
+
+		if (isExecuting()) {
+			buf.append("[executing]");
+		} else {
+			buf.append("[idle: "
+					+ Time.formatTime(System.currentTimeMillis()
+							- getLastActive()));
+		}
+
+		buf.append("]");
+
+		return buf.toString();
+	}
+
+	public OutputStream getOutputStream() throws IOException {
+		return _controlSocket.getOutputStream();
+	}
+
+	public int transferCounter(char transferDirection) {
 		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
 				getGlobalContext().getConnectionManager().getConnections());
 		int count = 0;
@@ -601,20 +622,17 @@ public class BaseFtpConnection implements Runnable {
 				.hasNext();) {
 			BaseFtpConnection conn2 = iter.next();
 
-/*			synchronized (conn2.getDataConnectionHandler()) {
-
-				if (conn2.getUserNull() == getUserNull()) {
-					if (!conn2.isExecuting()) {
-						continue;
-					}
-					if (conn2.getDataConnectionHandler().isTransfering()
-							&& (conn2.getTransferDirection() == transferDirection)) {
-						count++;
-					}
-				}
-			}*/
-	    	// This needs to be addressed after session
-	    	// information is stored in BaseFtpConnection and not DataConnectionHandler
+			/*
+			 * synchronized (conn2.getDataConnectionHandler()) {
+			 * 
+			 * if (conn2.getUserNull() == getUserNull()) { if
+			 * (!conn2.isExecuting()) { continue; } if
+			 * (conn2.getDataConnectionHandler().isTransfering() &&
+			 * (conn2.getTransferDirection() == transferDirection)) { count++; } } }
+			 */
+			// This needs to be addressed after session
+			// information is stored in BaseFtpConnection and not
+			// DataConnectionHandler
 		}
 		return count;
 	}

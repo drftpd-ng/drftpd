@@ -17,25 +17,24 @@
  */
 package net.sf.drftpd.master;
 
-
 /**
  * @author zubov
- * @version $Id: SlaveFileException.java,v 1.2 2004/08/03 20:13:56 zubov Exp $
+ * @version $Id$
  */
 public class SlaveFileException extends Exception {
-    public SlaveFileException() {
-        super();
-    }
+	public SlaveFileException() {
+		super();
+	}
 
-    public SlaveFileException(String message) {
-        super(message);
-    }
+	public SlaveFileException(String message) {
+		super(message);
+	}
 
-    public SlaveFileException(Throwable cause) {
-        super(cause);
-    }
+	public SlaveFileException(Throwable cause) {
+		super(cause);
+	}
 
-    public SlaveFileException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public SlaveFileException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

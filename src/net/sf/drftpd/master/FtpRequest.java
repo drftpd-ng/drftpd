@@ -19,94 +19,97 @@ package net.sf.drftpd.master;
 
 import java.io.Serializable;
 
-
 /**
  * Ftp command request class. We can access command, line and argument using
- * <code>{CMD}, {ARG}</code> within ftp status file. This represents
- * single Ftp request.
- *
+ * <code>{CMD}, {ARG}</code> within ftp status file. This represents single
+ * Ftp request.
+ * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @version $Id$
  */
 public class FtpRequest implements Serializable {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -8967203000005023929L;
+
 	private String line = null;
-    private String command = null;
-    private String argument = null;
 
-    /**
-     * Constructor.
-     *
-     * @param commandLine ftp input command line.
-     */
-    public FtpRequest(String commandLine) {
-        line = commandLine.trim();
-        parse();
-    }
+	private String command = null;
 
-    /**
-     * Parse the ftp command line.
-     */
-    private void parse() {
-        int spInd = line.indexOf(' ');
+	private String argument = null;
 
-        if (spInd != -1) {
-            command = line.substring(0, spInd).toUpperCase();
-            argument = line.substring(spInd + 1);
+	/**
+	 * Constructor.
+	 * 
+	 * @param commandLine
+	 *            ftp input command line.
+	 */
+	public FtpRequest(String commandLine) {
+		line = commandLine.trim();
+		parse();
+	}
 
-            if (command.equals("SITE")) {
-                spInd = line.indexOf(' ', spInd + 1);
+	/**
+	 * Parse the ftp command line.
+	 */
+	private void parse() {
+		int spInd = line.indexOf(' ');
 
-                if (spInd != -1) {
-                    command = line.substring(0, spInd).toUpperCase();
-                    argument = line.substring(spInd + 1);
-                } else {
-                    command = line.toUpperCase();
-                    argument = null;
-                }
-            }
-        } else {
-            command = line.toUpperCase();
-            argument = null;
-        }
+		if (spInd != -1) {
+			command = line.substring(0, spInd).toUpperCase();
+			argument = line.substring(spInd + 1);
 
-        //		if ((command.length() > 0) && (command.charAt(0) == 'X')) {
-        //			command = command.substring(1);
-        //		}
-    }
+			if (command.equals("SITE")) {
+				spInd = line.indexOf(' ', spInd + 1);
 
-    /**
-     * Get the ftp command.
-     */
-    public String getCommand() {
-        return command;
-    }
+				if (spInd != -1) {
+					command = line.substring(0, spInd).toUpperCase();
+					argument = line.substring(spInd + 1);
+				} else {
+					command = line.toUpperCase();
+					argument = null;
+				}
+			}
+		} else {
+			command = line.toUpperCase();
+			argument = null;
+		}
 
-    /**
-     * Get ftp input argument.
-     */
-    public String getArgument() {
-        if (argument == null) {
-            throw new IllegalStateException();
-        }
+		// if ((command.length() > 0) && (command.charAt(0) == 'X')) {
+		// command = command.substring(1);
+		// }
+	}
 
-        return argument;
-    }
+	/**
+	 * Get the ftp command.
+	 */
+	public String getCommand() {
+		return command;
+	}
 
-    /**
-     * Get the ftp request line.
-     */
-    public String getCommandLine() {
-        return line;
-    }
+	/**
+	 * Get ftp input argument.
+	 */
+	public String getArgument() {
+		if (argument == null) {
+			throw new IllegalStateException();
+		}
 
-    /**
-     * Has argument.
-     */
-    public boolean hasArgument() {
-        return argument != null;
-    }
+		return argument;
+	}
+
+	/**
+	 * Get the ftp request line.
+	 */
+	public String getCommandLine() {
+		return line;
+	}
+
+	/**
+	 * Has argument.
+	 */
+	public boolean hasArgument() {
+		return argument != null;
+	}
 }

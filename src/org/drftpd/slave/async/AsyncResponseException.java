@@ -17,28 +17,28 @@
  */
 package org.drftpd.slave.async;
 
-
 /**
  * @author mog
- * @version $Id: AsyncResponseException.java,v 1.4 2004/11/08 18:39:31 mog Exp $
+ * @version $Id$
  */
 public class AsyncResponseException extends AsyncResponse {
-    private static final long serialVersionUID = -6024340147843529987L;
-    private Throwable _t;
+	private static final long serialVersionUID = -6024340147843529987L;
 
-    public AsyncResponseException(String index, Throwable t) {
-        super(index);
-        _t = t;
-    }
+	private Throwable _t;
 
-    /**
-     *
-     */
-    public String toString() {
-        return "AsyncResponseException exception is - " + _t.getMessage();
-    }
+	public AsyncResponseException(String index, Throwable t) {
+		super(index);
+		_t = t;
+	}
 
-    public Throwable getThrowable() {
-        return _t;
-    }
+	/**
+	 * 
+	 */
+	public String toString() {
+		return "AsyncResponseException exception is - " + _t.getMessage();
+	}
+
+	public Throwable getThrowable() {
+		return _t;
+	}
 }

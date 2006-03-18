@@ -25,223 +25,229 @@ import java.util.Vector;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class Reply implements Cloneable {
-    private static final Logger logger = Logger.getLogger(Reply.class.getName());
+	private static final Logger logger = Logger
+			.getLogger(Reply.class.getName());
 
-    /** 150 File status okay; about to open data connection. */
-    public static final String RESPONSE_150_OK = "150 File status okay; about to open data connection.\r\n";
+	/** 150 File status okay; about to open data connection. */
+	public static final String RESPONSE_150_OK = "150 File status okay; about to open data connection.\r\n";
 
-    /** 200 Command okay */
-    public static final Reply RESPONSE_200_COMMAND_OK = new Reply(200,
-            "Command okay");
+	/** 200 Command okay */
+	public static final Reply RESPONSE_200_COMMAND_OK = new Reply(200,
+			"Command okay");
 
-    /** 202 Command not implemented, superfluous at this site. */
-    public static final Reply RESPONSE_202_COMMAND_NOT_IMPLEMENTED = new Reply(202,
-            "Command not implemented, superfluous at this site.");
+	/** 202 Command not implemented, superfluous at this site. */
+	public static final Reply RESPONSE_202_COMMAND_NOT_IMPLEMENTED = new Reply(
+			202, "Command not implemented, superfluous at this site.");
 
-    /** 215 NAME system type. */
-    public static final Reply RESPONSE_215_SYSTEM_TYPE = new Reply(215,
-            "UNIX system type.");
+	/** 215 NAME system type. */
+	public static final Reply RESPONSE_215_SYSTEM_TYPE = new Reply(215,
+			"UNIX system type.");
 
-    /** 221 Service closing control connection. */
-    public static final Reply RESPONSE_221_SERVICE_CLOSING = new Reply(221,
-            "Service closing control connection.");
+	/** 221 Service closing control connection. */
+	public static final Reply RESPONSE_221_SERVICE_CLOSING = new Reply(221,
+			"Service closing control connection.");
 
-    /** 226 Closing data connection */
-    public static final Reply RESPONSE_226_CLOSING_DATA_CONNECTION = new Reply(226,
-            "Closing data connection");
+	/** 226 Closing data connection */
+	public static final Reply RESPONSE_226_CLOSING_DATA_CONNECTION = new Reply(
+			226, "Closing data connection");
 
-    /** 230 User logged in, proceed. */
-    public static final Reply RESPONSE_230_USER_LOGGED_IN = new Reply(230,
-            "User logged in, proceed.");
+	/** 230 User logged in, proceed. */
+	public static final Reply RESPONSE_230_USER_LOGGED_IN = new Reply(230,
+			"User logged in, proceed.");
 
-    /** 250 Requested file action okay, completed. */
-    public static final Reply RESPONSE_250_ACTION_OKAY = new Reply(250,
-            "Requested file action okay, completed.");
+	/** 250 Requested file action okay, completed. */
+	public static final Reply RESPONSE_250_ACTION_OKAY = new Reply(250,
+			"Requested file action okay, completed.");
 
-    /** 331 User name okay, need password. */
-    public static final Reply RESPONSE_331_USERNAME_OK_NEED_PASS = new Reply(331,
-            "User name okay, need password.");
+	/** 331 User name okay, need password. */
+	public static final Reply RESPONSE_331_USERNAME_OK_NEED_PASS = new Reply(
+			331, "User name okay, need password.");
 
-    /** 350 Requested file action pending further information. */
-    public static final Reply RESPONSE_350_PENDING_FURTHER_INFORMATION = new Reply(350,
-            "Requested file action pending further information.");
+	/** 350 Requested file action pending further information. */
+	public static final Reply RESPONSE_350_PENDING_FURTHER_INFORMATION = new Reply(
+			350, "Requested file action pending further information.");
 
-    /** 425 Can't open data connection. */
-    public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION = "425 Can't open data connection.\r\n";
+	/** 425 Can't open data connection. */
+	public static final String RESPONSE_425_CANT_OPEN_DATA_CONNECTION = "425 Can't open data connection.\r\n";
 
-    /** 426 Connection closed; transfer aborted. */
-    public static final Reply RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED =
-        new Reply(426, "Connection closed; transfer aborted.");
+	/** 426 Connection closed; transfer aborted. */
+	public static final Reply RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED = new Reply(
+			426, "Connection closed; transfer aborted.");
 
-    /** 450 Requested file action not taken. */
-    public static final Reply RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = new Reply(450,
-            "Requested file action not taken.");
+	/** 450 Requested file action not taken. */
+	public static final Reply RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN = new Reply(
+			450, "Requested file action not taken.");
 
-    /** 450 No transfer-slave(s) available
-     * author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
-     */
-    public static final Reply RESPONSE_450_SLAVE_UNAVAILABLE = new Reply(450,
-            "No transfer-slave(s) available");
+	/**
+	 * 450 No transfer-slave(s) available author <a
+	 * href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+	 */
+	public static final Reply RESPONSE_450_SLAVE_UNAVAILABLE = new Reply(450,
+			"No transfer-slave(s) available");
 
-    /** 500 Syntax error, command unrecognized. */
-    public static final Reply RESPONSE_500_SYNTAX_ERROR = new Reply(500,
-            "Syntax error, command unrecognized.");
+	/** 500 Syntax error, command unrecognized. */
+	public static final Reply RESPONSE_500_SYNTAX_ERROR = new Reply(500,
+			"Syntax error, command unrecognized.");
 
-    /** 501 Syntax error in parameters or arguments */
-    public static final Reply RESPONSE_501_SYNTAX_ERROR = new Reply(501,
-            "Syntax error in parameters or arguments");
+	/** 501 Syntax error in parameters or arguments */
+	public static final Reply RESPONSE_501_SYNTAX_ERROR = new Reply(501,
+			"Syntax error in parameters or arguments");
 
-    /** 502 Command not implemented. */
-    public static final Reply RESPONSE_502_COMMAND_NOT_IMPLEMENTED = new Reply(502,
-            "Command not implemented.");
+	/** 502 Command not implemented. */
+	public static final Reply RESPONSE_502_COMMAND_NOT_IMPLEMENTED = new Reply(
+			502, "Command not implemented.");
 
-    /** 503 Bad sequence of commands. */
-    public static final Reply RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS = new Reply(503,
-            "Bad sequence of commands.");
+	/** 503 Bad sequence of commands. */
+	public static final Reply RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS = new Reply(
+			503, "Bad sequence of commands.");
 
-    /** 504 Command not implemented for that parameter. */
-    public static final Reply RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM = new Reply(504,
-            "Command not implemented for that parameter.");
+	/** 504 Command not implemented for that parameter. */
+	public static final Reply RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM = new Reply(
+			504, "Command not implemented for that parameter.");
 
-    /** 530 Access denied */
-    public static final Reply RESPONSE_530_ACCESS_DENIED = new Reply(530,
-            "Access denied");
+	/** 530 Access denied */
+	public static final Reply RESPONSE_530_ACCESS_DENIED = new Reply(530,
+			"Access denied");
 
-    /** 530 Not logged in. */
-    public static final Reply RESPONSE_530_NOT_LOGGED_IN = new Reply(530,
-            "Not logged in.");
-    public static final Reply RESPONSE_530_SLAVE_UNAVAILABLE = new Reply(530,
-            "No transfer-slave(s) available");
+	/** 530 Not logged in. */
+	public static final Reply RESPONSE_530_NOT_LOGGED_IN = new Reply(530,
+			"Not logged in.");
 
-    /**
-     * 550 Requested action not taken. File unavailable.
-     * File unavailable (e.g., file not found, no access).
-     */
-    public static final Reply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN = new Reply(550,
-            "Requested action not taken. File unavailable.");
+	public static final Reply RESPONSE_530_SLAVE_UNAVAILABLE = new Reply(530,
+			"No transfer-slave(s) available");
 
-    /** 553 Requested action not taken.
-     * File name not allowed.
-     */
-    public static final Reply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN = new Reply(553,
-            "Requested action not taken.  File name not allowed");
-    
-    /** 550 Requested action not taken.
-     * File exists.
-     */    
-    public static final Reply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS = new Reply(
+	/**
+	 * 550 Requested action not taken. File unavailable. File unavailable (e.g.,
+	 * file not found, no access).
+	 */
+	public static final Reply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN = new Reply(
+			550, "Requested action not taken. File unavailable.");
+
+	/**
+	 * 553 Requested action not taken. File name not allowed.
+	 */
+	public static final Reply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN = new Reply(
+			553, "Requested action not taken.  File name not allowed");
+
+	/**
+	 * 550 Requested action not taken. File exists.
+	 */
+	public static final Reply RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS = new Reply(
 			550, "Requested action not taken. File exists.");
-    
-    protected int _code;
-    protected Vector<String> _lines = new Vector<String>();
-    protected String _message;
 
-    public Reply() {
-    }
+	protected int _code;
 
-    public Reply(int code) {
-        setCode(code);
-    }
+	protected Vector<String> _lines = new Vector<String>();
 
-    public Reply(int code, String response) {
-        setCode(code);
-        setMessage(response);
-    }
+	protected String _message;
 
-    public Reply addComment(BufferedReader in) throws IOException {
-        String line;
+	public Reply() {
+	}
 
-        while ((line = in.readLine()) != null) { //throws IOException
-            this.addComment(line);
-        }
+	public Reply(int code) {
+		setCode(code);
+	}
 
-        return this;
-    }
+	public Reply(int code, String response) {
+		setCode(code);
+		setMessage(response);
+	}
 
-    public Reply addComment(Object response) {
-        String resp = String.valueOf(response);
+	public Reply addComment(BufferedReader in) throws IOException {
+		String line;
 
-        if (resp.indexOf('\n') != -1) {
-            String[] lines = resp.split("\n");
+		while ((line = in.readLine()) != null) { // throws IOException
+			this.addComment(line);
+		}
 
-            for (int i = 0; i < lines.length; i++) {
-                _lines.add(lines[i]);
-            }
-        } else {
-            _lines.add(resp);
-        }
-        return this;
-    }
+		return this;
+	}
 
-    public Object clone() {
-        try {
-            Reply r = (Reply) super.clone();
-            r._lines = (Vector) _lines.clone();
+	public Reply addComment(Object response) {
+		String resp = String.valueOf(response);
 
-            return r;
-        } catch (CloneNotSupportedException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+		if (resp.indexOf('\n') != -1) {
+			String[] lines = resp.split("\n");
 
-    public int getCode() {
-        return _code;
-    }
+			for (int i = 0; i < lines.length; i++) {
+				_lines.add(lines[i]);
+			}
+		} else {
+			_lines.add(resp);
+		}
+		return this;
+	}
 
-    public void setCode(int code) {
-        _code = code;
-    }
+	public Object clone() {
+		try {
+			Reply r = (Reply) super.clone();
+			r._lines = (Vector) _lines.clone();
 
-    public void setMessage(String response) {
-    	if(response == null) response = "No text";
-        int pos = response.indexOf('\n');
+			return r;
+		} catch (CloneNotSupportedException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
 
-        if (pos != -1) {
-            addComment(response.substring(pos + 1));
-            response = response.substring(0, pos);
-            logger.log(Level.DEBUG,
-                "Truncated response message with multiple lines: " + response);
-        }
+	public int getCode() {
+		return _code;
+	}
 
-        _message = response;
-    }
+	public void setCode(int code) {
+		_code = code;
+	}
 
-    public int size() {
-        return _lines.size();
-    }
+	public void setMessage(String response) {
+		if (response == null)
+			response = "No text";
+		int pos = response.indexOf('\n');
 
-    public String toString() {
-        StringBuffer sb = new StringBuffer();
+		if (pos != -1) {
+			addComment(response.substring(pos + 1));
+			response = response.substring(0, pos);
+			logger.log(Level.DEBUG,
+					"Truncated response message with multiple lines: "
+							+ response);
+		}
 
-        //sb.append(code + "-");
-        if ((_lines.size() == 0) && (_message == null)) {
-            setMessage("No text specified");
-        }
+		_message = response;
+	}
 
-        for (Iterator iter = _lines.iterator(); iter.hasNext();) {
-            String comment = (String) iter.next();
+	public int size() {
+		return _lines.size();
+	}
 
-            if (!iter.hasNext() && (_message == null)) {
-                sb.append(_code + "  " + comment + "\r\n");
-            } else {
-                sb.append(_code + "- " + comment + "\r\n");
-            }
-        }
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
 
-        if (_message != null) {
-            sb.append(_code + " " + _message + "\r\n");
-        }
+		// sb.append(code + "-");
+		if ((_lines.size() == 0) && (_message == null)) {
+			setMessage("No text specified");
+		}
 
-        return sb.toString();
-    }
+		for (Iterator iter = _lines.iterator(); iter.hasNext();) {
+			String comment = (String) iter.next();
 
-    public String getMessage() {
-        return _message;
-    }
+			if (!iter.hasNext() && (_message == null)) {
+				sb.append(_code + "  " + comment + "\r\n");
+			} else {
+				sb.append(_code + "- " + comment + "\r\n");
+			}
+		}
+
+		if (_message != null) {
+			sb.append(_code + " " + _message + "\r\n");
+		}
+
+		return sb.toString();
+	}
+
+	public String getMessage() {
+		return _message;
+	}
 }

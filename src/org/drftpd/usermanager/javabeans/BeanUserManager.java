@@ -47,7 +47,8 @@ public class BeanUserManager extends AbstractUserManager {
 
 	private File _userpathFile = new File(_userpath);
 
-	protected static final Logger logger = Logger.getLogger(BeanUserManager.class);
+	protected static final Logger logger = Logger
+			.getLogger(BeanUserManager.class);
 
 	public BeanUserManager() throws UserFileException {
 		this(true);
@@ -73,8 +74,7 @@ public class BeanUserManager extends AbstractUserManager {
 				return user;
 			}
 
-			xd = new XMLDecoder(new FileInputStream(
-					getUserFile(username)));
+			xd = new XMLDecoder(new FileInputStream(getUserFile(username)));
 			user = (BeanUser) xd.readObject();
 
 			user.setUserManager(this);

@@ -18,109 +18,90 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Properties;
-
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
-
 
 /**
  * @author mog
  * @version $Id: SlavetopFilter.java 847 2004-12-02 03:32:41Z mog $
  */
 public class SlavetopFilter extends Filter {
-    private GlobalContext _gctx;
-    private long _assign;
-    private int _topslaves;
+	private GlobalContext _gctx;
 
-    public SlavetopFilter(FilterChain fc, int i, Properties p) {
-        _gctx = fc.getGlobalContext();
-        _topslaves = Integer.parseInt(PropertyHelper.getProperty(p, i +
-                    ".topslaves"));
-        _assign = Long.parseLong(PropertyHelper.getProperty(p, i + ".assign"));
-    }
+	private long _assign;
 
-    public SlavetopFilter(GlobalContext gctx, int topslaves, long assign) {
-        _gctx = gctx;
-        _topslaves = topslaves;
-        _assign = assign;
-    }
+	private int _topslaves;
 
-    public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, InodeHandle dir, RemoteSlave sourceSlave) {
-    	process(scorechart, dir);
-    }
+	public SlavetopFilter(FilterChain fc, int i, Properties p) {
+		_gctx = fc.getGlobalContext();
+		_topslaves = Integer.parseInt(PropertyHelper.getProperty(p, i
+				+ ".topslaves"));
+		_assign = Long.parseLong(PropertyHelper.getProperty(p, i + ".assign"));
+	}
 
-    public void process(ScoreChart scorechart, InodeHandle dir) {
-        String path = dir.getPath();
-// I'll tackle this one later
-/*        //// find the section part of the path name
-        SectionInterface section = _gctx.getSectionManager().lookup(path);
-        InodeHandle rls = section.getFirstDirInSection(dir);
+	public SlavetopFilter(GlobalContext gctx, int topslaves, long assign) {
+		_gctx = gctx;
+		_topslaves = topslaves;
+		_assign = assign;
+	}
 
-        Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =
-        	new Hashtable<RemoteSlave, ScoreChart.SlaveScore>();
+	public void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, InodeHandle dir, RemoteSlave sourceSlave) {
+		process(scorechart, dir);
+	}
 
-        for (Iterator iter = scorechart.getSlaveScores().iterator();
-                iter.hasNext();) {
-            RemoteSlave rslave = ((ScoreChart.SlaveScore) iter.next()).getRSlave();
-            slavesmap.put(rslave, new ScoreChart.SlaveScore(rslave));
-        }
-
-        Collection files = LinkedRemoteFileUtils.getAllFiles(rls);
-
-        for (Iterator iter = files.iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter.next();
-
-            for (Iterator iterator = file.getSlaves().iterator();
-                    iterator.hasNext();) {
-                RemoteSlave rslave = (RemoteSlave) iterator.next();
-                ScoreChart.SlaveScore score = (SlaveScore) slavesmap.get(rslave);
-
-                if (score == null) {
-                    continue;
-                }
-
-                score.addScore(1);
-            }
-        }
-
-        ArrayList<ScoreChart.SlaveScore> slavescores = 
-        	new ArrayList<ScoreChart.SlaveScore>(slavesmap.values());
-        Collections.sort(slavescores, Collections.reverseOrder());
-
-        if(_assign == 0) {
-        	for(ScoreChart.SlaveScore score : slavescores.subList(_topslaves, slavescores.size())) {
-        		scorechart.removeSlaveScore(score.getRSlave());
-        	}
-        }
-        
-        if (slavescores.get(0).getScore() == 0) {
-        	// No slaves win, no reason to assign points
-        	return;
-        }
-        
-        Iterator iter = slavescores.iterator();
-        for (int i = 0; i < _topslaves && iter.hasNext(); i++) {
-            ScoreChart.SlaveScore score = (SlaveScore) iter.next();
-
-            try {
-                scorechart.getSlaveScore(score.getRSlave()).addScore(_assign);
-            } catch (ObjectNotFoundException e1) {
-                throw new RuntimeException(e1);
-            }
-        }*/
-    }
+	public void process(ScoreChart scorechart, InodeHandle dir) {
+		String path = dir.getPath();
+		// I'll tackle this one later
+		/*
+		 * //// find the section part of the path name SectionInterface section =
+		 * _gctx.getSectionManager().lookup(path); InodeHandle rls =
+		 * section.getFirstDirInSection(dir);
+		 * 
+		 * Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap = new
+		 * Hashtable<RemoteSlave, ScoreChart.SlaveScore>();
+		 * 
+		 * for (Iterator iter = scorechart.getSlaveScores().iterator();
+		 * iter.hasNext();) { RemoteSlave rslave = ((ScoreChart.SlaveScore)
+		 * iter.next()).getRSlave(); slavesmap.put(rslave, new
+		 * ScoreChart.SlaveScore(rslave)); }
+		 * 
+		 * Collection files = LinkedRemoteFileUtils.getAllFiles(rls);
+		 * 
+		 * for (Iterator iter = files.iterator(); iter.hasNext();) {
+		 * LinkedRemoteFileInterface file = (LinkedRemoteFileInterface)
+		 * iter.next();
+		 * 
+		 * for (Iterator iterator = file.getSlaves().iterator();
+		 * iterator.hasNext();) { RemoteSlave rslave = (RemoteSlave)
+		 * iterator.next(); ScoreChart.SlaveScore score = (SlaveScore)
+		 * slavesmap.get(rslave);
+		 * 
+		 * if (score == null) { continue; }
+		 * 
+		 * score.addScore(1); } }
+		 * 
+		 * ArrayList<ScoreChart.SlaveScore> slavescores = new ArrayList<ScoreChart.SlaveScore>(slavesmap.values());
+		 * Collections.sort(slavescores, Collections.reverseOrder());
+		 * 
+		 * if(_assign == 0) { for(ScoreChart.SlaveScore score :
+		 * slavescores.subList(_topslaves, slavescores.size())) {
+		 * scorechart.removeSlaveScore(score.getRSlave()); } }
+		 * 
+		 * if (slavescores.get(0).getScore() == 0) { // No slaves win, no reason
+		 * to assign points return; }
+		 * 
+		 * Iterator iter = slavescores.iterator(); for (int i = 0; i <
+		 * _topslaves && iter.hasNext(); i++) { ScoreChart.SlaveScore score =
+		 * (SlaveScore) iter.next();
+		 * 
+		 * try { scorechart.getSlaveScore(score.getRSlave()).addScore(_assign); }
+		 * catch (ObjectNotFoundException e1) { throw new RuntimeException(e1); } }
+		 */
+	}
 }

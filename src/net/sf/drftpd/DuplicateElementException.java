@@ -17,44 +17,43 @@
  */
 package net.sf.drftpd;
 
-
 /**
  * @author mog
- *
+ * 
  * @version $Id$
  */
 public class DuplicateElementException extends Exception {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -3420616098497542539L;
 
 	/**
-     *
-     */
-    public DuplicateElementException() {
-        super();
-    }
+	 * 
+	 */
+	public DuplicateElementException() {
+		super();
+	}
 
-    /**
-     * @param message
-     */
-    public DuplicateElementException(String message) {
-        super(message);
-    }
+	/**
+	 * @param message
+	 */
+	public DuplicateElementException(String message) {
+		super(message);
+	}
 
-    /**
-     * @param message
-     * @param cause
-     */
-    public DuplicateElementException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public DuplicateElementException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    /**
-     * @param cause
-     */
-    public DuplicateElementException(Throwable cause) {
-        super(cause);
-    }
+	/**
+	 * @param cause
+	 */
+	public DuplicateElementException(Throwable cause) {
+		super(cause);
+	}
 }

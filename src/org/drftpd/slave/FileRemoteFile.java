@@ -17,7 +17,6 @@
  */
 package org.drftpd.slave;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,362 +30,371 @@ import java.util.zip.CheckedInputStream;
 
 import org.apache.log4j.Logger;
 
-
 /**
  * A wrapper for java.io.File to the net.sf.drftpd.RemoteFile structure.
- *
+ * 
  * @author mog
  * @version $Id$
  */
 public class FileRemoteFile implements LightRemoteFileInterface {
-    private static final Logger logger = Logger.getLogger(FileRemoteFile.class);
-    Hashtable _filefiles;
-    String _path;
-    RootCollection _roots;
-    private boolean isDirectory;
-    private boolean isFile;
-    private long lastModified;
-    private long length;
+	private static final Logger logger = Logger.getLogger(FileRemoteFile.class);
 
-    public FileRemoteFile(RootCollection rootBasket) throws IOException {
-        this(rootBasket, "");
-    }
+	Hashtable _filefiles;
 
-    public FileRemoteFile(RootCollection roots, String path)
-        throws IOException {
-        _path = path;
-        _roots = roots;
+	String _path;
 
-        List files = roots.getMultipleFiles(path);
-        File firstFile;
-        // sanity checking
-        {
-            {
-                Iterator iter = files.iterator();
-                firstFile = (File) iter.next();
+	RootCollection _roots;
 
-                isFile = firstFile.isFile();
-                isDirectory = firstFile.isDirectory();
+	private boolean isDirectory;
 
-                if ((isFile && isDirectory) || (!isFile && !isDirectory)) {
-                    throw new IOException("isFile && isDirectory: " + path);
-                }
+	private boolean isFile;
 
-                checkSymlink(firstFile);
+	private long lastModified;
 
-                while (iter.hasNext()) {
-                    File file = (File) iter.next();
-                    checkSymlink(file);
+	private long length;
 
-                    if ((isFile != file.isFile()) ||
-                            (isDirectory != file.isDirectory())) {
-                        throw new IOException(
-                            "roots are out of sync, file&dir mix: " + path);
-                    }
-                }
-            }
+	public FileRemoteFile(RootCollection rootBasket) throws IOException {
+		this(rootBasket, "");
+	}
 
-            if (isFile && (files.size() > 1)) {
-                ArrayList checksummers = new ArrayList(files.size());
+	public FileRemoteFile(RootCollection roots, String path) throws IOException {
+		_path = path;
+		_roots = roots;
 
-                for (Iterator iter = files.iterator(); iter.hasNext();) {
-                    File file = (File) iter.next();
-                    Checksummer checksummer = new Checksummer(file);
-                    checksummer.start();
-                    checksummers.add(checksummer);
-                }
+		List files = roots.getMultipleFiles(path);
+		File firstFile;
+		// sanity checking
+		{
+			{
+				Iterator iter = files.iterator();
+				firstFile = (File) iter.next();
 
-                while (true) {
-                    boolean waiting = false;
+				isFile = firstFile.isFile();
+				isDirectory = firstFile.isDirectory();
 
-                    for (Iterator iter = checksummers.iterator();
-                            iter.hasNext();) {
-                        Checksummer cs = (Checksummer) iter.next();
+				if ((isFile && isDirectory) || (!isFile && !isDirectory)) {
+					throw new IOException("isFile && isDirectory: " + path);
+				}
 
-                        if (cs.isAlive()) {
-                            waiting = true;
+				checkSymlink(firstFile);
 
-                            try {
-                                synchronized (cs) {
-                                    cs.wait(10000); // wait a max of 10 seconds
-													// race condition could
-													// occur between above
-													// isAlive() statement and
-													// when the Checksummer
-													// finishes
-                                }
-                            } catch (InterruptedException e) {
-                            }
+				while (iter.hasNext()) {
+					File file = (File) iter.next();
+					checkSymlink(file);
 
-                            break;
-                        }
-                    }
+					if ((isFile != file.isFile())
+							|| (isDirectory != file.isDirectory())) {
+						throw new IOException(
+								"roots are out of sync, file&dir mix: " + path);
+					}
+				}
+			}
 
-                    if (!waiting) {
-                        break;
-                    }
-                }
+			if (isFile && (files.size() > 1)) {
+				ArrayList checksummers = new ArrayList(files.size());
 
-                Iterator iter = checksummers.iterator();
-                long checksum = ((Checksummer) iter.next()).getCheckSum()
-                                 .getValue();
+				for (Iterator iter = files.iterator(); iter.hasNext();) {
+					File file = (File) iter.next();
+					Checksummer checksummer = new Checksummer(file);
+					checksummer.start();
+					checksummers.add(checksummer);
+				}
 
-                for (; iter.hasNext();) {
-                    Checksummer cs = (Checksummer) iter.next();
+				while (true) {
+					boolean waiting = false;
 
-                    if (cs.getCheckSum().getValue() != checksum) {
-                        throw new IOException(
-                            "File collisions with different checksums - " + files);
-                    }
-                }
+					for (Iterator iter = checksummers.iterator(); iter
+							.hasNext();) {
+						Checksummer cs = (Checksummer) iter.next();
 
-                iter = files.iterator();
-                iter.next();
+						if (cs.isAlive()) {
+							waiting = true;
 
-                for (; iter.hasNext();) {
-                    File file = (File) iter.next();
-                    file.delete();
-                    logger.info("Deleted colliding and identical file: " +
-                        file.getPath());
-                    iter.remove();
-                }
-            }
-        } // end sanity checking
+							try {
+								synchronized (cs) {
+									cs.wait(10000); // wait a max of 10 seconds
+									// race condition could
+									// occur between above
+									// isAlive() statement and
+									// when the Checksummer
+									// finishes
+								}
+							} catch (InterruptedException e) {
+							}
 
-        if (isDirectory) {
-            length = 0;
-        } else {
-            length = firstFile.length();
-        }
+							break;
+						}
+					}
 
-        lastModified = firstFile.lastModified();
-    }
+					if (!waiting) {
+						break;
+					}
+				}
 
-    public static void checkSymlink(File file) throws IOException {
-        if (!file.getCanonicalPath().equalsIgnoreCase(file.getAbsolutePath())) {
-            throw new InvalidDirectoryException("Not following symlink: " +
-                file.getAbsolutePath());
-        }
-    }
+				Iterator iter = checksummers.iterator();
+				long checksum = ((Checksummer) iter.next()).getCheckSum()
+						.getValue();
 
-    /**
-     * @return true if directory contained no files and is now deleted, false
-     *                 otherwise.
-     * @throws IOException
-     */
-    private static boolean isEmpty(File dir) throws IOException {
-        File[] listfiles = dir.listFiles();
+				for (; iter.hasNext();) {
+					Checksummer cs = (Checksummer) iter.next();
 
-        if (listfiles == null) {
-            throw new RuntimeException("Not a directory or IO error: " + dir);
-        }
+					if (cs.getCheckSum().getValue() != checksum) {
+						throw new IOException(
+								"File collisions with different checksums - "
+										+ files);
+					}
+				}
 
-        for (int i = 0; i < listfiles.length; i++) {
-            File file = listfiles[i];
+				iter = files.iterator();
+				iter.next();
 
-            if (file.isFile()) {
-                return false;
-            }
-        }
+				for (; iter.hasNext();) {
+					File file = (File) iter.next();
+					file.delete();
+					logger.info("Deleted colliding and identical file: "
+							+ file.getPath());
+					iter.remove();
+				}
+			}
+		} // end sanity checking
 
-        for (int i = 0; i < listfiles.length; i++) {
-            File file = listfiles[i];
+		if (isDirectory) {
+			length = 0;
+		} else {
+			length = firstFile.length();
+		}
 
-            // parent directory not empty
-            if (!isEmpty(file)) {
-                return false;
-            }
-        }
+		lastModified = firstFile.lastModified();
+	}
 
-        if (!dir.delete()) {
-            throw new IOException("Permission denied deleting " +
-                dir.getPath());
-        }
+	public static void checkSymlink(File file) throws IOException {
+		if (!file.getCanonicalPath().equalsIgnoreCase(file.getAbsolutePath())) {
+			throw new InvalidDirectoryException("Not following symlink: "
+					+ file.getAbsolutePath());
+		}
+	}
 
-        return true;
-    }
+	/**
+	 * @return true if directory contained no files and is now deleted, false
+	 *         otherwise.
+	 * @throws IOException
+	 */
+	private static boolean isEmpty(File dir) throws IOException {
+		File[] listfiles = dir.listFiles();
 
-    private void buildFileFiles() throws IOException {
-        if (_filefiles != null) {
-            return;
-        }
+		if (listfiles == null) {
+			throw new RuntimeException("Not a directory or IO error: " + dir);
+		}
 
-        _filefiles = new Hashtable();
+		for (int i = 0; i < listfiles.length; i++) {
+			File file = listfiles[i];
 
-        if (!isDirectory()) {
-            throw new IllegalArgumentException(
-                "listFiles() called on !isDirectory()");
-        }
+			if (file.isFile()) {
+				return false;
+			}
+		}
 
-        for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
-            File file = new File(root.getPath() + "/" + _path);
+		for (int i = 0; i < listfiles.length; i++) {
+			File file = listfiles[i];
 
-            if (!file.exists()) {
-                continue;
-            }
+			// parent directory not empty
+			if (!isEmpty(file)) {
+				return false;
+			}
+		}
 
-            if (!file.isDirectory()) {
-                throw new RuntimeException(file.getPath() +
-                    " is not a directory, attempt to getFiles() on it");
-            }
+		if (!dir.delete()) {
+			throw new IOException("Permission denied deleting " + dir.getPath());
+		}
 
-            if (!file.canRead()) {
-                throw new RuntimeException("Cannot read: " + file);
-            }
+		return true;
+	}
 
-            File[] tmpFiles = file.listFiles();
+	private void buildFileFiles() throws IOException {
+		if (_filefiles != null) {
+			return;
+		}
 
-            //returns null if not a dir, blah!
-            if (tmpFiles == null) {
-                throw new NullPointerException("list() on " + file +
-                    " returned null");
-            }
+		_filefiles = new Hashtable();
 
-            for (int i = 0; i < tmpFiles.length; i++) {
-                //                try {
-                if (tmpFiles[i].isDirectory() && isEmpty(tmpFiles[i])) {
-                    continue;
-                }
+		if (!isDirectory()) {
+			throw new IllegalArgumentException(
+					"listFiles() called on !isDirectory()");
+		}
 
-                FileRemoteFile listfile = new FileRemoteFile(_roots,
-                        _path + File.separatorChar + tmpFiles[i].getName());
-                _filefiles.put(tmpFiles[i].getName(), listfile);
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+			File file = new File(root.getPath() + "/" + _path);
 
-                //                } catch (IOException e) {
-                //                    e.printStackTrace();
-                //                }
-            }
-        }
+			if (!file.exists()) {
+				continue;
+			}
 
-        if (!getName().equals("") && _filefiles.isEmpty()) {
-            throw new RuntimeException("Empty (not-root) directory " +
-                getPath() + ", shouldn't happen");
-        }
-    }
+			if (!file.isDirectory()) {
+				throw new RuntimeException(file.getPath()
+						+ " is not a directory, attempt to getFiles() on it");
+			}
 
-    public Collection getFiles() {
-        try {
-            buildFileFiles();
+			if (!file.canRead()) {
+				throw new RuntimeException("Cannot read: " + file);
+			}
 
-            return _filefiles.values();
-        } catch (IOException e) {
-            logger.debug("RuntimeException here", new Throwable());
-            throw new RuntimeException(e);
-        }
-    }
+			File[] tmpFiles = file.listFiles();
 
-    public String getGroupname() {
-        return "drftpd";
-    }
+			// returns null if not a dir, blah!
+			if (tmpFiles == null) {
+				throw new NullPointerException("list() on " + file
+						+ " returned null");
+			}
 
-    public String getName() {
-        return _path.substring(_path.lastIndexOf(File.separatorChar) + 1);
-    }
+			for (int i = 0; i < tmpFiles.length; i++) {
+				// try {
+				if (tmpFiles[i].isDirectory() && isEmpty(tmpFiles[i])) {
+					continue;
+				}
 
-    public String getParent() {
-        throw new UnsupportedOperationException();
+				FileRemoteFile listfile = new FileRemoteFile(_roots, _path
+						+ File.separatorChar + tmpFiles[i].getName());
+				_filefiles.put(tmpFiles[i].getName(), listfile);
 
-        //return file.getParent();
-    }
+				// } catch (IOException e) {
+				// e.printStackTrace();
+				// }
+			}
+		}
 
-    public String getPath() {
-        return _path;
+		if (!getName().equals("") && _filefiles.isEmpty()) {
+			throw new RuntimeException("Empty (not-root) directory "
+					+ getPath() + ", shouldn't happen");
+		}
+	}
 
-        //throw new UnsupportedOperationException();
-        //return file.getPath();
-    }
+	public Collection getFiles() {
+		try {
+			buildFileFiles();
 
-    public Collection getSlaves() {
-        return new ArrayList();
-    }
+			return _filefiles.values();
+		} catch (IOException e) {
+			logger.debug("RuntimeException here", new Throwable());
+			throw new RuntimeException(e);
+		}
+	}
 
-    public String getUsername() {
-        return "drftpd";
-    }
+	public String getGroupname() {
+		return "drftpd";
+	}
 
-    public boolean isDeleted() {
-        return false;
-    }
+	public String getName() {
+		return _path.substring(_path.lastIndexOf(File.separatorChar) + 1);
+	}
 
-    public boolean isDirectory() {
-        return isDirectory;
-    }
+	public String getParent() {
+		throw new UnsupportedOperationException();
 
-    public boolean isFile() {
-        return isFile;
-    }
+		// return file.getParent();
+	}
 
-    public long lastModified() {
-        return lastModified;
-    }
+	public String getPath() {
+		return _path;
 
-    public long length() {
-        return length;
-    }
+		// throw new UnsupportedOperationException();
+		// return file.getPath();
+	}
 
-    /**
-     * Returns an array of FileRemoteFile:s representing the contents of the
-     * directory this FileRemoteFile represents.
-     */
-    public FileRemoteFile[] listFiles() {
-    	
-        return (FileRemoteFile[]) getFiles().toArray(new FileRemoteFile[0]);
-    }
-    public static class InvalidDirectoryException extends IOException {
-        /**
-         * Constructor for InvalidDirectoryException.
-         */
-        public InvalidDirectoryException() {
-            super();
-        }
+	public Collection getSlaves() {
+		return new ArrayList();
+	}
 
-        /**
-         * Constructor for InvalidDirectoryException.
-         * @param arg0
-         */
-        public InvalidDirectoryException(String arg0) {
-            super(arg0);
-        }
-    }
+	public String getUsername() {
+		return "drftpd";
+	}
+
+	public boolean isDeleted() {
+		return false;
+	}
+
+	public boolean isDirectory() {
+		return isDirectory;
+	}
+
+	public boolean isFile() {
+		return isFile;
+	}
+
+	public long lastModified() {
+		return lastModified;
+	}
+
+	public long length() {
+		return length;
+	}
+
+	/**
+	 * Returns an array of FileRemoteFile:s representing the contents of the
+	 * directory this FileRemoteFile represents.
+	 */
+	public FileRemoteFile[] listFiles() {
+
+		return (FileRemoteFile[]) getFiles().toArray(new FileRemoteFile[0]);
+	}
+
+	public static class InvalidDirectoryException extends IOException {
+		/**
+		 * Constructor for InvalidDirectoryException.
+		 */
+		public InvalidDirectoryException() {
+			super();
+		}
+
+		/**
+		 * Constructor for InvalidDirectoryException.
+		 * 
+		 * @param arg0
+		 */
+		public InvalidDirectoryException(String arg0) {
+			super(arg0);
+		}
+	}
 }
 
-
 class Checksummer extends Thread {
-    private static final Logger logger = Logger.getLogger(Checksummer.class);
-    private File _f;
-    private CRC32 _checkSum;
-    private IOException _e;
+	private static final Logger logger = Logger.getLogger(Checksummer.class);
 
-    public Checksummer(File f) {
-    	super("Checksummer - " + f.getPath());
-        _f = f;
-    }
+	private File _f;
 
-    /**
-     * @return
-     */
-    public CRC32 getCheckSum() {
-        return _checkSum;
-    }
+	private CRC32 _checkSum;
 
-    public void run() {
-        synchronized (this) {
-            _checkSum = new CRC32();
+	private IOException _e;
 
-            try {
-                CheckedInputStream cis = new CheckedInputStream(new FileInputStream(
-                            _f), _checkSum);
-                byte[] b = new byte[1024];
+	public Checksummer(File f) {
+		super("Checksummer - " + f.getPath());
+		_f = f;
+	}
 
-                while (cis.read(b) > 0)
-                    ;
-            } catch (IOException e) {
-                logger.warn("", e);
-                _e = e;
-            }
+	/**
+	 * @return
+	 */
+	public CRC32 getCheckSum() {
+		return _checkSum;
+	}
 
-            notifyAll();
-        }
-    }
+	public void run() {
+		synchronized (this) {
+			_checkSum = new CRC32();
+
+			try {
+				CheckedInputStream cis = new CheckedInputStream(
+						new FileInputStream(_f), _checkSum);
+				byte[] b = new byte[1024];
+
+				while (cis.read(b) > 0)
+					;
+			} catch (IOException e) {
+				logger.warn("", e);
+				_e = e;
+			}
+
+			notifyAll();
+		}
+	}
 }

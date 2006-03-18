@@ -16,25 +16,24 @@
  */
 package net.sf.drftpd.mirroring;
 
-
 /**
  * @author zubov
- * @version $Id: SlaveException.java,v 1.3 2004/09/13 15:04:58 zubov Exp $
+ * @version $Id$
  */
 public class SlaveException extends Exception {
-    public SlaveException() {
-        super();
-    }
+	public SlaveException() {
+		super();
+	}
 
-    public SlaveException(Exception e) {
-        super(e);
-    }
+	public SlaveException(Exception e) {
+		super(e);
+	}
 
-    public SlaveException(String s) {
-        super(s);
-    }
+	public SlaveException(String s) {
+		super(s);
+	}
 
-    public SlaveException(Throwable throwable) {
-        super(throwable);
-    }
+	public SlaveException(Throwable throwable) {
+		super(throwable);
+	}
 }

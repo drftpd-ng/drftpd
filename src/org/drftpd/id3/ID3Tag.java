@@ -19,119 +19,127 @@ package org.drftpd.id3;
 
 import java.io.Serializable;
 
-
 /**
  * @author Teflon
  * @version $Id$
  */
 public class ID3Tag implements Serializable {
-    String artist = "";
-    String album = "";
-    String title = "";
-    String comment = "";
-    String year = "";
-    byte genre = 0;
-    byte track = 0;
+	String artist = "";
 
-    /** Constructor to create an empty tag -> insert your own data */
-    public ID3Tag() {
-    }
+	String album = "";
 
-    public String getTitle() {
-        return title;
-    }
+	String title = "";
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+	String comment = "";
 
-    public String getArtist() {
-        return artist;
-    }
+	String year = "";
 
-    public void setArtist(String artist) {
-        this.artist = artist;
-    }
+	byte genre = 0;
 
-    public String getAlbum() {
-        return album;
-    }
+	byte track = 0;
 
-    public void setAlbum(String album) {
-        this.album = album;
-    }
+	/** Constructor to create an empty tag -> insert your own data */
+	public ID3Tag() {
+	}
 
-    public String getComment() {
-        return comment;
-    }
+	public String getTitle() {
+		return title;
+	}
 
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
+	public void setTitle(String title) {
+		this.title = title;
+	}
 
-    public String getYear() {
-        return year;
-    }
+	public String getArtist() {
+		return artist;
+	}
 
-    public void setYear(String year) {
-        this.year = year;
-    }
+	public void setArtist(String artist) {
+		this.artist = artist;
+	}
 
-    public byte getTrack() {
-        return track;
-    }
+	public String getAlbum() {
+		return album;
+	}
 
-    public void setTrack(byte track) {
-        this.track = track;
-    }
+	public void setAlbum(String album) {
+		this.album = album;
+	}
 
-    public String getGenre() {
-        return ID3GenreList.getGenre(genre);
-    }
+	public String getComment() {
+		return comment;
+	}
 
-    public void setGenre(byte genre) {
-        this.genre = genre;
-    }
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 
-    /** Converts the whole tag to a byte array, so we can write it to a file or elsewhere...*/
-    byte[] toByteArray() {
-        byte[] tag = new byte[128];
+	public String getYear() {
+		return year;
+	}
 
-        tag[0] = (byte) 'T';
-        tag[1] = (byte) 'A';
-        tag[2] = (byte) 'G';
+	public void setYear(String year) {
+		this.year = year;
+	}
 
-        byte[] tempTitle = title.getBytes();
-        byte[] tempArtist = artist.getBytes();
-        byte[] tempAlbum = album.getBytes();
-        byte[] tempYear = year.getBytes();
-        byte[] tempComment = comment.getBytes();
+	public byte getTrack() {
+		return track;
+	}
 
-        tag = writeToTag(tag, tempTitle, 3, 30);
-        tag = writeToTag(tag, tempArtist, 33, 30);
-        tag = writeToTag(tag, tempAlbum, 63, 30);
-        tag = writeToTag(tag, tempYear, 93, 4);
-        tag = writeToTag(tag, tempComment, 97, 28);
+	public void setTrack(byte track) {
+		this.track = track;
+	}
 
-        tag[126] = track;
-        tag[127] = genre;
+	public String getGenre() {
+		return ID3GenreList.getGenre(genre);
+	}
 
-        return tag;
-    }
+	public void setGenre(byte genre) {
+		this.genre = genre;
+	}
 
-    /** Writes the array "bytes" to the array "tag" at given position "start" */
-    private byte[] writeToTag(byte[] tag, byte[] bytes, int start, int length) {
-        for (int i = start;
-                ((i - start) < bytes.length) && (i < (start + length)); i++) {
-            tag[i] = bytes[i - start];
-        }
+	/**
+	 * Converts the whole tag to a byte array, so we can write it to a file or
+	 * elsewhere...
+	 */
+	byte[] toByteArray() {
+		byte[] tag = new byte[128];
 
-        return tag;
-    }
+		tag[0] = (byte) 'T';
+		tag[1] = (byte) 'A';
+		tag[2] = (byte) 'G';
 
-    public String toString() {
-        return "Artist=" + artist + "\n" + "Title=" + title + "\n" + "Album=" +
-        album + "\n" + "Track=" + track + "\n" + "Year=" + year + "\n" +
-        "Genre=" + getGenre() + "\n" + "Comment=" + comment;
-    }
+		byte[] tempTitle = title.getBytes();
+		byte[] tempArtist = artist.getBytes();
+		byte[] tempAlbum = album.getBytes();
+		byte[] tempYear = year.getBytes();
+		byte[] tempComment = comment.getBytes();
+
+		tag = writeToTag(tag, tempTitle, 3, 30);
+		tag = writeToTag(tag, tempArtist, 33, 30);
+		tag = writeToTag(tag, tempAlbum, 63, 30);
+		tag = writeToTag(tag, tempYear, 93, 4);
+		tag = writeToTag(tag, tempComment, 97, 28);
+
+		tag[126] = track;
+		tag[127] = genre;
+
+		return tag;
+	}
+
+	/** Writes the array "bytes" to the array "tag" at given position "start" */
+	private byte[] writeToTag(byte[] tag, byte[] bytes, int start, int length) {
+		for (int i = start; ((i - start) < bytes.length)
+				&& (i < (start + length)); i++) {
+			tag[i] = bytes[i - start];
+		}
+
+		return tag;
+	}
+
+	public String toString() {
+		return "Artist=" + artist + "\n" + "Title=" + title + "\n" + "Album="
+				+ album + "\n" + "Track=" + track + "\n" + "Year=" + year
+				+ "\n" + "Genre=" + getGenre() + "\n" + "Comment=" + comment;
+	}
 }

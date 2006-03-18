@@ -58,7 +58,9 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 		_size = getSize() + l;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.drftpd.vfs.VirtualFileSystemInode#delete()
 	 */
 	@Override

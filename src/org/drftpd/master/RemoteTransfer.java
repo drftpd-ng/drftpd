@@ -35,90 +35,96 @@ import org.drftpd.slave.TransferStatus;
  * @version $Id$
  */
 public class RemoteTransfer {
-    private InetSocketAddress _address;
-    private TransferIndex _transferIndex;
-    private RemoteSlave _rslave;
-    private TransferStatus _status;
-    private char _state = Transfer.TRANSFER_UNKNOWN;
+	private InetSocketAddress _address;
+
+	private TransferIndex _transferIndex;
+
+	private RemoteSlave _rslave;
+
+	private TransferStatus _status;
+
+	private char _state = Transfer.TRANSFER_UNKNOWN;
+
 	private String _path;
 
-    public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave) throws SlaveUnavailableException {
-        _transferIndex = ci.getTransferIndex();
-        _address = new InetSocketAddress(rslave.getPASVIP(), ci.getPort());
-        _rslave = rslave;
-        _status = ci.getTransferStatus();
-    }
+	public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave)
+			throws SlaveUnavailableException {
+		_transferIndex = ci.getTransferIndex();
+		_address = new InetSocketAddress(rslave.getPASVIP(), ci.getPort());
+		_rslave = rslave;
+		_status = ci.getTransferStatus();
+	}
 
-    public void updateTransferStatus(TransferStatus ts) {
-    	synchronized (_rslave) {
-    		_status = ts;
-    	}
-    }
+	public void updateTransferStatus(TransferStatus ts) {
+		synchronized (_rslave) {
+			_status = ts;
+		}
+	}
 
-    public char getState() {
-        return _state;
-    }
+	public char getState() {
+		return _state;
+	}
 
-    public long getChecksum() {
-        return _status.getChecksum();
-    }
+	public long getChecksum() {
+		return _status.getChecksum();
+	}
 
-    /**
-     * Returns how long this transfer has been running in milliseconds.
-     */
-    public long getElapsed() {
-    	return _status.getElapsed();
-    }
+	/**
+	 * Returns how long this transfer has been running in milliseconds.
+	 */
+	public long getElapsed() {
+		return _status.getElapsed();
+	}
 
-    /**
-     * For a passive connection, returns the port the serversocket is listening on.
-     */
-    public int getLocalPort() {
-        return _address.getPort();
-    }
+	/**
+	 * For a passive connection, returns the port the serversocket is listening
+	 * on.
+	 */
+	public int getLocalPort() {
+		return _address.getPort();
+	}
 
-    public TransferStatus getTransferStatus()
-        throws TransferFailedException {
-        if (!_rslave.isOnline()) {
-            throw new TransferFailedException("Slave is offline", _status);
-        }
+	public TransferStatus getTransferStatus() throws TransferFailedException {
+		if (!_rslave.isOnline()) {
+			throw new TransferFailedException("Slave is offline", _status);
+		}
 
-        if (_status.threwException()) {
-            throw new TransferFailedException((IOException) _status.getThrowable(),
-                _status);
-        }
+		if (_status.threwException()) {
+			throw new TransferFailedException((IOException) _status
+					.getThrowable(), _status);
+		}
 
-        return _status;
-    }
+		return _status;
+	}
 
-    /**
-     * Returns the number of bytes transfered. 
-     */
-    public long getTransfered() {
-       	return _status.getTransfered();
-    }
-    
-    /**
-     * Returns how fast the transfer is going in bytes per second.
-     */
-    public long getXferSpeed() {
-       	return _status.getXferSpeed();
-    }
-    
-    public String getPathNull() {
-    	return _path;
-    }
+	/**
+	 * Returns the number of bytes transfered.
+	 */
+	public long getTransfered() {
+		return _status.getTransfered();
+	}
 
-    public TransferIndex getTransferIndex() {
-        return _transferIndex;
-    }
+	/**
+	 * Returns how fast the transfer is going in bytes per second.
+	 */
+	public long getXferSpeed() {
+		return _status.getXferSpeed();
+	}
 
-    public InetSocketAddress getAddress() {
-        return _address;
-    }
+	public String getPathNull() {
+		return _path;
+	}
 
-    public void abort(String reason) {
-    	synchronized (_rslave) {
+	public TransferIndex getTransferIndex() {
+		return _transferIndex;
+	}
+
+	public InetSocketAddress getAddress() {
+		return _address;
+	}
+
+	public void abort(String reason) {
+		synchronized (_rslave) {
 			if (_status.isFinished()) {
 				// no need to abort a transfer that isn't transferring
 				return;
@@ -129,39 +135,41 @@ public class RemoteTransfer {
 				_status = new TransferStatus(getTransferIndex(), e);
 			}
 		}
-    }
+	}
 
-    public void receiveFile(String path, char type, long position)
-        throws IOException, SlaveUnavailableException {
-    	_path = path;
-        String index = _rslave.issueReceiveToSlave(path, type, position,
-                getTransferIndex());
-        _state = Transfer.TRANSFER_RECEIVING_UPLOAD;
-        try {
-            _rslave.fetchResponse(index);
-        } catch (RemoteIOException e) {
-            throw (IOException) e.getCause();
-        }
-    }
+	public void receiveFile(String path, char type, long position)
+			throws IOException, SlaveUnavailableException {
+		_path = path;
+		String index = _rslave.issueReceiveToSlave(path, type, position,
+				getTransferIndex());
+		_state = Transfer.TRANSFER_RECEIVING_UPLOAD;
+		try {
+			_rslave.fetchResponse(index);
+		} catch (RemoteIOException e) {
+			throw (IOException) e.getCause();
+		}
+	}
 
-    public void sendFile(String path, char type, long position)
-        throws IOException, SlaveUnavailableException {
-    	_path = path;
-        String index = _rslave.issueSendToSlave(path, type, position,
-                getTransferIndex());
-        _state = Transfer.TRANSFER_SENDING_DOWNLOAD;
-        try {
-            _rslave.fetchResponse(index);
-        } catch (RemoteIOException e) {
-            throw (IOException) e.getCause();
-        }
-    }
-    public String toString() {
-			try {
-				return getClass().getName()+"[file="+_path+",status="+getTransferStatus()+"]";
-			} catch (TransferFailedException e) {
-				return getClass().getName()+"[file="+_path+",status=failed]";
-			}
+	public void sendFile(String path, char type, long position)
+			throws IOException, SlaveUnavailableException {
+		_path = path;
+		String index = _rslave.issueSendToSlave(path, type, position,
+				getTransferIndex());
+		_state = Transfer.TRANSFER_SENDING_DOWNLOAD;
+		try {
+			_rslave.fetchResponse(index);
+		} catch (RemoteIOException e) {
+			throw (IOException) e.getCause();
+		}
+	}
 
-    }
+	public String toString() {
+		try {
+			return getClass().getName() + "[file=" + _path + ",status="
+					+ getTransferStatus() + "]";
+		} catch (TransferFailedException e) {
+			return getClass().getName() + "[file=" + _path + ",status=failed]";
+		}
+
+	}
 }

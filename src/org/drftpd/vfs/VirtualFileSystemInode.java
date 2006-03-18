@@ -36,12 +36,12 @@ public abstract class VirtualFileSystemInode {
 	public static VirtualFileSystem getVFS() {
 		return VirtualFileSystem.getVirtualFileSystem();
 	}
-	
+
 	protected String _group;
-	
-    protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
-    
-    protected transient long _lastModified;
+
+	protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
+
+	protected transient long _lastModified;
 
 	protected transient String _name;
 
@@ -86,8 +86,8 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	public KeyedMap<Key, Object> getKeyedMap() {
-    	return _keyedMap;
-    }
+		return _keyedMap;
+	}
 
 	/**
 	 * @return Returns the _lastModified.
@@ -188,8 +188,8 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	public void setKeyedMap(KeyedMap<Key, Object> data) {
-    	_keyedMap = data;
-    }
+		_keyedMap = data;
+	}
 
 	/**
 	 * @param The
@@ -222,7 +222,9 @@ public abstract class VirtualFileSystemInode {
 		commit();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override

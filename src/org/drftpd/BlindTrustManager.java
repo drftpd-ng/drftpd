@@ -22,23 +22,22 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.X509TrustManager;
 
-
 /**
  * Also used by com.drftpd.friendly.
- *
+ * 
  * @author mog
- * @version $Id: BlindTrustManager.java,v 1.2 2004/08/03 20:14:03 zubov Exp $
+ * @version $Id$
  */
 public class BlindTrustManager implements X509TrustManager {
-    public void checkClientTrusted(X509Certificate[] arg0, String arg1)
-        throws CertificateException {
-    }
+	public void checkClientTrusted(X509Certificate[] arg0, String arg1)
+			throws CertificateException {
+	}
 
-    public void checkServerTrusted(X509Certificate[] arg0, String arg1)
-        throws CertificateException {
-    }
+	public void checkServerTrusted(X509Certificate[] arg0, String arg1)
+			throws CertificateException {
+	}
 
-    public X509Certificate[] getAcceptedIssuers() {
-        return null;
-    }
+	public X509Certificate[] getAcceptedIssuers() {
+		return null;
+	}
 }

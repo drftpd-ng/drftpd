@@ -23,39 +23,42 @@ import java.util.Properties;
 
 /**
  * Generic interface.
+ * 
  * @author fr0w
  */
 public abstract class DiskFilter {
 
 	public DiskFilter(Properties p, Integer i) {
-		
+
 	}
-	
+
 	/**
 	 * This method is called to process the ScoreChart of each file.
+	 * 
 	 * @param sc
 	 * @param path
 	 */
 	public abstract void process(ScoreChart sc, String path);
-	
+
 	/**
 	 * @return ArrayList with 'Root' objects
 	 */
 	public static ArrayList getRootList() {
-		return DiskSelection.getDiskSelection().getRootCollection().getRootList();
+		return DiskSelection.getDiskSelection().getRootCollection()
+				.getRootList();
 	}
-	
+
 	public static float parseMultiplier(String string) {
 		if (string.equalsIgnoreCase("remove")) {
 			return 0;
 		}
-		
+
 		boolean isMultiplier;
 		float multiplier = 1;
-		
+
 		while (string.length() != 0) {
 			char c = string.charAt(0);
-			
+
 			if (c == '*') {
 				isMultiplier = true;
 				string = string.substring(1);
@@ -65,28 +68,28 @@ public abstract class DiskFilter {
 			} else {
 				isMultiplier = true;
 			}
-			
+
 			int pos = string.indexOf('*');
-			
+
 			if (pos == -1) {
 				pos = string.length();
 			}
-			
+
 			int tmp = string.indexOf('/');
-			
+
 			if ((tmp != -1) && (tmp < pos)) {
 				pos = tmp;
 			}
-			
+
 			if (isMultiplier) {
 				multiplier *= Float.parseFloat(string.substring(0, pos));
 			} else {
 				multiplier /= Float.parseFloat(string.substring(0, pos));
 			}
-			
+
 			string = string.substring(pos);
 		}
-		
+
 		return multiplier;
 	}
 }

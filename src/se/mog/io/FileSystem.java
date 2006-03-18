@@ -19,28 +19,29 @@ package se.mog.io;
 
 import java.io.IOException;
 
-
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
+ * 
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 abstract class FileSystem {
-    static {
-        System.loadLibrary("FileSystem");
-    }
+	static {
+		System.loadLibrary("FileSystem");
+	}
 
-    public static native FileSystem getFileSystem();
+	public static native FileSystem getFileSystem();
 
-    /**
-     * Lists mount points and disk drives
-     *
-     * On UNIX this also lists file systems such as /proc.
-     * To make listMountsbehave like df omit volumes with 0 bytes using se.mog.io.File#getAvailableDiskSpace()
-     * @return
-     */
-    public abstract File[] listMounts() throws IOException;
+	/**
+	 * Lists mount points and disk drives
+	 * 
+	 * On UNIX this also lists file systems such as /proc. To make
+	 * listMountsbehave like df omit volumes with 0 bytes using
+	 * se.mog.io.File#getAvailableDiskSpace()
+	 * 
+	 * @return
+	 */
+	public abstract File[] listMounts() throws IOException;
 
-    public abstract DiskFreeSpace getDiskFreeSpace(File file);
+	public abstract DiskFreeSpace getDiskFreeSpace(File file);
 }

@@ -28,98 +28,99 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * Removes bandwidth * multiplier from the score.
+ * 
  * @author mog
  * @version $Id: BandwidthFilter.java 936 2005-01-31 22:25:52Z mog $
  */
 public class BandwidthFilter extends Filter {
-    protected float _multiplier;
+	protected float _multiplier;
 
-    public BandwidthFilter(FilterChain ssm, int i, Properties p) {
-        setMultiplier(parseMultiplier(PropertyHelper.getProperty(p, i +
-                    ".multiplier")));
-    }
+	public BandwidthFilter(FilterChain ssm, int i, Properties p) {
+		setMultiplier(parseMultiplier(PropertyHelper.getProperty(p, i
+				+ ".multiplier")));
+	}
 
-    /**
-         * @param multiplier
-         */
-    public BandwidthFilter(float multiplier) {
-        setMultiplier(multiplier);
-    }
+	/**
+	 * @param multiplier
+	 */
+	public BandwidthFilter(float multiplier) {
+		setMultiplier(multiplier);
+	}
 
-    protected void setMultiplier(float multiplier) {
-        _multiplier = multiplier;
-    }
+	protected void setMultiplier(float multiplier) {
+		_multiplier = multiplier;
+	}
 
-    protected static float parseMultiplier(String string) {
-        if (string.equalsIgnoreCase("remove")) {
-            return 0;
-        }
+	protected static float parseMultiplier(String string) {
+		if (string.equalsIgnoreCase("remove")) {
+			return 0;
+		}
 
-        boolean isMultiplier;
-        float multiplier = 1;
+		boolean isMultiplier;
+		float multiplier = 1;
 
-        while (string.length() != 0) {
-            char c = string.charAt(0);
+		while (string.length() != 0) {
+			char c = string.charAt(0);
 
-            if (c == '*') {
-                isMultiplier = true;
-                string = string.substring(1);
-            } else if (c == '/') {
-                isMultiplier = false;
-                string = string.substring(1);
-            } else {
-                isMultiplier = true;
-            }
+			if (c == '*') {
+				isMultiplier = true;
+				string = string.substring(1);
+			} else if (c == '/') {
+				isMultiplier = false;
+				string = string.substring(1);
+			} else {
+				isMultiplier = true;
+			}
 
-            int pos = string.indexOf('*');
+			int pos = string.indexOf('*');
 
-            if (pos == -1) {
-                pos = string.length();
-            }
+			if (pos == -1) {
+				pos = string.length();
+			}
 
-            int tmp = string.indexOf('/');
+			int tmp = string.indexOf('/');
 
-            if ((tmp != -1) && (tmp < pos)) {
-                pos = tmp;
-            }
+			if ((tmp != -1) && (tmp < pos)) {
+				pos = tmp;
+			}
 
-            if (isMultiplier) {
-                multiplier *= Float.parseFloat(string.substring(0, pos));
-            } else {
-                multiplier /= Float.parseFloat(string.substring(0, pos));
-            }
+			if (isMultiplier) {
+				multiplier *= Float.parseFloat(string.substring(0, pos));
+			} else {
+				multiplier /= Float.parseFloat(string.substring(0, pos));
+			}
 
-            string = string.substring(pos);
-        }
+			string = string.substring(pos);
+		}
 
-        return multiplier;
-    }
+		return multiplier;
+	}
 
-    public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, InodeHandle file, RemoteSlave sourceSlave) {
-        Collection slavescores = scorechart.getSlaveScores();
+	public void process(ScoreChart scorechart, User user, InetAddress source,
+			char direction, InodeHandle file, RemoteSlave sourceSlave) {
+		Collection slavescores = scorechart.getSlaveScores();
 
-        for (Iterator iter = slavescores.iterator(); iter.hasNext();) {
-            ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
-            SlaveStatus status;
+		for (Iterator iter = slavescores.iterator(); iter.hasNext();) {
+			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
+			SlaveStatus status;
 
-            try {
-                status = score.getRSlave().getSlaveStatusAvailable();
-            } catch (Exception e) {
-                iter.remove();
+			try {
+				status = score.getRSlave().getSlaveStatusAvailable();
+			} catch (Exception e) {
+				iter.remove();
 
-                continue;
-            }
+				continue;
+			}
 
-            score.addScore(-(long) (status.getThroughputDirection(direction) * getMultiplier(
-                    score.getRSlave())));
-        }
-    }
+			score
+					.addScore(-(long) (status.getThroughputDirection(direction) * getMultiplier(score
+							.getRSlave())));
+		}
+	}
 
-    protected float getMultiplier(RemoteSlave slave) {
-        return _multiplier;
-    }
+	protected float getMultiplier(RemoteSlave slave) {
+		return _multiplier;
+	}
 }

@@ -65,7 +65,7 @@ public class VirtualFileSystem {
 	 * Takes /path/dir/name and returns /path/dir
 	 */
 	public static String stripLast(String path) {
-		//logger.debug("stripLast(" + path + ")");
+		// logger.debug("stripLast(" + path + ")");
 		String toReturn = path.substring(0, path.lastIndexOf(pathSeparator));
 		if (toReturn.equals("")) {
 			return "/";
@@ -109,7 +109,7 @@ public class VirtualFileSystem {
 		if (path.equals(pathSeparator)) {
 			return _root;
 		}
-		//logger.debug("getInodeByPath(" + path + ")");
+		// logger.debug("getInodeByPath(" + path + ")");
 		path = path.substring(1);
 		VirtualFileSystemDirectory walker = _root;
 		VirtualFileSystemInode inode = null;
@@ -143,7 +143,7 @@ public class VirtualFileSystem {
 	protected VirtualFileSystemInode loadInode(String path)
 			throws FileNotFoundException {
 		String fullPath = fileSystemPath + path;
-		//logger.debug("Loading inode - " + fullPath);
+		// logger.debug("Loading inode - " + fullPath);
 		File file = new File(fullPath);
 		File dirFile = null;
 		if (file.isDirectory()) {
@@ -188,19 +188,21 @@ public class VirtualFileSystem {
 			}
 		}
 		if (!file.delete()) {
-			logger.error("Could not delete local entry " + file.getAbsolutePath()
-					+ ", check permissions");
+			logger.error("Could not delete local entry "
+					+ file.getAbsolutePath() + ", check permissions");
 		}
 	}
 
-	protected void renameXML(String source, String destination) throws FileNotFoundException, PermissionDeniedException {
+	protected void renameXML(String source, String destination)
+			throws FileNotFoundException, PermissionDeniedException {
 		File file = new File(getRealPath(source));
 		if (!file.exists()) {
 			throw new FileNotFoundException(source + " cannot be found");
 		}
 		boolean result = file.renameTo(new File(getRealPath(destination)));
 		if (!result) {
-			throw new PermissionDeniedException("Cannot rename " + source + " to " + destination);
+			throw new PermissionDeniedException("Cannot rename " + source
+					+ " to " + destination);
 		}
 	}
 

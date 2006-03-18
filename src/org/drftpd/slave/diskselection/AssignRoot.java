@@ -24,13 +24,16 @@ import java.util.Iterator;
 import org.drftpd.slave.Root;
 
 public class AssignRoot {
-	
+
 	/**
-	 * Parser for lines like this:<br><pre>
-	 * x.assign=1+500 2+300
-	 * x.assign=1+200, 2+200
-	 * x.assign=1 2 (will assign 0 points to each root)
-	 * x.assign=1,2 (will assign 0 points to each root)</pre>
+	 * Parser for lines like this:<br>
+	 * 
+	 * <pre>
+	 *  x.assign=1+500 2+300
+	 *  x.assign=1+200, 2+200
+	 *  x.assign=1 2 (will assign 0 points to each root)
+	 *  x.assign=1,2 (will assign 0 points to each root)
+	 * </pre>
 	 */
 	public static ArrayList parseAssign(String s) {
 		String parse = s.trim().replaceAll(",", "");
@@ -39,13 +42,14 @@ public class AssignRoot {
 		for (int i = 0; i < p.length; i++) {
 			AssignParser a = new AssignParser(p[i]);
 			list.add(a);
-		}		
+		}
 		return list;
 	}
-	
+
 	/**
-	 * Checks if <code>root</code> is inside <code>list</code>
-	 * that must be a <code>parseAssign()</code> ArrayList.
+	 * Checks if <code>root</code> is inside <code>list</code> that must be
+	 * a <code>parseAssign()</code> ArrayList.
+	 * 
 	 * @param root
 	 * @param list
 	 */
@@ -60,10 +64,11 @@ public class AssignRoot {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Iterates throught a <code>parseAssign()</code> ArrayList
-	 * and add the current assigned scores to the ScoreChart <code>sc</code>
+	 * Iterates throught a <code>parseAssign()</code> ArrayList and add the
+	 * current assigned scores to the ScoreChart <code>sc</code>
+	 * 
 	 * @param list
 	 * @param sc
 	 */
@@ -79,53 +84,54 @@ public class AssignRoot {
 
 class AssignParser {
 	private long _score;
+
 	private int _root;
-	
+
 	public AssignParser(String s) {
 		boolean positive;
 		int pos = s.indexOf("+");
-		
+
 		if (pos != -1) {
 			positive = true;
 		} else {
 			pos = s.indexOf("-");
-			
+
 			if (pos == -1) {
 				_score = 0;
-				_root = Integer.parseInt(s)-1;
+				_root = Integer.parseInt(s) - 1;
 				return;
 			}
-			
+
 			positive = false;
 		}
-		
+
 		String root = s.substring(0, pos);
 		String assign = s.substring(pos + 1);
 
-		_root = Integer.parseInt(root)-1;
-		
+		_root = Integer.parseInt(root) - 1;
+
 		if (assign.equals("remove")) {
 			_score = 0;
 			positive = false;
 		} else {
 			_score = Long.parseLong(assign);
-			
-			
+
 			if (!positive) {
 				_score = -_score;
 			}
 		}
 	}
-	
+
 	public int getRoot() {
 		return _root;
 	}
-	
+
 	public long getScore() {
 		return _score;
 	}
-	
+
 	public String toString() {
-		return getClass() + "@" + hashCode() + "[root=" + getRoot() + ",score=" + getScore() +"]";
+		return getClass() + "@" + hashCode() + "[root=" + getRoot() + ",score="
+				+ getScore() + "]";
 	}
 }

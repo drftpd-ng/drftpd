@@ -19,36 +19,37 @@ package net.sf.drftpd.mirroring;
 
 import java.util.Comparator;
 
-
 /**
  * @author zubov
  * @version $Id$
- *
+ * 
  */
 public class JobComparator implements Comparator<Job> {
-    /**
-     * Compares Jobs
-     */
-    public JobComparator() {
-    }
+	/**
+	 * Compares Jobs
+	 */
+	public JobComparator() {
+	}
 
-    /* (non-Javadoc)
-     * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-     */
-    public int compare(Job job1, Job job2) {
-        if (job1.getPriority() > job2.getPriority()) {
-            return -1;
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+	 */
+	public int compare(Job job1, Job job2) {
+		if (job1.getPriority() > job2.getPriority()) {
+			return -1;
+		}
 
-        if (job1.getPriority() < job2.getPriority()) {
-            return 1;
-        }
+		if (job1.getPriority() < job2.getPriority()) {
+			return 1;
+		}
 
-        if (job1.getIndex() < job2.getIndex()) { //older
-            return -1;
-        }
+		if (job1.getIndex() < job2.getIndex()) { // older
+			return -1;
+		}
 
-        //if (job1.getIndex() > job2.getIndex()) { //younger
-        return 1;
-    }
+		// if (job1.getIndex() > job2.getIndex()) { //younger
+		return 1;
+	}
 }

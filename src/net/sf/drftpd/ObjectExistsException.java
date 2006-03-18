@@ -19,22 +19,21 @@ package net.sf.drftpd;
 
 import java.io.IOException;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class ObjectExistsException extends IOException {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 5121347344759544660L;
 
 	public ObjectExistsException() {
-        super();
-    }
+		super();
+	}
 
-    public ObjectExistsException(String arg0) {
-        super(arg0);
-    }
+	public ObjectExistsException(String arg0) {
+		super(arg0);
+	}
 }

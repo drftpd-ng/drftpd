@@ -18,10 +18,11 @@
 package se.mog.io;
 
 class DiskFreeSpace {
-    long freeBytes;
-    long totalBytes;
+	long freeBytes;
 
-    public String toString() {
-        return "freeBytes:\t" + freeBytes + "\ntotalBytes:\t" + totalBytes;
-    }
+	long totalBytes;
+
+	public String toString() {
+		return "freeBytes:\t" + freeBytes + "\ntotalBytes:\t" + totalBytes;
+	}
 }

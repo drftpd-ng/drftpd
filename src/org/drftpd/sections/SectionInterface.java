@@ -17,35 +17,35 @@
  */
 package org.drftpd.sections;
 
-
 import java.util.Set;
 
 import org.drftpd.vfs.DirectoryHandle;
-
 
 /**
  * @author mog
  * @version $Id$
  */
 public interface SectionInterface {
-    /**
-     * @return the base directory for this section.
-     */
-    public DirectoryHandle getBaseDirectory();
+	/**
+	 * @return the base directory for this section.
+	 */
+	public DirectoryHandle getBaseDirectory();
 
-    /**
-     * @return the (current) directory for this section.
-     */
-    public DirectoryHandle getCurrentDirectory();
+	/**
+	 * @return the (current) directory for this section.
+	 */
+	public DirectoryHandle getCurrentDirectory();
 
-    /**
-     * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.
-     */
-    public Set<DirectoryHandle> getDirectories();
+	/**
+	 * @return all directories for this section. For example if this is a
+	 *         dated-dir section, it would return all dated dirs, including
+	 *         current dir.
+	 */
+	public Set<DirectoryHandle> getDirectories();
 
-    /**
-     * @return The name of this section
-     */
-    public String getName();
+	/**
+	 * @return The name of this section
+	 */
+	public String getName();
 
 }

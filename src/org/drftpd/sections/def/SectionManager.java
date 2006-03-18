@@ -17,7 +17,6 @@
  */
 package org.drftpd.sections.def;
 
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,97 +30,98 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
 
-    public SectionManager() {
-    }
+	public SectionManager() {
+	}
 
-    public ConnectionManager getConnectionManager() {
-        return ConnectionManager.getConnectionManager();
-    }
+	public ConnectionManager getConnectionManager() {
+		return ConnectionManager.getConnectionManager();
+	}
 
-    public SectionInterface getSection(String string) {
-        try {
-            return new Section(getGlobalContext().getRoot().getDirectory(string));
-        } catch (FileNotFoundException e) {
-            return new Section(getGlobalContext().getRoot());
-        }
-    }
+	public SectionInterface getSection(String string) {
+		try {
+			return new Section(getGlobalContext().getRoot()
+					.getDirectory(string));
+		} catch (FileNotFoundException e) {
+			return new Section(getGlobalContext().getRoot());
+		}
+	}
 
-    private GlobalContext getGlobalContext() {
-    	return GlobalContext.getGlobalContext();
+	private GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
 	}
 
 	public Collection<SectionInterface> getSections() {
-        ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
+		ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
 
-        try {
-			for (Iterator<DirectoryHandle> iter = getGlobalContext().getRoot().getDirectories()
-			                        .iterator(); iter.hasNext();) {
-			    sections.add(new Section(iter.next()));
+		try {
+			for (Iterator<DirectoryHandle> iter = getGlobalContext().getRoot()
+					.getDirectories().iterator(); iter.hasNext();) {
+				sections.add(new Section(iter.next()));
 			}
 		} catch (FileNotFoundException e) {
 			// no sections, return the empty set
 			return Collections.EMPTY_SET;
 		}
 
-        return sections;
-    }
+		return sections;
+	}
 
-    public void reload() {
-    }
-    
-    public SectionInterface lookup(DirectoryHandle dir) {
-    	try {
-        	DirectoryHandle parent = dir.getParent();
-    		if (parent.isRoot()) {
-    			return new Section(dir);
-    		}
-    		return lookup(parent);
-    	} catch (IllegalStateException e) {
-    		throw new IllegalStateException("The RootDirectory does not have a section");
-    	}
-    	
-    }
+	public void reload() {
+	}
 
-    public class Section implements SectionInterface {
-        private DirectoryHandle _lrf;
+	public SectionInterface lookup(DirectoryHandle dir) {
+		try {
+			DirectoryHandle parent = dir.getParent();
+			if (parent.isRoot()) {
+				return new Section(dir);
+			}
+			return lookup(parent);
+		} catch (IllegalStateException e) {
+			throw new IllegalStateException(
+					"The RootDirectory does not have a section");
+		}
 
-        public Section(DirectoryHandle lrf) {
-            _lrf = lrf;
-        }
+	}
 
-        public DirectoryHandle getCurrentDirectory() {
-            return _lrf;
-        }
+	public class Section implements SectionInterface {
+		private DirectoryHandle _lrf;
 
-        public Set<DirectoryHandle> getDirectories() {
-            try {
+		public Section(DirectoryHandle lrf) {
+			_lrf = lrf;
+		}
+
+		public DirectoryHandle getCurrentDirectory() {
+			return _lrf;
+		}
+
+		public Set<DirectoryHandle> getDirectories() {
+			try {
 				return _lrf.getDirectories();
 			} catch (FileNotFoundException e) {
 				return Collections.EMPTY_SET;
 			}
-        }
+		}
 
-        public String getName() {
-            return _lrf.getName();
-        }
+		public String getName() {
+			return _lrf.getName();
+		}
 
-        public String getPath() {
-            return _lrf.getPath();
-        }
+		public String getPath() {
+			return _lrf.getPath();
+		}
 
-        public DirectoryHandle getBaseDirectory() {
-            return _lrf;
-        }
+		public DirectoryHandle getBaseDirectory() {
+			return _lrf;
+		}
 
 		public String getBasePath() {
 			return getPath();
 		}
-    }
+	}
 }

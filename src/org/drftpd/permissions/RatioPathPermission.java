@@ -21,24 +21,24 @@ import java.util.Collection;
 
 import org.apache.oro.text.regex.Pattern;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class RatioPathPermission extends GlobPathPermission {
-    private float _ratio;
+	private float _ratio;
 
-    /**
-     * @param path
-     * @param users
-     */
-    public RatioPathPermission(Pattern pattern, float ratio, Collection<String> users) {
-        super(pattern, users);
-        _ratio = ratio;
-    }
+	/**
+	 * @param path
+	 * @param users
+	 */
+	public RatioPathPermission(Pattern pattern, float ratio,
+			Collection<String> users) {
+		super(pattern, users);
+		_ratio = ratio;
+	}
 
-    public float getRatio() {
-        return _ratio;
-    }
+	public float getRatio() {
+		return _ratio;
+	}
 }

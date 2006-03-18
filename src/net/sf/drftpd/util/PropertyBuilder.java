@@ -22,62 +22,62 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class PropertyBuilder {
-    private File _baseFile;
-    private int _prefixLength;
+	private File _baseFile;
 
-    public PropertyBuilder(File file) {
-        _baseFile = file;
-        _prefixLength = file.getPath().length() + 1;
-    }
+	private int _prefixLength;
 
-    public static void main(String[] args) throws IOException {
-        PropertyBuilder pb = new PropertyBuilder(new File(args[0]));
-        pb.findAndReadFiles();
-    }
+	public PropertyBuilder(File file) {
+		_baseFile = file;
+		_prefixLength = file.getPath().length() + 1;
+	}
 
-    public void findAndReadFiles() throws IOException {
-        findAndReadFiles(_baseFile);
-    }
+	public static void main(String[] args) throws IOException {
+		PropertyBuilder pb = new PropertyBuilder(new File(args[0]));
+		pb.findAndReadFiles();
+	}
 
-    private void findAndReadFiles(File file) throws IOException {
-        File[] files = file.listFiles();
+	public void findAndReadFiles() throws IOException {
+		findAndReadFiles(_baseFile);
+	}
 
-        for (int i = 0; i < files.length; i++) {
-            File file2 = files[i];
+	private void findAndReadFiles(File file) throws IOException {
+		File[] files = file.listFiles();
 
-            if (file2.isDirectory()) {
-                findAndReadFiles(file2);
-            } else if (file2.getName().endsWith(".properties")) {
-                String classname = file2.getPath().substring(_prefixLength);
-                classname = classname.replaceAll("\\.properties$", "");
-                classname = classname.replace(File.separatorChar, '.');
+		for (int i = 0; i < files.length; i++) {
+			File file2 = files[i];
 
-                BufferedReader in = null;
-                try {
-                	in = new BufferedReader(new FileReader(file2));
-                	System.out.println("## START: " + classname);
-                	
-                	String line;
-                	
-                	while ((line = in.readLine()) != null) {
-                		if (line.trim().equals("") || line.startsWith("#")) {
-                			System.out.println(line);
-                			
-                			continue;
-                		}
-                		
-                		System.out.println(classname + "." + line);
-                	}
-                } finally {
-                	in.close();
-                }
-            }
-        }
-    }
+			if (file2.isDirectory()) {
+				findAndReadFiles(file2);
+			} else if (file2.getName().endsWith(".properties")) {
+				String classname = file2.getPath().substring(_prefixLength);
+				classname = classname.replaceAll("\\.properties$", "");
+				classname = classname.replace(File.separatorChar, '.');
+
+				BufferedReader in = null;
+				try {
+					in = new BufferedReader(new FileReader(file2));
+					System.out.println("## START: " + classname);
+
+					String line;
+
+					while ((line = in.readLine()) != null) {
+						if (line.trim().equals("") || line.startsWith("#")) {
+							System.out.println(line);
+
+							continue;
+						}
+
+						System.out.println(classname + "." + line);
+					}
+				} finally {
+					in.close();
+				}
+			}
+		}
+	}
 }

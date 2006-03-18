@@ -17,13 +17,12 @@ import org.drftpd.commands.Reply;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
+ * TODO To change the template for this generated type comment go to Window -
+ * Preferences - Java - Code Style - Code Templates
  */
 public interface ConfigInterface {
 	public abstract boolean checkPathPermission(String key, User fromUser,
@@ -45,8 +44,7 @@ public interface ConfigInterface {
 	public abstract float getCreditCheckRatio(DirectoryHandle path,
 			User fromUser);
 
-	public abstract float getCreditLossRatio(DirectoryHandle path,
-			User fromUser);
+	public abstract float getCreditLossRatio(DirectoryHandle path, User fromUser);
 
 	public abstract boolean getHideIps();
 
@@ -56,8 +54,7 @@ public interface ConfigInterface {
 
 	public abstract int getMaxUsersTotal();
 
-	public abstract void loadConfig()
-			throws IOException;
+	public abstract void loadConfig() throws IOException;
 
 	public abstract void addPathPermission(String key, PathPermission permission);
 
@@ -67,7 +64,7 @@ public interface ConfigInterface {
 	public abstract boolean isLoginAllowed(User user);
 
 	public abstract PortRange getPortRange();
-	
+
 	public abstract Properties getProperties();
 
 	public abstract void addObserver(Observer observer);

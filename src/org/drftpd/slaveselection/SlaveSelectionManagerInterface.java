@@ -29,26 +29,26 @@ import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: SlaveSelectionManagerInterface.java 1443 2006-03-18 00:57:58Z
+ *          zubov $
  */
 public interface SlaveSelectionManagerInterface {
-    public abstract void reload() throws IOException;
+	public abstract void reload() throws IOException;
 
-    /**
-     * Checksums call us with null BaseFtpConnection.
-     */
-    public RemoteSlave getASlave(Collection<RemoteSlave> rslaves, char direction,
-        BaseFtpConnection conn, InodeHandle file)
-        throws NoAvailableSlaveException;
+	/**
+	 * Checksums call us with null BaseFtpConnection.
+	 */
+	public RemoteSlave getASlave(Collection<RemoteSlave> rslaves,
+			char direction, BaseFtpConnection conn, InodeHandle file)
+			throws NoAvailableSlaveException;
 
-    public GlobalContext getGlobalContext();
+	public GlobalContext getGlobalContext();
 
-    public RemoteSlave getASlaveForJobDownload(Job job)
-        throws NoAvailableSlaveException, FileNotFoundException;
+	public RemoteSlave getASlaveForJobDownload(Job job)
+			throws NoAvailableSlaveException, FileNotFoundException;
 
-    public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException, FileNotFoundException;
+	public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException, FileNotFoundException;
 }

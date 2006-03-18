@@ -27,51 +27,51 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class SSLGetContext {
 	static SSLContext ctx = null;
-    public static SSLContext getSSLContext()
-        throws GeneralSecurityException, IOException {
-//    	 Create a trust manager that does not validate certificate chains
-        TrustManager[] trustAllCerts = new TrustManager[]{
-            new X509TrustManager() {
-                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                    return null;
-                }
-                public void checkClientTrusted(
-                    java.security.cert.X509Certificate[] certs, String authType) {
-                }
-                public void checkServerTrusted(
-                    java.security.cert.X509Certificate[] certs, String authType) {
-                }
-            }
-        };
-    	if (ctx != null)
-    		return ctx; // reuse previous SSLContext
-    	
-        ctx = SSLContext.getInstance("SSLv3");
 
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+	public static SSLContext getSSLContext() throws GeneralSecurityException,
+			IOException {
+		// Create a trust manager that does not validate certificate chains
+		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
 
-        KeyStore ks = KeyStore.getInstance("JKS");
-        FileInputStream fis = null;
-        try {
-        	fis = new FileInputStream("drftpd.key");
-        	ks.load(fis, "drftpd".toCharArray());
-        } finally {
-        	if (fis != null) {
-        		fis.close();
-        	}
-        }
+			public void checkClientTrusted(
+					java.security.cert.X509Certificate[] certs, String authType) {
+			}
 
-        kmf.init(ks, "drftpd".toCharArray());
+			public void checkServerTrusted(
+					java.security.cert.X509Certificate[] certs, String authType) {
+			}
+		} };
+		if (ctx != null)
+			return ctx; // reuse previous SSLContext
 
-        ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
+		ctx = SSLContext.getInstance("SSLv3");
 
-        return ctx;
-    }
+		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+
+		KeyStore ks = KeyStore.getInstance("JKS");
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream("drftpd.key");
+			ks.load(fis, "drftpd".toCharArray());
+		} finally {
+			if (fis != null) {
+				fis.close();
+			}
+		}
+
+		kmf.init(ks, "drftpd".toCharArray());
+
+		ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
+
+		return ctx;
+	}
 }

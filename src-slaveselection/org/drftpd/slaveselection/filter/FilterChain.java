@@ -33,98 +33,99 @@ import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * @author mog
  * @version $Id: FilterChain.java 847 2004-12-02 03:32:41Z mog $
  */
 public class FilterChain {
-    private SlaveSelectionManagerInterface _ssm;
-    private String _cfgfileName;
-    private ArrayList<Filter> _filters;
+	private SlaveSelectionManagerInterface _ssm;
 
-    protected FilterChain() {
-    }
+	private String _cfgfileName;
 
-    public FilterChain(SlaveSelectionManagerInterface ssm, Properties p) {
-        _ssm = ssm;
-        reload(p);
-    }
+	private ArrayList<Filter> _filters;
 
-    public FilterChain(SlaveSelectionManagerInterface ssm, String cfgFileName)
-        throws FileNotFoundException, IOException {
-        _ssm = ssm;
-        _cfgfileName = cfgFileName;
-        reload();
-    }
-
-    public void filter(ScoreChart sc, User user, InetAddress peer, char direction, InodeHandle file, RemoteSlave sourceSlave) throws NoAvailableSlaveException {
-    	for (Filter filter : _filters) {
-    		filter.process(sc, user, peer, direction, file, sourceSlave);
-        }
+	protected FilterChain() {
 	}
 
-    public RemoteSlave getBestSlave(ScoreChart sc, User user, InetAddress peer,
-        char direction, InodeHandle file, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
-    	filter(sc,user,peer,direction,file, sourceSlave);
-        RemoteSlave rslave = sc.getBestSlave();
-        rslave.setLastDirection(direction, System.currentTimeMillis());
-        return rslave;
-    }
+	public FilterChain(SlaveSelectionManagerInterface ssm, Properties p) {
+		_ssm = ssm;
+		reload(p);
+	}
 
-    public void reload() throws FileNotFoundException, IOException {
-        Properties p = new Properties();
-        FileInputStream fis = null;
-        try {
-        	fis = new FileInputStream(_cfgfileName); 
-        	p.load(fis);
-        } finally {
-        	if (fis != null) {
-        		fis.close();
-        		fis = null;
-        	}
-        }
-        reload(p);
-    }
+	public FilterChain(SlaveSelectionManagerInterface ssm, String cfgFileName)
+			throws FileNotFoundException, IOException {
+		_ssm = ssm;
+		_cfgfileName = cfgFileName;
+		reload();
+	}
 
-    public void reload(Properties p) {
-        ArrayList<Filter> filters = new ArrayList<Filter>();
-        int i = 1;
+	public void filter(ScoreChart sc, User user, InetAddress peer,
+			char direction, InodeHandle file, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
+		for (Filter filter : _filters) {
+			filter.process(sc, user, peer, direction, file, sourceSlave);
+		}
+	}
 
-        for (;; i++) {
-            String type = p.getProperty(i + ".filter");
+	public RemoteSlave getBestSlave(ScoreChart sc, User user, InetAddress peer,
+			char direction, InodeHandle file, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
+		filter(sc, user, peer, direction, file, sourceSlave);
+		RemoteSlave rslave = sc.getBestSlave();
+		rslave.setLastDirection(direction, System.currentTimeMillis());
+		return rslave;
+	}
 
-            if (type == null) {
-                break;
-            }
+	public void reload() throws FileNotFoundException, IOException {
+		Properties p = new Properties();
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(_cfgfileName);
+			p.load(fis);
+		} finally {
+			if (fis != null) {
+				fis.close();
+				fis = null;
+			}
+		}
+		reload(p);
+	}
 
-            if (type.indexOf('.') == -1) {
-                type = "org.drftpd.slaveselection.filter." +
-                    type.substring(0, 1).toUpperCase() + type.substring(1) +
-                    "Filter";
-            }
+	public void reload(Properties p) {
+		ArrayList<Filter> filters = new ArrayList<Filter>();
+		int i = 1;
 
-            try {
-                Class[] SIG = new Class[] {
-                        FilterChain.class, int.class, Properties.class
-                    };
+		for (;; i++) {
+			String type = p.getProperty(i + ".filter");
 
-                Filter filter = (Filter) Class.forName(type).getConstructor(SIG)
-                                              .newInstance(new Object[] {
-                            this, new Integer(i), p
-                        });
-                filters.add(filter);
-            } catch (Exception e) {
-                throw new FatalException(i + ".filter = " + type, e);
-            }
-        }
+			if (type == null) {
+				break;
+			}
 
-        filters.trimToSize();
-        _filters = filters;
-    }
+			if (type.indexOf('.') == -1) {
+				type = "org.drftpd.slaveselection.filter."
+						+ type.substring(0, 1).toUpperCase()
+						+ type.substring(1) + "Filter";
+			}
 
-    public GlobalContext getGlobalContext() {
-        return _ssm.getGlobalContext();
-    }
+			try {
+				Class[] SIG = new Class[] { FilterChain.class, int.class,
+						Properties.class };
+
+				Filter filter = (Filter) Class.forName(type)
+						.getConstructor(SIG).newInstance(
+								new Object[] { this, new Integer(i), p });
+				filters.add(filter);
+			} catch (Exception e) {
+				throw new FatalException(i + ".filter = " + type, e);
+			}
+		}
+
+		filters.trimToSize();
+		_filters = filters;
+	}
+
+	public GlobalContext getGlobalContext() {
+		return _ssm.getGlobalContext();
+	}
 }

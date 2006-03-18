@@ -17,30 +17,29 @@
  */
 package se.mog.io;
 
-
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- * @version $Id: WindowsFileSystem.java,v 1.5 2004/08/03 20:14:11 zubov Exp $
+ * @version $Id$
  */
 class WindowsFileSystem extends FileSystem {
-    public File[] listMounts() {
-        java.io.File[] roots = java.io.File.listRoots();
-        File[] ret = new File[roots.length];
+	public File[] listMounts() {
+		java.io.File[] roots = java.io.File.listRoots();
+		File[] ret = new File[roots.length];
 
-        for (int i = 0; i < roots.length; i++) {
-            ret[i] = new File(roots[i]);
-        }
+		for (int i = 0; i < roots.length; i++) {
+			ret[i] = new File(roots[i]);
+		}
 
-        return ret;
-    }
+		return ret;
+	}
 
-    public static void main(String[] args) {
-        File[] mounts = new WindowsFileSystem().listMounts();
+	public static void main(String[] args) {
+		File[] mounts = new WindowsFileSystem().listMounts();
 
-        for (int i = 0; i < mounts.length; i++) {
-            System.out.println(mounts[i]);
-        }
-    }
+		for (int i = 0; i < mounts.length; i++) {
+			System.out.println(mounts[i]);
+		}
+	}
 
-    public native DiskFreeSpace getDiskFreeSpace(File file);
+	public native DiskFreeSpace getDiskFreeSpace(File file);
 }

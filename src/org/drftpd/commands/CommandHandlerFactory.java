@@ -20,14 +20,13 @@ package org.drftpd.commands;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public interface CommandHandlerFactory {
-    public abstract CommandHandler initialize(BaseFtpConnection conn,
-        CommandManager initializer);
+	public abstract CommandHandler initialize(BaseFtpConnection conn,
+			CommandManager initializer);
 
-    public void unload();
+	public void unload();
 }

@@ -1,6 +1,7 @@
 package net.sf.drftpd.mirroring;
 
 import java.util.Comparator;
+
 /**
  * 
  * @author zubov

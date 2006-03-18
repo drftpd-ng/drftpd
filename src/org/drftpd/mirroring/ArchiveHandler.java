@@ -27,68 +27,72 @@ import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.sections.SectionInterface;
 
-
 /**
  * @author zubov
  * @version $Id$
  */
 public class ArchiveHandler extends Thread {
-    protected final static Logger logger = Logger.getLogger(ArchiveHandler.class);
-    private ArchiveType _archiveType;
+	protected final static Logger logger = Logger
+			.getLogger(ArchiveHandler.class);
 
-    public ArchiveHandler(ArchiveType archiveType) {
-        super(archiveType.getClass().getName() + " archiving " +
-                archiveType.getSection().getName());
-        _archiveType = archiveType;
-    }
+	private ArchiveType _archiveType;
 
-    public ArchiveType getArchiveType() {
-        return _archiveType;
-    }
+	public ArchiveHandler(ArchiveType archiveType) {
+		super(archiveType.getClass().getName() + " archiving "
+				+ archiveType.getSection().getName());
+		_archiveType = archiveType;
+	}
 
-    public SectionInterface getSection() {
-        return _archiveType.getSection();
-    }
+	public ArchiveType getArchiveType() {
+		return _archiveType;
+	}
 
-    public void run() {
-        try {
-            synchronized (_archiveType._parent) {
-                if (_archiveType.getDirectory() == null) {
-                    _archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
-                }
+	public SectionInterface getSection() {
+		return _archiveType.getSection();
+	}
 
-                if (_archiveType.getDirectory() == null) {
-                    return; // all done
-                }
-                try {
+	public void run() {
+		try {
+			synchronized (_archiveType._parent) {
+				if (_archiveType.getDirectory() == null) {
+					_archiveType.setDirectory(_archiveType
+							.getOldestNonArchivedDir());
+				}
+
+				if (_archiveType.getDirectory() == null) {
+					return; // all done
+				}
+				try {
 					_archiveType._parent.addArchiveHandler(this);
 				} catch (DuplicateArchiveException e) {
 					logger.warn("Directory -- " + _archiveType.getDirectory()
 							+ " -- is already being archived ");
 					return;
 				}
-            }
+			}
 
-            if (_archiveType.getRSlaves() == null) {
-                Set<RemoteSlave> destSlaves = _archiveType.findDestinationSlaves();
+			if (_archiveType.getRSlaves() == null) {
+				Set<RemoteSlave> destSlaves = _archiveType
+						.findDestinationSlaves();
 
-                if (destSlaves == null) {
-                    _archiveType.setDirectory(null);
-                    return; // no available slaves to use
-                }
+				if (destSlaves == null) {
+					_archiveType.setDirectory(null);
+					return; // no available slaves to use
+				}
 
-                _archiveType.setRSlaves(Collections.unmodifiableSet(destSlaves));
-            }
+				_archiveType
+						.setRSlaves(Collections.unmodifiableSet(destSlaves));
+			}
 
-            ArrayList<Job> jobs = _archiveType.send();
-            _archiveType.waitForSendOfFiles(new ArrayList<Job>(jobs));
-            _archiveType.cleanup(jobs);
-            logger.info("Done archiving " +
-                getArchiveType().getDirectory().getPath());
-        } catch (Exception e) {
-            logger.warn("", e);
-        } finally {
+			ArrayList<Job> jobs = _archiveType.send();
+			_archiveType.waitForSendOfFiles(new ArrayList<Job>(jobs));
+			_archiveType.cleanup(jobs);
+			logger.info("Done archiving "
+					+ getArchiveType().getDirectory().getPath());
+		} catch (Exception e) {
+			logger.warn("", e);
+		} finally {
 			_archiveType._parent.removeArchiveHandler(this);
-        }
-    }
+		}
+	}
 }

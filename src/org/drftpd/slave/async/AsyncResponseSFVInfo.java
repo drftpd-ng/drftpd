@@ -19,29 +19,28 @@ package org.drftpd.slave.async;
 
 import org.drftpd.SFVInfo;
 
-
 /**
  * @author zubov
  * @version $Id: AsyncResponseSFVFile.java 790 2004-11-15 01:12:17Z mog $
  */
 public class AsyncResponseSFVInfo extends AsyncResponse {
-    private SFVInfo _sfv;
+	private SFVInfo _sfv;
 
-    public AsyncResponseSFVInfo(String index, SFVInfo sfv) {
-        super(index);
+	public AsyncResponseSFVInfo(String index, SFVInfo sfv) {
+		super(index);
 
-        if (sfv == null) {
-            throw new IllegalArgumentException("sfv cannot be null");
-        }
+		if (sfv == null) {
+			throw new IllegalArgumentException("sfv cannot be null");
+		}
 
-        _sfv = sfv;
-    }
+		_sfv = sfv;
+	}
 
-    public SFVInfo getSFV() {
-        return _sfv;
-    }
-    
-    public String toString() {
-    	return getClass().getName();
-    }
+	public SFVInfo getSFV() {
+		return _sfv;
+	}
+
+	public String toString() {
+		return getClass().getName();
+	}
 }

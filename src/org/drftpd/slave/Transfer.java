@@ -40,142 +40,162 @@ import org.drftpd.slave.async.AsyncResponseTransferStatus;
 
 import se.mog.io.File;
 
-
 /**
  * @author zubov
  * @version $Id$
  */
 public class Transfer {
-    private static final Logger logger = Logger.getLogger(Transfer.class);
+	private static final Logger logger = Logger.getLogger(Transfer.class);
+
 	private String _abortReason = null;
-    private CRC32 _checksum = null;
-    private Connection _conn;
-    private char _direction;
-    private long _finished = 0;
-    private InputStream _in;
-    private char _mode = 'I';
-    private OutputStream _out;
-    private Slave _slave;
-    private Socket _sock;
-    private long _started = 0;
-    private long _transfered = 0;
-    private TransferIndex _transferIndex;
+
+	private CRC32 _checksum = null;
+
+	private Connection _conn;
+
+	private char _direction;
+
+	private long _finished = 0;
+
+	private InputStream _in;
+
+	private char _mode = 'I';
+
+	private OutputStream _out;
+
+	private Slave _slave;
+
+	private Socket _sock;
+
+	private long _started = 0;
+
+	private long _transfered = 0;
+
+	private TransferIndex _transferIndex;
+
 	public static final char TRANSFER_RECEIVING_UPLOAD = 'R';
+
 	public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
+
 	public static final char TRANSFER_THROUGHPUT = 'A';
+
 	public static final char TRANSFER_UNKNOWN = 'U';
+
 	private File _file = null;
+
 	private String _pathForUpload = null;
 
-    /**
-     * Start undefined transfer.
-     */
-    public Transfer(Connection conn, Slave slave, TransferIndex transferIndex) {
-        if (conn == null) {
-            throw new RuntimeException();
-        }
+	/**
+	 * Start undefined transfer.
+	 */
+	public Transfer(Connection conn, Slave slave, TransferIndex transferIndex) {
+		if (conn == null) {
+			throw new RuntimeException();
+		}
 
-        if (slave == null) {
-            throw new RuntimeException();
-        }
+		if (slave == null) {
+			throw new RuntimeException();
+		}
 
-        if (transferIndex == null) {
-            throw new RuntimeException();
-        }
+		if (transferIndex == null) {
+			throw new RuntimeException();
+		}
 
-        _slave = slave;
-        _conn = conn;
-        synchronized(this) {
-        	_direction = Transfer.TRANSFER_UNKNOWN;
-        }
-        _transferIndex = transferIndex;
-    }
+		_slave = slave;
+		_conn = conn;
+		synchronized (this) {
+			_direction = Transfer.TRANSFER_UNKNOWN;
+		}
+		_transferIndex = transferIndex;
+	}
 
-    public int hashCode() {
-        return _transferIndex.hashCode();
-    }
+	public int hashCode() {
+		return _transferIndex.hashCode();
+	}
 
-    public synchronized void abort(String reason) {
-    	try {
-    	_abortReason = reason;
+	public synchronized void abort(String reason) {
+		try {
+			_abortReason = reason;
 
-    	} finally {
-            if (_conn != null) {
-                _conn.abort();
-            }
-            if(_direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-            	if (_file != null) {
-            		_file.delete();
-            	}
-            }
-            if (_sock != null) {
-            	try {
-            		_sock.close();
-            	} catch (IOException e) {
-            	}
-            }
-            if (_out != null) {
-            	try {
-            		_out.close();
-            	} catch (IOException e) {
-            	}            }
-            if (_in != null) {
-            	try {
-            		_in.close();
-            	} catch (IOException e) {
-            	}
-            }
-    	}
-    }
+		} finally {
+			if (_conn != null) {
+				_conn.abort();
+			}
+			if (_direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+				if (_file != null) {
+					_file.delete();
+				}
+			}
+			if (_sock != null) {
+				try {
+					_sock.close();
+				} catch (IOException e) {
+				}
+			}
+			if (_out != null) {
+				try {
+					_out.close();
+				} catch (IOException e) {
+				}
+			}
+			if (_in != null) {
+				try {
+					_in.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
 
-    public long getChecksum() {
-        if (_checksum == null) {
-            return 0;
-        }
+	public long getChecksum() {
+		if (_checksum == null) {
+			return 0;
+		}
 
-        return _checksum.getValue();
-    }
+		return _checksum.getValue();
+	}
 
-    public long getElapsed() {
-        if (_finished == 0) {
-            return System.currentTimeMillis() - _started;
-        }
+	public long getElapsed() {
+		if (_finished == 0) {
+			return System.currentTimeMillis() - _started;
+		}
 
-        return _finished - _started;
-    }
+		return _finished - _started;
+	}
 
-    public int getLocalPort() {
-        if (_conn instanceof PassiveConnection) {
-            return ((PassiveConnection) _conn).getLocalPort();
-        }
+	public int getLocalPort() {
+		if (_conn instanceof PassiveConnection) {
+			return ((PassiveConnection) _conn).getLocalPort();
+		}
 
-        throw new IllegalStateException(
-            "getLocalPort() called on a non-passive transfer");
-    }
+		throw new IllegalStateException(
+				"getLocalPort() called on a non-passive transfer");
+	}
 
-    public char getState() {
-        return _direction;
-    }
+	public char getState() {
+		return _direction;
+	}
 
-    public TransferStatus getTransferStatus() {
-        return new TransferStatus(getElapsed(), getTransfered(), getChecksum(),
-            isFinished(), getTransferIndex());
-    }
+	public TransferStatus getTransferStatus() {
+		return new TransferStatus(getElapsed(), getTransfered(), getChecksum(),
+				isFinished(), getTransferIndex());
+	}
 
-    public boolean isFinished() {
-    	return (_finished != 0 || _abortReason != null);
+	public boolean isFinished() {
+		return (_finished != 0 || _abortReason != null);
 	}
 
 	public long getTransfered() {
 		return _transfered;
 	}
 
-    public TransferIndex getTransferIndex() {
-        return _transferIndex;
-    }
-    
-    private Transfer getUploadForPath(String path) throws ObjectNotFoundException {
-    	for (Iterator iter = _slave.getTransfers().iterator(); iter.hasNext();) {
+	public TransferIndex getTransferIndex() {
+		return _transferIndex;
+	}
+
+	private Transfer getUploadForPath(String path)
+			throws ObjectNotFoundException {
+		for (Iterator iter = _slave.getTransfers().iterator(); iter.hasNext();) {
 			Transfer transfer = (Transfer) iter.next();
 			synchronized (transfer) {
 				if (!transfer.isReceivingUploading()) {
@@ -186,34 +206,34 @@ public class Transfer {
 				}
 			}
 		}
-    	throw new ObjectNotFoundException("Transfer not found");
-    }
+		throw new ObjectNotFoundException("Transfer not found");
+	}
 
-    public int getXferSpeed() {
-        long elapsed = getElapsed();
+	public int getXferSpeed() {
+		long elapsed = getElapsed();
 
-        if (_transfered == 0) {
-            return 0;
-        }
+		if (_transfered == 0) {
+			return 0;
+		}
 
-        if (elapsed == 0) {
-            return 0;
-        }
+		if (elapsed == 0) {
+			return 0;
+		}
 
-        return (int) (_transfered / ((float) elapsed / (float) 1000));
-    }
+		return (int) (_transfered / ((float) elapsed / (float) 1000));
+	}
 
-    public boolean isReceivingUploading() {
-        return _direction == Transfer.TRANSFER_RECEIVING_UPLOAD;
-    }
+	public boolean isReceivingUploading() {
+		return _direction == Transfer.TRANSFER_RECEIVING_UPLOAD;
+	}
 
-    public boolean isSendingUploading() {
-        return _direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
-    }
+	public boolean isSendingUploading() {
+		return _direction == Transfer.TRANSFER_SENDING_DOWNLOAD;
+	}
 
-    public TransferStatus receiveFile(String dirname, char mode,
+	public TransferStatus receiveFile(String dirname, char mode,
 			String filename, long offset) throws IOException {
-    	_pathForUpload = dirname + File.separator + filename;
+		_pathForUpload = dirname + File.separator + filename;
 		try {
 			_slave.getRoots().getFile(_pathForUpload);
 			throw new FileExistsException("File " + dirname
@@ -223,7 +243,8 @@ public class Transfer {
 		String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
 		try {
-			_out = new FileOutputStream(_file = new File(root + File.separator + filename));
+			_out = new FileOutputStream(_file = new File(root + File.separator
+					+ filename));
 
 			if (_slave.getUploadChecksums()) {
 				_checksum = new CRC32();
@@ -235,7 +256,7 @@ public class Transfer {
 			}
 
 			_in = _sock.getInputStream();
-			synchronized(this) {
+			synchronized (this) {
 				_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
 			}
 
@@ -249,84 +270,86 @@ public class Transfer {
 			// _slave.delete(root + File.separator + filename);
 			throw e; // so the Master can still handle the exception
 		} finally {
-            if (_sock != null) {
-            	try {
-            		_sock.close();
-            	} catch (IOException e) {
-            	}
-            }
-            if (_out != null) {
-            	try {
-            		_out.close();
-            	} catch (IOException e) {
-            	}            }
-            if (_in != null) {
-            	try {
-            		_in.close();
-            	} catch (IOException e) {
-            	}
-            }
+			if (_sock != null) {
+				try {
+					_sock.close();
+				} catch (IOException e) {
+				}
+			}
+			if (_out != null) {
+				try {
+					_out.close();
+				} catch (IOException e) {
+				}
+			}
+			if (_in != null) {
+				try {
+					_in.close();
+				} catch (IOException e) {
+				}
+			}
 		}
 	}
 
-    public TransferStatus sendFile(String path, char type, long resumePosition)
-    throws IOException {
-    	try {
+	public TransferStatus sendFile(String path, char type, long resumePosition)
+			throws IOException {
+		try {
 
-    		_in = new FileInputStream(_file = new File(_slave.getRoots()
-    				.getFile(path)));
-    		
-    		if (_slave.getDownloadChecksums()) {
-    			_checksum = new CRC32();
-    			_in = new CheckedInputStream(_in, _checksum);
-    		}
-    		
-    		_in.skip(resumePosition);
-    		accept();
-    		if (_slave.getBufferSize() > 0) {
-    			_sock.setSendBufferSize(_slave.getBufferSize());
-    		}
-    		
-    		_out = _sock.getOutputStream();
-    		synchronized(this) {
-    			_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
-    		}
-    		
-    		System.out.println("DL:" + path);
-    		try {
+			_in = new FileInputStream(_file = new File(_slave.getRoots()
+					.getFile(path)));
+
+			if (_slave.getDownloadChecksums()) {
+				_checksum = new CRC32();
+				_in = new CheckedInputStream(_in, _checksum);
+			}
+
+			_in.skip(resumePosition);
+			accept();
+			if (_slave.getBufferSize() > 0) {
+				_sock.setSendBufferSize(_slave.getBufferSize());
+			}
+
+			_out = _sock.getOutputStream();
+			synchronized (this) {
+				_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
+			}
+
+			System.out.println("DL:" + path);
+			try {
 				transfer(getUploadForPath(path));
 			} catch (ObjectNotFoundException e) {
 				transfer(null);
 			}
-    		return getTransferStatus();
+			return getTransferStatus();
 		} finally {
-            if (_sock != null) {
-            	try {
-            		_sock.close();
-            	} catch (IOException e) {
-            	}
-            }
-            if (_out != null) {
-            	try {
-            		_out.close();
-            	} catch (IOException e) {
-            	}            }
-            if (_in != null) {
-            	try {
-            		_in.close();
-            	} catch (IOException e) {
-            	}
-            }
-    	}
-    }
+			if (_sock != null) {
+				try {
+					_sock.close();
+				} catch (IOException e) {
+				}
+			}
+			if (_out != null) {
+				try {
+					_out.close();
+				} catch (IOException e) {
+				}
+			}
+			if (_in != null) {
+				try {
+					_in.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
 
-    private void accept() throws IOException {
-        _sock = _conn.connect();
-        
-        _conn = null;
-    }
+	private void accept() throws IOException {
+		_sock = _conn.connect();
 
-    /**
+		_conn = null;
+	}
+
+	/**
 	 * Call sock.connect() and start sending.
 	 * 
 	 * Read about buffers here:
@@ -351,7 +374,7 @@ public class Transfer {
 	 * data so it can put new TX data in there and on the line). (The idea is to
 	 * get the ack before you have to stop transmitting.)
 	 */
-    private void transfer(Transfer associatedUpload) throws IOException {
+	private void transfer(Transfer associatedUpload) throws IOException {
 		try {
 			_started = System.currentTimeMillis();
 			if (_mode == 'A') {
@@ -406,7 +429,9 @@ public class Transfer {
 			}
 		} finally {
 			_finished = System.currentTimeMillis();
-			_slave.removeTransfer(this); // transfers are added in setting up the transfer, issueListenToSlave()/issueConnectToSlave()
+			_slave.removeTransfer(this); // transfers are added in setting up
+											// the transfer,
+											// issueListenToSlave()/issueConnectToSlave()
 		}
 	}
 }

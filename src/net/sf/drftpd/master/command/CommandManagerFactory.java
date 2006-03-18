@@ -32,151 +32,153 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 
-
 /**
  * @author mog
- *
- * Istantiates the CommandManager instances that holds per-connection CommandHandlers.
+ * 
+ * Istantiates the CommandManager instances that holds per-connection
+ * CommandHandlers.
  * @version $Id$
  */
 public class CommandManagerFactory {
-    /**
-     * Class => CommandHandlerFactory
-     */
-    private Hashtable _hnds;
+	/**
+	 * Class => CommandHandlerFactory
+	 */
+	private Hashtable _hnds;
 
-    /**
-     * String=> Class
-     */
-    private Hashtable _cmds;
+	/**
+	 * String=> Class
+	 */
+	private Hashtable _cmds;
 
-    public CommandManagerFactory() {
+	public CommandManagerFactory() {
 
-        //		Login login = new Login();
-        //		handlers = new Hashtable();
-        //		handlers.put("USER", login);
-        //		handlers.put("PASS", login);
-        //		handlers = new ArrayList();
-        //		handlers.add(new Login());
-        //		handlers.add(new Dir());
-        //		handlers.add(new List());
-        //		handlers.add(new DataConnectionHandler());
-        //		handlers.add(new Search());
-        //		handlers.add(new UserManagement());
-        //_conn = conn;
-        //login.init(conn);
-        //Hashtable handlers = new Hashtable();
-        load();
-    }
+		// Login login = new Login();
+		// handlers = new Hashtable();
+		// handlers.put("USER", login);
+		// handlers.put("PASS", login);
+		// handlers = new ArrayList();
+		// handlers.add(new Login());
+		// handlers.add(new Dir());
+		// handlers.add(new List());
+		// handlers.add(new DataConnectionHandler());
+		// handlers.add(new Search());
+		// handlers.add(new UserManagement());
+		// _conn = conn;
+		// login.init(conn);
+		// Hashtable handlers = new Hashtable();
+		load();
+	}
 
-    public void reload() {
-        unload();
-        load();
-    }
+	public void reload() {
+		unload();
+		load();
+	}
 
-    private void unload() {
-        for (Iterator iter = _hnds.values().iterator(); iter.hasNext();) {
-            Object o = iter.next();
+	private void unload() {
+		for (Iterator iter = _hnds.values().iterator(); iter.hasNext();) {
+			Object o = iter.next();
 
-            try {
-                CommandHandlerFactory c = ((CommandHandlerFactory) o);
-                c.unload();
-            } catch (ClassCastException e) {
-                throw e;
-            }
-        }
-    }
+			try {
+				CommandHandlerFactory c = ((CommandHandlerFactory) o);
+				c.unload();
+			} catch (ClassCastException e) {
+				throw e;
+			}
+		}
+	}
 
-    private void load() {
-        Hashtable cmds = new Hashtable();
-        Hashtable hnds = new Hashtable();
-        Properties props = new Properties();
+	private void load() {
+		Hashtable cmds = new Hashtable();
+		Hashtable hnds = new Hashtable();
+		Properties props = new Properties();
 
-        try {
-            props.load(new FileInputStream("conf/commandhandlers.conf"));
-        } catch (IOException e) {
-            throw new FatalException("Error loading commandhandlers.conf", e);
-        }
+		try {
+			props.load(new FileInputStream("conf/commandhandlers.conf"));
+		} catch (IOException e) {
+			throw new FatalException("Error loading commandhandlers.conf", e);
+		}
 
-        //		URLClassLoader classLoader;
-        //		try {
-        //			classLoader =
-        //				URLClassLoader.newInstance(
-        //					new URL[] {
-        //						new URL("file:classes/"),
-        //						new URL("file:lib/log4j-1.2.8.jar")});
-        //		} catch (MalformedURLException e1) {
-        //			throw new RuntimeException(e1);
-        //		}
-        for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-            try {
-                Map.Entry entry = (Map.Entry) iter.next();
+		// URLClassLoader classLoader;
+		// try {
+		// classLoader =
+		// URLClassLoader.newInstance(
+		// new URL[] {
+		// new URL("file:classes/"),
+		// new URL("file:lib/log4j-1.2.8.jar")});
+		// } catch (MalformedURLException e1) {
+		// throw new RuntimeException(e1);
+		// }
+		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
+			try {
+				Map.Entry entry = (Map.Entry) iter.next();
 
-                Class hndclass = Class.forName((String) entry.getValue());
+				Class hndclass = Class.forName((String) entry.getValue());
 
-                //				Class hndclass =
-                //					Class.forName(
-                //						(String) entry.getValue(),
-                //						false,
-                //						classLoader);
-                CommandHandlerFactory hndinstance = (CommandHandlerFactory) hnds.get(hndclass);
+				// Class hndclass =
+				// Class.forName(
+				// (String) entry.getValue(),
+				// false,
+				// classLoader);
+				CommandHandlerFactory hndinstance = (CommandHandlerFactory) hnds
+						.get(hndclass);
 
-                if (hndinstance == null) {
-                    hndinstance = (CommandHandlerFactory) hndclass.newInstance();
-                    hnds.put(hndclass, hndinstance);
-                }
+				if (hndinstance == null) {
+					hndinstance = (CommandHandlerFactory) hndclass
+							.newInstance();
+					hnds.put(hndclass, hndinstance);
+				}
 
-                String cmd = (String) entry.getKey();
+				String cmd = (String) entry.getKey();
 
-                if (cmds.containsKey(cmd)) {
-                    throw new FileExistsException(cmd + " is already mapped");
-                }
+				if (cmds.containsKey(cmd)) {
+					throw new FileExistsException(cmd + " is already mapped");
+				}
 
-                cmds.put(cmd, hndclass);
-            } catch (Exception e) {
-                throw new FatalException("", e);
-            }
-        }
+				cmds.put(cmd, hndclass);
+			} catch (Exception e) {
+				throw new FatalException("", e);
+			}
+		}
 
-        _cmds = cmds;
-        _hnds = hnds;
-    }
+		_cmds = cmds;
+		_hnds = hnds;
+	}
 
-    public CommandManager initialize(BaseFtpConnection conn) {
-        CommandManager mgr = new CommandManager(conn, this);
+	public CommandManager initialize(BaseFtpConnection conn) {
+		CommandManager mgr = new CommandManager(conn, this);
 
-        return mgr;
-    }
+		return mgr;
+	}
 
-    /**
-     * Class => CommandHandler
-     */
-    public Hashtable getHandlersMap() {
-        return _hnds;
-    }
+	/**
+	 * Class => CommandHandler
+	 */
+	public Hashtable getHandlersMap() {
+		return _hnds;
+	}
 
-    /**
-     * String=> Class
-     */
-    public Hashtable getCommandsMap() {
-        return _cmds;
-    }
+	/**
+	 * String=> Class
+	 */
+	public Hashtable getCommandsMap() {
+		return _cmds;
+	}
 
-    public CommandHandler getHandler(Class clazz)
-        throws ObjectNotFoundException {
-        CommandHandler ret = (CommandHandler) _hnds.get(clazz);
+	public CommandHandler getHandler(Class clazz)
+			throws ObjectNotFoundException {
+		CommandHandler ret = (CommandHandler) _hnds.get(clazz);
 
-        if (ret == null) {
-            throw new ObjectNotFoundException();
-        }
+		if (ret == null) {
+			throw new ObjectNotFoundException();
+		}
 
-        return ret;
+		return ret;
 
-        //		for (Iterator iter = hnds.iterator(); iter.hasNext();) {
-        //			CommandHandler handler = (CommandHandler) iter.next();
-        //			if (handler.getClass().equals(clazz))
-        //				return handler;
-        //		}
-        //		throw new ObjectNotFoundException();
-    }
+		// for (Iterator iter = hnds.iterator(); iter.hasNext();) {
+		// CommandHandler handler = (CommandHandler) iter.next();
+		// if (handler.getClass().equals(clazz))
+		// return handler;
+		// }
+		// throw new ObjectNotFoundException();
+	}
 }

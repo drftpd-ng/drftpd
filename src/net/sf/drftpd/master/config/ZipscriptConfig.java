@@ -191,8 +191,7 @@ public class ZipscriptConfig {
 		return false;
 	}
 
-	public boolean checkSfvFirstEnforcedPath(DirectoryHandle dir,
-			User user) {
+	public boolean checkSfvFirstEnforcedPath(DirectoryHandle dir, User user) {
 		if (_SfvFirstRequired
 				&& _gctx.getConfig().checkPathPermission("sfvfirst.pathcheck",
 						user, dir)

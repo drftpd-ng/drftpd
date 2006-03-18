@@ -20,50 +20,51 @@ package org.drftpd.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
-
 /**
  * AddAsciiOutputStream that ensures that there's an \r before every \n.
- *
+ * 
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya</a>
  * @version $Id$
  */
 public class AddAsciiOutputStream extends OutputStream {
-    private OutputStream _out;
-    private boolean _lastWasCarriageReturn = false;
+	private OutputStream _out;
 
-    /**
-     * Constructor.
-     * @param os <code>java.io.OutputStream</code> to be filtered.
-     */
-    public AddAsciiOutputStream(OutputStream os) {
-        _out = os;
-    }
+	private boolean _lastWasCarriageReturn = false;
 
-    /**
-     * Write a single byte.
-     * ASCII characters are defined to be
-     * the lower half of an eight-bit code set (i.e., the most
-     * significant bit is zero). Change "\n" to "\r\n".
-     */
-    public void write(int i) throws IOException {
-        if ((i == '\n') && !_lastWasCarriageReturn) {
-            _out.write('\r');
-        }
+	/**
+	 * Constructor.
+	 * 
+	 * @param os
+	 *            <code>java.io.OutputStream</code> to be filtered.
+	 */
+	public AddAsciiOutputStream(OutputStream os) {
+		_out = os;
+	}
 
-        _lastWasCarriageReturn = false;
+	/**
+	 * Write a single byte. ASCII characters are defined to be the lower half of
+	 * an eight-bit code set (i.e., the most significant bit is zero). Change
+	 * "\n" to "\r\n".
+	 */
+	public void write(int i) throws IOException {
+		if ((i == '\n') && !_lastWasCarriageReturn) {
+			_out.write('\r');
+		}
 
-        if (i == '\r') {
-            _lastWasCarriageReturn = true;
-        }
+		_lastWasCarriageReturn = false;
 
-        _out.write(i);
-    }
+		if (i == '\r') {
+			_lastWasCarriageReturn = true;
+		}
 
-    public void close() throws IOException {
-        _out.close();
-    }
+		_out.write(i);
+	}
 
-    public void flush() throws IOException {
-        _out.flush();
-    }
+	public void close() throws IOException {
+		_out.close();
+	}
+
+	public void flush() throws IOException {
+		_out.flush();
+	}
 }

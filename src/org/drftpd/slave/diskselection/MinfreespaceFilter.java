@@ -28,49 +28,57 @@ import org.drftpd.slave.Root;
 
 /**
  * /**
+ * 
  * <pre>
- * X.filter=minfreespace
- * X.multiplier=1
- * X.minfreespace=1GB
- * X.assign=1, 2
+ *  X.filter=minfreespace
+ *  X.multiplier=1
+ *  X.minfreespace=1GB
+ *  X.assign=1, 2
  * </pre>
- *
- * Works like this:
- * if(diskfree < minfreespace) {
- *   addScore(-((minfreespace - diskfree) * multiplier))
- * }
+ * 
+ * Works like this: if(diskfree < minfreespace) { addScore(-((minfreespace -
+ * diskfree) * multiplier)) }
+ * 
  * @author fr0w
  */
 public class MinfreespaceFilter extends DiskFilter {
-	
+
 	private long _minfreespace;
+
 	private float _multiplier;
-	private ArrayList _assignList;  
-	
+
+	private ArrayList _assignList;
+
 	public MinfreespaceFilter(Properties p, Integer i) {
 		super(p, i);
-		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i + ".minfreespace"));
-		_multiplier = DiskFilter.parseMultiplier(p.getProperty(i + ".multiplier", "0"));
-		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
+		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i
+				+ ".minfreespace"));
+		_multiplier = DiskFilter.parseMultiplier(p.getProperty(i
+				+ ".multiplier", "0"));
+		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i
+				+ ".assign"));
 	}
-	
+
 	public void process(ScoreChart sc, String path) {
 		AssignRoot.addScoresToChart(_assignList, sc);
-		
+
 		for (Iterator iter = getRootList().iterator(); iter.hasNext();) {
 			Root o = (Root) iter.next();
-			
+
 			if (!AssignRoot.isAssignedRoot(o, _assignList))
 				continue;
-			
+
 			long df = o.getDiskSpaceAvailable();
 			if (df < _minfreespace) {
 				if (_multiplier == 0) {
 					sc.removeRootScore(o);
 				} else {
-					sc.addScore(o, -(long) ((_minfreespace - df) * _multiplier));
+					sc
+							.addScore(
+									o,
+									-(long) ((_minfreespace - df) * _multiplier));
 				}
-			} 
+			}
 		}
-	}	
+	}
 }

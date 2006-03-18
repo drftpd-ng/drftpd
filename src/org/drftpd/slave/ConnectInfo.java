@@ -17,35 +17,34 @@
  */
 package org.drftpd.slave;
 
-
 import java.io.Serializable;
-
 
 /**
  * @author zubov
  * @version $Id$
  */
 public class ConnectInfo implements Serializable {
-    private int _port;
-    private TransferIndex _transferIndex;
-    private TransferStatus _transferStatus;
+	private int _port;
 
-    public ConnectInfo(int port,
-        TransferIndex transferIndex, TransferStatus ts) {
-        _port = port;
-        _transferIndex = transferIndex;
-        _transferStatus = ts;
-    }
+	private TransferIndex _transferIndex;
 
-    public int getPort() {
-        return _port;
-    }
+	private TransferStatus _transferStatus;
 
-    public TransferIndex getTransferIndex() {
-        return _transferIndex;
-    }
+	public ConnectInfo(int port, TransferIndex transferIndex, TransferStatus ts) {
+		_port = port;
+		_transferIndex = transferIndex;
+		_transferStatus = ts;
+	}
 
-    public TransferStatus getTransferStatus() {
-        return _transferStatus;
-    }
+	public int getPort() {
+		return _port;
+	}
+
+	public TransferIndex getTransferIndex() {
+		return _transferIndex;
+	}
+
+	public TransferStatus getTransferStatus() {
+		return _transferStatus;
+	}
 }

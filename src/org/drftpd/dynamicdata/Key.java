@@ -19,54 +19,56 @@ package org.drftpd.dynamicdata;
 
 import java.io.Serializable;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class Key implements Serializable {
-    private String _key;
-    private Class _owner;
-    private Class _type;
+	private String _key;
 
-    public Key(Class owner, String key, Class type) {
-        assert owner != null;
-        assert key != null;
-        assert type != null;
-        _owner = owner;
-        _key = key;
-        _type = type;
-    }
+	private Class _owner;
 
-    public boolean equals(Object o) {
-        if (o == null) {
-            return false;
-        }
+	private Class _type;
 
-        Key ok = (Key) o;
+	public Key(Class owner, String key, Class type) {
+		assert owner != null;
+		assert key != null;
+		assert type != null;
+		_owner = owner;
+		_key = key;
+		_type = type;
+	}
 
-        return ok.getOwner() == getOwner() && ok.getKey().equals(getKey());
-    }
+	public boolean equals(Object o) {
+		if (o == null) {
+			return false;
+		}
 
-    public String getKey() {
-        return _key;
-    }
+		Key ok = (Key) o;
 
-    public Class getOwner() {
-        return _owner;
-    }
+		return ok.getOwner() == getOwner() && ok.getKey().equals(getKey());
+	}
 
-    public Class getType() {
-        return _type;
-    }
+	public String getKey() {
+		return _key;
+	}
 
-    public String toString() {
-        return getOwner().getName() + '@' + getKey();
-    }
+	public Class getOwner() {
+		return _owner;
+	}
 
-    public String toString(Object value) {
-        return value.toString();
-    }
+	public Class getType() {
+		return _type;
+	}
+
+	public String toString() {
+		return getOwner().getName() + '@' + getKey();
+	}
+
+	public String toString(Object value) {
+		return value.toString();
+	}
+
 	public int hashCode() {
 		return toString().hashCode();
 	}

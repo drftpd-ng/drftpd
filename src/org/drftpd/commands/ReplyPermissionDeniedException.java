@@ -19,7 +19,8 @@ package org.drftpd.commands;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: ReplyPermissionDeniedException.java 879 2004-12-29 03:39:22Z
+ *          mog $
  */
 public class ReplyPermissionDeniedException extends ReplyException {
 	public ReplyPermissionDeniedException() {

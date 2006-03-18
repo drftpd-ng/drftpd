@@ -42,48 +42,57 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * @author zubov
  * @version $Id$
  */
 public abstract class ArchiveType {
-    private static final Logger logger = Logger.getLogger(ArchiveType.class);
-    private long _archiveAfter;
-    private DirectoryHandle _directory;
-    protected Archive _parent;
-    protected SectionInterface _section;
-    protected Set<RemoteSlave> _slaveList;
-    protected int _numOfSlaves;
+	private static final Logger logger = Logger.getLogger(ArchiveType.class);
 
-    /**
-     * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter
-     * Each implementing ArchiveType still needs to check/validate these figures to their specific needs
-     * After the constructor finishes, _slaveList is guaranteed to be non-null, but can still be empty
-     * @param archive
-     * @param section
-     * @param p
-     */
-    public ArchiveType(Archive archive, SectionInterface section, Properties p) {
-        _parent = archive;
-        _section = section;
-        setProperties(p);
-    }
+	private long _archiveAfter;
 
-    /**
-     * Once the Jobs in the jobList have been sent, this method is called
-     * This is where files are possibly deleted from slaves
-     */
-    public void cleanup(ArrayList<Job> jobList) {
-    	for (Job job : jobList) {
-    		try {
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+	private DirectoryHandle _directory;
+
+	protected Archive _parent;
+
+	protected SectionInterface _section;
+
+	protected Set<RemoteSlave> _slaveList;
+
+	protected int _numOfSlaves;
+
+	/**
+	 * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter Each
+	 * implementing ArchiveType still needs to check/validate these figures to
+	 * their specific needs After the constructor finishes, _slaveList is
+	 * guaranteed to be non-null, but can still be empty
+	 * 
+	 * @param archive
+	 * @param section
+	 * @param p
+	 */
+	public ArchiveType(Archive archive, SectionInterface section, Properties p) {
+		_parent = archive;
+		_section = section;
+		setProperties(p);
+	}
+
+	/**
+	 * Once the Jobs in the jobList have been sent, this method is called This
+	 * is where files are possibly deleted from slaves
+	 */
+	public void cleanup(ArrayList<Job> jobList) {
+		for (Job job : jobList) {
+			try {
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job
+						.getFile().getSlaves())) {
 					if (!getRSlaves().contains(rslave)) {
 						rslave.simpleDelete(job.getFile().getPath());
 						job.getFile().removeSlave(rslave);
 					}
 				}
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job
+						.getFile().getSlaves())) {
 					if (job.getFile().getSlaves().size() > _numOfSlaves) {
 						if (!rslave.isAvailable()) {
 							rslave.simpleDelete(job.getFile().getPath());
@@ -93,63 +102,67 @@ public abstract class ArchiveType {
 						break;
 					}
 				}
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job
+						.getFile().getSlaves())) {
 					if (job.getFile().getSlaves().size() > _numOfSlaves) {
-							rslave.simpleDelete(job.getFile().getPath());
-							job.getFile().removeSlave(rslave);
+						rslave.simpleDelete(job.getFile().getPath());
+						job.getFile().removeSlave(rslave);
 					} else {
 						break;
 					}
 				}
 			} catch (FileNotFoundException e) {
-				// couldn't find the file that was referenced, unsure of what to do now
+				// couldn't find the file that was referenced, unsure of what to
+				// do now
 				// probably can just leave it alone
 				continue;
 			}
-    	}
-    }
-    
-    
-    /**
-     * Used to determine a list of slaves dynamically during runtime, only gets called if _slaveList == null
-     * @return
-     */
-    public abstract Set<RemoteSlave> findDestinationSlaves();
+		}
+	}
 
-    public final DirectoryHandle getDirectory() {
-        return _directory;
-    }
+	/**
+	 * Used to determine a list of slaves dynamically during runtime, only gets
+	 * called if _slaveList == null
+	 * 
+	 * @return
+	 */
+	public abstract Set<RemoteSlave> findDestinationSlaves();
 
-    /**
-     * Returns the oldest LinkedRemoteFile(directory) that needs to be archived by this type's definition
-     * If no such directory exists, it returns null
-     */
-    public final DirectoryHandle getOldestNonArchivedDir() {
-        ArrayList<DirectoryHandle> oldDirs = new ArrayList<DirectoryHandle>();
+	public final DirectoryHandle getDirectory() {
+		return _directory;
+	}
 
-        try {
-			for (Iterator<DirectoryHandle> iter = getSection().getCurrentDirectory().getDirectories().iterator();
-			        iter.hasNext();) {
+	/**
+	 * Returns the oldest LinkedRemoteFile(directory) that needs to be archived
+	 * by this type's definition If no such directory exists, it returns null
+	 */
+	public final DirectoryHandle getOldestNonArchivedDir() {
+		ArrayList<DirectoryHandle> oldDirs = new ArrayList<DirectoryHandle>();
+
+		try {
+			for (Iterator<DirectoryHandle> iter = getSection()
+					.getCurrentDirectory().getDirectories().iterator(); iter
+					.hasNext();) {
 				DirectoryHandle lrf = iter.next();
-			    try {
-			        _parent.checkPathForArchiveStatus(lrf.getPath());
-			    } catch (DuplicateArchiveException e1) {
-			        continue;
-			    }
+				try {
+					_parent.checkPathForArchiveStatus(lrf.getPath());
+				} catch (DuplicateArchiveException e1) {
+					continue;
+				}
 
-			    try {
-			        if (!isArchivedDir(lrf)) {
-			            if ((System.currentTimeMillis() - lrf.lastModified()) > getArchiveAfter()) {
-			                oldDirs.add(lrf);
-			            }
-			        }
-			    } catch (IncompleteDirectoryException e) {
-			        continue;
-			    } catch (OfflineSlaveException e) {
-			        continue;
-			    } catch (FileNotFoundException e) {
-			    	continue;
-			    	// directory was deleted or moved
+				try {
+					if (!isArchivedDir(lrf)) {
+						if ((System.currentTimeMillis() - lrf.lastModified()) > getArchiveAfter()) {
+							oldDirs.add(lrf);
+						}
+					}
+				} catch (IncompleteDirectoryException e) {
+					continue;
+				} catch (OfflineSlaveException e) {
+					continue;
+				} catch (FileNotFoundException e) {
+					continue;
+					// directory was deleted or moved
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -157,90 +170,97 @@ public abstract class ArchiveType {
 			// list is empty so the rest of the code will handle that
 		}
 
-        DirectoryHandle oldestDir = null;
-        long oldestDirLM = 0;
-        for (Iterator<DirectoryHandle> iter = oldDirs.iterator(); iter.hasNext();) {
-        	DirectoryHandle temp = iter.next();
+		DirectoryHandle oldestDir = null;
+		long oldestDirLM = 0;
+		for (Iterator<DirectoryHandle> iter = oldDirs.iterator(); iter
+				.hasNext();) {
+			DirectoryHandle temp = iter.next();
 
-            if (oldestDir == null) {
-                oldestDir = temp;
-                try {
+			if (oldestDir == null) {
+				oldestDir = temp;
+				try {
 					oldestDirLM = oldestDir.lastModified();
 				} catch (FileNotFoundException e) {
 					oldestDir = null;
 					iter.remove();
 				}
-                continue;
-            }
-            try {
+				continue;
+			}
+			try {
 				if (oldestDirLM > temp.lastModified()) {
-				    oldestDir = temp;
+					oldestDir = temp;
 				}
 			} catch (FileNotFoundException e) {
 				iter.remove();
 				continue;
 			}
-        }
-        if (oldestDir != null) {
-            logger.debug(getClass().toString() +
-                    " - Returning the oldest directory " + oldestDir);
-            return oldestDir;
-        }
-        logger.debug(getClass().toString() +
-                " - All directories are archived");
-        return null;
-    }
-
-    /**
-     * if the directory is archived by this type's definition, this method returns true
-     */
-    protected abstract boolean isArchivedDir(InodeHandle lrf)
-        throws IncompleteDirectoryException, OfflineSlaveException;
-
-    /**
-     * Returns unmodifiable Set<RemoteSlave>.
-     */
-    public final Set<RemoteSlave> getRSlaves() {
-        return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
-    }
-
-    /**
-     * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
-     * @throws FileNotFoundException 
-     */
-    public ArrayList<Job> send() throws FileNotFoundException {
-        ArrayList<Job> jobs = recursiveSend(getDirectory());
-        JobManager jm = getGlobalContext().getJobManager();
-        jm.addJobsToQueue(jobs);
-        return jobs;
-    }
-
-    private static GlobalContext getGlobalContext() {
-    	return GlobalContext.getGlobalContext();
+		}
+		if (oldestDir != null) {
+			logger.debug(getClass().toString()
+					+ " - Returning the oldest directory " + oldestDir);
+			return oldestDir;
+		}
+		logger.debug(getClass().toString() + " - All directories are archived");
+		return null;
 	}
 
-	protected ArrayList<Job> recursiveSend(DirectoryHandle lrf) throws FileNotFoundException {
-        ArrayList<Job> jobQueue = new ArrayList<Job>();
+	/**
+	 * if the directory is archived by this type's definition, this method
+	 * returns true
+	 */
+	protected abstract boolean isArchivedDir(InodeHandle lrf)
+			throws IncompleteDirectoryException, OfflineSlaveException;
 
-        for (Iterator<DirectoryHandle> iter = lrf.getDirectories().iterator(); iter.hasNext();) {
-            jobQueue.addAll(recursiveSend(iter.next()));
-        }
-        for (Iterator<FileHandle> iter = lrf.getFiles().iterator(); iter.hasNext();) {
-        	FileHandle file = iter.next();
-            logger.info("Adding " + file.getPath() + " to the job queue");
-            Job job = new Job(file, getRSlaves(), 3, _numOfSlaves);
-            jobQueue.add(job);
-        }
+	/**
+	 * Returns unmodifiable Set<RemoteSlave>.
+	 */
+	public final Set<RemoteSlave> getRSlaves() {
+		return _slaveList == null ? null : Collections
+				.unmodifiableSet(_slaveList);
+	}
 
-        return jobQueue;
-    }
+	/**
+	 * Adds relevant Jobs to the JobManager and returns an ArrayList of those
+	 * Job's
+	 * 
+	 * @throws FileNotFoundException
+	 */
+	public ArrayList<Job> send() throws FileNotFoundException {
+		ArrayList<Job> jobs = recursiveSend(getDirectory());
+		JobManager jm = getGlobalContext().getJobManager();
+		jm.addJobsToQueue(jobs);
+		return jobs;
+	}
 
-    protected static final boolean isArchivedToXSlaves(DirectoryHandle lrf,
-        int x) throws IncompleteDirectoryException, OfflineSlaveException {
-        HashSet<RemoteSlave> slaveSet = null;
-        Set<DirectoryHandle> directories = null;
-        Set<FileHandle> files = null;
-        try {
+	private static GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
+	}
+
+	protected ArrayList<Job> recursiveSend(DirectoryHandle lrf)
+			throws FileNotFoundException {
+		ArrayList<Job> jobQueue = new ArrayList<Job>();
+
+		for (Iterator<DirectoryHandle> iter = lrf.getDirectories().iterator(); iter
+				.hasNext();) {
+			jobQueue.addAll(recursiveSend(iter.next()));
+		}
+		for (Iterator<FileHandle> iter = lrf.getFiles().iterator(); iter
+				.hasNext();) {
+			FileHandle file = iter.next();
+			logger.info("Adding " + file.getPath() + " to the job queue");
+			Job job = new Job(file, getRSlaves(), 3, _numOfSlaves);
+			jobQueue.add(job);
+		}
+
+		return jobQueue;
+	}
+
+	protected static final boolean isArchivedToXSlaves(DirectoryHandle lrf,
+			int x) throws IncompleteDirectoryException, OfflineSlaveException {
+		HashSet<RemoteSlave> slaveSet = null;
+		Set<DirectoryHandle> directories = null;
+		Set<FileHandle> files = null;
+		try {
 			directories = lrf.getDirectories();
 			files = lrf.getFiles();
 		} catch (FileNotFoundException e1) {
@@ -248,192 +268,194 @@ public abstract class ArchiveType {
 			return true;
 		}
 
-/*        try {
-            if (!lrf.getSFVStatus().isFinished()) {
-                logger.debug(lrf.getPath() + " is not complete");
-                throw new IncompleteDirectoryException(lrf.getPath() +
-                    " is not complete");
-            }
-        } catch (FileNotFoundException e) {
-        } catch (IOException e) {
-        } catch (NoAvailableSlaveException e) {
-        	throw new OfflineSlaveException("SFV is offline", e);
-        }*/
-        // I don't like this code to begin with, it depends on SFV
-        // this should be configurable at least
-
-		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
-		    if (!isArchivedToXSlaves(iter.next(), x)) {
-		         return false;
-		    }
+		/*
+		 * try { if (!lrf.getSFVStatus().isFinished()) {
+		 * logger.debug(lrf.getPath() + " is not complete"); throw new
+		 * IncompleteDirectoryException(lrf.getPath() + " is not complete"); } }
+		 * catch (FileNotFoundException e) { } catch (IOException e) { } catch
+		 * (NoAvailableSlaveException e) { throw new OfflineSlaveException("SFV
+		 * is offline", e); }
+		 */
+		// I don't like this code to begin with, it depends on SFV
+		// this should be configurable at least
+		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter
+				.hasNext();) {
+			if (!isArchivedToXSlaves(iter.next(), x)) {
+				return false;
+			}
 		}
-        for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
-        	FileHandle file = iter.next();
+		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
+			FileHandle file = iter.next();
 			Collection<RemoteSlave> availableSlaves;
 			try {
-				if(!file.isAvailable()) throw new OfflineSlaveException(file.getPath()+" is offline");
+				if (!file.isAvailable())
+					throw new OfflineSlaveException(file.getPath()
+							+ " is offline");
 				availableSlaves = file.getSlaves();
 			} catch (FileNotFoundException e) {
-				// can't archive a directory with files that have been moved, we'll come back later
+				// can't archive a directory with files that have been moved,
+				// we'll come back later
 				return true;
 			}
 
-            if (slaveSet == null) {
-                slaveSet = new HashSet<RemoteSlave>(availableSlaves);
-            } else {
-                if (!(slaveSet.containsAll(availableSlaves) &&
-                        availableSlaves.containsAll(slaveSet))) {
-                    return false;
-                }
-            }
-        }
+			if (slaveSet == null) {
+				slaveSet = new HashSet<RemoteSlave>(availableSlaves);
+			} else {
+				if (!(slaveSet.containsAll(availableSlaves) && availableSlaves
+						.containsAll(slaveSet))) {
+					return false;
+				}
+			}
+		}
 
-        if (slaveSet == null) { // no files found in directory
-            return true;
-        }
+		if (slaveSet == null) { // no files found in directory
+			return true;
+		}
 
-        for (Iterator iter = slaveSet.iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
+		for (Iterator iter = slaveSet.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
 
-            if (!rslave.isAvailable()) {
-                throw new OfflineSlaveException(rslave.getName() +
-                    " is offline");
-            }
-        }
+			if (!rslave.isAvailable()) {
+				throw new OfflineSlaveException(rslave.getName()
+						+ " is offline");
+			}
+		}
 
-        return (slaveSet.size() == x);
-    }
+		return (slaveSet.size() == x);
+	}
 
-    public final boolean isBusy() {
-        return (getDirectory() != null);
-    }
+	public final boolean isBusy() {
+		return (getDirectory() != null);
+	}
 
-    protected final long getArchiveAfter() {
-        return _archiveAfter;
-    }
+	protected final long getArchiveAfter() {
+		return _archiveAfter;
+	}
 
-    public final SectionInterface getSection() {
-        return _section;
-    }
+	public final SectionInterface getSection() {
+		return _section;
+	}
 
-    /**
-     * Sets standard properties for this ArchiveType
-     */
-    private void setProperties(Properties properties) {
-        try {
-            _archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(
-                        properties, getSection().getName() + ".archiveAfter"));
-        } catch (NullPointerException e) {
-            _archiveAfter = 0;
-        }
-        _numOfSlaves = Integer.parseInt(properties.getProperty(getSection()
+	/**
+	 * Sets standard properties for this ArchiveType
+	 */
+	private void setProperties(Properties properties) {
+		try {
+			_archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(
+					properties, getSection().getName() + ".archiveAfter"));
+		} catch (NullPointerException e) {
+			_archiveAfter = 0;
+		}
+		_numOfSlaves = Integer.parseInt(properties.getProperty(getSection()
 				.getName()
 				+ ".numOfSlaves", "0"));
-        
-        HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
-        
-        for (int i = 1;; i++) {
-            String slavename = null;
 
-            try {
-                slavename = PropertyHelper.getProperty(properties,
-                        getSection().getName() + ".slavename." + i);
-            } catch (NullPointerException e) {
-                break; // done
-            }
+		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
 
-            try {
-                RemoteSlave rslave = _parent.getGlobalContext()
+		for (int i = 1;; i++) {
+			String slavename = null;
+
+			try {
+				slavename = PropertyHelper.getProperty(properties, getSection()
+						.getName()
+						+ ".slavename." + i);
+			} catch (NullPointerException e) {
+				break; // done
+			}
+
+			try {
+				RemoteSlave rslave = _parent.getGlobalContext()
 						.getSlaveManager().getRemoteSlave(slavename);
-                	destSlaves.add(rslave);
-            } catch (ObjectNotFoundException e) {
-                logger.error("Unable to get slave " + slavename +
-                    " from the SlaveManager");
-            }
-        }
-        _slaveList = destSlaves;
-    }
+				destSlaves.add(rslave);
+			} catch (ObjectNotFoundException e) {
+				logger.error("Unable to get slave " + slavename
+						+ " from the SlaveManager");
+			}
+		}
+		_slaveList = destSlaves;
+	}
 
-    public final void setDirectory(DirectoryHandle lrf) {
-        _directory = lrf;
-    }
+	public final void setDirectory(DirectoryHandle lrf) {
+		_directory = lrf;
+	}
 
-    public final void setRSlaves(Set<RemoteSlave> slaveList) {
-        _slaveList = slaveList;
-    }
+	public final void setRSlaves(Set<RemoteSlave> slaveList) {
+		_slaveList = slaveList;
+	}
 
-    public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
-        while (true) {
-            for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-                Job job = (Job) iter.next();
+	public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
+		while (true) {
+			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
+				Job job = (Job) iter.next();
 
-                if (job.isDone()) {
-                    logger.debug("Job " + job + " is done being sent");
-                    iter.remove();
-                }
-            }
+				if (job.isDone()) {
+					logger.debug("Job " + job + " is done being sent");
+					iter.remove();
+				}
+			}
 
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-            }
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+			}
 
-            if (jobQueue.isEmpty()) {
-                break;
-            }
-        }
-    }
-    
-    private void printJobsInQueue(ArrayList<Job> jobList) {
-    	for (Job j : jobList) {
-    		logger.debug(j);
-    	}
-    }
+			if (jobQueue.isEmpty()) {
+				break;
+			}
+		}
+	}
 
-    public abstract String toString();
+	private void printJobsInQueue(ArrayList<Job> jobList) {
+		for (Job j : jobList) {
+			logger.debug(j);
+		}
+	}
 
-    protected String outputSlaves(Collection slaveList) {
-        String toReturn = new String();
+	public abstract String toString();
 
-        for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
-            RemoteSlave rslave = (RemoteSlave) iter.next();
-            toReturn = toReturn + rslave.getName();
+	protected String outputSlaves(Collection slaveList) {
+		String toReturn = new String();
 
-            if (iter.hasNext()) {
-                toReturn = toReturn + ",";
-            } else {
-                return toReturn;
-            }
-        }
+		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = (RemoteSlave) iter.next();
+			toReturn = toReturn + rslave.getName();
 
-        return "Empty";
-    }
+			if (iter.hasNext()) {
+				toReturn = toReturn + ",";
+			} else {
+				return toReturn;
+			}
+		}
+
+		return "Empty";
+	}
 
 	public Set<RemoteSlave> getOffOfSlaves(Properties props) {
-        Set<RemoteSlave> offOfSlaves = new HashSet<RemoteSlave>();
+		Set<RemoteSlave> offOfSlaves = new HashSet<RemoteSlave>();
 
-        for (int i = 1;; i++) {
-            String slavename = null;
+		for (int i = 1;; i++) {
+			String slavename = null;
 
-            try {
-                slavename = PropertyHelper.getProperty(props,
-                        getSection().getName() + ".offOfSlave." + i);
-            } catch (NullPointerException e) {
-                break; // done
-            }
+			try {
+				slavename = PropertyHelper.getProperty(props, getSection()
+						.getName()
+						+ ".offOfSlave." + i);
+			} catch (NullPointerException e) {
+				break; // done
+			}
 
-            try {
-            	RemoteSlave rslave = _parent.getGlobalContext()
-				.getSlaveManager().getRemoteSlave(slavename);
-            	if (!_slaveList.contains(rslave)) {
-            		offOfSlaves.add(rslave);
-            	}
-            } catch (ObjectNotFoundException e) {
-                logger.error("Unable to get slave " + slavename +
-                    " from the SlaveManager");
-            }
-        }
-        return offOfSlaves;
+			try {
+				RemoteSlave rslave = _parent.getGlobalContext()
+						.getSlaveManager().getRemoteSlave(slavename);
+				if (!_slaveList.contains(rslave)) {
+					offOfSlaves.add(rslave);
+				}
+			} catch (ObjectNotFoundException e) {
+				logger.error("Unable to get slave " + slavename
+						+ " from the SlaveManager");
+			}
+		}
+		return offOfSlaves;
 
 	}
 }

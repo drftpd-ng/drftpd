@@ -20,11 +20,14 @@ import net.sf.drftpd.NoAvailableSlaveException;
 
 /**
  * @author mog
- * @version $Id$
+ * @version $Id: ReplySlaveUnavailableException.java 879 2004-12-29 03:39:22Z
+ *          mog $
  */
 public class ReplySlaveUnavailableException extends ReplyException {
 	private int _replyCode;
-	public ReplySlaveUnavailableException(NoAvailableSlaveException ex, int replyCode) {
+
+	public ReplySlaveUnavailableException(NoAvailableSlaveException ex,
+			int replyCode) {
 		super(ex);
 		_replyCode = replyCode;
 	}

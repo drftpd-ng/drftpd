@@ -103,7 +103,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		commit();
 		logger.info("createLink(" + inode + ")");
 	}
-	
+
 	public Set<String> getInodeNames() {
 		return new HashSet(_files.keySet());
 	}
@@ -117,7 +117,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			try {
 				inode = getInodeByName(inodeName);
 			} catch (FileNotFoundException e) {
-				throw new RuntimeException("Stop deleting files outside of drftpd", e);
+				throw new RuntimeException(
+						"Stop deleting files outside of drftpd", e);
 			}
 			if (inode.isDirectory()) {
 				set.add(new DirectoryHandle(path + inodeName));

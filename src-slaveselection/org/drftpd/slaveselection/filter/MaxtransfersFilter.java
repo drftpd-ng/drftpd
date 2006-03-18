@@ -30,48 +30,48 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * @author zubov
  */
 public class MaxtransfersFilter extends Filter {
-    private long _maxTransfers;
+	private long _maxTransfers;
 
-    public MaxtransfersFilter(FilterChain ssm, int i, Properties p) {
-        _maxTransfers = Long.parseLong(PropertyHelper.getProperty(p,
-                    i + ".maxtransfers"));
-    }
+	public MaxtransfersFilter(FilterChain ssm, int i, Properties p) {
+		_maxTransfers = Long.parseLong(PropertyHelper.getProperty(p, i
+				+ ".maxtransfers"));
+	}
 
-    public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, InodeHandle dir, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
-        for (Iterator iter = scorechart.getSlaveScores().iterator();
-                iter.hasNext();) {
-            ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iter.next();
-            SlaveStatus status;
+	public void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
+		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
+				.hasNext();) {
+			ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iter
+					.next();
+			SlaveStatus status;
 
-            try {
-                status = slavescore.getRSlave().getSlaveStatusAvailable();
-            } catch (Exception e) {
-                iter.remove();
+			try {
+				status = slavescore.getRSlave().getSlaveStatusAvailable();
+			} catch (Exception e) {
+				iter.remove();
 
-                continue;
-            }
+				continue;
+			}
 
-            int transfers = 0;
+			int transfers = 0;
 
-            if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-                transfers = status.getTransfersReceiving();
-            } else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-                transfers = status.getTransfersSending();
-            } else {
-                throw new IllegalArgumentException(
-                    "Direction was not one of download or upload");
-            }
+			if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+				transfers = status.getTransfersReceiving();
+			} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+				transfers = status.getTransfersSending();
+			} else {
+				throw new IllegalArgumentException(
+						"Direction was not one of download or upload");
+			}
 
-            if (transfers > _maxTransfers) {
-                iter.remove();
-            }
-        }
-    }
+			if (transfers > _maxTransfers) {
+				iter.remove();
+			}
+		}
+	}
 }

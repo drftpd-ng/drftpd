@@ -21,27 +21,27 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-
 /**
- * Starts DrFTPD slave (org.drftpd.slave.Slave) by loading a .jar file over the network.
- * Takes URL as first argument and passes the rest of the arguments to Slave.main()
- *
+ * Starts DrFTPD slave (org.drftpd.slave.Slave) by loading a .jar file over the
+ * network. Takes URL as first argument and passes the rest of the arguments to
+ * Slave.main()
+ * 
  * @author mog
  * @version $Id$
  */
 public class URLBootStrap {
-    public static void main(String[] args) throws Throwable {
-        URL[] urls = { new URL(args[0]) };
-        URLClassLoader cl = new URLClassLoader(urls);
-        Method met = cl.loadClass(args[1]).getMethod("main",
-                new Class[] { String[].class });
-        met.invoke(null, new Object[] { scrubArgs(args, 2) });
-    }
+	public static void main(String[] args) throws Throwable {
+		URL[] urls = { new URL(args[0]) };
+		URLClassLoader cl = new URLClassLoader(urls);
+		Method met = cl.loadClass(args[1]).getMethod("main",
+				new Class[] { String[].class });
+		met.invoke(null, new Object[] { scrubArgs(args, 2) });
+	}
 
-    public static String[] scrubArgs(String[] args, int scrub) {
-        String[] ret = new String[args.length - scrub];
-        System.arraycopy(args, scrub, ret, 0, ret.length);
+	public static String[] scrubArgs(String[] args, int scrub) {
+		String[] ret = new String[args.length - scrub];
+		System.arraycopy(args, scrub, ret, 0, ret.length);
 
-        return ret;
-    }
+		return ret;
+	}
 }

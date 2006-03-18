@@ -23,8 +23,12 @@ package org.drftpd.slave;
  */
 public interface LightRemoteFileInterface {
 	public String getName();
+
 	public boolean isDirectory();
+
 	public boolean isFile();
+
 	public long lastModified();
+
 	public long length();
 }

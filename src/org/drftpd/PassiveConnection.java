@@ -31,36 +31,37 @@ import net.sf.drftpd.util.PortRange;
 import org.apache.log4j.Logger;
 import org.drftpd.slave.Connection;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class PassiveConnection extends Connection {
-    private static final Logger logger = Logger.getLogger(PassiveConnection.class);
-    private ServerSocket _serverSocket;
-    // Default is to initiate the handshake
-    private boolean _useSSLClientMode = false;
-    
-    /**
-     * @param ctx
-     * @param portRange
-     * @throws IOException
-     * Creates a PassiveConnection
-     * - If ctx==null, the Connection will not use SSL
-     */
-    public PassiveConnection(SSLContext ctx, PortRange portRange,boolean useSSLClientMode)
-    	throws IOException {
-    	_useSSLClientMode = useSSLClientMode;
-    	if (ctx != null) {
+	private static final Logger logger = Logger
+			.getLogger(PassiveConnection.class);
+
+	private ServerSocket _serverSocket;
+
+	// Default is to initiate the handshake
+	private boolean _useSSLClientMode = false;
+
+	/**
+	 * @param ctx
+	 * @param portRange
+	 * @throws IOException
+	 *             Creates a PassiveConnection - If ctx==null, the Connection
+	 *             will not use SSL
+	 */
+	public PassiveConnection(SSLContext ctx, PortRange portRange,
+			boolean useSSLClientMode) throws IOException {
+		_useSSLClientMode = useSSLClientMode;
+		if (ctx != null) {
 			_serverSocket = portRange.getPort(ctx.getServerSocketFactory());
-    	} else {
-    		_serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
-    	}
-    	_serverSocket.setSoTimeout(TIMEOUT);
-    }
-    
- 
+		} else {
+			_serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
+		}
+		_serverSocket.setSoTimeout(TIMEOUT);
+	}
+
 	public Socket connect() throws IOException {
 		Socket sock = null;
 		try {
@@ -72,39 +73,41 @@ public class PassiveConnection extends Connection {
 			_serverSocket = null;
 		}
 
-        setSockOpts(sock);
-        
-        if (sock instanceof SSLSocket) {
-        	SSLSocket sslsock = (SSLSocket) sock;
-        	sslsock.setUseClientMode(_useSSLClientMode);
-           	sslsock.startHandshake();
-        }
-        if (sock == null) {
-        	// can happen if abort() is called while serverSocket.accept() is waiting
-        	throw new SocketException("abort() was called while waiting for a connection");
-        }
+		setSockOpts(sock);
 
-        return sock;
-    }
+		if (sock instanceof SSLSocket) {
+			SSLSocket sslsock = (SSLSocket) sock;
+			sslsock.setUseClientMode(_useSSLClientMode);
+			sslsock.startHandshake();
+		}
+		if (sock == null) {
+			// can happen if abort() is called while serverSocket.accept() is
+			// waiting
+			throw new SocketException(
+					"abort() was called while waiting for a connection");
+		}
 
-    public int getLocalPort() {
-        if (_serverSocket == null) {
-            throw new NullPointerException("_serverSocket == null");
-        }
+		return sock;
+	}
 
-        return _serverSocket.getLocalPort();
-    }
+	public int getLocalPort() {
+		if (_serverSocket == null) {
+			throw new NullPointerException("_serverSocket == null");
+		}
 
-    public void abort() {
-        try {
+		return _serverSocket.getLocalPort();
+	}
+
+	public void abort() {
+		try {
 			if (_serverSocket != null) {
 				_serverSocket.close();
 			}
-        } catch (IOException e) {
-            logger.error("failed to close() server socket", e);
-        }
-        _serverSocket = null;
-    }
+		} catch (IOException e) {
+			logger.error("failed to close() server socket", e);
+		}
+		_serverSocket = null;
+	}
 
 	protected void finalize() throws Throwable {
 		if (_serverSocket != null) {
@@ -112,7 +115,7 @@ public class PassiveConnection extends Connection {
 					+ _serverSocket.getLocalPort()
 					+ ", accept() was never called on the ServerSocket");
 			_serverSocket.close();
-			_serverSocket = null;	
+			_serverSocket = null;
 		}
 	}
 

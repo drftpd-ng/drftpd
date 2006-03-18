@@ -17,20 +17,18 @@
  */
 package org.drftpd.permissions;
 
-
 import java.util.Collection;
 
 import org.drftpd.vfs.DirectoryHandle;
-
 
 /**
  * @author mog
  * @version $Id$
  */
 public abstract class PathPermission extends Permission {
-    public PathPermission(Collection<String> users) {
-        super(users);
-    }
+	public PathPermission(Collection<String> users) {
+		super(users);
+	}
 
-    public abstract boolean checkPath(DirectoryHandle path);
+	public abstract boolean checkPath(DirectoryHandle path);
 }

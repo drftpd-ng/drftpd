@@ -35,7 +35,9 @@ import org.drftpd.usermanager.UserManager;
 public class BeanUser extends AbstractUser implements Serializable {
 
 	private BeanUserManager _um;
+
 	private String _password = "";
+
 	private boolean _purged;
 
 	public BeanUser(String username) {
@@ -60,15 +62,18 @@ public class BeanUser extends AbstractUser implements Serializable {
 	}
 
 	public void commit() throws UserFileException {
-		if(_purged) return;
+		if (_purged)
+			return;
 		XMLEncoder out = null;
 		try {
-			out = _um.getXMLEncoder(new SafeFileOutputStream(_um.getUserFile(getName())));
+			out = _um.getXMLEncoder(new SafeFileOutputStream(_um
+					.getUserFile(getName())));
 			out.writeObject(this);
 		} catch (IOException ex) {
 			throw new UserFileException(ex);
 		} finally {
-				if(out != null) out.close();
+			if (out != null)
+				out.close();
 		}
 	}
 
@@ -90,18 +95,17 @@ public class BeanUser extends AbstractUser implements Serializable {
 	}
 
 	/**
-	 * Setter for userfile backwards comptibility.
-	 * Should work but i had nothing to test with.
+	 * Setter for userfile backwards comptibility. Should work but i had nothing
+	 * to test with.
 	 */
-//    public void setGroupSlots(int s) {
-//    	getKeyedMap().setObject(UserManagement.GROUPSLOTS, s);
-//    }
-
-    /**
-	 * Setter for userfile backwards comptibility.
-	 * Should work but i had nothing to test with.
+	// public void setGroupSlots(int s) {
+	// getKeyedMap().setObject(UserManagement.GROUPSLOTS, s);
+	// }
+	/**
+	 * Setter for userfile backwards comptibility. Should work but i had nothing
+	 * to test with.
 	 */
 	public void setGroupLeechSlots(short s) {
-    	getKeyedMap().setObject(UserManagement.LEECHSLOTS, s);		
+		getKeyedMap().setObject(UserManagement.LEECHSLOTS, s);
 	}
 }

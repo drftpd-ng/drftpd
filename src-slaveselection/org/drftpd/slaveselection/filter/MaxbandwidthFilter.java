@@ -31,41 +31,43 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
  * @author zubov
  * @version $Id: MaxbandwidthFilter.java 880 2004-12-29 04:24:27Z mog $
  */
 public class MaxbandwidthFilter extends Filter {
-    private static final Logger logger = Logger.getLogger(MaxbandwidthFilter.class);
-    private long _maxBandwidth;
+	private static final Logger logger = Logger
+			.getLogger(MaxbandwidthFilter.class);
 
-    public MaxbandwidthFilter(FilterChain ssm, int i, Properties p) {
-        _maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p,
-                    i + ".maxbandwidth"));
-    }
+	private long _maxBandwidth;
 
-    public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, InodeHandle dir, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
-        for (Iterator iter = scorechart.getSlaveScores().iterator();
-                iter.hasNext();) {
-            ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iter.next();
-            SlaveStatus status;
+	public MaxbandwidthFilter(FilterChain ssm, int i, Properties p) {
+		_maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p, i
+				+ ".maxbandwidth"));
+	}
 
-            try {
-                status = slavescore.getRSlave().getSlaveStatusAvailable();
-            } catch (Exception e) {
-                iter.remove();
-                logger.debug("removed " + slavescore.getRSlave().getName() +
-                    " because of exception", e);
+	public void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
+		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
+				.hasNext();) {
+			ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iter
+					.next();
+			SlaveStatus status;
 
-                continue;
-            }
+			try {
+				status = slavescore.getRSlave().getSlaveStatusAvailable();
+			} catch (Exception e) {
+				iter.remove();
+				logger.debug("removed " + slavescore.getRSlave().getName()
+						+ " because of exception", e);
 
-            if (status.getThroughputDirection(direction) > _maxBandwidth) {
-                iter.remove();
-            }
-        }
-    }
+				continue;
+			}
+
+			if (status.getThroughputDirection(direction) > _maxBandwidth) {
+				iter.remove();
+			}
+		}
+	}
 }

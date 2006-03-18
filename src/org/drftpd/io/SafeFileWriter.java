@@ -25,77 +25,80 @@ import java.io.Writer;
 
 import org.apache.log4j.Logger;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class SafeFileWriter extends Writer {
-    private File _actualFile;
-    private OutputStreamWriter _out;
-    private File _tempFile;
-    private boolean failed = false;
+	private File _actualFile;
 
-    /**
-     * @see java.io.File#File(java.io.File)
-     */
-    public SafeFileWriter(File file) throws IOException {
-        _actualFile = file;
+	private OutputStreamWriter _out;
 
-        if (!_actualFile.getAbsoluteFile().getParentFile().canWrite()) {
-            throw new IOException("Can't write to target dir");
-        }
+	private File _tempFile;
 
-        File dir = _actualFile.getParentFile();
+	private boolean failed = false;
 
-        if (dir == null) {
-            dir = new File(".");
-        }
+	/**
+	 * @see java.io.File#File(java.io.File)
+	 */
+	public SafeFileWriter(File file) throws IOException {
+		_actualFile = file;
 
-        _tempFile = File.createTempFile(_actualFile.getName(), null, dir);
-        _out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
-    }
+		if (!_actualFile.getAbsoluteFile().getParentFile().canWrite()) {
+			throw new IOException("Can't write to target dir");
+		}
 
-    /**
-     * @see java.io.File#File(java.lang.String)
-     */
-    public SafeFileWriter(String fileName) throws IOException {
-        this(new File(fileName));
-    }
+		File dir = _actualFile.getParentFile();
 
-    public void close() throws IOException {
-        _out.flush();
-        _out.close();
+		if (dir == null) {
+			dir = new File(".");
+		}
 
-        if (!failed) {
-            Logger.getLogger(SafeFileWriter.class).debug("Renaming " +
-                _tempFile + " (" + _tempFile.length() + ") to " + _actualFile);
+		_tempFile = File.createTempFile(_actualFile.getName(), null, dir);
+		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
+	}
 
-            if (_actualFile.exists() && !_actualFile.delete()) {
-                throw new IOException("delete() failed");
-            }
+	/**
+	 * @see java.io.File#File(java.lang.String)
+	 */
+	public SafeFileWriter(String fileName) throws IOException {
+		this(new File(fileName));
+	}
 
-            if (!_tempFile.exists()) {
-                throw new IOException("source doesn't exist");
-            }
+	public void close() throws IOException {
+		_out.flush();
+		_out.close();
 
-            if (!_tempFile.renameTo(_actualFile)) {
-                throw new IOException("renameTo(" + _tempFile + ", " +
-                    _actualFile + ") failed");
-            }
-        }
-    }
+		if (!failed) {
+			Logger.getLogger(SafeFileWriter.class).debug(
+					"Renaming " + _tempFile + " (" + _tempFile.length()
+							+ ") to " + _actualFile);
 
-    public void flush() throws IOException {
-        _out.flush();
-    }
+			if (_actualFile.exists() && !_actualFile.delete()) {
+				throw new IOException("delete() failed");
+			}
 
-    public void write(char[] cbuf, int off, int len) throws IOException {
-        try {
-            _out.write(cbuf, off, len);
-        } catch (IOException e) {
-            failed = true;
-            throw e;
-        }
-    }
+			if (!_tempFile.exists()) {
+				throw new IOException("source doesn't exist");
+			}
+
+			if (!_tempFile.renameTo(_actualFile)) {
+				throw new IOException("renameTo(" + _tempFile + ", "
+						+ _actualFile + ") failed");
+			}
+		}
+	}
+
+	public void flush() throws IOException {
+		_out.flush();
+	}
+
+	public void write(char[] cbuf, int off, int len) throws IOException {
+		try {
+			_out.write(cbuf, off, len);
+		} catch (IOException e) {
+			failed = true;
+			throw e;
+		}
+	}
 }

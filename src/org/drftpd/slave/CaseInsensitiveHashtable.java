@@ -22,39 +22,40 @@ import java.util.Map;
 
 /**
  * Cannot be generic until JDK 1.4 support is dropped.
+ * 
  * @author mog
  * @version $Id$
  */
 public class CaseInsensitiveHashtable extends Hashtable {
-    public CaseInsensitiveHashtable() {
-        super();
-    }
+	public CaseInsensitiveHashtable() {
+		super();
+	}
 
-    public CaseInsensitiveHashtable(int initialCapacity) {
-        super(initialCapacity);
-    }
+	public CaseInsensitiveHashtable(int initialCapacity) {
+		super(initialCapacity);
+	}
 
-    public CaseInsensitiveHashtable(int initialCapacity, float loadFactor) {
-        super(initialCapacity, loadFactor);
-    }
+	public CaseInsensitiveHashtable(int initialCapacity, float loadFactor) {
+		super(initialCapacity, loadFactor);
+	}
 
-    public CaseInsensitiveHashtable(Map t) {
-        super(t);
-    }
+	public CaseInsensitiveHashtable(Map t) {
+		super(t);
+	}
 
-    public synchronized boolean containsKey(Object key) {
-        return super.containsKey(((String) key).toLowerCase());
-    }
+	public synchronized boolean containsKey(Object key) {
+		return super.containsKey(((String) key).toLowerCase());
+	}
 
-    public synchronized Object get(Object key) {
-        return super.get(((String) key).toLowerCase());
-    }
+	public synchronized Object get(Object key) {
+		return super.get(((String) key).toLowerCase());
+	}
 
-    public synchronized Object put(Object key, Object value) {
-        return super.put(((String) key).toLowerCase(), value);
-    }
+	public synchronized Object put(Object key, Object value) {
+		return super.put(((String) key).toLowerCase(), value);
+	}
 
-    public synchronized Object remove(Object key) {
-        return super.remove(((String) key).toLowerCase());
-    }
+	public synchronized Object remove(Object key) {
+		return super.remove(((String) key).toLowerCase());
+	}
 }

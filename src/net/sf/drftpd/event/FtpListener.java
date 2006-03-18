@@ -26,11 +26,13 @@ import org.drftpd.GlobalContext;
 public abstract class FtpListener {
 	public abstract void actionPerformed(Event event);
 
-    public void unload() {}
+	public void unload() {
+	}
 
-    public void init() {}
+	public void init() {
+	}
 
-    public static GlobalContext getGlobalContext() {
-    	return GlobalContext.getGlobalContext();
-    }
+	public static GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
+	}
 }

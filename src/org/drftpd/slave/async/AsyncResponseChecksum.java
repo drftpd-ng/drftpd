@@ -17,20 +17,19 @@
  */
 package org.drftpd.slave.async;
 
-
 /**
  * @author zubov
- * @version $Id: AsyncResponseChecksum.java,v 1.3 2004/11/03 16:46:46 mog Exp $
+ * @version $Id$
  */
 public class AsyncResponseChecksum extends AsyncResponse {
-    long _checksum;
+	long _checksum;
 
-    public AsyncResponseChecksum(String index, long checksum) {
-        super(index);
-        _checksum = checksum;
-    }
+	public AsyncResponseChecksum(String index, long checksum) {
+		super(index);
+		_checksum = checksum;
+	}
 
-    public long getChecksum() {
-        return _checksum;
-    }
+	public long getChecksum() {
+		return _checksum;
+	}
 }

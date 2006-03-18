@@ -38,13 +38,17 @@ import com.Ostermiller.util.StringTokenizer;
  * @version $Id: UserFilter.java 879 2004-12-29 03:39:22Z mog $
  */
 public class UserFilter extends Filter {
-    private Permission _perm;
+	private Permission _perm;
+
 	private ArrayList<MatchdirFilter.AssignSlave> _assigns;
 
-	public UserFilter(FilterChain fc, int i, Properties p) throws ObjectNotFoundException {
-    	_perm = new Permission(FtpConfig.makeUsers(new StringTokenizer(PropertyHelper.getProperty(p, i+".perm"))));
-    	_assigns = MatchdirFilter.parseAssign(PropertyHelper.getProperty(p, i+".assign"), fc.getGlobalContext().getSlaveManager());
-    }
+	public UserFilter(FilterChain fc, int i, Properties p)
+			throws ObjectNotFoundException {
+		_perm = new Permission(FtpConfig.makeUsers(new StringTokenizer(
+				PropertyHelper.getProperty(p, i + ".perm"))));
+		_assigns = MatchdirFilter.parseAssign(PropertyHelper.getProperty(p, i
+				+ ".assign"), fc.getGlobalContext().getSlaveManager());
+	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
 			char direction, InodeHandle dir, RemoteSlave sourceSlave)

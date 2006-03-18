@@ -23,24 +23,23 @@ import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.vfs.DirectoryHandle;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class GlobPathPermission extends PathPermission {
-    Pattern _pat;
+	Pattern _pat;
 
-    public GlobPathPermission(Pattern pat, Collection<String> users) {
-        super(users);
-        _pat = pat;
-    }
+	public GlobPathPermission(Pattern pat, Collection<String> users) {
+		super(users);
+		_pat = pat;
+	}
 
-    public boolean checkPath(DirectoryHandle file) {
-        String path = file.getPath().concat("/");
+	public boolean checkPath(DirectoryHandle file) {
+		String path = file.getPath().concat("/");
 
-        Perl5Matcher m = new Perl5Matcher();
+		Perl5Matcher m = new Perl5Matcher();
 
-        return m.matches(path, _pat);
-    }
+		return m.matches(path, _pat);
+	}
 }

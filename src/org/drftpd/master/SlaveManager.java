@@ -56,7 +56,6 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -67,10 +66,11 @@ public class SlaveManager implements Runnable {
 			.getName());
 
 	private static final String slavePath = "slaves/";
-	
+
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
-	
-	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
+
+	protected static final int actualTimeout = 60000; // one minute, evaluated
+														// on a SocketTimeout
 
 	protected List<RemoteSlave> _rslaves = new ArrayList<RemoteSlave>();
 
@@ -84,12 +84,12 @@ public class SlaveManager implements Runnable {
 
 	private boolean _sslSlaves;
 
-	public SlaveManager(Properties p)
-			throws SlaveFileException {
+	public SlaveManager(Properties p) throws SlaveFileException {
 		this();
 		_port = Integer.parseInt(PropertyHelper.getProperty(p,
 				"master.bindport"));
-		_sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
+		_sslSlaves = p.getProperty("master.slaveSSL", "false")
+				.equalsIgnoreCase("true");
 		loadSlaves();
 	}
 
@@ -154,17 +154,20 @@ public class SlaveManager implements Runnable {
 			rslave = (RemoteSlave) in.readObject();
 			in.close();
 			rslave.init(getGlobalContext());
-			
+
 			if (rslave.getName().equals(slavename)) {
 				_rslaves.add(rslave);
 				return rslave;
 			}
-			logger.warn("Tried to lookup a slave with the same name, different case", new Throwable());
+			logger
+					.warn(
+							"Tried to lookup a slave with the same name, different case",
+							new Throwable());
 			throw new ObjectNotFoundException();
 		} catch (FileNotFoundException e) {
 			throw new ObjectNotFoundException(e);
 		} catch (Exception e) {
-			throw new FatalException("Error loading "+slavename, e);
+			throw new FatalException("Error loading " + slavename, e);
 		}
 	}
 
@@ -173,7 +176,7 @@ public class SlaveManager implements Runnable {
 	}
 
 	protected void addShutdownHook() {
-		//add shutdown hook last
+		// add shutdown hook last
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				logger.info("Running shutdown hook");
@@ -204,8 +207,8 @@ public class SlaveManager implements Runnable {
 		}
 	}
 
-	public HashSet<RemoteSlave> findSlavesBySpace(int numOfSlaves, Set exemptSlaves,
-			boolean ascending) {
+	public HashSet<RemoteSlave> findSlavesBySpace(int numOfSlaves,
+			Set exemptSlaves, boolean ascending) {
 		Collection<RemoteSlave> slaveList = getSlaves();
 		HashMap<Long, RemoteSlave> map = new HashMap<Long, RemoteSlave>();
 
@@ -287,7 +290,7 @@ public class SlaveManager implements Runnable {
 			try {
 				allStatus = allStatus.append(rslave.getSlaveStatusAvailable());
 			} catch (SlaveUnavailableException e) {
-				//slave is offline, continue
+				// slave is offline, continue
 			}
 		}
 
@@ -295,9 +298,9 @@ public class SlaveManager implements Runnable {
 	}
 
 	public HashMap getAllStatusArray() {
-		//SlaveStatus[] ret = new SlaveStatus[getSlaves().size()];
-		HashMap<String, SlaveStatus> ret = 
-			new HashMap<String, SlaveStatus>(getSlaves().size());
+		// SlaveStatus[] ret = new SlaveStatus[getSlaves().size()];
+		HashMap<String, SlaveStatus> ret = new HashMap<String, SlaveStatus>(
+				getSlaves().size());
 
 		for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter
 				.hasNext();) {
@@ -313,25 +316,25 @@ public class SlaveManager implements Runnable {
 		return ret;
 	}
 
-	//	private Random rand = new Random();
-	//	public RemoteSlave getASlave() {
-	//		ArrayList retSlaves = new ArrayList();
-	//		for (Iterator iter = this.rslaves.iterator(); iter.hasNext();) {
-	//			RemoteSlave rslave = (RemoteSlave) iter.next();
-	//			if (!rslave.isAvailable())
-	//				continue;
-	//			retSlaves.add(rslave);
-	//		}
+	// private Random rand = new Random();
+	// public RemoteSlave getASlave() {
+	// ArrayList retSlaves = new ArrayList();
+	// for (Iterator iter = this.rslaves.iterator(); iter.hasNext();) {
+	// RemoteSlave rslave = (RemoteSlave) iter.next();
+	// if (!rslave.isAvailable())
+	// continue;
+	// retSlaves.add(rslave);
+	// }
 	//
-	//		int num = rand.nextInt(retSlaves.size());
-	//		logger.fine(
-	//			"Slave "
-	//				+ num
-	//				+ " selected out of "
-	//				+ retSlaves.size()
-	//				+ " available slaves");
-	//		return (RemoteSlave) retSlaves.get(num);
-	//	}
+	// int num = rand.nextInt(retSlaves.size());
+	// logger.fine(
+	// "Slave "
+	// + num
+	// + " selected out of "
+	// + retSlaves.size()
+	// + " available slaves");
+	// return (RemoteSlave) retSlaves.get(num);
+	// }
 	/**
 	 * Returns a modifiable list of available RemoteSlave's
 	 */
@@ -404,7 +407,7 @@ public class SlaveManager implements Runnable {
 			} else {
 				_serverSocket = new ServerSocket(_port);
 			}
-			//_serverSocket.setReuseAddress(true);
+			// _serverSocket.setReuseAddress(true);
 			logger.info("Listening for slaves on port " + _port);
 		} catch (Exception e) {
 			throw new FatalException(e);
@@ -477,7 +480,7 @@ public class SlaveManager implements Runnable {
 
 					continue;
 				}
-					
+
 				rslave.connect(socket, in, out);
 			} catch (Exception e) {
 				rslave.setOffline(e);
@@ -511,28 +514,30 @@ public class SlaveManager implements Runnable {
 	 * Cancels all transfers in directory
 	 */
 	public void cancelTransfersInDirectory(DirectoryHandle dir) {
-        for (RemoteSlave rs : getSlaves()) {
-        	try {
-        		for (RemoteTransfer rt : rs.getTransfers()) {
-        			String path = rt.getPathNull();
-        			if (path != null) {
-        				if (path.startsWith(dir.getPath())) {
-        					rt.abort("Directory is nuked");
-        				}
-        			}
-        		}
-        	} catch (SlaveUnavailableException ignore) {
-        	}
-        }
+		for (RemoteSlave rs : getSlaves()) {
+			try {
+				for (RemoteTransfer rt : rs.getTransfers()) {
+					String path = rt.getPathNull();
+					if (path != null) {
+						if (path.startsWith(dir.getPath())) {
+							rt.abort("Directory is nuked");
+						}
+					}
+				}
+			} catch (SlaveUnavailableException ignore) {
+			}
+		}
 	}
-/**
- * Accepts directories and does the physical deletes asynchronously
- * Waits for a response and handles errors on each slave
- * Use RemoteSlave.simpleDelete(path) if you want to delete files
- * @param file
- */
+
+	/**
+	 * Accepts directories and does the physical deletes asynchronously Waits
+	 * for a response and handles errors on each slave Use
+	 * RemoteSlave.simpleDelete(path) if you want to delete files
+	 * 
+	 * @param file
+	 */
 	public void deleteOnAllSlaves(DirectoryHandle directory) {
-		HashMap<RemoteSlave,String> slaveMap = new HashMap<RemoteSlave,String>();
+		HashMap<RemoteSlave, String> slaveMap = new HashMap<RemoteSlave, String>();
 		Collection<RemoteSlave> slaves = new ArrayList<RemoteSlave>(_rslaves);
 		for (RemoteSlave rslave : slaves) {
 			String index = null;
@@ -553,7 +558,8 @@ public class SlaveManager implements Runnable {
 				if (e.getCause() instanceof FileNotFoundException) {
 					continue;
 				}
-				rslave.setOffline("IOException deleting file, check logs for specific error");
+				rslave
+						.setOffline("IOException deleting file, check logs for specific error");
 				rslave.addQueueDelete(directory.getPath());
 				logger
 						.error(
@@ -563,8 +569,9 @@ public class SlaveManager implements Runnable {
 			}
 		}
 	}
-	
-	public void renameOnAllSlaves(String fromPath, String toDirPath, String toName) {
+
+	public void renameOnAllSlaves(String fromPath, String toDirPath,
+			String toName) {
 		synchronized (this) {
 			for (RemoteSlave rslave : _rslaves) {
 				rslave.simpleRename(fromPath, toDirPath, toName);
@@ -590,7 +597,7 @@ class RemergeThread extends Thread {
 				logger.info("", e);
 				continue;
 			}
-			
+
 			if (msg.isCompleted()) {
 				continue;
 			}

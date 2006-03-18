@@ -17,12 +17,11 @@
  */
 package org.drftpd.usermanager;
 
-
 /**
  * @author mog
- *
- * @version $Id: PlainTextPasswordUser.java,v 1.2 2004/11/06 07:55:35 mog Exp $
+ * 
+ * @version $Id$
  */
 public interface PlainTextPasswordUser {
-    public String getPassword();
+	public String getPassword();
 }

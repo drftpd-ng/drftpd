@@ -19,29 +19,27 @@ package org.drftpd.slave.async;
 
 import org.drftpd.slave.DiskStatus;
 
-
-
 /**
  * @author zubov
- * @version $Id: AsyncResponseDiskStatus.java,v 1.2 2004/11/11 13:31:39 mog Exp $
+ * @version $Id$
  */
 public class AsyncResponseDiskStatus extends AsyncResponse {
-    private DiskStatus _status;
+	private DiskStatus _status;
 
-    public AsyncResponseDiskStatus(DiskStatus status) {
-        super("DiskStatus");
-        if (status == null) {
-            throw new IllegalArgumentException("status cannot be null");
-        }
+	public AsyncResponseDiskStatus(DiskStatus status) {
+		super("DiskStatus");
+		if (status == null) {
+			throw new IllegalArgumentException("status cannot be null");
+		}
 
-        _status = status;
-    }
+		_status = status;
+	}
 
-    public DiskStatus getDiskStatus() {
-        return _status;
-    }
+	public DiskStatus getDiskStatus() {
+		return _status;
+	}
 
-    public String toString() {
-        return getClass().getName() + "[status=" + getDiskStatus() + "]";
-    }
+	public String toString() {
+		return getClass().getName() + "[status=" + getDiskStatus() + "]";
+	}
 }

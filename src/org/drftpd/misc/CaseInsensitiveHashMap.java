@@ -21,8 +21,7 @@ import java.util.HashMap;
 
 /**
  * @author zubov
- * @version $Id$
- * Must be CaseInsensitiveHashMap <String,V>
+ * @version $Id$ Must be CaseInsensitiveHashMap <String,V>
  */
 public class CaseInsensitiveHashMap<K, V> extends HashMap<K, V> {
 

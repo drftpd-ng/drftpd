@@ -17,85 +17,92 @@
  */
 package net.sf.drftpd.master;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class GroupPosition implements Comparable<GroupPosition> {
-    long bytes;
-    int files;
-    String groupname;
-    long xfertime;
+	long bytes;
 
-    public GroupPosition(String groupname, long bytes, int files, long xfertime) {
-        this.groupname = groupname;
-        this.bytes = bytes;
-        this.files = files;
-        this.xfertime = xfertime;
-    }
+	int files;
 
-    /** Sorts in reverse order so that the biggest shows up first.
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    public int compareTo(GroupPosition o) {
-        long thisVal = getBytes();
-        long anotherVal = o.getBytes();
+	String groupname;
 
-        return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0 : (-1)));
-    }
+	long xfertime;
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    public boolean equals(Object obj) {
-        //if(obj instanceof String && obj.equals(getUsername())) return true;
-        if (!(obj instanceof GroupPosition)) {
-            return false;
-        }
+	public GroupPosition(String groupname, long bytes, int files, long xfertime) {
+		this.groupname = groupname;
+		this.bytes = bytes;
+		this.files = files;
+		this.xfertime = xfertime;
+	}
 
-        GroupPosition other = (GroupPosition) obj;
+	/**
+	 * Sorts in reverse order so that the biggest shows up first.
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	public int compareTo(GroupPosition o) {
+		long thisVal = getBytes();
+		long anotherVal = o.getBytes();
 
-        return getGroupname().equals(other.getGroupname());
-    }
+		return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0
+				: (-1)));
+	}
 
-    public long getBytes() {
-        return this.bytes;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		// if(obj instanceof String && obj.equals(getUsername())) return true;
+		if (!(obj instanceof GroupPosition)) {
+			return false;
+		}
 
-    public int getFiles() {
-        return this.files;
-    }
+		GroupPosition other = (GroupPosition) obj;
 
-    public String getGroupname() {
-        return groupname;
-    }
+		return getGroupname().equals(other.getGroupname());
+	}
 
-    public long getXferspeed() {
-        if (getXfertime() == 0) {
-            return 0;
-        }
+	public long getBytes() {
+		return this.bytes;
+	}
 
-        return (long) (getBytes() / (getXfertime() / 1000.0));
-    }
+	public int getFiles() {
+		return this.files;
+	}
 
-    public long getXfertime() {
-        return xfertime;
-    }
+	public String getGroupname() {
+		return groupname;
+	}
 
-    public int hashCode() {
-        return getGroupname().hashCode();
-    }
+	public long getXferspeed() {
+		if (getXfertime() == 0) {
+			return 0;
+		}
 
-    public void updateBytes(long bytes) {
-        this.bytes += bytes;
-    }
+		return (long) (getBytes() / (getXfertime() / 1000.0));
+	}
 
-    public void updateFiles(int files) {
-        this.files += files;
-    }
+	public long getXfertime() {
+		return xfertime;
+	}
 
-    public void updateXfertime(long xfertime) {
-        this.xfertime += xfertime;
-    }
+	public int hashCode() {
+		return getGroupname().hashCode();
+	}
+
+	public void updateBytes(long bytes) {
+		this.bytes += bytes;
+	}
+
+	public void updateFiles(int files) {
+		this.files += files;
+	}
+
+	public void updateXfertime(long xfertime) {
+		this.xfertime += xfertime;
+	}
 }

@@ -19,32 +19,32 @@ package org.drftpd.slave;
 
 import java.io.Serializable;
 
-
 /**
  * @author zubov
- * @version $Id: TransferIndex.java,v 1.3 2004/11/03 16:46:46 mog Exp $
+ * @version $Id$
  */
 public final class TransferIndex implements Serializable {
-    static int transfers = 0;
-    private int _index;
+	static int transfers = 0;
 
-    public TransferIndex(int index) {
-        _index = index;
-    }
+	private int _index;
 
-    public TransferIndex() {
-        _index = transfers++;
-    }
+	public TransferIndex(int index) {
+		_index = index;
+	}
 
-    public boolean equals(Object obj) {
-        return _index == ((TransferIndex) obj)._index;
-    }
+	public TransferIndex() {
+		_index = transfers++;
+	}
 
-    public int hashCode() {
-        return _index;
-    }
+	public boolean equals(Object obj) {
+		return _index == ((TransferIndex) obj)._index;
+	}
 
-    public String toString() {
-        return Integer.toString(_index);
-    }
+	public int hashCode() {
+		return _index;
+	}
+
+	public String toString() {
+		return Integer.toString(_index);
+	}
 }

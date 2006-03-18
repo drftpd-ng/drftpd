@@ -53,7 +53,8 @@ public class DiskSelection {
 
 	public static void init(RootCollection rootCollection) throws IOException {
 		if (_diskSelection != null) {
-			throw new RuntimeException("DiskSelection has already been initialized.");
+			throw new RuntimeException(
+					"DiskSelection has already been initialized.");
 		}
 		_diskSelection = new DiskSelection(rootCollection);
 	}

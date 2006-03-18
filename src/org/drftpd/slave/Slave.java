@@ -78,166 +78,186 @@ import se.mog.io.PermissionDeniedException;
 
 import com.Ostermiller.util.StringTokenizer;
 
-
 /**
  * @author mog
  * @author zubov
  * @version $Id$
  */
 public class Slave {
-    public static final boolean isWin32 = System.getProperty("os.name")
-                                                .startsWith("Windows");
-    private static final Logger logger = Logger.getLogger(Slave.class);
+	public static final boolean isWin32 = System.getProperty("os.name")
+			.startsWith("Windows");
+
+	private static final Logger logger = Logger.getLogger(Slave.class);
+
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
-	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
-    public static final String VERSION = "DrFTPD 2.0.2";
-    private int _bufferSize;
-    private SSLContext _ctx;
-    private boolean _downloadChecksums;
-    private RootCollection _roots;
-    private Socket _s;
-    private ObjectInputStream _sin;
-    private ObjectOutputStream _sout;
-    private HashMap _transfers;
-    private boolean _uploadChecksums;
-    private PortRange _portRange;
-    private Set _renameQueue = null;
+
+	protected static final int actualTimeout = 60000; // one minute, evaluated
+														// on a SocketTimeout
+
+	public static final String VERSION = "DrFTPD 2.0.2";
+
+	private int _bufferSize;
+
+	private SSLContext _ctx;
+
+	private boolean _downloadChecksums;
+
+	private RootCollection _roots;
+
+	private Socket _s;
+
+	private ObjectInputStream _sin;
+
+	private ObjectOutputStream _sout;
+
+	private HashMap _transfers;
+
+	private boolean _uploadChecksums;
+
+	private PortRange _portRange;
+
+	private Set _renameQueue = null;
+
 	private int _timeout;
+
 	private boolean _sslMaster;
-    
-    protected Slave() {
-    	
-    }
 
-    public Slave(Properties p) throws IOException {
-        InetSocketAddress addr = new InetSocketAddress(PropertyHelper.getProperty(
-                    p, "master.host"),
-                Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport")));
-        _sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
+	protected Slave() {
 
-        // Whatever interface the slave uses to connect to the master, is the 
-        // interface that the master will report to clients requesting PASV transfers 
-        // from this slave, unless pasv_addr is set on the master for this slave
-        logger.info("Connecting to master at " + addr);
+	}
 
-        String slavename = PropertyHelper.getProperty(p, "slave.name");
-        
-        if (isWin32) {
-        	_renameQueue = new HashSet();
-        }
-        
-        try {
-            _ctx = SSLGetContext.getSSLContext();
-        } catch (Exception e) {
-            logger.warn("Error loading SSLContext", e);
-        }
+	public Slave(Properties p) throws IOException {
+		InetSocketAddress addr = new InetSocketAddress(PropertyHelper
+				.getProperty(p, "master.host"), Integer.parseInt(PropertyHelper
+				.getProperty(p, "master.bindport")));
+		_sslMaster = p.getProperty("slave.masterSSL", "false")
+				.equalsIgnoreCase("true");
 
-        if (_sslMaster) {
-        	_s = _ctx.getSocketFactory().createSocket();
-        } else {
-        	_s = new Socket();
-        }
+		// Whatever interface the slave uses to connect to the master, is the
+		// interface that the master will report to clients requesting PASV
+		// transfers
+		// from this slave, unless pasv_addr is set on the master for this slave
+		logger.info("Connecting to master at " + addr);
 
-        try {
-        	_timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
-        } catch (NullPointerException e) {
-        	_timeout = actualTimeout;
-        }
-        _s.setSoTimeout(socketTimeout);
-        _s.connect(addr);
+		String slavename = PropertyHelper.getProperty(p, "slave.name");
+
+		if (isWin32) {
+			_renameQueue = new HashSet();
+		}
+
+		try {
+			_ctx = SSLGetContext.getSSLContext();
+		} catch (Exception e) {
+			logger.warn("Error loading SSLContext", e);
+		}
+
+		if (_sslMaster) {
+			_s = _ctx.getSocketFactory().createSocket();
+		} else {
+			_s = new Socket();
+		}
+
+		try {
+			_timeout = Integer.parseInt(PropertyHelper.getProperty(p,
+					"slave.timeout"));
+		} catch (NullPointerException e) {
+			_timeout = actualTimeout;
+		}
+		_s.setSoTimeout(socketTimeout);
+		_s.connect(addr);
 		if (_s instanceof SSLSocket) {
 			((SSLSocket) _s).setUseClientMode(true);
 			((SSLSocket) _s).startHandshake();
 		}
-        _sout = new ObjectOutputStream(_s.getOutputStream());
-        _sin = new ObjectInputStream(_s.getInputStream());
+		_sout = new ObjectOutputStream(_s.getOutputStream());
+		_sin = new ObjectInputStream(_s.getInputStream());
 
-        //TODO sendReply()
-        _sout.writeObject(slavename);
-        _sout.flush();
-        _sout.reset();
+		// TODO sendReply()
+		_sout.writeObject(slavename);
+		_sout.flush();
+		_sout.reset();
 
-        _uploadChecksums = p.getProperty("enableuploadchecksums", "true")
-                            .equals("true");
-        _downloadChecksums = p.getProperty("enabledownloadchecksums", "true")
-                              .equals("true");
-        _bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
-        _roots = getDefaultRootBasket(p);
+		_uploadChecksums = p.getProperty("enableuploadchecksums", "true")
+				.equals("true");
+		_downloadChecksums = p.getProperty("enabledownloadchecksums", "true")
+				.equals("true");
+		_bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
+		_roots = getDefaultRootBasket(p);
 
-        _transfers = new HashMap();
-        
-        try {
-        	int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
-        	int maxport = Integer.parseInt(p.getProperty("slave.portto"));
-        	_portRange = new PortRange(minport, maxport);
-        } catch (NumberFormatException e) {
-        	_portRange = new PortRange();
-        }
-    }
+		_transfers = new HashMap();
 
-    public static RootCollection getDefaultRootBasket(Properties cfg)
-        throws IOException {
-        RootCollection roots;
+		try {
+			int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
+			int maxport = Integer.parseInt(p.getProperty("slave.portto"));
+			_portRange = new PortRange(minport, maxport);
+		} catch (NumberFormatException e) {
+			_portRange = new PortRange();
+		}
+	}
 
-        // START: RootBasket
-        //long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty(
-       //             "slave.minspacefree", "50mb"));
-        ArrayList rootStrings = new ArrayList();
+	public static RootCollection getDefaultRootBasket(Properties cfg)
+			throws IOException {
+		RootCollection roots;
 
-        for (int i = 1; true; i++) {
-            String rootString = cfg.getProperty("slave.root." + i);
+		// START: RootBasket
+		// long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty(
+		// "slave.minspacefree", "50mb"));
+		ArrayList rootStrings = new ArrayList();
 
-            if (rootString == null) {
-                break;
-            }
+		for (int i = 1; true; i++) {
+			String rootString = cfg.getProperty("slave.root." + i);
 
-            logger.info("slave.root." + i + ": " + rootString);
+			if (rootString == null) {
+				break;
+			}
 
-            /*
-             * long minSpaceFree;
-             *
-             * try { minSpaceFree = Long.parseLong(cfg.getProperty("slave.root." +
-             * i + ".minspacefree")); } catch (NumberFormatException ex) {
-             * minSpaceFree = defaultMinSpaceFree; }
-             *
-             * int priority;
-             *
-             * try { priority = Integer.parseInt(cfg.getProperty("slave.root." +
-             * i + ".priority")); } catch (NumberFormatException ex) { priority =
-             * 0; }
-             */
-            rootStrings.add(new Root(rootString));
-        }
+			logger.info("slave.root." + i + ": " + rootString);
 
-        roots = new RootCollection(rootStrings);
+			/*
+			 * long minSpaceFree;
+			 * 
+			 * try { minSpaceFree = Long.parseLong(cfg.getProperty("slave.root." +
+			 * i + ".minspacefree")); } catch (NumberFormatException ex) {
+			 * minSpaceFree = defaultMinSpaceFree; }
+			 * 
+			 * int priority;
+			 * 
+			 * try { priority = Integer.parseInt(cfg.getProperty("slave.root." +
+			 * i + ".priority")); } catch (NumberFormatException ex) { priority =
+			 * 0; }
+			 */
+			rootStrings.add(new Root(rootString));
+		}
 
-        // END: RootBasket
-        System.gc();
+		roots = new RootCollection(rootStrings);
 
-        return roots;
-    }
+		// END: RootBasket
+		System.gc();
 
-    public static void main(String[] args) throws Exception {
-        BasicConfigurator.configure();
-        System.out.println(
-            "DrFTPD Slave starting, further logging will be done through log4j");
+		return roots;
+	}
 
-        Properties p = new Properties();
-        p.load(new FileInputStream("slave.conf"));
+	public static void main(String[] args) throws Exception {
+		BasicConfigurator.configure();
+		System.out
+				.println("DrFTPD Slave starting, further logging will be done through log4j");
 
-        Slave s = new Slave(p);
-        if (isWin32) {
-        	s.startFileLockThread();
-        }
-        try {
+		Properties p = new Properties();
+		p.load(new FileInputStream("slave.conf"));
+
+		Slave s = new Slave(p);
+		if (isWin32) {
+			s.startFileLockThread();
+		}
+		try {
 			s.sendResponse(new AsyncResponseDiskStatus(s.getDiskStatus()));
 		} catch (Throwable t) {
 			logger.fatal("Error, check config on master for this slave");
 		}
-        s.listenForCommands();
-    }
-    
-    public class FileLockRunnable implements Runnable {
+		s.listenForCommands();
+	}
+
+	public class FileLockRunnable implements Runnable {
 
 		public void run() {
 			while (true) {
@@ -305,36 +325,36 @@ public class Slave {
 		}
 	}
 
-    public long checkSum(String path) throws IOException {
-        logger.debug("Checksumming: " + path);
+	public long checkSum(String path) throws IOException {
+		logger.debug("Checksumming: " + path);
 
-        CheckedInputStream in = null;
+		CheckedInputStream in = null;
 
-        try {
-            CRC32 crc32 = new CRC32();
-            in = new CheckedInputStream(new FileInputStream(_roots.getFile(path)),
-                    crc32);
+		try {
+			CRC32 crc32 = new CRC32();
+			in = new CheckedInputStream(new FileInputStream(_roots
+					.getFile(path)), crc32);
 
-            byte[] buf = new byte[4096];
+			byte[] buf = new byte[4096];
 
-            while (in.read(buf) != -1) {
-            }
+			while (in.read(buf) != -1) {
+			}
 
-            return crc32.getValue();
-        } finally {
-            in.close();
-        }
-    }
+			return crc32.getValue();
+		} finally {
+			in.close();
+		}
+	}
 
-    public void delete(String path) throws IOException {
+	public void delete(String path) throws IOException {
 		// now deletes files as well as directories, recursive!
-    	Collection files = null;
-    	try {
-    		files = _roots.getMultipleRootsForFile(path);
-    	} catch (FileNotFoundException e) {
-    		// all is good, it's already gone
-    		return;
-    	}
+		Collection files = null;
+		try {
+			files = _roots.getMultipleRootsForFile(path);
+		} catch (FileNotFoundException e) {
+			// all is good, it's already gone
+			return;
+		}
 
 		for (Iterator iter = files.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
@@ -375,47 +395,48 @@ public class Slave {
 		}
 	}
 
-    public int getBufferSize() {
-        return _bufferSize;
-    }
+	public int getBufferSize() {
+		return _bufferSize;
+	}
 
-    public boolean getDownloadChecksums() {
-        return _downloadChecksums;
-    }
+	public boolean getDownloadChecksums() {
+		return _downloadChecksums;
+	}
 
-    public ID3Tag getID3v1Tag(String path) throws IOException {
-        String absPath = _roots.getFile(path).getAbsolutePath();
-        logger.warn("Extracting ID3Tag info from: " + absPath);
+	public ID3Tag getID3v1Tag(String path) throws IOException {
+		String absPath = _roots.getFile(path).getAbsolutePath();
+		logger.warn("Extracting ID3Tag info from: " + absPath);
 
-        MP3File mp3 = null;
-        try {
-            mp3 = new MP3File(absPath, "r");
+		MP3File mp3 = null;
+		try {
+			mp3 = new MP3File(absPath, "r");
 
-            if (!mp3.hasID3v1Tag) {
-                mp3.close();
-                throw new IOException("No id3tag found for " + absPath);
-            }
+			if (!mp3.hasID3v1Tag) {
+				mp3.close();
+				throw new IOException("No id3tag found for " + absPath);
+			}
 
-            ID3Tag id3tag = mp3.readID3v1Tag();
-            mp3.close();
+			ID3Tag id3tag = mp3.readID3v1Tag();
+			mp3.close();
 
-            return id3tag;
-        } catch (FileNotFoundException e) {
-            logger.warn("FileNotFoundException: ", e);
-        } catch (IOException e) {
-            logger.warn("IOException: ", e);
-        } finally {
-            if (mp3 != null) mp3.close();
-        }
+			return id3tag;
+		} catch (FileNotFoundException e) {
+			logger.warn("FileNotFoundException: ", e);
+		} catch (IOException e) {
+			logger.warn("IOException: ", e);
+		} finally {
+			if (mp3 != null)
+				mp3.close();
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    public RootCollection getRoots() {
-        return _roots;
-    }
+	public RootCollection getRoots() {
+		return _roots;
+	}
 
-    private SFVInfo getSFVFile(String path) throws IOException {
+	private SFVInfo getSFVFile(String path) throws IOException {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(_roots.getFile(path)));
@@ -427,7 +448,7 @@ public class Slave {
 		}
 	}
 
-    private String getDIZFile(String path) throws IOException {
+	private String getDIZFile(String path) throws IOException {
 		ZipEntry zipEntry = null;
 		ZipInputStream zipInput = null;
 		byte[] buf = new byte[20 * 1024];
@@ -455,7 +476,7 @@ public class Slave {
 				}
 			}
 		} catch (Throwable t) {
-			logger.error("Error extracting .diz from zipfile",t);
+			logger.error("Error extracting .diz from zipfile", t);
 		} finally {
 			try {
 				if (zipInput != null) {
@@ -467,338 +488,335 @@ public class Slave {
 		throw new FileNotFoundException("No diz entry in - " + path);
 	}
 
-// public LinkedRemoteFile getSlaveRoot() throws IOException {
-// return Slave.getDefaultRoot(_roots);
-// }
+	// public LinkedRemoteFile getSlaveRoot() throws IOException {
+	// return Slave.getDefaultRoot(_roots);
+	// }
 
-    public DiskStatus getDiskStatus() {
-            return new DiskStatus(_roots.getTotalDiskSpaceAvailable(),
-                _roots.getTotalDiskSpaceCapacity());
-    }
+	public DiskStatus getDiskStatus() {
+		return new DiskStatus(_roots.getTotalDiskSpaceAvailable(), _roots
+				.getTotalDiskSpaceCapacity());
+	}
 
-    public Transfer getTransfer(TransferIndex index) {
-        synchronized (_transfers) {
-            return (Transfer) _transfers.get(index);
-        }
-    }
+	public Transfer getTransfer(TransferIndex index) {
+		synchronized (_transfers) {
+			return (Transfer) _transfers.get(index);
+		}
+	}
 
-    public boolean getUploadChecksums() {
-        return _uploadChecksums;
-    }
+	public boolean getUploadChecksums() {
+		return _uploadChecksums;
+	}
 
-    private AsyncResponse handleChecksum(AsyncCommandArgument ac) {
-        try {
-            return new AsyncResponseChecksum(ac.getIndex(),
-                checkSum(ac.getArgs()));
-        } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
-    }
+	private AsyncResponse handleChecksum(AsyncCommandArgument ac) {
+		try {
+			return new AsyncResponseChecksum(ac.getIndex(), checkSum(ac
+					.getArgs()));
+		} catch (IOException e) {
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
 
-    private AsyncResponse handleCommand(AsyncCommand ac) {
-        if (ac.getName().equals("remerge")) {
-            return handleRemerge((AsyncCommandArgument) ac);
-        }
+	private AsyncResponse handleCommand(AsyncCommand ac) {
+		if (ac.getName().equals("remerge")) {
+			return handleRemerge((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("checksum")) {
-            return handleChecksum((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("checksum")) {
+			return handleChecksum((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("connect")) {
-            return handleConnect((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("connect")) {
+			return handleConnect((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("delete")) {
-            return handleDelete((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("delete")) {
+			return handleDelete((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("id3tag")) {
-            return handleID3Tag((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("id3tag")) {
+			return handleID3Tag((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("listen")) {
-            return handleListen((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("listen")) {
+			return handleListen((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("maxpath")) {
-            return handleMaxpath(ac);
-        }
+		if (ac.getName().equals("maxpath")) {
+			return handleMaxpath(ac);
+		}
 
-        if (ac.getName().equals("ping")) {
-            return handlePing(ac);
-        }
+		if (ac.getName().equals("ping")) {
+			return handlePing(ac);
+		}
 
-        if (ac.getName().equals("receive")) {
-            return handleReceive((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("receive")) {
+			return handleReceive((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("rename")) {
-            return handleRename((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("rename")) {
+			return handleRename((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("sfvfile")) {
-            return handleSfvFile((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("sfvfile")) {
+			return handleSfvFile((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("dizfile")) {
-            return handleDIZFile((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("dizfile")) {
+			return handleDIZFile((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("send")) {
-            return handleSend((AsyncCommandArgument) ac);
-        }
+		if (ac.getName().equals("send")) {
+			return handleSend((AsyncCommandArgument) ac);
+		}
 
-        if (ac.getName().equals("abort")) {
-            handleAbort((AsyncCommandArgument) ac);
+		if (ac.getName().equals("abort")) {
+			handleAbort((AsyncCommandArgument) ac);
 
-            return null;
-        }
-        
-        if (ac.getIndex().equals("shutdown")) {
-        	logger.info("The master has requested that I shutdown");
-        	System.exit(0);
-        }
+			return null;
+		}
 
-        if (ac.getIndex().equals("error")) {
-        	System.err.println("error - " + ac);
-            System.exit(0);
-        }
+		if (ac.getIndex().equals("shutdown")) {
+			logger.info("The master has requested that I shutdown");
+			System.exit(0);
+		}
 
-        return new AsyncResponseException(ac.getIndex(),
-            new Exception(ac.getName() + " - Operation Not Supported"));
-    }
+		if (ac.getIndex().equals("error")) {
+			System.err.println("error - " + ac);
+			System.exit(0);
+		}
 
-    private void handleAbort(AsyncCommandArgument aca) {
-    	String[] args = aca.getArgs().split(",");
-        TransferIndex ti = new TransferIndex(Integer.parseInt(args[0]));
+		return new AsyncResponseException(ac.getIndex(), new Exception(ac
+				.getName()
+				+ " - Operation Not Supported"));
+	}
 
-        if (!_transfers.containsKey(ti)) {
-            return;
-        }
+	private void handleAbort(AsyncCommandArgument aca) {
+		String[] args = aca.getArgs().split(",");
+		TransferIndex ti = new TransferIndex(Integer.parseInt(args[0]));
 
-        Transfer t = (Transfer) _transfers.get(ti);
-        t.abort(args[1]);
-    }
+		if (!_transfers.containsKey(ti)) {
+			return;
+		}
 
-    private AsyncResponse handleConnect(AsyncCommandArgument ac) {
-        String[] data = ac.getArgs().split(",");
-        String[] data2 = data[0].split(":");
-        boolean encrypted = data[1].equals("true");
-        boolean useSSLClientHandshake = data[2].equals("true");
-        InetAddress address;
+		Transfer t = (Transfer) _transfers.get(ti);
+		t.abort(args[1]);
+	}
 
-        try {
-            address = InetAddress.getByName(data2[0]);
-        } catch (UnknownHostException e1) {
-            return new AsyncResponseException(ac.getIndex(), e1);
-        }
+	private AsyncResponse handleConnect(AsyncCommandArgument ac) {
+		String[] data = ac.getArgs().split(",");
+		String[] data2 = data[0].split(":");
+		boolean encrypted = data[1].equals("true");
+		boolean useSSLClientHandshake = data[2].equals("true");
+		InetAddress address;
 
-        int port = Integer.parseInt(data2[1]);
-        Transfer t = new Transfer(new ActiveConnection(encrypted ? _ctx : null,
-                    new InetSocketAddress(address, port), useSSLClientHandshake), this,
-                new TransferIndex());
-        addTransfer(t);
+		try {
+			address = InetAddress.getByName(data2[0]);
+		} catch (UnknownHostException e1) {
+			return new AsyncResponseException(ac.getIndex(), e1);
+		}
 
-        return new AsyncResponseTransfer(ac.getIndex(),
-            new ConnectInfo(port, t.getTransferIndex(),
-                t.getTransferStatus()));
-    }
+		int port = Integer.parseInt(data2[1]);
+		Transfer t = new Transfer(new ActiveConnection(encrypted ? _ctx : null,
+				new InetSocketAddress(address, port), useSSLClientHandshake),
+				this, new TransferIndex());
+		addTransfer(t);
 
-    private AsyncResponse handleDelete(AsyncCommandArgument ac) {
-        try {
-        	try {
-        		delete(mapPathToRenameQueue(ac.getArgs()));
-            } catch (PermissionDeniedException e) {
-            	if (isWin32) {
-            		synchronized (_renameQueue) {
-            			_renameQueue.add(new QueuedOperation(ac.getArgs(), null));
-            		}
-            	} else {
-            		throw e;
-            	}
-            }
-            sendResponse(new AsyncResponseDiskStatus(getDiskStatus()));
-            return new AsyncResponse(ac.getIndex());
-        } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
-    }
+		return new AsyncResponseTransfer(ac.getIndex(), new ConnectInfo(port, t
+				.getTransferIndex(), t.getTransferStatus()));
+	}
 
-    private AsyncResponse handleID3Tag(AsyncCommandArgument ac) {
-        try {
-            return new AsyncResponseID3Tag(ac.getIndex(),
-                getID3v1Tag(mapPathToRenameQueue(ac.getArgs())));
-        } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
-    }
+	private AsyncResponse handleDelete(AsyncCommandArgument ac) {
+		try {
+			try {
+				delete(mapPathToRenameQueue(ac.getArgs()));
+			} catch (PermissionDeniedException e) {
+				if (isWin32) {
+					synchronized (_renameQueue) {
+						_renameQueue
+								.add(new QueuedOperation(ac.getArgs(), null));
+					}
+				} else {
+					throw e;
+				}
+			}
+			sendResponse(new AsyncResponseDiskStatus(getDiskStatus()));
+			return new AsyncResponse(ac.getIndex());
+		} catch (IOException e) {
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
 
-    private AsyncResponse handleListen(AsyncCommandArgument ac) {
-    	String[] data = ac.getArgs().split(":");
-    	boolean encrypted = data[0].equals("true");
-    	boolean useSSLClientMode = data[1].equals("true");
-        PassiveConnection c = null;
+	private AsyncResponse handleID3Tag(AsyncCommandArgument ac) {
+		try {
+			return new AsyncResponseID3Tag(ac.getIndex(),
+					getID3v1Tag(mapPathToRenameQueue(ac.getArgs())));
+		} catch (IOException e) {
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
 
-        try {
-            c = new PassiveConnection(encrypted ? _ctx : null, _portRange, useSSLClientMode);
-        } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
+	private AsyncResponse handleListen(AsyncCommandArgument ac) {
+		String[] data = ac.getArgs().split(":");
+		boolean encrypted = data[0].equals("true");
+		boolean useSSLClientMode = data[1].equals("true");
+		PassiveConnection c = null;
 
-        Transfer t = new Transfer(c, this, new TransferIndex());
-        addTransfer(t);
+		try {
+			c = new PassiveConnection(encrypted ? _ctx : null, _portRange,
+					useSSLClientMode);
+		} catch (IOException e) {
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
 
-        return new AsyncResponseTransfer(ac.getIndex(),
-            new ConnectInfo(c.getLocalPort(),
-                t.getTransferIndex(), t.getTransferStatus()));
-    }
+		Transfer t = new Transfer(c, this, new TransferIndex());
+		addTransfer(t);
 
-    private AsyncResponse handleMaxpath(AsyncCommand ac) {
-        return new AsyncResponseMaxPath(ac.getIndex(),
-            isWin32 ? 255 : Integer.MAX_VALUE);
-    }
+		return new AsyncResponseTransfer(ac.getIndex(), new ConnectInfo(c
+				.getLocalPort(), t.getTransferIndex(), t.getTransferStatus()));
+	}
 
-    private AsyncResponse handlePing(AsyncCommand ac) {
-        return new AsyncResponse(ac.getIndex());
-    }
+	private AsyncResponse handleMaxpath(AsyncCommand ac) {
+		return new AsyncResponseMaxPath(ac.getIndex(), isWin32 ? 255
+				: Integer.MAX_VALUE);
+	}
 
-    private AsyncResponse handleReceive(AsyncCommandArgument ac) {
-        StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
-        char type = st.nextToken().charAt(0);
-        long position = Long.parseLong(st.nextToken());
-        TransferIndex transferIndex = new TransferIndex(Integer.parseInt(
-                    st.nextToken()));
-        String path = mapPathToRenameQueue(st.nextToken());
-        String fileName = path.substring(path.lastIndexOf("/") + 1);
-        String dirName = path.substring(0, path.lastIndexOf("/"));
-        Transfer t = getTransfer(transferIndex);
-        sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread
-														// on master
-        try {
-            return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
-                    fileName, position));
-        } catch (IOException e) {
-            return (new AsyncResponseTransferStatus(new TransferStatus(
-                    transferIndex, e)));
-        }
-    }
+	private AsyncResponse handlePing(AsyncCommand ac) {
+		return new AsyncResponse(ac.getIndex());
+	}
 
-    private AsyncResponse handleRemerge(AsyncCommandArgument ac) {
-        try {
-            handleRemergeRecursive(new FileRemoteFile(_roots));
+	private AsyncResponse handleReceive(AsyncCommandArgument ac) {
+		StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
+		char type = st.nextToken().charAt(0);
+		long position = Long.parseLong(st.nextToken());
+		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st
+				.nextToken()));
+		String path = mapPathToRenameQueue(st.nextToken());
+		String fileName = path.substring(path.lastIndexOf("/") + 1);
+		String dirName = path.substring(0, path.lastIndexOf("/"));
+		Transfer t = getTransfer(transferIndex);
+		sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread
+		// on master
+		try {
+			return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
+					fileName, position));
+		} catch (IOException e) {
+			return (new AsyncResponseTransferStatus(new TransferStatus(
+					transferIndex, e)));
+		}
+	}
 
-            return new AsyncResponse(ac.getIndex());
-        } catch (Throwable e) {
-            logger.error("Exception during merging", e);
+	private AsyncResponse handleRemerge(AsyncCommandArgument ac) {
+		try {
+			handleRemergeRecursive(new FileRemoteFile(_roots));
 
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
-    }
+			return new AsyncResponse(ac.getIndex());
+		} catch (Throwable e) {
+			logger.error("Exception during merging", e);
 
-    private void handleRemergeRecursive(FileRemoteFile dir) {
-        //sendResponse(new AsyncResponseRemerge(file.getPath(),
-        // file.getFiles()));
-        CaseInsensitiveHashtable mergeFiles = new CaseInsensitiveHashtable();
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
 
-        Collection files = dir.getFiles();
+	private void handleRemergeRecursive(FileRemoteFile dir) {
+		// sendResponse(new AsyncResponseRemerge(file.getPath(),
+		// file.getFiles()));
+		CaseInsensitiveHashtable mergeFiles = new CaseInsensitiveHashtable();
 
-        for (Iterator iter = files.iterator(); iter.hasNext();) {
-            FileRemoteFile file = (FileRemoteFile) iter.next();
-            
-            // need to send directories and files
-            mergeFiles.put(file.getName(), new LightRemoteFile(file));
+		Collection files = dir.getFiles();
 
-            //keep only dirs for recursiveness
-            if (!file.isDirectory()) {
-                iter.remove();
-            }
-        }
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			FileRemoteFile file = (FileRemoteFile) iter.next();
 
-        sendResponse(new AsyncResponseRemerge(dir.getPath(), mergeFiles));
+			// need to send directories and files
+			mergeFiles.put(file.getName(), new LightRemoteFile(file));
 
-        for (Iterator iter = files.iterator(); iter.hasNext();) {
-            FileRemoteFile file = (FileRemoteFile) iter.next();
-            handleRemergeRecursive(file);
-        }
-    }
+			// keep only dirs for recursiveness
+			if (!file.isDirectory()) {
+				iter.remove();
+			}
+		}
 
-    private AsyncResponse handleRename(AsyncCommandArgument ac) {
-        StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
-        String from = mapPathToRenameQueue(st.nextToken());
-        String toDir = st.nextToken();
-        String toFile = st.nextToken();
+		sendResponse(new AsyncResponseRemerge(dir.getPath(), mergeFiles));
 
-        try {
-        	try {
-            rename(from, toDir, toFile);
-        	} catch (PermissionDeniedException e) {
-        		if (isWin32) {
-        			String simplePath = null;
-        			if (toDir.endsWith("/")) {
-        				simplePath = toDir + toFile;
-        			} else {
-        				simplePath = toDir + "/" + toFile;
-        			}
-        			synchronized (_renameQueue) {
-        				_renameQueue.add(new QueuedOperation(from, simplePath));
-        			}
-        		} else {
-        			throw e;
-        		}
-        	}
+		for (Iterator iter = files.iterator(); iter.hasNext();) {
+			FileRemoteFile file = (FileRemoteFile) iter.next();
+			handleRemergeRecursive(file);
+		}
+	}
 
-            return new AsyncResponse(ac.getIndex());
-        } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
-    }
+	private AsyncResponse handleRename(AsyncCommandArgument ac) {
+		StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
+		String from = mapPathToRenameQueue(st.nextToken());
+		String toDir = st.nextToken();
+		String toFile = st.nextToken();
 
-    private AsyncResponse handleSend(AsyncCommandArgument ac) {
-        StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
-        char type = st.nextToken().charAt(0);
-        long position = Long.parseLong(st.nextToken());
-        TransferIndex transferIndex = new TransferIndex(Integer.parseInt(
-                    st.nextToken()));
-        String path = mapPathToRenameQueue(st.nextToken());
-        Transfer t = getTransfer(transferIndex);
-        sendResponse(new AsyncResponse(ac.getIndex())); // return
+		try {
+			try {
+				rename(from, toDir, toFile);
+			} catch (PermissionDeniedException e) {
+				if (isWin32) {
+					String simplePath = null;
+					if (toDir.endsWith("/")) {
+						simplePath = toDir + toFile;
+					} else {
+						simplePath = toDir + "/" + toFile;
+					}
+					synchronized (_renameQueue) {
+						_renameQueue.add(new QueuedOperation(from, simplePath));
+					}
+				} else {
+					throw e;
+				}
+			}
 
-        // calling thread on master
-        try {
-            return new AsyncResponseTransferStatus(t.sendFile(path, type,
-                    position));
-        } catch (IOException e) {
-            return new AsyncResponseTransferStatus(new TransferStatus(
-                    t.getTransferIndex(), e));
-        }
-    }
+			return new AsyncResponse(ac.getIndex());
+		} catch (IOException e) {
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
 
-    private AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
-        try {
-            return new AsyncResponseSFVInfo(ac.getIndex(),
-                getSFVFile(mapPathToRenameQueue(ac.getArgs())));
-        } catch (IOException e) {
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
-    }
+	private AsyncResponse handleSend(AsyncCommandArgument ac) {
+		StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
+		char type = st.nextToken().charAt(0);
+		long position = Long.parseLong(st.nextToken());
+		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st
+				.nextToken()));
+		String path = mapPathToRenameQueue(st.nextToken());
+		Transfer t = getTransfer(transferIndex);
+		sendResponse(new AsyncResponse(ac.getIndex())); // return
 
-    private AsyncResponse handleDIZFile(AsyncCommandArgument ac)
-    {
-        try
-        {
-            return new AsyncResponseDIZFile(ac.getIndex(),
-                getDIZFile(ac.getArgs()));
-        }
-        catch (IOException e)
-        {
-            return new AsyncResponseException(ac.getIndex(), e);
-        }
-    }
+		// calling thread on master
+		try {
+			return new AsyncResponseTransferStatus(t.sendFile(path, type,
+					position));
+		} catch (IOException e) {
+			return new AsyncResponseTransferStatus(new TransferStatus(t
+					.getTransferIndex(), e));
+		}
+	}
 
-    private void listenForCommands() throws IOException {
-    	long lastCommandReceived = System.currentTimeMillis();
-        while (true) {
-            AsyncCommand ac = null;
+	private AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
+		try {
+			return new AsyncResponseSFVInfo(ac.getIndex(),
+					getSFVFile(mapPathToRenameQueue(ac.getArgs())));
+		} catch (IOException e) {
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
+
+	private AsyncResponse handleDIZFile(AsyncCommandArgument ac) {
+		try {
+			return new AsyncResponseDIZFile(ac.getIndex(), getDIZFile(ac
+					.getArgs()));
+		} catch (IOException e) {
+			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
+
+	private void listenForCommands() throws IOException {
+		long lastCommandReceived = System.currentTimeMillis();
+		while (true) {
+			AsyncCommand ac = null;
 
 			try {
 				ac = (AsyncCommand) _sin.readObject();
@@ -827,110 +845,111 @@ public class Slave {
 				continue;
 			}
 
-            logger.debug("Slave fetched " + ac);
-            class AsyncCommandHandler implements Runnable {
-                private AsyncCommand _command = null;
+			logger.debug("Slave fetched " + ac);
+			class AsyncCommandHandler implements Runnable {
+				private AsyncCommand _command = null;
 
-                public AsyncCommandHandler(AsyncCommand command) {
-                    _command = command;
-                }
+				public AsyncCommandHandler(AsyncCommand command) {
+					_command = command;
+				}
 
-                public void run() {
-                    try {
-                        sendResponse(handleCommand(_command));
-                    } catch (Throwable e) {
-                        sendResponse(new AsyncResponseException(
-                                _command.getIndex(), e));
-                    }
-                }
-            }
-            Thread t = new Thread(new AsyncCommandHandler(ac));
-            t.setName("AsyncCommandHandler - " + ac.getClass());
-            t.start();
-        }
-    }
-    
-    public String mapPathToRenameQueue(String path) {
-    	if (!isWin32) { // there is no renameQueue
-    		return path;
-    	}
-    	synchronized(_renameQueue) {
-    		for (Iterator iter = _renameQueue.iterator(); iter.hasNext();) {
-    			QueuedOperation qo = (QueuedOperation) iter.next();
-    			if (qo.getDestination() == null) {
-    				continue;
-    			}
-    			if (qo.getDestination().equals(path)) {
-    				return qo.getSource();
-    			}
-    		}
-        	return path;
-    	}
-    }
+				public void run() {
+					try {
+						sendResponse(handleCommand(_command));
+					} catch (Throwable e) {
+						sendResponse(new AsyncResponseException(_command
+								.getIndex(), e));
+					}
+				}
+			}
+			Thread t = new Thread(new AsyncCommandHandler(ac));
+			t.setName("AsyncCommandHandler - " + ac.getClass());
+			t.start();
+		}
+	}
 
-    public void removeTransfer(Transfer transfer) {
-        synchronized (_transfers) {
-            if (_transfers.remove(transfer.getTransferIndex()) == null) {
-                throw new IllegalStateException();
-            }
-            _transfers.notifyAll();
-        }
-    }
+	public String mapPathToRenameQueue(String path) {
+		if (!isWin32) { // there is no renameQueue
+			return path;
+		}
+		synchronized (_renameQueue) {
+			for (Iterator iter = _renameQueue.iterator(); iter.hasNext();) {
+				QueuedOperation qo = (QueuedOperation) iter.next();
+				if (qo.getDestination() == null) {
+					continue;
+				}
+				if (qo.getDestination().equals(path)) {
+					return qo.getSource();
+				}
+			}
+			return path;
+		}
+	}
 
-    public void rename(String from, String toDirPath, String toName)
-        throws IOException {
-        for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
+	public void removeTransfer(Transfer transfer) {
+		synchronized (_transfers) {
+			if (_transfers.remove(transfer.getTransferIndex()) == null) {
+				throw new IllegalStateException();
+			}
+			_transfers.notifyAll();
+		}
+	}
 
-            File fromfile = root.getFile(from);
+	public void rename(String from, String toDirPath, String toName)
+			throws IOException {
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
 
-            if (!fromfile.exists()) {
-                continue;
-            }
+			File fromfile = root.getFile(from);
 
-            File toDir = root.getFile(toDirPath);
-            toDir.mkdirs();
+			if (!fromfile.exists()) {
+				continue;
+			}
 
-            File tofile = new File(toDir.getPath() + File.separator + toName);
+			File toDir = root.getFile(toDirPath);
+			toDir.mkdirs();
 
-            //!win32 == true on linux
-            //!win32 && equalsignore == true on win32
-            if (tofile.exists() &&
-                    !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
-                throw new FileExistsException("cannot rename from " + fromfile +
-                    " to " + tofile + ", destination exists");
-            }
+			File tofile = new File(toDir.getPath() + File.separator + toName);
 
-            if (!fromfile.renameTo(tofile)) {
-                throw new PermissionDeniedException("renameTo(" + fromfile + ", " + tofile +
-                    ") failed");
-            }
-        }
-    }
+			// !win32 == true on linux
+			// !win32 && equalsignore == true on win32
+			if (tofile.exists()
+					&& !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
+				throw new FileExistsException("cannot rename from " + fromfile
+						+ " to " + tofile + ", destination exists");
+			}
 
-    protected synchronized void sendResponse(AsyncResponse response) {
-        if (response == null) {
-            // handler doesn't return anything or it sends reply on it's own
-            // (threaded for example)
-            return;
-        }
+			if (!fromfile.renameTo(tofile)) {
+				throw new PermissionDeniedException("renameTo(" + fromfile
+						+ ", " + tofile + ") failed");
+			}
+		}
+	}
 
-        try {
-            _sout.writeObject(response);
-            _sout.flush();
-            _sout.reset();
-            if(!(response instanceof AsyncResponseTransferStatus)) {
-            	logger.debug("Slave wrote response - " + response);
-            }
+	protected synchronized void sendResponse(AsyncResponse response) {
+		if (response == null) {
+			// handler doesn't return anything or it sends reply on it's own
+			// (threaded for example)
+			return;
+		}
 
-            if (response instanceof AsyncResponseException) {
-                logger.debug("",
-                    ((AsyncResponseException) response).getThrowable());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+		try {
+			_sout.writeObject(response);
+			_sout.flush();
+			_sout.reset();
+			if (!(response instanceof AsyncResponseTransferStatus)) {
+				logger.debug("Slave wrote response - " + response);
+			}
+
+			if (response instanceof AsyncResponseException) {
+				logger.debug("", ((AsyncResponseException) response)
+						.getThrowable());
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * @return The current list of Transfer objects
 	 */

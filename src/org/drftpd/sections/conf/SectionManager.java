@@ -33,95 +33,97 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
-    private static final Class[] CONSTRUCTOR_SIG = new Class[] {
-            SectionManager.class, int.class, Properties.class
-        };
-    private PlainSection _emptySection = new PlainSection(this, "", GlobalContext.getGlobalContext().getRoot());
-    private Hashtable<String,SectionInterface> _sections;
+	private static final Class[] CONSTRUCTOR_SIG = new Class[] {
+			SectionManager.class, int.class, Properties.class };
 
-    public SectionManager() {
-        reload();
-    }
+	private PlainSection _emptySection = new PlainSection(this, "",
+			GlobalContext.getGlobalContext().getRoot());
 
-    public ConnectionManager getConnectionManager() {
-        return ConnectionManager.getConnectionManager();
-    }
+	private Hashtable<String, SectionInterface> _sections;
 
-    public SectionInterface getSection(String string) {
-        SectionInterface s = (SectionInterface) _sections.get(string);
+	public SectionManager() {
+		reload();
+	}
 
-        if (s != null) {
-            return s;
-        }
+	public ConnectionManager getConnectionManager() {
+		return ConnectionManager.getConnectionManager();
+	}
 
-        return _emptySection;
-    }
+	public SectionInterface getSection(String string) {
+		SectionInterface s = (SectionInterface) _sections.get(string);
 
-    public Collection getSections() {
-        return Collections.unmodifiableCollection(_sections.values());
-    }
+		if (s != null) {
+			return s;
+		}
 
-    private SectionInterface lookup(String string) {
-        int matchlen = 0;
-        SectionInterface match = _emptySection;
+		return _emptySection;
+	}
 
-        for (Iterator<SectionInterface> iter = _sections.values().iterator(); iter.hasNext();) {
-            SectionInterface section = iter.next();
+	public Collection getSections() {
+		return Collections.unmodifiableCollection(_sections.values());
+	}
 
-            if (string.startsWith(section.getBaseDirectory().getPath()) &&
-                    (matchlen < section.getCurrentDirectory().getPath().length())) {
-                match = section;
-                matchlen = section.getCurrentDirectory().getPath().length();
-            }
-        }
+	private SectionInterface lookup(String string) {
+		int matchlen = 0;
+		SectionInterface match = _emptySection;
 
-        return match;
-    }
+		for (Iterator<SectionInterface> iter = _sections.values().iterator(); iter
+				.hasNext();) {
+			SectionInterface section = iter.next();
 
-    public void reload() {
-        Properties p = new Properties();
+			if (string.startsWith(section.getBaseDirectory().getPath())
+					&& (matchlen < section.getCurrentDirectory().getPath()
+							.length())) {
+				match = section;
+				matchlen = section.getCurrentDirectory().getPath().length();
+			}
+		}
 
-        try {
-            p.load(new FileInputStream("conf/sections.conf"));
-        } catch (IOException e) {
-            throw new FatalException(e);
-        }
+		return match;
+	}
 
-        Hashtable<String,SectionInterface> sections = new Hashtable<String,SectionInterface>();
+	public void reload() {
+		Properties p = new Properties();
 
-        for (int i = 1;; i++) {
-            String name = p.getProperty(i + ".name");
-            if (name == null)
-                break;
+		try {
+			p.load(new FileInputStream("conf/sections.conf"));
+		} catch (IOException e) {
+			throw new FatalException(e);
+		}
 
-            String type = p.getProperty(i + ".type", "plain");
+		Hashtable<String, SectionInterface> sections = new Hashtable<String, SectionInterface>();
 
-            try {
-                Class clazz = Class.forName("org.drftpd.sections.conf." +
-                        type.substring(0, 1).toUpperCase() + type.substring(1) +
-                        "Section");
-                SectionInterface section = (SectionInterface) clazz.getDeclaredConstructor(CONSTRUCTOR_SIG)
-                                                                   .newInstance(new Object[] {
-                            this, new Integer(i), p
-                        });
-                sections.put(name, section);
-            } catch (Exception e1) {
-                throw new FatalException("Unknown section type: " + i +
-                    ".type = " + type, e1);
-            }
-        }
+		for (int i = 1;; i++) {
+			String name = p.getProperty(i + ".name");
+			if (name == null)
+				break;
 
-        _sections = sections;
-    }
+			String type = p.getProperty(i + ".type", "plain");
 
-    public SectionInterface lookup(DirectoryHandle directory) {
-        return lookup(directory.getPath());
-    }
+			try {
+				Class clazz = Class.forName("org.drftpd.sections.conf."
+						+ type.substring(0, 1).toUpperCase()
+						+ type.substring(1) + "Section");
+				SectionInterface section = (SectionInterface) clazz
+						.getDeclaredConstructor(CONSTRUCTOR_SIG).newInstance(
+								new Object[] { this, new Integer(i), p });
+				sections.put(name, section);
+			} catch (Exception e1) {
+				throw new FatalException("Unknown section type: " + i
+						+ ".type = " + type, e1);
+			}
+		}
+
+		_sections = sections;
+	}
+
+	public SectionInterface lookup(DirectoryHandle directory) {
+		return lookup(directory.getPath());
+	}
 
 }

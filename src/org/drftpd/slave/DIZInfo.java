@@ -31,7 +31,7 @@ import org.drftpd.vfs.FileHandle;
 
 public class DIZInfo {
 	private static final Logger logger = Logger.getLogger(DIZInfo.class);
-	
+
 	private String _diz;
 
 	private int _total;
@@ -42,7 +42,7 @@ public class DIZInfo {
 	public String getDiz() {
 		return _diz;
 	}
-	
+
 	public void setDiz(String diz) {
 		_diz = diz;
 	}
@@ -50,16 +50,18 @@ public class DIZInfo {
 	public int getTotal() {
 		return _total;
 	}
-	
+
 	public void setTotal(int total) {
 		_total = total;
 	}
 
-	public static DIZInfo fetchDiz(FileHandle file) throws NoAvailableSlaveException, IOException {
+	public static DIZInfo fetchDiz(FileHandle file)
+			throws NoAvailableSlaveException, IOException {
 		RemoteSlave aSlave = file.getAvailableSlaves().iterator().next();
 		try {
 			DIZInfo dizInfo = new DIZInfo();
-			String diz = aSlave.fetchDIZFileFromIndex(aSlave.issueDIZFileToSlave(file));
+			String diz = aSlave.fetchDIZFileFromIndex(aSlave
+					.issueDIZFileToSlave(file));
 			dizInfo.setDiz(diz);
 			dizInfo.setTotal(fetchTotal(diz));
 			return dizInfo;

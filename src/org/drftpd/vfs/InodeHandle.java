@@ -19,6 +19,7 @@ package org.drftpd.vfs;
 import java.io.FileNotFoundException;
 
 import org.drftpd.GlobalContext;
+
 /**
  * @author zubov
  * @version $Id$
@@ -29,11 +30,11 @@ public abstract class InodeHandle {
 	public InodeHandle(String path) {
 		_path = path;
 	}
-	
+
 	public GlobalContext getGlobalContext() {
 		return GlobalContext.getGlobalContext();
 	}
-	
+
 	protected VirtualFileSystemInode getInode() throws FileNotFoundException {
 		return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(_path);
 	}
@@ -76,16 +77,20 @@ public abstract class InodeHandle {
 
 	/**
 	 * Throws IllegalStateException if this object is the RootDirectory
+	 * 
 	 * @return
 	 */
 	public DirectoryHandle getParent() {
 		if (_path.equals(VirtualFileSystem.pathSeparator)) {
-			throw new IllegalStateException("Can't get the parent of the root directory");
+			throw new IllegalStateException(
+					"Can't get the parent of the root directory");
 		}
 		return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
@@ -95,15 +100,17 @@ public abstract class InodeHandle {
 		}
 		InodeHandle compareMe = (InodeHandle) arg0;
 		return _path.equalsIgnoreCase(compareMe._path);
-		
+
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
 		return _path.hashCode();
-	}	
+	}
 
 }

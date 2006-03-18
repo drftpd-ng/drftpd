@@ -19,20 +19,19 @@ package org.drftpd.slave.async;
 
 import org.drftpd.slave.ConnectInfo;
 
-
 /**
  * @author zubov
- * @version $Id: AsyncResponseTransfer.java,v 1.3 2004/11/03 16:46:47 mog Exp $
+ * @version $Id$
  */
 public class AsyncResponseTransfer extends AsyncResponse {
-    private ConnectInfo _ci;
+	private ConnectInfo _ci;
 
-    public AsyncResponseTransfer(String index, ConnectInfo ci) {
-        super(index);
-        _ci = ci;
-    }
+	public AsyncResponseTransfer(String index, ConnectInfo ci) {
+		super(index);
+		_ci = ci;
+	}
 
-    public ConnectInfo getConnectInfo() {
-        return _ci;
-    }
+	public ConnectInfo getConnectInfo() {
+		return _ci;
+	}
 }

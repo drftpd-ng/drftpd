@@ -19,37 +19,36 @@ package net.sf.drftpd.event;
 
 import org.drftpd.master.RemoteSlave;
 
-
 /**
  * @author mog
- *
+ * 
  * @version $Id$
  */
 public class SlaveEvent extends MessageEvent {
-    private RemoteSlave slave;
+	private RemoteSlave slave;
 
-    public SlaveEvent(String command, RemoteSlave rslave) {
-        this(command, null, rslave);
-    }
+	public SlaveEvent(String command, RemoteSlave rslave) {
+		this(command, null, rslave);
+	}
 
-    /**
-     * @param command
-     */
-    public SlaveEvent(String command, String message, RemoteSlave rslave) {
-        this(command, message, rslave, System.currentTimeMillis());
-    }
+	/**
+	 * @param command
+	 */
+	public SlaveEvent(String command, String message, RemoteSlave rslave) {
+		this(command, message, rslave, System.currentTimeMillis());
+	}
 
-    /**
-     * @param command
-     * @param time
-     */
-    public SlaveEvent(String command, String message, RemoteSlave slave,
-        long time) {
-        super(command, message, time);
-        this.slave = slave;
-    }
+	/**
+	 * @param command
+	 * @param time
+	 */
+	public SlaveEvent(String command, String message, RemoteSlave slave,
+			long time) {
+		super(command, message, time);
+		this.slave = slave;
+	}
 
-    public RemoteSlave getRSlave() {
-        return this.slave;
-    }
+	public RemoteSlave getRSlave() {
+		return this.slave;
+	}
 }

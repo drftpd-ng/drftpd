@@ -16,14 +16,13 @@
  */
 package net.sf.drftpd;
 
-
 /**
  * @author mog
  * @version $Id: SlaveUnavailableException.java,v 1.1 2004/03/01 00:21:07 mog
  *          Exp $
  */
 public class SlaveUnavailableException extends Exception {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -2578623630000522808L;
@@ -33,18 +32,18 @@ public class SlaveUnavailableException extends Exception {
 	 */
 
 	public SlaveUnavailableException() {
-        super();
-    }
+		super();
+	}
 
-    public SlaveUnavailableException(String message) {
-        super(message);
-    }
+	public SlaveUnavailableException(String message) {
+		super(message);
+	}
 
-    public SlaveUnavailableException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public SlaveUnavailableException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    public SlaveUnavailableException(Throwable cause) {
-        super(cause);
-    }
+	public SlaveUnavailableException(Throwable cause) {
+		super(cause);
+	}
 }

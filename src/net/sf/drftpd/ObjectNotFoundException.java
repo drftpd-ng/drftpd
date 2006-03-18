@@ -17,44 +17,43 @@
  */
 package net.sf.drftpd;
 
-
 /**
  * @author mog
- *
+ * 
  * @version $Id$
  */
 public class ObjectNotFoundException extends Exception {
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 5368158567799164728L;
 
 	/**
-     *
-     */
-    public ObjectNotFoundException() {
-        super();
-    }
+	 * 
+	 */
+	public ObjectNotFoundException() {
+		super();
+	}
 
-    /**
-     * @param message
-     */
-    public ObjectNotFoundException(String message) {
-        super(message);
-    }
+	/**
+	 * @param message
+	 */
+	public ObjectNotFoundException(String message) {
+		super(message);
+	}
 
-    /**
-     * @param message
-     * @param cause
-     */
-    public ObjectNotFoundException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public ObjectNotFoundException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-    /**
-     * @param cause
-     */
-    public ObjectNotFoundException(Throwable cause) {
-        super(cause);
-    }
+	/**
+	 * @param cause
+	 */
+	public ObjectNotFoundException(Throwable cause) {
+		super(cause);
+	}
 }

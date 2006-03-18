@@ -32,256 +32,256 @@ import org.drftpd.slave.diskselection.DiskSelection;
 
 import se.mog.io.File;
 
-
-//TODO SECURITY: verify so that we never get outside of a rootbasket root
+// TODO SECURITY: verify so that we never get outside of a rootbasket root
 
 /**
  * @author mog
  * @version $Id$
  */
 public class RootCollection {
-    private static final Logger logger = Logger.getLogger(RootCollection.class);
-    private Collection _roots = null;
+	private static final Logger logger = Logger.getLogger(RootCollection.class);
 
-    public RootCollection(Collection roots) throws IOException {
-        /** sanity checks **/
-        validateRoots(roots);
-        _roots = new ArrayList(roots);
-        DiskSelection.init(this);
-    }
+	private Collection _roots = null;
 
-    public Root getARoot() {
-        long mostFree = 0;
-        Root mostFreeRoot = null;
+	public RootCollection(Collection roots) throws IOException {
+		/** sanity checks * */
+		validateRoots(roots);
+		_roots = new ArrayList(roots);
+		DiskSelection.init(this);
+	}
 
-        for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
-            long diskSpaceAvailable = root.getDiskSpaceAvailable();
+	public Root getARoot() {
+		long mostFree = 0;
+		Root mostFreeRoot = null;
 
-            if (diskSpaceAvailable > mostFree) {
-                mostFree = diskSpaceAvailable;
-                mostFreeRoot = root;
-            }
-        }
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+			long diskSpaceAvailable = root.getDiskSpaceAvailable();
 
-        if (mostFreeRoot == null) {
-            throw new RuntimeException("NoAvailableRootsException");
-        }
+			if (diskSpaceAvailable > mostFree) {
+				mostFree = diskSpaceAvailable;
+				mostFreeRoot = root;
+			}
+		}
 
-        return mostFreeRoot;
-    }
+		if (mostFreeRoot == null) {
+			throw new RuntimeException("NoAvailableRootsException");
+		}
 
-    /**
-     * Get a directory specified by dir under an approperiate root for storing storing files in.
-     * @param directory to store file in
-     * @throws IOException 
-     */
-    public File getARootFileDir(String dir) throws IOException {
-    	Root bestRoot = DiskSelection.getDiskSelection().getBestRoot(dir);
-    	
-    	// to avoid this error SlaveSelectionManager MUST work
-    	// synchronized with DiskSelection.
-    	if (bestRoot == null) {
-    		throw new IOException("No suitable root was found.");
-    	}
-        bestRoot.touch();
+		return mostFreeRoot;
+	}
 
-        File file = bestRoot.getFile(dir);
-        file.mkdirs2();
+	/**
+	 * Get a directory specified by dir under an approperiate root for storing
+	 * storing files in.
+	 * 
+	 * @param directory
+	 *            to store file in
+	 * @throws IOException
+	 */
+	public File getARootFileDir(String dir) throws IOException {
+		Root bestRoot = DiskSelection.getDiskSelection().getBestRoot(dir);
 
-        return file;
-    }
+		// to avoid this error SlaveSelectionManager MUST work
+		// synchronized with DiskSelection.
+		if (bestRoot == null) {
+			throw new IOException("No suitable root was found.");
+		}
+		bestRoot.touch();
 
-    //Get root which has most of the tree structure that we have.
-    public File getFile(String path) throws FileNotFoundException {
-        return new File(getRootForFile(path).getPath() + File.separatorChar +
-            path);
-    }
+		File file = bestRoot.getFile(dir);
+		file.mkdirs2();
 
-    /**
-     * Returns an ArrayList containing se.mog.io.File objects
-     */
-    public List getMultipleFiles(String path) throws FileNotFoundException {
-        ArrayList files = new ArrayList();
+		return file;
+	}
 
-        for (Iterator iter = getMultipleRootsForFile(path).iterator();
-                iter.hasNext();) {
-            files.add(((Root) iter.next()).getFile(path));
-        }
+	// Get root which has most of the tree structure that we have.
+	public File getFile(String path) throws FileNotFoundException {
+		return new File(getRootForFile(path).getPath() + File.separatorChar
+				+ path);
+	}
 
-        return files;
-    }
+	/**
+	 * Returns an ArrayList containing se.mog.io.File objects
+	 */
+	public List getMultipleFiles(String path) throws FileNotFoundException {
+		ArrayList files = new ArrayList();
 
-    public List getMultipleRootsForFile(String path)
-        throws FileNotFoundException {
-        ArrayList roots = new ArrayList();
+		for (Iterator iter = getMultipleRootsForFile(path).iterator(); iter
+				.hasNext();) {
+			files.add(((Root) iter.next()).getFile(path));
+		}
 
-        for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
+		return files;
+	}
 
-            if (root.getFile(path).exists()) {
-                roots.add(root);
-            }
-        }
+	public List getMultipleRootsForFile(String path)
+			throws FileNotFoundException {
+		ArrayList roots = new ArrayList();
 
-        if (roots.size() == 0) {
-            throw new FileNotFoundException("Unable to find suitable root: " +
-                path);
-        }
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
 
-        return roots;
-    }
+			if (root.getFile(path).exists()) {
+				roots.add(root);
+			}
+		}
 
-    public Root getRootForFile(String path) throws FileNotFoundException {
-        for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
-            File file = new File(root.getPath() + File.separatorChar + path);
-            System.out.println(file.getPath());
-            if (file.exists()) {
-                return root;
-            }
-        }
-        throw new FileNotFoundException(path + " wasn't found in any root");
-    }
+		if (roots.size() == 0) {
+			throw new FileNotFoundException("Unable to find suitable root: "
+					+ path);
+		}
 
-    public long getTotalDiskSpaceAvailable() {
-        long totalDiskSpaceAvailable = 0;
+		return roots;
+	}
 
-        for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
-            File rootFile = root.getFile();
-            totalDiskSpaceAvailable += rootFile.getDiskSpaceAvailable();
-        }
+	public Root getRootForFile(String path) throws FileNotFoundException {
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+			File file = new File(root.getPath() + File.separatorChar + path);
+			System.out.println(file.getPath());
+			if (file.exists()) {
+				return root;
+			}
+		}
+		throw new FileNotFoundException(path + " wasn't found in any root");
+	}
 
-        return totalDiskSpaceAvailable;
-    }
+	public long getTotalDiskSpaceAvailable() {
+		long totalDiskSpaceAvailable = 0;
 
-    public long getTotalDiskSpaceCapacity() {
-        long totalDiskSpaceCapacity = 0;
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+			File rootFile = root.getFile();
+			totalDiskSpaceAvailable += rootFile.getDiskSpaceAvailable();
+		}
 
-        for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-            Root root = (Root) iter.next();
-            File rootFile = root.getFile();
-            totalDiskSpaceCapacity += rootFile.getDiskSpaceCapacity();
-        }
+		return totalDiskSpaceAvailable;
+	}
 
-        return totalDiskSpaceCapacity;
-    }
+	public long getTotalDiskSpaceCapacity() {
+		long totalDiskSpaceCapacity = 0;
 
-    public Iterator iterator() {
-        return _roots.iterator();
-    }
+		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
+			Root root = (Root) iter.next();
+			File rootFile = root.getFile();
+			totalDiskSpaceCapacity += rootFile.getDiskSpaceCapacity();
+		}
 
-    private static void validateRoots(Collection roots)
-        throws IOException {
-        File[] mountsArr = File.listMounts();
-        ArrayList mounts = new ArrayList(mountsArr.length);
+		return totalDiskSpaceCapacity;
+	}
 
-        for (int i = 0; i < mountsArr.length; i++) {
-            mounts.add(mountsArr[i]);
-        }
+	public Iterator iterator() {
+		return _roots.iterator();
+	}
 
-        Collections.sort(mounts,
-            new Comparator() {
-                public boolean equals(Object obj) {
-                    return obj.getClass() == getClass();
-                }
+	private static void validateRoots(Collection roots) throws IOException {
+		File[] mountsArr = File.listMounts();
+		ArrayList mounts = new ArrayList(mountsArr.length);
 
-                public int hashCode() {
-                    return getClass().hashCode();
-                }
+		for (int i = 0; i < mountsArr.length; i++) {
+			mounts.add(mountsArr[i]);
+		}
 
-                public int compare(Object o1, Object o2) {
-                    return compare((File) o1, (File) o2);
-                }
+		Collections.sort(mounts, new Comparator() {
+			public boolean equals(Object obj) {
+				return obj.getClass() == getClass();
+			}
 
-                public int compare(File o1, File o2) {
-                    int thisVal = o1.getPath().length();
-                    int anotherVal = o2.getPath().length();
+			public int hashCode() {
+				return getClass().hashCode();
+			}
 
-                    return ((thisVal < anotherVal) ? 1
-                                                   : ((thisVal == anotherVal)
-                    ? 0 : (-1)));
-                }
-            });
+			public int compare(Object o1, Object o2) {
+				return compare((File) o1, (File) o2);
+			}
 
-        Hashtable usedMounts = new Hashtable();
+			public int compare(File o1, File o2) {
+				int thisVal = o1.getPath().length();
+				int anotherVal = o2.getPath().length();
 
-        for (Iterator iter = roots.iterator(); iter.hasNext();) {
-            Object o = iter.next();
+				return ((thisVal < anotherVal) ? 1
+						: ((thisVal == anotherVal) ? 0 : (-1)));
+			}
+		});
 
-            if (!(o instanceof Root)) {
-                throw new RuntimeException();
-            }
+		Hashtable usedMounts = new Hashtable();
 
-            Root root = (Root) o;
-            File rootFile = root.getFile();
+		for (Iterator iter = roots.iterator(); iter.hasNext();) {
+			Object o = iter.next();
 
-            if (!rootFile.exists()) {
-                if (!rootFile.mkdirs()) {
-                    throw new IOException("mkdirs() failed on " +
-                        rootFile.getPath());
-                }
-            }
+			if (!(o instanceof Root)) {
+				throw new RuntimeException();
+			}
 
-            if (!rootFile.exists()) {
-                throw new FileNotFoundException("Invalid root: " + rootFile);
-            }
+			Root root = (Root) o;
+			File rootFile = root.getFile();
 
-            String fullpath = rootFile.getAbsolutePath();
+			if (!rootFile.exists()) {
+				if (!rootFile.mkdirs()) {
+					throw new IOException("mkdirs() failed on "
+							+ rootFile.getPath());
+				}
+			}
 
-            for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
-                File mount = (File) iterator.next();
+			if (!rootFile.exists()) {
+				throw new FileNotFoundException("Invalid root: " + rootFile);
+			}
 
-                if (fullpath.startsWith(mount.getPath())) {
-                    logger.info(fullpath + " in mount " + mount.getPath());
+			String fullpath = rootFile.getAbsolutePath();
 
-                    if (usedMounts.get(mount.getPath()) != null) {
-                        throw new IOException("Multiple roots in mount " +
-                            mount.getPath());
-                    }
+			for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
+				File mount = (File) iterator.next();
 
-                    usedMounts.put(mount.getPath(), new Object());
+				if (fullpath.startsWith(mount.getPath())) {
+					logger.info(fullpath + " in mount " + mount.getPath());
 
-                    break;
-                }
-            }
+					if (usedMounts.get(mount.getPath()) != null) {
+						throw new IOException("Multiple roots in mount "
+								+ mount.getPath());
+					}
 
-            for (Iterator iterator = roots.iterator(); iterator.hasNext();) {
-                Root root2 = (Root) iterator.next();
+					usedMounts.put(mount.getPath(), new Object());
 
-                if (root == root2) {
-                    continue;
-                }
+					break;
+				}
+			}
 
-                if ((root2.getPath() + File.pathSeparator).startsWith(root
+			for (Iterator iterator = roots.iterator(); iterator.hasNext();) {
+				Root root2 = (Root) iterator.next();
+
+				if (root == root2) {
+					continue;
+				}
+
+				if ((root2.getPath() + File.pathSeparator).startsWith(root
 						.getPath()
 						+ File.pathSeparator)) {
 					throw new RuntimeException("Overlapping roots: "
 							+ root.getPath() + " and " + root2.getPath());
 				}
-            }
-        }
-    }
+			}
+		}
+	}
 
-    public int getMaxPath() {
-        if (Slave.isWin32) {
-            int maxPath = 0;
+	public int getMaxPath() {
+		if (Slave.isWin32) {
+			int maxPath = 0;
 
-            for (Iterator iter = iterator(); iter.hasNext();) {
-                Root root = (Root) iter.next();
-                maxPath = Math.max(root.getPath().length(), maxPath);
-            } //constant for win32, see
+			for (Iterator iter = iterator(); iter.hasNext();) {
+				Root root = (Root) iter.next();
+				maxPath = Math.max(root.getPath().length(), maxPath);
+			} // constant for win32, see
 
-            //http://support.microsoft.com/default.aspx?scid=http://support.microsoft.com:80/support/kb/articles/Q177/6/65.ASP&NoWebContent=1
-            // for more info
-            return 256 - maxPath;
-        }
+			// http://support.microsoft.com/default.aspx?scid=http://support.microsoft.com:80/support/kb/articles/Q177/6/65.ASP&NoWebContent=1
+			// for more info
+			return 256 - maxPath;
+		}
 
-        return -1;
-    }
-    
-    public ArrayList getRootList() {
-    	return (ArrayList) _roots;
-    }
+		return -1;
+	}
+
+	public ArrayList getRootList() {
+		return (ArrayList) _roots;
+	}
 }

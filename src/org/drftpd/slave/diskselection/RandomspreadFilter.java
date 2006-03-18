@@ -24,13 +24,13 @@ import java.util.Random;
 import org.drftpd.slave.Root;
 
 /**
- * This filter simply pick a random root and
- * adds 1 point to the current ScoreChart making
- * files spread throught all roots.
+ * This filter simply pick a random root and adds 1 point to the current
+ * ScoreChart making files spread throught all roots.
+ * 
  * @author fr0w
  */
 public class RandomspreadFilter extends DiskFilter {
-	
+
 	public RandomspreadFilter(Properties p, Integer i) {
 		super(p, i);
 	}
@@ -40,6 +40,6 @@ public class RandomspreadFilter extends DiskFilter {
 	public void process(ScoreChart sc, String path) {
 		int i = _rand.nextInt(getRootList().size());
 		Root root = (Root) getRootList().get(i);
-		sc.addScore(root, 1);		
+		sc.addScore(root, 1);
 	}
 }

@@ -19,27 +19,27 @@ package net.sf.drftpd.event;
 
 import org.drftpd.usermanager.User;
 
-
 /**
  * @author mog
- *
+ * 
  * @version $Id$
  */
 public class InviteEvent extends Event {
-    private String _ircNick;
-    private User _user;
+	private String _ircNick;
 
-    public InviteEvent(String command, String ircUser, User user) {
-        super(command, System.currentTimeMillis());
-        _ircNick = ircUser;
-        _user = user;
-    }
+	private User _user;
 
-    public String getIrcNick() {
-        return _ircNick;
-    }
+	public InviteEvent(String command, String ircUser, User user) {
+		super(command, System.currentTimeMillis());
+		_ircNick = ircUser;
+		_user = user;
+	}
 
-    public User getUser() {
-        return _user;
-    }
+	public String getIrcNick() {
+		return _ircNick;
+	}
+
+	public User getUser() {
+		return _user;
+	}
 }

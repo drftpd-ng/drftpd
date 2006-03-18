@@ -27,21 +27,27 @@ import org.drftpd.Bytes;
  */
 public class DiskStatus implements Serializable {
 	private static final long serialVersionUID = 3573098662042584609L;
+
 	private long _free;
-    private long _total;
 
-    public DiskStatus(long free, long total) {
-        _free = free;
-        _total = total;
-    }
+	private long _total;
 
-    public long getBytesAvailable() {
-        return _free;
-    }
-    public long getBytesCapacity() {
-        return _total;
-    }
-    public String toString() {
-    	return getClass().getName()+"[free="+Bytes.formatBytes(getBytesAvailable())+",total="+Bytes.formatBytes(getBytesCapacity())+"]";
-    }
+	public DiskStatus(long free, long total) {
+		_free = free;
+		_total = total;
+	}
+
+	public long getBytesAvailable() {
+		return _free;
+	}
+
+	public long getBytesCapacity() {
+		return _total;
+	}
+
+	public String toString() {
+		return getClass().getName() + "[free="
+				+ Bytes.formatBytes(getBytesAvailable()) + ",total="
+				+ Bytes.formatBytes(getBytesCapacity()) + "]";
+	}
 }

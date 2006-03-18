@@ -19,14 +19,13 @@ package org.drftpd.commands;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public interface CommandHandler {
-    public abstract Reply execute(BaseFtpConnection conn)
-        throws ReplyException, ImproperUsageException;
+	public abstract Reply execute(BaseFtpConnection conn)
+			throws ReplyException, ImproperUsageException;
 
-    public String[] getFeatReplies();
+	public String[] getFeatReplies();
 }

@@ -24,66 +24,65 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-
 /**
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
- *
+ * 
  * To change the template for this generated type comment go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 class UnixFileSystem extends FileSystem {
-    public File[] listMounts() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader("/etc/mtab"));
+	public File[] listMounts() throws IOException {
+		BufferedReader reader = new BufferedReader(new FileReader("/etc/mtab"));
 
-        try {
-            Vector mountPoints = new Vector();
-            String line;
+		try {
+			Vector mountPoints = new Vector();
+			String line;
 
-            while ((line = reader.readLine()) != null) {
-                if (line.charAt(0) == '#') {
-                    continue;
-                }
+			while ((line = reader.readLine()) != null) {
+				if (line.charAt(0) == '#') {
+					continue;
+				}
 
-                Enumeration st = new StringTokenizer(line, " \t");
+				Enumeration st = new StringTokenizer(line, " \t");
 
-                if (!st.hasMoreElements()) {
-                    continue;
-                }
+				if (!st.hasMoreElements()) {
+					continue;
+				}
 
-                /*String fs_spec = */
-                st.nextElement();
+				/* String fs_spec = */
+				st.nextElement();
 
-                if (!st.hasMoreElements()) {
-                    System.err.println(
-                        "WARN: /etc/mtab is corrupt, skipping line");
+				if (!st.hasMoreElements()) {
+					System.err
+							.println("WARN: /etc/mtab is corrupt, skipping line");
 
-                    continue;
-                }
+					continue;
+				}
 
-                //String fs_file = st.nextToken();
-                mountPoints.add(new File((String) st.nextElement()));
+				// String fs_file = st.nextToken();
+				mountPoints.add(new File((String) st.nextElement()));
 
-                /*
-                String fs_vfstype = st.nextToken();
-                String fs_mntops = st.nextToken()
-                int fs_freq = Integer.parseInt(st.nextToken());
-                int fs_passno = Integer.parseInt(st.nextToken());
-                */
-            }
+				/*
+				 * String fs_vfstype = st.nextToken(); String fs_mntops =
+				 * st.nextToken() int fs_freq =
+				 * Integer.parseInt(st.nextToken()); int fs_passno =
+				 * Integer.parseInt(st.nextToken());
+				 */
+			}
 
-            return (File[]) mountPoints.toArray(new File[mountPoints.size()]);
-        } finally {
-            reader.close();
-        }
-    }
+			return (File[]) mountPoints.toArray(new File[mountPoints.size()]);
+		} finally {
+			reader.close();
+		}
+	}
 
-    public static void main(String[] args) throws IOException {
-        File[] mounts = new UnixFileSystem().listMounts();
+	public static void main(String[] args) throws IOException {
+		File[] mounts = new UnixFileSystem().listMounts();
 
-        for (int i = 0; i < mounts.length; i++) {
-            System.out.println(mounts[i]);
-        }
-    }
+		for (int i = 0; i < mounts.length; i++) {
+			System.out.println(mounts[i]);
+		}
+	}
 
-    public native DiskFreeSpace getDiskFreeSpace(File file);
+	public native DiskFreeSpace getDiskFreeSpace(File file);
 }

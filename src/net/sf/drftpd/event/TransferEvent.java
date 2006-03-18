@@ -24,59 +24,61 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.DirectoryHandle;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class TransferEvent extends DirectoryFtpEvent {
-    private InetAddress _peer;
-    private char _type;
-    private InetAddress _clientHost;
-    private BaseFtpConnection _conn;
+	private InetAddress _peer;
 
-    /**
-     * @param user
-     * @param command
-     * @param directory
-     */
-    public TransferEvent(BaseFtpConnection conn, String command,
-    		DirectoryHandle directory, InetAddress clientHost, RemoteSlave rslave,
-			InetAddress peer, char type) {
+	private char _type;
+
+	private InetAddress _clientHost;
+
+	private BaseFtpConnection _conn;
+
+	/**
+	 * @param user
+	 * @param command
+	 * @param directory
+	 */
+	public TransferEvent(BaseFtpConnection conn, String command,
+			DirectoryHandle directory, InetAddress clientHost,
+			RemoteSlave rslave, InetAddress peer, char type) {
 		this(conn, command, directory, clientHost, rslave, peer, type, System
 				.currentTimeMillis());
 	}
 
-    private TransferEvent(BaseFtpConnection conn, String command,
-    		DirectoryHandle directory, InetAddress clientHost, RemoteSlave rslave,
-			InetAddress peer, char type, long time) {
-        super(conn.getUserNull(), command, directory, time);
-        _clientHost = clientHost;
+	private TransferEvent(BaseFtpConnection conn, String command,
+			DirectoryHandle directory, InetAddress clientHost,
+			RemoteSlave rslave, InetAddress peer, char type, long time) {
+		super(conn.getUserNull(), command, directory, time);
+		_clientHost = clientHost;
 
-        if (peer == null) {
-            throw new NullPointerException();
-        }
+		if (peer == null) {
+			throw new NullPointerException();
+		}
 
-        _peer = peer;
-        _type = type;
-        _conn = conn;
-    }
+		_peer = peer;
+		_type = type;
+		_conn = conn;
+	}
 
-    public char getType() {
-        return _type;
-    }
+	public char getType() {
+		return _type;
+	}
 
-    public InetAddress getClientHost() {
-        return _clientHost;
-    }
+	public InetAddress getClientHost() {
+		return _clientHost;
+	}
 
-    public InetAddress getXferHost() {
-        return _peer;
-    }
+	public InetAddress getXferHost() {
+		return _peer;
+	}
 
-    public InetAddress getPeer() {
-        return _peer;
-    }
+	public InetAddress getPeer() {
+		return _peer;
+	}
 
 	public BaseFtpConnection getConn() {
 		return _conn;

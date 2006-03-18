@@ -17,90 +17,97 @@
  */
 package net.sf.drftpd.master;
 
-
 /**
  * @author mog
  * @version $Id$
  */
 public class UploaderPosition implements Comparable {
-    long _bytes;
-    int _files;
-    String _username;
-    long _xfertime;
+	long _bytes;
 
-    public UploaderPosition(String username, long bytes, int files,
-        long xfertime) {
-        _username = username;
-        _bytes = bytes;
-        _files = files;
-        _xfertime = xfertime;
-    }
+	int _files;
 
-    public int compareTo(Object o) {
-        return compareTo((UploaderPosition) o);
-    }
+	String _username;
 
-    /** Sorts in reverse order so that the biggest shows up first.
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    public int compareTo(UploaderPosition o) {
-        long thisVal = getBytes();
-        long anotherVal = o.getBytes();
+	long _xfertime;
 
-        return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0 : (-1)));
-    }
+	public UploaderPosition(String username, long bytes, int files,
+			long xfertime) {
+		_username = username;
+		_bytes = bytes;
+		_files = files;
+		_xfertime = xfertime;
+	}
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    public boolean equals(Object obj) {
-        //if(obj instanceof String && obj.equals(getUsername())) return true;
-        if (!(obj instanceof UploaderPosition)) {
-            return false;
-        }
+	public int compareTo(Object o) {
+		return compareTo((UploaderPosition) o);
+	}
 
-        UploaderPosition other = (UploaderPosition) obj;
+	/**
+	 * Sorts in reverse order so that the biggest shows up first.
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	public int compareTo(UploaderPosition o) {
+		long thisVal = getBytes();
+		long anotherVal = o.getBytes();
 
-        return getUsername().equals(other.getUsername());
-    }
+		return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0
+				: (-1)));
+	}
 
-    public long getBytes() {
-        return _bytes;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		// if(obj instanceof String && obj.equals(getUsername())) return true;
+		if (!(obj instanceof UploaderPosition)) {
+			return false;
+		}
 
-    public int getFiles() {
-        return _files;
-    }
+		UploaderPosition other = (UploaderPosition) obj;
 
-    public String getUsername() {
-        return _username;
-    }
+		return getUsername().equals(other.getUsername());
+	}
 
-    public long getXferspeed() {
-        if (getXfertime() == 0) {
-            return 0;
-        }
+	public long getBytes() {
+		return _bytes;
+	}
 
-        return (long) (getBytes() / (getXfertime() / 1000.0));
-    }
+	public int getFiles() {
+		return _files;
+	}
 
-    public long getXfertime() {
-        return _xfertime;
-    }
+	public String getUsername() {
+		return _username;
+	}
 
-    public int hashCode() {
-        return getUsername().hashCode();
-    }
+	public long getXferspeed() {
+		if (getXfertime() == 0) {
+			return 0;
+		}
 
-    public void updateBytes(long bytes) {
-        _bytes += bytes;
-    }
+		return (long) (getBytes() / (getXfertime() / 1000.0));
+	}
 
-    public void updateFiles(int files) {
-        _files += files;
-    }
+	public long getXfertime() {
+		return _xfertime;
+	}
 
-    public void updateXfertime(long xfertime) {
-        _xfertime += xfertime;
-    }
+	public int hashCode() {
+		return getUsername().hashCode();
+	}
+
+	public void updateBytes(long bytes) {
+		_bytes += bytes;
+	}
+
+	public void updateFiles(int files) {
+		_files += files;
+	}
+
+	public void updateXfertime(long xfertime) {
+		_xfertime += xfertime;
+	}
 }

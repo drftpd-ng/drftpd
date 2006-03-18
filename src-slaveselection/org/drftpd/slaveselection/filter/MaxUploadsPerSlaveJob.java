@@ -45,10 +45,11 @@ public class MaxUploadsPerSlaveJob extends Filter {
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandle dir,
-			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
+			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
 		process(scorechart, sourceSlave);
 	}
+
 	public void process(ScoreChart scorechart, RemoteSlave sourceSlave) {
 		if (sourceSlave == null)
 			return;

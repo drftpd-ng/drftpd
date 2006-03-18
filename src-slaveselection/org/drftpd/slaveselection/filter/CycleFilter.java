@@ -29,55 +29,59 @@ import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
 
-
 /**
- * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the one in that has been unused for the longest time.
- *
+ * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the
+ * one in that has been unused for the longest time.
+ * 
  * @author mog, zubov
  * @version $Id: CycleFilter.java 847 2004-12-02 03:32:41Z mog $
  */
 public class CycleFilter extends Filter {
-    public CycleFilter(FilterChain fc, int i, Properties p) {
-    }
+	public CycleFilter(FilterChain fc, int i, Properties p) {
+	}
 
-    public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, InodeHandle dir, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
-        ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart.getSlaveScores());
+	public void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			throws NoAvailableSlaveException {
+		ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart
+				.getSlaveScores());
 
-        while (true) {
-            if (tempList.isEmpty()) {
-                return;
-            }
+		while (true) {
+			if (tempList.isEmpty()) {
+				return;
+			}
 
-            ScoreChart.SlaveScore first = (ScoreChart.SlaveScore) tempList.get(0);
-            ArrayList<SlaveScore> equalList = new ArrayList<SlaveScore>();
-            equalList.add(first);
-            tempList.remove(first);
+			ScoreChart.SlaveScore first = (ScoreChart.SlaveScore) tempList
+					.get(0);
+			ArrayList<SlaveScore> equalList = new ArrayList<SlaveScore>();
+			equalList.add(first);
+			tempList.remove(first);
 
-            for (Iterator iter = tempList.iterator(); iter.hasNext();) {
-                ScoreChart.SlaveScore match = (ScoreChart.SlaveScore) iter.next();
+			for (Iterator iter = tempList.iterator(); iter.hasNext();) {
+				ScoreChart.SlaveScore match = (ScoreChart.SlaveScore) iter
+						.next();
 
-                if (match.compareTo(first) == 0) {
-                    equalList.add(match);
-                    iter.remove();
-                }
-            }
+				if (match.compareTo(first) == 0) {
+					equalList.add(match);
+					iter.remove();
+				}
+			}
 
-            ScoreChart.SlaveScore leastUsed = first;
+			ScoreChart.SlaveScore leastUsed = first;
 
-            for (Iterator iter = equalList.iterator(); iter.hasNext();) {
-                ScoreChart.SlaveScore match = (ScoreChart.SlaveScore) iter.next();
+			for (Iterator iter = equalList.iterator(); iter.hasNext();) {
+				ScoreChart.SlaveScore match = (ScoreChart.SlaveScore) iter
+						.next();
 
-                if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed.getRSlave()
-                                                                                            .getLastTransferForDirection(direction)) {
-                    leastUsed = match;
-                }
-            }
+				if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
+						.getRSlave().getLastTransferForDirection(direction)) {
+					leastUsed = match;
+				}
+			}
 
-            if (leastUsed != null) {
-                leastUsed.addScore(1);
-            }
-        }
-    }
+			if (leastUsed != null) {
+				leastUsed.addScore(1);
+			}
+		}
+	}
 }
