@@ -36,6 +36,7 @@ import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
@@ -73,17 +74,14 @@ public class JobManagerCommandHandler implements CommandHandler,
 		FileHandle lrf;
 
 		try {
-			lrf = conn.getCurrentDirectory().getFile(st.nextToken());
-		} catch (FileNotFoundException e) {
-			return new Reply(500, "File does not exist");
-		}
-		try {
-			if (!lrf.isFile()) {
+			try {
+				lrf = conn.getCurrentDirectory().getFile(st.nextToken());
+			} catch (ObjectNotValidException e) {
 				throw new ImproperUsageException(
 						"addjob does not handle directories or links");
 			}
-		} catch (FileNotFoundException e2) {
-			throw new ReplyException(e2);
+		} catch (FileNotFoundException e) {
+			return new Reply(500, "File does not exist");
 		}
 
 		int priority;

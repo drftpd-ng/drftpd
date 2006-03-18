@@ -17,31 +17,17 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-
-import net.sf.drftpd.FileExistsException;
-
 /**
  * @author zubov
  * @version $Id$
  */
-public class LinkHandle extends InodeHandle {
+public class FakeDirectoryHandle extends FakeFileHandle implements
+		DirectoryHandleInterface {
 
-	public LinkHandle(String path) {
-		super(path);
-	}
-
-	protected VirtualFileSystemLink getInode() throws FileNotFoundException {
-		VirtualFileSystemInode inode = super.getInode();
-		if (inode instanceof VirtualFileSystemLink) {
-			return (VirtualFileSystemLink) inode;
-		}
-		throw new ClassCastException("LinkHandle object pointing to Inode:"
-				+ inode);
-	}
-
-	public String getLinkPath() throws FileNotFoundException {
-		return getInode().getLink();
+	public FakeDirectoryHandle(String name, String user, String group,
+			long size, long lastModified) {
+		super(name, user, group, size, lastModified);
+		// TODO Auto-generated constructor stub
 	}
 
 }

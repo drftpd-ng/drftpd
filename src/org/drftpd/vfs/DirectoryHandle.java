@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import net.sf.drftpd.FileExistsException;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.CaseInsensitiveHashtable;
@@ -40,7 +42,7 @@ public class DirectoryHandle extends InodeHandle {
 	protected VirtualFileSystemDirectory getInode()
 			throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
-		if (inode instanceof VirtualFileSystemLink) {
+		if (inode instanceof VirtualFileSystemDirectory) {
 			return (VirtualFileSystemDirectory) inode;
 		}
 		throw new ClassCastException(
@@ -59,7 +61,7 @@ public class DirectoryHandle extends InodeHandle {
 		return (Set<FileHandle>) set;
 	}
 
-	public Set<InodeHandle> getAllHandles() throws FileNotFoundException {
+	public Set<InodeHandle> getInodeHandles() throws FileNotFoundException {
 		return getInode().getInodes();
 	}
 
@@ -74,21 +76,49 @@ public class DirectoryHandle extends InodeHandle {
 		}
 		return (Set<DirectoryHandle>) set;
 	}
-
-	public DirectoryHandle getDirectory(String name)
-			throws FileNotFoundException {
-		return null;
+	
+	public InodeHandle getInodeHandle(String name) throws FileNotFoundException {
+		// should accept absolute and relative paths
+		// TODO
+		VirtualFileSystemInode inode = getInode().getInodeByName(name);
+		if (inode.isDirectory()) {
+			return new DirectoryHandle(inode.getPath());
+		} else if (inode.isFile()) {
+			return new FileHandle(inode.getPath());
+		} else if (inode.isLink()) {
+			return new LinkHandle(inode.getPath());
+		}
+		throw new IllegalStateException("Not a directory, file, or link -- punt");
 	}
 
-	public FileHandle getFile(String string) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
+	public DirectoryHandle getDirectory(String name)
+			throws FileNotFoundException, ObjectNotValidException {
+		InodeHandle handle = getInodeHandle(name);
+		if (handle.isDirectory()) {
+			return (DirectoryHandle) handle;
+		}
+		throw new ObjectNotValidException(name + " is not a directory");
+	}
+
+	public FileHandle getFile(String name) throws FileNotFoundException, ObjectNotValidException {
+		InodeHandle handle = getInodeHandle(name);
+		if (handle.isFile()) {
+			return (FileHandle) handle;
+		}
+		throw new ObjectNotValidException(name + " is not a file");
+	}
+	
+	public LinkHandle getLink(String name) throws FileNotFoundException, ObjectNotValidException {
+		InodeHandle handle = getInodeHandle(name);
+		if (handle.isLink()) {
+			return (LinkHandle) handle;
+		}
+		throw new ObjectNotValidException(name + " is not a link");
 	}
 
 	public void remerge(CaseInsensitiveHashtable files, RemoteSlave rslave)
 			throws IOException {
 		// TODO Auto-generated method stub
-
 	}
 
 	public void unmergeDir(RemoteSlave rslave) {
@@ -97,17 +127,54 @@ public class DirectoryHandle extends InodeHandle {
 	}
 
 	/**
-	 * Creates a Directory object in the FileSystem with this path
+	 * Creates a Directory object in the FileSystem with this directory as its parent
 	 * 
 	 * @param user
 	 * @param group
 	 * @return
+	 * @throws FileNotFoundException 
+	 * @throws FileExistsException 
 	 */
-	public void createDirectory(String user, String group) {
-		// TODO Auto-generated method stub
-
+	public DirectoryHandle createDirectory(String name, String user, String group) throws FileExistsException, FileNotFoundException {
+		getInode().createDirectory(name, user, group);
+		try {
+			return getDirectory(name);
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException("somethin really funky happened, we just created it", e);
+		} catch (ObjectNotValidException e) {
+			throw new RuntimeException("somethin really funky happened, we just created it", e);
+		}
 	}
-
+	/**
+	 * Creates a File object in the FileSystem with this directory as its parent
+	 *
+	 */
+	public FileHandle createFile(String name, String user, String group, RemoteSlave initialSlave) throws FileExistsException, FileNotFoundException {
+		getInode().createFile(name, user, group, initialSlave.getName());
+		try {
+			return getFile(name);
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException("somethin really funky happened, we just created it", e);
+		} catch (ObjectNotValidException e) {
+			throw new RuntimeException("somethin really funky happened, we just created it", e);
+		}
+	}
+	
+	/**
+	 * Creates a File object in the FileSystem with this directory as its parent
+	 *
+	 */
+	public LinkHandle createLink(String name, String target, String user, String group) throws FileExistsException, FileNotFoundException {
+		getInode().createLink(name, target, user, group);
+		try {
+			return getLink(name);
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException("somethin really funky happened, we just created it", e);
+		} catch (ObjectNotValidException e) {
+			throw new RuntimeException("somethin really funky happened, we just created it", e);
+		}
+	}
+	
 	public boolean isRoot() {
 		return equals(GlobalContext.getGlobalContext().getRoot());
 	}

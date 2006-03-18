@@ -24,17 +24,23 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import net.sf.drftpd.master.command.plugins.Login;
+
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.ObjectNotValidException;
 
 /**
  * @author mog
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
+	
+	private static final Logger logger = Logger.getLogger(SectionManager.class);
 
 	public SectionManager() {
 	}
@@ -43,10 +49,15 @@ public class SectionManager implements SectionManagerInterface {
 		return ConnectionManager.getConnectionManager();
 	}
 
-	public SectionInterface getSection(String string) {
+	public SectionInterface getSection(String name) {
 		try {
-			return new Section(getGlobalContext().getRoot()
-					.getDirectory(string));
+			try {
+				return new Section(getGlobalContext().getRoot()
+						.getDirectory(name));
+			} catch (ObjectNotValidException e) {
+				logger.error("Section defined " + name + " is not a file");
+				return new Section(getGlobalContext().getRoot());
+			}
 		} catch (FileNotFoundException e) {
 			return new Section(getGlobalContext().getRoot());
 		}

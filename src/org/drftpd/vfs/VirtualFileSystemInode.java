@@ -134,7 +134,7 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	public boolean isFile() {
-		return this instanceof VirtualFileSystemInode;
+		return this instanceof VirtualFileSystemFile;
 	}
 
 	public boolean isLink() {

@@ -71,5 +71,4 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 				new DefaultPersistenceDelegate(new String[] { "username",
 						"group", "link" }));
 	}
-
 }

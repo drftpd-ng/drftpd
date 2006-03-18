@@ -20,49 +20,33 @@ package net.sf.drftpd.master.command.plugins;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.GroupPosition;
-import net.sf.drftpd.master.UploaderPosition;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.drftpd.Bytes;
 import org.drftpd.Checksum;
-import org.drftpd.RankUtils;
-import org.drftpd.victim;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.id3.ID3Tag;
-import org.drftpd.nuke.NukeBeans;
-import org.drftpd.plugins.DIZFile;
-import org.drftpd.plugins.DIZPlugin;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.ListUtils;
-import org.drftpd.remotefile.StaticRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFile.NonExistingFile;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.LinkHandle;
+import org.drftpd.vfs.ListUtils;
+import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
 
 
 /**
@@ -73,7 +57,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
             "yyyyMMddHHmmss.SSS");
     private static final Logger logger = Logger.getLogger(Dir.class);
-    protected LinkedRemoteFileInterface _renameFrom = null;
+    protected InodeHandle _renameFrom = null;
 
     public Dir() {
         super();
@@ -90,11 +74,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      */
     private Reply doCDUP(BaseFtpConnection conn) {
         // change directory
-        try {
-            conn.setCurrentDirectory(conn.getCurrentDirectory().getParentFile());
-        } catch (FileNotFoundException ex) {
-        }
-
+        conn.setCurrentDirectory(conn.getCurrentDirectory().getParent());
         return new Reply(200,
             "Directory changed to " + conn.getCurrentDirectory().getPath());
     }
@@ -115,23 +95,20 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        LinkedRemoteFile newCurrentDirectory;
+        DirectoryHandle newCurrentDirectory = null;
 
         try {
-            newCurrentDirectory = conn.getCurrentDirectory().lookupFile(request.getArgument());
+        	newCurrentDirectory = conn.getCurrentDirectory().getDirectory(request.getArgument());
         } catch (FileNotFoundException ex) {
             return new Reply(550, ex.getMessage());
-        }
+        } catch (ObjectNotValidException e) {
+			return new Reply(550, request.getArgument() + ": is not a directory");
+		}
 
         if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), newCurrentDirectory, true)) {
             return new Reply(550, request.getArgument() + ": Not found");
 
             // reply identical to FileNotFoundException.getMessage() above
-        }
-
-        if (!newCurrentDirectory.isDirectory()) {
-            return new Reply(550, request.getArgument() +
-                ": Not a directory");
         }
 
         conn.setCurrentDirectory(newCurrentDirectory);
@@ -141,8 +118,9 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         conn.getGlobalContext().getConfig().directoryMessage(response,
             conn.getUserNull(), newCurrentDirectory);
 
+        // diz,mp3,racestats will all be hooked externally in the new commandhandlers
         // show cwd_mp3.txt if this is an mp3 release
-        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
+/*        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
         if (conn.getGlobalContext().getZsConfig().id3Enabled()) {
             try {
                 ID3Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File())
@@ -339,7 +317,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                 //Error fetching SFV, ignore
             }
         }
-
+*/
         return response;
     }
 
@@ -360,42 +338,41 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         // get filenames
         String fileName = request.getArgument();
-        LinkedRemoteFile requestedFile;
-
+        InodeHandle requestedFile;
+        Reply reply = (Reply) Reply.RESPONSE_250_ACTION_OKAY.clone();
         try {
-            //requestedFile = getVirtualDirectory().lookupFile(fileName);
-            requestedFile = conn.getCurrentDirectory().lookupFile(fileName, false);
-        } catch (FileNotFoundException ex) {
-            return new Reply(550, "File not found: " + ex.getMessage());
-        }
+
+        requestedFile = conn.getCurrentDirectory().getInodeHandle(fileName); 
 
         // check permission
         if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile)) {
+            if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile.getParent())) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
-        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile)) {
+        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile.getParent())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
         
-        if (requestedFile.isDirectory() && requestedFile.getMap().size() != 0) {
-			return new Reply(550, requestedFile.getPath()
-					+ ": Directory not empty");
+        if (requestedFile.isDirectory()) {
+			DirectoryHandle victim = (DirectoryHandle) requestedFile;
+			if (victim.getInodeHandles().size() != 0) {
+				return new Reply(550, requestedFile.getPath()
+						+ ": Directory not empty");
+			}
 		}
 
-        Reply reply = (Reply) Reply.RESPONSE_250_ACTION_OKAY.clone();
 
         User uploader;
 
         try {
 			uploader = conn.getGlobalContext().getUserManager().getUserByName(
                     requestedFile.getUsername());
-            uploader.updateCredits((long) -(requestedFile.length() * conn
+            uploader.updateCredits((long) -(requestedFile.getSize() * conn
                     .getGlobalContext().getConfig().getCreditCheckRatio(
-                            requestedFile, uploader)));
+                            requestedFile.getParent(), uploader)));
             if (!conn.getGlobalContext().getConfig().checkPathPermission(
                     "nostatsup", uploader, conn.getCurrentDirectory())) {
-                uploader.updateUploadedBytes(-requestedFile.length());
+                uploader.updateUploadedBytes(-requestedFile.getSize());
             }
 		} catch (UserFileException e) {
 			reply.addComment("Error removing credits & stats: "
@@ -406,8 +383,12 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 		}
 
         conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn.getUserNull(), "DELE", requestedFile));
-        requestedFile.delete();
+                conn.getUserNull(), "DELE", requestedFile.getParent()));
+			requestedFile.delete();
+		} catch (FileNotFoundException e) {
+			// good! we're done :)
+			return new Reply(550, e.getMessage());
+		}
 
         return reply;
     }
@@ -427,10 +408,10 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         // get filenames
         String fileName = request.getArgument();
-        LinkedRemoteFile reqFile;
+        InodeHandle reqFile;
 
         try {
-            reqFile = conn.getCurrentDirectory().lookupFile(fileName);
+            reqFile = conn.getCurrentDirectory().getInodeHandle(fileName);
         } catch (FileNotFoundException ex) {
             return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
@@ -441,8 +422,12 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         //File reqFile = new File(physicalName);
         // now print date
         //if (reqFile.exists()) {
-        return new Reply(213,
-            DATE_FMT.format(new Date(reqFile.lastModified())));
+        try {
+			return new Reply(213,
+			    DATE_FMT.format(new Date(reqFile.lastModified())));
+		} catch (FileNotFoundException e) {
+			return new Reply(550, e.getMessage());
+		}
 
         //out.print(ftpStatus.getResponse(213, request, user, args));
         //} else {
@@ -474,16 +459,8 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         if (!conn.getGlobalContext().getSlaveManager().hasAvailableSlaves()) {
             return Reply.RESPONSE_450_SLAVE_UNAVAILABLE;
         }
-
-        LinkedRemoteFile.NonExistingFile ret = conn.getCurrentDirectory()
-                                                   .lookupNonExistingFile(request.getArgument());
-        LinkedRemoteFile dir = ret.getFile();
-
-        if (ret.exists()) {
-            return new Reply(550,
-                "Requested action not taken. " + request.getArgument() +
-                " already exists");
-        }
+        
+        String dirName = request.getArgument();
 
         //check for NUKED dir
         /*
@@ -500,7 +477,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         */
         // *************************************
 		// begin nuke log check
-		String toPath;
+/*		String toPath;
 		if (request.getArgument().substring(0, 1).equals("/")) {
 			toPath = request.getArgument();
 		} else {
@@ -524,33 +501,34 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 						"Access denied - Directory already nuked, reason unavailable - "
 								+ e.getMessage());
 			}
-		}
+		}*/
 		// end nuke log check
 		// *************************************
 
-        String createdDirName = conn.getGlobalContext().getConfig().getDirName(ret.getPath());
-
-        if (!ListUtils.isLegalFileName(createdDirName)) {
+        if (!ListUtils.isLegalFileName(dirName)) {
             return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
         }
 
-        if (!conn.getGlobalContext().getConfig().checkPathPermission("makedir", conn.getUserNull(), dir)) {
+        if (!conn.getGlobalContext().getConfig().checkPathPermission("makedir", conn.getUserNull(), conn.getCurrentDirectory())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }
 
         try {
-            LinkedRemoteFile createdDir = dir.createDirectory(conn.getUserNull()
-                                                                  .getName(),
-                    conn.getUserNull().getGroup(), createdDirName);
-
+        	DirectoryHandle newDir = null;
+            try {
+				newDir = conn.getCurrentDirectory().createDirectory(dirName,conn.getUserNull().getName(), conn.getUserNull().getGroup());
+			} catch (FileNotFoundException e) {
+				return new Reply(550, "Parent directory does not exist");
+			}
+  
             conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                    conn.getUserNull(), "MKD", createdDir));
+                    conn.getUserNull(), "MKD", newDir));
 
-            return new Reply(257, "\"" + createdDir.getPath() +
+            return new Reply(257, "\"" + newDir.getPath() +
                 "\" created.");
         } catch (FileExistsException ex) {
             return new Reply(550,
-                "directory " + createdDirName + " already exists");
+                "directory " + dirName + " already exists");
         }
     }
 
@@ -575,7 +553,10 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * the pathname is relative).
      */
     private Reply doRMD(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    	return doDELE(conn);
+    	// strange, the ftp rfc says it is exactly equal to DELE, we allow DELE to delete files
+    	// that might be wrong, but saves me from writing this method...
+/*        FtpRequest request = conn.getRequest();
 
         // argument check
         if (!request.hasArgument()) {
@@ -617,7 +598,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         requestedFile.delete();
 
         return Reply.RESPONSE_250_ACTION_OKAY;
-    }
+*/    }
 
     /**
      * <code>RNFR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
@@ -646,19 +627,18 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
         //mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
         try {
-            _renameFrom = conn.getCurrentDirectory().lookupFile(request.getArgument());
-        } catch (FileNotFoundException e) {
+            _renameFrom = conn.getCurrentDirectory().getInodeHandle(request.getArgument());
+            //check permission
+			if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
+			    if (!conn.getGlobalContext().getConfig().checkPathPermission("renameown", conn.getUserNull(), _renameFrom.getParent())) {
+			        return Reply.RESPONSE_530_ACCESS_DENIED;
+			    }
+			} else if (!conn.getGlobalContext().getConfig().checkPathPermission("rename", conn.getUserNull(), _renameFrom.getParent())) {
+			    return Reply.RESPONSE_530_ACCESS_DENIED;
+			}
+		} catch (FileNotFoundException e) {
             return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-        }
-
-        //check permission
-        if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkPathPermission("renameown", conn.getUserNull(), _renameFrom)) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
-            }
-        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("rename", conn.getUserNull(), _renameFrom)) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+		}
 
         return new Reply(350, "File exists, ready for destination name");
     }
@@ -684,39 +664,36 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
             return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
         }
 
-        NonExistingFile ret = conn.getCurrentDirectory().lookupNonExistingFile(request.getArgument());
-        LinkedRemoteFileInterface toDir = ret.getFile();
-        String name = ret.getPath();
-        LinkedRemoteFileInterface fromFile = _renameFrom;
+        InodeHandle toFile;
+		try {
+			toFile = conn.getCurrentDirectory().getInodeHandle(
+					request.getArgument());
+			InodeHandle fromFile = _renameFrom;
 
-        if (name == null) {
-            name = fromFile.getName();
-        }
+			// check permission
+			if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
+				if (!conn.getGlobalContext().getConfig().checkPathPermission(
+						"renameown", conn.getUserNull(), toFile.getParent())) {
+					return Reply.RESPONSE_530_ACCESS_DENIED;
+				}
+			} else if (!conn.getGlobalContext().getConfig()
+					.checkPathPermission("rename", conn.getUserNull(),
+							toFile.getParent())) {
+				return Reply.RESPONSE_530_ACCESS_DENIED;
+			}
+			fromFile.renameTo(toFile);
+		} catch (FileNotFoundException e) {
+			logger.info("FileNotFoundException on renameTo()", e);
 
-        // check permission
-        if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkPathPermission("renameown", conn.getUserNull(), toDir)) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
-            }
-        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("rename", conn.getUserNull(), toDir)) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+			return new Reply(500, "FileNotFound - " + e.getMessage());
+		} catch (IOException e) {
+			logger.info("IOException on renameTo()", e);
 
-        try {
-            fromFile.renameTo(toDir.getPath(), name);
-        } catch (FileNotFoundException e) {
-            logger.info("FileNotFoundException on renameTo()", e);
+			return new Reply(500, "IOException - " + e.getMessage());
+		}
 
-            return new Reply(500, "FileNotFound - " + e.getMessage());
-        } catch (IOException e) {
-            logger.info("IOException on renameTo()", e);
-
-            return new Reply(500, "IOException - " + e.getMessage());
-        }
-
-        //out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
-        return new Reply(250, request.getCommand() +
-            " command successful.");
+		// out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
+		return new Reply(250, request.getCommand() + " command successful.");
     }
 
     private Reply doSITE_CHOWN(BaseFtpConnection conn)
@@ -741,11 +718,10 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         while (st.hasMoreTokens()) {
             try {
-                LinkedRemoteFileInterface file = conn.getCurrentDirectory()
-                                                     .lookupFile(st.nextToken());
+                InodeHandle file = conn.getCurrentDirectory().getInodeHandle(st.nextToken());
 
                 if (owner != null) {
-                    file.setOwner(owner);
+                    file.setUsername(owner);
                 }
 
                 if (group != null) {
@@ -773,20 +749,18 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         String targetName = st.nextToken();
         String linkName = st.nextToken();
-        LinkedRemoteFile target;
+        InodeHandle target;
 
         try {
-            target = conn.getCurrentDirectory().lookupFile(targetName);
-        } catch (FileNotFoundException e) {
+            target = conn.getCurrentDirectory().getInodeHandle(targetName);
+            LinkHandle link = conn.getCurrentDirectory().createLink(linkName,
+					targetName, conn.getUserNull().getName(),
+					conn.getUserNull().getGroup());
+		} catch (FileExistsException e) {
+			return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
+		} catch (FileNotFoundException e) {
             return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-        }
-
-        if (!target.isDirectory()) {
-            return new Reply(501, "Only link to directories for now.");
-        }
-
-        StaticRemoteFile link = new StaticRemoteFile(linkName, null, targetName);
-        conn.getCurrentDirectory().addFile(link);
+		}
 
         return Reply.RESPONSE_200_COMMAND_OK;
     }
@@ -842,35 +816,37 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
             recursive = false;
         }
 
-        LinkedRemoteFile wipeFile;
+        InodeHandle wipeFile;
 
         try {
-            wipeFile = conn.getCurrentDirectory().lookupFile(arg);
-        } catch (FileNotFoundException e) {
-            return new Reply(200,
-                "Can't wipe: " + arg +
-                " does not exist or it's not a plain file/directory");
-        }
+			wipeFile = conn.getCurrentDirectory().getInodeHandle(arg);
 
-        if (wipeFile.isDirectory() && (wipeFile.dirSize() != 0) && !recursive) {
-            return new Reply(200, "Can't wipe, directory not empty");
-        }
+			if (wipeFile.isDirectory() && !recursive) {
+				if (((DirectoryHandle) wipeFile).getInodeHandles().size() != 0) {
+					return new Reply(200, "Can't wipe, directory not empty");
+				}
+			}
 
-        //if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
-        conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn.getUserNull(), "WIPE", wipeFile));
+			// if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
+			conn.getGlobalContext().dispatchFtpEvent(
+					new DirectoryFtpEvent(conn.getUserNull(), "WIPE", wipeFile
+							.getParent()));
 
-        //}
-        wipeFile.delete();
+			// }
+			wipeFile.delete();
+		} catch (FileNotFoundException e) {
+			return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+		}
+
 
         return Reply.RESPONSE_200_COMMAND_OK;
     }
 
     /**
-     * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * Returns the size of the file in bytes.
-     */
+	 * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 * 
+	 * Returns the size of the file in bytes.
+	 */
     private Reply doSIZE(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
 
@@ -878,15 +854,14 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        LinkedRemoteFile file;
+        InodeHandle file;
 
         try {
-            file = conn.getCurrentDirectory().lookupFile(request.getArgument());
+            file = conn.getCurrentDirectory().getInodeHandle(request.getArgument());
+			return new Reply(213, Long.toString(file.getSize()));
         } catch (FileNotFoundException ex) {
             return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
         }
-
-        return new Reply(213, Long.toString(file.length()));
     }
 
     /**
@@ -902,31 +877,35 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
-        LinkedRemoteFile myFile;
+        FileHandle myFile;
 
         try {
-            myFile = conn.getCurrentDirectory().lookupFile(st.nextToken());
+            myFile = conn.getCurrentDirectory().getFile(st.nextToken());
         } catch (FileNotFoundException e) {
             return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-        }
-
-        if (st.hasMoreTokens()) {
-            if (!st.nextToken().equals("0") ||
-                    !st.nextToken().equals(Long.toString(myFile.length()))) {
-                return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
-            }
-        }
+        } catch (ObjectNotValidException e) {
+        	return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+		}
 
         try {
-            return new Reply(250,
-                "XCRC Successful. " +
-                Checksum.formatChecksum(myFile.getCheckSum()));
-        } catch (NoAvailableSlaveException e1) {
-            logger.warn("", e1);
+			if (st.hasMoreTokens()) {
+				if (!st.nextToken().equals("0")
+						|| !st.nextToken().equals(
+								Long.toString(myFile.getSize()))) {
+					return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+				}
+			}
 
-            return new Reply(550,
-                "NoAvailableSlaveException: " + e1.getMessage());
-        }
+			return new Reply(250, "XCRC Successful. "
+					+ Checksum.formatChecksum(myFile.getCheckSum()));
+		} catch (NoAvailableSlaveException e1) {
+			logger.warn("", e1);
+
+			return new Reply(550, "NoAvailableSlaveException: "
+					+ e1.getMessage());
+		} catch (FileNotFoundException e) {
+			return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+		}
     }
 
     public Reply execute(BaseFtpConnection conn)

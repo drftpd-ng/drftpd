@@ -36,7 +36,6 @@ import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyPermissionDeniedException;
 import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.irc.SiteBot;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.SlaveStatus;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -113,8 +112,9 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
 
             try {
                 SlaveStatus status = rslave.getSlaveStatusAvailable();
-                SiteBot.fillEnvSlaveStatus(env, status,
-                    conn.getGlobalContext().getSlaveManager());
+                // what the hell is this doing here?!?
+                /*SiteBot.fillEnvSlaveStatus(env, status,
+                    conn.getGlobalContext().getSlaveManager());*/
                 response.addComment(conn.jprintf(SlaveManagement.class,
                         "slaves", env));
             } catch (SlaveUnavailableException e) {

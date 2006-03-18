@@ -18,74 +18,23 @@ package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
 
+import net.sf.drftpd.FileExistsException;
+
 import org.drftpd.GlobalContext;
 
 /**
  * @author zubov
  * @version $Id$
  */
-public abstract class InodeHandle {
+public abstract class InodeHandle implements InodeHandleInterface {
 	String _path = null;
 
 	public InodeHandle(String path) {
 		_path = path;
 	}
-
-	public GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
-
-	protected VirtualFileSystemInode getInode() throws FileNotFoundException {
-		return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(_path);
-	}
-
-	public String getPath() {
-		return _path;
-	}
-
-	public String getName() {
-		return VirtualFileSystem.getLast(_path);
-	}
-
-	public boolean isDirectory() throws FileNotFoundException {
-		return getInode().isDirectory();
-	}
-
-	public long lastModified() throws FileNotFoundException {
-		return getInode().getLastModified();
-	}
-
-	public boolean isFile() throws FileNotFoundException {
-		return getInode().isFile();
-	}
-
+	
 	public void delete() throws FileNotFoundException {
 		getInode().delete();
-	}
-
-	public long getSize() throws FileNotFoundException {
-		return getInode().getSize();
-	}
-
-	public String getUsername() throws FileNotFoundException {
-		return getInode().getUsername();
-	}
-
-	public String getGroup() throws FileNotFoundException {
-		return getInode().getGroup();
-	}
-
-	/**
-	 * Throws IllegalStateException if this object is the RootDirectory
-	 * 
-	 * @return
-	 */
-	public DirectoryHandle getParent() {
-		if (_path.equals(VirtualFileSystem.pathSeparator)) {
-			throw new IllegalStateException(
-					"Can't get the parent of the root directory");
-		}
-		return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
 	}
 
 	/*
@@ -103,6 +52,56 @@ public abstract class InodeHandle {
 
 	}
 
+	public boolean exists() {
+		try {
+			getInode();
+			return true;
+		} catch (FileNotFoundException e) {
+			return false;
+		}
+	}
+
+	public GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
+	}
+
+	public String getGroup() throws FileNotFoundException {
+		return getInode().getGroup();
+	}
+
+	protected VirtualFileSystemInode getInode() throws FileNotFoundException {
+		return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(_path);
+	}
+
+	public String getName() {
+		return VirtualFileSystem.getLast(_path);
+	}
+
+	/**
+	 * Throws IllegalStateException if this object is the RootDirectory
+	 * 
+	 * @return
+	 */
+	public DirectoryHandle getParent() {
+		if (_path.equals(VirtualFileSystem.pathSeparator)) {
+			throw new IllegalStateException(
+					"Can't get the parent of the root directory");
+		}
+		return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
+	}
+
+	public String getPath() {
+		return _path;
+	}
+
+	public long getSize() throws FileNotFoundException {
+		return getInode().getSize();
+	}
+
+	public String getUsername() throws FileNotFoundException {
+		return getInode().getUsername();
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -111,6 +110,38 @@ public abstract class InodeHandle {
 	@Override
 	public int hashCode() {
 		return _path.hashCode();
+	}
+
+	public boolean isDirectory() throws FileNotFoundException {
+		return getInode().isDirectory();
+	}
+
+	public boolean isFile() throws FileNotFoundException {
+		return getInode().isFile();
+	}
+
+	public boolean isLink() throws FileNotFoundException {
+		return getInode().isLink();
+	}
+
+	public long lastModified() throws FileNotFoundException {
+		return getInode().getLastModified();
+	}
+	
+	public String toString() {
+		return getName();
+	}
+
+	public void setUsername(String owner) throws FileNotFoundException {
+		getInode().setUsername(owner);
+	}
+
+	public void setGroup(String group) throws FileNotFoundException {
+		getInode().setGroup(group);
+	}
+
+	public void renameTo(InodeHandle toFile) throws FileExistsException, FileNotFoundException {
+		getInode().rename(toFile.getPath());
 	}
 
 }

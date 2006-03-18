@@ -27,7 +27,7 @@ public class NukeUtils {
 
 	public static void nukeRemoveCredits(DirectoryHandle nukeDir,
 			Hashtable<String, Long> nukees) throws FileNotFoundException {
-		for (Iterator<InodeHandle> iter = nukeDir.getAllHandles().iterator(); iter
+		for (Iterator<InodeHandle> iter = nukeDir.getInodeHandles().iterator(); iter
 				.hasNext();) {
 			InodeHandle file = iter.next();
 

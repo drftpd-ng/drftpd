@@ -17,31 +17,25 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-
-import net.sf.drftpd.FileExistsException;
-
 /**
  * @author zubov
  * @version $Id$
+ * @description To be thrown when the requested file system object isn't of the
+ *              requested type of object i.e, getDirectory() when the object is
+ *              a file
  */
-public class LinkHandle extends InodeHandle {
+public class ObjectNotValidException extends Exception {
 
-	public LinkHandle(String path) {
-		super(path);
+	public ObjectNotValidException(String arg0) {
+		super(arg0);
 	}
 
-	protected VirtualFileSystemLink getInode() throws FileNotFoundException {
-		VirtualFileSystemInode inode = super.getInode();
-		if (inode instanceof VirtualFileSystemLink) {
-			return (VirtualFileSystemLink) inode;
-		}
-		throw new ClassCastException("LinkHandle object pointing to Inode:"
-				+ inode);
+	public ObjectNotValidException(String arg0, Throwable arg1) {
+		super(arg0, arg1);
 	}
 
-	public String getLinkPath() throws FileNotFoundException {
-		return getInode().getLink();
+	public ObjectNotValidException(Throwable arg0) {
+		super(arg0);
 	}
 
 }

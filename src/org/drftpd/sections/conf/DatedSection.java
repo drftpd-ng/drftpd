@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TimerTask;
 
+import net.sf.drftpd.FileExistsException;
+
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
@@ -119,15 +121,16 @@ public class DatedSection implements SectionInterface {
 		// System.out.println(_dateFormat.getTimeZone());
 		_dateFormat.setTimeZone(TimeZone.getDefault());
 		// System.out.println(_dateFormat.getTimeZone());
-
-		DirectoryHandle newDatedDir = new DirectoryHandle(dateDirPath);
+		DirectoryHandle newDatedDir = null;
 		try {
-			if (newDatedDir.isDirectory()) {
-				return newDatedDir;
-			}
+			newDatedDir = getBaseDirectory().createDirectory(dateDirPath,"drftpd","drftpd");
+		} catch (FileExistsException e) {
+			// directory already existed
+			return newDatedDir;
 		} catch (FileNotFoundException e) {
+			// we just created it with mkdirs()
+			throw new RuntimeException("find this bug, this is odd", e);
 		}
-		newDatedDir.createDirectory("drftpd", "drftpd");
 		logger.info("Created dated directory " + newDatedDir.getPath());
 		return newDatedDir;
 	}

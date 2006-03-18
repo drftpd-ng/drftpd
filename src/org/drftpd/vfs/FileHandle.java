@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 
@@ -103,9 +104,4 @@ public class FileHandle extends InodeHandle {
 			return false;
 		}
 	}
-
-	public void createFile(String user, String group) {
-
-	}
-
 }

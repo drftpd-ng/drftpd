@@ -112,7 +112,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		HashSet<InodeHandle> set = new HashSet<InodeHandle>();
 		String path = getPath() + VirtualFileSystem.pathSeparator;
 		// not dynamically called for efficiency
-		for (String inodeName : _files.keySet()) {
+		for (String inodeName : new HashSet<String>(_files.keySet())) {
 			VirtualFileSystemInode inode;
 			try {
 				inode = getInodeByName(inodeName);
