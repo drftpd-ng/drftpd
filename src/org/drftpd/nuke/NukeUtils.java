@@ -1,8 +1,10 @@
 package org.drftpd.nuke;
 
+import java.io.FileNotFoundException;
 import java.util.Hashtable;
 import java.util.Iterator;
 
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
 public class NukeUtils {
@@ -23,26 +25,34 @@ public class NukeUtils {
         return (long) ((size * ratio) + (size * (multiplier - 1)));
     }
 
-    public static void nukeRemoveCredits(InodeHandle nukeDir,
-        Hashtable<String,Long> nukees) {
-        for (Iterator iter = nukeDir.getFiles().iterator(); iter.hasNext();) {
-        	InodeHandle file = (InodeHandle) iter.next();
+    public static void nukeRemoveCredits(DirectoryHandle nukeDir,
+        Hashtable<String,Long> nukees) throws FileNotFoundException {
+        for (Iterator<InodeHandle> iter = nukeDir.getAllHandles().iterator(); iter.hasNext();) {
+        	InodeHandle file = iter.next();
 
-            if (file.isDirectory()) {
-                nukeRemoveCredits(file, nukees);
-            }
+            try {
+				if (file.isDirectory()) {
+				    nukeRemoveCredits((DirectoryHandle) file, nukees);
+				}
+			} catch (FileNotFoundException e) {
+				continue;
+			}
 
-            if (file.isFile()) {
-                String owner = file.getUsername();
-                Long total = (Long) nukees.get(owner);
+            try {
+				if (file.isFile()) {
+				    String owner = file.getUsername();
+				    Long total = (Long) nukees.get(owner);
 
-                if (total == null) {
-                    total = new Long(0);
-                }
+				    if (total == null) {
+				        total = new Long(0);
+				    }
 
-                total = new Long(total.longValue() + file.length());
-                nukees.put(owner, total);
-            }
+				    total = new Long(total.longValue() + file.getSize());
+				    nukees.put(owner, total);
+				}
+			} catch (FileNotFoundException e) {
+				continue;
+			}
         }
     }
 }

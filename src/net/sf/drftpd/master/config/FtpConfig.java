@@ -49,6 +49,7 @@ import org.drftpd.permissions.Permission;
 import org.drftpd.permissions.RatioPathPermission;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
 import com.Ostermiller.util.StringTokenizer;
@@ -125,12 +126,12 @@ public class FtpConfig extends Observable implements ConfigInterface {
     }
 
     public boolean checkPathPermission(String key, User fromUser,
-    		InodeHandle path) {
+    		DirectoryHandle path) {
         return checkPathPermission(key, fromUser, path, false);
     }
 
     public boolean checkPathPermission(String key, User fromUser,
-    		InodeHandle path, boolean defaults) {
+    		DirectoryHandle path, boolean defaults) {
         Collection coll = ((Collection) _pathsPerms.get(key));
 
         if (coll == null) {
@@ -157,7 +158,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
     }
 
     public void directoryMessage(Reply response, User user,
-    		InodeHandle dir) {
+    		DirectoryHandle dir) {
         for (Iterator iter = _msgpath.iterator(); iter.hasNext();) {
             MessagePathPermission perm = (MessagePathPermission) iter.next();
 
@@ -176,7 +177,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
         return _bouncerIps;
     }
 
-    public float getCreditCheckRatio(InodeHandle path,
+    public float getCreditCheckRatio(DirectoryHandle path,
         User fromUser) {
         for (Iterator iter = _creditcheck.iterator(); iter.hasNext();) {
             RatioPathPermission perm = (RatioPathPermission) iter.next();
@@ -193,7 +194,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
         return fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO);
     }
 
-    public float getCreditLossRatio(InodeHandle path,
+    public float getCreditLossRatio(DirectoryHandle path,
         User fromUser) {
         for (Iterator iter = _creditloss.iterator(); iter.hasNext();) {
             RatioPathPermission perm = (RatioPathPermission) iter.next();
@@ -358,7 +359,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
                     }
                     //msgpath <path> <filename> <flag/=group/-user>
                     else if (cmd.equals("msgpath")) {
-                        InodeHandle path = new InodeHandle(st.nextToken());
+                    	DirectoryHandle path = new DirectoryHandle(st.nextToken());
                         String messageFile = st.nextToken();
                         _msgpath.add(new MessagePathPermission(path,
                                 messageFile, makeUsers(st)));

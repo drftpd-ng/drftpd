@@ -21,15 +21,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.slave.CaseInsensitiveHashtable;
+import org.drftpd.vfs.VirtualFileSystemFileSFV;
 
 /**
  * @author mog
- * @version $Id: LightSFVFile.java 1114 2005-03-13 01:26:58Z zubov $
+ * @version $Id$
  */
 public class SFVInfo implements Serializable {
 	
 	private CaseInsensitiveHashtable _entries = null;
+	
+	public static final Key SFV = new Key(VirtualFileSystemFileSFV.class,
+			"sfv", SFVInfo.class);
     /**
      * Constructor for SFVFile.
      */

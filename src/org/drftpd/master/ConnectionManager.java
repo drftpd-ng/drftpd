@@ -78,6 +78,9 @@ public class ConnectionManager {
 
         try {
             logger.info("Starting ConnectionManager");
+            
+            GlobalContext.getGlobalContext().init();
+            
 
             Properties cfg = getGlobalContext().getConfig().getProperties();
 

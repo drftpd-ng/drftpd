@@ -27,7 +27,7 @@ import net.sf.drftpd.SlaveUnavailableException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.FileHandle;
 
 public class DIZInfo {
 	private static final Logger logger = Logger.getLogger(DIZInfo.class);
@@ -55,7 +55,7 @@ public class DIZInfo {
 		_total = total;
 	}
 
-	public static DIZInfo fetchDiz(InodeHandle file) throws NoAvailableSlaveException, IOException {
+	public static DIZInfo fetchDiz(FileHandle file) throws NoAvailableSlaveException, IOException {
 		RemoteSlave aSlave = file.getAvailableSlaves().iterator().next();
 		try {
 			DIZInfo dizInfo = new DIZInfo();

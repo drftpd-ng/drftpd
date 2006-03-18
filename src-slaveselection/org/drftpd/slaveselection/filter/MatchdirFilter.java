@@ -31,8 +31,8 @@ import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -104,7 +104,7 @@ public class MatchdirFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) {
+        char direction, InodeHandle file, RemoteSlave sourceSlave) {
         if (_m.matches(file.getPath(), _p)) {
             doAssign(_assigns, scorechart);
         }

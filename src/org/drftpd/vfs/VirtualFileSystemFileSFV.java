@@ -32,9 +32,6 @@ import org.drftpd.dynamicdata.KeyNotFoundException;
 
 public class VirtualFileSystemFileSFV extends VirtualFileSystemFile {
 
-	public static final Key SFV = new Key(VirtualFileSystemFileSFV.class,
-			"sfv", SFVInfo.class);
-
 	public VirtualFileSystemFileSFV(String username, String group, long size,
 			Set<String> slaves) {
 		super(username, group, size, slaves);
@@ -48,20 +45,20 @@ public class VirtualFileSystemFileSFV extends VirtualFileSystemFile {
 
 	public SFVInfo getSFVInfo() {
 		try {
-			return (SFVInfo) getKeyedMap().getObject(SFV);
+			return (SFVInfo) getKeyedMap().getObject(SFVInfo.SFV);
 		} catch (KeyNotFoundException e) {
 			return null;
 		}
 	}
 
 	public void setSFVFile(SFVInfo sfvFile) {
-		getKeyedMap().setObject(SFV, sfvFile);
+		getKeyedMap().setObject(SFVInfo.SFV, sfvFile);
 	}
 
 	public SFVStatus getStatus() {
 		int offline = 0;
 		int present = 0;
-		for (String fileName : getParent().getInodes()) {
+		for (String fileName : getParent().getInodeNames()) {
 			VirtualFileSystemInode inode;
 			try {
 				inode = getParent().getInodeByName(fileName);

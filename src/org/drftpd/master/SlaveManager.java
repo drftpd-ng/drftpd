@@ -55,6 +55,7 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
 /**
@@ -509,10 +510,7 @@ public class SlaveManager implements Runnable {
 	/**
 	 * Cancels all transfers in directory
 	 */
-	public void cancelTransfersInDirectory(InodeHandle dir) {
-		if (!dir.isDirectory()) {
-			throw new IllegalArgumentException(dir + " is not a directory");
-		}
+	public void cancelTransfersInDirectory(DirectoryHandle dir) {
         for (RemoteSlave rs : getSlaves()) {
         	try {
         		for (RemoteTransfer rt : rs.getTransfers()) {
@@ -528,26 +526,21 @@ public class SlaveManager implements Runnable {
         }
 	}
 /**
- * Accepts files and directories and does the physical deletes asynchronously
+ * Accepts directories and does the physical deletes asynchronously
  * Waits for a response and handles errors on each slave
- * Use RemoteSlave.simpleDelete(path) if you want to just delete one file
+ * Use RemoteSlave.simpleDelete(path) if you want to delete files
  * @param file
  */
-	public void deleteOnAllSlaves(InodeHandle file) {
+	public void deleteOnAllSlaves(DirectoryHandle directory) {
 		HashMap<RemoteSlave,String> slaveMap = new HashMap<RemoteSlave,String>();
-		Collection<RemoteSlave> slaves = null;
-		if (file.isFile()) {
-			slaves = file.getSlaves();
-		} else {
-			slaves = new ArrayList<RemoteSlave>(_rslaves);
-		}
+		Collection<RemoteSlave> slaves = new ArrayList<RemoteSlave>(_rslaves);
 		for (RemoteSlave rslave : slaves) {
 			String index = null;
 			try {
-				index = rslave.issueDeleteToSlave(file.getPath());
+				index = rslave.issueDeleteToSlave(directory.getPath());
 				slaveMap.put(rslave, index);
 			} catch (SlaveUnavailableException e) {
-				rslave.addQueueDelete(file.getPath());
+				rslave.addQueueDelete(directory.getPath());
 			}
 		}
 		for (RemoteSlave rslave : slaveMap.keySet()) {
@@ -555,18 +548,18 @@ public class SlaveManager implements Runnable {
 			try {
 				rslave.fetchResponse(index, 300000);
 			} catch (SlaveUnavailableException e) {
-				rslave.addQueueDelete(file.getPath());
+				rslave.addQueueDelete(directory.getPath());
 			} catch (RemoteIOException e) {
 				if (e.getCause() instanceof FileNotFoundException) {
 					continue;
 				}
 				rslave.setOffline("IOException deleting file, check logs for specific error");
-				rslave.addQueueDelete(file.getPath());
+				rslave.addQueueDelete(directory.getPath());
 				logger
 						.error(
 								"IOException deleting file, file will be deleted when slave comes online",
 								e);
-				rslave.addQueueDelete(file.getPath());
+				rslave.addQueueDelete(directory.getPath());
 			}
 		}
 	}
@@ -602,7 +595,7 @@ class RemergeThread extends Thread {
 				continue;
 			}
 
-			InodeHandle lrf = new InodeHandle(msg.getDirectory());
+			DirectoryHandle lrf = new DirectoryHandle(msg.getDirectory());
 
 			try {
 				lrf.remerge(msg.getFiles(), msg.getRslave());

@@ -17,13 +17,14 @@
  */
 package org.drftpd.sections.conf;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.drftpd.PropertyHelper;
 import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -31,28 +32,28 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class PlainSection implements SectionInterface {
-    private InodeHandle _dir;
+    private DirectoryHandle _dir;
     private SectionManager _mgr;
     private String _name;
 
     public PlainSection(SectionManager mgr, int i, Properties p) {
         this(mgr, PropertyHelper.getProperty(p, i + ".name"),
-            new InodeHandle(PropertyHelper.getProperty(p, i + ".path")));
+            new DirectoryHandle(PropertyHelper.getProperty(p, i + ".path")));
     }
 
-    public PlainSection(SectionManager mgr, String name, InodeHandle path) {
+    public PlainSection(SectionManager mgr, String name, DirectoryHandle path) {
         _mgr = mgr;
         _name = name;
         _dir = path;
 
     }
 
-    public InodeHandle getFile() {
+    public DirectoryHandle getCurrentDirectory() {
     	return _dir;
     }
 
-    public Collection getFiles() {
-        return Collections.singletonList(getFile());
+    public Set<DirectoryHandle> getDirectories() {
+        return Collections.singleton(getCurrentDirectory());
     }
 
     public String getName() {
@@ -67,7 +68,7 @@ public class PlainSection implements SectionInterface {
 		return getPath();
 	}
 
-	public InodeHandle getBaseDirectory() {
-		return getFile();
+	public DirectoryHandle getBaseDirectory() {
+		return getCurrentDirectory();
 	}
 }

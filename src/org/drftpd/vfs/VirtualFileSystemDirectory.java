@@ -24,9 +24,10 @@ import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeMap;
 
 import net.sf.drftpd.FileExistsException;
@@ -102,9 +103,32 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		commit();
 		logger.info("createLink(" + inode + ")");
 	}
+	
+	public Set<String> getInodeNames() {
+		return new HashSet(_files.keySet());
+	}
 
-	public Collection<String> getInodes() {
-		return new ArrayList<String>(_files.keySet());
+	public Set<InodeHandle> getInodes() {
+		HashSet<InodeHandle> set = new HashSet<InodeHandle>();
+		String path = getPath() + VirtualFileSystem.pathSeparator;
+		// not dynamically called for efficiency
+		for (String inodeName : _files.keySet()) {
+			VirtualFileSystemInode inode;
+			try {
+				inode = getInodeByName(inodeName);
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException("Stop deleting files outside of drftpd", e);
+			}
+			if (inode.isDirectory()) {
+				set.add(new DirectoryHandle(path + inodeName));
+			} else if (inode.isFile()) {
+				set.add(new FileHandle(path + inodeName));
+			} else if (inode.isLink()) {
+				set.add(new LinkHandle(path + inodeName));
+			}
+		}
+		return set;
+
 	}
 
 	protected synchronized VirtualFileSystemInode getInodeByName(String name)

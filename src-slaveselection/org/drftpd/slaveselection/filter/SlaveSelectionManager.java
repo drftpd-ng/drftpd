@@ -31,10 +31,10 @@ import net.sf.drftpd.mirroring.Job;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -58,7 +58,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
      * Checksums call us with null BaseFtpConnection.
      */
     public RemoteSlave getASlave(Collection<RemoteSlave> rslaves, char direction,
-        BaseFtpConnection conn, LinkedRemoteFileInterface file)
+        BaseFtpConnection conn, InodeHandle file)
         throws NoAvailableSlaveException {
         InetAddress source = ((conn != null) ? conn.getClientAddress() : null);
         String status;
@@ -76,7 +76,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     }
 
     public RemoteSlave getASlaveForJobDownload(Job job)
-        throws NoAvailableSlaveException {
+        throws NoAvailableSlaveException, FileNotFoundException {
         ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getFile().getAvailableSlaves());
         slaves.removeAll(job.getDestinationSlaves());
 
@@ -89,7 +89,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     }
 
     public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
+        throws NoAvailableSlaveException, FileNotFoundException {
         ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
         slaves.removeAll(job.getFile().getAvailableSlaves());
 
@@ -112,7 +112,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
     }
 
     private RemoteSlave process(String filterchain, ScoreChart sc, User user,
-        InetAddress peer, char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave)
+        InetAddress peer, char direction, InodeHandle file, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         FilterChain ssmi;
 

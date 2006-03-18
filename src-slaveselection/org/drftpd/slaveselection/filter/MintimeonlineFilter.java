@@ -26,8 +26,8 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import org.drftpd.PropertyHelper;
 import org.drftpd.Time;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -45,14 +45,14 @@ public class MintimeonlineFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
+        char direction, InodeHandle dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         process(scorechart, user, peer, direction, dir,
             System.currentTimeMillis());
     }
 
     protected void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir, long currentTime)
+        char direction, InodeHandle dir, long currentTime)
         throws NoAvailableSlaveException {
         for (Iterator iter = scorechart.getSlaveScores().iterator();
                 iter.hasNext();) {

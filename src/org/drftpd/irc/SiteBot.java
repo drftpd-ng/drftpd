@@ -75,6 +75,7 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.vfs.InodeHandle;
 import org.schwering.irc.lib.IRCConnection;
 import org.schwering.irc.lib.IRCEventListener;
 import org.schwering.irc.lib.IRCUser;
@@ -235,9 +236,7 @@ public class SiteBot extends FtpListener {
 		} else if ("RMD".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "rmdir");
 		} else if ("WIPE".equals(direvent.getCommand())) {
-			if (direvent.getDirectory().isDirectory()) {
-				sayDirectorySection(direvent, "wipe");
-			}
+			sayDirectorySection(direvent, "wipe");
 		} else if ("PRE".equals(direvent.getCommand())) {
 			sayDirectorySection(direvent, "pre");
 		} else if ("STOR".equals(direvent.getCommand())) {
@@ -248,10 +247,10 @@ public class SiteBot extends FtpListener {
 	private void actionPerformedDirectoryID3(TransferEvent direvent)
 	throws FormatterException {
 		ReplacerEnvironment env = new ReplacerEnvironment(GLOBAL_ENV);
-		LinkedRemoteFile dir;
+		InodeHandle dir;
 		
 		try {
-			dir = direvent.getDirectory().getParentFile();
+			dir = direvent.getDirectory().getParent();
 		} catch (FileNotFoundException e) {
 			throw new FatalException(e);
 		}
@@ -353,7 +352,7 @@ public class SiteBot extends FtpListener {
 		
 		// Check if new racer
 		if ((sfvfile.size() - sfvstatus.getMissing()) != 1) {
-			for (Iterator iter = sfvfile.getFiles().iterator(); iter.hasNext();) {
+			for (Iterator iter = sfvfile.getDirectories().iterator(); iter.hasNext();) {
 				LinkedRemoteFile sfvFileEntry = (LinkedRemoteFile) iter.next();
 				
 				// If file just uploaded was deleted (by ZipScript?), move on and do nothing.
@@ -384,8 +383,8 @@ public class SiteBot extends FtpListener {
 		
 		//COMPLETE
 		if (sfvstatus.isFinished()) {
-			Collection racers = RankUtils.userSort(sfvfile.getFiles(), "bytes", "high");
-			Collection groups = RankUtils.topFileGroup(sfvfile.getFiles());
+			Collection racers = RankUtils.userSort(sfvfile.getDirectories(), "bytes", "high");
+			Collection groups = RankUtils.topFileGroup(sfvfile.getDirectories());
 			
 			//Collection fast = userSort(sfvfile.getFiles(), "xferspeed", "high");
 			//Collection slow = userSort(sfvfile.getFiles(), "xferspeed", "low");
@@ -516,7 +515,7 @@ public class SiteBot extends FtpListener {
 			//HALFWAY
 		} else if ((sfvfile.size() >= 4) &&
 				(sfvstatus.getMissing() == halfway)) {
-			Collection uploaders = RankUtils.userSort(sfvfile.getFiles(), "bytes", "high");
+			Collection uploaders = RankUtils.userSort(sfvfile.getDirectories(), "bytes", "high");
 			
 			//			ReplacerEnvironment env = new ReplacerEnvironment(globalEnv);
 			UploaderPosition stat = (UploaderPosition) uploaders.iterator()
@@ -1361,9 +1360,9 @@ public class SiteBot extends FtpListener {
 			starttime = dir.lastModified();
 		}
 
-		env.add("size", Bytes.formatBytes(file.length()));
+		env.add("size", Bytes.formatBytes(file.getSize()));
 		env.add("path",
-				strippath(dir.getPath().substring(section.getPath().length())));
+				strippath(dir.getPath().substring(section.getPath().getSize())));
 		env.add("file", file.getName());
 		
 		if (file.isFile()) {
@@ -1381,7 +1380,7 @@ public class SiteBot extends FtpListener {
 		env.add("averagespeed",
 				(elapsedSeconds == 0) ? "n/a"
 						: (Bytes.formatBytes(
-								dir.length() / elapsedSeconds) + "/s"));
+								dir.getSize() / elapsedSeconds) + "/s"));
 
 		SFVFile sfvfile;
 		
@@ -1391,7 +1390,7 @@ public class SiteBot extends FtpListener {
 			env.add("totalfiles", "" + sfvfile.size());
 			env.add("totalspeed", Bytes.formatBytes(sfvfile.getXferspeed()));
 		} catch (Exception ex) {
-			env.add("totalfiles", "" + file.getFiles().size());
+			env.add("totalfiles", "" + file.getDirectories().size());
 			//COULD BE multi-cd, PRE will have to get it owns fillEnvSection with sub-dir .sfv support!
 			if (ex instanceof FileNotFoundException) {
 				// no need to spam FileNotFound on SFVFile lookups

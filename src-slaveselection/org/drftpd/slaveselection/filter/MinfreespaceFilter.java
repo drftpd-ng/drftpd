@@ -26,8 +26,8 @@ import net.sf.drftpd.SlaveUnavailableException;
 import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -58,7 +58,7 @@ public class MinfreespaceFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) {
+        char direction, InodeHandle file, RemoteSlave sourceSlave) {
         for (Iterator iter = scorechart.getSlaveScores().iterator();
                 iter.hasNext();) {
             ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();

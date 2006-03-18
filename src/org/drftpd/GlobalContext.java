@@ -43,6 +43,7 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 
@@ -67,7 +68,7 @@ public class GlobalContext {
     protected AbstractUserManager _usermanager;
     private Timer _timer = new Timer("GlobalContextTimer");
     protected SlaveSelectionManagerInterface _slaveSelectionManager;
-	private static InodeHandle root = new InodeHandle(VirtualFileSystem.pathSeparator);
+	private static DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.pathSeparator);
 
     public void reloadFtpConfig() throws IOException {
     	_zsConfig = new ZipscriptConfig(this);
@@ -75,26 +76,6 @@ public class GlobalContext {
     }
 
     private GlobalContext() {
-        try {
-			reloadFtpConfig();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			logger.debug("",e);
-		}
-        loadUserManager(getConfig().getProperties());
-
-        try {
-			loadSlaveManager(getConfig().getProperties());
-		} catch (SlaveFileException e) {
-			throw new RuntimeException(e);
-		}
-        loadRSlaves();
-        listenForSlaves();
-        loadJobManager();
-        getJobManager().startJobs();
-        loadSlaveSelectionManager(getConfig().getProperties());
-        loadSectionManager(getConfig().getProperties());
-        loadPlugins(getConfig().getProperties());
     }
 
     public ConfigInterface getConfig() {
@@ -309,8 +290,30 @@ public class GlobalContext {
 		return _gctx;
 	}
 
-	public InodeHandle getRoot() {
+	public DirectoryHandle getRoot() {
 		return root;
+	}
+
+	public void init() {
+        try {
+			reloadFtpConfig();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			logger.debug("",e);
+		}
+        loadUserManager(getConfig().getProperties());
+
+        try {
+			loadSlaveManager(getConfig().getProperties());
+		} catch (SlaveFileException e) {
+			throw new RuntimeException(e);
+		}
+        listenForSlaves();
+        loadJobManager();
+        getJobManager().startJobs();
+        loadSlaveSelectionManager(getConfig().getProperties());
+        loadSectionManager(getConfig().getProperties());
+        loadPlugins(getConfig().getProperties());
 	}
 	
 /*	*//**

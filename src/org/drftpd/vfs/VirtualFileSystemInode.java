@@ -37,19 +37,19 @@ public abstract class VirtualFileSystemInode {
 		return VirtualFileSystem.getVirtualFileSystem();
 	}
 	
-	public String _group;
+	protected String _group;
 	
     protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
     
-    public transient long _lastModified;
+    protected transient long _lastModified;
 
-	public transient String _name;
+	protected transient String _name;
 
-	public transient VirtualFileSystemDirectory _parent;
+	protected transient VirtualFileSystemDirectory _parent;
 
-	public long _size = 0;
+	protected long _size = 0;
 
-	public String _username;
+	protected String _username;
 
 	public VirtualFileSystemInode(String user, String group, long size) {
 		_username = user;

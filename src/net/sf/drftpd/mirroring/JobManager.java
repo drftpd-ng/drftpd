@@ -17,6 +17,7 @@
 package net.sf.drftpd.mirroring;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +68,14 @@ public class JobManager {
 		ArrayList<Job> jobs2 = new ArrayList<Job>(jobs);
 		for (Iterator jobiter = jobs2.iterator(); jobiter.hasNext();) {
 			Job job = (Job) jobiter.next();
-			Collection<RemoteSlave> slaves = job.getFile().getSlaves();
+			Collection<RemoteSlave> slaves;
+			try {
+				slaves = job.getFile().getSlaves();
+			} catch (FileNotFoundException e) {
+				job.setDone();
+				jobiter.remove();
+				continue;
+			}
 
 			for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
 				RemoteSlave slave = iter.next();
@@ -117,12 +125,11 @@ public class JobManager {
 			try {
 				availableSlaves = tempJob.getFile().getAvailableSlaves();
 			} catch (NoAvailableSlaveException e) {
-				if (tempJob.getFile().isDeleted()) {
-					tempJob.setDone();
-					iter.remove();
-				}
-
 				continue; // can't transfer what isn't online
+			} catch (FileNotFoundException e) {
+				tempJob.setDone();
+				iter.remove();
+				continue;
 			}
 
 			if (!busySlaves.containsAll(availableSlaves)) {
@@ -166,17 +173,24 @@ public class JobManager {
 					sourceSlave = getGlobalContext().getSlaveSelectionManager()
 							.getASlaveForJobDownload(job);
 				} catch (NoAvailableSlaveException e) {
-					busySlavesDown.addAll(job.getFile().getSlaves());
+					try {
+						busySlavesDown.addAll(job.getFile().getSlaves());
+					} catch (FileNotFoundException e1) {
+						// can't transfer
+						return;
+					}
 					continue;
+				} catch (FileNotFoundException e) {
+					// can't transfer
+					return;
 				}
 
 				if (sourceSlave == null) {
 					logger.debug("Unable to find a suitable job for transfer");
 					return;
 				}
-
-				availableSlaves.removeAll(job.getFile().getSlaves());
 				try {
+					availableSlaves.removeAll(job.getFile().getSlaves());
 					destSlave = getGlobalContext().getSlaveSelectionManager().getASlaveForJobUpload(
 									job, sourceSlave);
 
@@ -190,6 +204,9 @@ public class JobManager {
 					skipJobs.add(job);
 
 					continue;
+				} catch (FileNotFoundException e) {
+					// can't transfer
+					return;
 				}
 			}
 			// sourceSlave will always be null if destSlave is null
@@ -199,9 +216,14 @@ public class JobManager {
 			}
 		}
 
-		// job is not deleted, we are ready to process
+		// file is not deleted and is available, we are ready to process
 		
-		job.transfer(useCRC(), sourceSlave, destSlave);
+		try {
+			job.transfer(useCRC(), sourceSlave, destSlave);
+		} catch (FileNotFoundException e) {
+			// file is deleted, hah! stupid race conditions
+			return;
+		}
 		if (job.isDone()) {
 			logger.debug("Job is finished, removing job " + job.getFile());
 			removeJobFromQueue(job);

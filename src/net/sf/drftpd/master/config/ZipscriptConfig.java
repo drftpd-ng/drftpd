@@ -27,7 +27,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.usermanager.User;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 import com.Ostermiller.util.StringTokenizer;
 
@@ -191,7 +191,7 @@ public class ZipscriptConfig {
 		return false;
 	}
 
-	public boolean checkSfvFirstEnforcedPath(InodeHandle dir,
+	public boolean checkSfvFirstEnforcedPath(DirectoryHandle dir,
 			User user) {
 		if (_SfvFirstRequired
 				&& _gctx.getConfig().checkPathPermission("sfvfirst.pathcheck",

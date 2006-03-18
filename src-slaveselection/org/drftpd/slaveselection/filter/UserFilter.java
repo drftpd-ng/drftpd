@@ -28,8 +28,8 @@ import net.sf.drftpd.master.config.FtpConfig;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.permissions.Permission;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 import com.Ostermiller.util.StringTokenizer;
 
@@ -47,7 +47,7 @@ public class UserFilter extends Filter {
     }
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
+			char direction, InodeHandle dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
 		MatchdirFilter.doAssign(_assigns, scorechart);
 	}

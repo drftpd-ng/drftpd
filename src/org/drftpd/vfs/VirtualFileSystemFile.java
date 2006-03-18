@@ -77,14 +77,17 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 	}
 
 	public long getChecksum() {
-		return getKeyedMap().getObjectLong(CRC);
+		long checksum = getKeyedMap().getObjectLong(CRC);
+		// if checksum == 0, we need to fetch it from the slave
+		// TODO
+		return checksum;
 	}
 
 	public long getXfertime() {
 		return getKeyedMap().getObjectLong(XFERTIME);
 	}
 
-	public synchronized void removeSlave(RemoteSlave rslave) {
+	public synchronized void removeSlave(String rslave) {
 		_slaves.remove(rslave);
 		if (_slaves.isEmpty()) {
 			delete();

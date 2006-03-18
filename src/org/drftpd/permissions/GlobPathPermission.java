@@ -21,7 +21,7 @@ import java.util.Collection;
 
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -36,12 +36,8 @@ public class GlobPathPermission extends PathPermission {
         _pat = pat;
     }
 
-    public boolean checkPath(InodeHandle file) {
-        String path = file.getPath();
-
-        if (file.isDirectory()) {
-            path = path.concat("/");
-        }
+    public boolean checkPath(DirectoryHandle file) {
+        String path = file.getPath().concat("/");
 
         Perl5Matcher m = new Perl5Matcher();
 

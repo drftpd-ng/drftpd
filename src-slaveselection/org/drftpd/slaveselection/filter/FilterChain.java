@@ -17,24 +17,21 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Properties;
+
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.drftpd.GlobalContext;
-
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import java.net.InetAddress;
-
-import java.util.ArrayList;
-import java.util.Properties;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -61,14 +58,14 @@ public class FilterChain {
         reload();
     }
 
-    public void filter(ScoreChart sc, User user, InetAddress peer, char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) throws NoAvailableSlaveException {
+    public void filter(ScoreChart sc, User user, InetAddress peer, char direction, InodeHandle file, RemoteSlave sourceSlave) throws NoAvailableSlaveException {
     	for (Filter filter : _filters) {
     		filter.process(sc, user, peer, direction, file, sourceSlave);
         }
 	}
 
     public RemoteSlave getBestSlave(ScoreChart sc, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave)
+        char direction, InodeHandle file, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
     	filter(sc,user,peer,direction,file, sourceSlave);
         RemoteSlave rslave = sc.getBestSlave();

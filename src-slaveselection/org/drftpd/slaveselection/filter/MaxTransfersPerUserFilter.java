@@ -17,20 +17,16 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.net.InetAddress;
+import java.util.Properties;
+
 import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-
-import java.net.InetAddress;
-
-import java.util.Iterator;
-import java.util.Properties;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -53,8 +49,8 @@ public class MaxTransfersPerUserFilter extends Filter {
 
 	public void process(ScoreChart scorechart, char direction, User user)
 			throws NoAvailableSlaveException {
-
-		for (BaseFtpConnection conn : _gctx.getConnectionManager()
+// Again, need to move session data to BaseFtpConnection
+/*		for (BaseFtpConnection conn : _gctx.getConnectionManager()
 				.getConnections()) {
 
 			if (!conn.getDataConnectionHandler().isTransfering())
@@ -78,14 +74,14 @@ public class MaxTransfersPerUserFilter extends Filter {
 					iter2.remove();
 				}
 			}
-		}
+		}*/
 		if (scorechart.isEmpty())
 			throw new NoAvailableSlaveException(
 					"All slaves were unavailable cause you already had open transfers to the available slaves");
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, LinkedRemoteFileInterface dir,
+			char direction, InodeHandle dir,
 			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
 		process(scorechart, direction, user);
 	}

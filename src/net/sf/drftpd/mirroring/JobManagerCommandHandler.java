@@ -35,7 +35,7 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.FileHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 
@@ -59,24 +59,30 @@ public class JobManagerCommandHandler
      * @param conn
      * @return
      * @throws ImproperUsageException
+     * @throws ReplyException 
+     * @throws FileNotFoundException 
      */
-    private Reply doADDJOB(BaseFtpConnection conn) throws ImproperUsageException {
+    private Reply doADDJOB(BaseFtpConnection conn) throws ImproperUsageException, ReplyException {
 
         if (!conn.getRequest().hasArgument()) {
         	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
-        InodeHandle lrf;
+        FileHandle lrf;
 
         try {
             lrf = conn.getCurrentDirectory().getFile(st.nextToken());
         } catch (FileNotFoundException e) {
             return new Reply(500, "File does not exist");
         }
-        if (!lrf.isFile()) {
-        	throw new ImproperUsageException("addjob does not handle directories or links");
-        }
+        try {
+			if (!lrf.isFile()) {
+				throw new ImproperUsageException("addjob does not handle directories or links");
+			}
+		} catch (FileNotFoundException e2) {
+			throw new ReplyException(e2);
+		}
 
         int priority;
 
@@ -143,7 +149,11 @@ public class JobManagerCommandHandler
 				if (job.isTransferring()) {
 					env.add("speed", Bytes.formatBytes(job.getSpeed()));
 					env.add("progress", Bytes.formatBytes(job.getProgress()));
-					env.add("total", Bytes.formatBytes(job.getFile().length()));
+					try {
+						env.add("total", Bytes.formatBytes(job.getFile().getSize()));
+					} catch (FileNotFoundException e) {
+						env.add("total", "0");
+					}
 					env.add("srcslave", job.getSourceSlave().getName());
 					env.add("destslave", job.getDestinationSlave().getName());
 					reply.addComment(conn.jprintf(

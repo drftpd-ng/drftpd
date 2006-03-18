@@ -18,6 +18,7 @@
 
 package org.drftpd;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,19 +28,27 @@ import java.util.Iterator;
 import net.sf.drftpd.master.GroupPosition;
 import net.sf.drftpd.master.UploaderPosition;
 
+import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 
 /**
  * Set of usefull commnads to sort users/groups.
  * @author fr0w
+ * @version $Id$
  */
 public class RankUtils {
-	public static Collection<GroupPosition> topFileGroup(Collection files) {
+	public static Collection<GroupPosition> topFileGroup(Collection<FileHandle> files) {
 		ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
 		
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			InodeHandle file = (InodeHandle) iter.next();
-			String groupname = file.getGroupname();
+		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
+			FileHandle file = iter.next();
+			String groupname;
+			try {
+				groupname = file.getGroup();
+			} catch (FileNotFoundException e) {
+				continue;
+				// file was deleted or moved
+			}
 			
 			GroupPosition stat = null;
 			
@@ -54,13 +63,23 @@ public class RankUtils {
 			}
 			
 			if (stat == null) {
-				stat = new GroupPosition(groupname, file.length(), 1,
-						file.getXfertime());
+				try {
+					stat = new GroupPosition(groupname, file.getSize(), 1,
+							file.getXfertime());
+				} catch (FileNotFoundException e) {
+					continue;
+					// file was deleted or moved
+				}
 				ret.add(stat);
 			} else {
-				stat.updateBytes(file.length());
-				stat.updateFiles(1);
-				stat.updateXfertime(file.getXfertime());
+				try {
+					stat.updateBytes(file.getSize());
+					stat.updateFiles(1);
+					stat.updateXfertime(file.getXfertime());
+				} catch (FileNotFoundException e) {
+					continue;
+					// file was deleted or moved
+				}
 			}
 		}
 		
@@ -69,31 +88,46 @@ public class RankUtils {
 		return ret;
 	}
 	
-	public static Collection userSort(Collection files, String type, String sort) {
+	public static Collection userSort(Collection<FileHandle> files, String type, String sort) {
 		ArrayList<UploaderPosition> ret = new ArrayList<UploaderPosition>();
 		
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			InodeHandle file = (InodeHandle) iter.next();
+		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
+			FileHandle file = iter.next();
 			UploaderPosition stat = null;
 			
 			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
 				UploaderPosition stat2 = (UploaderPosition) iter2.next();
 				
-				if (stat2.getUsername().equals(file.getUsername())) {
-					stat = stat2;
-					
-					break;
+				try {
+					if (stat2.getUsername().equals(file.getUsername())) {
+						stat = stat2;
+						
+						break;
+					}
+				} catch (FileNotFoundException e) {
+					continue;
+					// file was deleted or moved
 				}
 			}
 			
 			if (stat == null) {
-				stat = new UploaderPosition(file.getUsername(), file.length(),
-						1, file.getXfertime());
+				try {
+					stat = new UploaderPosition(file.getUsername(), file.getSize(),
+							1, file.getXfertime());
+				} catch (FileNotFoundException e) {
+					continue;
+					// file was deleted or moved
+				}
 				ret.add(stat);
 			} else {
-				stat.updateBytes(file.length());
-				stat.updateFiles(1);
-				stat.updateXfertime(file.getXfertime());
+				try {
+					stat.updateBytes(file.getSize());
+					stat.updateFiles(1);
+					stat.updateXfertime(file.getXfertime());
+				} catch (FileNotFoundException e) {
+					continue;
+					// file was deleted or moved
+				}
 			}
 		}
 		

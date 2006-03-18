@@ -17,6 +17,7 @@
  */
 package org.drftpd;
 
+import java.io.FileNotFoundException;
 import java.util.Comparator;
 
 import org.drftpd.vfs.InodeHandle;
@@ -28,7 +29,7 @@ import org.drftpd.vfs.InodeHandle;
 public class TimeComparator implements Comparator<InodeHandle> {
 
 	/**
-	 * Sorts LinkedRemoteFileInterface objects by their date modified
+	 * Sorts FileSystem objects by their date modified
 	 */
 	public TimeComparator() {
 		
@@ -38,7 +39,11 @@ public class TimeComparator implements Comparator<InodeHandle> {
 		if (arg0 == null || arg1 == null) {
 			throw new IllegalArgumentException("Neither arg0 nor arg1 can be null");
 		}
-		return Long.signum(arg1.lastModified() - arg0.lastModified());
+		try {
+			return Long.signum(arg1.lastModified() - arg0.lastModified());
+		} catch (FileNotFoundException e) {
+			throw new IllegalArgumentException("File does not exist", e);
+		}
 	}
 
 }

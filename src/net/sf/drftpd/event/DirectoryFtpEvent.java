@@ -18,6 +18,7 @@
 package net.sf.drftpd.event;
 
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
 
@@ -27,20 +28,20 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class DirectoryFtpEvent extends ConnectionEvent {
-    private InodeHandle directory;
+    private DirectoryHandle directory;
 
     public DirectoryFtpEvent(User user, String command,
-    		InodeHandle directory) {
+    		DirectoryHandle directory) {
         this(user, command, directory, System.currentTimeMillis());
     }
 
     public DirectoryFtpEvent(User user, String command,
-    		InodeHandle directory, long time) {
+    		DirectoryHandle directory, long time) {
         super(user, command, time);
         this.directory = directory;
     }
 
-    public InodeHandle getDirectory() {
+    public DirectoryHandle getDirectory() {
         return directory;
     }
 

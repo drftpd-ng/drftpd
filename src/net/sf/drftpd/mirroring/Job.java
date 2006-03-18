@@ -30,7 +30,7 @@ import net.sf.drftpd.SlaveUnavailableException;
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.FileHandle;
 
 
 /**
@@ -42,7 +42,7 @@ public class Job {
 	private static long jobIndexCount = 1;
 	private static final Logger logger = Logger.getLogger(Job.class);
     private Set<RemoteSlave> _destSlaves;
-    private InodeHandle _file;
+    private FileHandle _file;
     private int _priority;
     private SlaveTransfer _slaveTransfer;
     private long _timeCreated;
@@ -51,12 +51,12 @@ public class Job {
     private long _index;
     private boolean _onlyCountOnlineSlaves;
     
-    public Job(InodeHandle file, Collection<RemoteSlave> destSlaves,
+    public Job(FileHandle file, Collection<RemoteSlave> destSlaves,
             int priority, int transferNum) {
     	this(file, destSlaves, priority, transferNum, false);
     }
 
-    public Job(InodeHandle file, Collection<RemoteSlave> destSlaves,
+    public Job(FileHandle file, Collection<RemoteSlave> destSlaves,
         int priority, int transferNum, boolean onlyCountOnlineSlaves) {
     	_index = jobIndexCount++;
         _destSlaves = new HashSet<RemoteSlave>(destSlaves);
@@ -103,7 +103,7 @@ public class Job {
 	 * Returns the file for this job. This file is used to tell the slaves what
 	 * file to transfer & receive.
 	 */
-    public InodeHandle getFile() {
+    public FileHandle getFile() {
         return _file;
     }
 
@@ -212,10 +212,11 @@ public class Job {
 	 * @param sourceSlave
 	 * @param destSlave
 	 * @return
+     * @throws FileNotFoundException 
 	 */
     
     public void transfer(boolean checkCRC, RemoteSlave sourceSlave,
-			RemoteSlave destSlave) {
+			RemoteSlave destSlave) throws FileNotFoundException {
 		synchronized (this) {
 			if (_slaveTransfer != null) {
 				throw new IllegalStateException("Job is already transferring");
@@ -309,7 +310,11 @@ public class Job {
 	}
 
 	private void logSuccess() {
-		getFile().addSlave(getDestinationSlave());
+		try {
+			getFile().addSlave(getDestinationSlave());
+		} catch (FileNotFoundException e) {
+			logger.error("File was sent with the JobManager but the file was deleted or moved during the send", e);
+		}
 		logger.debug("Sent file " + getFile().getName() + " from "
 				+ getSourceSlave().getName() + " to " + getDestinationSlave().getName());
 		sentToSlave(getDestinationSlave());

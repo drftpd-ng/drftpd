@@ -53,6 +53,7 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -81,7 +82,7 @@ public class BaseFtpConnection implements Runnable {
     //protected ConnectionManager _cm;
     private CommandManager _commandManager;
     protected Socket _controlSocket;
-    protected InodeHandle _currentDirectory;
+    protected DirectoryHandle _currentDirectory;
 
     /**
      * Is the client running a command?
@@ -196,7 +197,7 @@ public class BaseFtpConnection implements Runnable {
         return _out;
     }
 
-    public InodeHandle getCurrentDirectory() {
+    public DirectoryHandle getCurrentDirectory() {
         return _currentDirectory;
     }
 
@@ -519,7 +520,7 @@ public class BaseFtpConnection implements Runnable {
         }
     }
 
-    public void setCurrentDirectory(InodeHandle path) {
+    public void setCurrentDirectory(DirectoryHandle path) {
         _currentDirectory = path;
     }
 

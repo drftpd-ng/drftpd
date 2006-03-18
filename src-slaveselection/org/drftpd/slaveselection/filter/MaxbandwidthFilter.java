@@ -27,9 +27,9 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -46,7 +46,7 @@ public class MaxbandwidthFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
+        char direction, InodeHandle dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         for (Iterator iter = scorechart.getSlaveScores().iterator();
                 iter.hasNext();) {

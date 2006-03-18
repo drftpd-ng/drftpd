@@ -18,9 +18,9 @@
 package org.drftpd.sections;
 
 
-import java.util.Collection;
+import java.util.Set;
 
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -31,17 +31,17 @@ public interface SectionInterface {
     /**
      * @return the base directory for this section.
      */
-    public InodeHandle getBaseDirectory();
+    public DirectoryHandle getBaseDirectory();
 
     /**
      * @return the (current) directory for this section.
      */
-    public InodeHandle getFile();
+    public DirectoryHandle getCurrentDirectory();
 
     /**
      * @return all directories for this section. For example if this is a dated-dir section, it would return all dated dirs, including current dir.
      */
-    public Collection getFiles();
+    public Set<DirectoryHandle> getDirectories();
 
     /**
      * @return The name of this section

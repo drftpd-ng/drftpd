@@ -18,7 +18,6 @@
 package org.drftpd.mirroring;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,18 +26,20 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.mirroring.Job;
 import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
 import org.drftpd.mirroring.archivetypes.OfflineSlaveException;
 import org.drftpd.plugins.Archive;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 
 
@@ -49,7 +50,7 @@ import org.drftpd.vfs.InodeHandle;
 public abstract class ArchiveType {
     private static final Logger logger = Logger.getLogger(ArchiveType.class);
     private long _archiveAfter;
-    private InodeHandle _directory;
+    private DirectoryHandle _directory;
     protected Archive _parent;
     protected SectionInterface _section;
     protected Set<RemoteSlave> _slaveList;
@@ -75,30 +76,36 @@ public abstract class ArchiveType {
      */
     public void cleanup(ArrayList<Job> jobList) {
     	for (Job job : jobList) {
-    		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
-    			if (!getRSlaves().contains(rslave)) {
-    				rslave.simpleDelete(job.getFile().getPath());
-    				job.getFile().removeSlave(rslave);
-    			}
-    		}
-    		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
-    			if (job.getFile().getSlaves().size() > _numOfSlaves) {
-    				if (!rslave.isAvailable()) {
-        				rslave.simpleDelete(job.getFile().getPath());
-        				job.getFile().removeSlave(rslave);
-    				}
-    			} else {
-    				break;
-    			}
-    		}
-    		for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
-    			if (job.getFile().getSlaves().size() > _numOfSlaves) {
-        				rslave.simpleDelete(job.getFile().getPath());
-        				job.getFile().removeSlave(rslave);
-    			} else {
-    				break;
-    			}
-    		}
+    		try {
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+					if (!getRSlaves().contains(rslave)) {
+						rslave.simpleDelete(job.getFile().getPath());
+						job.getFile().removeSlave(rslave);
+					}
+				}
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+					if (job.getFile().getSlaves().size() > _numOfSlaves) {
+						if (!rslave.isAvailable()) {
+							rslave.simpleDelete(job.getFile().getPath());
+							job.getFile().removeSlave(rslave);
+						}
+					} else {
+						break;
+					}
+				}
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job.getFile().getSlaves())) {
+					if (job.getFile().getSlaves().size() > _numOfSlaves) {
+							rslave.simpleDelete(job.getFile().getPath());
+							job.getFile().removeSlave(rslave);
+					} else {
+						break;
+					}
+				}
+			} catch (FileNotFoundException e) {
+				// couldn't find the file that was referenced, unsure of what to do now
+				// probably can just leave it alone
+				continue;
+			}
     	}
     }
     
@@ -109,7 +116,7 @@ public abstract class ArchiveType {
      */
     public abstract Set<RemoteSlave> findDestinationSlaves();
 
-    public final InodeHandle getDirectory() {
+    public final DirectoryHandle getDirectory() {
         return _directory;
     }
 
@@ -117,59 +124,71 @@ public abstract class ArchiveType {
      * Returns the oldest LinkedRemoteFile(directory) that needs to be archived by this type's definition
      * If no such directory exists, it returns null
      */
-    public final InodeHandle getOldestNonArchivedDir() {
-        ArrayList<InodeHandle> oldDirs = new ArrayList<InodeHandle>();
+    public final DirectoryHandle getOldestNonArchivedDir() {
+        ArrayList<DirectoryHandle> oldDirs = new ArrayList<DirectoryHandle>();
 
-        for (Iterator iter = getSection().getFile().getFiles().iterator();
-                iter.hasNext();) {
-        	InodeHandle lrf = (InodeHandle) iter.next();
-            if (!lrf.isDirectory()) {
-            	continue;
-            }
-            try {
-                _parent.checkPathForArchiveStatus(lrf.getPath());
-            } catch (DuplicateArchiveException e1) {
-                continue;
-            }
+        try {
+			for (Iterator<DirectoryHandle> iter = getSection().getCurrentDirectory().getDirectories().iterator();
+			        iter.hasNext();) {
+				DirectoryHandle lrf = iter.next();
+			    try {
+			        _parent.checkPathForArchiveStatus(lrf.getPath());
+			    } catch (DuplicateArchiveException e1) {
+			        continue;
+			    }
 
-            try {
-                if (!isArchivedDir(lrf)) {
-                    if ((System.currentTimeMillis() - lrf.lastModified()) > getArchiveAfter()) {
-                        oldDirs.add(lrf);
-                    }
-                }
-            } catch (IncompleteDirectoryException e) {
-                continue;
-            } catch (OfflineSlaveException e) {
-                continue;
-            }
-        }
+			    try {
+			        if (!isArchivedDir(lrf)) {
+			            if ((System.currentTimeMillis() - lrf.lastModified()) > getArchiveAfter()) {
+			                oldDirs.add(lrf);
+			            }
+			        }
+			    } catch (IncompleteDirectoryException e) {
+			        continue;
+			    } catch (OfflineSlaveException e) {
+			        continue;
+			    } catch (FileNotFoundException e) {
+			    	continue;
+			    	// directory was deleted or moved
+				}
+			}
+		} catch (FileNotFoundException e) {
+			// section does not exist, no directories to archive
+			// list is empty so the rest of the code will handle that
+		}
 
-        InodeHandle oldestDir = null;
-
-        for (Iterator iter = oldDirs.iterator(); iter.hasNext();) {
-        	InodeHandle temp = (InodeHandle) iter.next();
+        DirectoryHandle oldestDir = null;
+        long oldestDirLM = 0;
+        for (Iterator<DirectoryHandle> iter = oldDirs.iterator(); iter.hasNext();) {
+        	DirectoryHandle temp = iter.next();
 
             if (oldestDir == null) {
                 oldestDir = temp;
-
+                try {
+					oldestDirLM = oldestDir.lastModified();
+				} catch (FileNotFoundException e) {
+					oldestDir = null;
+					iter.remove();
+				}
                 continue;
             }
-
-            if (oldestDir.lastModified() > temp.lastModified()) {
-                oldestDir = temp;
-            }
+            try {
+				if (oldestDirLM > temp.lastModified()) {
+				    oldestDir = temp;
+				}
+			} catch (FileNotFoundException e) {
+				iter.remove();
+				continue;
+			}
         }
-
         if (oldestDir != null) {
             logger.debug(getClass().toString() +
-                " - Returning the oldest directory " + oldestDir);
-        } else {
-            logger.debug(getClass().toString() +
-                " - Returning a null directory");
+                    " - Returning the oldest directory " + oldestDir);
+            return oldestDir;
         }
-
-        return oldestDir;
+        logger.debug(getClass().toString() +
+                " - All directories are archived");
+        return null;
     }
 
     /**
@@ -187,40 +206,47 @@ public abstract class ArchiveType {
 
     /**
      * Adds relevant Jobs to the JobManager and returns an ArrayList of those Job's
+     * @throws FileNotFoundException 
      */
-    public ArrayList<Job> send() {
+    public ArrayList<Job> send() throws FileNotFoundException {
         ArrayList<Job> jobs = recursiveSend(getDirectory());
-        JobManager jm = _parent.getGlobalContext().getJobManager();
+        JobManager jm = getGlobalContext().getJobManager();
         jm.addJobsToQueue(jobs);
         return jobs;
     }
 
-    protected ArrayList<Job> recursiveSend(InodeHandle lrf) {
+    private static GlobalContext getGlobalContext() {
+    	return GlobalContext.getGlobalContext();
+	}
+
+	protected ArrayList<Job> recursiveSend(DirectoryHandle lrf) throws FileNotFoundException {
         ArrayList<Job> jobQueue = new ArrayList<Job>();
 
-        for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-        	InodeHandle src = (InodeHandle) iter.next();
-
-            if (src.isFile()) {
-                logger.info("Adding " + src.getPath() + " to the job queue");
-
-                Job job = new Job(src, getRSlaves(), 3, _numOfSlaves);
-                jobQueue.add(job);
-            } else {
-                jobQueue.addAll(recursiveSend(src));
-            }
+        for (Iterator<DirectoryHandle> iter = lrf.getDirectories().iterator(); iter.hasNext();) {
+            jobQueue.addAll(recursiveSend(iter.next()));
+        }
+        for (Iterator<FileHandle> iter = lrf.getFiles().iterator(); iter.hasNext();) {
+        	FileHandle file = iter.next();
+            logger.info("Adding " + file.getPath() + " to the job queue");
+            Job job = new Job(file, getRSlaves(), 3, _numOfSlaves);
+            jobQueue.add(job);
         }
 
         return jobQueue;
     }
 
-    protected static final boolean isArchivedToXSlaves(InodeHandle lrf,
+    protected static final boolean isArchivedToXSlaves(DirectoryHandle lrf,
         int x) throws IncompleteDirectoryException, OfflineSlaveException {
         HashSet<RemoteSlave> slaveSet = null;
-
-        if (lrf.getFiles().isEmpty()) {
-            return true;
-        }
+        Set<DirectoryHandle> directories = null;
+        Set<FileHandle> files = null;
+        try {
+			directories = lrf.getDirectories();
+			files = lrf.getFiles();
+		} catch (FileNotFoundException e1) {
+			// directory doesn't exist, no files to archive
+			return true;
+		}
 
 /*        try {
             if (!lrf.getSFVStatus().isFinished()) {
@@ -236,24 +262,28 @@ public abstract class ArchiveType {
         // I don't like this code to begin with, it depends on SFV
         // this should be configurable at least
 
-        for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-        	InodeHandle file = (InodeHandle) iter.next();
+		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
+		    if (!isArchivedToXSlaves(iter.next(), x)) {
+		         return false;
+		    }
+		}
+        for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
+        	FileHandle file = iter.next();
+			Collection<RemoteSlave> availableSlaves;
+			try {
+				if(!file.isAvailable()) throw new OfflineSlaveException(file.getPath()+" is offline");
+				availableSlaves = file.getSlaves();
+			} catch (FileNotFoundException e) {
+				// can't archive a directory with files that have been moved, we'll come back later
+				return true;
+			}
 
-            if (file.isDirectory()) {
-                if (!isArchivedToXSlaves(file, x)) {
+            if (slaveSet == null) {
+                slaveSet = new HashSet<RemoteSlave>(availableSlaves);
+            } else {
+                if (!(slaveSet.containsAll(availableSlaves) &&
+                        availableSlaves.containsAll(slaveSet))) {
                     return false;
-                }
-            } else { // file.isFile()
-            	if(!file.isAvailable()) throw new OfflineSlaveException(file.getPath()+" is offline");
-                Collection<RemoteSlave> availableSlaves = file.getSlaves();
-
-                if (slaveSet == null) {
-                    slaveSet = new HashSet<RemoteSlave>(availableSlaves);
-                } else {
-                    if (!(slaveSet.containsAll(availableSlaves) &&
-                            availableSlaves.containsAll(slaveSet))) {
-                        return false;
-                    }
                 }
             }
         }
@@ -324,7 +354,7 @@ public abstract class ArchiveType {
         _slaveList = destSlaves;
     }
 
-    public final void setDirectory(InodeHandle lrf) {
+    public final void setDirectory(DirectoryHandle lrf) {
         _directory = lrf;
     }
 
@@ -334,10 +364,6 @@ public abstract class ArchiveType {
 
     public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
         while (true) {
-        	if (_directory.isDeleted()) {
-        		// all files will be deleted too, no need to removejobs, JobManager will do that
-        		return;
-        	}
             for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
                 Job job = (Job) iter.next();
 

@@ -16,6 +16,7 @@
  */
 package net.sf.drftpd.mirroring;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import net.sf.drftpd.SlaveUnavailableException;
@@ -25,6 +26,7 @@ import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;
+import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 
 
@@ -35,7 +37,7 @@ import org.drftpd.vfs.InodeHandle;
  */
 public class SlaveTransfer {
     private RemoteSlave _destSlave;
-    private InodeHandle _file;
+    private FileHandle _file;
     private RemoteSlave _srcSlave;
     private RemoteTransfer _destTransfer = null;
     private RemoteTransfer _srcTransfer = null;
@@ -43,7 +45,7 @@ public class SlaveTransfer {
     /**
      * Slave to Slave Transfers
      */
-    public SlaveTransfer(InodeHandle file,
+    public SlaveTransfer(FileHandle file,
         RemoteSlave sourceSlave, RemoteSlave destSlave) {
         _file = file;
         _srcSlave = sourceSlave;
@@ -145,7 +147,12 @@ public class SlaveTransfer {
         }
         // may as well set the checksum, we know this one is right
         if (_srcTransfer.getChecksum() != 0) {
-        	_file.setCheckSum(_srcTransfer.getChecksum());
+        	try {
+				_file.setCheckSum(_srcTransfer.getChecksum());
+			} catch (FileNotFoundException e) {
+				// file was moved during transfer
+				// can't set the checksum
+			}
         }
         
         if (_srcTransfer.getChecksum() == _destTransfer.getChecksum() || _destTransfer.getChecksum() == 0 || _srcTransfer.getChecksum() == 0 ) {

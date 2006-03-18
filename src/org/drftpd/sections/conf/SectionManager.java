@@ -27,10 +27,11 @@ import java.util.Properties;
 
 import net.sf.drftpd.FatalException;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -41,7 +42,7 @@ public class SectionManager implements SectionManagerInterface {
     private static final Class[] CONSTRUCTOR_SIG = new Class[] {
             SectionManager.class, int.class, Properties.class
         };
-    private PlainSection _emptySection = new PlainSection(this, "", new InodeHandle("/"));
+    private PlainSection _emptySection = new PlainSection(this, "", GlobalContext.getGlobalContext().getRoot());
     private Hashtable<String,SectionInterface> _sections;
 
     public SectionManager() {
@@ -66,17 +67,17 @@ public class SectionManager implements SectionManagerInterface {
         return Collections.unmodifiableCollection(_sections.values());
     }
 
-    public SectionInterface lookup(String string) {
+    private SectionInterface lookup(String string) {
         int matchlen = 0;
         SectionInterface match = _emptySection;
 
-        for (Iterator iter = _sections.values().iterator(); iter.hasNext();) {
-            SectionInterface section = (SectionInterface) iter.next();
+        for (Iterator<SectionInterface> iter = _sections.values().iterator(); iter.hasNext();) {
+            SectionInterface section = iter.next();
 
             if (string.startsWith(section.getBaseDirectory().getPath()) &&
-                    (matchlen < section.getFile().getPath().length())) {
+                    (matchlen < section.getCurrentDirectory().getPath().length())) {
                 match = section;
-                matchlen = section.getFile().getPath().length();
+                matchlen = section.getCurrentDirectory().getPath().length();
             }
         }
 
@@ -119,8 +120,8 @@ public class SectionManager implements SectionManagerInterface {
         _sections = sections;
     }
 
-    public SectionInterface lookup(InodeHandle file) {
-        return lookup(file.getPath());
+    public SectionInterface lookup(DirectoryHandle directory) {
+        return lookup(directory.getPath());
     }
 
 }

@@ -82,12 +82,6 @@ public class ArchiveHandler extends Thread {
 
             ArrayList<Job> jobs = _archiveType.send();
             _archiveType.waitForSendOfFiles(new ArrayList<Job>(jobs));
-        	if (_archiveType.getDirectory().isDeleted()) {
-        		// all files will be deleted too, no need to removejobs, JobManager will do that
-                logger.info("Done archiving " +
-                        getArchiveType().getDirectory().getPath() + ", it was deleted during archival");        		
-        		return;
-        	}
             _archiveType.cleanup(jobs);
             logger.info("Done archiving " +
                 getArchiveType().getDirectory().getPath());

@@ -20,7 +20,7 @@ package org.drftpd.permissions;
 
 import java.util.Collection;
 
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -32,5 +32,5 @@ public abstract class PathPermission extends Permission {
         super(users);
     }
 
-    public abstract boolean checkPath(InodeHandle path);
+    public abstract boolean checkPath(DirectoryHandle path);
 }

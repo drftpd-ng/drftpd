@@ -17,13 +17,15 @@
  */
 package org.drftpd.sections.conf;
 
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TimerTask;
 
@@ -31,7 +33,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -52,7 +54,7 @@ public class DatedSection implements SectionInterface {
     // The gmtTimeZone is used only in computeCheckPeriod() method.
     static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
     private static final Logger logger = Logger.getLogger(DatedSection.class);
-    private InodeHandle _basePath;
+    private DirectoryHandle _basePath;
     private SimpleDateFormat _dateFormat;
     private SectionManager _sectionManager;
     private String _name;
@@ -62,7 +64,7 @@ public class DatedSection implements SectionInterface {
     public DatedSection(SectionManager mgr, int i, Properties p) {
         _sectionManager = mgr;
         _name = PropertyHelper.getProperty(p, i + ".name");
-        _basePath = new InodeHandle(PropertyHelper.getProperty(p, i + ".path"));
+        _basePath = new DirectoryHandle(PropertyHelper.getProperty(p, i + ".path"));
         _now = PropertyHelper.getProperty(p, i + ".now");
 
         _dateFormat = new SimpleDateFormat(PropertyHelper.getProperty(p, i +
@@ -78,24 +80,24 @@ public class DatedSection implements SectionInterface {
         getGlobalContext().getTimer().schedule(new TimerTask() {
                 public void run() {
                 	try {
-                		getFile();
+                		getCurrentDirectory();
                 	} catch (Throwable t) {
                 		logger.error("Catching Throwable in DatedSection TimerTask", t);
                 	}
                 }
             }, rc.getNextCheckDate(new Date()));
-        getFile();
+        getCurrentDirectory();
     }
 
     private GlobalContext getGlobalContext() {
         return GlobalContext.getGlobalContext();
     }
 
-    public InodeHandle getBaseDirectory() {
+    public DirectoryHandle getBaseDirectory() {
         return _basePath;
     }
 
-    public InodeHandle getFile() {
+    public DirectoryHandle getCurrentDirectory() {
         String dateDirPath = _dateFormat.format(new Date());
         //System.out.println(new Date());
         //System.out.println(dateDirPath);
@@ -104,18 +106,24 @@ public class DatedSection implements SectionInterface {
         _dateFormat.setTimeZone(TimeZone.getDefault());
         //System.out.println(_dateFormat.getTimeZone());
         
-        InodeHandle newDatedDir = new InodeHandle(dateDirPath);
-        if (newDatedDir.isDirectory()) {
-        	return newDatedDir;
-        }
-        newDatedDir.delete();
-        newDatedDir.createDirectory();
+        DirectoryHandle newDatedDir = new DirectoryHandle(dateDirPath);
+        try {
+			if (newDatedDir.isDirectory()) {
+				return newDatedDir;
+			}
+		} catch (FileNotFoundException e) {
+		}
+        newDatedDir.createDirectory("drftpd", "drftpd");
         logger.info("Created dated directory " + newDatedDir.getPath());
         return newDatedDir;
     }
 
-    public Collection getFiles() {
-        return getBaseDirectory().getDirectories();
+    public Set<DirectoryHandle> getDirectories() {
+        try {
+			return getBaseDirectory().getDirectories();
+		} catch (FileNotFoundException e) {
+			return Collections.EMPTY_SET;
+		}
     }
 
     public String getName() {
@@ -123,7 +131,7 @@ public class DatedSection implements SectionInterface {
     }
 
     public String getPath() {
-        return getFile().getPath();
+        return getCurrentDirectory().getPath();
     }
 
     // This method computes the roll over period by looping over the

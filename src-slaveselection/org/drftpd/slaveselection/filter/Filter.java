@@ -17,13 +17,13 @@
  */
 package org.drftpd.slaveselection.filter;
 
+import java.net.InetAddress;
+
 import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
-
-import java.net.InetAddress;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -35,6 +35,6 @@ import java.net.InetAddress;
  */
 public abstract class Filter {
     public abstract void process(ScoreChart scorechart, User user,
-        InetAddress peer, char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
+        InetAddress peer, char direction, InodeHandle dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException;
 }

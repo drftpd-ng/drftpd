@@ -30,11 +30,10 @@ import net.sf.drftpd.ObjectNotFoundException;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.LinkedRemoteFileUtils;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -60,16 +59,16 @@ public class SlavetopFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave) {
+        char direction, InodeHandle dir, RemoteSlave sourceSlave) {
     	process(scorechart, dir);
     }
 
-    public void process(ScoreChart scorechart, LinkedRemoteFileInterface dir) {
+    public void process(ScoreChart scorechart, InodeHandle dir) {
         String path = dir.getPath();
-
-        //// find the section part of the path name
+// I'll tackle this one later
+/*        //// find the section part of the path name
         SectionInterface section = _gctx.getSectionManager().lookup(path);
-        LinkedRemoteFileInterface rls = section.getFirstDirInSection(dir);
+        InodeHandle rls = section.getFirstDirInSection(dir);
 
         Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =
         	new Hashtable<RemoteSlave, ScoreChart.SlaveScore>();
@@ -122,6 +121,6 @@ public class SlavetopFilter extends Filter {
             } catch (ObjectNotFoundException e1) {
                 throw new RuntimeException(e1);
             }
-        }
+        }*/
     }
 }

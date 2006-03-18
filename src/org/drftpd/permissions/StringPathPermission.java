@@ -20,6 +20,7 @@ package org.drftpd.permissions;
 
 import java.util.Collection;
 
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
 
@@ -30,15 +31,12 @@ import org.drftpd.vfs.InodeHandle;
 public class StringPathPermission extends PathPermission {
     private InodeHandle _path;
 
-    public StringPathPermission(InodeHandle path, Collection<String> users) {
+    public StringPathPermission(DirectoryHandle path, Collection<String> users) {
         super(users);
         _path = path;
     }
 
-    public boolean checkPath(InodeHandle path) {
-        if (!path.isDirectory()) {
-            throw new RuntimeException("Should be a directory");
-        }
+    public boolean checkPath(DirectoryHandle path) {
 
         return (path.getPath()).startsWith(_path.getPath());
     }

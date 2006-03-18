@@ -34,10 +34,11 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -77,19 +78,19 @@ public class DefaultSlaveSelectionManager
     }
 
     public RemoteSlave getASlave(Collection rslaves, char direction,
-        BaseFtpConnection conn, LinkedRemoteFileInterface file)
+        BaseFtpConnection conn, InodeHandle file)
         throws NoAvailableSlaveException {
         return getASlaveInternal(rslaves, direction);
     }
 
-    public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
-        ConfigInterface cfg) throws NoAvailableSlaveException {
+    public RemoteSlave getASlaveForMaster(FileHandle file,
+        ConfigInterface cfg) throws NoAvailableSlaveException, FileNotFoundException {
         return getASlaveInternal(file.getAvailableSlaves(),
             Transfer.TRANSFER_SENDING_DOWNLOAD);
     }
 
     public RemoteSlave getASlaveForJobDownload(Job job)
-        throws NoAvailableSlaveException {
+        throws NoAvailableSlaveException, FileNotFoundException {
         return getASlaveInternal(job.getFile().getAvailableSlaves(),
             Transfer.TRANSFER_SENDING_DOWNLOAD);
     }
@@ -195,7 +196,7 @@ public class DefaultSlaveSelectionManager
     }
 
     public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException {
+        throws NoAvailableSlaveException, FileNotFoundException {
         Collection<RemoteSlave> slaves = job.getDestinationSlaves();
         slaves.removeAll(job.getFile().getAvailableSlaves());
 

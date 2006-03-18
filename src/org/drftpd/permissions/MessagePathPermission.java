@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.drftpd.commands.Reply;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -37,7 +37,7 @@ import org.drftpd.vfs.InodeHandle;
 public class MessagePathPermission extends StringPathPermission {
     private ArrayList<String> _message;
 
-    public MessagePathPermission(InodeHandle path, String messageFile,
+    public MessagePathPermission(DirectoryHandle path, String messageFile,
         Collection<String> users) throws IOException {
         super(path, users);
         _message= new ArrayList<String>();

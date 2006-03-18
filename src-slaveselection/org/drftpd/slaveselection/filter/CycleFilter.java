@@ -17,18 +17,17 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
-import org.drftpd.usermanager.User;
-
 import java.net.InetAddress;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
+
+import net.sf.drftpd.NoAvailableSlaveException;
+
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
+import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -42,7 +41,7 @@ public class CycleFilter extends Filter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress peer,
-        char direction, LinkedRemoteFileInterface dir, RemoteSlave sourceSlave)
+        char direction, InodeHandle dir, RemoteSlave sourceSlave)
         throws NoAvailableSlaveException {
         ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart.getSlaveScores());
 

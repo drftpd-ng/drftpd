@@ -20,7 +20,7 @@ package org.drftpd.permissions;
 import java.util.Collection;
 
 import org.drftpd.org.apache.tools.ant.types.selectors.SelectorUtils;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 /**
  * @author mog
@@ -34,7 +34,7 @@ public class PatternPathPermission extends PathPermission {
 		_pat = pattern;
 	}
 
-	public boolean checkPath(InodeHandle path) {
+	public boolean checkPath(DirectoryHandle path) {
 		return SelectorUtils.matchPath(_pat, path.getPath(), false);
 	}
 

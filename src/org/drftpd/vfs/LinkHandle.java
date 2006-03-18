@@ -15,33 +15,29 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections;
+package org.drftpd.vfs;
 
-
-import java.util.Collection;
-
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.vfs.DirectoryHandle;
-
-
+import java.io.FileNotFoundException;
 /**
- * @author mog
+ * @author zubov
  * @version $Id$
  */
-public interface SectionManagerInterface {
-    public ConnectionManager getConnectionManager();
+public class LinkHandle extends InodeHandle {
 
-    public Collection<SectionInterface> getSections();
+	public LinkHandle(String path) {
+		super(path);
+	}
+	
+	protected VirtualFileSystemLink getInode() throws FileNotFoundException {
+		VirtualFileSystemInode inode = super.getInode();
+		if (inode instanceof VirtualFileSystemLink) {
+			return (VirtualFileSystemLink) inode;
+		}
+		throw new ClassCastException("LinkHandle object pointing to Inode:" + inode);
+	}
+	
+	public void createLink(String user, String group) {
 
-    /**
-     * getSectionByName()
-     */
-    public SectionInterface getSection(String string);
+	}
 
-    public void reload();
-    
-    /**
-     * Return the section the Directory is in.
-     */
-    public SectionInterface lookup(DirectoryHandle dir);
 }

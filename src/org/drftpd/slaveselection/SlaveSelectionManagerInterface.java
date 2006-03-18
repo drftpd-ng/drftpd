@@ -17,6 +17,7 @@
  */
 package org.drftpd.slaveselection;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -46,8 +47,8 @@ public interface SlaveSelectionManagerInterface {
     public GlobalContext getGlobalContext();
 
     public RemoteSlave getASlaveForJobDownload(Job job)
-        throws NoAvailableSlaveException;
+        throws NoAvailableSlaveException, FileNotFoundException;
 
     public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
-        throws NoAvailableSlaveException;
+        throws NoAvailableSlaveException, FileNotFoundException;
 }

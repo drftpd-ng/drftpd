@@ -16,6 +16,7 @@ import net.sf.drftpd.util.PortRange;
 import org.drftpd.commands.Reply;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
 /**
@@ -26,25 +27,25 @@ import org.drftpd.vfs.InodeHandle;
  */
 public interface ConfigInterface {
 	public abstract boolean checkPathPermission(String key, User fromUser,
-			InodeHandle path);
+			DirectoryHandle path);
 
 	public abstract boolean checkPathPermission(String key, User fromUser,
-			InodeHandle path, boolean defaults);
+			DirectoryHandle path, boolean defaults);
 
 	public abstract boolean checkPermission(String key, User user);
 
 	public abstract void directoryMessage(Reply response, User user,
-			InodeHandle dir);
+			DirectoryHandle dir);
 
 	/**
 	 * @return Returns the bouncerIp.
 	 */
 	public abstract List getBouncerIps();
 
-	public abstract float getCreditCheckRatio(InodeHandle path,
+	public abstract float getCreditCheckRatio(DirectoryHandle path,
 			User fromUser);
 
-	public abstract float getCreditLossRatio(InodeHandle path,
+	public abstract float getCreditLossRatio(DirectoryHandle path,
 			User fromUser);
 
 	public abstract boolean getHideIps();

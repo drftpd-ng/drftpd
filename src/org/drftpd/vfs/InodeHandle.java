@@ -17,144 +17,93 @@
 package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Set;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.slave.CaseInsensitiveHashtable;
-
-public class InodeHandle {
+import org.drftpd.GlobalContext;
+/**
+ * @author zubov
+ * @version $Id$
+ */
+public abstract class InodeHandle {
 	String _path = null;
 
 	public InodeHandle(String path) {
 		_path = path;
 	}
 	
-	private VirtualFileSystemInode getInode() throws FileNotFoundException {
+	public GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
+	}
+	
+	protected VirtualFileSystemInode getInode() throws FileNotFoundException {
 		return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(_path);
 	}
 
-	public Set<RemoteSlave> getSlaves() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public String getPath() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void setCheckSum(long checksum) {
-		// TODO Auto-generated method stub
-		
+		return _path;
 	}
 
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return VirtualFileSystem.getLast(_path);
 	}
 
-	public void removeSlave(RemoteSlave sourceSlave) {
-		// TODO Auto-generated method stub
+	public boolean isDirectory() throws FileNotFoundException {
+		return getInode().isDirectory();
+	}
+
+	public long lastModified() throws FileNotFoundException {
+		return getInode().getLastModified();
+	}
+
+	public boolean isFile() throws FileNotFoundException {
+		return getInode().isFile();
+	}
+
+	public void delete() throws FileNotFoundException {
+		getInode().delete();
+	}
+
+	public long getSize() throws FileNotFoundException {
+		return getInode().getSize();
+	}
+
+	public String getUsername() throws FileNotFoundException {
+		return getInode().getUsername();
+	}
+
+	public String getGroup() throws FileNotFoundException {
+		return getInode().getGroup();
+	}
+
+	/**
+	 * Throws IllegalStateException if this object is the RootDirectory
+	 * @return
+	 */
+	public DirectoryHandle getParent() {
+		if (_path.equals(VirtualFileSystem.pathSeparator)) {
+			throw new IllegalStateException("Can't get the parent of the root directory");
+		}
+		return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object arg0) {
+		if (!(arg0 instanceof InodeHandle)) {
+			return false;
+		}
+		InodeHandle compareMe = (InodeHandle) arg0;
+		return _path.equalsIgnoreCase(compareMe._path);
 		
 	}
 
-	public long getCheckSum() throws NoAvailableSlaveException {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public void addSlave(RemoteSlave destinationSlave) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public Set<InodeHandle> getFiles() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public boolean isDirectory() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public long lastModified() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public boolean isAvailable() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean isDeleted() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public boolean isFile() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	public InodeHandle getFile(String string) throws FileNotFoundException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Collection<InodeHandle> getDirectories() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void delete() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void createDirectory() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public long length() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public String getUsername() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void unmergeDir(RemoteSlave rslave) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public String getGroupname() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public long getXfertime() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public void remerge(CaseInsensitiveHashtable files, RemoteSlave rslave) throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return _path.hashCode();
+	}	
 
 }

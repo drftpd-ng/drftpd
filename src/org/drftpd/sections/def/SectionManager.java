@@ -23,13 +23,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.StringTokenizer;
+import java.util.Set;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -47,7 +47,7 @@ public class SectionManager implements SectionManagerInterface {
 
     public SectionInterface getSection(String string) {
         try {
-            return new Section(getGlobalContext().getRoot().getFile(string));
+            return new Section(getGlobalContext().getRoot().getDirectory(string));
         } catch (FileNotFoundException e) {
             return new Section(getGlobalContext().getRoot());
         }
@@ -60,49 +60,52 @@ public class SectionManager implements SectionManagerInterface {
 	public Collection<SectionInterface> getSections() {
         ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
 
-        for (Iterator<InodeHandle> iter = getGlobalContext().getRoot().getDirectories()
-                                .iterator(); iter.hasNext();) {
-        	InodeHandle dir = (InodeHandle) iter.next();
-            sections.add(new Section(dir));
-        }
+        try {
+			for (Iterator<DirectoryHandle> iter = getGlobalContext().getRoot().getDirectories()
+			                        .iterator(); iter.hasNext();) {
+			    sections.add(new Section(iter.next()));
+			}
+		} catch (FileNotFoundException e) {
+			// no sections, return the empty set
+			return Collections.EMPTY_SET;
+		}
 
         return sections;
     }
 
-    public SectionInterface lookup(String string) {
-        StringTokenizer st = new StringTokenizer(string, "/");
-
-        if (!st.hasMoreTokens()) {
-            return new Section(getGlobalContext().getRoot());
-        }
-
-        try {
-            return new Section(getGlobalContext().getRoot().getFile(st.nextToken()));
-        } catch (FileNotFoundException e) {
-            return new Section(getGlobalContext().getRoot());
-        }
-    }
-
     public void reload() {
     }
-
-    public SectionInterface lookup(InodeHandle file) {
-        return lookup(file.getPath());
+    
+    public SectionInterface lookup(DirectoryHandle dir) {
+    	try {
+        	DirectoryHandle parent = dir.getParent();
+    		if (parent.isRoot()) {
+    			return new Section(dir);
+    		}
+    		return lookup(parent);
+    	} catch (IllegalStateException e) {
+    		throw new IllegalStateException("The RootDirectory does not have a section");
+    	}
+    	
     }
 
     public class Section implements SectionInterface {
-        private InodeHandle _lrf;
+        private DirectoryHandle _lrf;
 
-        public Section(InodeHandle lrf) {
+        public Section(DirectoryHandle lrf) {
             _lrf = lrf;
         }
 
-        public InodeHandle getFile() {
+        public DirectoryHandle getCurrentDirectory() {
             return _lrf;
         }
 
-        public Collection getFiles() {
-            return Collections.singletonList(_lrf);
+        public Set<DirectoryHandle> getDirectories() {
+            try {
+				return _lrf.getDirectories();
+			} catch (FileNotFoundException e) {
+				return Collections.EMPTY_SET;
+			}
         }
 
         public String getName() {
@@ -113,8 +116,8 @@ public class SectionManager implements SectionManagerInterface {
             return _lrf.getPath();
         }
 
-        public InodeHandle getBaseDirectory() {
-            return getFile();
+        public DirectoryHandle getBaseDirectory() {
+            return _lrf;
         }
 
 		public String getBasePath() {

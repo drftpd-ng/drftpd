@@ -24,10 +24,10 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.InodeHandle;
 
 
 /*
@@ -40,7 +40,7 @@ public class ReversebandwidthFilter extends BandwidthFilter {
     }
 
     public void process(ScoreChart scorechart, User user, InetAddress source,
-        char direction, LinkedRemoteFileInterface file, RemoteSlave sourceSlave) {
+        char direction, InodeHandle file, RemoteSlave sourceSlave) {
         char oppositeDirection;
 
         if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
