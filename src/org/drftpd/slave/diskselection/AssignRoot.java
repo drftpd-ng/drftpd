@@ -39,8 +39,12 @@ public class AssignRoot {
 		String parse = s.trim().replaceAll(",", "");
 		String[] p = parse.split(" ");
 		ArrayList list = new ArrayList();
+		int x = DiskSelection.getDiskSelection().getRootCollection().getRootList().size();
 		for (int i = 0; i < p.length; i++) {
 			AssignParser a = new AssignParser(p[i]);
+			if (a.getRoot() > x)
+				throw new IllegalArgumentException("You are trying to assign points to" +
+						" a root that doesn't exists.", new Throwable());
 			list.add(a);
 		}
 		return list;
