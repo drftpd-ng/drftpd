@@ -48,7 +48,10 @@ import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.io.AddAsciiOutputStream;
+import org.drftpd.slave.DIZInfo;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -85,7 +88,24 @@ public class BaseFtpConnection implements Runnable {
 	private CommandManager _commandManager;
 
 	protected Socket _controlSocket;
-
+	
+	protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
+	
+	public KeyedMap<Key, Object> getKeyedMap() {
+		return _keyedMap;
+	}
+	
+	public TransferState getTransferState() {
+		TransferState ts;
+		try {
+			ts = (TransferState) getKeyedMap().getObject(TransferState.TRANSFERSTATE);
+		} catch (KeyNotFoundException e) {
+			ts = new TransferState();
+			getKeyedMap().setObject(TransferState.TRANSFERSTATE,ts);
+		}
+		return ts;
+	}
+	
 	protected DirectoryHandle _currentDirectory;
 
 	/**

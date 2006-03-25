@@ -33,12 +33,14 @@ import org.drftpd.slave.CaseInsensitiveHashtable;
  * @author zubov
  * @version $Id$
  */
-public class DirectoryHandle extends InodeHandle {
+public class DirectoryHandle extends InodeHandle implements DirectoryHandleInterface {
 
 	public DirectoryHandle(String path) {
 		super(path);
 	}
 
+	
+	@Override
 	protected VirtualFileSystemDirectory getInode()
 			throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
@@ -78,8 +80,6 @@ public class DirectoryHandle extends InodeHandle {
 	}
 	
 	public InodeHandle getInodeHandle(String name) throws FileNotFoundException {
-		// should accept absolute and relative paths
-		// TODO
 		VirtualFileSystemInode inode = getInode().getInodeByName(name);
 		if (inode.isDirectory()) {
 			return new DirectoryHandle(inode.getPath());
@@ -93,6 +93,12 @@ public class DirectoryHandle extends InodeHandle {
 
 	public DirectoryHandle getDirectory(String name)
 			throws FileNotFoundException, ObjectNotValidException {
+		logger.debug("getDirectory(" + name + ")");
+		if (name.equals("..")) {
+			return getParent();
+		} else if (name.equals(".")) {
+			return this;
+		}
 		InodeHandle handle = getInodeHandle(name);
 		if (handle.isDirectory()) {
 			return (DirectoryHandle) handle;
@@ -177,5 +183,14 @@ public class DirectoryHandle extends InodeHandle {
 	
 	public boolean isRoot() {
 		return equals(GlobalContext.getGlobalContext().getRoot());
+	}
+
+	public FileHandle getNonExistentFileHandle(String argument) {
+		if (argument.startsWith(VirtualFileSystem.separator)) {
+			// absolute path, easy to handle
+			return new FileHandle(argument);
+		}
+		// path must be relative
+		return new FileHandle(getPath() + VirtualFileSystem.separator + argument);
 	}
 }

@@ -108,10 +108,10 @@ public abstract class VirtualFileSystemInode {
 	 * @return Returns the full path.
 	 */
 	protected String getPath() {
-		if (getParent().getPath().equals(VirtualFileSystem.pathSeparator)) {
-			return VirtualFileSystem.pathSeparator + getName();
+		if (getParent().getPath().equals(VirtualFileSystem.separator)) {
+			return VirtualFileSystem.separator + getName();
 		}
-		return getParent().getPath() + VirtualFileSystem.pathSeparator
+		return getParent().getPath() + VirtualFileSystem.separator
 				+ getName();
 	}
 
@@ -142,7 +142,7 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	protected void rename(String destination) throws FileExistsException {
-		if (!destination.startsWith(VirtualFileSystem.pathSeparator)) {
+		if (!destination.startsWith(VirtualFileSystem.separator)) {
 			throw new IllegalArgumentException("Accepts a full path and name");
 		}
 		try {
@@ -164,7 +164,7 @@ public abstract class VirtualFileSystemInode {
 		try {
 			VirtualFileSystem.getVirtualFileSystem().renameXML(
 					this.getPath(),
-					destinationDir.getPath() + VirtualFileSystem.pathSeparator
+					destinationDir.getPath() + VirtualFileSystem.separator
 							+ VirtualFileSystem.getLast(destination));
 		} catch (FileNotFoundException e) {
 			// we may be able to handle this
@@ -197,11 +197,11 @@ public abstract class VirtualFileSystemInode {
 	 */
 	public void setLastModified(long modified) {
 		_lastModified = modified;
+		commit();
 	}
 
 	/**
-	 * @param The
-	 *            name to set.
+	 * The name to set.
 	 */
 	public void setName(String name) {
 		_name = name;

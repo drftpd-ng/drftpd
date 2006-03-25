@@ -19,10 +19,13 @@ package org.drftpd;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
+
+import javax.net.ssl.SSLContext;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -77,8 +80,10 @@ public class GlobalContext {
 
 	protected SlaveSelectionManagerInterface _slaveSelectionManager;
 
+	private SSLContext _sslContext;
+
 	private static DirectoryHandle root = new DirectoryHandle(
-			VirtualFileSystem.pathSeparator);
+			VirtualFileSystem.separator);
 
 	public void reloadFtpConfig() throws IOException {
 		_zsConfig = new ZipscriptConfig(this);
@@ -334,6 +339,20 @@ public class GlobalContext {
 		loadSlaveSelectionManager(getConfig().getProperties());
 		loadSectionManager(getConfig().getProperties());
 		loadPlugins(getConfig().getProperties());
+		try {
+			_sslContext = SSLGetContext.getSSLContext();
+		} catch (IOException e) {
+			logger.warn("Couldn't load SSLContext, SSL/TLS disabled - " + e.getMessage());
+		} catch (Exception e) {
+			logger.warn("Couldn't load SSLContext, SSL/TLS disabled", e);
+		}
+	}
+
+	/**
+	 * Will return null if SSL/TLS is not configured
+	 */
+	public SSLContext getSSLContext() {
+		return _sslContext;
 	}
 
 	/*	*//**

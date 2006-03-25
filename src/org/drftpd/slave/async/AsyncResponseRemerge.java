@@ -23,6 +23,9 @@ public class AsyncResponseRemerge extends AsyncResponse {
 			throw new RuntimeException(
 					"\\ is not an acceptable character in a directory path");
 		}
+		if (directory.equals("")) {
+			directory = File.separator;
+		}
 		_directory = directory;
 	}
 

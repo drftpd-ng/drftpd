@@ -82,6 +82,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 
 	public synchronized void addSlave(String rslave) {
 		_slaves.add(rslave);
+		commit();
 	}
 
 	public long getChecksum() {
@@ -99,11 +100,14 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		_slaves.remove(rslave);
 		if (_slaves.isEmpty()) {
 			delete();
+		} else {
+			commit();
 		}
 	}
 
 	public void setChecksum(long checksum) {
 		getKeyedMap().setObject(CRC, checksum);
+		commit();
 	}
 
 	@Override
@@ -130,6 +134,17 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 
 	public void setXfertime(long xfertime) {
 		getKeyedMap().setObject(XFERTIME, xfertime);
+		commit();
+	}
+	
+	public void setSize(long size) {
+		if (size < 0) {
+			throw new IllegalArgumentException("File size cannot be < 0");
+		}
+		getParent().addSize(-_size);
+		_size = size;
+		getParent().addSize(_size);
+		commit();
 	}
 
 	public boolean isUploading() {

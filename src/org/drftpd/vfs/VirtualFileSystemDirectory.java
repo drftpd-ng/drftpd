@@ -110,7 +110,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	public Set<InodeHandle> getInodes() {
 		HashSet<InodeHandle> set = new HashSet<InodeHandle>();
-		String path = getPath() + VirtualFileSystem.pathSeparator;
+		String path = getPath() + VirtualFileSystem.separator;
 		// not dynamically called for efficiency
 		for (String inodeName : new HashSet<String>(_files.keySet())) {
 			VirtualFileSystemInode inode;
@@ -134,6 +134,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected synchronized VirtualFileSystemInode getInodeByName(String name)
 			throws FileNotFoundException {
+		if (name.startsWith(VirtualFileSystem.separator)) {
+			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(name);
+		}
 		if (!_files.containsKey(name)) {
 			throw new FileNotFoundException(name + " does not exist in "
 					+ getPath());
@@ -142,7 +145,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		VirtualFileSystemInode inode = null;
 		if (sf == null || sf.get() == null) {
 			inode = getVFS().loadInode(
-					getPath() + VirtualFileSystem.pathSeparator + name);
+					getPath() + VirtualFileSystem.separator + name);
 			inode.setParent(this);
 			_files.remove(name);
 			_files.put(name, new SoftReference<VirtualFileSystemInode>(inode));

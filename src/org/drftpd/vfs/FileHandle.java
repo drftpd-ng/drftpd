@@ -32,15 +32,16 @@ import org.drftpd.master.RemoteSlave;
  * @author zubov
  * @version $Id$
  */
-public class FileHandle extends InodeHandle {
+public class FileHandle extends InodeHandle implements FileHandleInterface {
 
 	public FileHandle(String path) {
 		super(path);
 	}
-
+	
+	@Override
 	protected VirtualFileSystemFile getInode() throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
-		if (inode instanceof VirtualFileSystemLink) {
+		if (inode instanceof VirtualFileSystemFile) {
 			return (VirtualFileSystemFile) inode;
 		}
 		throw new ClassCastException("FileHandle object pointing to Inode:"
@@ -103,5 +104,9 @@ public class FileHandle extends InodeHandle {
 		} catch (NoAvailableSlaveException e) {
 			return false;
 		}
+	}
+	
+	public void setSize(long size) throws FileNotFoundException {
+		getInode().setSize(size);
 	}
 }

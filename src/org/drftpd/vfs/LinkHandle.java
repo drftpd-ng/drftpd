@@ -25,12 +25,13 @@ import net.sf.drftpd.FileExistsException;
  * @author zubov
  * @version $Id$
  */
-public class LinkHandle extends InodeHandle {
+public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 
 	public LinkHandle(String path) {
 		super(path);
 	}
-
+	
+	@Override
 	protected VirtualFileSystemLink getInode() throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
 		if (inode instanceof VirtualFileSystemLink) {

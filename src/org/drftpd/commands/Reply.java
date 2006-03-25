@@ -126,7 +126,7 @@ public class Reply implements Cloneable {
 	 * file not found, no access).
 	 */
 	public static final Reply RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN = new Reply(
-			550, "Requested action not taken. File unavailable.");
+			550, "Requested action not taken. File unavailable (e.g., file not found, no access");
 
 	/**
 	 * 553 Requested action not taken. File name not allowed.

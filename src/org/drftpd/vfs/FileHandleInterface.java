@@ -17,12 +17,14 @@
  */
 package org.drftpd.vfs;
 
+import java.io.FileNotFoundException;
+
 /**
  * @author zubov
  * @version $Id$
  */
 public interface FileHandleInterface extends InodeHandleInterface {
 
-	boolean isAvailable();
+	boolean isAvailable() throws FileNotFoundException;
 
 }

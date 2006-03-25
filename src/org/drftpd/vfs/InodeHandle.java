@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 
 import net.sf.drftpd.FileExistsException;
 
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 
 /**
@@ -28,8 +29,12 @@ import org.drftpd.GlobalContext;
  */
 public abstract class InodeHandle implements InodeHandleInterface {
 	String _path = null;
+	protected static final Logger logger = Logger.getLogger(InodeHandle.class.getName());
 
 	public InodeHandle(String path) {
+		if (path == null || !path.startsWith(VirtualFileSystem.separator)) {
+			throw new IllegalArgumentException("InodeHandle needs an absolute path, argument was [" + path + "]");
+		}
 		_path = path;
 	}
 	
@@ -83,7 +88,7 @@ public abstract class InodeHandle implements InodeHandleInterface {
 	 * @return
 	 */
 	public DirectoryHandle getParent() {
-		if (_path.equals(VirtualFileSystem.pathSeparator)) {
+		if (_path.equals(VirtualFileSystem.separator)) {
 			throw new IllegalStateException(
 					"Can't get the parent of the root directory");
 		}
@@ -129,7 +134,7 @@ public abstract class InodeHandle implements InodeHandleInterface {
 	}
 	
 	public String toString() {
-		return getName();
+		return getPath();
 	}
 
 	public void setUsername(String owner) throws FileNotFoundException {

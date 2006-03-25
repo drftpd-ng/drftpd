@@ -45,18 +45,19 @@ public class VirtualFileSystem {
 	private static final Logger logger = Logger
 			.getLogger(VirtualFileSystem.class.getName());
 
-	public static String pathSeparator = File.separator;
+	public static String separator = File.separator;
 
 	/**
 	 * Takes /path/dir/name and returns name
 	 */
 	public static String getLast(String path) {
-		return path.substring(path.lastIndexOf(pathSeparator) + 1);
+		return path.substring(path.lastIndexOf(separator) + 1);
 	}
 
 	public static VirtualFileSystem getVirtualFileSystem() {
 		if (_vfs == null) {
 			_vfs = new VirtualFileSystem();
+			_vfs._root.commit();
 		}
 		return _vfs;
 	}
@@ -66,7 +67,7 @@ public class VirtualFileSystem {
 	 */
 	public static String stripLast(String path) {
 		// logger.debug("stripLast(" + path + ")");
-		String toReturn = path.substring(0, path.lastIndexOf(pathSeparator));
+		String toReturn = path.substring(0, path.lastIndexOf(separator));
 		if (toReturn.equals("")) {
 			return "/";
 		}
@@ -78,7 +79,7 @@ public class VirtualFileSystem {
 	private VirtualFileSystem() {
 		new File(fileSystemPath).mkdirs();
 		try {
-			_root = (VirtualFileSystemRoot) loadInode("/");
+			_root = (VirtualFileSystemRoot) loadInode(separator);
 		} catch (FileNotFoundException e) {
 			logger.info("Creating new root filesystem");
 			logger
@@ -106,14 +107,18 @@ public class VirtualFileSystem {
 	 */
 	protected VirtualFileSystemInode getInodeByPath(String path)
 			throws FileNotFoundException {
-		if (path.equals(pathSeparator)) {
+		if (path.startsWith("//")) {
+			path = path.substring(1);
+			// this is a hack, i haven't figured out the problem yet
+		}
+		if (path.equals(separator)) {
 			return _root;
 		}
-		// logger.debug("getInodeByPath(" + path + ")");
+		//logger.debug("getInodeByPath(" + path + ")");
 		path = path.substring(1);
 		VirtualFileSystemDirectory walker = _root;
 		VirtualFileSystemInode inode = null;
-		String[] values = path.split(pathSeparator);
+		String[] values = path.split(separator);
 		for (int x = 0; x < values.length; x++) {
 			inode = walker.getInodeByName(values[x]);
 			if (inode.isDirectory()) {
@@ -147,7 +152,7 @@ public class VirtualFileSystem {
 		File file = new File(fullPath);
 		File dirFile = null;
 		if (file.isDirectory()) {
-			fullPath = fullPath + pathSeparator + dirName;
+			fullPath = fullPath + separator + dirName;
 			dirFile = file;
 			file = new File(fullPath);
 		}
@@ -210,7 +215,7 @@ public class VirtualFileSystem {
 		String fullPath = getRealPath(inode.getPath());
 		if (inode.isDirectory()) {
 			new File(fullPath).mkdirs();
-			fullPath = fullPath + pathSeparator + dirName;
+			fullPath = fullPath + separator + dirName;
 		}
 		XMLEncoder enc = null;
 		new File(fileSystemPath).mkdirs();

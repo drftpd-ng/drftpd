@@ -18,14 +18,14 @@
 package org.drftpd.vfs;
 
 public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
-
+	
 	public VirtualFileSystemRoot() {
-		this("drftpd", "drftpd");
+		this("drftpd","drftpd");
 	}
 
 	public VirtualFileSystemRoot(String user, String group) {
 		super(user, group);
-		setName(VirtualFileSystem.pathSeparator);
+		setName(VirtualFileSystem.separator);
 	}
 
 	/*

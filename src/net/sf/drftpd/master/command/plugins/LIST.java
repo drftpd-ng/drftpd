@@ -19,6 +19,7 @@ package net.sf.drftpd.master.command.plugins;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.Socket;
@@ -34,6 +35,7 @@ import java.util.StringTokenizer;
 
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
+import net.sf.drftpd.master.TransferState;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
@@ -245,6 +247,7 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 
 		String directoryName = null;
 		String options = "";
+		TransferState ts = conn.getTransferState();
 
 		// String pattern = "*";
 		// get options, directory name and pattern
@@ -277,15 +280,13 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 				|| (options.indexOf('l') != -1);
 
 		// boolean directoryOption = options.indexOf("d") != -1;
-/*		DataConnectionHandler dataconn = null;
 
 		if (!request.getCommand().equals("STAT")) {
-			dataconn = conn.getDataConnectionHandler();
 
-			if (!dataconn.isPasv() && !dataconn.isPort()) {
+			if (!ts.isPasv() && !ts.isPort()) {
 				return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 			}
-		}*/
+		}
 
 		DirectoryHandle directoryFile;
 
@@ -311,23 +312,23 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 		Socket dataSocket = null;
 		Writer os;
 
-		//if (request.getCommand().equals("STAT")) {
+		if (request.getCommand().equals("STAT")) {
 			os = out;
 			out
 					.write("213- Status of " + request.getArgument() + ":"
 							+ NEWLINE);
-		//} else {
-/*			if (!dataconn.isEncryptedDataChannel()
+		} else {
+			if (!ts.getSendFilesEncrypted()
 					&& conn.getGlobalContext().getConfig().checkPermission(
 							"denydiruncrypted", conn.getUserNull())) {
 				return new Reply(550, "Secure Listing Required");
-			}*/
+			}
 
 			out.write(Reply.RESPONSE_150_OK);
 			out.flush();
 
-/*			try {
-				dataSocket = dataconn.getDataSocket();
+			try {
+				dataSocket = ts.getDataSocketForLIST();
 				os = new PrintWriter(new OutputStreamWriter(dataSocket
 						.getOutputStream()));
 
@@ -336,10 +337,11 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 				logger.warn("from master", ex);
 
 				return new Reply(425, ex.getMessage());
-			}*/
-		//}
+			}
+		}
 
 		// //////////////
+		logger.debug("Listing directoryFile - " + directoryFile);
 		List<InodeHandleInterface> listFiles = ListUtils.list(directoryFile, conn);
 
 		// //////////////
