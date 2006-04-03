@@ -62,7 +62,7 @@ public class PassiveConnection extends Connection {
 		_serverSocket.setSoTimeout(TIMEOUT);
 	}
 
-	public Socket connect() throws IOException {
+	public Socket connect(String[] cipherSuites) throws IOException {
 		Socket sock = null;
 		try {
 			sock = _serverSocket.accept();
@@ -77,6 +77,9 @@ public class PassiveConnection extends Connection {
 
 		if (sock instanceof SSLSocket) {
 			SSLSocket sslsock = (SSLSocket) sock;
+			if (cipherSuites != null && cipherSuites.length != 0) {
+				sslsock.setEnabledCipherSuites(cipherSuites);
+			}
 			sslsock.setUseClientMode(_useSSLClientMode);
 			sslsock.startHandshake();
 		}

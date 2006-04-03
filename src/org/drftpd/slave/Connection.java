@@ -27,7 +27,7 @@ import java.net.Socket;
 public abstract class Connection {
 	public static final int TIMEOUT = 10000;
 
-	public abstract Socket connect() throws IOException;
+	public abstract Socket connect(String[] cipherSuites) throws IOException;
 
 	protected void setSockOpts(Socket sock) throws IOException {
 		/*

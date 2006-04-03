@@ -32,7 +32,9 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -97,6 +99,8 @@ public class Slave {
 	public static final String VERSION = "DrFTPD 2.0.2";
 
 	private int _bufferSize;
+	
+	private String[] _cipherSuites;
 
 	private SSLContext _ctx;
 
@@ -149,6 +153,25 @@ public class Slave {
 			_ctx = SSLGetContext.getSSLContext();
 		} catch (Exception e) {
 			logger.warn("Error loading SSLContext", e);
+			_cipherSuites = null;
+		}
+		
+		ArrayList<String> cipherSuites = new ArrayList<String>();
+		for (int x = 1;;x++) {
+			String cipherSuite = p.getProperty("cipher." + x);
+			if (cipherSuite != null) {
+				cipherSuites.add(cipherSuite);
+			} else {
+				break;
+			}
+		}
+		if (cipherSuites.size() == 0) {
+			_cipherSuites = null;
+		} else {
+			_cipherSuites = new String[cipherSuites.size()];
+			for (int x = 0; x<_cipherSuites.length; x++) {
+				_cipherSuites[x] = cipherSuites.get(x);
+			}
 		}
 
 		if (_sslMaster) {
@@ -166,6 +189,9 @@ public class Slave {
 		_s.setSoTimeout(socketTimeout);
 		_s.connect(addr);
 		if (_s instanceof SSLSocket) {
+			if (getCipherSuites() != null) {
+				((SSLSocket) _s).setEnabledCipherSuites(getCipherSuites());	
+			}
 			((SSLSocket) _s).setUseClientMode(true);
 			((SSLSocket) _s).startHandshake();
 		}
@@ -959,5 +985,13 @@ public class Slave {
 		synchronized (_transfers) {
 			return new ArrayList(_transfers.values());
 		}
+	}
+
+	public String[] getCipherSuites() {
+		// returns null if none are configured explicitly
+		if (_cipherSuites == null) {
+			return null;
+		}
+		return _cipherSuites;
 	}
 }

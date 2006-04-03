@@ -46,6 +46,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.SlaveFileException;
+import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -424,6 +425,10 @@ public class SlaveManager implements Runnable {
 				socket = _serverSocket.accept();
 				socket.setSoTimeout(socketTimeout);
 				if (socket instanceof SSLSocket) {
+					if (FtpConfig.getFtpConfig().getCipherSuites() != null) {
+						((SSLSocket) socket).setEnabledCipherSuites(FtpConfig
+								.getFtpConfig().getCipherSuites());
+					}
 					((SSLSocket) socket).setUseClientMode(false);
 					((SSLSocket) socket).startHandshake();
 				}

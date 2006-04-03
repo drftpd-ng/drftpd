@@ -27,12 +27,16 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author mog
  * @version $Id$
  */
 public class SSLGetContext {
 	static SSLContext ctx = null;
+
+	private static final Logger logger = Logger.getLogger(SSLGetContext.class);
 
 	public static SSLContext getSSLContext() throws GeneralSecurityException,
 			IOException {
@@ -53,7 +57,7 @@ public class SSLGetContext {
 		if (ctx != null)
 			return ctx; // reuse previous SSLContext
 
-		ctx = SSLContext.getInstance("SSLv3");
+		ctx = SSLContext.getInstance("TLS");
 
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
@@ -71,7 +75,11 @@ public class SSLGetContext {
 		kmf.init(ks, "drftpd".toCharArray());
 
 		ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
-
+		String[] ciphers = ctx.createSSLEngine().getSupportedCipherSuites();
+		logger.info("Supported ciphers are as follows:");
+		for (String cipher : ciphers) {
+			logger.info(cipher);
+		}
 		return ctx;
 	}
 }

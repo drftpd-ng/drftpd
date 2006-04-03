@@ -69,6 +69,8 @@ public class FtpConfig extends Observable implements ConfigInterface {
 	private ArrayList<RatioPathPermission> _creditcheck = new ArrayList<RatioPathPermission>();
 
 	private ArrayList<RatioPathPermission> _creditloss = new ArrayList<RatioPathPermission>();
+	
+	private String[] _cipherSuites;
 
 	private boolean _hideIps;
 
@@ -233,6 +235,14 @@ public class FtpConfig extends Observable implements ConfigInterface {
 		return (fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) ? 0
 				: 1;
 	}
+	
+	public String[] getCipherSuites() {
+		// returns null if none are configured explicitly
+		if (_cipherSuites == null) {
+			return null;
+		}
+		return _cipherSuites;
+	}
 
 	public String getDirName(String name) {
 		if (!_useDirNames) {
@@ -337,6 +347,24 @@ public class FtpConfig extends Observable implements ConfigInterface {
 		}
 
 		_bouncerIps = bouncerIps;
+		
+		ArrayList<String> cipherSuites = new ArrayList<String>();
+		for (int x = 1;;x++) {
+			String cipherSuite = _properties.getProperty("cipher." + x);
+			if (cipherSuite != null) {
+				cipherSuites.add(cipherSuite);
+			} else {
+				break;
+			}
+		}
+		if (cipherSuites.size() == 0) {
+			_cipherSuites = null;
+		} else {
+			_cipherSuites = new String[cipherSuites.size()];
+			for (int x = 0; x<_cipherSuites.length; x++) {
+				_cipherSuites[x] = cipherSuites.get(x);
+			}
+		}
 	}
 
 	public void loadReaderForTest(Reader in) throws IOException {
