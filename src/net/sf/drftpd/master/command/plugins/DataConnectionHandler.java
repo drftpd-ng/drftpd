@@ -979,7 +979,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 env.add("direction", "download");
             }
 
-            if (comparison != 0 && count > comparison)
+            if (comparison != 0 && count >= comparison)
             	return new Reply(550, conn.jprintf(DataConnectionHandler.class, "transfer.err.maxsim", env));
             
             // get filenames
