@@ -28,13 +28,10 @@ import se.mog.io.File;
 public class Root {
 	private File _rootFile;
 
-	private String _root;
-
 	private long _lastModified;
 
 	public Root(String root) throws IOException {
 		_rootFile = new File(new File(root).getCanonicalFile());
-		_root = _rootFile.getPath();
 		_lastModified = getFile().lastModified();
 	}
 
@@ -43,7 +40,7 @@ public class Root {
 	}
 
 	public String getPath() {
-		return _root;
+		return _rootFile.getPath();
 	}
 
 	public long lastModified() {
@@ -67,6 +64,20 @@ public class Root {
 	}
 
 	public File getFile(String path) {
-		return new File(_root + File.separator + path);
+		return new File(getPath() + File.separator + path);
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object arg0) {
+		if (!(arg0 instanceof Root)) {
+			return false;
+		}
+		Root r = (Root) arg0;
+		return r.getPath().equals(getPath());
+	}
+	
+	
 }

@@ -90,13 +90,16 @@ public class ScoreChart {
 	 * @param root
 	 */
 	public RootScore getRootScoreObject(Root root) {
+		if (root == null) {
+			throw new IllegalArgumentException("Argument to getRootScoreObject() cannot be null");
+		}
 		for (Iterator iter = _scoreList.iterator(); iter.hasNext();) {
 			RootScore rootScore = (RootScore) iter.next();
 			Root o = rootScore.getRoot();
 			if (o.equals(root))
 				return rootScore;
 		}
-		// should never happend;
+		// should never happen;
 		return null;
 	}
 
