@@ -48,7 +48,6 @@ public class DiskSelection {
 
 	private DiskSelection(RootCollection rootCollection) throws IOException {
 		_rootCollection = rootCollection;
-		readConf();
 	}
 
 	public static void init(RootCollection rootCollection) throws IOException {
@@ -57,6 +56,7 @@ public class DiskSelection {
 					"DiskSelection has already been initialized.");
 		}
 		_diskSelection = new DiskSelection(rootCollection);
+                _diskSelection.readConf();
 	}
 
 	public static DiskSelection getDiskSelection() {
