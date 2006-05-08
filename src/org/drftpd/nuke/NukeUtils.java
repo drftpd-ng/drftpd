@@ -22,7 +22,9 @@ public class NukeUtils {
 	 */
 	public static long calculateNukedAmount(long size, float ratio,
 			int multiplier) {
-		return (long) ((size * ratio) + (size * (multiplier - 1)));
+    	// If ratio is 0, NukedAmount should be 0.
+    	if (ratio == 0) return 0L;
+    	else return (long) ((size * ratio) + (size * (multiplier - 1)));
 	}
 
 	public static void nukeRemoveCredits(DirectoryHandle nukeDir,
