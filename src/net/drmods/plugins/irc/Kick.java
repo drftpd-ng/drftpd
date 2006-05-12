@@ -116,7 +116,7 @@ public class Kick extends IRCCommand {
                     continue;
                 }
 
-				long idletime = (System.currentTimeMillis() - conn.getLastActive()) / 1000;
+                long idletime = System.currentTimeMillis() - conn.getLastActive();
                 env.add("idletime", Time.formatTime(idletime));
                 env.add("idleuser", cuser.getName());
                 env.add("ircuser", cmduser);
