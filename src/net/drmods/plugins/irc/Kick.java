@@ -45,7 +45,7 @@ import org.tanesha.replacer.SimplePrintf;
  */
 public class Kick extends IRCCommand {
     private static final Logger logger = Logger.getLogger(Kick.class);
-    private int _idleTimeout;
+    private long _idleTimeout;
     private int _usersPerLine;
     
     public Kick() {
@@ -67,7 +67,8 @@ public class Kick extends IRCCommand {
             if (usersPerLine == null) {
                 throw new RuntimeException("Unspecified value 'kick.usersperline' in " + confFile);        
             }
-            _idleTimeout = Integer.parseInt(idleTimeout);
+
+            _idleTimeout = Long.parseLong(idleTimeout) * 1000;
             _usersPerLine = Integer.parseInt(usersPerLine);
         } catch (Exception e) {
             logger.error("Error reading " + confFile,e);
@@ -96,10 +97,8 @@ public class Kick extends IRCCommand {
                     "kick.ftpmsg");
             ReplacerFormat userformat = ReplacerUtils.finalFormat(Kick.class,
                     "kick.userformat");
-            //ResourceBundle bundle = ResourceBundle.getBundle(TDPKick.class.getName());
-            //String userformat = bundle.getString("kick.userformat");
-            
-			env.add("idlelimit",Long.toString(_idleTimeout));
+
+            env.add("idlelimit", Time.formatTime(_idleTimeout));
 
             ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(getGlobalContext()
                     									.getConnectionManager().getConnections());
