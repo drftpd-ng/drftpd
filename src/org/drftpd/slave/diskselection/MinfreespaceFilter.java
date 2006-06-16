@@ -55,8 +55,8 @@ public class MinfreespaceFilter extends DiskFilter {
 				+ ".minfreespace"));
 		_multiplier = DiskFilter.parseMultiplier(p.getProperty(i
 				+ ".multiplier", "0"));
-		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i
-				+ ".assign"));
+		_assignList = _assignList = AssignRoot.parseAssign(p.getProperty(i 
+				+ ".assign", "all"));
 	}
 
 	public void process(ScoreChart sc, String path) {

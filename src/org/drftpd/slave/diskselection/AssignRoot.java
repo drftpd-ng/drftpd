@@ -60,6 +60,10 @@ public class AssignRoot {
 	public static boolean isAssignedRoot(Root root, ArrayList list) {
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			AssignParser a = (AssignParser) iter.next();
+			
+			if (a.allAssigned())
+				return true;
+			
 			int i = (int) a.getRoot();
 			Root o = (Root) DiskFilter.getRootList().get(i);
 			if (o.equals(root)) {
@@ -79,6 +83,10 @@ public class AssignRoot {
 	public static void addScoresToChart(ArrayList list, ScoreChart sc) {
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			AssignParser ap = (AssignParser) iter.next();
+			
+			if (ap.allAssigned())
+				return;
+			
 			int i = (int) ap.getRoot();
 			Root o = (Root) DiskFilter.getRootList().get(i);
 			sc.addScore(o, ap.getScore());
@@ -90,8 +98,16 @@ class AssignParser {
 	private long _score;
 
 	private int _root;
+	
+	private boolean _all = false;
 
 	public AssignParser(String s) {
+		if (s.equals("all")) {
+			_all = true;
+			_score = 0;
+			return;
+		}
+		
 		boolean positive;
 		int pos = s.indexOf("+");
 
@@ -137,5 +153,9 @@ class AssignParser {
 	public String toString() {
 		return getClass() + "@" + hashCode() + "[root=" + getRoot() + ",score="
 				+ getScore() + "]";
+	}
+	
+	public boolean allAssigned() {
+		return _all;
 	}
 }
