@@ -6,3 +6,8 @@ useCRC=true
 # sleep for this amount of seconds between searching for new transfers
 sleepSeconds=10
 
+# use SSL transfer
+useSSLTransfers=true
+
+# use SSL transfer
+useSSLTransfers=true

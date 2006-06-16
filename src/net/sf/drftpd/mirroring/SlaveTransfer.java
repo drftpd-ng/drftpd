@@ -44,14 +44,17 @@ public class SlaveTransfer {
 
 	private RemoteTransfer _srcTransfer = null;
 
+	private boolean _secureTransfer;
+
 	/**
 	 * Slave to Slave Transfers
 	 */
 	public SlaveTransfer(FileHandle file, RemoteSlave sourceSlave,
-			RemoteSlave destSlave) {
+			RemoteSlave destSlave, boolean secureTransfer) {
 		_file = file;
 		_srcSlave = sourceSlave;
 		_destSlave = destSlave;
+		_secureTransfer = secureTransfer; 
 	}
 
 	long getTransfered() {
@@ -85,7 +88,7 @@ public class SlaveTransfer {
 		// in issueConnectToSlave(), maybe do an option later, is this wanted?
 
 		try {
-			String destIndex = _destSlave.issueListenToSlave(false, false);
+			String destIndex = _destSlave.issueListenToSlave(_secureTransfer, false); 
 			ConnectInfo ci = _destSlave
 					.fetchTransferResponseFromIndex(destIndex);
 			_destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
@@ -98,7 +101,7 @@ public class SlaveTransfer {
 		try {
 			String srcIndex = _srcSlave.issueConnectToSlave(_destTransfer
 					.getAddress().getAddress().getHostAddress(), _destTransfer
-					.getLocalPort(), false, true);
+					.getLocalPort(), _secureTransfer, true); 
 			ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
 			_srcTransfer = _srcSlave.getTransfer(ci.getTransferIndex());
 		} catch (SlaveUnavailableException e) {

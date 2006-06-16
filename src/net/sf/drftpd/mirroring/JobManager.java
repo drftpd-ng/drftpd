@@ -48,6 +48,8 @@ public class JobManager {
 	private Set<Job> _queuedJobSet;
 
 	private boolean _useCRC;
+	
+	private boolean _useSSL;
 
 	private long _sleepSeconds;
 
@@ -219,7 +221,7 @@ public class JobManager {
 		// file is not deleted and is available, we are ready to process
 
 		try {
-			job.transfer(useCRC(), sourceSlave, destSlave);
+			job.transfer(useCRC(), useSecureTransfers(), sourceSlave, destSlave);
 		} catch (FileNotFoundException e) {
 			// file is deleted, hah! stupid race conditions
 			return;
@@ -261,6 +263,7 @@ public class JobManager {
 			}
 		}
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
+		_useSSL = p.getProperty("useSSLTransfers", "true").equals("true"); 
 		_sleepSeconds = 1000 * Integer.parseInt(PropertyHelper.getProperty(p,
 				"sleepSeconds"));
 		if (_runJob != null) {
@@ -300,5 +303,9 @@ public class JobManager {
 
 	private boolean useCRC() {
 		return _useCRC;
+	}
+	
+	private boolean useSecureTransfers() {
+		return _useSSL;
 	}
 }
