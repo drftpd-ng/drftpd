@@ -1833,13 +1833,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		}
 
 		try {
-			conn.getUserNull().getKeyedMap().setObject(UserManagement.TAGLINE,
-					request.getArgument());
-			conn.getUserNull().commit();
 			logger.info("'" + conn.getUserNull().getName()
 					+ "' changed his tagline from '"
 					+ conn.getUserNull().getKeyedMap().getObject(TAGLINE, "")
 					+ "' to '" + request.getArgument() + "'");
+			conn.getUserNull().getKeyedMap().setObject(UserManagement.TAGLINE,
+					request.getArgument());
+			conn.getUserNull().commit();
 		} catch (UserFileException e) {
 			throw new ReplyException(e);
 		}
