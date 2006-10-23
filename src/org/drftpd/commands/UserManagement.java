@@ -155,7 +155,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 			env.add("targetuser", myUser.getName());
 
 			for (int i = 1; i < args.length; i++) {
-				String string = args[i];
+				String string = args[i].replace(",",""); // strip commas (for easy copy+paste)
 				env.add("mask", string);
 
 				try {
@@ -190,37 +190,37 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	 * a user. You can have wild cards for users that have dynamic ips Examples:
 	 * *@192.168.1.* , frank@192.168.*.* , bob@192.*.*.* (*@192.168.1.1[5-9]
 	 * will allow only 192.168.1.15-19 to connect but no one else)
-	 * 
+	 *
 	 * If a user is added by a groupadmin, that user will have the GLOCK flag
 	 * enabled and will inherit the groupadmin's home directory.
-	 * 
+	 *
 	 * All default values for the user are read from file default.user in
 	 * /glftpd/ftp-data/users. Comments inside describe what is what. Gadmins
 	 * can be assigned their own default. <group>userfiles as templates to be
 	 * used when they add a user, if one is not found, default.user will be
 	 * used. default.groupname files will also be used for "site gadduser".
-	 * 
+	 *
 	 * ex. site ADDUSER Archimede mypassword
-	 * 
+	 *
 	 * This would add the user 'Archimede' with the password 'mypassword'.
-	 * 
+	 *
 	 * ex. site ADDUSER Archimede mypassword *@127.0.0.1
-	 * 
+	 *
 	 * This would do the same as above + add the ip '*@127.0.0.1' at the same
 	 * time.
-	 * 
+	 *
 	 * HOMEDIRS: After login, the user will automatically be transferred into
 	 * his/her homedir. As of 1.16.x this dir is now "kinda" chroot'ed and they
 	 * are now unable to "cd ..".
-	 * 
-	 * 
-	 * 
+	 *
+	 *
+	 *
 	 * USAGE: site gadduser <group><user><password>[ <ident@ip#1 ..
 	 * ident@ip#5>] Adds a user and changes his/her group to <group>. If
 	 * default.group exists, it will be used as a base instead of default.user.
-	 * 
+	 *
 	 * Only public groups can be used as <group>.
-	 * 
+	 *
 	 * @throws ImproperUsageException
 	 */
 	private Reply doSITE_ADDUSER(BaseFtpConnection conn)
@@ -436,7 +436,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 		try {
 			while (st.hasMoreTokens()) {
-				String string = st.nextToken();
+				String string = st.nextToken().replace(",",""); // strip commas (for easy copy+paste)
 				env.add("mask", string);
 				new HostMask(string); // validate hostmask
 
@@ -469,11 +469,11 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	 * <group>site change {<user1><user2>.. }<field><value>- change a field
 	 * for each user in the list site change *<field><value>- change a field
 	 * for everyone
-	 * 
+	 *
 	 * Type "site change user help" in glftpd for syntax.
-	 * 
+	 *
 	 * Fields available:
-	 * 
+	 *
 	 * Field Description
 	 * ------------------------------------------------------------- ratio
 	 * Upload/Download ratio. 0 = Unlimited (Leech) wkly_allotment The number of
@@ -514,9 +514,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	 * this user (-1 = unlimited, 0 = zero [user can't upload]) sratio
 	 * <SECTIONNAME><#>This is to change the ratio of a section (other than
 	 * default).
-	 * 
+	 *
 	 * Flags available:
-	 * 
+	 *
 	 * Flagname Flag Description
 	 * ------------------------------------------------------------- SITEOP 1
 	 * User is siteop. GADMIN 2 User is Groupadmin of his/her first public group
@@ -526,18 +526,18 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	 * user from the sim_xfers limit in config file. COLOR 5 Enable/Disable the
 	 * use of color (toggle with "site color"). DELETED 6 User is deleted.
 	 * USEREDIT 7 "Co-Siteop" ANON 8 User is anonymous (per-session like login).
-	 * 
+	 *
 	 * NOTE* The 1 flag is not GOD mode, you must have the correct flags for the
 	 * actions you wish to perform. NOTE* If you have flag 1 then you DO NOT
 	 * WANT flag 2
-	 * 
+	 *
 	 * Restrictions placed on users flagged ANONYMOUS. 1. '!' on login is
 	 * ignored. 2. They cannot DELETE, RMDIR, or RENAME. 3. Userfiles do not
 	 * update like usual, meaning no stats will be kept for these users. The
 	 * userfile only serves as a template for the starting environment of the
 	 * logged in user. Use external scripts if you must keep records of their
 	 * transfer stats.
-	 * 
+	 *
 	 * NUKE A User is allowed to use site NUKE. UNNUKE B User is allowed to use
 	 * site UNNUKE. UNDUPE C User is allowed to use site UNDUPE. KICK D User is
 	 * allowed to use site KICK. KILL E User is allowed to use site KILL/SWHO.
@@ -546,23 +546,23 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	 * IDLER I User is allowed to idle forever. CUSTOM1 J Custom flag 1 CUSTOM2
 	 * K Custom flag 2 CUSTOM3 L Custom flag 3 CUSTOM4 M Custom flag 4 CUSTOM5 N
 	 * Custom flag 5
-	 * 
+	 *
 	 * You can use custom flags in the config file to give some users access to
 	 * certain things without having to use private groups. These flags will
 	 * only show up in "site flags" if they're turned on.
-	 * 
+	 *
 	 * ex. site change Archimede ratio 5
-	 * 
+	 *
 	 * This would set the ratio to 1:5 for the user 'Archimede'.
-	 * 
+	 *
 	 * ex. site change Archimede flags +2-AG
-	 * 
+	 *
 	 * This would make the user 'Archimede' groupadmin and remove his ability to
 	 * use the commands site nuke and site give.
-	 * 
+	 *
 	 * NOTE: The flag DELETED can not be changed with site change, it will
 	 * change when someone does a site deluser/readd.
-	 * 
+	 *
 	 * @throws ImproperUsageException
 	 */
 	private Reply doSITE_CHANGE(BaseFtpConnection conn)
@@ -1005,16 +1005,16 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	/**
 	 * USAGE: site chgrp <user><group>[ <group>] Adds/removes a user from
 	 * group(s).
-	 * 
+	 *
 	 * ex. site chgrp archimede ftp This would change the group to 'ftp' for the
 	 * user 'archimede'.
-	 * 
+	 *
 	 * ex1. site chgrp archimede ftp This would remove the group ftp from the
 	 * user 'archimede'.
-	 * 
+	 *
 	 * ex2. site chgrp archimede ftp eleet This moves archimede from ftp group
 	 * to eleet group.
-	 * 
+	 *
 	 * @throws ImproperUsageException
 	 */
 	private Reply doSITE_CHGRP(BaseFtpConnection conn) throws ReplyException,
@@ -1083,14 +1083,14 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 	/**
 	 * USAGE: site chpass <user><password>Change users password.
-	 * 
+	 *
 	 * ex. site chpass Archimede newpassword This would change the password to
 	 * 'newpassword' for the user 'Archimede'.
-	 * 
+	 *
 	 * See "site passwd" for more info if you get a "Password is not secure
 	 * enough" error. * Denotes any password, ex. site chpass arch * This will
 	 * allow arch to login with any password
-	 * 
+	 *
 	 * @throws ImproperUsageException @
 	 * Denotes any email-like password, ex. site chpass arch @ This will allow
 	 *             arch to login with a@b.com but not ab.com
@@ -1133,7 +1133,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 	/**
 	 * USAGE: site delip <user><ident@ip>...
-	 * 
+	 *
 	 * @param request
 	 * @param out
 	 * @throws ImproperUsageException
@@ -1177,7 +1177,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		Reply response = new Reply(200);
 
 		for (int i = 1; i < args.length; i++) {
-			String string = args[i];
+			String string = args[i].replace(",",""); // strip commas (for easy copy+paste)
 
 			try {
 				myUser.removeIpMask(string);
@@ -1868,12 +1868,12 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 	/**
 	 * USAGE: site take <user><kbytes>[ <message>] Removes credit from user
-	 * 
+	 *
 	 * ex. site take Archimede 100000 haha
-	 * 
+	 *
 	 * This will remove 100mb of credits from the user 'Archimede' and send the
 	 * message haha to him.
-	 * 
+	 *
 	 * @throws ImproperUsageException
 	 */
 	private Reply doSITE_TAKE(BaseFtpConnection conn)
@@ -1932,15 +1932,15 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	/**
 	 * USAGE: site user [ <user>] Lists users / Shows detailed info about a
 	 * user.
-	 * 
+	 *
 	 * ex. site user
-	 * 
+	 *
 	 * This will display a list of all users currently on site.
-	 * 
+	 *
 	 * ex. site user Archimede
-	 * 
+	 *
 	 * This will show detailed information about user 'Archimede'.
-	 * 
+	 *
 	 * @throws ImproperUsageException
 	 */
 	private Reply doSITE_USER(BaseFtpConnection conn) throws ReplyException,
@@ -2114,7 +2114,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 					 * .getTransferFile().getName()); env.add("slave",
 					 * conn2.getDataConnectionHandler()
 					 * .getTranferSlave().getName());
-					 * 
+					 *
 					 * if (conn2.getDirection() ==
 					 * Transfer.TRANSFER_RECEIVING_UPLOAD) {
 					 * response.addComment(SimplePrintf.jprintf( formatup,
@@ -2210,7 +2210,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 					 * .getTransferFile().getName()); env.add("slave",
 					 * conn2.getDataConnectionHandler()
 					 * .getTranferSlave().getName());
-					 * 
+					 *
 					 * if (conn2.getTransferDirection() ==
 					 * Transfer.TRANSFER_RECEIVING_UPLOAD) {
 					 * response.addComment(SimplePrintf.jprintf( formatup,
