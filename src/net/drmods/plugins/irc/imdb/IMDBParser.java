@@ -122,7 +122,7 @@ public class IMDBParser {
 				in.close();
 			}
             
-           _title = parseData(data, "<h1><strong class=\"title\">", "<small>");
+           _title = parseData(data, "<strong class=\"title\">", "<small>");
            _genre = parseData(data, "<b class=\"ch\">Genre:</b>", "<br><br>");
            _genre = _genre.replaceAll("\\(more\\)", "").trim();
            _plot = parseData(data, "<b class=\"ch\">Plot Outline:</b>", "<a href=\"");
