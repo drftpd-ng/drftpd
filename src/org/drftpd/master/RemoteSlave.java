@@ -53,6 +53,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.SFVInfo;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.slave.ConnectInfo;
@@ -215,18 +216,27 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
 	}
 
 	public void setProperty(String name, String value) {
-		_keysAndValues.setProperty(name, value);
-		commit();
+		synchronized (_keysAndValues) {
+			_keysAndValues.setProperty(name, value);
+			commit();
+		}
 	}
 
 	public String getProperty(String name, String def) {
-		return _keysAndValues.getProperty(name, def);
+		synchronized (_keysAndValues) {
+			return _keysAndValues.getProperty(name, def);
+		}
 	}
 
 	public Properties getProperties() {
-		return _keysAndValues;
+		synchronized (_keysAndValues) {
+			return (Properties) _keysAndValues.clone();
+		}
 	}
-
+	
+	/** 
+	 * Needed in order for this class to be a Bean
+	 */
 	public void setProperties(Properties keysAndValues) {
 		_keysAndValues = keysAndValues;
 	}
@@ -1162,7 +1172,9 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
 	}
 
 	public String getProperty(String key) {
-		return _keysAndValues.getProperty(key);
+		synchronized (_keysAndValues) {
+			return _keysAndValues.getProperty(key);
+		}
 	}
 
 	public synchronized void addTransfer(TransferIndex transferIndex,
@@ -1242,5 +1254,14 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
 		String value = getProperty("lastOnline");
 		// if (value == null) Slave has never been online
 		return Long.parseLong(value == null ? "0" : value);
+	}
+
+	public String removeProperty(String key) throws KeyNotFoundException {
+		synchronized (_keysAndValues) {
+			if (getProperty(key) == null) throw new KeyNotFoundException();
+			String value = (String) _keysAndValues.remove(key);
+			commit();
+			return value;
+		}
 	}
 }

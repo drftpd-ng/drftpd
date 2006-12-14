@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;
@@ -36,6 +37,7 @@ import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyPermissionDeniedException;
 import org.drftpd.commands.UnhandledCommandException;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.SlaveStatus;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -243,6 +245,25 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
                     "slave.set.success", env));
 
             return response;
+        } else if (command.equalsIgnoreCase("unset")) {
+        	if (arguments.countTokens() != 1) {
+        		throw new ImproperUsageException();
+        	}
+
+        	String key = arguments.nextToken();
+        	env.add("key", key);
+        	String value;
+        	try {
+        		value = rslave.removeProperty(key);
+        	} catch (KeyNotFoundException e) {
+        		response.addComment(conn.jprintf(SlaveManagement.class,
+        				"slave.unset.failure", env));
+        		return response;
+        	}
+        	env.add("value", value);
+        	response.addComment(conn.jprintf(SlaveManagement.class,
+        			"slave.unset.success", env));
+        	return response;
         } else if (command.equalsIgnoreCase("addmask")) {
             if (arguments.countTokens() != 1) {
             	throw new ImproperUsageException();
