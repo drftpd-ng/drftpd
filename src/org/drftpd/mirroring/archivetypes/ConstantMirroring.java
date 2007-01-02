@@ -17,14 +17,19 @@
  */
 package org.drftpd.mirroring.archivetypes;
 
+import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.plugins.Archive;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
 
 
 /**
@@ -54,57 +59,53 @@ public class ConstantMirroring extends ArchiveType {
     }
 
     public HashSet<RemoteSlave> findDestinationSlaves() {
-        return new HashSet<RemoteSlave>(_parent.getGlobalContext()
+        return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext()
                                   .getSlaveManager().getSlaves());
     }
 
-    protected boolean isArchivedDir(LinkedRemoteFileInterface lrf)
-        throws IncompleteDirectoryException, OfflineSlaveException {
-        for (Iterator iter = lrf.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFileInterface src = (LinkedRemoteFileInterface) iter.next();
+    protected boolean isArchivedDir(DirectoryHandle lrf)
+    throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+    	for (FileHandle src : lrf.getFiles()) {
 
-            if (src.isLink()) {
-                continue;
-            }
+    		Collection<RemoteSlave> slaves;
 
-            if (src.isFile()) {
-                Collection<RemoteSlave> slaves;
+    		slaves = src.getSlaves();
 
-                slaves = src.getSlaves();
+    		/*
+    		 * Only check if this slave is dead if slaveDeadAfter is
+    		 * configured to a non-zero value
+    		 */
 
-                /* Only check if this slave is dead if slaveDeadAfter is
-                 * configured to a non-zero value
-                 */
+    		if (_slaveDeadAfter > 0) {
+    			for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
+    				RemoteSlave rslave = slaveIter.next();
+    				if (!rslave.isAvailable()) {
+    					long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
+    					if (offlineTime > _slaveDeadAfter) {
+    						// slave is considered dead
+    						slaveIter.remove();
+    					}
+    				}
+    			}
+    		}
 
-                if (_slaveDeadAfter > 0) {
-                    for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
-                        RemoteSlave rslave = slaveIter.next();
-                        if (!rslave.isAvailable()) {
-                            long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
-                            if (offlineTime > _slaveDeadAfter) {
-                                // slave is considered dead
-                                slaveIter.remove();
-                            }
-                        }
-                    }
-                }
+    		if (!getRSlaves().containsAll(slaves)) {
+    			return false;
+    		}
 
-                if (!getRSlaves().containsAll(slaves)) {
-                	return false;
-                }
+    		if (slaves.size() != _numOfSlaves) {
+    			return false;
+    		}
 
-                if (slaves.size() != _numOfSlaves) {
-                    return false;
-                }
-            } else if (src.isDirectory()) {
-            	if (!isArchivedDir(src)) {
-                	return false;
-                }
-            }
-        }
-
-        return true;
+    	}
+    	for (DirectoryHandle dir : lrf.getDirectories()) {
+    		if (!isArchivedDir(dir)) {
+    			return false;
+    		}
+    	}
+		return true;
     }
+    
 
     public String toString() {
         return "ConstantMirroring=[directory=[" + getDirectory().getPath() +

@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.sf.drftpd.master.command.plugins.Login;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;

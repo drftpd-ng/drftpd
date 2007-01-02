@@ -55,7 +55,7 @@ public class MinfreespaceFilter extends DiskFilter {
 				+ ".minfreespace"));
 		_multiplier = DiskFilter.parseMultiplier(p.getProperty(i
 				+ ".multiplier", "0"));
-		_assignList = _assignList = AssignRoot.parseAssign(p.getProperty(i 
+		_assignList = AssignRoot.parseAssign(p.getProperty(i 
 				+ ".assign", "all"));
 	}
 

@@ -18,13 +18,14 @@
 package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
+import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.master.RemoteSlave;
 
@@ -37,7 +38,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	public FileHandle(String path) {
 		super(path);
 	}
-	
+
 	@Override
 	protected VirtualFileSystemFile getInode() throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
@@ -84,9 +85,33 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 		getInode().removeSlave(sourceSlave.getName());
 	}
 
+	RemoteSlave getASlaveForFunction() throws FileNotFoundException,
+			NoAvailableSlaveException {
+		for (RemoteSlave rslave : getAvailableSlaves()) {
+			return rslave;
+		}
+		throw new NoAvailableSlaveException("No slaves are online for file "
+				+ this);
+	}
+
 	public long getCheckSum() throws NoAvailableSlaveException,
 			FileNotFoundException {
-		return getInode().getChecksum();
+		long checksum = getInode().getChecksum();
+		if (checksum == 0L) {
+			while (true) {
+				RemoteSlave rslave = getASlaveForFunction();
+				try {
+					checksum = rslave.getCheckSumForPath(getPath());
+					getInode().setChecksum(checksum);
+					return checksum;
+				} catch (IOException e) {
+					rslave.setOffline(e);
+				} catch (SlaveUnavailableException e) {
+					continue;
+				}
+			}
+		}
+		return checksum;
 	}
 
 	public void addSlave(RemoteSlave destinationSlave)
@@ -105,8 +130,24 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 			return false;
 		}
 	}
-	
+
 	public void setSize(long size) throws FileNotFoundException {
 		getInode().setSize(size);
 	}
+
+	@Override
+	public boolean isDirectory() {
+		return false;
+	}
+
+	@Override
+	public boolean isFile() {
+		return true;
+	}
+
+	@Override
+	public boolean isLink() {
+		return false;
+	}
+
 }

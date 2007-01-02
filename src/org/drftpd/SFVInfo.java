@@ -37,7 +37,7 @@ public class SFVInfo implements Serializable {
 			"sfv", SFVInfo.class);
 
 	/**
-	 * Constructor for SFVFile.
+	 * Constructor for SFVInfo
 	 */
 	public SFVInfo() {
 

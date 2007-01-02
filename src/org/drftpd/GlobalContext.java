@@ -19,7 +19,6 @@ package org.drftpd;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -89,8 +88,13 @@ public class GlobalContext {
 		_zsConfig = new ZipscriptConfig(this);
 		FtpConfig.reload();
 	}
-
-	private GlobalContext() {
+	
+	/**
+	 * If you're creating a GlobalContext object and it's not part of a TestCase
+	 * you're not doing it correctly, GlobalContext is a Singleton
+	 *
+	 */
+	protected GlobalContext() {
 	}
 
 	public ConfigInterface getConfig() {

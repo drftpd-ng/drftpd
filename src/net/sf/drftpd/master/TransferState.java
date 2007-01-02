@@ -37,7 +37,6 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.Connection;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.FileHandleInterface;
 
 /**
  * @author zubov

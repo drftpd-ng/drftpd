@@ -17,6 +17,9 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.event.DirectoryFtpEvent;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -24,15 +27,10 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.NoSuchUserException;
-
-import java.io.IOException;
-
-import java.util.Iterator;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -53,49 +51,49 @@ public class Request implements CommandHandler, CommandHandlerFactory {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
 
-        LinkedRemoteFileInterface currdir = conn.getCurrentDirectory();
+        DirectoryHandle currdir = conn.getCurrentDirectory();
         String reqname = conn.getRequest().getArgument().trim();
+        try {
+			for (DirectoryHandle dir : currdir.getDirectories()) {
 
-        for (Iterator iter = currdir.getFiles().iterator(); iter.hasNext();) {
-            LinkedRemoteFile file = (LinkedRemoteFile) iter.next();
+			    if (!dir.getName().startsWith(REQPREFIX)) {
+			        continue;
+			    }
 
-            if (!file.getName().startsWith(REQPREFIX)) {
-                continue;
-            }
+			    String username = dir.getName().substring(REQPREFIX.length());
+			    String myreqname = username.substring(username.indexOf('-') + 1);
+			    username = username.substring(0, username.indexOf('-'));
 
-            String username = file.getName().substring(REQPREFIX.length());
-            String myreqname = username.substring(username.indexOf('-') + 1);
-            username = username.substring(0, username.indexOf('-'));
+			    if (myreqname.equals(reqname)) {
+			        String filledname = FILLEDPREFIX + username + "-" + myreqname;
 
-            if (myreqname.equals(reqname)) {
-                String filledname = FILLEDPREFIX + username + "-" + myreqname;
+			        try {
+			            dir.renameTo(currdir.getNonExistentFileHandle(filledname));
+			        } catch (IOException e) {
+			            logger.warn("", e);
+			            return new Reply(200, e.getMessage());
+			        }
 
-                try {
-                    file.renameTo(file.getParentFile().getPath(),
-                            filledname);
-                } catch (IOException e) {
-                    logger.warn("", e);
+			        //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
+			        conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
+			                conn.getUserNull(), "REQFILLED", dir));
 
-                    return new Reply(200, e.getMessage());
-                }
+			        //}
+			        try {
+			            conn.getUser().getKeyedMap().incrementObjectLong(REQUESTSFILLED);
 
-                //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
-                conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                        conn.getUserNull(), "REQFILLED", file));
+			            //conn.getUser().addRequestsFilled();
+			        } catch (NoSuchUserException e) {
+			            e.printStackTrace();
+			        }
 
-                //}
-                try {
-                    conn.getUser().getKeyedMap().incrementObjectLong(REQUESTSFILLED);
-
-                    //conn.getUser().addRequestsFilled();
-                } catch (NoSuchUserException e) {
-                    e.printStackTrace();
-                }
-
-                return new Reply(200,
-                    "OK, renamed " + myreqname + " to " + filledname);
-            }
-        }
+			        return new Reply(200,
+			            "OK, renamed " + myreqname + " to " + filledname);
+			    }
+			}
+		} catch (FileNotFoundException e) {
+			return new Reply(500, "Current directory does not exist, please CWD /");
+		}
 
         return new Reply(200, "Couldn't find a request named " + reqname);
     }
@@ -114,10 +112,15 @@ public class Request implements CommandHandler, CommandHandlerFactory {
             "-" + conn.getRequest().getArgument().trim();
 
         try {
-            LinkedRemoteFile createdDir = conn.getCurrentDirectory()
-                                              .createDirectory(conn.getUserNull()
-                                                                   .getName(),
-                    conn.getUserNull().getGroup(), createdDirName);
+            DirectoryHandle createdDir;
+			try {
+				createdDir = conn.getCurrentDirectory()
+				                                  .createDirectory(conn.getUserNull()
+				                                                       .getName(),
+				        conn.getUserNull().getGroup(), createdDirName);
+			} catch (FileNotFoundException e) {
+				return new Reply(500, "Current directory does not exist, please CWD /");
+			}
 
             //if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
             conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(

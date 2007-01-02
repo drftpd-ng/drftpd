@@ -118,8 +118,12 @@ public class FtpConfig extends Observable implements ConfigInterface {
 		}
 		return _config;
 	}
-
-	private FtpConfig() {
+	/**
+	 * If you're creating a FtpConfig object and it's not part of a TestCase
+	 * you're not doing it correctly, FtpConfig is a Singleton
+	 *
+	 */
+	protected FtpConfig() {
 		try {
 			loadConfig();
 		} catch (IOException e) {

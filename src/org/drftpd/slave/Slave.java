@@ -32,7 +32,6 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -94,12 +93,13 @@ public class Slave {
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 
 	protected static final int actualTimeout = 60000; // one minute, evaluated
-														// on a SocketTimeout
+
+	// on a SocketTimeout
 
 	public static final String VERSION = "DrFTPD 2.0.2";
 
 	private int _bufferSize;
-	
+
 	private String[] _cipherSuites;
 
 	private SSLContext _ctx;
@@ -155,9 +155,9 @@ public class Slave {
 			logger.warn("Error loading SSLContext", e);
 			_cipherSuites = null;
 		}
-		
-		ArrayList<String> cipherSuites = new ArrayList<String>();
-		for (int x = 1;;x++) {
+
+		ArrayList cipherSuites = new ArrayList();
+		for (int x = 1;; x++) {
 			String cipherSuite = p.getProperty("cipher." + x);
 			if (cipherSuite != null) {
 				cipherSuites.add(cipherSuite);
@@ -169,8 +169,8 @@ public class Slave {
 			_cipherSuites = null;
 		} else {
 			_cipherSuites = new String[cipherSuites.size()];
-			for (int x = 0; x<_cipherSuites.length; x++) {
-				_cipherSuites[x] = cipherSuites.get(x);
+			for (int x = 0; x < _cipherSuites.length; x++) {
+				_cipherSuites[x] = (String) cipherSuites.get(x);
 			}
 		}
 
@@ -190,7 +190,7 @@ public class Slave {
 		_s.connect(addr);
 		if (_s instanceof SSLSocket) {
 			if (getCipherSuites() != null) {
-				((SSLSocket) _s).setEnabledCipherSuites(getCipherSuites());	
+				((SSLSocket) _s).setEnabledCipherSuites(getCipherSuites());
 			}
 			((SSLSocket) _s).setUseClientMode(true);
 			((SSLSocket) _s).startHandshake();
@@ -369,7 +369,7 @@ public class Slave {
 			return crc32.getValue();
 		} finally {
 			if (in != null) {
-			in.close();
+				in.close();
 			}
 		}
 	}
@@ -735,7 +735,7 @@ public class Slave {
 
 	private AsyncResponse handleRemerge(AsyncCommandArgument ac) {
 		try {
-			handleRemergeRecursive(new FileRemoteFile(_roots));
+			handleRemergeRecursive2(_roots, ac.getArgs());
 
 			return new AsyncResponse(ac.getIndex());
 		} catch (Throwable e) {
@@ -745,33 +745,47 @@ public class Slave {
 		}
 	}
 
-	private void handleRemergeRecursive(FileRemoteFile dir) {
-		// sendResponse(new AsyncResponseRemerge(file.getPath(),
-		// file.getFiles()));
-		CaseInsensitiveHashtable mergeFiles = new CaseInsensitiveHashtable();
+	private void handleRemergeRecursive2(RootCollection rootCollection,
+			String path) {
+		ArrayList<String> inodes = rootCollection.getLocalInodes(path);
+		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+		Collections.sort(inodes, String.CASE_INSENSITIVE_ORDER);
 
-		Collection files = dir.getFiles();
-
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			FileRemoteFile file = (FileRemoteFile) iter.next();
-
-			// need to send directories and files
-			mergeFiles.put(file.getName(), new LightRemoteFile(file));
-
-			// keep only dirs for recursiveness
-			if (!file.isDirectory()) {
-				iter.remove();
+		for (String inode : inodes) {
+			String fullPath = path + "/" + inode;
+			File file;
+			try {
+				file = rootCollection.getFile(fullPath);
+			} catch (FileNotFoundException e) {
+				// something is screwy, we just found the file, it has to exist
+				// race condition i guess, stop deleting files outside drftpd!
+				logger.error("Error getting file " + path
+						+ " even though we just listed it, check permissions",
+						e);
+				continue;
 			}
+			try {
+				if (file.isSymbolicLink()) {
+					// ignore it, but log an error
+					logger.warn("You have a symbolic link " + fullPath
+							+ " -- these are ignored by drftpd");
+					continue;
+				}
+			} catch (IOException e) {
+				logger
+						.warn("You have a symbolic link that couldn't be read at "
+								+ fullPath + " -- these are ignored by drftpd");
+				continue;
+			}
+			if (file.isDirectory()) {
+				handleRemergeRecursive2(rootCollection, fullPath);
+			}
+			fileList.add(new LightRemoteInode(file));
 		}
-
-		sendResponse(new AsyncResponseRemerge(dir.getPath(), mergeFiles));
-
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			FileRemoteFile file = (FileRemoteFile) iter.next();
-			handleRemergeRecursive(file);
-		}
+		sendResponse(new AsyncResponseRemerge(path, fileList));
+		logger.debug("Sending " + path + " to the master");
 	}
-
+	
 	private AsyncResponse handleRename(AsyncCommandArgument ac) {
 		StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
 		String from = mapPathToRenameQueue(st.nextToken());

@@ -20,7 +20,6 @@ package org.drftpd.master;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.HashSet;
-import java.util.Set;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -29,8 +28,10 @@ import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.slave.async.AsyncResponse;
+import org.drftpd.tests.DummyRemoteSlave;
+import org.drftpd.tests.DummySlaveManager;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -49,7 +50,8 @@ public class RemoteSlaveTest extends TestCase {
     public void testEquals() throws SlaveFileException {
         DummySlaveManager sm = new DummySlaveManager();
         GlobalContext gc = new GC();
-        sm.setGlobalContext(gc);
+        
+        //sm.setGlobalContext(gc); -zubov
         ((GC) gc).setSlaveManager(sm);
 
         RemoteSlave rslave1 = new DummyRemoteSlave("test1", gc);
@@ -64,7 +66,7 @@ public class RemoteSlaveTest extends TestCase {
         throws SlaveFileException, IOException, SlaveUnavailableException {
         DummySlaveManager sm = new DummySlaveManager();
         GC gc = new GC();
-        sm.setGlobalContext(gc);
+        //sm.setGlobalContext(gc); -zubov
         gc.setSlaveManager(sm);
 
         RemergeRemoteSlave rslave = new RemergeRemoteSlave("test", gc);
@@ -91,7 +93,7 @@ public class RemoteSlaveTest extends TestCase {
         throws InterruptedException, SlaveFileException {
         DummySlaveManager sm = new DummySlaveManager();
         GC gc = new GC();
-        sm.setGlobalContext(gc);
+        //sm.setGlobalContext(gc); -zubov
         gc.setSlaveManager(sm);
 
         DummyRemoteSlave rslave = new DummyRemoteSlave("test", gc);
@@ -112,32 +114,6 @@ public class RemoteSlaveTest extends TestCase {
         assertFalse(rslave.isAvailable());
     }
 
-    public class LRF extends AbstractLinkedRemoteFile {
-        public void cleanSlaveFromMerging(RemoteSlave slave) {
-        }
-
-        public void resetSlaveForMerging(RemoteSlave slave) {
-        }
-
-        public void setSlaveForMerging(RemoteSlave rslave) {
-        }
-
-        public void deleteOthers(Set destSlaves) {
-        }
-
-        /* (non-Javadoc)
-         * @see net.sf.drftpd.remotefile.LinkedRemoteFileInterface#remerge(net.sf.drftpd.remotefile.LinkedRemoteFile.CaseInsensitiveHashtable, net.sf.drftpd.master.RemoteSlave)
-         */
-        public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
-            RemoteSlave rslave) throws IOException {
-            // TODO Auto-generated method stub
-        }
-
-		public boolean isValid() {
-			return true;
-		}
-    }
-
     public class GC extends GlobalContext {
         public SlaveManager getSlaveManager() {
             return super.getSlaveManager();
@@ -150,10 +126,10 @@ public class RemoteSlaveTest extends TestCase {
             _slaveManager = sm;
         }
 
-        public LinkedRemoteFileInterface getRoot() {
+        public DirectoryHandle getRoot() {
             System.out.println("new lrf");
 
-            return new LRF();
+            return new DirectoryHandle("/");
         }
     }
 

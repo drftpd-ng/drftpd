@@ -17,32 +17,28 @@
  */
 package org.drftpd.commands;
 
+import java.io.FileNotFoundException;
+import java.lang.reflect.Constructor;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;
 import org.drftpd.plugins.Archive;
-
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.sections.SectionInterface;
-
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
-
-import java.io.FileNotFoundException;
-
-import java.lang.reflect.Constructor;
-
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.StringTokenizer;
 
 
 /*
@@ -82,23 +78,22 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
 
         StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
         String dirname = st.nextToken();
-        LinkedRemoteFileInterface lrf;
+        DirectoryHandle dir;
 
         try {
-            lrf = conn.getCurrentDirectory().getFile(dirname);
-        } catch (FileNotFoundException e1) {
-            try {
-                lrf = conn.getGlobalContext().getRoot().lookupFile(dirname);
-            } catch (FileNotFoundException e2) {
-                reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "help.archive", env));
-                env.add("dirname", dirname);
-                reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.baddir", env));
+			dir = conn.getCurrentDirectory().getDirectory(dirname);
+		} catch (FileNotFoundException e1) {
+			reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
+					"help.archive", env));
+			env.add("dirname", dirname);
+			reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
+					"archive.baddir", env));
 
-                return reply;
-            }
-        }
+			return reply;
+		} catch (ObjectNotValidException e) {
+			reply.addComment("Archive only works on Directories");
+			return reply;
+		}
 
         Archive archive;
 
@@ -114,7 +109,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         String archiveTypeName = null;
         ArchiveType archiveType = null;
         SectionInterface section = conn.getGlobalContext().getSectionManager()
-                                       .lookup(lrf.getPath());
+                                       .getSection(dir.getPath());
 
         if (st.hasMoreTokens()) { // load the specific type
             archiveTypeName = st.nextToken();
@@ -185,10 +180,10 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
             }
         }
 
-        archiveType.setDirectory(lrf);
+        archiveType.setDirectory(dir);
 
         try {
-            archive.checkPathForArchiveStatus(lrf.getPath());
+            archive.checkPathForArchiveStatus(dir.getPath());
         } catch (DuplicateArchiveException e) {
             env.add("exception", e.getMessage());
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
@@ -202,7 +197,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         ArchiveHandler archiveHandler = new ArchiveHandler(archiveType);
 
         archiveHandler.start();
-        env.add("dirname", lrf.getPath());
+        env.add("dirname", dir.getPath());
         env.add("archivetypename", archiveTypeName);
         reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                 "archive.success", env));

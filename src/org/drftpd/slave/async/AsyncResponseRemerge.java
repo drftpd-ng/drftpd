@@ -1,43 +1,46 @@
 package org.drftpd.slave.async;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.List;
 
-import org.drftpd.slave.CaseInsensitiveHashtable;
+import org.drftpd.slave.LightRemoteInode;
 
 /**
  * @author zubov
  * @version $Id$
  */
 public class AsyncResponseRemerge extends AsyncResponse {
-	private CaseInsensitiveHashtable _files;
+	private List<LightRemoteInode> _inodes;
 
-	private String _directory;
+	private String _path;
 
-	public AsyncResponseRemerge(String directory, CaseInsensitiveHashtable files) {
+	public AsyncResponseRemerge(String directoryPath,
+			List<LightRemoteInode> inodes) {
 		super("Remerge");
-		_files = files;
 		if (File.separatorChar == '\\') { // stupid win32 hack
-			directory = directory.replaceAll("\\\\", "/");
+			directoryPath = directoryPath.replaceAll("\\\\", "/");
 		}
-		if (directory.indexOf('\\') != -1) {
+		if (directoryPath.indexOf('\\') != -1) {
 			throw new RuntimeException(
 					"\\ is not an acceptable character in a directory path");
 		}
-		if (directory.equals("")) {
-			directory = File.separator;
+		if (directoryPath.equals("")) {
+			directoryPath = File.separator;
 		}
-		_directory = directory;
+		_path = directoryPath;
+		_inodes = inodes;
 	}
 
-	public String getDirectory() {
-		return _directory;
+	public String getPath() {
+		return _path;
 	}
 
-	public CaseInsensitiveHashtable getFiles() {
-		return _files;
+	public List<LightRemoteInode> getFiles() {
+		return Collections.unmodifiableList(_inodes);
 	}
 
 	public String toString() {
-		return getClass().getName() + "[path=" + getDirectory() + "]";
+		return getClass().getName() + "[path=" + getPath() + "]";
 	}
 }

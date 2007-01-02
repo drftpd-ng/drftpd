@@ -17,29 +17,30 @@
  */
 package org.drftpd.tests;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.Collections;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+
+import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import java.net.InetAddress;
-import java.net.Socket;
-
-import java.util.Collections;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.VirtualFileSystemFile;
 
 
 /**
@@ -52,17 +53,21 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
     private StringWriter _out2;
     private DummyServerSocketFactory _serverSocketFactory;
     private DummySocketFactory _socketFactory;
-	private DummyGlobalContext _gctx;
+	private static final Logger logger = Logger.getLogger(DummyBaseFtpConnection.class);
 
     public DummyBaseFtpConnection(DataConnectionHandler dch) {
         _dch = dch;
         _socketFactory = new DummySocketFactory();
         _serverSocketFactory = new DummyServerSocketFactory(_socketFactory);
 
-        _currentDirectory = new LinkedRemoteFile(null);
-        _currentDirectory.addFile(new StaticRemoteFile(Collections.EMPTY_LIST,
-                "testfile", "drftpd", "drftpd", Bytes.parseBytes("10M"),
-                System.currentTimeMillis()));
+        _currentDirectory = new DirectoryHandle(null);
+        try {
+			_currentDirectory.createFile("testfile", "drftpd", "drftpd", null);
+		} catch (FileExistsException e) {
+			logger.error(e);
+		} catch (FileNotFoundException e) {
+			logger.error(e);
+		}
         _out2 = new StringWriter();
         _out = new PrintWriter(_out2);
     }
@@ -240,9 +245,5 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
      */
     public String toString() {
         throw new UnsupportedOperationException();
-    }
-
-    public void setGlobalConext(DummyGlobalContext gctx) {
-        _gctx = gctx;
     }
 }

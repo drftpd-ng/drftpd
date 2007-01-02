@@ -38,16 +38,13 @@ public class DummySlaveManager extends SlaveManager {
     }
 
 	public DummySlaveManager(GlobalContext gctx) {
-		setGlobalContext(gctx);
+		
 	}
 
 	public void setSlaves(List<RemoteSlave> rslaves) {
         _rslaves = rslaves;
     }
 
-    public void setGlobalContext(GlobalContext gctx) {
-        _gctx = gctx;
-    }
     public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
         return getSlaves();
     }

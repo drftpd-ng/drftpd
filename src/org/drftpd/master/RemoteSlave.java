@@ -233,8 +233,8 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
 			return (Properties) _keysAndValues.clone();
 		}
 	}
-	
-	/** 
+
+	/**
 	 * Needed in order for this class to be a Bean
 	 */
 	public void setProperties(Properties keysAndValues) {
@@ -775,16 +775,25 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
 
 	/**
 	 * 
-	 * @param string
+	 * @param path
 	 * @return
 	 * @throws SlaveUnavailableException
 	 */
-	public String issueChecksumToSlave(String string)
+	public String issueChecksumToSlave(String path)
 			throws SlaveUnavailableException {
 		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "checksum", string));
+		sendCommand(new AsyncCommandArgument(index, "checksum", path));
 
 		return index;
+	}
+
+	public long getCheckSumForPath(String path) throws IOException,
+			SlaveUnavailableException {
+		try {
+			return fetchChecksumFromIndex(issueChecksumToSlave(path));
+		} catch (RemoteIOException e) {
+			throw e.getCause();
+		}
 	}
 
 	public String issueConnectToSlave(String ip, int port,
@@ -1258,7 +1267,8 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
 
 	public String removeProperty(String key) throws KeyNotFoundException {
 		synchronized (_keysAndValues) {
-			if (getProperty(key) == null) throw new KeyNotFoundException();
+			if (getProperty(key) == null)
+				throw new KeyNotFoundException();
 			String value = (String) _keysAndValues.remove(key);
 			commit();
 			return value;

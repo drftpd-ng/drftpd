@@ -21,12 +21,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.FileExistsException;
@@ -57,7 +57,6 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.FileHandleInterface;
 import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -73,8 +72,9 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
     
     private static boolean _encryptedDataChannel;
 
-/*    private Reply doAUTH(BaseFtpConnection conn) {
-        if (_ctx == null) {
+    private Reply doAUTH(BaseFtpConnection conn) {
+    	SSLContext ctx = GlobalContext.getGlobalContext().getSSLContext();
+        if (ctx == null) {
             return new Reply(500, "TLS not configured");
         }
 
@@ -86,25 +86,12 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         conn.getControlWriter().flush();
         SSLSocket s2 = null;
         try {
-            s2 = (SSLSocket) _ctx.getSocketFactory().createSocket(s,
+            s2 = (SSLSocket) ctx.getSocketFactory().createSocket(s,
                     s.getInetAddress().getHostAddress(), s.getPort(), true);
             conn.setControlSocket(s2);
             s2.setUseClientMode(false);
-            s2.addHandshakeCompletedListener(this);
+            s2.setSoTimeout(10000);
             s2.startHandshake();
-            while(!_handshakeCompleted) {
-            	synchronized(this) {
-            		try {
-            			wait(10000);
-            		} catch (InterruptedException e) {
-            			s2.close();
-            			conn.stop("Took too long to negotiate SSL");
-            			return new Reply(400, "Took too long to negotiate SSL");
-            		}
-            	}
-            }
-            // reset for possible auth later
-            _handshakeCompleted = false;
         } catch (IOException e) {
             logger.warn("", e);
             if (s2 != null) {
@@ -121,7 +108,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         s2 = null;
 
         return null;
-    }*/
+    }
 
     /**
      * <code>MODE &lt;SP&gt; <mode-code> &lt;CRLF&gt;</code><br>
@@ -763,9 +750,9 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             return doTYPE(conn);
         }
 
-/*        if ("AUTH".equals(cmd)) {
+        if ("AUTH".equals(cmd)) {
             return doAUTH(conn);
-        }*/
+        }
 
         if ("PROT".equals(cmd)) {
             return doPROT(conn);
@@ -1485,7 +1472,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 */
 				// Dispatch for both STOR and RETR
 				conn.getGlobalContext().dispatchFtpEvent(
-						new TransferEvent(conn, eventType, ts.getTransferFile().getParent(), conn
+						new TransferEvent(conn, eventType, ts.getTransferFile(), conn
 								.getClientAddress(), ts.getTransferSlave(), ts.getTransfer()
 								.getAddress().getAddress(), ts.getType()));
 				return response;

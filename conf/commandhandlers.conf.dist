@@ -15,8 +15,8 @@ REST=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 SITE\ RESCAN=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 SITE\ XDUPE=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 STOR=net.sf.drftpd.master.command.plugins.DataConnectionHandler
-#EPSV=net.sf.drftpd.master.command.plugins.DataConnectionHandler
-#EPRT=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+EPSV=net.sf.drftpd.master.command.plugins.DataConnectionHandler
+EPRT=net.sf.drftpd.master.command.plugins.DataConnectionHandler
 
 IDNT=net.sf.drftpd.master.command.plugins.Login
 USER=net.sf.drftpd.master.command.plugins.Login
@@ -30,6 +30,7 @@ PWD=net.sf.drftpd.master.command.plugins.Dir
 RMD=net.sf.drftpd.master.command.plugins.Dir
 RNFR=net.sf.drftpd.master.command.plugins.Dir
 RNTO=net.sf.drftpd.master.command.plugins.Dir
+DELE=net.sf.drftpd.master.command.plugins.Dir
 SITE\ WIPE=net.sf.drftpd.master.command.plugins.Dir
 SITE\ CHOWN=net.sf.drftpd.master.command.plugins.Dir
 #collides with SITE CHGRP defined by UserManagement

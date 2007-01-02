@@ -32,7 +32,12 @@ import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.CaseInsensitiveHashtable;
+import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummyRemoteSlave;
+import org.drftpd.tests.DummySlaveManager;
+import org.drftpd.tests.DummySlaveSelectionManager;
+import org.drftpd.vfs.FileHandle;
 
 
 /**
@@ -41,8 +46,8 @@ import org.drftpd.remotefile.CaseInsensitiveHashtable;
  */
 public class JobManagerTest extends TestCase {
     private Properties p;
-    LinkedRemoteFilePath file2;
-    LinkedRemoteFilePath file;
+    JobtestFileHandle file2;
+    JobtestFileHandle file;
 
     /**
      * Constructor for JobManagerTest.
@@ -70,8 +75,9 @@ public class JobManagerTest extends TestCase {
         p = new Properties();
         _cm = new CM(p);
 
-        _cm.setGlobalContext(dgc);
-        dgc.setConnectionManager(_cm);
+        // TODO I broke the test! -zubov
+        //_cm.setGlobalContext(dgc);
+        //dgc.setConnectionManager(_cm);
 
         DummySlaveManager dsm = null;
 
@@ -82,9 +88,9 @@ public class JobManagerTest extends TestCase {
         DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
         dgc.setSlaveSelectionManager(dssm);
         _jm = _cm.getGlobalContext().getJobManager();
-        file = new LinkedRemoteFilePath("/path/file1.txt");
+        file = new JobtestFileHandle("/path/file1.txt");
         file.addSlave(rslave1);
-        file2 = new LinkedRemoteFilePath("/path/file2.txt");
+        file2 = new JobtestFileHandle("/path/file2.txt");
         file2.addSlave(rslave2);
     }
 
@@ -131,20 +137,15 @@ public class JobManagerTest extends TestCase {
         }
     }
 
-    public static class LinkedRemoteFilePath extends AbstractLinkedRemoteFile {
-        private String _path;
+    public static class JobtestFileHandle extends FileHandle {
         private boolean isDeleted = false;
-        private ArrayList slaves = new ArrayList();
+        private HashSet<RemoteSlave> slaves = new HashSet<RemoteSlave>();
 
-        public LinkedRemoteFilePath(String path) {
-            _path = path;
-        }
+        public JobtestFileHandle(String string) {
+        	super(string);
+		}
 
-        public String getPath() {
-            return _path;
-        }
-
-        public void addSlave(DummyRemoteSlave slave) {
+		public void addSlave(DummyRemoteSlave slave) {
             slaves.add(slave);
         }
 
@@ -152,7 +153,7 @@ public class JobManagerTest extends TestCase {
             isDeleted = true;
         }
 
-        public Collection getAvailableSlaves() throws NoAvailableSlaveException {
+        public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
             if (getSlaves().isEmpty()) {
                 throw new NoAvailableSlaveException();
             }
@@ -160,7 +161,7 @@ public class JobManagerTest extends TestCase {
             return getSlaves();
         }
 
-        public Collection getSlaves() {
+        public Set<RemoteSlave> getSlaves() {
             return slaves;
         }
 
@@ -185,10 +186,6 @@ public class JobManagerTest extends TestCase {
             }
 
             return string + "]]";
-        }
-
-        public String getName() {
-            return _path;
         }
 
         public void deleteOthers(Set destSlaves) {

@@ -202,9 +202,11 @@ public class SlaveManager implements Runnable {
 			getSlaveFile(rslave.getName()).delete();
 			rslave.setOffline("Slave has been deleted");
 			_rslaves.remove(rslave);
-			getGlobalContext().getRoot().unmergeDir(rslave);
+			getGlobalContext().getRoot().removeSlave(rslave);
 		} catch (ObjectNotFoundException e) {
 			throw new IllegalArgumentException("Slave not found");
+		} catch (FileNotFoundException e) {
+			logger.debug("FileNotFoundException in delSlave()", e);
 		}
 	}
 
@@ -607,13 +609,16 @@ class RemergeThread extends Thread {
 				continue;
 			}
 
-			DirectoryHandle lrf = new DirectoryHandle(msg.getDirectory());
+			DirectoryHandle dir = new DirectoryHandle(msg.getDirectory());
 
 			try {
-				lrf.remerge(msg.getFiles(), msg.getRslave());
+				dir.remerge(msg.getFiles(), msg.getRslave());
 			} catch (IOException e2) {
 				logger.error("IOException during remerge", e2);
 				msg.getRslave().setOffline("IOException during remerge");
+			} catch (SlaveUnavailableException e) {
+				logger.error("SlaveUnavailableException during remerge", e);
+				msg.getRslave().setOffline("SlaveUnavailableException during remerge");
 			}
 		}
 	}

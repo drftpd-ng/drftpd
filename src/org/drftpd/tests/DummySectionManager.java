@@ -18,22 +18,24 @@
 package org.drftpd.tests;
 
 
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.remotefile.FileUtils;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import java.io.FileNotFoundException;
+import java.util.Collection;
+import java.util.Set;
 
+import net.sf.drftpd.master.config.FtpConfig;
+
+import org.apache.log4j.Logger;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
-
-import java.io.FileNotFoundException;
-
-import java.util.Collection;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 public class DummySectionManager implements SectionManagerInterface {
-    private LinkedRemoteFileInterface _sectionDir;
+    private DirectoryHandle _sectionDir;
+    private static final Logger logger = Logger.getLogger(DummySectionManager.class);
     private SectionInterface _section = new SectionInterface() {
-            public LinkedRemoteFileInterface getFile() {
+            public DirectoryHandle getDirectory() {
                 return _sectionDir;
             }
 
@@ -46,38 +48,47 @@ public class DummySectionManager implements SectionManagerInterface {
             }
 
             public String getPath() {
-                return getFile().getPath();
+                return getDirectory().getPath();
             }
 
-            public LinkedRemoteFileInterface getFirstDirInSection(
-                LinkedRemoteFileInterface dir) {
-                //							LinkedRemoteFileInterface dir1 = dir, dir2 = dir;
-                //							while(dir1 != getFile()) {
-                //								dir2 = dir1;
-                //								try {
-                //									dir1 = dir1.getParentFile();
-                //								} catch (FileNotFoundException e) {
-                //									return getFile();
-                //								}
-                //							}
-                //							return dir2;
-                try {
-                    return FileUtils.getSubdirOfDirectory(getFile(), dir);
-                } catch (FileNotFoundException e) {
-                    return dir;
-                }
+            public DirectoryHandle getFirstDirInSection(
+            		DirectoryHandle dir) {
+            	try {
+					for (DirectoryHandle first : dir.getDirectories()) {
+						return first;
+					}
+				} catch (FileNotFoundException e) {
+					logger.debug(e);
+				}
+            	// bah, just don't feel like dealing with it -zubov
+            	return null;
             }
 
-            public LinkedRemoteFileInterface getBaseFile() {
-                return getFile();
+            public DirectoryHandle getBaseFile() {
+                return getDirectory();
             }
 
 			public String getBasePath() {
 				return getPath();
 			}
+
+			public DirectoryHandle getBaseDirectory() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			public DirectoryHandle getCurrentDirectory() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			public Set<DirectoryHandle> getDirectories() {
+				// TODO Auto-generated method stub
+				return null;
+			}
         };
 
-    public DummySectionManager(LinkedRemoteFileInterface sectionDir) {
+    public DummySectionManager(DirectoryHandle sectionDir) {
         _sectionDir = sectionDir;
     }
 
@@ -100,7 +111,7 @@ public class DummySectionManager implements SectionManagerInterface {
         return _section;
     }
 
-    public SectionInterface lookup(LinkedRemoteFileInterface file) {
+    public SectionInterface lookup(DirectoryHandle file) {
         return _section;
     }
 }

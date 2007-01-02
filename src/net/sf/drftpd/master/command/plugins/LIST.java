@@ -172,7 +172,7 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 		line.append(DELIM);
 		line.append(fl.getName());
 		if (fl.isLink()) {
-			line.append(DELIM + "->" + DELIM + ((LinkHandle)fl).getLinkPath());
+			line.append(DELIM + "->" + DELIM + ((LinkHandle)fl).getTargetString());
 		}
 		line.append(NEWLINE);
 		out.write(line.toString());

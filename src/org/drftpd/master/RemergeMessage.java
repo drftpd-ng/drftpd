@@ -17,7 +17,9 @@
  */
 package org.drftpd.master;
 
-import org.drftpd.slave.CaseInsensitiveHashtable;
+import java.util.List;
+
+import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.async.AsyncResponseRemerge;
 
 /**
@@ -44,14 +46,14 @@ public class RemergeMessage {
 	}
 
 	public String getDirectory() {
-		return _response.getDirectory();
+		return _response.getPath();
 	}
 
 	public RemoteSlave getRslave() {
 		return _rslave;
 	}
 
-	public CaseInsensitiveHashtable getFiles() {
+	public List<LightRemoteInode> getFiles() {
 		return _response.getFiles();
 	}
 }

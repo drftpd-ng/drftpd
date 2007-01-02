@@ -50,7 +50,7 @@ public class UserManagementTest extends TestCase {
         DummyBaseFtpConnection conn = new DummyBaseFtpConnection(null);
         DummyGlobalContext gctx = new DummyGlobalContext();
         gctx.setUserManager(um);
-        conn.setGlobalConext(gctx);
+        // conn.setGlobalConext(gctx); -zubov
         conn.setUser(u.getName());
         u.getKeyedMap().setObject(UserManagement.GROUPSLOTS, ((short) 1));
         u.setGroup("group");

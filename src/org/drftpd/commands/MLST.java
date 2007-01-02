@@ -17,28 +17,23 @@
  */
 package org.drftpd.commands;
 
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
-
-import org.apache.log4j.Logger;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
-import org.drftpd.remotefile.ListUtils;
-import org.drftpd.remotefile.MLSTSerialize;
-import org.drftpd.remotefile.RemoteFileInterface;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
-
 import java.net.Socket;
-
-import java.util.Iterator;
 import java.util.List;
+
+import net.sf.drftpd.master.BaseFtpConnection;
+import net.sf.drftpd.master.command.CommandManager;
+import net.sf.drftpd.master.command.CommandManagerFactory;
+
+import org.apache.log4j.Logger;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandleInterface;
+import org.drftpd.vfs.ListUtils;
+import org.drftpd.vfs.ObjectNotValidException;
 
 
 /**
@@ -52,11 +47,15 @@ public class MLST implements CommandHandler, CommandHandlerFactory {
         throws UnhandledCommandException {
         String command = conn.getRequest().getCommand();
 
-        LinkedRemoteFileInterface dir = conn.getCurrentDirectory();
+        DirectoryHandle dir = conn.getCurrentDirectory();
 
         if (conn.getRequest().hasArgument()) {
             try {
-                dir = dir.lookupFile(conn.getRequest().getArgument());
+                try {
+					dir = dir.getDirectory((conn.getRequest().getArgument()));
+				} catch (ObjectNotValidException e) {
+					return new Reply(500, "Target is not a directory, MLST only works on Directories");
+				}
             } catch (FileNotFoundException e) {
                 return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
             }
@@ -75,28 +74,21 @@ public class MLST implements CommandHandler, CommandHandlerFactory {
 
             return null;
         } else if ("MLSD".equals(command)) {
-            DataConnectionHandler dataConnHnd;
-
-            try {
-                dataConnHnd = (DataConnectionHandler) conn.getCommandManager()
-                                                          .getCommandHandler(DataConnectionHandler.class);
-            } catch (ObjectNotFoundException e) {
-                return new Reply(500, e.getMessage());
-            }
-            if (!dataConnHnd.isPasv() && !dataConnHnd.isPort()) {
+        	
+            if (!conn.getTransferState().isPasv() && !conn.getTransferState().isPort()) {
                 return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
             }
             out.print(Reply.RESPONSE_150_OK);
             out.flush();
 
             try {
-                Socket sock = dataConnHnd.getDataSocket();
-                List files = ListUtils.list(dir, conn);
+            	
+                Socket sock = conn.getTransferState().getDataSocketForLIST();
+                List<InodeHandleInterface> files = ListUtils.list(dir, conn);
                 Writer os = new OutputStreamWriter(sock.getOutputStream());
 
-                for (Iterator iter = files.iterator(); iter.hasNext();) {
-                    RemoteFileInterface file = (RemoteFileInterface) iter.next();
-                    os.write(toMLST(file) + "\r\n");
+                for (InodeHandleInterface inode : files) {
+                    os.write(toMLST(inode) + "\r\n");
                 }
 
                 os.close();
@@ -127,8 +119,9 @@ public class MLST implements CommandHandler, CommandHandlerFactory {
     public void load(CommandManagerFactory initializer) {
     }
 
-    private String toMLST(RemoteFileInterface file) {
-        String ret = MLSTSerialize.toMLST(file);
+    private String toMLST(InodeHandleInterface file) {
+        String ret = // MLSTSerialize.toMLST(file);
+        	"mlst"; // -zubov
 
         //add perm=
         //add 

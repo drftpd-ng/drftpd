@@ -105,13 +105,13 @@ public class DataConnectionHandlerTest extends TestCase {
         dch = (DummyDataConnectionHandler) new DummyDataConnectionHandler().initialize(null, null);
 
         gctx = new DummyGlobalContext();
-        gctx.setFtpConfig(new DummyFtpConfig());
+        //gctx.setFtpConfig(new DummyFtpConfig()); -zubov
 
         conn = new DummyBaseFtpConnection(dch);
         cm = new DummyConnectionManager();
-        cm.setGlobalContext(gctx);
-        conn.setGlobalConext(gctx);
-        gctx.setConnectionManager(cm);
+        // cm.setGlobalContext(gctx); -zubov
+        // conn.setGlobalConext(gctx); -zubov
+        // gctx.setConnectionManager(cm); -zubov
     }
 
     protected void tearDown() throws Exception {

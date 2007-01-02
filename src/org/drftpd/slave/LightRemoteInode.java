@@ -17,14 +17,19 @@
  */
 package org.drftpd.slave;
 
+import java.io.FileNotFoundException;
 import java.io.Serializable;
+
+import org.drftpd.vfs.InodeHandleInterface;
+
+import se.mog.io.File;
 
 /**
  * @author zubov
  * @version $Id$ For use
  *          in sending the filelist from the slave to the master
  */
-public final class LightRemoteFile implements Serializable {
+public final class LightRemoteInode implements Serializable, InodeHandleInterface {
 	private String _filename;
 
 	private long _lastModified;
@@ -41,7 +46,7 @@ public final class LightRemoteFile implements Serializable {
 		_filename = name;
 	}
 
-	public LightRemoteFile(LightRemoteFileInterface file) {
+	public LightRemoteInode(File file) {
 		setName(file.getName());
 		_lastModified = file.lastModified();
 		_length = file.length();
@@ -49,23 +54,12 @@ public final class LightRemoteFile implements Serializable {
 	}
 
 	/**
-	 * Will create a directory
-	 */
-	public LightRemoteFile(String filename, long lastModified) {
-		setName(filename);
-		_lastModified = lastModified;
-		_length = 0;
-		_isDirectory = true;
-	}
-
-	/**
 	 * Will create a file
 	 */
-	public LightRemoteFile(String filename, long lastModified, long length) {
+	public LightRemoteInode(String filename, long lastModified, long length) {
 		setName(filename);
 		_lastModified = lastModified;
 		_length = length;
-		_isDirectory = false;
 	}
 
 	public boolean isDirectory() {
@@ -86,5 +80,25 @@ public final class LightRemoteFile implements Serializable {
 
 	public String getName() {
 		return _filename;
+	}
+
+	public boolean isAvailable() throws FileNotFoundException {
+		return true;
+	}
+
+	public String getGroup() throws FileNotFoundException {
+		return "drftpd";
+	}
+
+	public long getSize() throws FileNotFoundException {
+		return length();
+	}
+
+	public String getUsername() throws FileNotFoundException {
+		return "drftpd";
+	}
+
+	public boolean isLink() throws FileNotFoundException {
+		return false;
 	}
 }

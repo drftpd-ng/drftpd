@@ -18,12 +18,16 @@
 package org.drftpd.plugins;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import org.apache.log4j.Logger;
+import org.drftpd.commands.TransferStatistics;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;
@@ -60,6 +64,7 @@ public class XferLog extends FtpListener {
     public static SimpleDateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy",
             Locale.ENGLISH);
     private PrintStream _out;
+    private static final Logger logger = Logger.getLogger(XferLog.class);
 
     public XferLog() {
         super();
@@ -103,14 +108,18 @@ public class XferLog extends FtpListener {
         //char completed = event.isComplete() ? 'c' : 'i';
         // all transfers are noted as complete
         char completed = 'c';
-        _out.println(DATE_FMT.format(new Date(event.getTime())) + " " +
-            (event.getDirectory().getXfertime() / 1000) + " " +
-            event.getPeer().getHostName() + " " +
-            event.getDirectory().length() + " " +
-            event.getDirectory().getPath() + " " + transferType + " _ " +
-            direction + " r " + event.getUser().getName() + " " +
-            event.getUser().getGroup() +
-            " 0 * " // authentication-method   authenticated-user-id
-             +completed);
+        try {
+			_out.println(DATE_FMT.format(new Date(event.getTime())) + " " +
+			    (event.getTransferFile().getXfertime() / 1000) + " " +
+			    event.getPeer().getHostName() + " " +
+			    event.getTransferFile().getSize() + " " +
+			    event.getTransferFile().getPath() + " " + transferType + " _ " +
+			    direction + " r " + event.getUser().getName() + " " +
+			    event.getUser().getGroup() +
+			    " 0 * " // authentication-method   authenticated-user-id
+			     +completed);
+		} catch (FileNotFoundException e) {
+			logger.error("File " + event.getTransferFile().getPath() + " is unable to be found immediately after transfer");
+		}
     }
 }

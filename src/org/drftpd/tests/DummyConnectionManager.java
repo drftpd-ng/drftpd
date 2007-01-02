@@ -23,7 +23,5 @@ import org.drftpd.master.ConnectionManager;
 
 
 public class DummyConnectionManager extends ConnectionManager {
-    public void setGlobalContext(GlobalContext gctx) {
-        _gctx = gctx;
-    }
+
 }

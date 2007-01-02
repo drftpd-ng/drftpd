@@ -27,4 +27,10 @@ public class RemoteIOException extends Exception {
 	public RemoteIOException(IOException cause) {
 		super(cause);
 	}
+
+	@Override
+	public IOException getCause() {
+		return (IOException) super.getCause();
+	}
+
 }

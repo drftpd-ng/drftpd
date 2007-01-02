@@ -48,7 +48,7 @@ public class Sections implements CommandHandler, CommandHandlerFactory {
         for (Iterator iter = sections.iterator(); iter.hasNext();) {
             SectionInterface section = (SectionInterface) iter.next();
             env.add("section", section.getName());
-            env.add("path", section.getPath());
+            env.add("path", section.getCurrentDirectory());
             reply.addComment(conn.jprintf(Sections.class, "section", env));
         }
 

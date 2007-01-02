@@ -55,7 +55,12 @@ public class ConnectionManager {
 	private List<BaseFtpConnection> _conns = Collections
 			.synchronizedList(new ArrayList<BaseFtpConnection>());
 
-	private ConnectionManager() {
+	/**
+	 * If you're creating a ConnectionManager object and it's not part of a TestCase
+	 * you're not doing it correctly, ConnectionManager is a Singleton
+	 *
+	 */
+	protected ConnectionManager() {
 		_commandManagerFactory = new CommandManagerFactory();
 
 		// getGlobalContext().addFtpListener(new RaceStatistics());

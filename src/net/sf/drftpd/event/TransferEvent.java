@@ -22,7 +22,7 @@ import java.net.InetAddress;
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
 
 /**
  * @author mog
@@ -36,6 +36,8 @@ public class TransferEvent extends DirectoryFtpEvent {
 	private InetAddress _clientHost;
 
 	private BaseFtpConnection _conn;
+	
+	private FileHandle _file;
 
 	/**
 	 * @param user
@@ -43,22 +45,22 @@ public class TransferEvent extends DirectoryFtpEvent {
 	 * @param directory
 	 */
 	public TransferEvent(BaseFtpConnection conn, String command,
-			DirectoryHandle directory, InetAddress clientHost,
+			FileHandle file, InetAddress clientHost,
 			RemoteSlave rslave, InetAddress peer, char type) {
-		this(conn, command, directory, clientHost, rslave, peer, type, System
+		this(conn, command, file, clientHost, rslave, peer, type, System
 				.currentTimeMillis());
 	}
 
 	private TransferEvent(BaseFtpConnection conn, String command,
-			DirectoryHandle directory, InetAddress clientHost,
+			FileHandle file, InetAddress clientHost,
 			RemoteSlave rslave, InetAddress peer, char type, long time) {
-		super(conn.getUserNull(), command, directory, time);
+		super(conn.getUserNull(), command, file.getParent(), time);
 		_clientHost = clientHost;
 
 		if (peer == null) {
 			throw new NullPointerException();
 		}
-
+		_file = file;
 		_peer = peer;
 		_type = type;
 		_conn = conn;
@@ -82,5 +84,9 @@ public class TransferEvent extends DirectoryFtpEvent {
 
 	public BaseFtpConnection getConn() {
 		return _conn;
+	}
+	
+	public FileHandle getTransferFile() {
+		return _file;
 	}
 }

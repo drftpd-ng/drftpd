@@ -19,12 +19,8 @@ package org.drftpd.tests;
 
 import java.util.Properties;
 
-import net.sf.drftpd.master.config.FtpConfig;
-
 import org.drftpd.GlobalContext;
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.sections.SectionManagerInterface;
 
 
@@ -41,16 +37,9 @@ public class DummyGlobalContext extends GlobalContext {
     }
 
     public void loadUserManager(Properties cfg, String cfgFileName) {
-        super.loadUserManager(cfg, cfgFileName);
+        super.loadUserManager(cfg);
     }
 
-    public void setConnectionManager(ConnectionManager cm) {
-        _cm = cm;
-    }
-
-    public void setFtpConfig(FtpConfig config) {
-        _config = config;
-    }
 
     public void setSectionManager(SectionManagerInterface manager) {
         _sections = manager;
@@ -62,10 +51,6 @@ public class DummyGlobalContext extends GlobalContext {
 
     public void setUserManager(DummyUserManager um) {
         _usermanager = um;
-    }
-
-    public void setRoot(LinkedRemoteFile root) {
-        _root = root;
     }
 
     public void setSlaveSelectionManager(DummySlaveSelectionManager dssm) {

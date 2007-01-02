@@ -17,22 +17,16 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.apache.log4j.Logger;
-import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVStatus;
 import org.drftpd.commands.Reply;
-import org.drftpd.id3.ID3Tag;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 

@@ -71,7 +71,7 @@ public class LoginTest extends TestCase {
 
         FC fc = new FC();
         DummyGlobalContext gctx = new DummyGlobalContext();
-        gctx.setFtpConfig(fc);
+        // gctx.setFtpConfig(fc); -zubov
         gctx.setUserManager(_userManager);
 
         DummyConnectionManager cm = new DummyConnectionManager() {
@@ -80,9 +80,9 @@ public class LoginTest extends TestCase {
                 }
             };
 
-        cm.setGlobalContext(gctx);
-        gctx.setConnectionManager(cm);
-        _conn.setGlobalConext(gctx);
+        // cm.setGlobalContext(gctx); -zubov
+        // gctx.setConnectionManager(cm); -zubov
+        // _conn.setGlobalConext(gctx); -zubov
 
         //_conn.setConnectionManager(cm);
     }
@@ -155,7 +155,7 @@ public class LoginTest extends TestCase {
             Reader r = new StringReader("shutdown *");
 
             try {
-                loadConfig1(cfg);
+                loadConfig1();
                 loadConfig2(r);
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);

@@ -11,8 +11,9 @@ import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.InodeHandle;
 
 
 /**
@@ -28,13 +29,7 @@ public class DummySlaveSelectionManager
     public void reload() throws FileNotFoundException, IOException {
     }
 
-    public RemoteSlave getASlave(Collection rslaves, char direction,
-        BaseFtpConnection conn, LinkedRemoteFileInterface file)
-        throws NoAvailableSlaveException {
-        throw new UnsupportedOperationException();
-    }
-
-    public RemoteSlave getASlaveForMaster(LinkedRemoteFileInterface file,
+    public RemoteSlave getASlaveForMaster(FileHandle file,
         ConfigInterface cfg) throws NoAvailableSlaveException {
         throw new UnsupportedOperationException();
     }
@@ -52,4 +47,9 @@ public class DummySlaveSelectionManager
     public GlobalContext getGlobalContext() {
         throw new UnsupportedOperationException();
     }
+
+	public RemoteSlave getASlave(Collection<RemoteSlave> rslaves, char direction, BaseFtpConnection conn, InodeHandle file) throws NoAvailableSlaveException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

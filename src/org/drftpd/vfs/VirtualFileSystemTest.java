@@ -31,12 +31,12 @@ public class VirtualFileSystemTest extends TestCase {
 	}
 
 	private void recursiveList(VirtualFileSystemDirectory root) {
-		for (String name : root.getFiles()) {
+		for (String name : root.getInodeNames()) {
 			VirtualFileSystemInode inode;
 			try {
 				inode = root.getInodeByName(name);
 			} catch (FileNotFoundException e) {
-				throw new RuntimeException("this cannot happen", e);
+				throw new RuntimeException("this cannot happen except for a race condition", e);
 			}
 			if (inode.isDirectory()) {
 				recursiveList((VirtualFileSystemDirectory) inode);
@@ -58,7 +58,7 @@ public class VirtualFileSystemTest extends TestCase {
 	}
 
 	protected void tearDown() throws Exception {
-		for (String file : vfs.getRoot().getFiles()) {
+		for (String file : vfs.getRoot().getInodeNames()) {
 			vfs.getRoot().getInodeByName(file).delete();
 		}
 	}

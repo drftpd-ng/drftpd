@@ -1,27 +1,21 @@
 package org.drftpd.tests;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVInfo;
-import org.drftpd.victim;
-
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
-import org.drftpd.remotefile.LinkedRemoteFile;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.async.AsyncResponse;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 
 
 /**
@@ -44,12 +38,6 @@ public class DummyRemoteSlave extends RemoteSlave {
     public boolean isOnline() {
         // TODO Auto-generated method stub
         return false;
-    }
-
-    public LinkedRemoteFile getSlaveRoot()
-        throws SlaveUnavailableException, IOException {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     public void listenForInfoFromSlave() {
@@ -94,12 +82,6 @@ public class DummyRemoteSlave extends RemoteSlave {
     }
 
     public ID3Tag fetchID3TagFromIndex(String index)
-        throws RemoteIOException, SlaveUnavailableException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public LightSFVFile fetchSFVFileFromIndex(String index)
         throws RemoteIOException, SlaveUnavailableException {
         // TODO Auto-generated method stub
         return null;

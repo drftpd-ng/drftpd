@@ -20,6 +20,7 @@ package org.drftpd.slave;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,13 +42,29 @@ import se.mog.io.File;
 public class RootCollection {
 	private static final Logger logger = Logger.getLogger(RootCollection.class);
 
-	private Collection _roots = null;
+	private Collection<Root> _roots = null;
 
-	public RootCollection(Collection roots) throws IOException {
+	public RootCollection(Collection<Root> roots) throws IOException {
 		/** sanity checks * */
 		validateRoots(roots);
-		_roots = new ArrayList(roots);
+		_roots = new ArrayList<Root>(roots);
 		DiskSelection.init(this);
+	}
+	
+	/**
+	 * Returns a sorted (alphabetical) list of inodes in the path given
+	 * @param path
+	 * @return
+	 */
+	public ArrayList<String> getLocalInodes(String path) {
+		ArrayList<String> files = new ArrayList<String>();
+		for (Root root : _roots) {
+			String[] fileArray = root.getFile(path).list();
+			if (fileArray == null) continue;
+			files.addAll(Arrays.asList(fileArray));
+		}
+		Collections.sort(files);
+		return files;
 	}
 
 	public Root getARoot() {
@@ -104,21 +121,26 @@ public class RootCollection {
 	/**
 	 * Returns an ArrayList containing se.mog.io.File objects
 	 */
-	public List getMultipleFiles(String path) throws FileNotFoundException {
-		ArrayList files = new ArrayList();
+	public List<File> getMultipleFiles(String path) throws FileNotFoundException {
+		ArrayList<File> files = new ArrayList<File>();
 
-		for (Iterator iter = getMultipleRootsForFile(path).iterator(); iter
-				.hasNext();) {
-			files.add(((Root) iter.next()).getFile(path));
+		for (Root r : getMultipleRootsForFile(path)) {
+			files.add(r.getFile(path));
 		}
 
 		return files;
 	}
 
-	public List getMultipleRootsForFile(String path)
+	public List<Root> getMultipleRootsForFile(String path)
 			throws FileNotFoundException {
-		ArrayList roots = new ArrayList();
+		ArrayList<Root> roots = new ArrayList<Root>();
 
+		
+		for (Root r : _roots) {
+			if (r.getFile(path).exists()) {
+				roots.add(r);
+			}
+		}
 		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 
@@ -139,7 +161,6 @@ public class RootCollection {
 		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
 			Root root = (Root) iter.next();
 			File file = new File(root.getPath() + File.separatorChar + path);
-			System.out.println(file.getPath());
 			if (file.exists()) {
 				return root;
 			}

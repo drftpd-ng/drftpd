@@ -19,7 +19,7 @@ package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
 
-import net.sf.drftpd.FileExistsException;
+import org.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
@@ -30,7 +30,7 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 	public LinkHandle(String path) {
 		super(path);
 	}
-	
+
 	@Override
 	protected VirtualFileSystemLink getInode() throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
@@ -41,8 +41,33 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 				+ inode);
 	}
 
-	public String getLinkPath() throws FileNotFoundException {
+	public DirectoryHandle getTargetDirectory() throws FileNotFoundException,
+			ObjectNotValidException {
+		return getParent().getDirectory(getInode().getLink());
+	}
+	
+	public String getTargetString() throws FileNotFoundException {
 		return getInode().getLink();
+	}
+
+	@Override
+	public void removeSlave(RemoteSlave rslave) throws FileNotFoundException {
+		// we don't have anything to remove
+	}
+
+	@Override
+	public boolean isDirectory() {
+		return false;
+	}
+
+	@Override
+	public boolean isFile() {
+		return false;
+	}
+
+	@Override
+	public boolean isLink() {
+		return true;
 	}
 
 }

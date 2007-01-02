@@ -60,7 +60,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		for (String slave : getSlaves()) {
 			ret.append(slave + ",");
 		}
-		ret.replace(ret.length() - 1, ret.length() - 1, "]");
+		ret.replace(ret.length() - 1, ret.length(), "]");
 		return ret.toString();
 	}
 
@@ -86,10 +86,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 	}
 
 	public long getChecksum() {
-		long checksum = getKeyedMap().getObjectLong(CRC);
-		// if checksum == 0, we need to fetch it from the slave
-		// TODO
-		return checksum;
+		return getKeyedMap().getObjectLong(CRC);
 	}
 
 	public long getXfertime() {
@@ -136,7 +133,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		getKeyedMap().setObject(XFERTIME, xfertime);
 		commit();
 	}
-	
+
 	public void setSize(long size) {
 		if (size < 0) {
 			throw new IllegalArgumentException("File size cannot be < 0");

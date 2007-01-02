@@ -30,6 +30,8 @@ import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.tests.DummyGlobalContext;
+import org.drftpd.tests.DummyUser;
 
 
 /**

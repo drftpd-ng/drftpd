@@ -45,7 +45,8 @@ import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.commands.UnhandledCommandException;
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -63,37 +64,35 @@ public class SiteManagement implements CommandHandler, CommandHandlerFactory {
 		Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 
 		// .getMap().values() to get the .isDeleted files as well.
-		LinkedRemoteFileInterface dir = conn.getCurrentDirectory();
-
+		DirectoryHandle dir = conn.getCurrentDirectory();
+		InodeHandle target;
 		if (conn.getRequest().hasArgument()) {
 			try {
-				dir = dir.lookupFile(conn.getRequest().getArgument());
+				target = dir.getInodeHandle(conn.getRequest().getArgument());
 			} catch (FileNotFoundException e) {
 				logger.debug("", e);
-
 				return new Reply(200, e.getMessage());
 			}
-		}
-
-		List files;
-		if (dir.isFile()) {
-			files = Collections.singletonList(dir);
 		} else {
-			files = new ArrayList(dir.getMap().values());
+			target = dir;
 		}
-		Collections.sort(files);
+		
+		List<InodeHandle> inodes;
+		try {
+			if (target.isFile()) {
+				inodes = Collections.singletonList((InodeHandle)dir);
+			} else {
+				inodes = new ArrayList<InodeHandle>(dir.getInodeHandles());
+			}
+			Collections.sort(inodes);
 
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			LinkedRemoteFileInterface file = (LinkedRemoteFileInterface) iter
-					.next();
-
-			// if (!key.equals(file.getName()))
-			// response.addComment(
-			// "WARN: " + key + " not equals to " + file.getName());
-			// response.addComment(key);
-			response.addComment(file.toString());
+			for (InodeHandle inode : inodes) {
+				response.addComment(inode.toString());
+			}
+		} catch (FileNotFoundException e) {
+			logger.debug("FileNotFound", e);
+			return new Reply(200, e.getMessage());
 		}
-
 		return response;
 	}
 

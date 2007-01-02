@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Properties;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.ObjectNotFoundException;

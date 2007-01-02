@@ -77,9 +77,12 @@ public class SSLGetContext {
 		ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
 		String[] ciphers = ctx.createSSLEngine().getSupportedCipherSuites();
 		logger.info("Supported ciphers are as follows:");
-		for (String cipher : ciphers) {
+		for (int x = 0; x<ciphers.length; x++) {
+			logger.info(ciphers[x]);
+		}
+/*		for (String cipher : ciphers) {
 			logger.info(cipher);
 		}
-		return ctx;
+*/		return ctx;
 	}
 }

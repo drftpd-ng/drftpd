@@ -207,9 +207,10 @@ public abstract class ArchiveType {
 	/**
 	 * if the directory is archived by this type's definition, this method
 	 * returns true
+	 * @throws FileNotFoundException 
 	 */
-	protected abstract boolean isArchivedDir(InodeHandle lrf)
-			throws IncompleteDirectoryException, OfflineSlaveException;
+	protected abstract boolean isArchivedDir(DirectoryHandle directory)
+			throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException;
 
 	/**
 	 * Returns unmodifiable Set<RemoteSlave>.

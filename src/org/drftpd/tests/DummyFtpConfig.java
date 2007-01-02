@@ -19,22 +19,20 @@ package org.drftpd.tests;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Properties;
 
 import net.sf.drftpd.master.config.FtpConfig;
 import net.sf.drftpd.util.PortRange;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
-
-import org.drftpd.remotefile.LinkedRemoteFileInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.DirectoryHandle;
 
 public class DummyFtpConfig extends FtpConfig {
     public DummyFtpConfig() {
         try {
             loadConfig2(new StringReader(""));
-            loadConfig1(new Properties());
+            loadConfig1();
             if (_portRange == null) {
                 //default portrange if none specified
                 _portRange = new PortRange();
@@ -45,16 +43,13 @@ public class DummyFtpConfig extends FtpConfig {
     }
 
     public boolean checkPathPermission(String key, User fromUser,
-        LinkedRemoteFileInterface path) {
+        DirectoryHandle path) {
         return true;
     }
 
-    public float getCreditCheckRatio(LinkedRemoteFileInterface path,
+    public float getCreditCheckRatio(DirectoryHandle path,
         User fromUser) {
         return fromUser.getKeyedMap().getObjectFloat(UserManagement.RATIO);
     }
 
-    public void setGlobalContext(GlobalContext gctx) {
-        _gctx = gctx;
-    }
 }

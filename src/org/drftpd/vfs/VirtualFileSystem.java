@@ -36,6 +36,30 @@ import se.mog.io.PermissionDeniedException;
 
 public class VirtualFileSystem {
 
+	protected static final InodeHandleCaseInsensitiveComparator INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR = new InodeHandleCaseInsensitiveComparator();
+
+	static class InodeHandleCaseInsensitiveComparator extends
+			CaseInsensitiveComparator<InodeHandle> {
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see org.drftpd.vfs.CaseInsensitiveComparator#compare(java.lang.Object,
+		 *      java.lang.Object)
+		 */
+		@Override
+		public int compare(Object arg0, Object arg1) {
+			if (!(arg0 instanceof InodeHandle)
+					|| !(arg1 instanceof InodeHandle)) {
+				throw new IllegalArgumentException(
+						"Can only compare classes of type InodeHandle");
+			}
+			InodeHandle ih0 = (InodeHandle) arg0;
+			InodeHandle ih1 = (InodeHandle) arg1;
+			return super.compare(ih0.getName(), ih1.getName());
+		}
+	}
+
 	private static VirtualFileSystem _vfs = null;
 
 	public static final String dirName = ".dirProperties";
@@ -67,6 +91,10 @@ public class VirtualFileSystem {
 	 */
 	public static String stripLast(String path) {
 		// logger.debug("stripLast(" + path + ")");
+		if (!(path.startsWith(VirtualFileSystem.separator))) {
+			throw new IllegalArgumentException(
+					"stripLast() needs to be supplied with a full path, i.e, start with \"/\"");
+		}
 		String toReturn = path.substring(0, path.lastIndexOf(separator));
 		if (toReturn.equals("")) {
 			return "/";
@@ -114,7 +142,6 @@ public class VirtualFileSystem {
 		if (path.equals(separator)) {
 			return _root;
 		}
-		//logger.debug("getInodeByPath(" + path + ")");
 		path = path.substring(1);
 		VirtualFileSystemDirectory walker = _root;
 		VirtualFileSystemInode inode = null;
@@ -130,6 +157,7 @@ public class VirtualFileSystem {
 				}
 			}
 		}
+		// logger.debug("getInodeByPath(/" + path + ")--returning--" + inode);
 		return inode;
 	}
 
@@ -163,8 +191,8 @@ public class VirtualFileSystem {
 			xmlDec.setExceptionListener(new VFSExceptionListener());
 			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec
 					.readObject();
-			inode.setLastModified(file.lastModified());
-			inode.setName(getLast(path));
+			inode._lastModified = file.lastModified();
+			inode._name = getLast(path);
 			if (inode.isDirectory()) {
 				VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
 				Collection<String> files = new ArrayList<String>();
@@ -232,6 +260,23 @@ public class VirtualFileSystem {
 				enc.close();
 			}
 		}
+	}
+
+	/**
+	 * Accepts a path and makes sure it doesn't end with /, (except for Root)
+	 * Example: Given "directory/subdir/file/" returns "directory/subdir/file"
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static String fixPath(String path) {
+		if (path.equals(VirtualFileSystem.separator)) {
+			return VirtualFileSystem.separator;
+		}
+		if (path.endsWith(VirtualFileSystem.separator)) {
+			return path.substring(0, path.length() - 1);
+		}
+		return path;
 	}
 
 	/*

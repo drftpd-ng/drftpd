@@ -96,7 +96,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         }
 
         DirectoryHandle newCurrentDirectory = null;
-
+        
         try {
         	newCurrentDirectory = conn.getCurrentDirectory().getDirectory(request.getArgument());
         } catch (FileNotFoundException ex) {
@@ -455,10 +455,6 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         if (!request.hasArgument()) {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
-
-        if (!conn.getGlobalContext().getSlaveManager().hasAvailableSlaves()) {
-            return Reply.RESPONSE_450_SLAVE_UNAVAILABLE;
-        }
         
         String dirName = request.getArgument();
 
@@ -663,25 +659,67 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         if (_renameFrom == null) {
             return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
         }
+        
+		InodeHandle fromInode = _renameFrom;
+        String argument = VirtualFileSystem.fixPath(request.getArgument());
+        if (!(argument.startsWith(VirtualFileSystem.separator))) {
+        	// Not a full path, let's make it one
+        	if (conn.getCurrentDirectory().isRoot()) {
+        		argument = VirtualFileSystem.separator + argument;
+        	} else {
+        		argument = conn.getCurrentDirectory().getPath() + VirtualFileSystem.separator + argument;
+        	}
+        }
+        DirectoryHandle toDir = null;
+        String newName = null;
+        try {
+			toDir = conn.getCurrentDirectory().getDirectory(argument);
+	        // toDir exists and is a directory, so we're just changing the parent directory and not the name
+			newName = fromInode.getName();
+        } catch (FileNotFoundException e) {
+        	// Directory does not exist, that means they may have specified _renameFrom's new name
+        	// as the last part of the argument
+        	try {
+				toDir = conn.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument));
+	        	newName = VirtualFileSystem.getLast(argument);
+			} catch (FileNotFoundException e1) {
+				// Destination doesn't exist
+				logger.debug("Destination doesn't exist", e1);
+				return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+			} catch (ObjectNotValidException e1) {
+				// Destination isn't a Directory
+				logger.debug("Destination isn't a Directory", e1);
+				return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+			}
+        } catch (ObjectNotValidException e) {
+        	return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
+		}
+        InodeHandle toInode = null;
+       	if (fromInode.isDirectory()) {
+       		toInode = new DirectoryHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+       	} else if (fromInode.isFile()) {
+       		toInode = new FileHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+       	} else if (fromInode.isLink()) {
+       		toInode = new LinkHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+       	}
 
-        InodeHandle toFile;
 		try {
-			toFile = conn.getCurrentDirectory().getInodeHandle(
-					request.getArgument());
-			InodeHandle fromFile = _renameFrom;
-
 			// check permission
 			if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
 				if (!conn.getGlobalContext().getConfig().checkPathPermission(
-						"renameown", conn.getUserNull(), toFile.getParent())) {
+						"renameown", conn.getUserNull(), toInode.getParent())) {
 					return Reply.RESPONSE_530_ACCESS_DENIED;
 				}
 			} else if (!conn.getGlobalContext().getConfig()
 					.checkPathPermission("rename", conn.getUserNull(),
-							toFile.getParent())) {
+							toInode.getParent())) {
 				return Reply.RESPONSE_530_ACCESS_DENIED;
 			}
-			fromFile.renameTo(toFile);
+/*			logger.debug("before rename toInode-" +toInode);
+			logger.debug("before rename toInode.getPath()-" + toInode.getPath());
+			logger.debug("before rename toInode.getParent()-" + toInode.getParent());
+			logger.debug("before rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
+			fromInode.renameTo(toInode);
 		} catch (FileNotFoundException e) {
 			logger.info("FileNotFoundException on renameTo()", e);
 
@@ -691,6 +729,10 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
 			return new Reply(500, "IOException - " + e.getMessage());
 		}
+/*		logger.debug("after rename toInode-" +toInode);
+		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
+		logger.debug("after rename toInode.getParent()-" + toInode.getParent());
+		logger.debug("after rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
 
 		// out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
 		return new Reply(250, request.getCommand() + " command successful.");

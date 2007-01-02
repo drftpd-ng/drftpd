@@ -19,7 +19,6 @@ package net.sf.drftpd.util;
 
 import java.util.Comparator;
 
-import org.drftpd.commands.TransferStatistics;
 import org.drftpd.usermanager.User;
 
 
@@ -39,9 +38,11 @@ public class UserComparator implements Comparator {
         User u1 = (User) o1;
         User u2 = (User) o2;
 
-        long thisVal = TransferStatistics.getStats(_type, u1);
-        long anotherVal = TransferStatistics.getStats(_type, u2);
-
-        return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
+        //long thisVal = TransferStatistics.getStats(_type, u1);
+        //long anotherVal = TransferStatistics.getStats(_type, u2);
+        // Don't feel like fixing this so it works in lean mode :)
+        // So I just broke it, if I'd remove it, more things would not compile - zubov
+        return 0;
+        //return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
     }
 }

@@ -33,8 +33,8 @@ public class FakeLinkHandle extends FakeHandle implements LinkHandleInterface {
 		_target = target;
 	}
 
-	public String getLinkPath() throws FileNotFoundException {
-		return _target;
+	public DirectoryHandle getTargetDirectory() throws FileNotFoundException {
+		return new DirectoryHandle(_target);
 	}
 
 }

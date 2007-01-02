@@ -23,12 +23,13 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
 import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
@@ -140,11 +141,12 @@ public class TestSlave extends Slave {
     }
     private AsyncResponse handleCommand(AsyncCommand ac) {
         if (ac.getName().equals("remerge")) {
-        	CaseInsensitiveHashtable mergeFiles = new CaseInsensitiveHashtable();
-        	mergeFiles.put("ps2dvd", new LightRemoteFile("ps2dvd",System.currentTimeMillis()));
-        	sendResponse(new AsyncResponseRemerge("", mergeFiles));
+        	List<LightRemoteInode> mergeFiles = new ArrayList<LightRemoteInode>();
+        	
+        	mergeFiles.add(new LightRemoteInode("ps2dvd",System.currentTimeMillis(), 0));
+        	sendResponse(new AsyncResponseRemerge("/", mergeFiles));
         	mergeFiles.clear();
-        	mergeFiles.put("c4testsagain", new LightRemoteFile("c4testsagain",System.currentTimeMillis(), 100));
+        	mergeFiles.add(new LightRemoteInode("c4testsagain",System.currentTimeMillis(), 100));
         	sendResponse(new AsyncResponseRemerge("\\ps2dvd", mergeFiles));
         	return new AsyncResponse(ac.getIndex());
         }

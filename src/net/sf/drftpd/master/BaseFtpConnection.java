@@ -51,7 +51,6 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.io.AddAsciiOutputStream;
-import org.drftpd.slave.DIZInfo;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

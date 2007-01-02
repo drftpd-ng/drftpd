@@ -72,7 +72,7 @@ public abstract class VirtualFileSystemInode {
 	 */
 	public void delete() {
 		logger.info("delete(" + this + ")");
-		// GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
+		//GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves();
 		VirtualFileSystem.getVirtualFileSystem().deleteXML(getPath());
 		_parent.removeChild(this);
 		_parent.addSize(-getSize());
@@ -108,7 +108,10 @@ public abstract class VirtualFileSystemInode {
 	 * @return Returns the full path.
 	 */
 	protected String getPath() {
-		if (getParent().getPath().equals(VirtualFileSystem.separator)) {
+		if (this instanceof VirtualFileSystemRoot) {
+			return VirtualFileSystem.separator;
+		}
+		if (getParent() instanceof VirtualFileSystemRoot) {
 			return VirtualFileSystem.separator + getName();
 		}
 		return getParent().getPath() + VirtualFileSystem.separator
@@ -167,13 +170,14 @@ public abstract class VirtualFileSystemInode {
 					destinationDir.getPath() + VirtualFileSystem.separator
 							+ VirtualFileSystem.getLast(destination));
 		} catch (FileNotFoundException e) {
-			// we may be able to handle this
+			// we may be able to handle this, but not yet
 			throw new RuntimeException("FileSystemError", e);
 		} catch (PermissionDeniedException e) {
 			throw new RuntimeException("FileSystemError", e);
 		}
 		_name = VirtualFileSystem.getLast(destination);
-		destinationDir.addChild(this);
+		_parent = destinationDir;
+		_parent.addChild(this);
 		fileString = fileString + ",(" + this + ")";
 		logger.info(fileString);
 	}

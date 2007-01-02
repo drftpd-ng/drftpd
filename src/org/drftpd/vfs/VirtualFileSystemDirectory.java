@@ -134,6 +134,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected synchronized VirtualFileSystemInode getInodeByName(String name)
 			throws FileNotFoundException {
+		//logger.debug("getInodeByName(" + name + ")");
+		name = VirtualFileSystem.fixPath(name);
 		if (name.startsWith(VirtualFileSystem.separator)) {
 			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(name);
 		}

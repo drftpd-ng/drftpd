@@ -22,20 +22,26 @@ import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
  * @version $Id$
  */
-public abstract class InodeHandle implements InodeHandleInterface {
+public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	String _path = null;
 	protected static final Logger logger = Logger.getLogger(InodeHandle.class.getName());
-
+	
 	public InodeHandle(String path) {
 		if (path == null || !path.startsWith(VirtualFileSystem.separator)) {
 			throw new IllegalArgumentException("InodeHandle needs an absolute path, argument was [" + path + "]");
 		}
 		_path = path;
+	}
+	
+	public int compareTo(Object o) {
+		InodeHandle handle = (InodeHandle) o;
+		return(handle._path.compareTo(_path));
 	}
 	
 	public void delete() throws FileNotFoundException {
@@ -117,24 +123,22 @@ public abstract class InodeHandle implements InodeHandleInterface {
 		return _path.hashCode();
 	}
 
-	public boolean isDirectory() throws FileNotFoundException {
-		return getInode().isDirectory();
-	}
+	public abstract boolean isDirectory();
 
-	public boolean isFile() throws FileNotFoundException {
-		return getInode().isFile();
-	}
+	public abstract boolean isFile();
 
-	public boolean isLink() throws FileNotFoundException {
-		return getInode().isLink();
-	}
+	public abstract boolean isLink();
 
 	public long lastModified() throws FileNotFoundException {
 		return getInode().getLastModified();
 	}
 	
 	public String toString() {
-		return getPath();
+		try {
+			return getInode().toString();
+		} catch (FileNotFoundException e) {
+			return getPath() + "-FileNotFound";
+		}
 	}
 
 	public void setUsername(String owner) throws FileNotFoundException {
@@ -145,8 +149,14 @@ public abstract class InodeHandle implements InodeHandleInterface {
 		getInode().setGroup(group);
 	}
 
-	public void renameTo(InodeHandle toFile) throws FileExistsException, FileNotFoundException {
-		getInode().rename(toFile.getPath());
+	public void renameTo(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
+		getInode().rename(toInode.getPath());
+	}
+
+	public abstract void removeSlave(RemoteSlave rslave) throws FileNotFoundException;
+	
+	public void setLastModified(long l) throws FileNotFoundException {
+		getInode().setLastModified(l);
 	}
 
 }
