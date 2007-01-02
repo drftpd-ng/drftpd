@@ -26,8 +26,9 @@ import se.mog.io.File;
 
 /**
  * @author zubov
- * @version $Id$ For use
- *          in sending the filelist from the slave to the master
+ * @version $Id$
+ * For use in sending the filelist from the slave to the master
+ * Also used for creating files/directories that are superfluous
  */
 public final class LightRemoteInode implements Serializable, InodeHandleInterface {
 	private String _filename;
@@ -37,6 +38,10 @@ public final class LightRemoteInode implements Serializable, InodeHandleInterfac
 	private long _length;
 
 	private boolean _isDirectory;
+	
+	private String _username = "drftpd";
+	
+	private String _group = "drftpd";
 
 	private void setName(String name) {
 		if (name.indexOf("\\") != -1) {
@@ -46,6 +51,10 @@ public final class LightRemoteInode implements Serializable, InodeHandleInterfac
 		_filename = name;
 	}
 
+	/**
+	 * Will create a File or Directory depending on what the File Object is.
+	 * @param file
+	 */
 	public LightRemoteInode(File file) {
 		setName(file.getName());
 		_lastModified = file.lastModified();
@@ -60,6 +69,20 @@ public final class LightRemoteInode implements Serializable, InodeHandleInterfac
 		setName(filename);
 		_lastModified = lastModified;
 		_length = length;
+	}
+
+	/**
+	 * Will create a file
+	 * @param fileName
+	 * @param username
+	 * @param group
+	 * @param size
+	 * @param lastModified
+	 */
+	public LightRemoteInode(String fileName, String username, String group, long lastModified, long size) {
+		this(fileName, lastModified, size);
+		_username = username;
+		_group = group;
 	}
 
 	public boolean isDirectory() {
@@ -87,7 +110,7 @@ public final class LightRemoteInode implements Serializable, InodeHandleInterfac
 	}
 
 	public String getGroup() throws FileNotFoundException {
-		return "drftpd";
+		return _group;
 	}
 
 	public long getSize() throws FileNotFoundException {
@@ -95,7 +118,7 @@ public final class LightRemoteInode implements Serializable, InodeHandleInterfac
 	}
 
 	public String getUsername() throws FileNotFoundException {
-		return "drftpd";
+		return _username;
 	}
 
 	public boolean isLink() throws FileNotFoundException {

@@ -27,6 +27,7 @@ import net.sf.drftpd.master.BaseFtpConnection;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.Reply;
+import org.drftpd.slave.LightRemoteInode;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 
@@ -124,7 +125,7 @@ public class ListUtils {
             		env.add("ofilename", element.getName());
     				String oFileName = conn.jprintf(ListUtils.class, "files.offline.filename", env);
     				
-    				listFiles.add(new FakeFileHandle(oFileName, element.getUsername(), element.getGroup(), element.getSize(), element.lastModified()));
+    				listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.getSize(), element.lastModified()));
     				numTotal++;
             	}
                 // -OFFLINE and "ONLINE" files will both be present until someone implements
