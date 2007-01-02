@@ -31,10 +31,6 @@ import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.UnhandledCommandException;
-import org.schwering.irc.lib.IRCConnection;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.SimplePrintf;
 
 
 /**
@@ -67,42 +63,6 @@ public class Textoutput implements CommandHandler, CommandHandlerFactory {
         }
 
         return text;
-    }
-
-    protected static void sendTextToIRC(IRCConnection conn, String destination,
-        BufferedReader in) throws IOException {
-        String line;
-
-        while ((line = in.readLine()) != null) {
-            ReplacerEnvironment env = new ReplacerEnvironment();
-
-            try {
-                conn.doPrivmsg(destination,
-                        SimplePrintf.jprintf(line, env));
-            } catch (FormatterException e1) {
-                conn.doPrivmsg(destination,
-                        "Error in formatting of line - " + line);
-            }
-        }
-    }
-
-    /**
-     * @param Path is a complete working path, not just a filename, for example "text/file.txt"
-     */
-    public static void sendTextToIRC(IRCConnection conn, String destination,
-        String path) {
-        BufferedReader fileReader = null;
-
-        try {
-            fileReader = new BufferedReader(new InputStreamReader(
-                        new FileInputStream(path)));
-            sendTextToIRC(conn, destination, fileReader);
-        } catch (IOException e) {
-            conn.doPrivmsg(destination,
-                    "IOException opening file "+ path +", check generictextoutput.conf");
-
-            return;
-        }
     }
 
     public Reply execute(BaseFtpConnection conn)
