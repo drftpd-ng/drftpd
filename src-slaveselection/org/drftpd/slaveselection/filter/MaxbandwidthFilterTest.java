@@ -31,9 +31,9 @@ import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.AbstractLinkedRemoteFile;
-import org.drftpd.remotefile.CaseInsensitiveHashtable;
+import org.drftpd.slave.CaseInsensitiveHashtable;
 import org.drftpd.slave.DiskStatus;
+import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
@@ -75,10 +75,11 @@ public class MaxbandwidthFilterTest extends TestCase {
     }
 
     @SuppressWarnings("unchecked")
-	public static class LinkedRemoteFilePath extends AbstractLinkedRemoteFile {
+	public static class LinkedRemoteFilePath extends LightRemoteInode {
         private String _path;
 
         public LinkedRemoteFilePath(String path) {
+        	super(path, 0, 0);
             _path = path;
         }
 

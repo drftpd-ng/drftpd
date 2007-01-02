@@ -23,7 +23,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * if upload, the inetaddress would be the source. if download, the inetaddress
@@ -34,6 +34,6 @@ import org.drftpd.vfs.InodeHandle;
  */
 public abstract class Filter {
 	public abstract void process(ScoreChart scorechart, User user,
-			InetAddress peer, char direction, InodeHandle dir,
+			InetAddress peer, char direction, InodeHandleInterface inode,
 			RemoteSlave sourceSlave) throws NoAvailableSlaveException;
 }

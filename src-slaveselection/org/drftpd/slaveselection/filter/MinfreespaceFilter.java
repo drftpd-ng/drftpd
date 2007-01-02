@@ -27,7 +27,7 @@ import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * Example slaveselection.conf entry:
@@ -59,7 +59,7 @@ public class MinfreespaceFilter extends Filter {
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress source,
-			char direction, InodeHandle file, RemoteSlave sourceSlave) {
+			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
 		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
 				.hasNext();) {
 			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();

@@ -349,12 +349,16 @@ public class DirectoryHandle extends InodeHandle implements
 			}
 		}
 	}
+	
+	public DirectoryHandle createDirectorySystem(String name) throws FileExistsException, FileNotFoundException {
+		return createDirectory(name, "drftpd", "drftpd");
+	}
 
 	private void createDirectoryForRemergeRecursive(String name)
 			throws FileExistsException, FileNotFoundException {
 		DirectoryHandle dir = null;
 		try {
-			dir = createDirectory(name, "drftpd", "drftpd");
+			dir = createDirectorySystem(name);
 		} catch (FileNotFoundException e) {
 			getParent().createDirectoryForRemergeRecursive(getName());
 		}

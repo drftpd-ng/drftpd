@@ -17,10 +17,21 @@
  */
 package org.drftpd.vfs;
 
+import java.io.FileNotFoundException;
+import java.util.List;
+
+import org.drftpd.master.RemoteSlave;
+
+import net.sf.drftpd.FileExistsException;
+
 /**
  * @author zubov
  * @version $Id$
  */
 public interface DirectoryHandleInterface extends InodeHandleInterface {
+
+	public DirectoryHandleInterface createDirectorySystem(String string) throws FileExistsException, FileNotFoundException;
+
+	public FileHandle createFile(String string, String user, String group, RemoteSlave rslave) throws FileExistsException, FileNotFoundException;
 
 }

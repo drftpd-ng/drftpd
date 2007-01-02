@@ -27,7 +27,7 @@ import net.sf.drftpd.mirroring.JobManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author mog
@@ -45,7 +45,7 @@ public class MaxUploadsPerSlaveJob extends Filter {
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
 		process(scorechart, sourceSlave);
 	}

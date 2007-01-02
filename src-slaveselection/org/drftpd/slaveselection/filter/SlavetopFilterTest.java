@@ -33,14 +33,15 @@ import org.apache.log4j.BasicConfigurator;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.remotefile.LinkedRemoteFile;
-import org.drftpd.remotefile.StaticRemoteFile;
 import org.drftpd.sections.def.SectionManager;
+import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.DirectoryHandleInterface;
 
 
 /**
@@ -48,12 +49,12 @@ import org.drftpd.tests.DummySlaveManager;
  * @version $Id: SlavetopFilterTest.java 847 2004-12-02 03:32:41Z mog $
  */
 public class SlavetopFilterTest extends TestCase {
-    private LinkedRemoteFile _dir1;
-    private LinkedRemoteFile _root;
+    private DirectoryHandleInterface _dir1;
+    private DirectoryHandleInterface _root;
 	private RemoteSlave[] _rslaves;
 	private ScoreChart _sc;
 	private DummyFilterChain _fc;
-	private LinkedRemoteFile _dir2;
+	private DirectoryHandleInterface _dir2;
 
     public SlavetopFilterTest(String name) {
         super(name);
@@ -73,38 +74,28 @@ public class SlavetopFilterTest extends TestCase {
 
         _sc = new ScoreChart(Arrays.asList(_rslaves));
 
-        _root = new LinkedRemoteFile(null);
-        _dir1 = _root.createDirectory("dir1");
+        _root = new DirectoryHandle(null);
+        _dir1 = _root.createDirectorySystem("dir1");
 
-        _dir2 = _dir1.createDirectory("dir2");
+        _dir2 = _dir1.createDirectorySystem("dir2");
 
-        _dir2.addFile(new StaticRemoteFile("file1",
-                Collections.singletonList(_rslaves[0])));
-        _dir2.addFile(new StaticRemoteFile("file2",
-                Collections.singletonList(_rslaves[2])));
-        _dir2.addFile(new StaticRemoteFile("file3",
-                Collections.singletonList(_rslaves[0])));
-        _dir2.addFile(new StaticRemoteFile("file4",
-                Collections.singletonList(_rslaves[1])));
-        _dir2.addFile(new StaticRemoteFile("file5",
-                Collections.singletonList(_rslaves[2])));
+        _dir2.createFile("file1", "drftpd", "drftpd", _rslaves[0]);
+        _dir2.createFile("file2", "drftpd", "drftpd", _rslaves[2]);
+        _dir2.createFile("file3", "drftpd", "drftpd", _rslaves[0]);
+        _dir2.createFile("file4", "drftpd", "drftpd", _rslaves[1]);
+        _dir2.createFile("file5", "drftpd", "drftpd", _rslaves[2]);
 
         // these 3 shouldn't get included by SlavetopFilter, as they are directly in the section.
-        _dir1.addFile(new StaticRemoteFile("file6",
-                Collections.singletonList(_rslaves[1])));
-
-        _dir1.addFile(new StaticRemoteFile("file7",
-                Collections.singletonList(_rslaves[1])));
-
-        _dir1.addFile(new StaticRemoteFile("file8",
-                Collections.singletonList(_rslaves[1])));
+        _dir1.createFile("file6", "drftpd", "drftpd", _rslaves[2]);
+        _dir1.createFile("file7", "drftpd", "drftpd", _rslaves[2]);
+        _dir1.createFile("file8", "drftpd", "drftpd", _rslaves[2]);
 
         _fc = new DummyFilterChain();
         DummyConnectionManager cm = new DummyConnectionManager();
 
         DummyGlobalContext gctx = new DummyGlobalContext();
         _fc.setGlobalContext(gctx);
-        gctx.setSectionManager(new SectionManager(cm));
+/*        gctx.setSectionManager(new SectionManager(cm));
         gctx.setConnectionManager(cm);
         gctx.setRoot(_root);
         cm.setGlobalContext(gctx);
@@ -112,6 +103,7 @@ public class SlavetopFilterTest extends TestCase {
         DummySlaveManager sm = new DummySlaveManager();
         sm.setGlobalContext(gctx);
         _fc.setSlaveManager(sm);
+        */
     }
 
     public void testAssign()

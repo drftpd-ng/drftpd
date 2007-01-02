@@ -27,7 +27,7 @@ import net.sf.drftpd.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the
@@ -41,7 +41,7 @@ public class CycleFilter extends Filter {
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandle dir, RemoteSlave sourceSlave)
+			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
 		ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart
 				.getSlaveScores());

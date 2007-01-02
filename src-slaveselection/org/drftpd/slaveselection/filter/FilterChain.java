@@ -32,6 +32,7 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author mog
@@ -60,7 +61,7 @@ public class FilterChain {
 	}
 
 	public void filter(ScoreChart sc, User user, InetAddress peer,
-			char direction, InodeHandle file, RemoteSlave sourceSlave)
+			char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
 		for (Filter filter : _filters) {
 			filter.process(sc, user, peer, direction, file, sourceSlave);
@@ -68,7 +69,7 @@ public class FilterChain {
 	}
 
 	public RemoteSlave getBestSlave(ScoreChart sc, User user, InetAddress peer,
-			char direction, InodeHandle file, RemoteSlave sourceSlave)
+			char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
 		filter(sc, user, peer, direction, file, sourceSlave);
 		RemoteSlave rslave = sc.getBestSlave();

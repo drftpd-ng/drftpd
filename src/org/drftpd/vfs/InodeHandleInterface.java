@@ -40,4 +40,6 @@ public interface InodeHandleInterface {
 	public boolean isFile() throws FileNotFoundException;
 	
 	public boolean isLink() throws FileNotFoundException;
+	
+	public String getPath();
 }

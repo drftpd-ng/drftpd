@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.Serializable;
 
 import org.drftpd.vfs.InodeHandleInterface;
+import org.drftpd.vfs.VirtualFileSystem;
 
 import se.mog.io.File;
 
@@ -30,7 +31,7 @@ import se.mog.io.File;
  * For use in sending the filelist from the slave to the master
  * Also used for creating files/directories that are superfluous
  */
-public final class LightRemoteInode implements Serializable, InodeHandleInterface {
+public class LightRemoteInode implements Serializable, InodeHandleInterface {
 	private String _filename;
 
 	private long _lastModified;
@@ -123,5 +124,9 @@ public final class LightRemoteInode implements Serializable, InodeHandleInterfac
 
 	public boolean isLink() throws FileNotFoundException {
 		return false;
+	}
+
+	public String getPath() {
+		return VirtualFileSystem.separator + getName();
 	}
 }
