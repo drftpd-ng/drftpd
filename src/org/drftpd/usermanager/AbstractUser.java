@@ -426,12 +426,11 @@ public abstract class AbstractUser extends User {
 	public long getUploadedTimeForTrialPeriod(int period) {
 		switch (period) {
 		case Trial.PERIOD_DAILY:
-
 			// return _uploadedMilliSeconds[P_DAY];
 			return _uploadedMilliSeconds[P_DAY];
 
 		case Trial.PERIOD_MONTHLY:
-			return _uploadedMilliSeconds[P_ALL];
+			return _uploadedMilliSeconds[P_MONTH];
 
 		case Trial.PERIOD_WEEKLY:
 			return _uploadedMilliSeconds[P_WEEK];

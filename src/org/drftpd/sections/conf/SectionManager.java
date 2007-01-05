@@ -83,42 +83,45 @@ public class SectionManager implements SectionManagerInterface {
 				matchlen = section.getCurrentDirectory().getPath().length();
 			}
 		}
-
 		return match;
 	}
-
 	public void reload() {
 		Properties p = new Properties();
-
-		try {
-			p.load(new FileInputStream("conf/sections.conf"));
+		Hashtable<String, SectionInterface> sections = new Hashtable<String, SectionInterface>();
+		FileInputStream stream = null;
+        try {
+        	stream = new FileInputStream("conf/sections.conf");
+			p.load(stream);
 		} catch (IOException e) {
 			throw new FatalException(e);
-		}
-
-		Hashtable<String, SectionInterface> sections = new Hashtable<String, SectionInterface>();
-
-		for (int i = 1;; i++) {
-			String name = p.getProperty(i + ".name");
-			if (name == null)
-				break;
-
-			String type = p.getProperty(i + ".type", "plain");
-
-			try {
-				Class clazz = Class.forName("org.drftpd.sections.conf."
-						+ type.substring(0, 1).toUpperCase()
-						+ type.substring(1) + "Section");
-				SectionInterface section = (SectionInterface) clazz
-						.getDeclaredConstructor(CONSTRUCTOR_SIG).newInstance(
-								new Object[] { this, new Integer(i), p });
-				sections.put(name, section);
-			} catch (Exception e1) {
-				throw new FatalException("Unknown section type: " + i
-						+ ".type = " + type, e1);
+		} finally {
+			if (stream != null) {
+				try {
+					stream.close();
+				} catch (IOException e) {
+				}
 			}
 		}
 
+		for (int i = 1;; i++) {
+				String name = p.getProperty(i + ".name");
+				if (name == null)
+					break;
+				String type = p.getProperty(i + ".type", "plain");
+				try {
+					Class clazz = Class.forName("org.drftpd.sections.conf."
+							+ type.substring(0, 1).toUpperCase()
+							+ type.substring(1) + "Section");
+					SectionInterface section = (SectionInterface) clazz
+							.getDeclaredConstructor(CONSTRUCTOR_SIG)
+							.newInstance(
+									new Object[] { this, new Integer(i), p });
+					sections.put(name, section);
+				} catch (Exception e1) {
+					throw new FatalException("Unknown section type: " + i
+							+ ".type = " + type, e1);
+				}
+			}
 		_sections = sections;
 	}
 

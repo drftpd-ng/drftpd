@@ -206,6 +206,7 @@ public class RootCollection {
 
 		Collections.sort(mounts, new Comparator() {
 			public boolean equals(Object obj) {
+				if (obj == null) return false;
 				return obj.getClass() == getClass();
 			}
 
@@ -225,8 +226,6 @@ public class RootCollection {
 						: ((thisVal == anotherVal) ? 0 : (-1)));
 			}
 		});
-
-		Hashtable usedMounts = new Hashtable();
 
 		for (Iterator iter = roots.iterator(); iter.hasNext();) {
 			Object o = iter.next();
@@ -250,6 +249,8 @@ public class RootCollection {
 			}
 
 			String fullpath = rootFile.getAbsolutePath();
+			
+			Hashtable usedMounts = new Hashtable();
 
 			for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
 				File mount = (File) iterator.next();

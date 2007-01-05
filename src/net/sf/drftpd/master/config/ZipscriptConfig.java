@@ -70,8 +70,16 @@ public class ZipscriptConfig {
 	public ZipscriptConfig(GlobalContext gctx) throws IOException {
 		_gctx = gctx;
 		Properties cfg = new Properties();
-		cfg.load(new FileInputStream(zsConf));
-		loadConfig(cfg);
+		FileInputStream stream = null;
+		try {
+			stream = new FileInputStream(zsConf);
+			cfg.load(stream);
+			loadConfig(cfg);
+		} finally {
+			if(stream != null) {
+				stream.close();
+			}
+		}
 	}
 
 	public void loadConfig(Properties cfg) throws IOException {

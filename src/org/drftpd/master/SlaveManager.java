@@ -465,9 +465,11 @@ public class SlaveManager implements Runnable {
 					throw new IOException("Already online");
 				}
 			} catch (Exception e) {
-				try {
-					socket.close();
-				} catch (IOException e1) {
+				if (socket != null) {
+					try {
+						socket.close();
+					} catch (IOException e1) {
+					}
 				}
 
 				logger.error("", e);

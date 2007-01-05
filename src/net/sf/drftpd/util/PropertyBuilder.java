@@ -75,7 +75,9 @@ public class PropertyBuilder {
 						System.out.println(classname + "." + line);
 					}
 				} finally {
-					in.close();
+                	if(in != null) {
+                		in.close();
+                	}
 				}
 			}
 		}

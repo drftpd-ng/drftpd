@@ -37,6 +37,7 @@ public final class TransferIndex implements Serializable {
 	}
 
 	public boolean equals(Object obj) {
+	if(obj == null) return false;
 		return _index == ((TransferIndex) obj)._index;
 	}
 
