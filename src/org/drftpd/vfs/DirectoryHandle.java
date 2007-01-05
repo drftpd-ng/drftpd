@@ -294,7 +294,7 @@ public class DirectoryHandle extends InodeHandle implements
 				} else if (source.isFile() && destination.isFile()) {
 					// both files
 					FileHandle destinationFile = (FileHandle) destination;
-					long sourceCRC = rslave.getCheckSumForPath(getPath()
+/*					long sourceCRC = rslave.getCheckSumForPath(getPath()
 							+ VirtualFileSystem.separator + source.getName());
 					long destinationCRC;
 					try {
@@ -302,8 +302,8 @@ public class DirectoryHandle extends InodeHandle implements
 					} catch (NoAvailableSlaveException e) {
 						destinationCRC = 0L;
 					}
-					if (source.length() != destinationFile.getSize()
-							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
+*/					if (source.length() != destinationFile.getSize()) {
+//							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
 						// handle collision
 						createRemergedFile(source, rslave, true);
 						logger.warn("In remerging " + rslave.getName()
