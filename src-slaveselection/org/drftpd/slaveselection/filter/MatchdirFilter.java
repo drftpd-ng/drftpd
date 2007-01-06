@@ -125,12 +125,12 @@ public class MatchdirFilter extends Filter {
 		public AssignSlave(String s, SlaveManager slaveManager)
 				throws ObjectNotFoundException {
 			boolean isAdd;
-			int pos = s.indexOf("+");
+			int pos = s.lastIndexOf("+");
 
 			if (pos != -1) {
 				isAdd = true;
 			} else {
-				pos = s.indexOf("-");
+				pos = s.lastIndexOf("-");
 
 				if (pos == -1) {
 					throw new IllegalArgumentException(s
