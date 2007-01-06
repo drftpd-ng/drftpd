@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.GlobalContext;
@@ -65,6 +64,9 @@ public class DirectoryHandle extends InodeHandle implements
 		return new LinkHandle(getPath() + VirtualFileSystem.separator + name);
 	}
 
+	/**
+	 * @see org.drftpd.vfs.InodleHandle#getInode()
+	 */
 	@Override
 	protected VirtualFileSystemDirectory getInode()
 			throws FileNotFoundException {
@@ -76,6 +78,11 @@ public class DirectoryHandle extends InodeHandle implements
 				"DirectoryHandle object pointing to Inode:" + inode);
 	}
 
+	/**
+	 * @return a set containing only the files of this dir.
+	 * (no links or directories included.)
+	 * @throws FileNotFoundException
+	 */
 	public Set<FileHandle> getFiles() throws FileNotFoundException {
 		Set<FileHandle> set = new HashSet<FileHandle>();
 		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter
@@ -88,10 +95,19 @@ public class DirectoryHandle extends InodeHandle implements
 		return (Set<FileHandle>) set;
 	}
 
+	/**
+	 * @return all InodeHandles inside this dir.
+	 * @throws FileNotFoundException
+	 */
 	public Set<InodeHandle> getInodeHandles() throws FileNotFoundException {
 		return getInode().getInodes();
 	}
 
+	/**
+	 * @return a set containing only the directories of this dir.
+	 * (no links or files included.)
+	 * @throws FileNotFoundException
+	 */
 	public Set<DirectoryHandle> getDirectories() throws FileNotFoundException {
 		Set<DirectoryHandle> set = new HashSet<DirectoryHandle>();
 		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter
@@ -104,6 +120,11 @@ public class DirectoryHandle extends InodeHandle implements
 		return (Set<DirectoryHandle>) set;
 	}
 
+	/**
+	 * @param name
+	 * @return 
+	 * @throws FileNotFoundException
+	 */
 	public InodeHandle getInodeHandle(String name) throws FileNotFoundException {
 		VirtualFileSystemInode inode = getInode().getInodeByName(name);
 		if (inode.isDirectory()) {

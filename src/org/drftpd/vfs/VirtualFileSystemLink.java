@@ -25,6 +25,9 @@ import java.beans.XMLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * Lowest representation of a directory.
+ */
 public class VirtualFileSystemLink extends VirtualFileSystemInode {
 
 	private String _link;

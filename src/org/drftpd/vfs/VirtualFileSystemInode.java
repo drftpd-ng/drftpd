@@ -28,11 +28,18 @@ import org.drftpd.dynamicdata.KeyedMap;
 
 import se.mog.io.PermissionDeniedException;
 
+/**
+ * VirtualFileSystemInode is an abstract class used to handle basic functions
+ * of files/dirs/links and to keep an hierarchy/organization of the FS.
+ */
 public abstract class VirtualFileSystemInode {
 
 	protected static final Logger logger = Logger
 			.getLogger(VirtualFileSystemInode.class.getName());
 
+	/**
+	 * @return the VirtualFileSystem instance.
+	 */
 	public static VirtualFileSystem getVFS() {
 		return VirtualFileSystem.getVirtualFileSystem();
 	}
@@ -60,7 +67,8 @@ public abstract class VirtualFileSystemInode {
 
 	/**
 	 * Need to ensure that this is called after each (non-transient) change to
-	 * the Inode
+	 * the Inode.<br>
+	 * When called, this method will save the Inode data to the disk.
 	 */
 	protected void commit() {
 		VirtualFileSystem.getVirtualFileSystem().writeInode(this);
@@ -73,33 +81,42 @@ public abstract class VirtualFileSystemInode {
 	public void delete() {
 		logger.info("delete(" + this + ")");
 		//GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves();
-		VirtualFileSystem.getVirtualFileSystem().deleteXML(getPath());
+		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
 		_parent.removeChild(this);
 		_parent.addSize(-getSize());
 	}
 
 	/**
-	 * @return Returns the _group.
+	 * @return the owner primary group.
 	 */
 	public String getGroup() {
 		return _group;
 	}
 
+	/**
+	 * @return the KeyedMap containing the Dynamic Data. 
+	 */
 	public KeyedMap<Key, Object> getKeyedMap() {
 		return _keyedMap;
 	}
 
 	/**
-	 * @return Returns the _lastModified.
+	 * @return when the file was last modified.
 	 */
 	public long getLastModified() {
 		return _lastModified;
 	}
 
+	/**
+	 * @return the file name.
+	 */
 	public String getName() {
 		return _name;
 	}
 
+	/**
+	 * @return parent dir of the file/directory/link.
+	 */
 	public VirtualFileSystemDirectory getParent() {
 		return _parent;
 	}
@@ -119,14 +136,14 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	/**
-	 * @return Returns the size.
+	 * @return Returns the size of the dir/file/link.
 	 */
 	public long getSize() {
 		return _size;
 	}
 
 	/**
-	 * @return Returns the user.
+	 * @return the owner username.
 	 */
 	public String getUsername() {
 		return _username;
@@ -144,6 +161,11 @@ public abstract class VirtualFileSystemInode {
 		return this instanceof VirtualFileSystemLink;
 	}
 
+	/**
+	 * Renames this Inode.
+	 * @param destination
+	 * @throws FileExistsException
+	 */
 	protected void rename(String destination) throws FileExistsException {
 		if (!destination.startsWith(VirtualFileSystem.separator)) {
 			throw new IllegalArgumentException("Accepts a full path and name");
@@ -162,10 +184,10 @@ public abstract class VirtualFileSystemInode {
 			throw new RuntimeException(
 					"Error in logic, this should not happen", e);
 		}
-		String fileString = "rename(" + this;
+		String fileString = "rename(" + this + ")";
 		_parent.removeChild(this);
 		try {
-			VirtualFileSystem.getVirtualFileSystem().renameXML(
+			VirtualFileSystem.getVirtualFileSystem().renameInode(
 					this.getPath(),
 					destinationDir.getPath() + VirtualFileSystem.separator
 							+ VirtualFileSystem.getLast(destination));
@@ -184,7 +206,7 @@ public abstract class VirtualFileSystemInode {
 
 	/**
 	 * @param group
-	 *            The group to set.
+	 * Sets the group which owns the Inode.
 	 */
 	public void setGroup(String group) {
 		_group = group;
@@ -196,8 +218,8 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	/**
-	 * @param The
-	 *            lastModified to set.
+	 * @param modified
+	 * Set when the file was last modified.
 	 */
 	public void setLastModified(long modified) {
 		_lastModified = modified;
@@ -205,7 +227,7 @@ public abstract class VirtualFileSystemInode {
 	}
 
 	/**
-	 * The name to set.
+	 * Sets the Inode name.
 	 */
 	public void setName(String name) {
 		_name = name;

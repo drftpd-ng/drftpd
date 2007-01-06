@@ -32,6 +32,9 @@ import net.sf.drftpd.ObjectNotFoundException;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 
+/**
+ * Lowest representation of a File object.
+ */
 public class VirtualFileSystemFile extends VirtualFileSystemInode {
 
 	protected static final Collection<String> transientListFile = Arrays
@@ -49,6 +52,9 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 
 	protected Set<String> _slaves;
 
+	/**
+	 * @return a set of which slaves have this file.
+	 */
 	public synchronized Set<String> getSlaves() {
 		return new HashSet<String>(_slaves);
 	}
@@ -80,19 +86,33 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		_slaves = slaves;
 	}
 
+	/**
+	 * Add a slave to the list of slaves that contain this file.
+	 * @param rslave
+	 */
 	public synchronized void addSlave(String rslave) {
 		_slaves.add(rslave);
 		commit();
 	}
 
+	/**
+	 * @return the CRC32 of the file.
+	 */
 	public long getChecksum() {
 		return getKeyedMap().getObjectLong(CRC);
 	}
 
+	/**
+	 * @return the xfertime of the file.
+	 */
 	public long getXfertime() {
 		return getKeyedMap().getObjectLong(XFERTIME);
 	}
 
+	/**
+	 * Remove the slave from slave list.
+	 * @param rslave
+	 */
 	public synchronized void removeSlave(String rslave) {
 		_slaves.remove(rslave);
 		if (_slaves.isEmpty()) {
@@ -102,11 +122,18 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 		}
 	}
 
+	/**
+	 * Changes the CRC32.
+	 * @param checksum
+	 */
 	public void setChecksum(long checksum) {
 		getKeyedMap().setObject(CRC, checksum);
 		commit();
 	}
 
+	/**
+	 * Configure the serialization of the File.
+	 */
 	@Override
 	protected void setupXML(XMLEncoder enc) {
 		PropertyDescriptor[] pdArr;
@@ -129,11 +156,19 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 						"group", "size", "slaves" }));
 	}
 
+	/**
+	 * Changes the xfertime of the File.
+	 * @param xfertime
+	 */
 	public void setXfertime(long xfertime) {
 		getKeyedMap().setObject(XFERTIME, xfertime);
 		commit();
 	}
 
+	/**
+	 * Modifies the size of the File.
+	 * @param size
+	 */
 	public void setSize(long size) {
 		if (size < 0) {
 			throw new IllegalArgumentException("File size cannot be < 0");

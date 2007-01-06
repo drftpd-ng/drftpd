@@ -32,6 +32,12 @@ import java.util.TreeMap;
 
 import net.sf.drftpd.FileExistsException;
 
+/**
+ * Lowest representation of a directory.<br>
+ * This class deals directly w/ the actual VFS and should not be used
+ * outside the of the VirtualFileSystem part.
+ * @see org.drftpd.vfs.DirectoryHandle
+ */
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected static final Collection<String> transientListDirectory = Arrays
@@ -44,6 +50,10 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		_files = new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
 	}
 
+	/**
+	 * Add another inode to the directory tree.
+	 * @param inode
+	 */
 	protected synchronized void addChild(VirtualFileSystemInode inode) {
 		_files.put(inode.getName(), new SoftReference<VirtualFileSystemInode>(
 				inode));
@@ -59,6 +69,13 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		_parent.addSize(l);
 	}
 
+	/**
+	 * Create a directory inside the current Directory.
+	 * @param name
+	 * @param user
+	 * @param group
+	 * @throws FileExistsException if this directory already exists.
+	 */
 	public synchronized void createDirectory(String name, String user,
 			String group) throws FileExistsException {
 		if (_files.containsKey(name)) {
@@ -74,6 +91,14 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		logger.info("createDirectory(" + inode + ")");
 	}
 
+	/**
+	 * Create a file inside the current directory.
+	 * @param name
+	 * @param user
+	 * @param group
+	 * @param initialSlave
+	 * @throws FileExistsException if this file already exists.
+	 */
 	public synchronized void createFile(String name, String user, String group,
 			String initialSlave) throws FileExistsException {
 		if (_files.containsKey(name)) {
@@ -89,6 +114,14 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		logger.info("createFile(" + inode + ")");
 	}
 
+	/**
+	 * Create a link inside the current directory.
+	 * @param name
+	 * @param target
+	 * @param user
+	 * @param group
+	 * @throws FileExistsException if this link already exists.
+	 */
 	public synchronized void createLink(String name, String target,
 			String user, String group) throws FileExistsException {
 		if (_files.containsKey(name)) {
@@ -104,10 +137,16 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		logger.info("createLink(" + inode + ")");
 	}
 
+	/**
+	 * @return a Set containing all inode names inside this directory.
+	 */
 	public Set<String> getInodeNames() {
 		return new HashSet(_files.keySet());
 	}
 
+	/**
+	 * @return a set containing all Inode objects inside this directory.
+	 */
 	public Set<InodeHandle> getInodes() {
 		HashSet<InodeHandle> set = new HashSet<InodeHandle>();
 		String path = getPath() + VirtualFileSystem.separator;
@@ -132,6 +171,11 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	}
 
+	/**
+	 * @param name
+	 * @return VirtualFileSystemInode object if 'name' exists on the dir.
+	 * @throws FileNotFoundException
+	 */
 	protected synchronized VirtualFileSystemInode getInodeByName(String name)
 			throws FileNotFoundException {
 		//logger.debug("getInodeByName(" + name + ")");
@@ -157,6 +201,10 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		return inode;
 	}
 
+	/**
+	 * Remove the inode from the directory tree.
+	 * @param child
+	 */
 	protected synchronized void removeChild(VirtualFileSystemInode child) {
 		_files.remove(child.getName());
 		addSize(-child.getSize());
@@ -164,12 +212,19 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		commit();
 	}
 
+	/**
+	 * Changes the directory tree.
+	 * @param files
+	 */
 	public synchronized void setFiles(Collection<String> files) {
 		for (String file : files) {
 			_files.put(file, null);
 		}
 	}
 
+	/**
+	 * Configure the serialization of the Directory.
+	 */
 	@Override
 	protected void setupXML(XMLEncoder enc) {
 		PropertyDescriptor[] pdArr;

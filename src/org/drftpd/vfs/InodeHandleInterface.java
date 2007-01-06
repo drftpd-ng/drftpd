@@ -21,6 +21,8 @@ import java.io.FileNotFoundException;
 
 
 /**
+ * Lowest level of InodeHandles.<br>
+ * This class provides more flexibility and organization to the VFS.
  * @author zubov
  * @version $Id$
  */

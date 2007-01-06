@@ -32,6 +32,10 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	String _path = null;
 	protected static final Logger logger = Logger.getLogger(InodeHandle.class.getName());
 	
+	/**
+	 * Creates an InodleHandle for the given path.
+	 * @param path
+	 */
 	public InodeHandle(String path) {
 		if (path == null || !path.startsWith(VirtualFileSystem.separator)) {
 			throw new IllegalArgumentException("InodeHandle needs an absolute path, argument was [" + path + "]");
@@ -44,6 +48,10 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		return(handle._path.compareTo(_path));
 	}
 	
+	/**
+	 * Delete the inode.
+	 * @throws FileNotFoundException
+	 */
 	public void delete() throws FileNotFoundException {
 		getInode().delete();
 	}
@@ -63,6 +71,9 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 
 	}
 
+	/**
+	 * @return true if the Inode exists or false if it doesnt exists.
+	 */
 	public boolean exists() {
 		try {
 			getInode();
@@ -72,18 +83,32 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		}
 	}
 
-	public GlobalContext getGlobalContext() {
+	/**
+	 * @return shortcurt to access the GlobalContext.
+	 */
+	public static GlobalContext getGlobalContext() {
 		return GlobalContext.getGlobalContext();
 	}
 
+	/**
+	 * @return the group that owns the Inode.
+	 */
 	public String getGroup() throws FileNotFoundException {
 		return getInode().getGroup();
 	}
 
+	/**
+	 * Call the lowest level of the VFS and ask it to search the Inode.
+	 * @return a VirtualFileSystemInode object.
+	 * @throws FileNotFoundException if the inode does not exist.
+	 */
 	protected VirtualFileSystemInode getInode() throws FileNotFoundException {
 		return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(_path);
 	}
 
+	/**
+	 * Return the Inode name.
+	 */
 	public String getName() {
 		return VirtualFileSystem.getLast(_path);
 	}
@@ -101,10 +126,16 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
 	}
 
+	/**
+	 * @return the full path of the Inode.
+	 */
 	public String getPath() {
 		return _path;
 	}
 
+	/**
+	 * @return The size (in bytes) of the Inode.
+	 */
 	public long getSize() throws FileNotFoundException {
 		return getInode().getSize();
 	}
@@ -141,20 +172,46 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		}
 	}
 
+	/**
+	 * Changes the user who owns the Inode.
+	 * @param owner
+	 * @throws FileNotFoundException, if the Inode does not exist.
+	 */
 	public void setUsername(String owner) throws FileNotFoundException {
 		getInode().setUsername(owner);
 	}
 
+	/**
+	 * Changes the group which owns the Inode.
+	 * @param group
+	 * @throws FileNotFoundException, if the Inode does not exist.
+	 */
 	public void setGroup(String group) throws FileNotFoundException {
 		getInode().setGroup(group);
 	}
 
+	/**
+	 * Renames the Inode.
+	 * @param toInode
+	 * @throws FileExistsException if the destination inode already exists.
+	 * @throws FileNotFoundException if the source inode does not exist.
+	 */
 	public void renameTo(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
 		getInode().rename(toInode.getPath());
 	}
 
+	/**
+	 * Remove the slave from the slave list.
+	 * @param rslave
+	 * @throws FileNotFoundException
+	 */
 	public abstract void removeSlave(RemoteSlave rslave) throws FileNotFoundException;
 	
+	/**
+	 * Set when it was last modified.
+	 * @param l
+	 * @throws FileNotFoundException
+	 */
 	public void setLastModified(long l) throws FileNotFoundException {
 		getInode().setLastModified(l);
 	}

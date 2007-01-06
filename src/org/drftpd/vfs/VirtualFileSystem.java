@@ -69,7 +69,7 @@ public class VirtualFileSystem {
 	private static final Logger logger = Logger
 			.getLogger(VirtualFileSystem.class.getName());
 
-	public static String separator = File.separator;
+	public static String separator = "/";
 
 	/**
 	 * Takes /path/dir/name and returns name
@@ -78,6 +78,10 @@ public class VirtualFileSystem {
 		return path.substring(path.lastIndexOf(separator) + 1);
 	}
 
+	/**
+	 * Singleton method.
+	 * @return a VirtualFileSystem object, core of the FS.
+	 */
 	public static VirtualFileSystem getVirtualFileSystem() {
 		if (_vfs == null) {
 			_vfs = new VirtualFileSystem();
@@ -104,6 +108,12 @@ public class VirtualFileSystem {
 
 	private VirtualFileSystemRoot _root = null;
 
+	/**
+	 * Create a VirtualFileSystem object, creating or not a new directory tree.
+	 * If there's a pre-existing tree, it loads the data, if not, it creates a new one.<br>
+	 * 
+	 * <br>This constructor is private due to the Singleton architecture.
+	 */
 	private VirtualFileSystem() {
 		new File(fileSystemPath).mkdirs();
 		try {
@@ -121,17 +131,22 @@ public class VirtualFileSystem {
 		}
 	}
 
-	protected void deleteXML(String path) {
+	/**
+	 * Deletes a directory or a file from the dir tree, deleting
+	 * data from the disk also.
+	 * @param path
+	 */
+	protected void deleteInode(String path) {
 		recursiveDelete(new File(getRealPath(path)));
 	}
 
 	/**
 	 * Accepts a String path that starts with "/" and walks through the
-	 * structure to get it
+	 * structure to get it.
 	 * 
 	 * @param path
-	 * @return
-	 * @throws FileNotFoundException
+	 * @return the requested Inode, if it exists.
+	 * @throws FileNotFoundException if the inode doesnt exist.
 	 */
 	protected VirtualFileSystemInode getInodeByPath(String path)
 			throws FileNotFoundException {
@@ -161,10 +176,18 @@ public class VirtualFileSystem {
 		return inode;
 	}
 
+	/**
+	 * @param path
+	 * @return the real path of the file on the disk.<br>
+	 * Ex: getRealPath('PICS/me.jpg') would return 'files/PICS/me.jpg'
+	 */
 	private String getRealPath(String path) {
 		return fileSystemPath + path;
 	}
 
+	/**
+	 * @return the root directory.
+	 */
 	protected VirtualFileSystemRoot getRoot() {
 		return _root;
 	}
@@ -213,6 +236,12 @@ public class VirtualFileSystem {
 		}
 	}
 
+	/**
+	 * If 'file' is a directory, it recurses through it and deletes,
+	 * everything inside it.<br>
+	 * If 'file' is an actual file, it simply deletes it.
+	 * @param file
+	 */
 	private void recursiveDelete(File file) {
 		if (file.isDirectory()) {
 			File[] files = file.listFiles();
@@ -226,7 +255,14 @@ public class VirtualFileSystem {
 		}
 	}
 
-	protected void renameXML(String source, String destination)
+	/**
+	 * Rename the file/directory.
+	 * @param source
+	 * @param destination
+	 * @throws FileNotFoundException if there's no such file/dir.
+	 * @throws PermissionDeniedException if there's no permission to rename.
+	 */
+	protected void renameInode(String source, String destination)
 			throws FileNotFoundException, PermissionDeniedException {
 		File file = new File(getRealPath(source));
 		if (!file.exists()) {
@@ -239,6 +275,10 @@ public class VirtualFileSystem {
 		}
 	}
 
+	/**
+	 * Write the Inode data to the disk.
+	 * @param inode
+	 */
 	protected void writeInode(VirtualFileSystemInode inode) {
 		String fullPath = getRealPath(inode.getPath());
 		if (inode.isDirectory()) {

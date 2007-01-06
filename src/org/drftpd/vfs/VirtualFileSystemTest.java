@@ -67,8 +67,8 @@ public class VirtualFileSystemTest extends TestCase {
 	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.getLast(String)'
 	 */
 	public void testGetLast() {
-		assertEquals(vfs.getLast("/full/path/to/file"), "file");
-		assertEquals(vfs.getLast("/full/path/to"), "to");
+		assertEquals(VirtualFileSystem.getLast("/full/path/to/file"), "file");
+		assertEquals(VirtualFileSystem.getLast("/full/path/to"), "to");
 	}
 
 	/*
@@ -136,8 +136,8 @@ public class VirtualFileSystemTest extends TestCase {
 	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.stripLast(String)'
 	 */
 	public void testStripLast() {
-		assertEquals(vfs.stripLast("/full/path/to/file"), "/full/path/to");
-		assertEquals(vfs.stripLast("/full/path/to"), "/full/path");
+		assertEquals(VirtualFileSystem.stripLast("/full/path/to/file"), "/full/path/to");
+		assertEquals(VirtualFileSystem.stripLast("/full/path/to"), "/full/path");
 	}
 
 }

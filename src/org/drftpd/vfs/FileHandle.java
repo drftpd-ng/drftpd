@@ -40,6 +40,9 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	}
 
 	@Override
+	/**
+	 * @see org.drftpd.vfs.InodleHandle#getInode()
+	 */
 	protected VirtualFileSystemFile getInode() throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
 		if (inode instanceof VirtualFileSystemFile) {
@@ -49,6 +52,10 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 				+ inode);
 	}
 
+	/**
+	 * @return a Set containing the slaves that contain the File.
+	 * @throws FileNotFoundException
+	 */
 	public Set<RemoteSlave> getSlaves() throws FileNotFoundException {
 		HashSet<RemoteSlave> slaves = new HashSet<RemoteSlave>();
 		for (String slave : getInode().getSlaves()) {
@@ -62,6 +69,12 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 		return slaves;
 	}
 
+	/**
+	 * @return a filtered Collection containing only the avaiable slaves of
+	 * the Inode.
+	 * @throws NoAvailableSlaveException
+	 * @throws FileNotFoundException
+	 */
 	public Collection<RemoteSlave> getAvailableSlaves()
 			throws NoAvailableSlaveException, FileNotFoundException {
 		HashSet<RemoteSlave> rslaves = new HashSet<RemoteSlave>();
@@ -76,17 +89,30 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 		return rslaves;
 	}
 
+	/**
+	 * Changes the CRC32 of the File.
+	 * @param checksum
+	 * @throws FileNotFoundException
+	 */
 	public void setCheckSum(long checksum) throws FileNotFoundException {
 		getInode().setChecksum(checksum);
 	}
 
+	/**
+	 * Removes a slave from the slavelist.
+	 */
 	public void removeSlave(RemoteSlave sourceSlave)
 			throws FileNotFoundException {
 		getInode().removeSlave(sourceSlave.getName());
 	}
 
-	RemoteSlave getASlaveForFunction() throws FileNotFoundException,
-			NoAvailableSlaveException {
+	/**
+	 * @return the first slave of the slave list.
+	 * @throws FileNotFoundException if there's no such file.
+	 * @throws NoAvailableSlaveException if there's no avaiable slave.
+	 */
+	private RemoteSlave getASlaveForFunction() throws FileNotFoundException,
+	NoAvailableSlaveException {
 		for (RemoteSlave rslave : getAvailableSlaves()) {
 			return rslave;
 		}
@@ -94,6 +120,11 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 				+ this);
 	}
 
+	/**
+	 * @return the CRC32 of the file.
+	 * @throws FileNotFoundException if there's no such file.
+	 * @throws NoAvailableSlaveException if there's no avaiable slave.
+	 */
 	public long getCheckSum() throws NoAvailableSlaveException,
 			FileNotFoundException {
 		long checksum = getInode().getChecksum();
@@ -114,15 +145,28 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 		return checksum;
 	}
 
+	/**
+	 * Add a slave to the slave list.
+	 * @param destinationSlave
+	 * @throws FileNotFoundException if there's no such file.
+	 */
 	public void addSlave(RemoteSlave destinationSlave)
 			throws FileNotFoundException {
 		getInode().addSlave(destinationSlave.getName());
 	}
 
+	/**
+	 * @return the xfertime.
+	 * @throws FileNotFoundException if there's no such file.
+	 */
 	public long getXfertime() throws FileNotFoundException {
 		return getInode().getXfertime();
 	}
 
+	/**
+	 * @return true if there's an avaiable slave for the file or
+	 * false if there isn't.
+	 */
 	public boolean isAvailable() throws FileNotFoundException {
 		try {
 			return !getAvailableSlaves().isEmpty();
@@ -131,6 +175,11 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 		}
 	}
 
+	/**
+	 * Changes the size of the file.
+	 * @param size
+	 * @throws FileNotFoundException
+	 */
 	public void setSize(long size) throws FileNotFoundException {
 		getInode().setSize(size);
 	}

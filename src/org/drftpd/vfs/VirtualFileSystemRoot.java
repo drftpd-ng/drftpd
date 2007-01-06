@@ -28,9 +28,9 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 		setName(VirtualFileSystem.separator);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
+	 * @throws IllegalStateException whenever this method is called, since
+	 * root dir does not have a parent.
 	 * @see org.drftpd.vfs.VirtualFileSystemInode#getParent()
 	 */
 	@Override
@@ -38,9 +38,7 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 		throw new IllegalStateException("Root does not have a parent");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see org.drftpd.vfs.VirtualFileSystemInode#getPath()
 	 */
 	@Override
@@ -58,10 +56,10 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 		_size = getSize() + l;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see org.drftpd.vfs.VirtualFileSystemInode#delete()
+	 * @throws UnsupportedOperationException everytime this method is called,
+	 * since it's impossible to delete the root dir.
 	 */
 	@Override
 	public void delete() {

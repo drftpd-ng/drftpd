@@ -18,13 +18,14 @@
 package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
-import java.util.List;
 
 import org.drftpd.master.RemoteSlave;
 
 import net.sf.drftpd.FileExistsException;
 
 /**
+ * Lowest level of DirectoryHandles.<br>
+ * This class provides more flexibility and organization to the VFS.
  * @author zubov
  * @version $Id$
  */
