@@ -20,12 +20,13 @@ package org.drftpd.usermanager;
 import java.util.Collection;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.master.cron.TimeEventInterface;
 
 /**
  * @author mog
  * @version $Id$
  */
-public interface UserManager {
+public interface UserManager extends TimeEventInterface {
 	public abstract User create(String username) throws UserFileException;
 
 	public abstract Collection getAllGroups() throws UserFileException;

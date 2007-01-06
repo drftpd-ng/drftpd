@@ -41,6 +41,8 @@ import net.sf.drftpd.util.PortRange;
 import org.apache.log4j.Logger;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.master.cron.TimeEventInterface;
+import org.drftpd.master.cron.TimeManager;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
@@ -80,6 +82,8 @@ public class GlobalContext {
 	protected SlaveSelectionManagerInterface _slaveSelectionManager;
 
 	private SSLContext _sslContext;
+	
+	private TimeManager _timeManager;
 
 	private static DirectoryHandle root = new DirectoryHandle(
 			VirtualFileSystem.separator);
@@ -294,6 +298,10 @@ public class GlobalContext {
 	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
 		return _slaveSelectionManager;
 	}
+	
+	public void addTimeEvent(TimeEventInterface timeEvent) {
+		_timeManager.addTimeEvent(timeEvent);
+	}
 
 	public PortRange getPortRange() {
 		return getConfig().getPortRange();
@@ -330,7 +338,9 @@ public class GlobalContext {
 			// TODO Auto-generated catch block
 			logger.debug("", e);
 		}
+		_timeManager = new TimeManager();
 		loadUserManager(getConfig().getProperties());
+		addTimeEvent(getUserManager());
 
 		try {
 			loadSlaveManager(getConfig().getProperties());
@@ -343,6 +353,7 @@ public class GlobalContext {
 		loadSlaveSelectionManager(getConfig().getProperties());
 		loadSectionManager(getConfig().getProperties());
 		loadPlugins(getConfig().getProperties());
+		
 		try {
 			_sslContext = SSLGetContext.getSSLContext();
 		} catch (IOException e) {

@@ -16,11 +16,11 @@
  */
 package org.drftpd.usermanager;
 
+import java.util.Date;
 import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 
@@ -225,7 +225,15 @@ public abstract class User implements Entity {
 	public abstract void rename(String username) throws UserExistsException,
 			UserFileException;
 
-	public abstract void reset(GlobalContext manager) throws UserFileException;
+	public abstract void resetHour(Date d) throws UserFileException;
+
+	public abstract void resetDay(Date d) throws UserFileException;
+
+	public abstract void resetWeek(Date d) throws UserFileException;
+
+	public abstract void resetMonth(Date d) throws UserFileException;
+
+	public abstract void resetYear(Date d) throws UserFileException;
 
 	/**
 	 * Sets the credits.

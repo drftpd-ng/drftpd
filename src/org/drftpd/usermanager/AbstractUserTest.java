@@ -18,15 +18,12 @@
 package org.drftpd.usermanager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
 import net.sf.drftpd.event.Event;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -99,53 +96,6 @@ i1:
 
     public void setUp() {
         BasicConfigurator.configure();
-    }
-
-    public void testResetDay() throws UserFileException {
-        resetSetUp();
-        _resetCal.add(Calendar.DAY_OF_MONTH, 1);
-        CalendarUtils.floorAllLessThanDay(_resetCal);
-        logger.debug("resetDay lastreset " + new Date(_user.getLastReset()));
-        logger.debug("resetDay date " + _resetCal.getTime());
-        _user.reset(_gctx, _resetCal);
-        verifyEvents(new ArrayList<String>(Arrays.asList(new String[] { "RESETDAY" })), _gctx.events);
-    }
-
-    public void testResetMonth() throws UserFileException {
-        resetSetUp();
-        _resetCal.add(Calendar.MONTH, 1);
-        CalendarUtils.floorDayOfMonth(_resetCal);
-        CalendarUtils.floorAllLessThanDay(_resetCal);
-        logger.debug("resetMonth lastreset " + new Date(_user.getLastReset()));
-        logger.debug("resetMonth date " + _resetCal.getTime());
-        _user.reset(_gctx, _resetCal);
-        verifyEvents(new ArrayList<String>(Arrays.asList(
-                new String[] { "RESETDAY", "RESETWEEK", "RESETMONTH" })),
-            _gctx.events);
-    }
-
-    public void testResetNone1() throws UserFileException {
-        resetSetUp();
-        CalendarUtils.ceilAllLessThanDay(_resetCal);
-        _user.reset(_gctx, _resetCal);
-    }
-
-    public void testResetNone2() throws UserFileException {
-        resetSetUp();
-        CalendarUtils.floorAllLessThanDay(_resetCal);
-        _user.reset(_gctx, _resetCal);
-    }
-
-    public void testResetWeek() throws UserFileException {
-        resetSetUp();
-        _resetCal.add(Calendar.WEEK_OF_MONTH, 1);
-        CalendarUtils.floorDayOfWeek(_resetCal);
-        CalendarUtils.floorAllLessThanDay(_resetCal);
-        logger.debug("resetWeek lastreset " + new Date(_user.getLastReset()));
-        logger.debug("resetWeek date " + _resetCal.getTime());
-        _user.reset(_gctx, _resetCal);
-        verifyEvents(new ArrayList<String>(Arrays.asList(new String[] { "RESETDAY", "RESETWEEK" })),
-            _gctx.events);
     }
 
     private static class GCtx extends DummyGlobalContext {

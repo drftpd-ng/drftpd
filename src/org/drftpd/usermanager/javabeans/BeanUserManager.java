@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
@@ -70,7 +71,6 @@ public class BeanUserManager extends AbstractUserManager {
 			BeanUser user = (BeanUser) _users.get(username);
 
 			if (user != null) {
-				user.reset(getGlobalContext());
 				return user;
 			}
 
@@ -79,7 +79,6 @@ public class BeanUserManager extends AbstractUserManager {
 
 			user.setUserManager(this);
 			_users.put(user.getName(), user);
-			user.reset(getGlobalContext());
 			return user;
 		} catch (FileNotFoundException ex) {
 			throw new NoSuchUserException("No such user", ex);

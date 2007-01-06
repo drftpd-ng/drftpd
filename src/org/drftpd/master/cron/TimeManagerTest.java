@@ -109,7 +109,7 @@ public class TimeManagerTest extends TestCase {
 		
 // 		test year & week
 		_resetWeek = false;
-		_lastReset = Calendar.ALL_STYLES; // used as a un-set value
+		_lastReset = Calendar.ERA; // used as a un-set value
 		date = df.parse("1/1/07 12:00 AM");
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);
@@ -119,7 +119,7 @@ public class TimeManagerTest extends TestCase {
 		
 //		test month & week
 		_resetWeek = false;
-		_lastReset = Calendar.ALL_STYLES; // used as a un-set value
+		_lastReset = Calendar.ERA; // used as a un-set value
 		date = df.parse("2/1/07 12:00 AM");
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);
@@ -129,7 +129,7 @@ public class TimeManagerTest extends TestCase {
 		
 //		 test day & week
 		_resetWeek = false;
-		_lastReset = Calendar.ALL_STYLES; // used as a un-set value
+		_lastReset = Calendar.ERA; // used as a un-set value
 		date = df.parse("2/3/07 12:00 AM");
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);
@@ -139,7 +139,7 @@ public class TimeManagerTest extends TestCase {
 		
 //		 test hour & week
 		_resetWeek = false;
-		_lastReset = Calendar.ALL_STYLES; // used as a un-set value
+		_lastReset = Calendar.ERA; // used as a un-set value
 		date = df.parse("1/1/07 2:00 AM");
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);

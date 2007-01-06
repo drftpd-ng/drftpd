@@ -17,14 +17,12 @@
 package org.drftpd.usermanager;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
@@ -508,51 +506,8 @@ public abstract class AbstractUser extends User {
 		commit(); // throws IOException
 	}
 
-	public void reset(GlobalContext gctx) throws UserFileException {
-		reset(gctx, Calendar.getInstance());
-	}
-
-	protected void reset(GlobalContext gctx, Calendar cal)
-			throws UserFileException {
-		// ignore reset() if we are called from userfileconverter or the like
-		if (gctx == null) {
-			return;
-		}
-
-		Date lastResetDate = new Date(_lastReset);
-		_lastReset = cal.getTimeInMillis();
-
-		// cal = Calendar.getInstance();
-		Calendar calTmp = (Calendar) cal.clone();
-		calTmp.add(Calendar.DAY_OF_MONTH, -1);
-		CalendarUtils.ceilAllLessThanDay(calTmp);
-
-		// has not been reset since midnight
-		if (lastResetDate.before(calTmp.getTime())) {
-			resetDay(gctx, cal.getTime());
-
-			// floorDayOfWeek could go into the previous month
-			calTmp = (Calendar) cal.clone();
-
-			// calTmp.add(Calendar.WEEK_OF_YEAR, 1);
-			CalendarUtils.floorDayOfWeek(calTmp);
-
-			if (lastResetDate.before(calTmp.getTime())) {
-				resetWeek(gctx, calTmp.getTime());
-			}
-
-			CalendarUtils.floorDayOfMonth(cal);
-
-			if (lastResetDate.before(cal.getTime())) {
-				resetMonth(gctx, cal.getTime());
-			}
-
-			commit(); // throws UserFileException
-		}
-	}
-
-	private void resetDay(GlobalContext gctx, Date resetDate) {
-		gctx.dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate
+	public void resetDay(Date resetDate) {
+		GlobalContext.getGlobalContext().dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate
 				.getTime()));
 		_downloadedFiles[P_DAY] = 0;
 		_uploadedFiles[P_DAY] = 0;
@@ -563,8 +518,8 @@ public abstract class AbstractUser extends User {
 		logger.info("Reset daily stats for " + getName());
 	}
 
-	private void resetMonth(GlobalContext gctx, Date resetDate) {
-		gctx.dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate
+	public void resetMonth(Date resetDate) {
+		GlobalContext.getGlobalContext().dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate
 				.getTime()));
 		_downloadedFiles[P_MONTH] = 0;
 		_uploadedFiles[P_MONTH] = 0;
@@ -575,11 +530,27 @@ public abstract class AbstractUser extends User {
 		logger.info("Reset monthly stats for " + getName());
 	}
 
-	private void resetWeek(GlobalContext gctx, Date resetDate) {
+	/* (non-Javadoc)
+	 * @see org.drftpd.usermanager.User#resetHour(java.util.Date)
+	 */
+	@Override
+	public void resetHour(Date d) throws UserFileException {
+		// do nothing for now
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.usermanager.User#resetYear(java.util.Date)
+	 */
+	@Override
+	public void resetYear(Date d) throws UserFileException {
+		// do nothing for now
+	}
+
+	public void resetWeek(Date resetDate) {
 		logger.info("Reset weekly stats for " + getName() + "(was "
 				+ Bytes.formatBytes(_uploadedBytes[P_WEEK]) + " UP and "
 				+ Bytes.formatBytes(_downloadedBytes[P_WEEK]) + " DOWN");
-		gctx.dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate
+		GlobalContext.getGlobalContext().dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate
 				.getTime()));
 		_downloadedFiles[P_WEEK] = 0;
 		_uploadedFiles[P_WEEK] = 0;

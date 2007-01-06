@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
@@ -230,7 +231,6 @@ public abstract class AbstractUserManager implements UserManager {
 	public User getUserByNameIncludeDeleted(String username)
 			throws NoSuchUserException, UserFileException {
 		User user = getUserByNameUnchecked(username);
-		user.reset(getGlobalContext());
 		return user;
 	}
 
@@ -300,6 +300,76 @@ public abstract class AbstractUserManager implements UserManager {
 		logger.info("Saving userfiles");
 		for (User user : _users.values()) {
 			user.commit();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.master.cron.TimeEventInterface#resetDay(java.util.Date)
+	 */
+	public void resetDay(Date d) {
+		List<User> users = new ArrayList<User>(_users.values());
+		for (User user : users) {
+			try {
+				user.resetDay(d);
+			} catch (UserFileException e) {
+				logger.error("Unable to process user for resetDay()", e);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.master.cron.TimeEventInterface#resetHour(java.util.Date)
+	 */
+	public void resetHour(Date d) {
+		List<User> users = new ArrayList<User>(_users.values());
+		for (User user : users) {
+			try {
+				user.resetHour(d);
+			} catch (UserFileException e) {
+				logger.error("Unable to process user for resetHour()", e);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.master.cron.TimeEventInterface#resetMonth(java.util.Date)
+	 */
+	public void resetMonth(Date d) {
+		List<User> users = new ArrayList<User>(_users.values());
+		for (User user : users) {
+			try {
+				user.resetMonth(d);
+			} catch (UserFileException e) {
+				logger.error("Unable to process user for resetMonth()", e);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.master.cron.TimeEventInterface#resetWeek(java.util.Date)
+	 */
+	public void resetWeek(Date d) {
+		List<User> users = new ArrayList<User>(_users.values());
+		for (User user : users) {
+			try {
+				user.resetWeek(d);
+			} catch (UserFileException e) {
+				logger.error("Unable to process user for resetWeek()", e);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.master.cron.TimeEventInterface#resetYear(java.util.Date)
+	 */
+	public void resetYear(Date d) {
+		List<User> users = new ArrayList<User>(_users.values());
+		for (User user : users) {
+			try {
+				user.resetYear(d);
+			} catch (UserFileException e) {
+				logger.error("Unable to process user for resetYear()", e);
+			}
 		}
 	}
 }
