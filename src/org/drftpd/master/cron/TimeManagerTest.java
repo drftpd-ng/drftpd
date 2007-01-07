@@ -103,44 +103,44 @@ public class TimeManagerTest extends TestCase {
 
 	public void testDoReset() throws ParseException {
 		Calendar cal = Calendar.getInstance();
-		SimpleDateFormat df = new SimpleDateFormat();
+		SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy HH:mm");
 		Date date = null;
-		// parseFormat = MM/DD/YY HH:MM {AM,PM}
+		// parseFormat = MM/dd/yy HH:mm
 		
-// 		test year & week
+		// test year & week
 		_resetWeek = false;
 		_lastReset = Calendar.ERA; // used as a un-set value
-		date = df.parse("1/1/07 12:00 AM");
+		date = df.parse("1/1/08 00:00"); // tuesday, so never gonna be the First the of Week
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);
 		_tm.doReset(cal);
 		assertTrue(_lastReset == Calendar.YEAR);
 		assertTrue(_resetWeek == false);
 		
-//		test month & week
+		// test month & week
 		_resetWeek = false;
 		_lastReset = Calendar.ERA; // used as a un-set value
-		date = df.parse("2/1/07 12:00 AM");
+		date = df.parse("2/1/07 00:00");
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);
 		_tm.doReset(cal);
 		assertTrue(_lastReset == Calendar.MONTH);
 		assertTrue(_resetWeek == false);
 		
-//		 test day & week
+		// test day & week
 		_resetWeek = false;
 		_lastReset = Calendar.ERA; // used as a un-set value
-		date = df.parse("2/3/07 12:00 AM");
+		date = df.parse("2/3/07 00:00");
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);
 		_tm.doReset(cal);
 		assertTrue(_lastReset == Calendar.DAY_OF_MONTH);
 		assertTrue(_resetWeek == false);
 		
-//		 test hour & week
+		// test hour & week
 		_resetWeek = false;
 		_lastReset = Calendar.ERA; // used as a un-set value
-		date = df.parse("1/1/07 2:00 AM");
+		date = df.parse("1/1/07 2:00");
 		System.out.println("Testing date - " + date);
 		cal.setTime(date);
 		_tm.doReset(cal);
@@ -150,9 +150,9 @@ public class TimeManagerTest extends TestCase {
 	}
 
 	public void testProcessTimeEventsSinceDate() throws ParseException {
-		SimpleDateFormat df = new SimpleDateFormat();
-		Date oldDate = df.parse("12/25/06 3:00 AM");
-		Date newDate = df.parse("2/17/07 7:00 PM");
+		SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy HH:mm");
+		Date oldDate = df.parse("12/25/06 3:00");
+		Date newDate = df.parse("2/17/07 19:00");
 		_tm.processTimeEventsBetweenDates(oldDate, newDate);
 		assertTrue(_yearsReset == 1);
 		assertTrue(_monthsReset == 2);
