@@ -40,14 +40,18 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 		throw new ClassCastException("LinkHandle object pointing to Inode:"
 				+ inode);
 	}
+	
+	public void setTarget(String path) throws FileNotFoundException {
+		((VirtualFileSystemLink) getInode()).setLinkPath(path);
+	}
 
 	public DirectoryHandle getTargetDirectory() throws FileNotFoundException,
 			ObjectNotValidException {
-		return getParent().getDirectory(getInode().getLink());
+		return getParent().getDirectory(getInode().getLinkPath());
 	}
 	
 	public String getTargetString() throws FileNotFoundException {
-		return getInode().getLink();
+		return getInode().getLinkPath();
 	}
 
 	@Override

@@ -40,17 +40,17 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 		_link = link;
 	}
 
-	public String getLink() {
+	public String getLinkPath() {
 		return _link;
 	}
 
-	public void setLink(String link) {
+	public void setLinkPath(String link) {
 		_link = link;
 	}
 
 	@Override
 	public String toString() {
-		return "Link" + super.toString() + "[link=" + getLink() + "]";
+		return "Link" + super.toString() + "[link=" + getLinkPath() + "]";
 	}
 
 	@Override
@@ -72,6 +72,6 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 		}
 		enc.setPersistenceDelegate(VirtualFileSystemLink.class,
 				new DefaultPersistenceDelegate(new String[] { "username",
-						"group", "link" }));
+						"group", "linkPath" }));
 	}
 }

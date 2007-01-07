@@ -41,9 +41,9 @@ LIST=net.sf.drftpd.master.command.plugins.LIST
 NLST=net.sf.drftpd.master.command.plugins.LIST
 STAT=net.sf.drftpd.master.command.plugins.LIST
 
-SITE\ NUKE=org.drftpd.commands.Nuke
-SITE\ NUKES=org.drftpd.commands.Nuke
-SITE\ UNNUKE=org.drftpd.commands.Nuke
+#SITE\ NUKE=org.drftpd.commands.Nuke
+#SITE\ NUKES=org.drftpd.commands.Nuke
+#SITE\ UNNUKE=org.drftpd.commands.Nuke
 
 SITE\ ADDIP=org.drftpd.commands.UserManagement
 SITE\ ADDUSER=org.drftpd.commands.UserManagement
@@ -100,8 +100,8 @@ SITE\ TIME=net.sf.drftpd.master.command.plugins.Misc
 SITE\ VERS=net.sf.drftpd.master.command.plugins.Misc
 SITE\ HELP=net.sf.drftpd.master.command.plugins.Misc
 
-SITE\ DUPE=net.sf.drftpd.master.command.plugins.Search
-SITE\ SEARCH=net.sf.drftpd.master.command.plugins.Search
+#SITE\ DUPE=net.sf.drftpd.master.command.plugins.Search
+#SITE\ SEARCH=net.sf.drftpd.master.command.plugins.Search
 
 MLST=org.drftpd.commands.MLST
 MLSD=org.drftpd.commands.MLST
@@ -119,7 +119,7 @@ SITE\ DAYUP=org.drftpd.commands.TransferStatistics
 SITE\ DAYDN=org.drftpd.commands.TransferStatistics
 SITE\ STATS=org.drftpd.commands.TransferStatistics
 
-SITE\ PRE=org.drftpd.commands.Pre
+#SITE\ PRE=org.drftpd.commands.Pre
 
 SITE\ SLAVES=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ REMERGE=net.sf.drftpd.master.command.plugins.SlaveManagement
@@ -136,24 +136,24 @@ SITE\ STOPJOBS=net.sf.drftpd.mirroring.JobManagerCommandHandler
 SITE\ ADDJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
 SITE\ REMOVEJOB=net.sf.drftpd.mirroring.JobManagerCommandHandler
 
-SITE\ IRC=org.drftpd.commands.SiteBotManagement
-SITE\ BLOWFISH=org.drftpd.commands.SiteBotManagement
+#SITE\ IRC=org.drftpd.commands.SiteBotManagement
+#SITE\ BLOWFISH=org.drftpd.commands.SiteBotManagement
 
 SITE\ SECTIONS=org.drftpd.commands.Sections
 
-SITE\ NEW=org.drftpd.commands.New
+#SITE\ NEW=org.drftpd.commands.New
 
 #SITE\ ARCHIVE=org.drftpd.commands.ArchiveCommandHandler
 #SITE\ LISTARCHIVETYPES=org.drftpd.commands.ArchiveCommandHandler
 
-SITE\ FIND=org.drftpd.commands.Find
+#SITE\ FIND=org.drftpd.commands.Find
 
-SITE\ TRAFFIC=org.drftpd.commands.MoreStats
-SITE\ GALUP=org.drftpd.commands.MoreStats
-SITE\ GALDN=org.drftpd.commands.MoreStats
-SITE\ GWKUP=org.drftpd.commands.MoreStats
-SITE\ GWKDN=org.drftpd.commands.MoreStats
-SITE\ GMONTHUP=org.drftpd.commands.MoreStats
-SITE\ GMONTHDN=org.drftpd.commands.MoreStats
-SITE\ GDAYUP=org.drftpd.commands.MoreStats
-SITE\ GDAYDN=org.drftpd.commands.MoreStats
+#SITE\ TRAFFIC=org.drftpd.commands.MoreStats
+#SITE\ GALUP=org.drftpd.commands.MoreStats
+#SITE\ GALDN=org.drftpd.commands.MoreStats
+#SITE\ GWKUP=org.drftpd.commands.MoreStats
+#SITE\ GWKDN=org.drftpd.commands.MoreStats
+#SITE\ GMONTHUP=org.drftpd.commands.MoreStats
+#SITE\ GMONTHDN=org.drftpd.commands.MoreStats
+#SITE\ GDAYUP=org.drftpd.commands.MoreStats
+#SITE\ GDAYDN=org.drftpd.commands.MoreStats

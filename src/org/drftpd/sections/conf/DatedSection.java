@@ -27,21 +27,23 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.TimerTask;
 
 import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.LinkHandle;
+import org.drftpd.vfs.ObjectNotValidException;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class DatedSection implements SectionInterface {
+public class DatedSection implements SectionInterface, TimeEventInterface {
 	// The code assumes that the following constants are in a increasing
 	// sequence.
 	static final int TOP_OF_TROUBLE = -1;
@@ -91,18 +93,8 @@ public class DatedSection implements SectionInterface {
 		rc.setType(type);
 
 		// end rollingcalendar...
-		logger.debug("Rolling at " + rc.getNextCheckDate(new Date()));
-		getGlobalContext().getTimer().schedule(new TimerTask() {
-			public void run() {
-				try {
-					getCurrentDirectory();
-				} catch (Throwable t) {
-					logger.error(
-							"Catching Throwable in DatedSection TimerTask", t);
-				}
-			}
-		}, rc.getNextCheckDate(new Date()));
-		getCurrentDirectory();
+		logger.debug("Configured to roll at " + rc.getNextCheckDate(new Date()));
+		getGlobalContext().addTimeEvent(this);
 	}
 
 	private GlobalContext getGlobalContext() {
@@ -119,20 +111,9 @@ public class DatedSection implements SectionInterface {
 		// System.out.println(dateDirPath);
 		// System.out.println(_dateFormat.getCalendar());
 		// System.out.println(_dateFormat.getTimeZone());
-		_dateFormat.setTimeZone(TimeZone.getDefault());
+		//_dateFormat.setTimeZone(TimeZone.getDefault());
 		// System.out.println(_dateFormat.getTimeZone());
-		DirectoryHandle newDatedDir = null;
-		try {
-			newDatedDir = getBaseDirectory().createDirectory(dateDirPath,"drftpd","drftpd");
-		} catch (FileExistsException e) {
-			// directory already existed
-			return newDatedDir;
-		} catch (FileNotFoundException e) {
-			// we just created it with mkdirs()
-			throw new RuntimeException("find this bug, this is odd", e);
-		}
-		logger.info("Created dated directory " + newDatedDir.getPath());
-		return newDatedDir;
+		return getBaseDirectory().getNonExistentDirectoryHandle(dateDirPath);
 	}
 
 	public Set<DirectoryHandle> getDirectories() {
@@ -231,6 +212,118 @@ public class DatedSection implements SectionInterface {
 					.warn("Unknown periodicity for DatedSection [" + _name
 							+ "].");
 		}
+	}
+	
+	private void processNewDate(Date d) {
+		String dateDirName = _dateFormat.format(new Date());
+		if (!getBaseDirectory().exists()) {
+			logger.error("Section directory does not exist while creating dated directory - " + dateDirName);
+			logger.info("Creating base directory for section " + getName());
+			try {
+				getBaseDirectory().getParent().createDirectoryRecursive(getBaseDirectory().getName());
+			} catch (FileExistsException e) {
+				// this is good, continue
+			} catch (FileNotFoundException e) {
+				logger.error("Unable to create base directory for section " + getName(), e);
+				return;
+			}
+
+		}
+		
+		// create the directory
+		DirectoryHandle newDir = null;
+		try {
+			newDir = getBaseDirectory().getDirectory(dateDirName);
+		} catch (FileNotFoundException e) {
+			// this is good
+		} catch (ObjectNotValidException e) {
+			logger.error("There is already a non-Directory object in the place where the new dated directory should go, removing " + dateDirName + " from section " + getName());
+			try {
+				getBaseDirectory().getInodeHandle(dateDirName).delete();
+			} catch (FileNotFoundException e1) {
+				// this is good, although a little strange since it was just there a few milliseconds ago...
+			}
+		}
+		if (newDir == null) { // this is good, this is the standard process
+			try {
+				newDir = getBaseDirectory().createDirectory(dateDirName, "drftpd", "drftpd");
+			} catch (FileExistsException e) {
+				logger.error(dateDirName + " already exists in section " + getName() + ", this should not happen, we just deleted it", e);
+				return;
+			} catch (FileNotFoundException e) {
+				logger.error(dateDirName + " base directory does not exist for section " + getName() + ", this should not happen, we just verified it existed", e);
+				return;
+			}
+		} else {
+			logger.warn("DatedDirectory " + dateDirName + " already exists in section " + getName());
+		}
+		
+		// create the link
+		if (_now == null || _now.equals("")) {
+			return;
+		}
+		String linkName = getName() + _now;
+		DirectoryHandle root = getGlobalContext().getRoot();
+		LinkHandle link = null;
+		try {
+			link = root.getLink(linkName);
+		} catch (FileNotFoundException e) {
+			// this is okay, the link was deleted, we will recreate it below
+		} catch (ObjectNotValidException e) {
+			
+		}
+		if (link != null) {
+			try {
+				link.setTarget(newDir.getPath());
+				return;
+				// link's target path has been updated
+			} catch (FileNotFoundException e) {
+				// will be created below
+			}
+		}
+		try {
+			root.createLink(linkName, newDir.getPath(), "drftpd", "drftpd");
+		} catch (FileExistsException e) {
+			logger.error(linkName + " already exists in / for section " + getName() + ", this should not happen, we just deleted it", e);
+		} catch (FileNotFoundException e) {
+			logger.error("Unable to find the Root DirectoryHandle, this should not happen, it's the root!", e);
+		}
+
+		
+	}
+
+	public void resetDay(Date d) {
+		if (rc._type == TOP_OF_DAY) {
+			processNewDate(d);
+		}
+	}
+
+	public void resetHour(Date d) {
+		if (rc._type == TOP_OF_HOUR) {
+			processNewDate(d);
+		} else if (rc._type == HALF_DAY) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(d);
+			if (cal.get(Calendar.HOUR_OF_DAY) == 12) {
+				processNewDate(d);
+			}
+		}
+	}
+
+	public void resetMonth(Date d) {
+		if (rc._type == TOP_OF_MONTH) {
+			processNewDate(d);
+		}
+	}
+
+	public void resetWeek(Date d) {
+		if (rc._type == TOP_OF_WEEK) {
+			processNewDate(d);
+		}
+	}
+
+	public void resetYear(Date d) {
+		// no year option currently
 	}
 }
 

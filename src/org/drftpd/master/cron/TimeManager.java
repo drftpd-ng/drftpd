@@ -97,7 +97,7 @@ public class TimeManager {
 		dateArg[0] = d;
 		for (TimeEventInterface event : tempList) {
 			try {
-				Method m = event.getClass().getDeclaredMethod(methodName,
+				Method m = TimeEventInterface.class.getDeclaredMethod(methodName,
 						classArg);
 				m.invoke(event, d);
 			} catch (IllegalAccessException e) {
@@ -130,6 +130,7 @@ public class TimeManager {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		timer.scheduleAtFixedRate(_processHour, cal.getTime(), HOUR);
+		logger.info("TimeManager scheduled the next reset to be at " + cal.getTime());
 	}
 	
 	public void processTimeEventsSinceDate(Date date) {

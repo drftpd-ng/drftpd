@@ -204,7 +204,7 @@ public class DirectoryHandle extends InodeHandle implements
 			destinationList = new ArrayList<InodeHandle>(getInodeHandles());
 		} catch (FileNotFoundException e) {
 			// create directory for merging
-			getParent().createDirectoryForRemergeRecursive(getName());
+			getParent().createDirectoryRecursive(getName());
 			// lets try this again, this time, if it doesn't work, we throw an
 			// IOException up the chain
 			destinationList = new ArrayList<InodeHandle>(getInodeHandles());
@@ -375,16 +375,22 @@ public class DirectoryHandle extends InodeHandle implements
 		return createDirectory(name, "drftpd", "drftpd");
 	}
 
-	private void createDirectoryForRemergeRecursive(String name)
+	/**
+	 * Given a DirectoryHandle, it makes sure that this directory and all of its parent(s) exist
+	 * @param name
+	 * @throws FileExistsException
+	 * @throws FileNotFoundException
+	 */
+	public void createDirectoryRecursive(String name)
 			throws FileExistsException, FileNotFoundException {
 		DirectoryHandle dir = null;
 		try {
 			dir = createDirectorySystem(name);
 		} catch (FileNotFoundException e) {
-			getParent().createDirectoryForRemergeRecursive(getName());
+			getParent().createDirectoryRecursive(getName());
 		}
 		if (dir == null) {
-			dir = createDirectory(name, "drftpd", "drftpd");
+			dir = createDirectorySystem(name);
 		}
 		logger.debug("Created directory " + dir);
 	}
