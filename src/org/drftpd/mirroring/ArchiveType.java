@@ -40,7 +40,6 @@ import org.drftpd.plugins.Archive;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author zubov
@@ -365,7 +364,7 @@ public abstract class ArchiveType {
 			}
 
 			try {
-				RemoteSlave rslave = _parent.getGlobalContext()
+				RemoteSlave rslave = GlobalContext.getGlobalContext()
 						.getSlaveManager().getRemoteSlave(slavename);
 				destSlaves.add(rslave);
 			} catch (ObjectNotFoundException e) {
@@ -406,12 +405,6 @@ public abstract class ArchiveType {
 		}
 	}
 
-	private void printJobsInQueue(ArrayList<Job> jobList) {
-		for (Job j : jobList) {
-			logger.debug(j);
-		}
-	}
-
 	public abstract String toString();
 
 	protected String outputSlaves(Collection slaveList) {
@@ -446,7 +439,7 @@ public abstract class ArchiveType {
 			}
 
 			try {
-				RemoteSlave rslave = _parent.getGlobalContext()
+				RemoteSlave rslave = GlobalContext.getGlobalContext()
 						.getSlaveManager().getRemoteSlave(slavename);
 				if (!_slaveList.contains(rslave)) {
 					offOfSlaves.add(rslave);

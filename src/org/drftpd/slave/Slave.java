@@ -96,7 +96,7 @@ public class Slave {
 
 	// on a SocketTimeout
 
-	public static final String VERSION = "DrFTPD 2.0.2";
+	public static final String VERSION = "DrFTPD 2.1-dev";
 
 	private int _bufferSize;
 
@@ -114,13 +114,13 @@ public class Slave {
 
 	private ObjectOutputStream _sout;
 
-	private HashMap _transfers;
+	private HashMap<TransferIndex, Transfer> _transfers;
 
 	private boolean _uploadChecksums;
 
 	private PortRange _portRange;
 
-	private Set _renameQueue = null;
+	private Set<QueuedOperation> _renameQueue = null;
 
 	private int _timeout;
 
@@ -146,7 +146,7 @@ public class Slave {
 		String slavename = PropertyHelper.getProperty(p, "slave.name");
 
 		if (isWin32) {
-			_renameQueue = new HashSet();
+			_renameQueue = new HashSet<QueuedOperation>();
 		}
 
 		try {
@@ -156,7 +156,7 @@ public class Slave {
 			_cipherSuites = null;
 		}
 
-		ArrayList cipherSuites = new ArrayList();
+		ArrayList<String> cipherSuites = new ArrayList<String>();
 		for (int x = 1;; x++) {
 			String cipherSuite = p.getProperty("cipher." + x);
 			if (cipherSuite != null) {
@@ -210,7 +210,7 @@ public class Slave {
 		_bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
 		_roots = getDefaultRootBasket(p);
 
-		_transfers = new HashMap();
+		_transfers = new HashMap<TransferIndex, Transfer>();
 
 		try {
 			int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
@@ -228,7 +228,7 @@ public class Slave {
 		// START: RootBasket
 		// long defaultMinSpaceFree = Bytes.parseBytes(cfg.getProperty(
 		// "slave.minspacefree", "50mb"));
-		ArrayList rootStrings = new ArrayList();
+		ArrayList<Root> rootStrings = new ArrayList<Root>();
 
 		for (int i = 1; true; i++) {
 			String rootString = cfg.getProperty("slave.root." + i);
@@ -997,7 +997,7 @@ public class Slave {
 	 */
 	public ArrayList getTransfers() {
 		synchronized (_transfers) {
-			return new ArrayList(_transfers.values());
+			return new ArrayList<Transfer>(_transfers.values());
 		}
 	}
 

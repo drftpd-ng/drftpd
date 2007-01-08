@@ -18,7 +18,6 @@
 package org.drftpd.tests;
 
 
-import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 
 

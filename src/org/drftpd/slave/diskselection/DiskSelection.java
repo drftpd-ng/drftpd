@@ -98,7 +98,7 @@ public class DiskSelection {
 	 * For example: 'minfreespace' filter, class = MinfreespaceFilter.class<br>
 	 */
 	private void loadFilters(Properties p) {
-		ArrayList filters = new ArrayList();
+		ArrayList<DiskFilter> filters = new ArrayList<DiskFilter>();
 		int i = 1;
 
 		logger.info("Loading DiskSelection filters...");

@@ -31,12 +31,12 @@ import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.slave.CaseInsensitiveHashtable;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
+import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 
 /**
@@ -90,7 +90,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         public void deleteOthers(Set destSlaves) {
         }
 
-        public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
+        public void remerge(CaseInsensitiveTreeMap lightRemoteFiles,
             RemoteSlave rslave) throws IOException {
         }
     }

@@ -33,8 +33,6 @@ import org.drftpd.slave.diskselection.DiskSelection;
 
 import se.mog.io.File;
 
-// TODO SECURITY: verify so that we never get outside of a rootbasket root
-
 /**
  * @author mog
  * @version $Id$
@@ -198,13 +196,13 @@ public class RootCollection {
 
 	private static void validateRoots(Collection roots) throws IOException {
 		File[] mountsArr = File.listMounts();
-		ArrayList mounts = new ArrayList(mountsArr.length);
+		ArrayList<File> mounts = new ArrayList<File>(mountsArr.length);
 
 		for (int i = 0; i < mountsArr.length; i++) {
 			mounts.add(mountsArr[i]);
 		}
 
-		Collections.sort(mounts, new Comparator() {
+		Collections.sort(mounts, new Comparator<File>() {
 			public boolean equals(Object obj) {
 				if (obj == null) return false;
 				return obj.getClass() == getClass();
@@ -212,10 +210,6 @@ public class RootCollection {
 
 			public int hashCode() {
 				return getClass().hashCode();
-			}
-
-			public int compare(Object o1, Object o2) {
-				return compare((File) o1, (File) o2);
 			}
 
 			public int compare(File o1, File o2) {
@@ -250,7 +244,7 @@ public class RootCollection {
 
 			String fullpath = rootFile.getAbsolutePath();
 			
-			Hashtable usedMounts = new Hashtable();
+			Hashtable<String, Object> usedMounts = new Hashtable<String, Object>();
 
 			for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
 				File mount = (File) iterator.next();

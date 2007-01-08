@@ -32,7 +32,6 @@ import java.util.zip.CheckedOutputStream;
 import net.sf.drftpd.FileExistsException;
 import net.sf.drftpd.ObjectNotFoundException;
 
-import org.apache.log4j.Logger;
 import org.drftpd.PassiveConnection;
 import org.drftpd.io.AddAsciiOutputStream;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
@@ -45,8 +44,6 @@ import se.mog.io.File;
  * @version $Id$
  */
 public class Transfer {
-	private static final Logger logger = Logger.getLogger(Transfer.class);
-
 	private String _abortReason = null;
 
 	private CRC32 _checksum = null;

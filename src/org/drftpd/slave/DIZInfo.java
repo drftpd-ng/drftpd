@@ -25,13 +25,10 @@ import java.util.regex.Pattern;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.SlaveUnavailableException;
 
-import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.FileHandle;
 
 public class DIZInfo {
-	private static final Logger logger = Logger.getLogger(DIZInfo.class);
-
 	private String _diz;
 
 	private int _total;

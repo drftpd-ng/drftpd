@@ -21,8 +21,9 @@ import java.util.TreeMap;
 
 public class CaseInsensitiveTreeMap<K, V> extends TreeMap {
 
-	private static CaseInsensitiveComparator comparer = new CaseInsensitiveComparator<String>();
+	private static CaseInsensitiveComparator<String> comparer = new CaseInsensitiveComparator<String>();
 
+	@SuppressWarnings("unchecked")
 	public CaseInsensitiveTreeMap() {
 		super(comparer);
 	}

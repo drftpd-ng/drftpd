@@ -30,9 +30,6 @@ import org.apache.log4j.BasicConfigurator;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.tests.DummyBaseFtpConnection;
-import org.drftpd.tests.DummyConnectionManager;
-import org.drftpd.tests.DummyFtpConfig;
-import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyServerSocketFactory;
 import org.drftpd.tests.DummySocketFactory;
 
@@ -42,8 +39,6 @@ import org.drftpd.tests.DummySocketFactory;
  * @version $Id$
  */
 public class DataConnectionHandlerTest extends TestCase {
-    private DummyGlobalContext gctx;
-    private DummyConnectionManager cm;
     DummyBaseFtpConnection conn;
     DummyDataConnectionHandler dch;
 
@@ -104,11 +99,9 @@ public class DataConnectionHandlerTest extends TestCase {
         BasicConfigurator.configure();
         dch = (DummyDataConnectionHandler) new DummyDataConnectionHandler().initialize(null, null);
 
-        gctx = new DummyGlobalContext();
         //gctx.setFtpConfig(new DummyFtpConfig()); -zubov
 
         conn = new DummyBaseFtpConnection(dch);
-        cm = new DummyConnectionManager();
         // cm.setGlobalContext(gctx); -zubov
         // conn.setGlobalConext(gctx); -zubov
         // gctx.setConnectionManager(cm); -zubov

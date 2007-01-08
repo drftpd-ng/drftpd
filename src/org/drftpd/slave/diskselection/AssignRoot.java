@@ -38,7 +38,7 @@ public class AssignRoot {
 	public static ArrayList parseAssign(String s) {
 		String parse = s.trim().replaceAll(",", "");
 		String[] p = parse.split(" ");
-		ArrayList list = new ArrayList();
+		ArrayList<AssignParser> list = new ArrayList<AssignParser>();
 		int x = DiskSelection.getDiskSelection().getRootCollection().getRootList().size();
 		for (int i = 0; i < p.length; i++) {
 			AssignParser a = new AssignParser(p[i]);

@@ -186,7 +186,7 @@ public class Reply implements Cloneable {
 	public Object clone() {
 		try {
 			Reply r = (Reply) super.clone();
-			r._lines = (Vector) _lines.clone();
+			r._lines = (Vector<String>) _lines.clone();
 
 			return r;
 		} catch (CloneNotSupportedException ex) {

@@ -22,8 +22,6 @@ import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.Set;
 
-import net.sf.drftpd.master.config.FtpConfig;
-
 import org.apache.log4j.Logger;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;

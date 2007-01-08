@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.slave.CaseInsensitiveHashtable;
+import org.drftpd.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.vfs.VirtualFileSystemFileSFV;
 
 /**
@@ -31,7 +31,7 @@ import org.drftpd.vfs.VirtualFileSystemFileSFV;
  */
 public class SFVInfo implements Serializable {
 
-	private CaseInsensitiveHashtable _entries = null;
+	private CaseInsensitiveTreeMap<String, Long> _entries = null;
 
 	public static final Key SFV = new Key(VirtualFileSystemFileSFV.class,
 			"sfv", SFVInfo.class);
@@ -43,11 +43,11 @@ public class SFVInfo implements Serializable {
 
 	}
 
-	public CaseInsensitiveHashtable getEntries() {
+	public CaseInsensitiveTreeMap<String, Long> getEntries() {
 		return _entries;
 	}
 
-	public void setEntries(CaseInsensitiveHashtable entries) {
+	public void setEntries(CaseInsensitiveTreeMap<String, Long> entries) {
 		_entries = entries;
 	}
 
@@ -57,7 +57,7 @@ public class SFVInfo implements Serializable {
 
 	public static SFVInfo getSFVInfo(BufferedReader in) throws IOException {
 		String line;
-		CaseInsensitiveHashtable entries = new CaseInsensitiveHashtable();
+		CaseInsensitiveTreeMap<String, Long> entries = new CaseInsensitiveTreeMap<String, Long>();
 		try {
 			while ((line = in.readLine()) != null) {
 				if (line.length() == 0) {

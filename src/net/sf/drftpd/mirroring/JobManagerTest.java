@@ -30,13 +30,14 @@ import junit.framework.TestCase;
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.SlaveFileException;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.slave.CaseInsensitiveHashtable;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.tests.DummySlaveSelectionManager;
+import org.drftpd.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.vfs.FileHandle;
 
 
@@ -87,7 +88,7 @@ public class JobManagerTest extends TestCase {
 
         DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
         dgc.setSlaveSelectionManager(dssm);
-        _jm = _cm.getGlobalContext().getJobManager();
+        _jm = GlobalContext.getGlobalContext().getJobManager();
         file = new JobtestFileHandle("/path/file1.txt");
         file.addSlave(rslave1);
         file2 = new JobtestFileHandle("/path/file2.txt");
@@ -102,12 +103,12 @@ public class JobManagerTest extends TestCase {
      * Test for Job getNextJob(List)
      */
     public void testGetNextJobList() {
-        HashSet slaveSet = new HashSet(_slaveList);
+        HashSet<RemoteSlave> slaveSet = new HashSet<RemoteSlave>(_slaveList);
         Job job = new Job(file, slaveSet, 0, slaveSet.size());
         _jm.addJobToQueue(job);
 
-        Set usedSlaveList = new HashSet();
-        Set skipJobs = new HashSet();
+        Set<RemoteSlave> usedSlaveList = new HashSet<RemoteSlave>();
+        Set<Job> skipJobs = new HashSet<Job>();
         assertSame(job, _jm.getNextJob(usedSlaveList, skipJobs));
         skipJobs.add(job);
         assertNull(_jm.getNextJob(usedSlaveList, skipJobs));
@@ -192,7 +193,7 @@ public class JobManagerTest extends TestCase {
             // TODO Auto-generated method stub
         }
 
-        public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
+        public void remerge(CaseInsensitiveTreeMap lightRemoteFiles,
             RemoteSlave rslave) throws IOException {
             // TODO Auto-generated method stub
         }

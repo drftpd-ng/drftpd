@@ -791,13 +791,12 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 
         String targetName = st.nextToken();
         String linkName = st.nextToken();
-        InodeHandle target;
 
         try {
-            target = conn.getCurrentDirectory().getInodeHandle(targetName);
-            LinkHandle link = conn.getCurrentDirectory().createLink(linkName,
+            conn.getCurrentDirectory().getInodeHandle(targetName); // checks if the inode exists.
+            conn.getCurrentDirectory().createLink(linkName,
 					targetName, conn.getUserNull().getName(),
-					conn.getUserNull().getGroup());
+					conn.getUserNull().getGroup()); // create the link
 		} catch (FileExistsException e) {
 			return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
 		} catch (FileNotFoundException e) {

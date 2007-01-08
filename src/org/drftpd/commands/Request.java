@@ -30,8 +30,6 @@ import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
-
 
 /**
  * @author mog

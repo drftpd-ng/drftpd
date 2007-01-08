@@ -21,8 +21,6 @@ import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 /**
  * Implements Map for javabeans support.
  * 
@@ -30,8 +28,6 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class KeyedMap<K, V> extends Hashtable {
-	private static final Logger logger = Logger.getLogger(KeyedMap.class);
-
 	public KeyedMap() {
 		super();
 	}

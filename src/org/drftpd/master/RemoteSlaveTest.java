@@ -75,7 +75,7 @@ public class RemoteSlaveTest extends TestCase {
         rslave.simpleDelete("/deleteme");
         rslave.simpleRename("/renameme", "/indir", "tofile");
 
-        HashSet filelist = new HashSet();
+        HashSet<String> filelist = new HashSet<String>();
         filelist.add("/deleteme");
         filelist.add("/renameme");
         filelist.add("/indir");
@@ -134,7 +134,7 @@ public class RemoteSlaveTest extends TestCase {
     }
 
     public class RemergeRemoteSlave extends RemoteSlave {
-        private HashSet _filelist = null;
+        private HashSet<String> _filelist = null;
 
         public RemergeRemoteSlave(String name, GlobalContext gctx) {
             super(name, gctx);
@@ -143,7 +143,7 @@ public class RemoteSlaveTest extends TestCase {
         /**
          * @param filelist
          */
-        public void setFileList(HashSet filelist) {
+        public void setFileList(HashSet<String> filelist) {
             _filelist = filelist;
         }
 

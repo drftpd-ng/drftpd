@@ -79,7 +79,7 @@ public class DummyUserManager extends AbstractUserManager {
         _user = user;
     }
 
-    public Collection getAllUsers() throws UserFileException {
+    public Collection<User> getAllUsers() throws UserFileException {
         return Collections.unmodifiableCollection(_users.values());
     }
 

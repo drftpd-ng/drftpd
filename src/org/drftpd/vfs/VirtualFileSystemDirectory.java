@@ -141,7 +141,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @return a Set containing all inode names inside this directory.
 	 */
 	public Set<String> getInodeNames() {
-		return new HashSet(_files.keySet());
+		return new HashSet<String>(_files.keySet());
 	}
 
 	/**

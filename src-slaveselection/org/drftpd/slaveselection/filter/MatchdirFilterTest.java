@@ -18,24 +18,20 @@
 package org.drftpd.slaveselection.filter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.slave.CaseInsensitiveHashtable;
 import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
+import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 
 /**
@@ -146,7 +142,7 @@ public class MatchdirFilterTest extends TestCase {
         public void deleteOthers(Set destSlaves) {
         }
 
-        public void remerge(CaseInsensitiveHashtable lightRemoteFiles,
+        public void remerge(CaseInsensitiveTreeMap lightRemoteFiles,
             RemoteSlave rslave) throws IOException {
         }
     }

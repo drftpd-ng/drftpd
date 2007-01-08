@@ -33,7 +33,7 @@ public class ScoreChart {
 
 	private RootCollection _rootCollection;
 
-	private ArrayList _scoreList;
+	private ArrayList<RootScore> _scoreList;
 
 	/**
 	 * Creates the ArrayList<RootScore>
@@ -44,7 +44,7 @@ public class ScoreChart {
 		_rootCollection = rootCollection;
 
 		Iterator iter = _rootCollection.iterator();
-		_scoreList = new ArrayList();
+		_scoreList = new ArrayList<RootScore>();
 		while (iter.hasNext()) {
 			Root o = (Root) iter.next();
 			_scoreList.add(new RootScore(o, 0));

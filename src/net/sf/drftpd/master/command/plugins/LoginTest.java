@@ -27,7 +27,6 @@ import java.util.Properties;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.master.BaseFtpConnection;
 import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.config.FtpConfig;
 
@@ -36,11 +35,9 @@ import org.apache.log4j.Logger;
 import org.drftpd.commands.Reply;
 import org.drftpd.commands.ReplyException;
 import org.drftpd.tests.DummyBaseFtpConnection;
-import org.drftpd.tests.DummyConnectionManager;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
-import org.drftpd.usermanager.User;
 
 
 /**
@@ -69,16 +66,9 @@ public class LoginTest extends TestCase {
         _user = new DummyUser("myuser", _userManager);
         _userManager.setUser(_user);
 
-        FC fc = new FC();
         DummyGlobalContext gctx = new DummyGlobalContext();
         // gctx.setFtpConfig(fc); -zubov
         gctx.setUserManager(_userManager);
-
-        DummyConnectionManager cm = new DummyConnectionManager() {
-                public Reply canLogin(BaseFtpConnection baseconn, User user) {
-                    return null;
-                }
-            };
 
         // cm.setGlobalContext(gctx); -zubov
         // gctx.setConnectionManager(cm); -zubov

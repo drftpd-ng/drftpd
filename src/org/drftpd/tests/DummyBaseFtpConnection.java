@@ -23,7 +23,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Collections;
 
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
@@ -36,11 +35,9 @@ import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 
 import org.apache.log4j.Logger;
-import org.drftpd.Bytes;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystemFile;
 
 
 /**

@@ -35,7 +35,7 @@ class UnixFileSystem extends FileSystem {
 		BufferedReader reader = new BufferedReader(new FileReader("/etc/mtab"));
 
 		try {
-			Vector mountPoints = new Vector();
+			Vector<File> mountPoints = new Vector<File>();
 			String line;
 
 			while ((line = reader.readLine()) != null) {

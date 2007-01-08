@@ -230,18 +230,10 @@ public class GlobalContext {
 		}
 	}
 
-	/**
-	 * Depends on slavemanager being loaded.
-	 * 
-	 */
-	private void loadRSlaves() {
-		List rslaves = _slaveManager.getSlaves();
-	}
-
 	// depends on having getRoot() working
 	private void loadSectionManager(Properties cfg) {
 		try {
-			Class cl = Class.forName(cfg.getProperty("sectionmanager",
+			Class<?> cl = Class.forName(cfg.getProperty("sectionmanager",
 					"org.drftpd.sections.def.SectionManager"));
 			Constructor c = cl.getConstructor();
 			_sections = (SectionManagerInterface) c.newInstance();

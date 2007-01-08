@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
-import org.drftpd.commands.TransferStatistics;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.event.Event;

@@ -35,7 +35,7 @@ public class JobTest extends TestCase {
     }
 
     public void testRemoveDestinationSlave() {
-        HashSet slaveSet = new HashSet();
+        HashSet<RemoteSlave> slaveSet = new HashSet<RemoteSlave>();
         RemoteSlave rslave = new DummyRemoteSlave("name", null);
         slaveSet.add(rslave);
 
