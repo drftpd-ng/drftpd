@@ -21,7 +21,6 @@ import java.beans.XMLEncoder;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.usermanager.AbstractUser;

@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.OutputStream;
-import java.util.Date;
+import java.lang.ref.SoftReference;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
@@ -44,9 +44,8 @@ import org.drftpd.usermanager.UserFileException;
  */
 public class BeanUserManager extends AbstractUserManager {
 
-	private String _userpath = "users/javabeans/";
-
-	private File _userpathFile = new File(_userpath);
+	private final String _userpath = "users/javabeans/";
+	private final File _userpathFile = new File(_userpath);
 
 	protected static final Logger logger = Logger
 			.getLogger(BeanUserManager.class);
@@ -68,17 +67,22 @@ public class BeanUserManager extends AbstractUserManager {
 			throws NoSuchUserException, UserFileException {
 		XMLDecoder xd = null;
 		try {
-			BeanUser user = (BeanUser) _users.get(username);
+			SoftReference<User> sf = _users.get(username);
+			BeanUser user = null;
 
-			if (user != null) {
-				return user;
+			if (sf == null || sf.get() == null) {
+				xd = new XMLDecoder(new FileInputStream(getUserFile(username)));
+				user = (BeanUser) xd.readObject();
+
+				user.setUserManager(this);
+				_users.put(user.getName(), new SoftReference<User>(user));
+				
+				// this line can be removed later on, debugging purposes only.
+				logger.debug("No reference to '" + user.getName()+ "' found, loaded user data from disk. " +
+						"Was it GC'ed or never loaded?");
+			} else {
+				return sf.get();
 			}
-
-			xd = new XMLDecoder(new FileInputStream(getUserFile(username)));
-			user = (BeanUser) xd.readObject();
-
-			user.setUserManager(this);
-			_users.put(user.getName(), user);
 			return user;
 		} catch (FileNotFoundException ex) {
 			throw new NoSuchUserException("No such user", ex);

@@ -18,12 +18,12 @@ package org.drftpd.usermanager;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 
 import net.sf.drftpd.DuplicateElementException;
 import net.sf.drftpd.FileExistsException;
@@ -43,7 +43,7 @@ import se.mog.io.PermissionDeniedException;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
-	protected Hashtable<String, User> _users = new Hashtable<String, User>();
+	protected Hashtable<String, SoftReference<User>> _users = new Hashtable<String, SoftReference<User>>();
 
 	private static final Logger logger = Logger
 			.getLogger(AbstractUserManager.class);
@@ -188,8 +188,8 @@ public abstract class AbstractUserManager implements UserManager {
 	/**
 	 * Get all user names in the system.
 	 */
-	public Collection getAllUsers() throws UserFileException {
-		ArrayList<AbstractUser> users = new ArrayList<AbstractUser>();
+	public Collection<User> getAllUsers() throws UserFileException {
+		ArrayList<User> users = new ArrayList<User>();
 		String[] userpaths = getUserpathFile().list();
 
 		for (int i = 0; i < userpaths.length; i++) {
@@ -227,7 +227,6 @@ public abstract class AbstractUserManager implements UserManager {
 		return c;
 	}
 
-	// TODO garbage collected Map of users.
 	public User getUserByNameIncludeDeleted(String username)
 			throws NoSuchUserException, UserFileException {
 		User user = getUserByNameUnchecked(username);
@@ -288,7 +287,7 @@ public abstract class AbstractUserManager implements UserManager {
 				getUserByNameUnchecked(newUsername);
 			} catch (NoSuchUserException e) {
 				_users.remove(oldUser.getName());
-				_users.put(newUsername, oldUser);
+				_users.put(newUsername, new SoftReference<User>(oldUser));
 				return;
 			}
 		}
@@ -298,8 +297,11 @@ public abstract class AbstractUserManager implements UserManager {
 
 	public void saveAll() throws UserFileException {
 		logger.info("Saving userfiles");
-		for (User user : _users.values()) {
-			user.commit();
+		for (SoftReference<User> sf : _users.values()) {
+			if (sf == null || sf.get() == null)
+				continue;
+			
+			sf.get().commit();
 		}
 	}
 
@@ -307,10 +309,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetDay(java.util.Date)
 	 */
 	public void resetDay(Date d) {
-		List<User> users = new ArrayList<User>(_users.values());
-		for (User user : users) {
+		for (SoftReference<User> sf : _users.values()) {
 			try {
-				user.resetDay(d);
+				if (sf == null || sf.get() == null)
+					return;
+				
+				sf.get().resetDay(d);
 			} catch (UserFileException e) {
 				logger.error("Unable to process user for resetDay()", e);
 			}
@@ -321,10 +325,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetHour(java.util.Date)
 	 */
 	public void resetHour(Date d) {
-		List<User> users = new ArrayList<User>(_users.values());
-		for (User user : users) {
+		for (SoftReference<User> sf : _users.values()) {
 			try {
-				user.resetHour(d);
+				if (sf == null || sf.get() == null)
+					return;
+				
+				sf.get().resetHour(d);
 			} catch (UserFileException e) {
 				logger.error("Unable to process user for resetHour()", e);
 			}
@@ -335,10 +341,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetMonth(java.util.Date)
 	 */
 	public void resetMonth(Date d) {
-		List<User> users = new ArrayList<User>(_users.values());
-		for (User user : users) {
+		for (SoftReference<User> sf : _users.values()) {
 			try {
-				user.resetMonth(d);
+				if (sf == null || sf.get() == null)
+					return;
+				
+				sf.get().resetMonth(d);
 			} catch (UserFileException e) {
 				logger.error("Unable to process user for resetMonth()", e);
 			}
@@ -349,10 +357,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetWeek(java.util.Date)
 	 */
 	public void resetWeek(Date d) {
-		List<User> users = new ArrayList<User>(_users.values());
-		for (User user : users) {
+		for (SoftReference<User> sf : _users.values()) {
 			try {
-				user.resetWeek(d);
+				if (sf == null || sf.get() == null)
+					return;
+				
+				sf.get().resetWeek(d);
 			} catch (UserFileException e) {
 				logger.error("Unable to process user for resetWeek()", e);
 			}
@@ -363,10 +373,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetYear(java.util.Date)
 	 */
 	public void resetYear(Date d) {
-		List<User> users = new ArrayList<User>(_users.values());
-		for (User user : users) {
+		for (SoftReference<User> sf : _users.values()) {
 			try {
-				user.resetYear(d);
+				if (sf == null || sf.get() == null)
+					return;
+				
+				sf.get().resetYear(d);
 			} catch (UserFileException e) {
 				logger.error("Unable to process user for resetYear()", e);
 			}

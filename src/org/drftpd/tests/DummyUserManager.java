@@ -24,6 +24,7 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 
 import java.io.File;
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -55,7 +56,7 @@ public class DummyUserManager extends AbstractUserManager {
     }
 
     public void add(User user) {
-        _users.put(user.getName(), user);
+        _users.put(user.getName(), new SoftReference<User>(user));
     }
 
     public User getUserByNameUnchecked(String username)
@@ -80,7 +81,7 @@ public class DummyUserManager extends AbstractUserManager {
     }
 
     public Collection<User> getAllUsers() throws UserFileException {
-        return Collections.unmodifiableCollection(_users.values());
+        return Collections.singletonList(_user);
     }
 
 	protected File getUserpathFile() {
