@@ -77,6 +77,7 @@ import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.usermanager.Entity;
+import org.drftpd.stats.Stats;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.HostMaskCollection;
 import org.drftpd.vfs.InodeHandle;
@@ -86,7 +87,7 @@ import org.drftpd.vfs.InodeHandle;
  * @author zubov
  * @version $Id$
  */
-public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
+public class RemoteSlave extends Stats implements Runnable, Comparable<RemoteSlave>,
 		Serializable, Entity {
 	private static final long serialVersionUID = -6973935289361817125L;
 
@@ -1009,24 +1010,11 @@ public class RemoteSlave implements Runnable, Comparable<RemoteSlave>,
 			throw new IllegalStateException("there is a bug in code");
 		}
 		if (transfer.getState() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-			addReceivedBytes(transfer.getTransfered());
+			updateDownloadedBytes(transfer.getTransfered());
 		} else if (transfer.getState() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-			addSentBytes(transfer.getTransfered());
+			updateUploadedBytes(transfer.getTransfered());
 		} // else, we don't care
-	}
-
-	private void addSentBytes(long transfered) {
-		addBytes("bytesSent", transfered);
-	}
-
-	private void addBytes(String field, long transfered) {
-		setProperty(field, Long.toString(Long
-				.parseLong(getProperty(field, "0"))
-				+ transfered));
-	}
-
-	private void addReceivedBytes(long transfered) {
-		addBytes("bytesReceived", transfered);
+		commit();
 	}
 
 	public void setOffline(String reason) {

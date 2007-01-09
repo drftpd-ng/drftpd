@@ -51,14 +51,11 @@ public class Trial extends FtpListener {
 	private static final Logger logger = Logger.getLogger(Trial.class);
 
 	public static final int PERIOD_ALL = 0;
+	public static final int PERIOD_MONTHLY = 1;
+	public static final int PERIOD_WEEKLY = 2;
+	public static final int PERIOD_DAILY = 3;
 
-	public static final int PERIOD_DAILY = Calendar.DAY_OF_MONTH; // = 5
-
-	public static final short PERIOD_MONTHLY = Calendar.MONTH; // = 2
-
-	public static final short PERIOD_WEEKLY = Calendar.WEEK_OF_YEAR; // = 3
-
-	private ArrayList _limits;
+	private ArrayList<Limit> _limits;
 
 	public Trial() throws FileNotFoundException, IOException {
 		super();
@@ -426,7 +423,7 @@ public class Trial extends FtpListener {
 		reload(props);
 	}
 
-	public void reload(ArrayList limits) {
+	public void reload(ArrayList<Limit> limits) {
 		_limits = limits;
 	}
 

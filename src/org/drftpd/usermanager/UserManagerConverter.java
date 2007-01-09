@@ -91,7 +91,7 @@ public class UserManagerConverter {
 		// to.putObject(UserManagement.TAGLINE,
 		// from.getObjectString(UserManagement.TAGLINE));
 		// to.putObject(Nuke.NUKED, new Integer(from.getObjectInt(Nuke.NUKED)));
-		int[] periods = new int[] { Trial.PERIOD_ALL, Trial.PERIOD_DAILY,
+		/*int[] periods = new int[] { Trial.PERIOD_ALL, Trial.PERIOD_DAILY,
 				Trial.PERIOD_MONTHLY, Trial.PERIOD_WEEKLY };
 
 		for (int i = 0; i < periods.length; i++) {
@@ -113,7 +113,7 @@ public class UserManagerConverter {
 
 			to.setDownloadedFilesForTrialPeriod(period, from
 					.getDownloadedFilesForTrialPeriod(period));
-		}
+		}*/
 
 		to.commit();
 	}

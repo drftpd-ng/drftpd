@@ -60,27 +60,6 @@ public class DummyUser extends AbstractUser {
         _uploadedBytes[P_MONTH] = bytes;
     }
 
-    //    public void setUploadedBytesForTrialPeriod(int period, long l) {
-    //        switch (period) {
-    //        case Trial.PERIOD_DAILY:
-    //            setUploadedBytesDay(l);
-    //
-    //            return;
-    //
-    //        case Trial.PERIOD_MONTHLY:
-    //            setUploadedBytesMonth(l);
-    //
-    //            return;
-    //
-    //        case Trial.PERIOD_WEEKLY:
-    //            setUploadedBytesWeek(l);
-    //
-    //            return;
-    //
-    //        default:
-    //            throw new RuntimeException();
-    //        }
-    //    }
     public void setUploadedBytesWeek(long bytes) {
         _uploadedBytes[P_WEEK] = bytes;
     }

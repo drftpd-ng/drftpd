@@ -365,25 +365,25 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
     }
 
     public static String getUpRate(User user, int period) {
-        double s = user.getUploadedTimeForTrialPeriod(period) / (double) 1000.0;
+        double s = user.getUploadedTimeForPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
         }
 
-        double rate = user.getUploadedBytesForTrialPeriod(period) / s;
+        double rate = user.getUploadedBytesForPeriod(period) / s;
 
         return Bytes.formatBytes((long) rate) + "/s";
     }
 
     public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedTimeForTrialPeriod(period) / (double) 1000.0;
+        double s = user.getDownloadedTimeForPeriod(period) / (double) 1000.0;
 
         if (s <= 0) {
             return "- k/s";
         }
 
-        double rate = user.getDownloadedBytesForTrialPeriod(period) / s;
+        double rate = user.getDownloadedBytesForPeriod(period) / s;
 
         return Bytes.formatBytes((long) rate) + "/s";
     }

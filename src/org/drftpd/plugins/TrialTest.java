@@ -178,7 +178,7 @@ public class TrialTest extends TestCase {
 
         //pass real period
         user = getJUnitUser();
-        user.setUploadedBytesForTrialPeriod(period, TESTBYTES);
+        user.setUploadedBytesForPeriod(period, TESTBYTES);
         action();
         assertUserPassed();
 

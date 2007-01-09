@@ -56,6 +56,7 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferStatus;
+import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -1419,14 +1420,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 				}
 
 /*				boolean zipscript = zipscript(isRetr, isStor, status
-						.getChecksum(), response, targetFileName, targetDir);
+						.getChecksum(), response, targetFileName, targetDir);*/
 
-				if (zipscript) {
 					// transferstatistics
 					if (isRetr) {
 
 						float ratio = conn.getGlobalContext().getConfig()
-								.getCreditLossRatio(_transferFile,
+								.getCreditLossRatio(ts.getTransferFile().getParent(),
 										conn.getUserNull());
 
 						if (ratio != 0) {
@@ -1449,7 +1449,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 						conn.getUserNull().updateCredits(
 								(long) (status.getTransfered() * conn
 										.getGlobalContext().getConfig()
-										.getCreditCheckRatio(_transferFile,
+										.getCreditCheckRatio(ts.getTransferFile().getParent(),
 												conn.getUserNull())));
 						if (!conn.getGlobalContext().getConfig()
 								.checkPathPermission("nostatsup",
@@ -1469,14 +1469,13 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 						logger.warn("", e);
 					}
 				}
-*/
-				// Dispatch for both STOR and RETR
+
+            // Dispatch for both STOR and RETR
 				conn.getGlobalContext().dispatchFtpEvent(
 						new TransferEvent(conn, eventType, ts.getTransferFile(), conn
 								.getClientAddress(), ts.getTransferSlave(), ts.getTransfer()
 								.getAddress().getAddress(), ts.getType()));
 				return response;
-			}
         } finally {
             reset(conn);
         }

@@ -20,7 +20,7 @@ package org.drftpd.permissions;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.drftpd.usermanager.Entity;
+import org.drftpd.usermanager.User;
 
 /**
  * @author mog
@@ -40,7 +40,7 @@ public class Permission {
 		_invert = invert;
 	}
 
-	public boolean check(Entity user) {
+	public boolean check(User user) {
 		boolean allow = false;
 
 		for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
