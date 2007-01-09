@@ -30,15 +30,14 @@ public interface UserManager extends TimeEventInterface {
 	
 	public abstract User create(String username) throws UserFileException;
 
-	public abstract Collection getAllGroups() throws UserFileException;
+	public abstract Collection getAllGroups();
 
 	/**
 	 * Get all user names in the system.
 	 */
-	public abstract Collection<User> getAllUsers() throws UserFileException;
+	public abstract Collection<User> getAllUsers();
 
-	public abstract Collection getAllUsersByGroup(String group)
-			throws UserFileException;
+	public abstract Collection getAllUsersByGroup(String group);
 
 	/**
 	 * Get user by name.
@@ -52,7 +51,7 @@ public interface UserManager extends TimeEventInterface {
 	public abstract User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException;
 
-	public abstract void saveAll() throws UserFileException;
+	public abstract void saveAll();
 
 	public abstract User getUserByNameIncludeDeleted(String argument)
 			throws NoSuchUserException, UserFileException;

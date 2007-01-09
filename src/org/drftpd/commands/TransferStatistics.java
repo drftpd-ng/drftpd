@@ -145,16 +145,8 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
         // AL MONTH WK DAY
         int place = 1;
         long bytes = getStats(command, user);
-        Collection users;
-
-        try {
-            users = userman.getAllUsers();
-        } catch (UserFileException e) {
-            logger.error("IO error:", e);
-
-            return 0;
-        }
-
+        Collection users = userman.getAllUsers();
+        
         for (Iterator iter = users.iterator(); iter.hasNext();) {
             User tempUser = (User) iter.next();
             long tempBytes = getStats(command, tempUser);
@@ -255,16 +247,8 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
             return doSITE_STATS(conn);
         }
 
-        Collection<User> users;
-
-        try {
-            users = conn.getGlobalContext().getUserManager().getAllUsers();
-        } catch (UserFileException e) {
-            logger.warn("", e);
-
-            return new Reply(200, "IO error: " + e.getMessage());
-        }
-
+        Collection<User> users = conn.getGlobalContext().getUserManager().getAllUsers();
+        
         int count = 10; // default # of users to list
         request = conn.getRequest();
 

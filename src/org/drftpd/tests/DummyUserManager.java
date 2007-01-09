@@ -49,7 +49,7 @@ public class DummyUserManager extends AbstractUserManager {
         return u;
     }
 
-    public Collection getAllGroups() throws UserFileException {
+    public Collection getAllGroups() {
         throw new UnsupportedOperationException();
     }
 
@@ -66,7 +66,7 @@ public class DummyUserManager extends AbstractUserManager {
         return _user;
     }
 
-    public void saveAll() throws UserFileException {
+    public void saveAll() {
         throw new UnsupportedOperationException();
     }
 
@@ -74,7 +74,7 @@ public class DummyUserManager extends AbstractUserManager {
         _user = user;
     }
 
-    public Collection<User> getAllUsers() throws UserFileException {
+    public Collection<User> getAllUsers() {
         return Collections.singletonList(_user);
     }
 

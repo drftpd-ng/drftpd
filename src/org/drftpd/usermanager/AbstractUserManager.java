@@ -120,7 +120,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 	protected abstract File getUserFile(String username);
 
-	public Collection getAllGroups() throws UserFileException {
+	public Collection getAllGroups() {
 		Collection users = getAllUsers();
 		ArrayList<String> ret = new ArrayList<String>();
 
@@ -147,9 +147,9 @@ public abstract class AbstractUserManager implements UserManager {
 	/**
 	 * Get all user names in the system.
 	 */
-	public abstract Collection<User> getAllUsers() throws UserFileException;
+	public abstract Collection<User> getAllUsers();
 	
-	public Collection getAllUsersByGroup(String group) throws UserFileException {
+	public Collection getAllUsersByGroup(String group) {
 		Collection<User> c = new ArrayList<User>();
 
 		for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
@@ -203,15 +203,6 @@ public abstract class AbstractUserManager implements UserManager {
 	public abstract User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException;
 
-	/**
-	 * A kind of constuctor defined in the interface for allowing the
-	 * usermanager to get a hold of the ConnectionManager object for dispatching
-	 * events etc.
-	 */
-	/*public void init(GlobalContext gctx) {
-		_gctx = gctx;
-	}*/
-
 	public void remove(User user) {
 		_users.remove(user.getName());
 	}
@@ -231,10 +222,15 @@ public abstract class AbstractUserManager implements UserManager {
 		throw new UserExistsException("user " + newUsername + " exists");
 	}
 
-	public void saveAll() throws UserFileException {
+	public void saveAll() {
 		logger.info("Saving userfiles");
 		for (User user : getAllUsers()) {
-			user.commit();
+			try {
+				user.commit();
+			} catch (UserFileException e) {
+				logger.error("Error saving: '"+user.getName()+"'", e);
+				continue;
+			}
 		}
 	}
 
@@ -242,38 +238,46 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetDay(java.util.Date)
 	 */
 	public void resetDay(Date d) {
-		try {
-			for (User user : getAllUsers()) {			
-				user.resetDay(d);			
+		for (User user : getAllUsers()) {			
+			user.resetDay(d);
+			try {
+				user.commit();
+			} catch (UserFileException e) {
+				logger.error("Error saving: '"+user.getName()+"'", e);
+				continue;
 			}
-		} catch (UserFileException e) {
-			logger.error("Unable to process user for resetDay()", e);
 		}
-	}
+	} 
 
 	/* (non-Javadoc)
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetHour(java.util.Date)
 	 */
 	public void resetHour(Date d) {
-		try {
-			for (User user : getAllUsers()) {			
-				user.resetHour(d);			
+		for (User user : getAllUsers()) {			
+			user.resetHour(d);
+			try {
+				user.commit();
+			} catch (UserFileException e) {
+				logger.error("Error saving: '"+user.getName()+"'", e);
+				continue;
 			}
-		} catch (UserFileException e) {
-			logger.error("Unable to process user for resetDay()", e);
 		}
-	}
+	} 
+
 
 	/* (non-Javadoc)
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetMonth(java.util.Date)
 	 */
 	public void resetMonth(Date d) {
-		try {
-			for (User user : getAllUsers()) {			
-				user.resetMonth(d);			
+
+		for (User user : getAllUsers()) {			
+			user.resetMonth(d);	
+			try {
+				user.commit();
+			} catch (UserFileException e) {
+				logger.error("Error saving: '"+user.getName()+"'", e);
+				continue;
 			}
-		} catch (UserFileException e) {
-			logger.error("Unable to process user for resetDay()", e);
 		}
 	}
 
@@ -281,25 +285,32 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetWeek(java.util.Date)
 	 */
 	public void resetWeek(Date d) {
-		try {
-			for (User user : getAllUsers()) {			
-				user.resetWeek(d);			
+
+		for (User user : getAllUsers()) {			
+			user.resetWeek(d);	
+			try {
+				user.commit();
+			} catch (UserFileException e) {
+				logger.error("Error saving: '"+user.getName()+"'", e);
+				continue;
 			}
-		} catch (UserFileException e) {
-			logger.error("Unable to process user for resetDay()", e);
 		}
+
 	}
 
 	/* (non-Javadoc)
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetYear(java.util.Date)
 	 */
 	public void resetYear(Date d) {
-		try {
-			for (User user : getAllUsers()) {			
-				user.resetYear(d);			
+
+		for (User user : getAllUsers()) {			
+			user.resetYear(d);		
+			try {
+				user.commit();
+			} catch (UserFileException e) {
+				logger.error("Error saving: '"+user.getName()+"'", e);
+				continue;
 			}
-		} catch (UserFileException e) {
-			logger.error("Unable to process user for resetDay()", e);
 		}
 	}
 }

@@ -185,11 +185,7 @@ public class SlaveManager implements Runnable {
 					rslave.shutdown();
 				}
 
-				try {
-					getGlobalContext().getUserManager().saveAll();
-				} catch (UserFileException e) {
-					logger.warn("", e);
-				}
+				getGlobalContext().getUserManager().saveAll();				
 			}
 		});
 	}

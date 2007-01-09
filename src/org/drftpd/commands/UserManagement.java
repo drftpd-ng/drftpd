@@ -241,26 +241,20 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 			int users;
 
-			try {
-				users = conn.getGlobalContext().getUserManager()
-						.getAllUsersByGroup(conn.getUserNull().getGroup())
-						.size();
-				logger.debug("Group "
-						+ conn.getUserNull().getGroup()
-						+ " is "
-						+ conn.getGlobalContext().getUserManager()
-								.getAllUsersByGroup(
-										conn.getUserNull().getGroup()));
+			users = conn.getGlobalContext().getUserManager()
+					.getAllUsersByGroup(conn.getUserNull().getGroup())
+					.size();
+			logger.debug("Group "
+					+ conn.getUserNull().getGroup()
+					+ " is "
+					+ conn.getGlobalContext().getUserManager()
+							.getAllUsersByGroup(
+									conn.getUserNull().getGroup()));
 
-				if (users >= conn.getUserNull().getKeyedMap().getObjectInt(
-						UserManagement.GROUPSLOTS)) {
-					return new Reply(452, conn.jprintf(UserManagement.class,
-							"adduser.noslots"));
-				}
-			} catch (UserFileException e1) {
-				logger.warn("", e1);
-
-				return new Reply(452, e1.getMessage());
+			if (users >= conn.getUserNull().getKeyedMap().getObjectInt(
+					UserManagement.GROUPSLOTS)) {
+				return new Reply(452, conn.jprintf(UserManagement.class,
+						"adduser.noslots"));
 			}
 
 			newGroup = conn.getUserNull().getGroup();
@@ -648,19 +642,14 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 				if (ratio == 0F) {
 					int usedleechslots = 0;
 
-					try {
-						for (Iterator iter = conn.getGlobalContext()
-								.getUserManager().getAllUsersByGroup(
-										conn.getUserNull().getGroup())
-								.iterator(); iter.hasNext();) {
-							if (((User) iter.next()).getKeyedMap()
-									.getObjectFloat(UserManagement.RATIO) == 0F) {
-								usedleechslots++;
-							}
+					for (Iterator iter = conn.getGlobalContext()
+							.getUserManager().getAllUsersByGroup(
+									conn.getUserNull().getGroup())
+							.iterator(); iter.hasNext();) {
+						if (((User) iter.next()).getKeyedMap()
+								.getObjectFloat(UserManagement.RATIO) == 0F) {
+							usedleechslots++;
 						}
-					} catch (UserFileException e1) {
-						return new Reply(452, "IO error reading userfiles: "
-								+ e1.getMessage());
 					}
 
 					if (usedleechslots >= conn.getUserNull().getKeyedMap()
@@ -1293,12 +1282,8 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		long allmbup = 0;
 		long allmbdn = 0;
 
-		Collection users;
-		try {
-			users = conn.getGlobalContext().getUserManager().getAllUsers();
-		} catch (UserFileException e) {
-			return new Reply(452, "IO error: " + e.getMessage());
-		}
+		Collection users = conn.getGlobalContext().getUserManager().getAllUsers();
+
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
 			User user = (User) iter.next();
 			if (!user.isMemberOf(group))
@@ -1485,17 +1470,9 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 		Reply response = new Reply(200);
 
-		Collection users = null;
+		Collection users = conn.getGlobalContext().getUserManager()
+		.getAllUsersByGroup(group);;
 
-		try {
-			users = conn.getGlobalContext().getUserManager()
-					.getAllUsersByGroup(group);
-		} catch (UserFileException ex) {
-			logger.log(Level.FATAL, "IO error from getAllUsersByGroup(" + group
-					+ ")", ex);
-
-			return new Reply(200, "IO error: " + ex.getMessage());
-		}
 		response.addComment("Changing '" + group + "' members " + opt);
 
 		for (Iterator iter = users.iterator(); iter.hasNext();) {
@@ -1528,15 +1505,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	}
 
 	private Reply doSITE_GROUPS(BaseFtpConnection conn) {
-		Collection groups;
-
-		try {
-			groups = conn.getGlobalContext().getUserManager().getAllGroups();
-		} catch (UserFileException e) {
-			logger.log(Level.FATAL, "IO error from getAllGroups()", e);
-
-			return new Reply(452, "IO error: " + e.getMessage());
-		}
+		Collection groups = conn.getGlobalContext().getUserManager().getAllGroups();
 
 		Reply response = new Reply(200);
 		response.addComment("All groups:");
@@ -1574,21 +1543,12 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		}
 
 		String newGroup = st.nextToken();
-		Collection users = null;
+		Collection users = conn.getGlobalContext().getUserManager()
+		.getAllUsersByGroup(oldGroup);;
 
-		try {
-			if (!conn.getGlobalContext().getUserManager().getAllUsersByGroup(
-					newGroup).isEmpty()) {
-				return new Reply(500, newGroup + " already exists");
-			}
-
-			users = conn.getGlobalContext().getUserManager()
-					.getAllUsersByGroup(oldGroup);
-		} catch (UserFileException e) {
-			logger.log(Level.FATAL, "IO error from getAllUsersByGroup("
-					+ oldGroup + ")", e);
-
-			return new Reply(200, "IO error: " + e.getMessage());
+		if (!conn.getGlobalContext().getUserManager().getAllUsersByGroup(
+				newGroup).isEmpty()) {
+			return new Reply(500, newGroup + " already exists");
 		}
 
 		Reply response = new Reply(200);
@@ -2018,15 +1978,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 		}
 
 		Reply response = new Reply(200);
-		Collection myUsers;
-
-		try {
-			myUsers = conn.getGlobalContext().getUserManager().getAllUsers();
-		} catch (UserFileException e) {
-			logger.log(Level.FATAL, "IO error reading all users", e);
-
-			throw new ReplyException(e);
-		}
+		Collection myUsers = conn.getGlobalContext().getUserManager().getAllUsers();
 
 		if (request.hasArgument()) {
 			Permission perm = new Permission(FtpConfig
@@ -2341,13 +2293,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	}
 
 	private Reply doSITE_BANS(BaseFtpConnection conn) throws ReplyException {
-		Collection<User> myUsers;
-		try {
-			myUsers = conn.getGlobalContext().getUserManager().getAllUsers();
-		} catch (UserFileException e) {
-			logger.log(Level.FATAL, "IO error reading all users", e);
-			throw new ReplyException(e);
-		}
+		Collection<User> myUsers = conn.getGlobalContext().getUserManager().getAllUsers();
 
 		Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
 		for (User user : myUsers) {

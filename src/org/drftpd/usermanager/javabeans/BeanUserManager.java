@@ -30,7 +30,6 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
@@ -91,26 +90,20 @@ public class BeanUserManager extends AbstractUserManager {
 		}		
 	}
 	
+	/**
+	 * Tries to find a user in the Map that matches the 'username'.
+	 * This method does not care about if the user exists or not,
+	 * it simply tries to find it.
+	 * @throws NoSuchUserException, if there's no such user w/ this Username.
+	 * @throws UserFileException, if an error (i/o) occured while loading data.
+	 */
 	public User getUserByNameUnchecked(String username)
-			throws NoSuchUserException, UserFileException {
-
+	throws NoSuchUserException, UserFileException {
 		try {
-			SoftReference<User> sf = _users.get(username);
 
-			User user = null;
-			if (sf == null || sf.get() == null) {				
-				user = loadUser(username);
-				
-				// this line can be removed later on, debugging purposes only.
-				logger.debug("No reference to '"+username+"' found. Was it GC'ed or never loaded?");
-				
-				_users.put(user.getName(), new SoftReference<User>(user));
-			} else {
-				return sf.get();
-			}
-			return user;
-		} catch (FileNotFoundException ex) {
-			throw new NoSuchUserException("No such user", ex);
+			User user = getUserFromSoftReference(username);
+			_users.put(user.getName(), new SoftReference<User>(user));
+			return user;			
 		} catch (Exception ex) {
 			if (ex instanceof NoSuchUserException) {
 				throw (NoSuchUserException) ex;
@@ -119,7 +112,14 @@ public class BeanUserManager extends AbstractUserManager {
 		}
 	}
 
-	protected User loadUser(String userName) throws FileNotFoundException {
+	/**
+	 * Lowest level method for loading a User object.
+	 * @param userName
+	 * @throws NoSuchUserException, if there's no such user w/ this Username.
+	 * Meaning that the userfile does not exists.
+	 * @throws UserFileException, if an error (i/o) occured while loading data.
+	 */
+	private User loadUser(String userName) throws NoSuchUserException, UserFileException {
 		XMLDecoder xd = null;
 		try {
 			BeanUser user = null;
@@ -128,10 +128,41 @@ public class BeanUserManager extends AbstractUserManager {
 			user = (BeanUser) xd.readObject();
 			user.setUserManager(this);
 			return user;
-		} finally {
+		} catch (FileNotFoundException e) {
+			throw new NoSuchUserException("No such user: '"+userName+"'", e);
+		} catch (Exception e) {
+			throw new UserFileException("Error loading " + userName, e);
+		}
+		finally {
 			if (xd != null)
 				xd.close();
 		}
+	}
+	
+	/**
+	 * This methods fetches the SoftReference from the users map
+	 * and checks if it still holds a reference to a User object.<br>
+	 * If it does return the object, if not it tries to load the
+	 * User data from the disk and return it.
+	 * @param name, the username.
+	 * @return a User object.
+	 * @throws NoSuchUserException, if not such file containing use data was found,
+	 * so the user does not exist.
+	 * @throws UserFileException, if an error (i/o) occurs during the load. 
+	 */
+	private User getUserFromSoftReference(String name) 
+				throws NoSuchUserException, UserFileException {
+		SoftReference<User> sf = _users.get(name);
+		User u = null;
+		if (sf != null) {
+			u = sf.get();
+			if (u == null) {
+				// user object was garbage collected, load it again.
+				u = loadUser(name);
+			}
+			return u;
+		}
+		throw new NoSuchUserException("No such user found: " + name);
 	}
 	
 	/**
@@ -142,31 +173,38 @@ public class BeanUserManager extends AbstractUserManager {
 	 */
 	public Collection<User> getAllUsers() {
 		ArrayList<User> users = new ArrayList<User>(_users.size());
-		User u = null;
-		for (Entry<String, SoftReference<User>> entry : _users.entrySet()) {
-			SoftReference<User> sf = entry.getValue();
-			if (sf == null || sf.get() == null) {
-				try {
-					u = loadUser(entry.getKey());
-				} catch (FileNotFoundException e) {
-					logger.fatal("This should have happened, but it did. " +
-							"Stop deleting users outside DrFTPd!", e);
-				}
-			} else {
-				u = sf.get();
+		for (String name : _users.keySet()) {
+			try {
+				User u = getUserFromSoftReference(name);
+				users.add(u);
+				_users.put(name, new SoftReference<User>(u));
+			} catch (NoSuchUserException e) {
+				logger.error(name+" data wasnt found in the disk! " +
+						"How come the user is in the Map and does not have a userfile?! Deleting it.");
+				_users.remove(name);
+				continue; // nothing to do, user wasnt loaded properly.
+			} catch (UserFileException e) {
+				logger.error("Error loading " + name, e);
+				continue; // nothing to do, an error ocurred while loading data.
 			}
-			users.add(u);
-			_users.put(entry.getKey(), new SoftReference<User>(u));
 		}
 		return users;		
 	}
 	
+	/**
+	 * Testing routine.
+	 * @param args
+	 * @throws UserFileException
+	 */
 	public static void main(String args[]) throws UserFileException {
 		BeanUserManager bu = new BeanUserManager();
 		User u = bu.createUser("drftpd");
 		u.commit();
 	}
 
+	/**
+	 * Sets up the XMLEnconder.
+	 */
 	public XMLEncoder getXMLEncoder(OutputStream out) {
 		XMLEncoder e = new XMLEncoder(out);
 		e.setExceptionListener(new ExceptionListener() {
