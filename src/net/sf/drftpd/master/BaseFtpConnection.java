@@ -31,7 +31,9 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 import javax.net.ssl.SSLSocket;
 
@@ -312,6 +314,13 @@ public class BaseFtpConnection implements Runnable {
 		} catch (UserFileException e) {
 			return null;
 		}
+	}
+	
+	/**
+	 * @return the username (string).
+	 */
+	public String getUsername() {
+		return _user;
 	}
 
 	protected boolean hasPermission(FtpRequest request) {
@@ -654,5 +663,23 @@ public class BaseFtpConnection implements Runnable {
 			// DataConnectionHandler
 		}
 		return count;
+	}
+	
+	/**
+	 * When a user is renamed the control connection looses its owner since the reference to the User
+	 * is actually made thru a String containing the username.<br>
+	 * This methods iterates thru all control connections trying to match connections owned by 'oldUsername'
+	 * and re-sets it to 'newUsername'. 
+	 * @param oldUsername
+	 * @param newUsername
+	 */
+	public static void fixBaseFtpConnUser(String oldUsername, String newUsername) {
+		List<BaseFtpConnection> list = GlobalContext.getGlobalContext().getConnectionManager().getConnections();
+		synchronized (list) {
+			List<BaseFtpConnection> conns = Collections.unmodifiableList(list);
+			for (BaseFtpConnection conn : conns)
+				if (conn.getUsername().equals(oldUsername))
+					conn.setUser(newUsername);
+		}
 	}
 }

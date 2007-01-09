@@ -16,8 +16,6 @@
  */
 package org.drftpd.tests;
 
-
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -68,10 +66,6 @@ public class DummyUserManager extends AbstractUserManager {
         return _user;
     }
 
-    public void init(ConnectionManager mgr) {
-        throw new UnsupportedOperationException();
-    }
-
     public void saveAll() throws UserFileException {
         throw new UnsupportedOperationException();
     }
@@ -90,5 +84,10 @@ public class DummyUserManager extends AbstractUserManager {
 
 	protected File getUserFile(String username) {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void init() throws UserFileException {
+		
 	}
 }

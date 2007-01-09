@@ -22,7 +22,7 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import net.sf.drftpd.DuplicateElementException;
@@ -43,50 +43,13 @@ import se.mog.io.PermissionDeniedException;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
-	protected Hashtable<String, SoftReference<User>> _users = new Hashtable<String, SoftReference<User>>();
+	protected HashMap<String, SoftReference<User>> _users;
 
 	private static final Logger logger = Logger
 			.getLogger(AbstractUserManager.class);
 
-	private GlobalContext _gctx;
-
-	/**
-	 * For DummyUserManager, skips creation of userfile directory.
-	 */
-	public AbstractUserManager() {
-	}
-
-	/**
-	 * <p>
-	 * Cannot be a constructor because the child class fields don't get
-	 * initialized until super (this) class gets run.
-	 * </p>
-	 */
-	protected void init(boolean createIfNoUser) throws UserFileException {
-		if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
-			throw new UserFileException(new IOException(
-					"Error creating directories: " + getUserpathFile()));
-		}
-		if (createIfNoUser) {
-			String[] userfilenames = getUserpathFile().list();
-			boolean hasUsers = false;
-
-			for (int i = 0; i < userfilenames.length; i++) {
-				String string = userfilenames[i];
-
-				if (string.endsWith(".xml")) {
-					hasUsers = true;
-
-					break;
-				}
-			}
-
-			if (!hasUsers) {
-				createSiteopUser();
-			}
-		}
-	}
-
+	public abstract void init() throws UserFileException;
+	
 	protected abstract File getUserpathFile();
 
 	protected void createSiteopUser() throws UserFileException {
@@ -129,19 +92,15 @@ public abstract class AbstractUserManager implements UserManager {
 	public User create(String username) throws UserFileException {
 		try {
 			getUserByName(username);
-
-			// bad
-			throw new FileExistsException("User " + username
-					+ " already exists");
+			// bad, .xml file already exists.
+			throw new FileExistsException("User " +username+ " already exists");
 		} catch (IOException e) {
-			// bad
+			// bad, some I/O error ocurred.
 			throw new UserFileException(e);
 		} catch (NoSuchUserException e) {
-			// good
+			// good, no such user was found. create it!
 		}
 
-		// User user =
-		// _connManager.getGlobalContext().getUserManager().createUser(username);
 		User user = createUser(username);
 		user.commit();
 
@@ -188,31 +147,8 @@ public abstract class AbstractUserManager implements UserManager {
 	/**
 	 * Get all user names in the system.
 	 */
-	public Collection<User> getAllUsers() throws UserFileException {
-		ArrayList<User> users = new ArrayList<User>();
-		String[] userpaths = getUserpathFile().list();
-
-		for (int i = 0; i < userpaths.length; i++) {
-			String userpath = userpaths[i];
-
-			if (!userpath.endsWith(".xml")) {
-				continue;
-			}
-
-			String username = userpath.substring(0, userpath.length()
-					- ".xml".length());
-
-			try {
-				users.add((AbstractUser) getUserByNameUnchecked(username));
-
-				// throws IOException
-			} catch (NoSuchUserException e) {
-			} // continue
-		}
-
-		return users;
-	}
-
+	public abstract Collection<User> getAllUsers() throws UserFileException;
+	
 	public Collection getAllUsersByGroup(String group) throws UserFileException {
 		Collection<User> c = new ArrayList<User>();
 
@@ -244,8 +180,8 @@ public abstract class AbstractUserManager implements UserManager {
 		return user;
 	}
 
-	public GlobalContext getGlobalContext() {
-		return _gctx;
+	public static GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
 	}
 
 	public User getUserByIdent(String ident) throws NoSuchUserException,
@@ -272,9 +208,9 @@ public abstract class AbstractUserManager implements UserManager {
 	 * usermanager to get a hold of the ConnectionManager object for dispatching
 	 * events etc.
 	 */
-	public void init(GlobalContext gctx) {
+	/*public void init(GlobalContext gctx) {
 		_gctx = gctx;
-	}
+	}*/
 
 	public void remove(User user) {
 		_users.remove(user.getName());
@@ -282,7 +218,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 	protected void rename(User oldUser, String newUsername)
 			throws UserExistsException, UserFileException {
-		if (!_users.contains(newUsername)) {
+		if (!_users.containsKey(newUsername)) {
 			try {
 				getUserByNameUnchecked(newUsername);
 			} catch (NoSuchUserException e) {
@@ -297,11 +233,8 @@ public abstract class AbstractUserManager implements UserManager {
 
 	public void saveAll() throws UserFileException {
 		logger.info("Saving userfiles");
-		for (SoftReference<User> sf : _users.values()) {
-			if (sf == null || sf.get() == null)
-				continue;
-			
-			sf.get().commit();
+		for (User user : getAllUsers()) {
+			user.commit();
 		}
 	}
 
@@ -309,15 +242,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetDay(java.util.Date)
 	 */
 	public void resetDay(Date d) {
-		for (SoftReference<User> sf : _users.values()) {
-			try {
-				if (sf == null || sf.get() == null)
-					return;
-				
-				sf.get().resetDay(d);
-			} catch (UserFileException e) {
-				logger.error("Unable to process user for resetDay()", e);
+		try {
+			for (User user : getAllUsers()) {			
+				user.resetDay(d);			
 			}
+		} catch (UserFileException e) {
+			logger.error("Unable to process user for resetDay()", e);
 		}
 	}
 
@@ -325,15 +255,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetHour(java.util.Date)
 	 */
 	public void resetHour(Date d) {
-		for (SoftReference<User> sf : _users.values()) {
-			try {
-				if (sf == null || sf.get() == null)
-					return;
-				
-				sf.get().resetHour(d);
-			} catch (UserFileException e) {
-				logger.error("Unable to process user for resetHour()", e);
+		try {
+			for (User user : getAllUsers()) {			
+				user.resetHour(d);			
 			}
+		} catch (UserFileException e) {
+			logger.error("Unable to process user for resetDay()", e);
 		}
 	}
 
@@ -341,15 +268,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetMonth(java.util.Date)
 	 */
 	public void resetMonth(Date d) {
-		for (SoftReference<User> sf : _users.values()) {
-			try {
-				if (sf == null || sf.get() == null)
-					return;
-				
-				sf.get().resetMonth(d);
-			} catch (UserFileException e) {
-				logger.error("Unable to process user for resetMonth()", e);
+		try {
+			for (User user : getAllUsers()) {			
+				user.resetMonth(d);			
 			}
+		} catch (UserFileException e) {
+			logger.error("Unable to process user for resetDay()", e);
 		}
 	}
 
@@ -357,15 +281,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetWeek(java.util.Date)
 	 */
 	public void resetWeek(Date d) {
-		for (SoftReference<User> sf : _users.values()) {
-			try {
-				if (sf == null || sf.get() == null)
-					return;
-				
-				sf.get().resetWeek(d);
-			} catch (UserFileException e) {
-				logger.error("Unable to process user for resetWeek()", e);
+		try {
+			for (User user : getAllUsers()) {			
+				user.resetWeek(d);			
 			}
+		} catch (UserFileException e) {
+			logger.error("Unable to process user for resetDay()", e);
 		}
 	}
 
@@ -373,15 +294,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetYear(java.util.Date)
 	 */
 	public void resetYear(Date d) {
-		for (SoftReference<User> sf : _users.values()) {
-			try {
-				if (sf == null || sf.get() == null)
-					return;
-				
-				sf.get().resetYear(d);
-			} catch (UserFileException e) {
-				logger.error("Unable to process user for resetYear()", e);
+		try {
+			for (User user : getAllUsers()) {			
+				user.resetYear(d);			
 			}
+		} catch (UserFileException e) {
+			logger.error("Unable to process user for resetDay()", e);
 		}
 	}
 }

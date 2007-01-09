@@ -260,10 +260,7 @@ public class GlobalContext {
 			_usermanager = (AbstractUserManager) Class.forName(
 					PropertyHelper.getProperty(cfg, "master.usermanager"))
 					.newInstance();
-
-			// if the below method is not run, JSXUserManager fails when trying
-			// to do a reset() on the user logging in
-			_usermanager.init(this);
+			_usermanager.init();
 		} catch (Exception e) {
 			throw new FatalException(
 					"Cannot create instance of usermanager, check master.usermanager in config file",

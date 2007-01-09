@@ -19,7 +19,6 @@ package org.drftpd.usermanager;
 
 import java.util.Collection;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.master.cron.TimeEventInterface;
 
 /**
@@ -27,6 +26,8 @@ import org.drftpd.master.cron.TimeEventInterface;
  * @version $Id$
  */
 public interface UserManager extends TimeEventInterface {
+	public abstract void init() throws UserFileException;
+	
 	public abstract User create(String username) throws UserFileException;
 
 	public abstract Collection getAllGroups() throws UserFileException;
@@ -50,13 +51,6 @@ public interface UserManager extends TimeEventInterface {
 
 	public abstract User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException;
-
-	/**
-	 * A kind of constuctor defined in the interface for allowing the
-	 * usermanager to get a hold of the ConnectionManager object for dispatching
-	 * events etc.
-	 */
-	public abstract void init(GlobalContext mgr);
 
 	public abstract void saveAll() throws UserFileException;
 

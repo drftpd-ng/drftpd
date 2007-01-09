@@ -1786,6 +1786,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 					.getUserByName(args[0]);
 			String oldUsername = myUser.getName();
 			myUser.rename(args[1]);
+			BaseFtpConnection.fixBaseFtpConnUser(oldUsername, myUser.getName());
 			logger.info("'" + conn.getUserNull().getName() + "' renamed '"
 					+ oldUsername + "' to '" + myUser.getName() + "'");
 		} catch (NoSuchUserException e) {
