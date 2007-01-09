@@ -504,4 +504,10 @@ public class DirectoryHandle extends InodeHandle implements
 	public boolean isLink() {
 		return false;
 	}
+	
+	@Override
+	public void delete() throws FileNotFoundException {
+		GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
+		super.delete();
+	}
 }

@@ -80,10 +80,8 @@ public abstract class VirtualFileSystemInode {
 	 */
 	public void delete() {
 		logger.info("delete(" + this + ")");
-		//GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves();
 		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
 		_parent.removeChild(this);
-		_parent.addSize(-getSize());
 	}
 
 	/**
