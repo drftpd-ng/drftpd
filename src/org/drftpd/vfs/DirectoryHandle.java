@@ -43,6 +43,19 @@ public class DirectoryHandle extends InodeHandle implements
 	public DirectoryHandle(String path) {
 		super(path);
 	}
+
+	/**
+	 * @param reason
+	 * @throws FileNotFoundException if this Directory does not exist
+	 */
+	public void abortAllTransfers(String reason) throws FileNotFoundException {
+		for (FileHandle file : getFiles()) {
+			try {
+				file.abortTransfers(reason);
+			} catch (FileNotFoundException e) {
+			}
+		}
+	}
 	
 	/**
 	 * Returns a DirectoryHandle for a possibly non-existant directory in this path
@@ -507,6 +520,7 @@ public class DirectoryHandle extends InodeHandle implements
 	
 	@Override
 	public void delete() throws FileNotFoundException {
+		abortAllTransfers("Directory " + getPath() + " is being deleted");
 		GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
 		super.delete();
 	}

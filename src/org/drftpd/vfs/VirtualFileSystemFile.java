@@ -22,15 +22,19 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.master.RemoteTransfer;
+import org.drftpd.slave.TransferFailedException;
 
 /**
  * Lowest representation of a File object.
@@ -49,8 +53,12 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 
 	public static final Key XFERTIME = new Key(VirtualFileSystemFile.class,
 			"xfertime", Long.class);
-
+	
 	protected Set<String> _slaves;
+	
+	private transient ArrayList<RemoteTransfer> _uploads = new ArrayList<RemoteTransfer>(1);
+	
+	private transient ArrayList<RemoteTransfer> _downloads = new ArrayList<RemoteTransfer>(1);
 
 	/**
 	 * @return a set of which slaves have this file.
@@ -180,8 +188,70 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 	}
 
 	public boolean isUploading() {
-		// TODO Auto-generated method stub
-		return false;
+		return isTransferring(_uploads);
+	}
+	
+	public boolean isTransferring() {
+		return isUploading() || isDownloading();
+	}
+	
+	public void addUpload(RemoteTransfer transfer) {
+		synchronized (_uploads) {
+			_uploads.add(transfer);
+		}
+	}
+	
+	public void addDownload(RemoteTransfer transfer) {
+		synchronized (_downloads) {
+			_downloads.add(transfer);
+		}
+	}
+	
+	protected void abortTransfers(String reason) {
+		abortUploads(reason);
+		abortDownloads(reason);
+	}
+	
+	protected void abortUploads(String reason) {
+		abortTransfers(_uploads, reason);
+	}
+	
+	protected void abortDownloads(String reason) {
+		abortTransfers(_downloads, reason);
+	}
+	
+	private void abortTransfers(ArrayList<RemoteTransfer> transfers, String reason) {
+		synchronized (transfers) {
+			for (Iterator<RemoteTransfer> iter = transfers.iterator(); iter.hasNext();) {
+				RemoteTransfer transfer = iter.next();
+				transfer.abort(reason);
+				iter.remove();
+			}
+		}
+	}
+	
+	private boolean isTransferring(ArrayList<RemoteTransfer> transfers) {
+		synchronized (transfers) {
+			for (Iterator<RemoteTransfer> iter = transfers.iterator(); iter.hasNext();) {
+				RemoteTransfer transfer = iter.next();
+				try {
+					if (!transfer.getTransferStatus().isFinished()) {
+						return true;
+					}
+					// transfer is done
+				} catch (TransferFailedException e) {
+					// this one failed but another might be transferring
+					
+				}
+				// transfer is done or failed, let's remove it from the list so we don't have to iterate over it anymore
+				iter.remove();
+			}
+			return false;
+		}
+	}
+	
+	public boolean isDownloading() {
+		return isTransferring(_downloads);
 	}
 
 	public synchronized boolean isAvailable() {
@@ -192,6 +262,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 					return true;
 				}
 			} catch (ObjectNotFoundException e) {
+				removeSlave(slave);
 			}
 		}
 		return false;

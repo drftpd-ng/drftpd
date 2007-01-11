@@ -28,6 +28,8 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
+import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.TransferPointer;
 
 /**
  * @author zubov
@@ -46,6 +48,8 @@ public class RemoteTransfer {
 	private char _state = Transfer.TRANSFER_UNKNOWN;
 
 	private String _path;
+	
+	private TransferPointer _pointer;
 
 	public RemoteTransfer(ConnectInfo ci, RemoteSlave rslave)
 			throws SlaveUnavailableException {
@@ -58,6 +62,9 @@ public class RemoteTransfer {
 	public void updateTransferStatus(TransferStatus ts) {
 		synchronized (_rslave) {
 			_status = ts;
+		}
+		if (_status.isFinished()) {
+			_pointer = null;
 		}
 	}
 
@@ -133,10 +140,11 @@ public class RemoteTransfer {
 				_rslave.issueAbortToSlave(getTransferIndex(), reason);
 			} catch (SlaveUnavailableException e) {
 				_status = new TransferStatus(getTransferIndex(), e);
+				_pointer = null;
 			}
 		}
 	}
-
+	
 	public void receiveFile(String path, char type, long position)
 			throws IOException, SlaveUnavailableException {
 		_path = path;
@@ -148,6 +156,7 @@ public class RemoteTransfer {
 		} catch (RemoteIOException e) {
 			throw (IOException) e.getCause();
 		}
+		_pointer = new TransferPointer(_path, this);
 	}
 
 	public void sendFile(String path, char type, long position)
@@ -161,6 +170,7 @@ public class RemoteTransfer {
 		} catch (RemoteIOException e) {
 			throw (IOException) e.getCause();
 		}
+		_pointer = new TransferPointer(_path,this);
 	}
 
 	public String toString() {

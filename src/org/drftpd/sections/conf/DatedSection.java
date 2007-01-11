@@ -214,7 +214,7 @@ public class DatedSection implements SectionInterface, TimeEventInterface {
 		}
 	}
 	
-	private void processNewDate(Date d) {
+	public void processNewDate(Date d) {
 		String dateDirName = _dateFormat.format(new Date());
 		if (!getBaseDirectory().exists()) {
 			logger.error("Section directory does not exist while creating dated directory - " + dateDirName);

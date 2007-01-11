@@ -53,6 +53,14 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	}
 
 	/**
+	 * Sets the xfertime of this file
+	 * @throws FileNotFoundException if there's no such file.
+	 */
+	public void setXfertime(long x) throws FileNotFoundException {
+		getInode().setXfertime(x);
+	}
+
+	/**
 	 * @return a Set containing the slaves that contain the File.
 	 * @throws FileNotFoundException
 	 */
@@ -162,6 +170,30 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	public long getXfertime() throws FileNotFoundException {
 		return getInode().getXfertime();
 	}
+	
+	public boolean isUploading() throws FileNotFoundException {
+		return getInode().isUploading();
+	}
+	
+	public boolean isDownloading() throws FileNotFoundException {
+		return getInode().isDownloading();
+	}
+	
+	public boolean isTransferring() throws FileNotFoundException {
+		return getInode().isTransferring();
+	}
+	
+	public void abortTransfers(String reason) throws FileNotFoundException {
+		getInode().abortTransfers(reason);
+	}
+	
+	public void abortUploads(String reason) throws FileNotFoundException {
+		getInode().abortUploads(reason);
+	}
+	
+	public void abortDownloads(String reason) throws FileNotFoundException {
+		getInode().abortDownloads(reason);
+	}
 
 	/**
 	 * @return true if there's an avaiable slave for the file or
@@ -201,6 +233,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 
 	@Override
 	public void delete() throws FileNotFoundException {
+		abortTransfers("File " + getPath() + " is being deleted");
 		for (RemoteSlave rslave : getSlaves()) {
 			rslave.simpleDelete(getPath());
 		}
