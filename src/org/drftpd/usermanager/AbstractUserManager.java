@@ -112,7 +112,7 @@ public abstract class AbstractUserManager implements UserManager {
 	/**
 	 * final for now to remove duplicate implementations
 	 */
-	public void delete(String username) {
+	public synchronized void delete(String username) {
 		if (!getUserFile(username).delete())
 			throw new RuntimeException(new PermissionDeniedException());
 		_users.remove(username);
@@ -203,11 +203,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public abstract User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException;
 
-	public void remove(User user) {
-		_users.remove(user.getName());
-	}
-
-	protected void rename(User oldUser, String newUsername)
+	protected synchronized void rename(User oldUser, String newUsername)
 			throws UserExistsException, UserFileException {
 		if (!_users.containsKey(newUsername)) {
 			try {
@@ -220,18 +216,6 @@ public abstract class AbstractUserManager implements UserManager {
 		}
 
 		throw new UserExistsException("user " + newUsername + " exists");
-	}
-
-	public void saveAll() {
-		logger.info("Saving userfiles");
-		for (User user : getAllUsers()) {
-			try {
-				user.commit();
-			} catch (UserFileException e) {
-				logger.error("Error saving: '"+user.getName()+"'", e);
-				continue;
-			}
-		}
 	}
 
 	/* (non-Javadoc)

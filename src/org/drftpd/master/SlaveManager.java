@@ -183,9 +183,7 @@ public class SlaveManager implements Runnable {
 				logger.info("Running shutdown hook");
 				for (RemoteSlave rslave : _rslaves) {
 					rslave.shutdown();
-				}
-
-				getGlobalContext().getUserManager().saveAll();				
+				}				
 			}
 		});
 	}

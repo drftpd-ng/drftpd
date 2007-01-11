@@ -51,8 +51,6 @@ public interface UserManager extends TimeEventInterface {
 	public abstract User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException;
 
-	public abstract void saveAll();
-
 	public abstract User getUserByNameIncludeDeleted(String argument)
 			throws NoSuchUserException, UserFileException;
 }

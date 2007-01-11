@@ -53,7 +53,7 @@ public class DummyUserManager extends AbstractUserManager {
         throw new UnsupportedOperationException();
     }
 
-    public void add(User user) {
+    public synchronized void add(User user) {
         _users.put(user.getName(), new SoftReference<User>(user));
     }
 

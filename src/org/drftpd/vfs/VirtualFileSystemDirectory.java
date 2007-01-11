@@ -189,20 +189,23 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		}
 		SoftReference<VirtualFileSystemInode> sf = _files.get(name);
 		VirtualFileSystemInode inode = null;
-		if (sf == null || sf.get() == null) {
+		if (sf != null) {
+			inode = sf.get();
+		}
+		if (inode == null) {
 			inode = getVFS().loadInode(
 					getPath() + VirtualFileSystem.separator + name);
 			inode.setParent(this);
-			_files.remove(name);
+			// _files.remove(name);
+			// Map instance replaces what is previously there with put()
 			_files.put(name, new SoftReference<VirtualFileSystemInode>(inode));
-		} else {
-			inode = sf.get();
 		}
 		return inode;
 	}
 
 	/**
 	 * Remove the inode from the directory tree.
+	 * 
 	 * @param child
 	 */
 	protected synchronized void removeChild(VirtualFileSystemInode child) {

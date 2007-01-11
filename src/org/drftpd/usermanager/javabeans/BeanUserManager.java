@@ -30,6 +30,7 @@ import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
@@ -57,7 +58,7 @@ public class BeanUserManager extends AbstractUserManager {
 	/**
 	 * Creates a user named 'username' and adds it to the users map.
 	 */
-	protected User createUser(String username) {
+	protected synchronized User createUser(String username) {
 		BeanUser buser = new BeanUser(this, username);
 		_users.put(username, new SoftReference<User>(buser));
 		return buser;
@@ -74,20 +75,18 @@ public class BeanUserManager extends AbstractUserManager {
 		}
 		
 		_users = new HashMap<String, SoftReference<User>>();
-		boolean hasUsers = false; // checking if there is at least 1 existing User.
 		
 		logger.debug("Creating users map...");
 		for (String filename : getUserpathFile().list()) {
 			if (filename.endsWith(".xml")) {
-				hasUsers = true; // good we have a XML file.
 				String username = filename.substring(0, filename.length()-4);
 				_users.put(username, null); // the user exists, loading it is useless right now.
 			}
 		}
 		
-		if (!hasUsers) {
+		if (_users.size() == 0) {
 			createSiteopUser();
-		}		
+		}
 	}
 	
 	/**
@@ -100,10 +99,7 @@ public class BeanUserManager extends AbstractUserManager {
 	public User getUserByNameUnchecked(String username)
 	throws NoSuchUserException, UserFileException {
 		try {
-
-			User user = getUserFromSoftReference(username);
-			_users.put(user.getName(), new SoftReference<User>(user));
-			return user;			
+			return getUserFromSoftReference(username);
 		} catch (Exception ex) {
 			if (ex instanceof NoSuchUserException) {
 				throw (NoSuchUserException) ex;
@@ -132,8 +128,7 @@ public class BeanUserManager extends AbstractUserManager {
 			throw new NoSuchUserException("No such user: '"+userName+"'", e);
 		} catch (Exception e) {
 			throw new UserFileException("Error loading " + userName, e);
-		}
-		finally {
+		} finally {
 			if (xd != null)
 				xd.close();
 		}
@@ -150,19 +145,22 @@ public class BeanUserManager extends AbstractUserManager {
 	 * so the user does not exist.
 	 * @throws UserFileException, if an error (i/o) occurs during the load. 
 	 */
-	private User getUserFromSoftReference(String name) 
-				throws NoSuchUserException, UserFileException {
+	private synchronized User getUserFromSoftReference(String name)
+			throws NoSuchUserException, UserFileException {
+		if (!_users.keySet().contains(name)) {
+			throw new NoSuchUserException("No such user found: " + name);
+		}
 		SoftReference<User> sf = _users.get(name);
 		User u = null;
 		if (sf != null) {
 			u = sf.get();
-			if (u == null) {
-				// user object was garbage collected, load it again.
-				u = loadUser(name);
-			}
-			return u;
 		}
-		throw new NoSuchUserException("No such user found: " + name);
+		if (u == null) {
+			// user object was garbage collected or was never loaded
+			u = loadUser(name);
+			_users.put(name, new SoftReference<User>(u));
+		}
+		return u;
 	}
 	
 	/**
@@ -171,9 +169,10 @@ public class BeanUserManager extends AbstractUserManager {
 	 * saved in the memory for future usage, but they still subject to
 	 * GarbageColector.
 	 */
-	public Collection<User> getAllUsers() {
+	public synchronized Collection<User> getAllUsers() {
 		ArrayList<User> users = new ArrayList<User>(_users.size());
-		for (String name : _users.keySet()) {
+		for (Iterator<String> iter = _users.keySet().iterator(); iter.hasNext();) {
+			String name = iter.next();
 			try {
 				User u = getUserFromSoftReference(name);
 				users.add(u);
@@ -181,11 +180,11 @@ public class BeanUserManager extends AbstractUserManager {
 			} catch (NoSuchUserException e) {
 				logger.error(name+" data wasnt found in the disk! " +
 						"How come the user is in the Map and does not have a userfile?! Deleting it.");
-				_users.remove(name);
-				continue; // nothing to do, user wasnt loaded properly.
+				iter.remove();
+				// nothing else to do, user wasnt loaded properly.
 			} catch (UserFileException e) {
 				logger.error("Error loading " + name, e);
-				continue; // nothing to do, an error ocurred while loading data.
+				// nothing else to do, an error ocurred while loading data.
 			}
 		}
 		return users;		
