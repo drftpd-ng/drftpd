@@ -41,7 +41,7 @@ import net.sf.drftpd.FileExistsException;
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected static final Collection<String> transientListDirectory = Arrays
-			.asList(new String[] { "lastModified", "name", "parent", "files" });
+			.asList(new String[] { "name", "parent", "files" });
 
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = null;
 
@@ -66,7 +66,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected void addSize(long l) {
 		_size = getSize() + l;
-		_parent.addSize(l);
+		getParent().addSize(l);
+		commit();
 	}
 
 	/**

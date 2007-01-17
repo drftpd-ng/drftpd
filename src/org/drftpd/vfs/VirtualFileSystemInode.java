@@ -48,7 +48,7 @@ public abstract class VirtualFileSystemInode {
 
 	protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
 
-	protected transient long _lastModified;
+	protected long _lastModified;
 
 	protected transient String _name;
 
@@ -139,6 +139,14 @@ public abstract class VirtualFileSystemInode {
 	public long getSize() {
 		return _size;
 	}
+	
+	/**
+	 * Set the size of the dir/file/link.
+	 */
+	public void setSize(long l) {
+		_size = l;
+		commit();
+	}
 
 	/**
 	 * @return the owner username.
@@ -213,6 +221,7 @@ public abstract class VirtualFileSystemInode {
 
 	public void setKeyedMap(KeyedMap<Key, Object> data) {
 		_keyedMap = data;
+		commit();
 	}
 
 	/**

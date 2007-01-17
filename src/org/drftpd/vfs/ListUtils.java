@@ -124,8 +124,8 @@ public class ListUtils {
             		ReplacerEnvironment env = new ReplacerEnvironment();
             		env.add("ofilename", element.getName());
     				String oFileName = conn.jprintf(ListUtils.class, "files.offline.filename", env);
-    				
-    				listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.getSize(), element.lastModified()));
+
+    				listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
     				numTotal++;
             	}
                 // -OFFLINE and "ONLINE" files will both be present until someone implements

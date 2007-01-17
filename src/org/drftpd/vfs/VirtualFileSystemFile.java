@@ -33,17 +33,20 @@ import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
+
+import org.drftpd.stats.StatsInterface;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.TransferFailedException;
 
 /**
  * Lowest representation of a File object.
  */
-public class VirtualFileSystemFile extends VirtualFileSystemInode {
+public class VirtualFileSystemFile extends VirtualFileSystemInode implements StatsInterface  {
 
 	protected static final Collection<String> transientListFile = Arrays
-			.asList(new String[] { "lastModified", "name", "parent",
-					"xfertime", "checksum" });
+			.asList(new String[] { "name", "parent", "xfertime", "checksum", "size",
+					"downloadedBytes", "downloadedFiles", "downloadedTime",
+					"uploadedBytes", "uploadedFiles", "uploadedTime"});
 
 	public static final Key CRC = new Key(VirtualFileSystemFile.class,
 			"checksum", Long.class);
@@ -55,6 +58,13 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 			"xfertime", Long.class);
 	
 	protected Set<String> _slaves;
+	
+	
+	public static final Key DOWNLOADEDTIMES = new Key(VirtualFileSystemFile.class, 
+			"dltimes", Integer.class);
+	
+	public static final Key DOWNLOADDURATION = new Key(VirtualFileSystemFile.class, 
+			"dlduration", Long.class);
 	
 	private transient ArrayList<RemoteTransfer> _uploads = new ArrayList<RemoteTransfer>(1);
 	
@@ -177,11 +187,12 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 	 * Modifies the size of the File.
 	 * @param size
 	 */
+	@Override
 	public void setSize(long size) {
 		if (size < 0) {
 			throw new IllegalArgumentException("File size cannot be < 0");
 		}
-		getParent().addSize(-_size);
+		getParent().addSize(-_size); // removing old size from parent.
 		_size = size;
 		getParent().addSize(_size);
 		commit();
@@ -266,6 +277,86 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode {
 			}
 		}
 		return false;
+	}
+
+	public long getDownloadedBytes() {
+		return getKeyedMap().getObjectInt(DOWNLOADEDTIMES) * getSize() ;
+	}
+
+	public int getDownloadedFiles() {
+		return getKeyedMap().getObjectInt(DOWNLOADEDTIMES);
+	}
+
+	public long getDownloadedTime() {
+		return getKeyedMap().getObjectLong(DOWNLOADDURATION);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.drftpd.stats.StatsInterface#getUploadedBytes()
+	 * Useless since it's equals to getSize().
+	 */
+	public long getUploadedBytes() {
+		return getSize();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.drftpd.stats.StatsInterface#getUploadedFiles()
+	 * Useless since a file cannot be uploaded more than once.
+	 */
+	public int getUploadedFiles() {
+		return 1;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.drftpd.stats.StatsInterface#getUploadedTime()
+	 * Useless since it's equals to getXfertime().
+	 */
+	public long getUploadedTime() {
+		return getXfertime();
+	}
+
+	public void setDownloadedBytes(long bytes) {
+		return;	
+	}
+
+	public void setDownloadedFiles(int files) {
+		getKeyedMap().incrementObjectInt(DOWNLOADEDTIMES, files);
+		commit();
+	}
+
+	public void setDownloadedTime(long millis) {
+		getKeyedMap().incrementObjectLong(DOWNLOADDURATION, millis);
+		commit();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.drftpd.stats.StatsInterface#setUploadedBytes(long)
+	 * Equals to file size.
+	 */
+	public void setUploadedBytes(long bytes) {
+		return;		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.drftpd.stats.StatsInterface#setUploadedFiles(int)
+	 * Useless since a file cannot be uploaded more than once.
+	 */
+	public void setUploadedFiles(int files) {
+		return;		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.drftpd.stats.StatsInterface#setUploadedTime(long)
+	 * Equals to setXfertime().
+	 */
+	public void setUploadedTime(long millis) {
+		return;		
 	}
 
 }

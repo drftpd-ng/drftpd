@@ -214,8 +214,7 @@ public class VirtualFileSystem {
 			xmlDec.setExceptionListener(new VFSExceptionListener());
 			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec
 					.readObject();
-			inode._lastModified = file.lastModified();
-			inode._name = getLast(path);
+			inode.setName(getLast(path));
 			if (inode.isDirectory()) {
 				VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
 				Collection<String> files = new ArrayList<String>();

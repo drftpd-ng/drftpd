@@ -152,7 +152,7 @@ public class Slave {
 		try {
 			_ctx = SSLGetContext.getSSLContext();
 		} catch (Exception e) {
-			logger.warn("Error loading SSLContext", e);
+			logger.warn("Error loading SSLContext, no secure connections will be avaible.");
 			_cipherSuites = null;
 		}
 

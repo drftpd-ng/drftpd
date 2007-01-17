@@ -77,7 +77,7 @@ import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.usermanager.Entity;
-import org.drftpd.stats.Stats;
+import org.drftpd.stats.ExtentedTimedStats;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.HostMaskCollection;
 import org.drftpd.vfs.InodeHandle;
@@ -87,7 +87,7 @@ import org.drftpd.vfs.InodeHandle;
  * @author zubov
  * @version $Id$
  */
-public class RemoteSlave extends Stats implements Runnable, Comparable<RemoteSlave>,
+public class RemoteSlave extends ExtentedTimedStats implements Runnable, Comparable<RemoteSlave>,
 		Serializable, Entity {
 	private static final long serialVersionUID = -6973935289361817125L;
 

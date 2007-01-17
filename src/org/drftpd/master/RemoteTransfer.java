@@ -170,7 +170,7 @@ public class RemoteTransfer {
 		} catch (RemoteIOException e) {
 			throw (IOException) e.getCause();
 		}
-		_pointer = new TransferPointer(_path,this);
+		_pointer = new TransferPointer(_path, this);
 	}
 
 	public String toString() {

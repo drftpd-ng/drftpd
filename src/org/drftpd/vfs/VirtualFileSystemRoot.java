@@ -54,6 +54,7 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 	@Override
 	protected void addSize(long l) {
 		_size = getSize() + l;
+		commit();
 	}
 
 	/**

@@ -33,10 +33,10 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 	private String _link;
 
 	protected static final Collection<String> transientListLink = Arrays
-			.asList(new String[] { "lastModified", "name", "parent", "size" });
+			.asList(new String[] { "name", "parent", "size" });
 
 	public VirtualFileSystemLink(String user, String group, String link) {
-		super(user, group, link.length());
+		super(user, group, 0);
 		_link = link;
 	}
 
@@ -46,6 +46,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 
 	public void setLinkPath(String link) {
 		_link = link;
+		commit();
 	}
 
 	@Override
