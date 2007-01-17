@@ -7,7 +7,7 @@ import java.util.Date;
  * The extended means that it also saves dayly/weekly/monthly stats.
  * @author fr0w
  */
-public abstract class ExtentedTimedStats extends AbstractTimedStats {
+public abstract class ExtendedTimedStats extends AbstractTimedStats {
 	public static final int P_ALL = 0;
 	public static final int P_MONTH = 1;
 	public static final int P_WEEK = 2;

@@ -22,13 +22,13 @@ import net.sf.drftpd.DuplicateElementException;
 
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.stats.ExtentedTimedStats;
+import org.drftpd.stats.ExtendedTimedStats;
 
 /**
  * @author mog
  * @version $Id$
  */
-public abstract class User extends ExtentedTimedStats implements Entity {
+public abstract class User extends ExtendedTimedStats implements Entity {
 	public abstract UserManager getUserManager();
 
 	public abstract KeyedMap<Key, Object> getKeyedMap();
