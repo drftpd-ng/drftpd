@@ -701,6 +701,8 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
        		toInode = new FileHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
        	} else if (fromInode.isLink()) {
        		toInode = new LinkHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+       	} else {
+       		return new Reply(500, "Someone has extended the VFS beyond File/Directory/Link");
        	}
 
 		try {
