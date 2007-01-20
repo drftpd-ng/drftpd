@@ -67,11 +67,8 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author zubov
  * @version $Id$
  */
-public class DataConnectionHandler implements CommandHandler, CommandHandlerFactory,
-    Cloneable {
+public class DataConnectionHandler implements CommandHandler, CommandHandlerFactory {
     private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
-    
-    private static boolean _encryptedDataChannel;
 
     private Reply doAUTH(BaseFtpConnection conn) {
     	SSLContext ctx = GlobalContext.getGlobalContext().getSSLContext();
@@ -184,7 +181,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 										Transfer.TRANSFER_SENDING_DOWNLOAD,
 										conn, ts.getTransferFile());
 						String index = slave.issueListenToSlave(
-								_encryptedDataChannel, ts
+								ts.getSendFilesEncrypted(), ts
 										.getSSLHandshakeClientMode());
 						ci = slave.fetchTransferResponseFromIndex(index);
 			            ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
@@ -219,7 +216,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 										Transfer.TRANSFER_RECEIVING_UPLOAD,
 										conn, ts.getTransferFile());
 						String index = slave.issueListenToSlave(
-								_encryptedDataChannel, ts
+								ts.getSendFilesEncrypted(), ts
 										.getSSLHandshakeClientMode());
 						ci = slave.fetchTransferResponseFromIndex(index);
 			            ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
@@ -292,7 +289,6 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
      */
     private Reply doPORT(BaseFtpConnection conn) {
         FtpRequest request = conn.getRequest();
-        reset(conn);
 
         InetAddress clientAddr = null;
 
@@ -350,86 +346,131 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         } catch (NumberFormatException ex) {
         	reset(conn);
             return Reply.RESPONSE_501_SYNTAX_ERROR;
-
-            //out.write(ftpStatus.getResponse(552, request, user, null));
         }
 
         conn.getTransferState().setPortAddress(new InetSocketAddress(clientAddr, clientPort));
+        
 
+        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+        
         if (portHostAddress.startsWith("127.")) {
-            return new Reply(200,
-                "Ok, but distributed transfers won't work with local addresses");
+            response.addComment(
+            		"Ok, but distributed transfers won't work with local addresses");
         }
 
         //Notify the user that this is not his IP.. Good for NAT users that
         // aren't aware that their IP has changed.
         if (!clientAddr.equals(conn.getControlSocket().getInetAddress())) {
-            return new Reply(200,
+            response.addComment(
                 "FXP allowed. If you're not FXPing then set your IP to " +
                 conn.getControlSocket().getInetAddress().getHostAddress() +
                 " (usually in firewall settings)");
         }
+        // get slave from PRET
+        TransferState ts = conn.getTransferState();
+    	try {
+        if (ts.isPreTransfer()) {
+				// do SlaveSelection now since we're using PRET Active transfers
+				char direction = ts.getDirection(ts.getPretRequest());
+				if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+					ts.setTransferSlave(conn.getGlobalContext()
+							.getSlaveSelectionManager().getASlave(
+									conn.getGlobalContext().getSlaveManager()
+											.getAvailableSlaves(),
+									Transfer.TRANSFER_SENDING_DOWNLOAD, conn,
+									ts.getTransferFile()));
+				} else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+					ts.setTransferSlave(conn.getGlobalContext()
+							.getSlaveSelectionManager().getASlave(
+									conn.getGlobalContext().getSlaveManager()
+											.getAvailableSlaves(),
+									Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
+									ts.getTransferFile()));
+				}
+				response.addComment("Using "
+						+ (ts.isLocalPreTransfer() ? "master:"
+								+ GlobalContext.getGlobalContext().getConfig()
+										.getPasvAddress() : ts
+								.getTransferSlave().getName()
+								+ ":" + ts.getTransferSlave().getPASVIP())
+						+ " for upcoming transfer");
+			}
 
-        return Reply.RESPONSE_200_COMMAND_OK;
+
+		} catch (SlaveUnavailableException e) {
+			// I don't want to deal with this at the PORT command, let's let it
+			// error at transfer()
+		} catch (NoAvailableSlaveException e) {
+			// I don't want to deal with this at the PORT command, let's let it
+			// error at transfer()
+		}
+        return response;
     }
 
     private Reply doPRET(BaseFtpConnection conn) {
         reset(conn);
-
-        FtpRequest request = conn.getRequest();
-        FtpRequest ghostRequest = new FtpRequest(request.getArgument());
-        String cmd = ghostRequest.getCommand();
         TransferState ts = conn.getTransferState();
-        ts.setPreTransferRequest(ghostRequest);
+        ts.setPreTransferRequest(new FtpRequest(conn.getRequest().getArgument()));
         
         if (ts.isLocalPreTransfer()) {
             return new Reply(200, "OK, planning to use master for upcoming LIST transfer");
-        } else if (cmd.equals("RETR")) {
-        	FileHandle file = null;
-    		try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
-			} catch (FileNotFoundException e) {
-				reset(conn);
-				return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-			} catch (ObjectNotValidException e) {
-				reset(conn);
-				return new Reply(550, "Requested target is not a file");
-			}
-			ts.setTransferFile(file);
-            return new Reply(200,
-                "OK, planning to use PASV for upcoming download");
-        } else if (cmd.equals("STOR")) {
-        	FileHandle file = null;
-    		try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
-			} catch (FileNotFoundException e) {
-				// this is good, do nothing
-				// should be null already, but just for my (current) sanity
-				file = null;
-			} catch (ObjectNotValidException e) {
-				// this is not good, file exists
-            	// until we can upload multiple instances of files
-				reset(conn);
-                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;					
-			}
-			if (file != null) {
-				// this is not good, file exists
-            	// until we can upload multiple instances of files
-				reset(conn);
-                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
-			}
-			file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
-
-            if (!ListUtils.isLegalFileName(file.getName())) {
-            	reset(conn);
-                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
-            }
-            ts.setTransferFile(file);
-            return new Reply(200,
-                    "OK, planning to use PASV for upcoming upload");
-        } else {
-            return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
         }
+    	return setTransferFileFromPRETRequest(conn);
+    }
+    
+    private Reply setTransferFileFromPRETRequest(BaseFtpConnection conn) {
+    	TransferState ts = conn.getTransferState();
+        FtpRequest ghostRequest = ts.getPretRequest();
+        if (ghostRequest == null) {
+        	throw new IllegalStateException("PRET was not called before setTransferFileFromPRETRequest()");
+        }
+        String cmd = ghostRequest.getCommand();
+		if (cmd.equals("RETR")) {
+	        	FileHandle file = null;
+	    		try {
+					file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
+				} catch (FileNotFoundException e) {
+					reset(conn);
+					return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+				} catch (ObjectNotValidException e) {
+					reset(conn);
+					return new Reply(550, "Requested target is not a file");
+				}
+				ts.setTransferFile(file);
+	            return new Reply(200,
+	                "OK, planning for upcoming download");
+	        } else if (cmd.equals("STOR")) {
+	        	FileHandle file = null;
+	    		try {
+					file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
+				} catch (FileNotFoundException e) {
+					// this is good, do nothing
+					// should be null already, but just for my (current) sanity
+					file = null;
+				} catch (ObjectNotValidException e) {
+					// this is not good, file exists
+	            	// until we can upload multiple instances of files
+					reset(conn);
+	                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;					
+				}
+				if (file != null) {
+					// this is not good, file exists
+	            	// until we can upload multiple instances of files
+					reset(conn);
+	                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
+				}
+				file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
+
+	            if (!ListUtils.isLegalFileName(file.getName())) {
+	            	reset(conn);
+	                return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+	            }
+	            ts.setTransferFile(file);
+	            return new Reply(200,
+	                    "OK, planning for upcoming upload");
+	        } else {
+	            return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+	        }
     }
     
     private Reply doSSCN(BaseFtpConnection conn) {
@@ -471,7 +512,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
         if (!req.hasArgument()) {
             //clear
-            _encryptedDataChannel = false;
+            conn.getTransferState().setSendFilesEncrypted(false);
 
             return Reply.RESPONSE_200_COMMAND_OK;
         }
@@ -484,14 +525,14 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
         case 'C':
 
             //clear
-            _encryptedDataChannel = false;
+        	conn.getTransferState().setSendFilesEncrypted(false);
 
             return Reply.RESPONSE_200_COMMAND_OK;
 
         case 'P':
 
             //private
-            _encryptedDataChannel = true;
+        	conn.getTransferState().setSendFilesEncrypted(true);
 
             return Reply.RESPONSE_200_COMMAND_OK;
 
@@ -934,7 +975,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
         try {
             FtpRequest request = conn.getRequest();
-            char direction = conn.getDirection();
+            char direction = ts.getDirection(request);
             String cmd = conn.getRequest().getCommand();
             boolean isStor = cmd.equals("STOR");
             boolean isRetr = cmd.equals("RETR");
@@ -972,16 +1013,17 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             
             // get filenames
 
-            if (isRetr && !ts.isPasv()) {
-            	try {
-					ts.setTransferFile(conn.getCurrentDirectory().getFile(request.getArgument()));
-				} catch (FileNotFoundException e) {
-					return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-				} catch (ObjectNotValidException e) {
-					return new Reply(550, "Argument is not a file");
-				}
-            } else if (isStor && !ts.isPasv()) {
-            	
+            if (isRetr && ts.isPort()) {
+            	if (ts.getTransferFile() == null) {
+					try {
+						ts.setTransferFile(conn.getCurrentDirectory().getFile(
+								request.getArgument()));
+					} catch (FileNotFoundException e) {
+						return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+					} catch (ObjectNotValidException e) {
+						return new Reply(550, "Argument is not a file");
+					}
+				} // else { ts.getTransferFile() is set, this is a PRET action
             }
             /*            if (isRetr) {
             	ts.getTransferFile().isFile()
@@ -1143,13 +1185,11 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 					// reset(); already done in finally block
 					return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
 				}
-
-                //_preTransferRSlave = null;
-                //_preTransfer = false;
-                //code above to be handled by reset()
+				// reset(); already done in finally block
             } else if (ts.isPASVUpload()) {
             	// do nothing at this point
-            } else {
+            } else if (!ts.isPreTransfer()) { // && ts.isPort()
+            	// is a PORT command with no previous PRET command
                 try {
                     if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 							ts.setTransferSlave(conn.getGlobalContext()
@@ -1178,6 +1218,10 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 	// reset(); already done in finally block
                 	throw new ReplySlaveUnavailableException(ex, 450);
                 }
+            } else { // ts.isPreTransfer() && ts.isPort()
+            	// they issued PRET before PORT
+            	// let's honor that SlaveSelection
+            	// ts.setTransferSlave() was already called in PRET
             }
 
             if (isStor) {
@@ -1187,7 +1231,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
                 // it doesn't exist in the VFS yet!
                 try {
                 	if (ts.isPasv()) {
-					ts.setTransferFile(fh.getParent().createFile(fh.getName(),
+                		ts.setTransferFile(fh.getParent().createFile(fh.getName(),
 							conn.getUserNull().getName(),
 							conn.getUserNull().getGroup(),
 							ts.getTransferSlave()));
@@ -1236,7 +1280,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 					try {
 						index = ts.getTransferSlave().issueConnectToSlave(ts.getPortAddress()
 								.getAddress().getHostAddress(), ts.getPortAddress()
-								.getPort(), _encryptedDataChannel, ts.getSSLHandshakeClientMode());
+								.getPort(), ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
 	                    ConnectInfo ci = ts.getTransferSlave().fetchTransferResponseFromIndex(index);
 	                   	ts.setTransfer(ts.getTransferSlave().getTransfer(ci.getTransferIndex()));
 					} catch (SlaveUnavailableException e) {

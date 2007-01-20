@@ -146,7 +146,6 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 */
 	public void setChecksum(long checksum) {
 		getKeyedMap().setObject(CRC, checksum);
-		commit();
 	}
 
 	/**
@@ -324,12 +323,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 
 	public void setDownloadedFiles(int files) {
 		getKeyedMap().incrementObjectInt(DOWNLOADEDTIMES, files);
-		commit();
 	}
 
 	public void setDownloadedTime(long millis) {
 		getKeyedMap().incrementObjectLong(DOWNLOADDURATION, millis);
-		commit();
 	}
 
 	/*

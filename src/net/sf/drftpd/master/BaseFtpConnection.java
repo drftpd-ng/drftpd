@@ -239,20 +239,6 @@ public class BaseFtpConnection implements Runnable {
 		return _currentDirectory;
 	}
 
-	public char getDirection() {
-		String cmd = getRequest().getCommand();
-
-		if ("RETR".equals(cmd)) {
-			return Transfer.TRANSFER_SENDING_DOWNLOAD;
-		}
-
-		if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
-			return Transfer.TRANSFER_RECEIVING_UPLOAD;
-		}
-
-		return Transfer.TRANSFER_UNKNOWN;
-	}
-
 	/**
 	 * Returns the "currentTimeMillis" when last command finished executing.
 	 */

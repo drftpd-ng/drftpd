@@ -145,7 +145,6 @@ public abstract class VirtualFileSystemInode {
 	 */
 	public void setSize(long l) {
 		_size = l;
-		commit();
 	}
 
 	/**
@@ -216,12 +215,10 @@ public abstract class VirtualFileSystemInode {
 	 */
 	public void setGroup(String group) {
 		_group = group;
-		commit();
 	}
 
 	public void setKeyedMap(KeyedMap<Key, Object> data) {
 		_keyedMap = data;
-		commit();
 	}
 
 	/**
@@ -230,7 +227,6 @@ public abstract class VirtualFileSystemInode {
 	 */
 	public void setLastModified(long modified) {
 		_lastModified = modified;
-		commit();
 	}
 
 	/**
@@ -252,7 +248,6 @@ public abstract class VirtualFileSystemInode {
 	 */
 	public void setUsername(String user) {
 		_username = user;
-		commit();
 	}
 
 	/*

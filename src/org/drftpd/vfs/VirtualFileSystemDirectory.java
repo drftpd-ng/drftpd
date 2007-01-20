@@ -87,6 +87,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				group);
 		inode.setName(name);
 		inode.setParent(this);
+		inode.setLastModified(System.currentTimeMillis());
 		inode.commit();
 		addChild(inode);
 		logger.info("createDirectory(" + inode + ")");
@@ -109,6 +110,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				0, initialSlave);
 		inode.setName(name);
 		inode.setParent(this);
+		inode.setLastModified(System.currentTimeMillis());
 		inode.commit();
 		addChild(inode);
 		commit();
@@ -132,6 +134,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				target);
 		inode.setName(name);
 		inode.setParent(this);
+		inode.setLastModified(System.currentTimeMillis());
 		inode.commit();
 		addChild(inode);
 		commit();

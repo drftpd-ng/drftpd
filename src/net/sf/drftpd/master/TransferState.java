@@ -20,6 +20,7 @@
  */
 package net.sf.drftpd.master;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -32,11 +33,15 @@ import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
+import org.drftpd.commands.Reply;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.Connection;
+import org.drftpd.slave.Transfer;
 import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.ListUtils;
+import org.drftpd.vfs.ObjectNotValidException;
 
 /**
  * @author zubov
@@ -105,7 +110,24 @@ public class TransferState {
 	 * This class to be used as a state holder for DataConnectionHandler
 	 */
 	public TransferState() {
-		
+
+	}
+	
+	public char getDirection(FtpRequest request) {
+		if (getPretRequest() != null) {
+			request = getPretRequest();
+		}
+		String cmd = request.getCommand();
+
+		if ("RETR".equals(cmd)) {
+			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		}
+
+		if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
+		}
+
+		return Transfer.TRANSFER_UNKNOWN;
 	}
 	
 	public void reset() {
@@ -169,14 +191,15 @@ public class TransferState {
         } else {
             throw new IllegalStateException("Neither PASV nor PORT");
         }
+        
 		// Already done since we are using ActiveConnection and PasvConnection
-        dataSocket.setSoTimeout(Connection.TIMEOUT); // 15 seconds timeout
+        //dataSocket.setSoTimeout(Connection.TIMEOUT); // 15 seconds timeout
 
-        if (dataSocket instanceof SSLSocket) {
-            SSLSocket ssldatasocket = (SSLSocket) dataSocket;
-            ssldatasocket.setUseClientMode(false);
-            ssldatasocket.startHandshake();
-        }
+        //if (dataSocket instanceof SSLSocket) {
+        //    SSLSocket ssldatasocket = (SSLSocket) dataSocket;
+        //    ssldatasocket.setUseClientMode(false);
+        //    ssldatasocket.startHandshake();
+        //}
 
         return dataSocket;
 	}
@@ -188,12 +211,19 @@ public class TransferState {
 	public boolean getSendFilesEncrypted() {
 		return _encryptedDataChannel;
 	}
+	
+	public void setSendFilesEncrypted(boolean encrypted) {
+		_encryptedDataChannel = encrypted;
+	}
 
 	public FtpRequest getPretRequest() {
 		return _pretRequest;
 	}
 
 	public boolean isLocalPreTransfer() {
+		if (!isPreTransfer()) {
+			return false;
+		}
 		return (getPretRequest().getCommand().equalsIgnoreCase("LIST")
 				|| getPretRequest().getCommand().equalsIgnoreCase("NLST") || getPretRequest()
 				.getCommand().equalsIgnoreCase("MLSD"));
