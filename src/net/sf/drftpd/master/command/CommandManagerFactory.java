@@ -26,10 +26,8 @@ import java.util.Properties;
 
 import net.sf.drftpd.FatalException;
 import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.master.BaseFtpConnection;
 
-import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 
 /**
@@ -43,12 +41,12 @@ public class CommandManagerFactory {
 	/**
 	 * Class => CommandHandlerFactory
 	 */
-	private Hashtable _hnds;
+	private Hashtable<Class, CommandHandlerFactory> _hnds;
 
 	/**
 	 * String=> Class
 	 */
-	private Hashtable _cmds;
+	private Hashtable<String, Class> _cmds;
 
 	public CommandManagerFactory() {
 
@@ -88,8 +86,8 @@ public class CommandManagerFactory {
 	}
 
 	private void load() {
-		Hashtable cmds = new Hashtable();
-		Hashtable hnds = new Hashtable();
+		Hashtable<String, Class> cmds = new Hashtable<String, Class>();
+		Hashtable<Class, CommandHandlerFactory> hnds = new Hashtable<Class, CommandHandlerFactory>();
 		Properties props = new Properties();
         FileInputStream stream = null;
         try {
@@ -128,8 +126,7 @@ public class CommandManagerFactory {
 				// (String) entry.getValue(),
 				// false,
 				// classLoader);
-				CommandHandlerFactory hndinstance = (CommandHandlerFactory) hnds
-						.get(hndclass);
+				CommandHandlerFactory hndinstance = hnds.get(hndclass);
 
 				if (hndinstance == null) {
 					hndinstance = (CommandHandlerFactory) hndclass
@@ -145,7 +142,7 @@ public class CommandManagerFactory {
 
 				cmds.put(cmd, hndclass);
 			} catch (Exception e) {
-				throw new FatalException("", e);
+				throw new FatalException(e);
 			}
 		}
 
@@ -156,7 +153,6 @@ public class CommandManagerFactory {
 
 	public CommandManager initialize(BaseFtpConnection conn) {
 		CommandManager mgr = new CommandManager(conn, this);
-
 		return mgr;
 	}
 
@@ -172,23 +168,5 @@ public class CommandManagerFactory {
 	 */
 	public Hashtable getCommandsMap() {
 		return _cmds;
-	}
-
-	public CommandHandler getHandler(Class clazz)
-			throws ObjectNotFoundException {
-		CommandHandler ret = (CommandHandler) _hnds.get(clazz);
-
-		if (ret == null) {
-			throw new ObjectNotFoundException();
-		}
-
-		return ret;
-
-		// for (Iterator iter = hnds.iterator(); iter.hasNext();) {
-		// CommandHandler handler = (CommandHandler) iter.next();
-		// if (handler.getClass().equals(clazz))
-		// return handler;
-		// }
-		// throw new ObjectNotFoundException();
 	}
 }
