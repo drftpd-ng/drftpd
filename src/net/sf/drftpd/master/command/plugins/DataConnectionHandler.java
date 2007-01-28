@@ -875,11 +875,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
 
     public CommandHandler initialize(BaseFtpConnection conn,
         CommandManager initializer) {
-        try {
-            return (DataConnectionHandler) clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
+    	return this;
     }
 
     public void load(CommandManagerFactory initializer) {
