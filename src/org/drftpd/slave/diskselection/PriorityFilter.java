@@ -18,7 +18,6 @@
 
 package org.drftpd.slave.diskselection;
 
-import java.util.ArrayList;
 import java.util.Properties;
 
 import org.drftpd.PropertyHelper;
@@ -38,8 +37,6 @@ import org.drftpd.PropertyHelper;
  */
 
 public class PriorityFilter extends DiskFilter {
-
-	private ArrayList _assignList;
 
 	public PriorityFilter(Properties p, Integer i) {
 		super(p, i);

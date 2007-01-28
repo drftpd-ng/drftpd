@@ -3,24 +3,29 @@
 #		Better explanation in:
 # 		https://opensvn.csie.org/traccgi/drftpd/trac.cgi/ticket/85;
 
+# Simple filter combined w/ the 'assign=all' property.
+# The 'assign=all' property saves the admin sometime as it automatically
+# adds the existing roots to the ScoreChart chain.
 1.filter=minfreespace
 1.minfreespace=5GB
-1.assign=1
+1.assign=all
 1.multiplier=1
-
-# If you have multiple roots and you want to assign a filter to them also use as following:
-# 2.filter=minfreespace
-# 2.minfreespace=5GB
-# 2.assign=2
-# 2.multiplier=1
 
 # If there's a tie on the ScoreChart, Cycle adds a point to the most unused root.
 # Should always be last filter on the Chain.
+# This filter does not requires a 'assign=' property.
 2.filter=cycle
+
+# If you have multiple roots and you want to assign a separate filter to them, use as following:
+#  x.filter=minfreespace
+#  x.minfreespace=5GB
+#  x.assign=2
+#  x.multiplier=1
 
 # Matchdir is used to distribute certain files to certain roots.
 # Always remember that ".match=" is a valid path according to master VFS.
 # So it does not work like, /mnt/site*.
+# Using the 'assign=all' property here makes the filter useless.
 #  x.filter=matchdir
 #  x.match=/PHOTOS*
 #  x.assign=1+100 2+remove
@@ -31,11 +36,13 @@
 
 # Randomspread filter grabs a random root and adds 1 (one) point
 # to it on the ScoreChart. Usefull to make files spread all over.
+# This filter does not requires a 'assign=' property.
 #  x.filter=randomspread
 
 # This filter might look foolish, but it just have the hole
 # of letting you choose which root will be filled first.
 # Using this filter (depeding on the way, of course) you prolly
 # make 'randomspread' and 'cycle' useless.
+# Using the 'assign=all' property here makes the filter useless.
 #  x.filter=priority
 #  x.assign=1+100 2+200

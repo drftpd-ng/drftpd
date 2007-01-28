@@ -18,7 +18,6 @@
 
 package org.drftpd.slave.diskselection;
 
-import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.oro.text.GlobCompiler;
@@ -42,8 +41,6 @@ public class MatchdirFilter extends DiskFilter {
 	private Pattern _p;
 
 	private Perl5Matcher _m = new Perl5Matcher();
-
-	private ArrayList _assignList;
 
 	private String _pattern;
 

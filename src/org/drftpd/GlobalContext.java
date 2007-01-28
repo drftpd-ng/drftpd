@@ -222,7 +222,7 @@ public class GlobalContext {
 
 			try {
 				FtpListener ftpListener = (FtpListener) Class
-						.forName(classname).newInstance();
+						.forName(classname.trim()).newInstance();
 				addFtpListener(ftpListener);
 			} catch (Exception e) {
 				throw new FatalException("Error loading plugins", e);

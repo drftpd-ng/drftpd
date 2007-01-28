@@ -21,7 +21,6 @@ package org.drftpd.slave.diskselection;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -40,7 +39,7 @@ public class DiskSelection {
 
 	private static final Logger logger = Logger.getLogger(Slave.class);
 
-	private ArrayList _filters;
+	private ArrayList<DiskFilter> _filters;
 
 	private RootCollection _rootCollection;
 
@@ -147,10 +146,12 @@ public class DiskSelection {
 		long bestScore = 0L;
 		Root bestRoot = null;
 
-		for (Iterator iter = getRootCollection().iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
-			if (sc.getRootScore(root) > bestScore)
+		for (Root root : getRootCollection().getRootList()) {
+			long score = sc.getRootScore(root);
+			if (score > bestScore) {
 				bestRoot = root;
+				bestScore = score;
+			}
 		}
 
 		return bestRoot;
@@ -160,13 +161,12 @@ public class DiskSelection {
 	 * Runs the process() on all filters.
 	 */
 	public void process(ScoreChart sc, String path) {
-		for (Iterator iter = getFilters().iterator(); iter.hasNext();) {
-			DiskFilter filter = (DiskFilter) iter.next();
+		for (DiskFilter filter : getFilters()) {
 			filter.process(sc, path);
 		}
 	}
 
-	public ArrayList getFilters() {
+	public ArrayList<DiskFilter> getFilters() {
 		return _filters;
 	}
 }

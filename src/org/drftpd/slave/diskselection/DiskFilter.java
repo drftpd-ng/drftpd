@@ -21,6 +21,8 @@ package org.drftpd.slave.diskselection;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.drftpd.slave.Root;
+
 /**
  * Generic interface.
  * 
@@ -32,6 +34,8 @@ public abstract class DiskFilter {
 
 	}
 
+	protected ArrayList<AssignParser> _assignList;
+	
 	/**
 	 * This method is called to process the ScoreChart of each file.
 	 * 
@@ -43,7 +47,7 @@ public abstract class DiskFilter {
 	/**
 	 * @return ArrayList with 'Root' objects
 	 */
-	public static ArrayList getRootList() {
+	public static ArrayList<Root> getRootList() {
 		return DiskSelection.getDiskSelection().getRootCollection()
 				.getRootList();
 	}

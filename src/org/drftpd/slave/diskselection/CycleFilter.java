@@ -18,8 +18,6 @@
 
 package org.drftpd.slave.diskselection;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 /**
@@ -34,12 +32,10 @@ public class CycleFilter extends DiskFilter {
 	}
 
 	public void process(ScoreChart sc, String path) {
-		ArrayList currentList = sc.getScoreList();
 		ScoreChart.RootScore bestRoot = null;
 
 		// retrieves the higher score
-		for (Iterator iter = currentList.iterator(); iter.hasNext();) {
-			ScoreChart.RootScore rootScore = (ScoreChart.RootScore) iter.next();
+		for (ScoreChart.RootScore rootScore : sc.getScoreList()) {
 			if (bestRoot == null) {
 				bestRoot = rootScore;
 			} else {

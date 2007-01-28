@@ -18,7 +18,6 @@
 
 package org.drftpd.slave.diskselection;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -47,8 +46,6 @@ public class MinfreespaceFilter extends DiskFilter {
 
 	private float _multiplier;
 
-	private ArrayList _assignList;
-
 	public MinfreespaceFilter(Properties p, Integer i) {
 		super(p, i);
 		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i
@@ -73,10 +70,7 @@ public class MinfreespaceFilter extends DiskFilter {
 				if (_multiplier == 0) {
 					sc.removeRootScore(o);
 				} else {
-					sc
-							.addScore(
-									o,
-									-(long) ((_minfreespace - df) * _multiplier));
+					sc.addScore(o, -(long) ((_minfreespace - df) * _multiplier));
 				}
 			}
 		}

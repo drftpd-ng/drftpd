@@ -19,7 +19,6 @@
 package org.drftpd.slave.diskselection;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.drftpd.slave.Root;
 import org.drftpd.slave.RootCollection;
@@ -42,12 +41,10 @@ public class ScoreChart {
 	 */
 	public ScoreChart(RootCollection rootCollection) {
 		_rootCollection = rootCollection;
-
-		Iterator iter = _rootCollection.iterator();
 		_scoreList = new ArrayList<RootScore>();
-		while (iter.hasNext()) {
-			Root o = (Root) iter.next();
-			_scoreList.add(new RootScore(o, 0));
+
+		for (Root root : _rootCollection.getRootList()) {
+			_scoreList.add(new RootScore(root, 0));
 		}
 	}
 
@@ -62,7 +59,7 @@ public class ScoreChart {
 	/**
 	 * @return ArrayList<RootScore>
 	 */
-	public ArrayList getScoreList() {
+	public ArrayList<RootScore> getScoreList() {
 		return _scoreList;
 	}
 
@@ -93,8 +90,8 @@ public class ScoreChart {
 		if (root == null) {
 			throw new IllegalArgumentException("Argument to getRootScoreObject() cannot be null");
 		}
-		for (Iterator iter = _scoreList.iterator(); iter.hasNext();) {
-			RootScore rootScore = (RootScore) iter.next();
+		
+		for (RootScore rootScore : _scoreList) {
 			Root o = rootScore.getRoot();
 			if (o.equals(root))
 				return rootScore;
@@ -112,10 +109,6 @@ public class ScoreChart {
 		public RootScore(Root root, long score) {
 			_root = root;
 			_score = score;
-		}
-
-		public RootScore(Object o, long score) {
-			this((Root) o, score);
 		}
 
 		public void addScore(long score) {

@@ -19,7 +19,6 @@
 package org.drftpd.slave.diskselection;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.drftpd.slave.Root;
 
@@ -33,18 +32,26 @@ public class AssignRoot {
 	 *  x.assign=1+200, 2+200
 	 *  x.assign=1 2 (will assign 0 points to each root)
 	 *  x.assign=1,2 (will assign 0 points to each root)
+	 *  x.assign=all (will assign ALL roots w/ 0 points each.).
 	 * </pre>
 	 */
-	public static ArrayList parseAssign(String s) {
+	public static ArrayList<AssignParser> parseAssign(String s) {
 		String parse = s.trim().replaceAll(",", "");
 		String[] p = parse.split(" ");
+		
 		ArrayList<AssignParser> list = new ArrayList<AssignParser>();
+		
+		// safety precaution.
 		int x = DiskSelection.getDiskSelection().getRootCollection().getRootList().size();
+
 		for (int i = 0; i < p.length; i++) {
 			AssignParser a = new AssignParser(p[i]);
+			
+			 // Root index is bigger than the root list that means that it does not exist.
 			if (a.getRoot() > x)
 				throw new IllegalArgumentException("You are trying to assign points to" +
-						" a root that doesn't exists.", new Throwable());
+						" a root that doesn't exists.");
+			
 			list.add(a);
 		}
 		return list;
@@ -57,15 +64,13 @@ public class AssignRoot {
 	 * @param root
 	 * @param list
 	 */
-	public static boolean isAssignedRoot(Root root, ArrayList list) {
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			AssignParser a = (AssignParser) iter.next();
-			
+	public static boolean isAssignedRoot(Root root, ArrayList<AssignParser> list) {
+		for (AssignParser a : list) {			
 			if (a.allAssigned())
 				return true;
 			
 			int i = (int) a.getRoot();
-			Root o = (Root) DiskFilter.getRootList().get(i);
+			Root o = DiskFilter.getRootList().get(i-1);
 			if (o.equals(root)) {
 				return true;
 			}
@@ -80,15 +85,14 @@ public class AssignRoot {
 	 * @param list
 	 * @param sc
 	 */
-	public static void addScoresToChart(ArrayList list, ScoreChart sc) {
-		for (Iterator iter = list.iterator(); iter.hasNext();) {
-			AssignParser ap = (AssignParser) iter.next();
+	public static void addScoresToChart(ArrayList<AssignParser> list, ScoreChart sc) {
+		for (AssignParser ap : list) {
 			
 			if (ap.allAssigned())
 				return;
 			
 			int i = (int) ap.getRoot();
-			Root o = (Root) DiskFilter.getRootList().get(i);
+			Root o = DiskFilter.getRootList().get(i-1);
 			sc.addScore(o, ap.getScore());
 		}
 	}
@@ -118,7 +122,7 @@ class AssignParser {
 
 			if (pos == -1) {
 				_score = 0;
-				_root = Integer.parseInt(s) - 1;
+				_root = Integer.parseInt(s);
 				return;
 			}
 
@@ -128,7 +132,7 @@ class AssignParser {
 		String root = s.substring(0, pos);
 		String assign = s.substring(pos + 1);
 
-		_root = Integer.parseInt(root) - 1;
+		_root = Integer.parseInt(root);
 
 		if (assign.equals("remove")) {
 			_score = 0;
