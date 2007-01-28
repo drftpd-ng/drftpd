@@ -8,14 +8,15 @@
 1.assign=1
 1.multiplier=1
 
-2.filter=minfreespace
-2.minfreespace=5GB
-2.assign=2
-2.multiplier=1
+# If you have multiple roots and you want to assign a filter to them also use as following:
+# 2.filter=minfreespace
+# 2.minfreespace=5GB
+# 2.assign=2
+# 2.multiplier=1
 
 # If there's a tie on the ScoreChart, Cycle adds a point to the most unused root.
 # Should always be last filter on the Chain.
-3.filter=cycle
+2.filter=cycle
 
 # Matchdir is used to distribute certain files to certain roots.
 # Always remember that ".match=" is a valid path according to master VFS.
