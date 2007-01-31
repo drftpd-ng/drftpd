@@ -173,7 +173,7 @@ public class TransferState {
         if (isPort()) {
             try {
 				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? GlobalContext.getGlobalContext().getSSLContext() : null, _portAddress, _SSLHandshakeClientMode);
-                dataSocket = ac.connect(FtpConfig.getFtpConfig().getCipherSuites());
+                dataSocket = ac.connect(FtpConfig.getFtpConfig().getCipherSuites(), 0);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
                 dataSocket = null;
@@ -181,7 +181,7 @@ public class TransferState {
             }
         } else if (isPasv()) {
             try {
-                dataSocket = _localPassiveConnection.connect(FtpConfig.getFtpConfig().getCipherSuites());
+                dataSocket = _localPassiveConnection.connect(FtpConfig.getFtpConfig().getCipherSuites(), 0);
             } finally {
 				if (_localPassiveConnection != null) {
 					_localPassiveConnection.abort();

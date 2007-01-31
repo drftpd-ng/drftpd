@@ -62,7 +62,9 @@ public class PassiveConnection extends Connection {
 		_serverSocket.setSoTimeout(TIMEOUT);
 	}
 
-	public Socket connect(String[] cipherSuites) throws IOException {
+	public Socket connect(String[] cipherSuites, int bufferSize) throws IOException {
+		// bufferSize has already been set on the ServerSocket
+		// just need to accept this param to comply with the Connection class
 		Socket sock = null;
 		try {
 			sock = _serverSocket.accept();

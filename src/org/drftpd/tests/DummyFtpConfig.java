@@ -34,7 +34,7 @@ public class DummyFtpConfig extends FtpConfig {
             loadConfig1();
             if (_portRange == null) {
                 //default portrange if none specified
-                _portRange = new PortRange();
+                _portRange = new PortRange(0);
             }
         } catch (IOException e) {
             throw new RuntimeException();

@@ -247,10 +247,7 @@ public class Transfer {
 				_checksum = new CRC32();
 				_out = new CheckedOutputStream(_out, _checksum);
 			}
-			accept(_slave.getCipherSuites());
-			if (_slave.getBufferSize() > 0) {
-				_sock.setReceiveBufferSize(_slave.getBufferSize());
-			}
+			accept(_slave.getCipherSuites(), _slave.getBufferSize());
 
 			_in = _sock.getInputStream();
 			synchronized (this) {
@@ -301,10 +298,7 @@ public class Transfer {
 			}
 
 			_in.skip(resumePosition);
-			accept(_slave.getCipherSuites());
-			if (_slave.getBufferSize() > 0) {
-				_sock.setSendBufferSize(_slave.getBufferSize());
-			}
+			accept(_slave.getCipherSuites(), _slave.getBufferSize());
 
 			_out = _sock.getOutputStream();
 			synchronized (this) {
@@ -340,8 +334,8 @@ public class Transfer {
 		}
 	}
 
-	private void accept(String[] cipherSuites) throws IOException {
-		_sock = _conn.connect(cipherSuites);
+	private void accept(String[] cipherSuites, int bufferSize) throws IOException {
+		_sock = _conn.connect(cipherSuites, bufferSize);
 
 		_conn = null;
 	}

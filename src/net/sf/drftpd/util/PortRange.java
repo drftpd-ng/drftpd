@@ -18,6 +18,7 @@
 package net.sf.drftpd.util;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.util.Random;
 
@@ -35,30 +36,45 @@ public class PortRange {
 	private int _minPort;
 
 	private int _maxPort;
+	
+	private int _bufferSize = 0;
 
 	Random rand = new Random();
 
 	/**
 	 * Creates a default port range for port 49152 to 65535.
 	 */
-	public PortRange() {
-		_minPort = 0;
-		_maxPort = 0;
+	public PortRange(int bufferSize) {
+		this(0,0,bufferSize);
 	}
 
-	public PortRange(int minPort, int maxPort) {
+	public PortRange(int minPort, int maxPort, int bufferSize) {
 		if (0 >= minPort || minPort > maxPort || maxPort > 65535) {
 			throw new RuntimeException("0 < minPort <= maxPort <= 65535");
 		}
 
 		_maxPort = maxPort;
 		_minPort = minPort;
+		
+		if (bufferSize < 0) {
+			throw new RuntimeException("BufferSize cannot be < 0");
+		}
+		_bufferSize = bufferSize;
+	}
+	
+	private ServerSocket createServerSocket(int port, ServerSocketFactory ssf) throws IOException {
+		ServerSocket ss = ssf.createServerSocket();
+		if (_bufferSize > 0) {
+			ss.setReceiveBufferSize(_bufferSize);	
+		}
+		ss.bind(new InetSocketAddress(port),1);
+		return ss;
 	}
 
 	public ServerSocket getPort(ServerSocketFactory ssf) {
 		if (_minPort == 0) {
 			try {
-				return ssf.createServerSocket(0, 1);
+				return createServerSocket(0,ssf);
 			} catch (IOException e) {
 				logger.error("Unable to bind anonymous port", e);
 				throw new RuntimeException(e);
@@ -70,7 +86,7 @@ public class PortRange {
 		boolean retry = true;
 		while (true) {
 			try {
-				return ssf.createServerSocket(pos, 1);
+				return createServerSocket(pos,ssf);
 			} catch (IOException e) {
 			}
 			pos++;

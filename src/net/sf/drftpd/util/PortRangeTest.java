@@ -33,7 +33,7 @@ import junit.framework.TestCase;
  */
 public class PortRangeTest extends TestCase {
     public void testGetPort() throws IOException {
-        PortRange pr = new PortRange(45300, 45310);
+        PortRange pr = new PortRange(45300, 45310, 0);
         ArrayList<Integer> ports = new ArrayList<Integer>();
         ArrayList<ServerSocket> sockets = new ArrayList<ServerSocket>();
 
