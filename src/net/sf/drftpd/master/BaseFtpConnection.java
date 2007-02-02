@@ -30,10 +30,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 
 import javax.net.ssl.SSLSocket;
 
@@ -53,6 +53,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.io.AddAsciiOutputStream;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -582,16 +583,10 @@ public class BaseFtpConnection implements Runnable {
 	 * User logout and stop this thread.
 	 */
 	public void stop() {
-		/*
-		 * synchronized (getDataConnectionHandler()) { if
-		 * (getDataConnectionHandler().isTransfering()) { try {
-		 * getDataConnectionHandler().getTransfer().abort( "Control connection
-		 * dropped"); } catch (ObjectNotFoundException e) { logger.debug("This
-		 * is a bug, please report it", e); } } }
-		 */
-		// This needs to be addressed after session
-		// information is stored in BaseFtpConnection and not
-		// DataConnectionHandler
+		RemoteTransfer transfer = getTransferState().getTransfer();
+		if (transfer != null) {
+			transfer.abort("Your connection is being shutdown");
+		}
 		_stopRequest = true;
 	}
 

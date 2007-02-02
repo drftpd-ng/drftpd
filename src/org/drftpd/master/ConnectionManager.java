@@ -273,17 +273,6 @@ public class ConnectionManager {
 		if (!_conns.remove(conn)) {
 			throw new RuntimeException("connections.remove() returned false.");
 		}
-
-		if (getGlobalContext().isShutdown() && _conns.isEmpty()) {
-			// _slaveManager.saveFilelist();
-			// try {
-			// getUserManager().saveAll();
-			// } catch (UserFileException e) {
-			// logger.log(Level.WARN, "Failed to save all userfiles", e);
-			// }
-			logger.info("Shutdown complete, exiting");
-			System.exit(0);
-		}
 	}
 
 	public void shutdownPrivate(String message) {

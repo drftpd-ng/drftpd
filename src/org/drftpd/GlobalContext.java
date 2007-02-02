@@ -278,6 +278,21 @@ public class GlobalContext {
 		_shutdownMessage = message;
 		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
 		getConnectionManager().shutdownPrivate(message);
+		new Thread(new Shutdown()).start();
+	}
+	
+	class Shutdown implements Runnable {
+		public void run() {
+			while(GlobalContext.getGlobalContext().getConnectionManager().getConnections().size() > 0) {
+				logger.info("Waiting for connections to be shutdown...");
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+			}
+			logger.info("Shutdown complete, exiting");
+			System.exit(0);
+		}
 	}
 
 	public Timer getTimer() {

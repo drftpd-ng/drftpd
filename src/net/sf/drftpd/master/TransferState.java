@@ -261,6 +261,10 @@ public class TransferState {
 		_transfer = transfer;
 	}
 	
+	public boolean isTransferring() {
+		return getTransfer() != null;
+	}
+	
 	public RemoteTransfer getTransfer() {
 		return _transfer;
 	}
