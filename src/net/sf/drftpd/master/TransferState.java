@@ -99,7 +99,7 @@ public class TransferState {
      * This flag defines if we are the client or server in the SSL handshake
      * This only means something when _encryptedDataChannel below is set
      */
-    private boolean _SSLHandshakeClientMode=true;
+    private boolean _SSLHandshakeClientMode = false;
     
     /**
      * Should we send files encrypted?
@@ -172,7 +172,7 @@ public class TransferState {
         // get socket depending on the selection
         if (isPort()) {
             try {
-				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? GlobalContext.getGlobalContext().getSSLContext() : null, _portAddress, _SSLHandshakeClientMode);
+				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? GlobalContext.getGlobalContext().getSSLContext() : null, _portAddress, getSSLHandshakeClientMode());
                 dataSocket = ac.connect(FtpConfig.getFtpConfig().getCipherSuites(), 0);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
