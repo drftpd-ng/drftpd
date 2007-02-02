@@ -119,21 +119,7 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private RemoteSlave process(String filterchain, ScoreChart sc, User user,
 			InetAddress peer, char direction, InodeHandle file,
 			RemoteSlave sourceSlave) throws NoAvailableSlaveException {
-		FilterChain ssmi;
-
-		if (filterchain.equals("down")) {
-			ssmi = _ssmiDown;
-		} else if (filterchain.equals("up")) {
-			ssmi = _ssmiUp;
-		} else if (filterchain.equals("jobup")) {
-			ssmi = _ssmiJobUp;
-		} else if (filterchain.equals("jobdown")) {
-			ssmi = _ssmiJobDown;
-		} else {
-			throw new IllegalArgumentException();
-		}
-
-		return ssmi.getBestSlave(sc, user, peer, direction, file, sourceSlave);
+		return getFilterChain(filterchain).getBestSlave(sc, user, peer, direction, file, sourceSlave);
 	}
 
 	public void reload() throws FileNotFoundException, IOException {
@@ -145,5 +131,20 @@ public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 
 	public GlobalContext getGlobalContext() {
 		return _gctx;
+	}
+	
+	public FilterChain getFilterChain(String type) {
+
+		if (type.equals("down")) {
+			return _ssmiDown;
+		} else if (type.equals("up")) {
+			return _ssmiUp;
+		} else if (type.equals("jobup")) {
+			return _ssmiJobUp;
+		} else if (type.equals("jobdown")) {
+			return _ssmiJobDown;
+		} else {
+			throw new IllegalArgumentException();
+		}
 	}
 }

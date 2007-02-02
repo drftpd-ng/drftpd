@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import net.sf.drftpd.DuplicateElementException;
+import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.ObjectNotFoundException;
 import net.sf.drftpd.SlaveUnavailableException;
 import net.sf.drftpd.master.BaseFtpConnection;
@@ -30,6 +31,7 @@ import net.sf.drftpd.master.FtpRequest;
 import net.sf.drftpd.master.command.CommandManager;
 import net.sf.drftpd.master.command.CommandManagerFactory;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.CommandHandler;
 import org.drftpd.commands.CommandHandlerFactory;
 import org.drftpd.commands.ImproperUsageException;
@@ -39,6 +41,13 @@ import org.drftpd.commands.UnhandledCommandException;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
+import org.drftpd.slaveselection.filter.Filter;
+import org.drftpd.slaveselection.filter.ScoreChart;
+import org.drftpd.slaveselection.filter.SlaveSelectionManager;
+import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import com.Ostermiller.util.StringTokenizer;
@@ -54,6 +63,62 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
     }
 
     public void load(CommandManagerFactory initializer) {
+    }
+    
+    private Reply doSITE_SLAVESELECT(BaseFtpConnection conn) throws ImproperUsageException {
+        if (!conn.getUserNull().isAdmin()) {
+            return Reply.RESPONSE_530_ACCESS_DENIED;
+        }
+
+        if (!conn.getRequest().hasArgument()) {
+        	throw new ImproperUsageException();
+        }
+        String argument = conn.getRequest().getArgument();
+        StringTokenizer arguments = new StringTokenizer(argument);
+        if (arguments.hasMoreTokens() == false) {
+        	throw new ImproperUsageException();
+        }
+        String type = arguments.nextToken();
+        if (arguments.hasMoreTokens() == false) {
+        	throw new ImproperUsageException();
+        }
+        String path = arguments.nextToken();
+        if (!path.startsWith(VirtualFileSystem.separator)) {
+        	throw new ImproperUsageException();
+        }
+        char direction = Transfer.TRANSFER_UNKNOWN;
+        if (type.equalsIgnoreCase("up")) {
+        	direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
+        } else if (type.equalsIgnoreCase("down")) {
+        	direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
+        } else {
+        	throw new ImproperUsageException();
+        }
+        Collection<RemoteSlave> slaves;
+		try {
+			slaves = GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves();
+		} catch (NoAvailableSlaveException e1) {
+			return Reply.RESPONSE_530_SLAVE_UNAVAILABLE;
+		}
+        SlaveSelectionManager ssm = null;
+        try {
+        	ssm = (SlaveSelectionManager) GlobalContext.getGlobalContext().getSlaveSelectionManager();
+        } catch (ClassCastException e) {
+        	return new Reply(500, "You are attempting to test filter.SlaveSelectionManager yet you're using def.SlaveSelectionManager");
+        }
+        Reply reply = new Reply(200, "***End of SlaveSelection output***");
+        Collection<Filter> filters = ssm.getFilterChain(type).getFilters();
+        ScoreChart sc = new ScoreChart(slaves);
+        for (Filter filter : filters) {
+        	try {
+				filter.process(sc, null, null, direction, new FileHandle(path), null);
+			} catch (NoAvailableSlaveException e) {
+			}
+        }
+        for (SlaveScore ss : sc.getSlaveScores()) {
+        	reply.addComment(ss.getRSlave().getName() + "=" + ss.getScore());
+        }
+        return reply;
     }
 
     private Reply doSITE_KICKSLAVE(BaseFtpConnection conn) {
@@ -323,6 +388,10 @@ public class SlaveManagement implements CommandHandler, CommandHandlerFactory {
 
         if ("SITE DELSLAVE".equals(cmd)) {
             return doSITE_DELSLAVE(conn);
+        }
+        
+        if ("SITE SLAVESELECT".equals(cmd)) {
+        	return doSITE_SLAVESELECT(conn);
         }
 
         throw UnhandledCommandException.create(SlaveManagement.class,

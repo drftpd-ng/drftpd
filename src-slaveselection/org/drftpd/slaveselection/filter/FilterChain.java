@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 
 import net.sf.drftpd.FatalException;
@@ -31,7 +32,6 @@ import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
-import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.InodeHandleInterface;
 
 /**
@@ -46,6 +46,10 @@ public class FilterChain {
 	private ArrayList<Filter> _filters;
 
 	protected FilterChain() {
+	}
+	
+	public Collection<Filter> getFilters() {
+		return new ArrayList<Filter>(_filters);
 	}
 
 	public FilterChain(SlaveSelectionManagerInterface ssm, Properties p) {

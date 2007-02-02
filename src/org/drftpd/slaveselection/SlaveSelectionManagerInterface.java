@@ -37,9 +37,6 @@ import org.drftpd.vfs.InodeHandle;
 public interface SlaveSelectionManagerInterface {
 	public abstract void reload() throws IOException;
 
-	/**
-	 * Checksums call us with null BaseFtpConnection.
-	 */
 	public RemoteSlave getASlave(Collection<RemoteSlave> rslaves,
 			char direction, BaseFtpConnection conn, InodeHandle file)
 			throws NoAvailableSlaveException;

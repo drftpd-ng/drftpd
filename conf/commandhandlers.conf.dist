@@ -127,6 +127,7 @@ SITE\ KICKSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ SLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ ADDSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
 SITE\ DELSLAVE=net.sf.drftpd.master.command.plugins.SlaveManagement
+SITE\ SLAVESELECT=net.sf.drftpd.master.command.plugins.SlaveManagement
 
 SITE\ INVITE=net.sf.drftpd.master.command.plugins.Invite
 
