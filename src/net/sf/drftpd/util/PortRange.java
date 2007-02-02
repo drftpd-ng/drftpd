@@ -45,7 +45,9 @@ public class PortRange {
 	 * Creates a default port range for port 49152 to 65535.
 	 */
 	public PortRange(int bufferSize) {
-		this(0,0,bufferSize);
+		_maxPort = 0;
+		_minPort = 0;
+		_bufferSize = bufferSize;
 	}
 
 	public PortRange(int minPort, int maxPort, int bufferSize) {
