@@ -64,6 +64,11 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @return
 	 */
 	public DirectoryHandle getNonExistentDirectoryHandle(String name) {
+		if (name.startsWith(VirtualFileSystem.separator)) {
+			// absolute path, easy to handle
+			return new DirectoryHandle(name);
+		}
+		// path must be relative
 		return new DirectoryHandle(getPath() + VirtualFileSystem.separator + name);
 	}
 	

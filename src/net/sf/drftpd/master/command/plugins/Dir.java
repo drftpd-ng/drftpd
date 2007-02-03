@@ -456,7 +456,11 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
             return Reply.RESPONSE_501_SYNTAX_ERROR;
         }
         
-        String dirName = request.getArgument();
+        
+        
+        String path = request.getArgument();
+        DirectoryHandle fakeDirectory = conn.getCurrentDirectory().getNonExistentDirectoryHandle(path);
+        String dirName = fakeDirectory.getName();
 
         //check for NUKED dir
         /*
@@ -512,7 +516,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         try {
         	DirectoryHandle newDir = null;
             try {
-				newDir = conn.getCurrentDirectory().createDirectory(dirName,conn.getUserNull().getName(), conn.getUserNull().getGroup());
+				newDir = fakeDirectory.getParent().createDirectory(dirName,conn.getUserNull().getName(), conn.getUserNull().getGroup());
 			} catch (FileNotFoundException e) {
 				return new Reply(550, "Parent directory does not exist");
 			}
