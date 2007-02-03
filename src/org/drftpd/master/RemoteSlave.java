@@ -243,9 +243,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void commit() {
+		XMLEncoder out = null;
 		try {
 
-			XMLEncoder out = new XMLEncoder(new SafeFileOutputStream(
+			out = new XMLEncoder(new SafeFileOutputStream(
 					(getGlobalContext().getSlaveManager().getSlaveFile(this
 							.getName()))));
 			out.setExceptionListener(new ExceptionListener() {
@@ -279,16 +280,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				logger.error("I don't know what to do here", e1);
 				throw new RuntimeException(e1);
 			}
-			try {
-				out.writeObject(this);
-			} finally {
-				out.close();
-			}
-
+			out.writeObject(this);
 			Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
 		} catch (IOException ex) {
 			throw new RuntimeException("Error writing slavefile for "
 					+ this.getName() + ": " + ex.getMessage(), ex);
+		} finally {
+			if (out != null) {
+				out.close();
+			}
 		}
 	}
 
@@ -305,7 +305,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public GlobalContext getGlobalContext() {
-		return _gctx;
+		return GlobalContext.getGlobalContext();
 	}
 
 	public final long getLastDownloadSending() {
@@ -1222,10 +1222,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 
 		return false;
-	}
-
-	public void init(GlobalContext globalContext) {
-		_gctx = globalContext;
 	}
 
 	public LinkedList<QueuedOperation> getRenameQueue() {

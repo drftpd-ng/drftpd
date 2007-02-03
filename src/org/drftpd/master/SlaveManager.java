@@ -72,8 +72,10 @@ public class SlaveManager implements Runnable {
 
 	protected static final int actualTimeout = 60000; // one minute, evaluated
 														// on a SocketTimeout
-
-	protected List<RemoteSlave> _rslaves = new ArrayList<RemoteSlave>();
+	
+	//protected List<RemoteSlave> _rslaves = new ArrayList<RemoteSlave>();
+	
+	protected HashMap<String,RemoteSlave> _rslaves = new HashMap<String,RemoteSlave>();
 
 	private int _port;
 
@@ -127,17 +129,14 @@ public class SlaveManager implements Runnable {
 
 			// throws IOException
 		}
-
-		Collections.sort(_rslaves);
 	}
 
 	public void newSlave(String slavename) {
-		addSlave(new RemoteSlave(slavename, getGlobalContext()));
+		addSlave(new RemoteSlave(slavename));
 	}
 
-	public void addSlave(RemoteSlave rslave) {
-		_rslaves.add(rslave);
-		Collections.sort(_rslaves);
+	public synchronized void addSlave(RemoteSlave rslave) {
+		_rslaves.put(rslave.getName(), rslave);
 	}
 
 	private RemoteSlave getSlaveByNameUnchecked(String slavename)
@@ -147,17 +146,16 @@ public class SlaveManager implements Runnable {
 		}
 
 		RemoteSlave rslave = null;
+		XMLDecoder in = null;
 
 		try {
-			XMLDecoder in = new XMLDecoder(new FileInputStream(
+			in = new XMLDecoder(new FileInputStream(
 					getSlaveFile(slavename)));
 
 			rslave = (RemoteSlave) in.readObject();
-			in.close();
-			rslave.init(getGlobalContext());
 
 			if (rslave.getName().equals(slavename)) {
-				_rslaves.add(rslave);
+				_rslaves.put(slavename,rslave);
 				return rslave;
 			}
 			logger
@@ -169,6 +167,10 @@ public class SlaveManager implements Runnable {
 			throw new ObjectNotFoundException(e);
 		} catch (Exception e) {
 			throw new FatalException("Error loading " + slavename, e);
+		} finally {
+			if (in != null) {
+				in.close();
+			}
 		}
 	}
 
@@ -181,7 +183,7 @@ public class SlaveManager implements Runnable {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				logger.info("Running shutdown hook");
-				for (RemoteSlave rslave : _rslaves) {
+				for (RemoteSlave rslave : _rslaves.values()) {
 					rslave.shutdown();
 				}				
 			}
@@ -362,24 +364,20 @@ public class SlaveManager implements Runnable {
 	}
 
 	public RemoteSlave getRemoteSlave(String s) throws ObjectNotFoundException {
-		for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter
-				.hasNext();) {
-			RemoteSlave rslave = iter.next();
-
-			if (rslave.getName().equals(s)) {
-				return rslave;
-			}
+		RemoteSlave rslave = _rslaves.get(s);
+		if (rslave == null) {
+			return getSlaveByNameUnchecked(s);
 		}
-
-		return getSlaveByNameUnchecked(s);
+		return rslave;
 	}
 
 	public List<RemoteSlave> getSlaves() {
 		if (_rslaves == null) {
 			throw new NullPointerException();
 		}
-
-		return Collections.unmodifiableList(_rslaves);
+		List<RemoteSlave> slaveList = new ArrayList<RemoteSlave>(_rslaves.values());
+		Collections.sort(slaveList);
+		return slaveList;
 	}
 
 	/**
@@ -388,7 +386,7 @@ public class SlaveManager implements Runnable {
 	 * @return true if one or more slaves are online, false otherwise.
 	 */
 	public boolean hasAvailableSlaves() {
-		for (Iterator<RemoteSlave> iter = _rslaves.iterator(); iter.hasNext();) {
+		for (Iterator<RemoteSlave> iter = _rslaves.values().iterator(); iter.hasNext();) {
 			if (iter.next().isAvailable()) {
 				return true;
 			}
@@ -541,7 +539,7 @@ public class SlaveManager implements Runnable {
 	 */
 	public void deleteOnAllSlaves(DirectoryHandle directory) {
 		HashMap<RemoteSlave, String> slaveMap = new HashMap<RemoteSlave, String>();
-		Collection<RemoteSlave> slaves = new ArrayList<RemoteSlave>(_rslaves);
+		Collection<RemoteSlave> slaves = new ArrayList<RemoteSlave>(_rslaves.values());
 		for (RemoteSlave rslave : slaves) {
 			String index = null;
 			try {
@@ -576,7 +574,7 @@ public class SlaveManager implements Runnable {
 	public void renameOnAllSlaves(String fromPath, String toDirPath,
 			String toName) {
 		synchronized (this) {
-			for (RemoteSlave rslave : _rslaves) {
+			for (RemoteSlave rslave : _rslaves.values()) {
 				rslave.simpleRename(fromPath, toDirPath, toName);
 			}
 		}

@@ -18,7 +18,7 @@
 package org.drftpd.tests;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
 
 import net.sf.drftpd.NoAvailableSlaveException;
 import net.sf.drftpd.master.SlaveFileException;
@@ -41,7 +41,7 @@ public class DummySlaveManager extends SlaveManager {
 		
 	}
 
-	public void setSlaves(List<RemoteSlave> rslaves) {
+	public void setSlaves(HashMap<String,RemoteSlave> rslaves) {
         _rslaves = rslaves;
     }
 
