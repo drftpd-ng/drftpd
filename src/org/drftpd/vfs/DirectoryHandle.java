@@ -496,10 +496,11 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	public void removeSlave(RemoteSlave rslave) throws FileNotFoundException {
+		boolean empty = isEmpty();
 		for (InodeHandle inode : getInodeHandles()) {
 			inode.removeSlave(rslave);
 		}
-		if (isEmpty()) {
+		if (!empty && isEmpty()) { // if it wasn't empty before, but is now, delete it
 			delete();
 		}
 	}
