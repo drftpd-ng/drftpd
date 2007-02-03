@@ -243,142 +243,145 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 	 * LIST 125, 150 226, 250 425, 426, 451 450 500, 501, 502, 421, 530
 	 */
 	public Reply execute(BaseFtpConnection conn) {
-		FtpRequest request = conn.getRequest();
+		try {
+			FtpRequest request = conn.getRequest();
 
-		String directoryName = null;
-		String options = "";
-		TransferState ts = conn.getTransferState();
+			String directoryName = null;
+			String options = "";
+			TransferState ts = conn.getTransferState();
 
-		// String pattern = "*";
-		// get options, directory name and pattern
-		// argument == null if there was no argument for LIST
-		if (request.hasArgument()) {
-			// argument = argument.trim();
-			StringBuffer optionsSb = new StringBuffer(4);
-			StringTokenizer st = new StringTokenizer(request.getArgument(), " ");
+			// String pattern = "*";
+			// get options, directory name and pattern
+			// argument == null if there was no argument for LIST
+			if (request.hasArgument()) {
+				// argument = argument.trim();
+				StringBuffer optionsSb = new StringBuffer(4);
+				StringTokenizer st = new StringTokenizer(request.getArgument(),
+						" ");
 
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
+				while (st.hasMoreTokens()) {
+					String token = st.nextToken();
 
-				if (token.charAt(0) == '-') {
-					if (token.length() > 1) {
-						optionsSb.append(token.substring(1));
+					if (token.charAt(0) == '-') {
+						if (token.length() > 1) {
+							optionsSb.append(token.substring(1));
+						}
+					} else {
+						directoryName = token;
 					}
-				} else {
-					directoryName = token;
+				}
+
+				options = optionsSb.toString();
+			}
+
+			// check options
+			// boolean allOption = options.indexOf('a') != -1;
+			boolean fulldate = options.indexOf('T') != -1;
+			boolean detailOption = request.getCommand().equals("LIST")
+					|| request.getCommand().equals("STAT")
+					|| (options.indexOf('l') != -1);
+
+			// boolean directoryOption = options.indexOf("d") != -1;
+
+			if (!request.getCommand().equals("STAT")) {
+
+				if (!ts.isPasv() && !ts.isPort()) {
+					return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
 				}
 			}
 
-			options = optionsSb.toString();
-		}
+			DirectoryHandle directoryFile;
 
-		// check options
-		// boolean allOption = options.indexOf('a') != -1;
-		boolean fulldate = options.indexOf('T') != -1;
-		boolean detailOption = request.getCommand().equals("LIST")
-				|| request.getCommand().equals("STAT")
-				|| (options.indexOf('l') != -1);
+			if (directoryName != null) {
+				try {
+					directoryFile = conn.getCurrentDirectory().getDirectory(
+							directoryName);
+				} catch (FileNotFoundException ex) {
+					return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+				} catch (ObjectNotValidException e) {
+					return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+				}
 
-		// boolean directoryOption = options.indexOf("d") != -1;
-
-		if (!request.getCommand().equals("STAT")) {
-
-			if (!ts.isPasv() && !ts.isPort()) {
-				return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+				if (!conn.getGlobalContext().getConfig().checkPathPermission(
+						"privpath", conn.getUserNull(),
+						directoryFile.getParent(), true)) {
+					return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+				}
+			} else {
+				directoryFile = conn.getCurrentDirectory();
 			}
-		}
 
-		DirectoryHandle directoryFile;
+			PrintWriter out = conn.getControlWriter();
+			Socket dataSocket = null;
+			Writer os;
 
-		if (directoryName != null) {
+			if (request.getCommand().equals("STAT")) {
+				os = out;
+				out.write("213- Status of " + request.getArgument() + ":"
+						+ NEWLINE);
+			} else {
+				if (!ts.getSendFilesEncrypted()
+						&& conn.getGlobalContext().getConfig().checkPermission(
+								"denydiruncrypted", conn.getUserNull())) {
+					return new Reply(550, "Secure Listing Required");
+				}
+
+				out.write(Reply.RESPONSE_150_OK);
+				out.flush();
+
+				try {
+					dataSocket = ts.getDataSocketForLIST();
+					os = new PrintWriter(new OutputStreamWriter(dataSocket
+							.getOutputStream()));
+
+					// out2 = dataSocket.getChannel();
+				} catch (IOException ex) {
+					logger.warn("from master", ex);
+
+					return new Reply(425, ex.getMessage());
+				}
+			}
+
+			// //////////////
+			logger.debug("Listing directoryFile - " + directoryFile);
+			List<InodeHandleInterface> listFiles = ListUtils.list(
+					directoryFile, conn);
+
+			// //////////////
 			try {
-				directoryFile = conn.getCurrentDirectory().getDirectory(
-						directoryName);
-			} catch (FileNotFoundException ex) {
-				return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-			} catch (ObjectNotValidException e) {
-				return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
-			}
+				if (request.getCommand().equals("LIST")
+						|| request.getCommand().equals("STAT")) {
+					printList(listFiles, os, fulldate);
+				} else if (request.getCommand().equals("NLST")) {
+					printNList(listFiles, detailOption, os);
+				}
 
-			if (!conn.getGlobalContext().getConfig().checkPathPermission(
-					"privpath", conn.getUserNull(), directoryFile.getParent(), true)) {
-				return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-			}
-		} else {
-			directoryFile = conn.getCurrentDirectory();
-		}
+				Reply response = (Reply) Reply.RESPONSE_226_CLOSING_DATA_CONNECTION
+						.clone();
 
-		PrintWriter out = conn.getControlWriter();
-		Socket dataSocket = null;
-		Writer os;
+				try {
+					if (!request.getCommand().equals("STAT")) {
+						os.close();
+						dataSocket.close();
+						response.addComment(conn.status());
 
-		if (request.getCommand().equals("STAT")) {
-			os = out;
-			out
-					.write("213- Status of " + request.getArgument() + ":"
-							+ NEWLINE);
-		} else {
-			if (!ts.getSendFilesEncrypted()
-					&& conn.getGlobalContext().getConfig().checkPermission(
-							"denydiruncrypted", conn.getUserNull())) {
-				return new Reply(550, "Secure Listing Required");
-			}
+						return response;
+					}
 
-			out.write(Reply.RESPONSE_150_OK);
-			out.flush();
+					return new Reply(213, "End of Status");
+				} catch (IOException ioe) {
+					logger.error("", ioe);
 
-			try {
-				dataSocket = ts.getDataSocketForLIST();
-				os = new PrintWriter(new OutputStreamWriter(dataSocket
-						.getOutputStream()));
-
-				// out2 = dataSocket.getChannel();
+					return new Reply(450, ioe.getMessage());
+				}
 			} catch (IOException ex) {
 				logger.warn("from master", ex);
 
-				return new Reply(425, ex.getMessage());
+				return new Reply(450, ex.getMessage());
 			}
+		} finally {
+			conn.getTransferState().reset();
 		}
-
-		// //////////////
-		logger.debug("Listing directoryFile - " + directoryFile);
-		List<InodeHandleInterface> listFiles = ListUtils.list(directoryFile, conn);
-
-		// //////////////
-		try {
-			if (request.getCommand().equals("LIST")
-					|| request.getCommand().equals("STAT")) {
-				printList(listFiles, os, fulldate);
-			} else if (request.getCommand().equals("NLST")) {
-				printNList(listFiles, detailOption, os);
-			}
-
-			Reply response = (Reply) Reply.RESPONSE_226_CLOSING_DATA_CONNECTION
-					.clone();
-
-			try {
-				if (!request.getCommand().equals("STAT")) {
-					os.close();
-					dataSocket.close();
-					response.addComment(conn.status());
-
-					return response;
-				}
-
-				return new Reply(213, "End of Status");
-			} catch (IOException ioe) {
-				logger.error("", ioe);
-
-				return new Reply(450, ioe.getMessage());
-			}
-		} catch (IOException ex) {
-			logger.warn("from master", ex);
-
-			return new Reply(450, ex.getMessage());
-		}
-
-		// redo connection handling
-		// conn.reset();
 	}
 
 	public String[] getFeatReplies() {
