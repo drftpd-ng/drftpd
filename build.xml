@@ -110,28 +110,15 @@
 
   <patternset id="excludes">
     <exclude name="**/*Test.java"/>
-    <exclude name="org/drftpd/friendly/**"/>
-    <exclude name="net/sf/drftpd/master/usermanager/jsx/**"/>
-    <exclude name="net/sf/drftpd/master/usermanager/xstream/**"/>
   </patternset>
 
   <target name="compile">
     <mkdir dir="${outputDir}"/>
     <mkdir dir="src-archive" />
     <echo>Compiling bytecode in 1.5 compatible files</echo>
-  	<javac srcdir="${sourceDir}" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.5">
+  	<javac srcdir="${sourceDir};${sourceDir}-slaveselection" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.5">
   		<patternset refid="excludes"/>
     </javac>
-    <echo>Compiling slaveselection files</echo>
-  	<javac srcdir="${sourceDir}-slaveselection" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.5">
-      <include name="**/*.java"/>
-      <patternset refid="excludes"/>
-  	</javac>
-	<echo>Compiling archive files</echo>
-  	<javac srcdir="${sourceDir}-archive" destdir="${outputDir}" classpathref="classpath" debug="true" source="1.5">
-      <include name="**/*.java"/>
-      <patternset refid="excludes"/>
-  	</javac>
     <copy todir="${outputDir}">
       <fileset dir="${sourceDir}">
         <include name="**/*.properties"/>
