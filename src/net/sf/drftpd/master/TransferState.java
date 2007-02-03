@@ -78,7 +78,7 @@ public class TransferState {
     private InetSocketAddress _portAddress;
     
     /**
-     * Is this a PRET/PASV transfer?
+     * Is this a PRET transfer?
      * If a PRET command has been done, this will be set
      */
     private FtpRequest _pretRequest = null;
@@ -105,6 +105,11 @@ public class TransferState {
      * Should we send files encrypted?
      */
     private boolean _encryptedDataChannel;
+    
+    /**
+     * Defines if the transfer is of type Passive
+     */
+	private boolean _isPasv = false;
 
 	/**
 	 * This class to be used as a state holder for DataConnectionHandler
@@ -139,8 +144,10 @@ public class TransferState {
 		_transfer = null;
 		_transferFile = null;
 		_pretRequest = null;
+		_isPasv = false;
+		_portAddress = null;
 
-		if (_localPassiveConnection != null) { //isPasv() && _preTransferRSlave == null
+		if (_localPassiveConnection != null) {
 			_localPassiveConnection.abort();
 			_localPassiveConnection = null;
 		}
@@ -154,13 +161,9 @@ public class TransferState {
 	public boolean isPort() {
 		return _portAddress != null;
 	}
-
-	/**
-	 * A synonym for isPreTransfer()
-	 * @see isPreTransfer()
-	 */
+	
 	public boolean isPasv() {
-		return isPreTransfer();
+		return _isPasv;
 	}
 
 	public void setSSLHandshakeClientMode(boolean b) {
@@ -230,11 +233,11 @@ public class TransferState {
 	}
 	
 	public boolean isPASVDownload() {
-		return (getPretRequest() != null && getPretRequest().getCommand().equalsIgnoreCase("RETR"));
+		return (isPasv() && getPretRequest().getCommand().equalsIgnoreCase("RETR"));
 	}
 	
 	public boolean isPASVUpload() {
-		return (getPretRequest() != null && getPretRequest().getCommand().equalsIgnoreCase("STOR"));
+		return (isPasv() && getPretRequest().getCommand().equalsIgnoreCase("STOR"));
 	}
 
 	public void setLocalPassiveConnection(PassiveConnection pc) {
@@ -279,6 +282,10 @@ public class TransferState {
 	
 	public void setPortAddress(InetSocketAddress addr) {
 		_portAddress = addr;
+	}
+	
+	public void setPasv(boolean value) {
+		_isPasv = value;
 	}
 
 	public void setResumePosition(long resumePosition) {

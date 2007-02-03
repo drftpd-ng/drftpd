@@ -139,6 +139,7 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
      */
     private Reply doPASVandCPSV(BaseFtpConnection conn) {
     	TransferState ts = conn.getTransferState();
+    	ts.setPasv(true);
         if (!ts.isPreTransfer()) {
         	reset(conn);
             return new Reply(500,
@@ -332,7 +333,8 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             response.addComment(
                 "Or you can just use a PRET capable client, see");
             response.addComment("  http://drftpd.org/ for PRET capable clients");
-
+            
+            reset(conn);
             return response;
         }
 
