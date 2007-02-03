@@ -17,12 +17,15 @@
 package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
+import java.util.Set;
 
 import net.sf.drftpd.FileExistsException;
+import net.sf.drftpd.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.SlaveManager;
 
 /**
  * @author zubov
@@ -53,7 +56,23 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	 * @throws FileNotFoundException
 	 */
 	public void delete() throws FileNotFoundException {
-		getInode().delete();
+		VirtualFileSystemInode inode = getInode();
+		SlaveManager sm = getGlobalContext().getSlaveManager();
+		if (inode.isFile()) {
+			Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
+			for (String slaveName : slaves) {
+				try {
+					sm.getRemoteSlave(slaveName).simpleDelete(getPath());
+				} catch (ObjectNotFoundException e) {
+					// slave doesn't exist, no reason to tell it to delete this file
+				}
+			}
+		} else if (inode.isDirectory()){
+			getGlobalContext().getSlaveManager().deleteOnAllSlaves((DirectoryHandle) this);
+		} else {
+			// it's a link! who cares! :)
+		}
+		inode.delete();
 	}
 
 	/*
@@ -197,7 +216,25 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	 * @throws FileNotFoundException if the source inode does not exist.
 	 */
 	public void renameTo(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
-		getInode().rename(toInode.getPath());
+		String fromPath = getPath();
+		VirtualFileSystemInode inode = getInode();
+		SlaveManager sm = getGlobalContext().getSlaveManager();
+		if (inode.isFile()) {
+			Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
+			for (String slaveName : slaves) {
+				try {
+					sm.getRemoteSlave(slaveName).simpleRename(fromPath, toInode.getParent().getPath(), toInode.getName());
+				} catch (ObjectNotFoundException e) {
+					// slave doesn't exist, no reason to tell it to rename this file
+				}
+			}
+		} else if (inode.isDirectory()){
+			getGlobalContext().getSlaveManager().renameOnAllSlaves(fromPath, toInode.getParent().getPath(), toInode.getName());
+		} else {
+			// it's a link! who cares! :)
+		}
+		inode.rename(toInode.getPath());
+
 	}
 
 	/**
