@@ -268,6 +268,45 @@ public class Slave {
 		System.out
 				.println("DrFTPD Slave starting, further logging will be done through log4j");
 
+		// Try using the JuiCE JCE if available
+
+		Class<?> juiceJCE = null;
+		Class<?> bcJCE = null;
+
+		try {
+			juiceJCE = Class.forName("org.apache.security.juice.provider.JuiCEProviderOpenSSL");
+		} catch (ClassNotFoundException e) {
+			logger.info("JuiCE JCE not installed, using java native JSSE");
+		}
+
+		// Only try installing JuiCE provider if the class was found
+
+		if (juiceJCE != null) {
+			int provider1Pos = java.security.Security.insertProviderAt((java.security.Provider) juiceJCE
+				.newInstance(), 2);
+			if (provider1Pos == -1) {
+				logger.info("Loading of JuiCE JCE failed");
+			}
+			else {
+				logger.debug("Juice JCE Provider successfully inserted at position: "+provider1Pos);
+			}
+			try {
+				bcJCE = Class.forName("org.bouncycastle.jce.provider.BouncyCastleProvider");
+			} catch (ClassNotFoundException e) {
+				logger.fatal("JuiCE JCE found but Bouncy Castle JCE not installed, please check installation");
+			}
+			if (bcJCE != null) {
+				int provider2Pos = java.security.Security.insertProviderAt((java.security.Provider) bcJCE
+					.newInstance(), 3);
+				if (provider2Pos == -1) {
+					logger.info("Loading of Bouncy Castle JCE failed");
+				}
+				else {
+					logger.debug("Bouncy Castle JCE Provider successfully inserted at position: "+provider2Pos);
+				}
+			}
+		}
+		
 		Properties p = new Properties();
 		p.load(new FileInputStream("slave.conf"));
 
