@@ -33,7 +33,7 @@ import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author zubov
- * @version $Id: MaxbandwidthFilter.java 880 2004-12-29 04:24:27Z mog $
+ * @version $Id$
  */
 public class MaxbandwidthFilter extends Filter {
 	private static final Logger logger = Logger

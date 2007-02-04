@@ -30,7 +30,7 @@ import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author mog
- * @version $Id: MaxTransfersPerUserFilter.java 849 2004-12-02 05:21:41Z mog $
+ * @version $Id$
  */
 public class MaxTransfersPerUserFilter extends Filter {
 

@@ -20,7 +20,7 @@ package org.drftpd;
 /**
  * @author mog
  * 
- * @version $Id: Checksum.java 808 2004-11-18 15:58:39Z mog $
+ * @version $Id$
  */
 public class Checksum {
 	public static String formatChecksum(long checkSum) {

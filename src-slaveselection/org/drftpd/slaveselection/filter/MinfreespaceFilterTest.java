@@ -37,7 +37,7 @@ import org.drftpd.tests.DummyRemoteSlave;
 
 /**
  * @author mog
- * @version $Id: MinfreespaceFilterTest.java 823 2004-11-29 01:36:22Z mog $
+ * @version $Id$
  */
 public class MinfreespaceFilterTest extends TestCase {
     public MinfreespaceFilterTest(String fName) {

@@ -30,7 +30,7 @@ import org.drftpd.tests.DummyRemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: CycleFilterTest.java 823 2004-11-29 01:36:22Z mog $
+ * @version $Id$
  */
 public class CycleFilterTest extends TestCase {
     /**

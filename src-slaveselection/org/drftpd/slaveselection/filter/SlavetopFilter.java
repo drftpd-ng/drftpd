@@ -28,7 +28,7 @@ import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilter.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public class SlavetopFilter extends Filter {
 	private GlobalContext _gctx;

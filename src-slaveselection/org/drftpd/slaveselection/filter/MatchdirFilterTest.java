@@ -36,7 +36,7 @@ import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 /**
  * @author mog
- * @version $Id: MatchdirFilterTest.java 823 2004-11-29 01:36:22Z mog $
+ * @version $Id$
  */
 public class MatchdirFilterTest extends TestCase {
     RemoteSlave[] rslaves = {

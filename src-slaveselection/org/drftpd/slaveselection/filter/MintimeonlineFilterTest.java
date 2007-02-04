@@ -32,7 +32,7 @@ import org.drftpd.tests.DummyRemoteSlave;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilterTest.java 936 2005-01-31 22:25:52Z mog $
+ * @version $Id$
  */
 public class MintimeonlineFilterTest extends TestCase {
     public MintimeonlineFilterTest(String name) {

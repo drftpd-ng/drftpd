@@ -41,7 +41,7 @@ import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 /**
  * @author zubov
- * @version $Id: MaxbandwidthFilterTest.java 880 2004-12-29 04:24:27Z mog $
+ * @version $Id$
  */
 public class MaxbandwidthFilterTest extends TestCase {
     RemoteSlave[] rslaves = {

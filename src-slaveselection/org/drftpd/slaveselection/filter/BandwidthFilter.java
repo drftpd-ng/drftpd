@@ -32,7 +32,7 @@ import org.drftpd.vfs.InodeHandleInterface;
  * Removes bandwidth * multiplier from the score.
  * 
  * @author mog
- * @version $Id: BandwidthFilter.java 936 2005-01-31 22:25:52Z mog $
+ * @version $Id$
  */
 public class BandwidthFilter extends Filter {
 	protected float _multiplier;

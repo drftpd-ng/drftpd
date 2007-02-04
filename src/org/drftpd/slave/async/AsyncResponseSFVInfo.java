@@ -21,7 +21,7 @@ import org.drftpd.SFVInfo;
 
 /**
  * @author zubov
- * @version $Id: AsyncResponseSFVFile.java 790 2004-11-15 01:12:17Z mog $
+ * @version $Id$
  */
 public class AsyncResponseSFVInfo extends AsyncResponse {
 	private SFVInfo _sfv;

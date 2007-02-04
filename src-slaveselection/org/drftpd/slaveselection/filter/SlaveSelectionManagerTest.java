@@ -32,7 +32,7 @@ import org.drftpd.tests.DummyRemoteSlave;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManagerTest.java 838 2004-12-01 02:35:02Z mog $
+ * @version $Id$
  */
 public class SlaveSelectionManagerTest extends TestCase {
     public SlaveSelectionManagerTest(String fName) {

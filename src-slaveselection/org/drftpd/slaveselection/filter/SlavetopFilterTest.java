@@ -46,7 +46,7 @@ import org.drftpd.vfs.DirectoryHandleInterface;
 
 /**
  * @author mog
- * @version $Id: SlavetopFilterTest.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public class SlavetopFilterTest extends TestCase {
     private DirectoryHandleInterface _dir1;

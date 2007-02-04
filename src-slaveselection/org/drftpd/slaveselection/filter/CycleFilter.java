@@ -34,7 +34,7 @@ import org.drftpd.vfs.InodeHandleInterface;
  * one in that has been unused for the longest time.
  * 
  * @author mog, zubov
- * @version $Id: CycleFilter.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public class CycleFilter extends Filter {
 	public CycleFilter(FilterChain fc, int i, Properties p) {

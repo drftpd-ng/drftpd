@@ -38,7 +38,7 @@ import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
- * @version $Id: SlaveSelectionManager.java 930 2005-01-30 15:16:42Z zubov $
+ * @version $Id$
  */
 public class SlaveSelectionManager implements SlaveSelectionManagerInterface {
 	private GlobalContext _gctx;

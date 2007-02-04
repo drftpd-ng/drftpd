@@ -42,7 +42,7 @@ import org.drftpd.vfs.InodeHandleInterface;
  * diskfree) * multiplier)) }
  * 
  * @author mog
- * @version $Id: MinfreespaceFilter.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public class MinfreespaceFilter extends Filter {
 	private long _minfreespace;

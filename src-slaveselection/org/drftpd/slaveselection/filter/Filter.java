@@ -30,7 +30,7 @@ import org.drftpd.vfs.InodeHandleInterface;
  * would be the dest.
  * 
  * @author mog
- * @version $Id: Filter.java 847 2004-12-02 03:32:41Z mog $
+ * @version $Id$
  */
 public abstract class Filter {
 	public abstract void process(ScoreChart scorechart, User user,

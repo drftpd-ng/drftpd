@@ -33,7 +33,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
- * @version $Id: ListUtils.java 894 2005-01-13 22:32:32Z zubov $
+ * @version $Id$
  */
 public class ListUtils {
     private static final Logger logger = Logger.getLogger(ListUtils.class);

@@ -23,7 +23,7 @@ import junit.framework.TestSuite;
 
 /**
  * @author mog
- * @version $Id: TimeTest.java 690 2004-08-03 20:14:12Z zubov $
+ * @version $Id$
  */
 public class TimeTest extends TestCase {
     public TimeTest(String name) {

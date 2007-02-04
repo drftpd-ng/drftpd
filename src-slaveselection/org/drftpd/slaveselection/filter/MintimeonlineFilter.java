@@ -31,7 +31,7 @@ import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author mog
- * @version $Id: MintimeonlineFilter.java 936 2005-01-31 22:25:52Z mog $
+ * @version $Id$
  */
 public class MintimeonlineFilter extends Filter {
 	private long _minTime;

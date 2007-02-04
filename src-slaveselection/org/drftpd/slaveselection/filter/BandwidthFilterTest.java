@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 
 /**
  * @author mog
- * @version $Id: BandwidthFilterTest.java 690 2004-08-03 20:14:12Z zubov $
+ * @version $Id$
  */
 public class BandwidthFilterTest extends TestCase {
     public BandwidthFilterTest(String fName) {

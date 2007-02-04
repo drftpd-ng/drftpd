@@ -19,7 +19,7 @@ package org.drftpd;
 
 /**
  * @author mog
- * @version $Id: SFVFile.java 1413 2006-02-11 14:02:21Z fr0w $
+ * @version $Id$
  */
 
 public class SFVStatus {

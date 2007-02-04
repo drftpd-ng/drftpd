@@ -42,7 +42,7 @@ import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
- * @version $Id: DefaultSlaveSelectionManager.java 874 2004-12-23 17:43:28Z mog $
+ * @version $Id$
  */
 public class DefaultSlaveSelectionManager implements
 		SlaveSelectionManagerInterface {

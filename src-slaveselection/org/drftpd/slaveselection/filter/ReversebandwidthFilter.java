@@ -31,7 +31,7 @@ import org.drftpd.vfs.InodeHandle;
 /*
  * @author zubov
  * 
- * @version $Id: ReversebandwidthFilter.java 879 2004-12-29 03:39:22Z mog $
+ * @version $Id$
  */
 public class ReversebandwidthFilter extends BandwidthFilter {
 	public ReversebandwidthFilter(FilterChain ssm, int i, Properties p) {

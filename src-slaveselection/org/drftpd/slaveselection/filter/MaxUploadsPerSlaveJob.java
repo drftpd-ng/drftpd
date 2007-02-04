@@ -31,7 +31,7 @@ import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author mog
- * @version $Id: MaxUploadsPerSlaveJob.java 879 2004-12-29 03:39:22Z mog $
+ * @version $Id$
  */
 public class MaxUploadsPerSlaveJob extends Filter {
 	private GlobalContext _gctx;

@@ -29,7 +29,7 @@ import org.drftpd.master.RemoteSlave;
 
 /**
  * @author mog
- * @version $Id: ScoreChart.java 849 2004-12-02 05:21:41Z mog $
+ * @version $Id$
  */
 public class ScoreChart {
 	private static final Logger logger = Logger.getLogger(ScoreChart.class);

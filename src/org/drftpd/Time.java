@@ -19,7 +19,7 @@ package org.drftpd;
 
 /**
  * @author zubov
- * @version $Id: Time.java 852 2004-12-04 17:46:58Z mog $
+ * @version $Id$
  */
 public class Time {
 	/**
