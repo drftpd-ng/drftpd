@@ -255,7 +255,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			throw new RuntimeException(e);
 		}
 		for (int x = 0; x < pdArr.length; x++) {
-			logger.debug("PropertyDescriptor - VirtualFileSystemDirectory - " + pdArr[x].getDisplayName());
+			//logger.debug("PropertyDescriptor - VirtualFileSystemDirectory - " + pdArr[x].getDisplayName());
 			if (transientListDirectory.contains(pdArr[x].getName())) {
 				pdArr[x].setValue("transient", Boolean.TRUE);
 			}

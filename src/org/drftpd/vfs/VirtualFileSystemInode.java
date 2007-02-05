@@ -19,12 +19,15 @@ package org.drftpd.vfs;
 
 import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
+import org.drftpd.master.CommitManager;
+import org.drftpd.master.Commitable;
 
 import se.mog.io.PermissionDeniedException;
 
@@ -32,7 +35,7 @@ import se.mog.io.PermissionDeniedException;
  * VirtualFileSystemInode is an abstract class used to handle basic functions
  * of files/dirs/links and to keep an hierarchy/organization of the FS.
  */
-public abstract class VirtualFileSystemInode {
+public abstract class VirtualFileSystemInode implements Commitable {
 
 	protected static final Logger logger = Logger
 			.getLogger(VirtualFileSystemInode.class.getName());
@@ -58,6 +61,14 @@ public abstract class VirtualFileSystemInode {
 
 	protected String _username;
 
+	public String descriptiveName() {
+		return getPath();
+	}
+
+	public void writeToDisk() throws IOException {
+		VirtualFileSystem.getVirtualFileSystem().writeInode(this);
+	}
+
 	public VirtualFileSystemInode(String user, String group, long size) {
 		_username = user;
 		_group = group;
@@ -70,8 +81,8 @@ public abstract class VirtualFileSystemInode {
 	 * the Inode.<br>
 	 * When called, this method will save the Inode data to the disk.
 	 */
-	protected void commit() {
-		VirtualFileSystem.getVirtualFileSystem().writeInode(this);
+	public void commit() {
+		CommitManager.add(this);
 	}
 
 	/**

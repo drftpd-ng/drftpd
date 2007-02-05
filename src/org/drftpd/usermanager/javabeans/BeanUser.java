@@ -23,6 +23,8 @@ import java.io.Serializable;
 
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
+import org.drftpd.master.CommitManager;
+import org.drftpd.master.Commitable;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserFileException;
@@ -32,7 +34,7 @@ import org.drftpd.usermanager.UserManager;
  * @author mog
  * @version $Id$
  */
-public class BeanUser extends AbstractUser implements Serializable {
+public class BeanUser extends AbstractUser implements Serializable, Commitable {
 
 	private BeanUserManager _um;
 
@@ -61,20 +63,8 @@ public class BeanUser extends AbstractUser implements Serializable {
 		return password.equals(_password);
 	}
 
-	public void commit() throws UserFileException {
-		if (_purged)
-			return;
-		XMLEncoder out = null;
-		try {
-			out = _um.getXMLEncoder(new SafeFileOutputStream(_um
-					.getUserFile(getName())));
-			out.writeObject(this);
-		} catch (IOException ex) {
-			throw new UserFileException(ex);
-		} finally {
-			if (out != null)
-				out.close();
-		}
+	public void commit() {
+		CommitManager.add(this);
 	}
 
 	public void purge() {
@@ -107,5 +97,23 @@ public class BeanUser extends AbstractUser implements Serializable {
 	 */
 	public void setGroupLeechSlots(short s) {
 		getKeyedMap().setObject(UserManagement.LEECHSLOTS, s);
+	}
+
+	public void writeToDisk() throws IOException {
+		if (_purged)
+			return;
+		XMLEncoder out = null;
+		try {
+			out = _um.getXMLEncoder(new SafeFileOutputStream(_um
+					.getUserFile(getName())));
+			out.writeObject(this);
+		} finally {
+			if (out != null)
+				out.close();
+		}
+	}
+
+	public String descriptiveName() {
+		return getName();
 	}
 }

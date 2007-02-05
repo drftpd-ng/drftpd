@@ -88,7 +88,7 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class RemoteSlave extends ExtendedTimedStats implements Runnable, Comparable<RemoteSlave>,
-		Serializable, Entity {
+		Serializable, Entity, Commitable {
 	private static final long serialVersionUID = -6973935289361817125L;
 
 	private final String[] transientFields = { "available",
@@ -243,53 +243,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void commit() {
-		XMLEncoder out = null;
-		try {
-
-			out = new XMLEncoder(new SafeFileOutputStream(
-					(getGlobalContext().getSlaveManager().getSlaveFile(this
-							.getName()))));
-			out.setExceptionListener(new ExceptionListener() {
-				public void exceptionThrown(Exception e) {
-					logger.warn("", e);
-				}
-			});
-			out.setPersistenceDelegate(Key.class,
-					new DefaultPersistenceDelegate(new String[] { "owner",
-							"key", "type" }));
-			out.setPersistenceDelegate(HostMask.class,
-					new DefaultPersistenceDelegate(new String[] { "mask" }));
-			out.setPersistenceDelegate(RemoteSlave.class,
-					new DefaultPersistenceDelegate(new String[] { "name" }));
-			out.setPersistenceDelegate(QueuedOperation.class,
-					new DefaultPersistenceDelegate(new String[] { "source",
-							"destination" }));
-			try {
-				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(
-						RemoteSlave.class).getPropertyDescriptors();
-				ArrayList<String> transientList = new ArrayList<String>();
-				for (int x = 0; x < transientFields.length; x++) {
-					transientList.add(transientFields[x]);
-				}
-				for (int x = 0; x < pdArr.length; x++) {
-					if (transientList.contains(pdArr[x].getName())) {
-						pdArr[x].setValue("transient", Boolean.TRUE);
-					}
-				}
-			} catch (IntrospectionException e1) {
-				logger.error("I don't know what to do here", e1);
-				throw new RuntimeException(e1);
-			}
-			out.writeObject(this);
-			Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
-		} catch (IOException ex) {
-			throw new RuntimeException("Error writing slavefile for "
-					+ this.getName() + ": " + ex.getMessage(), ex);
-		} finally {
-			if (out != null) {
-				out.close();
-			}
-		}
+		CommitManager.add(this);
 	}
 
 	public final int compareTo(RemoteSlave o) {
@@ -1256,6 +1210,60 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			String value = (String) _keysAndValues.remove(key);
 			commit();
 			return value;
+		}
+	}
+
+	public String descriptiveName() {
+		return getName();
+	}
+
+	public void writeToDisk() throws IOException {
+		XMLEncoder out = null;
+		try {
+
+			out = new XMLEncoder(new SafeFileOutputStream(
+					(getGlobalContext().getSlaveManager().getSlaveFile(this
+							.getName()))));
+			out.setExceptionListener(new ExceptionListener() {
+				public void exceptionThrown(Exception e) {
+					logger.warn("", e);
+				}
+			});
+			out.setPersistenceDelegate(Key.class,
+					new DefaultPersistenceDelegate(new String[] { "owner",
+							"key", "type" }));
+			out.setPersistenceDelegate(HostMask.class,
+					new DefaultPersistenceDelegate(new String[] { "mask" }));
+			out.setPersistenceDelegate(RemoteSlave.class,
+					new DefaultPersistenceDelegate(new String[] { "name" }));
+			out.setPersistenceDelegate(QueuedOperation.class,
+					new DefaultPersistenceDelegate(new String[] { "source",
+							"destination" }));
+			try {
+				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(
+						RemoteSlave.class).getPropertyDescriptors();
+				ArrayList<String> transientList = new ArrayList<String>();
+				for (int x = 0; x < transientFields.length; x++) {
+					transientList.add(transientFields[x]);
+				}
+				for (int x = 0; x < pdArr.length; x++) {
+					if (transientList.contains(pdArr[x].getName())) {
+						pdArr[x].setValue("transient", Boolean.TRUE);
+					}
+				}
+			} catch (IntrospectionException e1) {
+				logger.error("I don't know what to do here", e1);
+				throw new RuntimeException(e1);
+			}
+			out.writeObject(this);
+			Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
+		} catch (IOException ex) {
+			throw new RuntimeException("Error writing slavefile for "
+					+ this.getName() + ": " + ex.getMessage(), ex);
+		} finally {
+			if (out != null) {
+				out.close();
+			}
 		}
 	}
 }

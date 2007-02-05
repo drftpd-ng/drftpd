@@ -39,6 +39,7 @@ import net.sf.drftpd.mirroring.JobManager;
 import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
+import org.drftpd.master.CommitManager;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.master.cron.TimeEventInterface;
@@ -342,6 +343,7 @@ public class GlobalContext {
 			// TODO Auto-generated catch block
 			logger.debug("", e);
 		}
+		CommitManager.start();
 		_timeManager = new TimeManager();
 		loadUserManager(getConfig().getProperties());
 		addTimeEvent(getUserManager());
