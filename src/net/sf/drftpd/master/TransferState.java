@@ -20,12 +20,9 @@
  */
 package net.sf.drftpd.master;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
-import javax.net.ssl.SSLSocket;
 
 import net.sf.drftpd.master.config.FtpConfig;
 
@@ -33,15 +30,11 @@ import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
-import org.drftpd.commands.Reply;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
-import org.drftpd.slave.Connection;
 import org.drftpd.slave.Transfer;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.ListUtils;
-import org.drftpd.vfs.ObjectNotValidException;
 
 /**
  * @author zubov

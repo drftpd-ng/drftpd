@@ -28,7 +28,6 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
-import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.TransferPointer;
 
 /**

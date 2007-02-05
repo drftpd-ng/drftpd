@@ -76,7 +76,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	public synchronized Set<String> getSlaves() {
 		return new HashSet<String>(_slaves);
 	}
-
+	
 	@Override
 	public String toString() {
 		StringBuffer ret = new StringBuffer();
@@ -85,6 +85,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 			ret.append(slave + ",");
 		}
 		ret.replace(ret.length() - 1, ret.length(), "]");
+		ret.append("[xfertime="+getXfertime()+"]");
 		return ret.toString();
 	}
 

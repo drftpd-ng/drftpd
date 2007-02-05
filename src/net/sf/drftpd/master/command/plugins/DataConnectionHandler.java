@@ -1422,44 +1422,22 @@ public class DataConnectionHandler implements CommandHandler, CommandHandlerFact
             synchronized (conn.getGlobalContext()) { // need to synchronize
 														// here so only one
 				// TransferEvent can be sent at a time
-				if (isStor) {
-					if (ts.getResumePosition() == 0) {
-						try {
-							ts.getTransferFile().setCheckSum(status.getChecksum());
-						} catch (FileNotFoundException e) {
-							// this is kindof odd
-							// it was a successful transfer, yet the file is gone
-							// lets just return the response
-							return response;
-						}
-					} else {
-						// try {
-						// checksum = _transferFile.getCheckSumFromSlave();
-						// } catch (NoAvailableSlaveException e) {
-						// response.addComment(
-						// "No available slaves when getting checksum from
-						// slave: "
-						// + e.getMessage());
-						// logger.warn("", e);
-						// checksum = 0;
-						// } catch (IOException e) {
-						// response.addComment(
-						// "IO error getting checksum from slave: "
-						// + e.getMessage());
-						// logger.warn("", e);
-						// checksum = 0;
-						// }
-					}
-
-					try {
-						ts.getTransferFile().setSize(status.getTransfered());
-					} catch (FileNotFoundException e) {
-						// this is kindof odd
-						// it was a successful transfer, yet the file is gone
-						// lets just return the response
-						return response;					
-					}
-				}
+            	if (isStor) {
+            		try {
+            			if (ts.getResumePosition() == 0) {
+            				ts.getTransferFile().setCheckSum(status.getChecksum());
+            			} // else, fetch checksum from slave when resumable uploads are implemented.
+            			
+            			ts.getTransferFile().setSize(status.getTransfered());
+            			ts.getTransferFile().setLastModified(System.currentTimeMillis());
+            			ts.getTransferFile().setXfertime(ts.getTransfer().getElapsed());
+            		} catch (FileNotFoundException e) {
+            			// this is kindof odd
+            			// it was a successful transfer, yet the file is gone
+            			// lets just return the response
+            			return response;					
+            		}
+            	}
 
 /*				boolean zipscript = zipscript(isRetr, isStor, status
 						.getChecksum(), response, targetFileName, targetDir);*/
