@@ -119,7 +119,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 * @throws FileNotFoundException if there's no such file.
 	 * @throws NoAvailableSlaveException if there's no avaiable slave.
 	 */
-	private RemoteSlave getASlaveForFunction() throws FileNotFoundException,
+	protected RemoteSlave getASlaveForFunction() throws FileNotFoundException,
 	NoAvailableSlaveException {
 		for (RemoteSlave rslave : getAvailableSlaves()) {
 			return rslave;

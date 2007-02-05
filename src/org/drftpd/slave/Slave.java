@@ -507,7 +507,7 @@ public class Slave {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new FileReader(_roots.getFile(path)));
-			return SFVInfo.getSFVInfo(reader);
+			return SFVInfo.importSFVInfoFromFile(reader);
 		} finally {
 			if (reader != null) {
 				reader.close();

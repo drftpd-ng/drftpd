@@ -754,7 +754,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return ((AsyncResponseDIZFile) fetchResponse(index)).getDIZ();
 	}
 
-	public SFVInfo fetchSFVFileFromIndex(String index)
+	public SFVInfo fetchSFVInfoFromIndex(String index)
 			throws RemoteIOException, SlaveUnavailableException {
 		return ((AsyncResponseSFVInfo) fetchResponse(index)).getSFV();
 	}

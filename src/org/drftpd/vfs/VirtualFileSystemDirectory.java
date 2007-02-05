@@ -30,6 +30,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.drftpd.SFVInfo;
+import org.drftpd.dynamicdata.KeyNotFoundException;
+
 import net.sf.drftpd.FileExistsException;
 
 /**
@@ -41,13 +44,22 @@ import net.sf.drftpd.FileExistsException;
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected static final Collection<String> transientListDirectory = Arrays
-			.asList(new String[] { "name", "parent", "files" });
+			.asList(new String[] { "name", "parent", "files", "SFVInfo" });
 
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = null;
 
 	public VirtualFileSystemDirectory(String user, String group) {
 		super(user, group, 0);
 		_files = new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
+	}
+	
+	public void setSFVInfo(SFVInfo sfvFile) {
+		getKeyedMap().setObject(SFVInfo.SFV, sfvFile);
+		commit();
+	}
+	
+	public SFVInfo getSFVInfo() throws KeyNotFoundException {
+		return (SFVInfo) getKeyedMap().getObject(SFVInfo.SFV);
 	}
 
 	/**
@@ -243,8 +255,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			throw new RuntimeException(e);
 		}
 		for (int x = 0; x < pdArr.length; x++) {
-			// logger.debug("PropertyDescriptor - VirtualFileSystemDirectory - "
-			// + pdArr[x].getDisplayName());
+			logger.debug("PropertyDescriptor - VirtualFileSystemDirectory - " + pdArr[x].getDisplayName());
 			if (transientListDirectory.contains(pdArr[x].getName())) {
 				pdArr[x].setValue("transient", Boolean.TRUE);
 			}
