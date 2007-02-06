@@ -22,8 +22,8 @@ import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -505,9 +505,15 @@ public class Slave {
 
 	private SFVInfo getSFVFile(String path) throws IOException {
 		BufferedReader reader = null;
+		CRC32 checksum = null;
 		try {
-			reader = new BufferedReader(new FileReader(_roots.getFile(path)));
-			return SFVInfo.importSFVInfoFromFile(reader);
+			File file = _roots.getFile(path);
+			checksum = new CRC32();
+			reader = new BufferedReader(new InputStreamReader(new CheckedInputStream(new FileInputStream(file), checksum)));
+			SFVInfo sfvInfo = SFVInfo.importSFVInfoFromFile(reader);
+			sfvInfo.setSFVFileName(file.getName());
+			sfvInfo.setChecksum(checksum.getValue());
+			return sfvInfo;
 		} finally {
 			if (reader != null) {
 				reader.close();

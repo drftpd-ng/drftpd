@@ -32,6 +32,8 @@ import org.drftpd.vfs.VirtualFileSystemDirectory;
 public class SFVInfo implements Serializable {
 
 	private CaseInsensitiveTreeMap<String, Long> _entries = null;
+	private String _sfvFileName = null;
+	private long _checksum = 0L;
 
 	public static final Key SFV = new Key(VirtualFileSystemDirectory.class,
 			"sfv", SFVInfo.class);
@@ -41,6 +43,14 @@ public class SFVInfo implements Serializable {
 	 */
 	public SFVInfo() {
 
+	}
+	
+	public String getSFVFileName() {
+		return _sfvFileName;
+	}
+	
+	public void setSFVFileName(String name) {
+		_sfvFileName = name;
 	}
 
 	public CaseInsensitiveTreeMap<String, Long> getEntries() {
@@ -93,5 +103,13 @@ public class SFVInfo implements Serializable {
 		SFVInfo tmp = new SFVInfo();
 		tmp.setEntries(entries);
 		return tmp;
+	}
+
+	public void setChecksum(long value) {
+		_checksum = value;
+	}
+	
+	public long getChecksum() {
+		return _checksum;
 	}
 }

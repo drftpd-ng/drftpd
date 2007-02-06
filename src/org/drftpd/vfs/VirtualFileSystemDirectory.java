@@ -270,4 +270,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		return "Directory" + super.toString();
 	}
 
+	public void removeSFVInfo() {
+		getKeyedMap().remove(SFVInfo.SFV);
+		commit();
+	}
+
 }

@@ -52,9 +52,25 @@ public class DirectoryHandle extends InodeHandle implements
 	
 	public SFVInfo getSFVInfo() throws FileNotFoundException, NoAvailableSlaveException {
 		try {
-			return getInode().getSFVInfo();
+			SFVInfo sfvInfo = getInode().getSFVInfo();
+			try {
+				FileHandle sfvFile = getFile(sfvInfo.getSFVFileName());
+				if (sfvFile.exists()) {
+					if (sfvFile.getCheckSum() == sfvInfo.getChecksum()) {
+						// 	passed all tests
+						return sfvInfo;
+					}
+				}
+			} catch (FileNotFoundException e) {
+				// just continue, it couldn't find the previous sfv file, the line below here will remove it
+				// we will then continue to try to find a new one right afterward
+			}
+			removeSFVInfo();
 		} catch (KeyNotFoundException e1) {
 			// bah, let's load it
+		} catch (ObjectNotValidException e) {
+			// the previous sfv file is not longer of type VirtualFileSystemFile
+			removeSFVInfo();
 		}
 
 		for (FileHandle file : getFiles()) {
@@ -81,6 +97,10 @@ public class DirectoryHandle extends InodeHandle implements
 		throw new FileNotFoundException("No SFV file in directory");
 	}
 	
+	private void removeSFVInfo() throws FileNotFoundException {
+		getInode().removeSFVInfo();
+	}
+
 	private void setSFVInfo(SFVInfo info) throws FileNotFoundException {
 		getInode().setSFVInfo(info);
 	}
