@@ -26,10 +26,10 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
 import org.drftpd.slave.Connection;
+import org.drftpd.util.PortRange;
 
 /**
  * @author mog

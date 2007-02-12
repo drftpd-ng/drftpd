@@ -31,10 +31,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.vfs.CaseInsensitiveTreeMap;
 

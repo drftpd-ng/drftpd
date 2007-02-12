@@ -21,10 +21,10 @@ import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.drftpd.PropertyHelper;
 import org.drftpd.Time;
+import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;

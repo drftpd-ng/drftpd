@@ -24,10 +24,10 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.Bytes;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.SlaveStatus;

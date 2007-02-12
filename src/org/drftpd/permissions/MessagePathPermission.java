@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.drftpd.commands.Reply;
+import org.drftpd.commandmanager.Reply;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**

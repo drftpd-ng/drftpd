@@ -24,12 +24,17 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commandmanager.CommandHandler;
+import org.drftpd.commandmanager.CommandHandlerFactory;
+import org.drftpd.commandmanager.CommandManager;
+import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.ImproperUsageException;
+import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;

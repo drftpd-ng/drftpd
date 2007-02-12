@@ -19,16 +19,19 @@ package org.drftpd.commands;
 
 import junit.framework.TestCase;
 
-import net.sf.drftpd.master.FtpRequest;
 
 import org.apache.log4j.BasicConfigurator;
 
 
+import org.drftpd.commandmanager.ImproperUsageException;
+import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.ReplyException;
 import org.drftpd.tests.DummyBaseFtpConnection;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 import org.drftpd.tests.DummyUserManager;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.FtpRequest;
 
 import java.util.ArrayList;
 

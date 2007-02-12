@@ -26,11 +26,11 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.TimerTask;
 
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
 
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
+import org.drftpd.event.Event;
+import org.drftpd.event.FtpListener;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;

@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
-import net.sf.drftpd.mirroring.Job;
 
 import org.apache.log4j.Logger;
+import org.drftpd.jobmanager.Job;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.sections.SectionInterface;
 

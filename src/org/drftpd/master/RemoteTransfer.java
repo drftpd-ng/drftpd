@@ -20,8 +20,8 @@ package org.drftpd.master;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import net.sf.drftpd.SlaveUnavailableException;
 
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.Transfer;

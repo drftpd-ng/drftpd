@@ -25,9 +25,9 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.FatalException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;

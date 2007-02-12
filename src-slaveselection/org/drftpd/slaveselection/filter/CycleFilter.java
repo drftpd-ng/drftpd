@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;

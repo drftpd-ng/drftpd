@@ -43,12 +43,11 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.StringTokenizer;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -57,6 +56,7 @@ import org.drftpd.PassiveConnection;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SFVInfo;
 import org.drftpd.SSLGetContext;
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.id3.MP3File;
 import org.drftpd.master.QueuedOperation;
@@ -73,11 +73,10 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.util.PortRange;
 
 import se.mog.io.File;
 import se.mog.io.PermissionDeniedException;
-
-import com.Ostermiller.util.StringTokenizer;
 
 /**
  * @author mog

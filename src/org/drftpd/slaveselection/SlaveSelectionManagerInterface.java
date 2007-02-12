@@ -21,11 +21,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.jobmanager.Job;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.InodeHandle;
 

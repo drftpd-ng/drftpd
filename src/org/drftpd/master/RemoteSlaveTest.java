@@ -23,11 +23,11 @@ import java.util.HashSet;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.event.Event;
+import org.drftpd.exceptions.SlaveFileException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;

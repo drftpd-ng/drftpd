@@ -26,15 +26,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.NoSFVEntryException;
-import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.SFVInfo;
 import org.drftpd.SFVStatus;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.NoSFVEntryException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.RemoteIOException;

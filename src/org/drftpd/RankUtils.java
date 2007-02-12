@@ -25,9 +25,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import net.sf.drftpd.master.GroupPosition;
-import net.sf.drftpd.master.UploaderPosition;
 
+import org.drftpd.util.GroupPosition;
+import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.FileHandle;
 
 /**

@@ -20,11 +20,11 @@ package org.drftpd.tests;
 import java.io.IOException;
 import java.io.StringReader;
 
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.util.PortRange;
 
 import org.drftpd.commands.UserManagement;
+import org.drftpd.master.config.FtpConfig;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 
 public class DummyFtpConfig extends FtpConfig {

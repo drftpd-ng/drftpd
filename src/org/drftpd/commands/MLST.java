@@ -25,11 +25,15 @@ import java.io.Writer;
 import java.net.Socket;
 import java.util.List;
 
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commandmanager.CommandHandler;
+import org.drftpd.commandmanager.CommandHandlerFactory;
+import org.drftpd.commandmanager.CommandManager;
+import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandleInterface;
 import org.drftpd.vfs.ListUtils;

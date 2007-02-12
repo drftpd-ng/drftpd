@@ -29,10 +29,10 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.PassiveConnection;
+import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.AddAsciiOutputStream;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;

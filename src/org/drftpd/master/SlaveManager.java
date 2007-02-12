@@ -41,17 +41,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.net.ssl.SSLSocket;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.master.config.FtpConfig;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
+import org.drftpd.exceptions.FatalException;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SlaveFileException;
+import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.config.FtpConfig;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;

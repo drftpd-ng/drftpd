@@ -25,13 +25,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.exceptions.DuplicateElementException;
+import org.drftpd.exceptions.FileExistsException;
 
 import se.mog.io.PermissionDeniedException;
 

@@ -21,10 +21,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 
 /**

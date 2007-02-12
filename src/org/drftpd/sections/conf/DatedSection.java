@@ -28,11 +28,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 
-import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;

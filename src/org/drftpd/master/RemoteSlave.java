@@ -43,10 +43,6 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.SlaveUnavailableException;
-import net.sf.drftpd.event.SlaveEvent;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -54,6 +50,10 @@ import org.drftpd.GlobalContext;
 import org.drftpd.SFVInfo;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.event.SlaveEvent;
+import org.drftpd.exceptions.DuplicateElementException;
+import org.drftpd.exceptions.FatalException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.slave.ConnectInfo;

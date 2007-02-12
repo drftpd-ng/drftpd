@@ -22,11 +22,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.drftpd.master.BaseFtpConnection;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.Reply;
+import org.drftpd.commandmanager.Reply;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.slave.LightRemoteInode;
 import org.tanesha.replacer.ReplacerEnvironment;
 

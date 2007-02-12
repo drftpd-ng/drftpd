@@ -29,10 +29,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.exceptions.ObjectNotFoundException;
 
 import org.drftpd.stats.StatsInterface;
 import org.drftpd.master.RemoteTransfer;

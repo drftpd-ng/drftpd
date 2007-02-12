@@ -24,11 +24,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.mirroring.Job;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.jobmanager.Job;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.slave.Transfer;

@@ -18,10 +18,10 @@ package org.drftpd.usermanager;
 
 import java.util.List;
 
-import net.sf.drftpd.DuplicateElementException;
 
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
+import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.stats.ExtendedTimedStats;
 
 /**

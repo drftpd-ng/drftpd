@@ -26,28 +26,28 @@ import java.util.Timer;
 
 import javax.net.ssl.SSLContext;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.MessageEvent;
-import net.sf.drftpd.master.SlaveFileException;
-import net.sf.drftpd.master.config.ConfigInterface;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.master.config.ZipscriptConfig;
-import net.sf.drftpd.mirroring.JobManager;
-import net.sf.drftpd.util.PortRange;
 
 import org.apache.log4j.Logger;
+import org.drftpd.event.Event;
+import org.drftpd.event.FtpListener;
+import org.drftpd.event.MessageEvent;
+import org.drftpd.exceptions.FatalException;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SlaveFileException;
+import org.drftpd.jobmanager.JobManager;
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.master.config.ConfigInterface;
+import org.drftpd.master.config.FtpConfig;
+import org.drftpd.master.config.ZipscriptConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
+import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 

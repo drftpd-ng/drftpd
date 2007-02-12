@@ -21,11 +21,11 @@ import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import net.sf.drftpd.FileExistsException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.Commitable;
 

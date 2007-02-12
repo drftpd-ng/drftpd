@@ -19,8 +19,8 @@ package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
 
-import net.sf.drftpd.NoAvailableSlaveException;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;

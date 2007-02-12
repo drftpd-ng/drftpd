@@ -19,11 +19,11 @@ package org.drftpd.vfs;
 import java.io.FileNotFoundException;
 import java.util.Set;
 
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 

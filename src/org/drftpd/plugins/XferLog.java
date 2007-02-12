@@ -27,11 +27,11 @@ import java.util.Date;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
+import org.drftpd.event.Event;
+import org.drftpd.event.FtpListener;
+import org.drftpd.event.TransferEvent;
+import org.drftpd.exceptions.FatalException;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.TransferEvent;
 
 
 /**

@@ -28,15 +28,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.commands.Reply;
+import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.Reply;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.event.Event;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;

@@ -22,9 +22,9 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.apache.log4j.BasicConfigurator;
+import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;

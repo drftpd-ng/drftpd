@@ -26,13 +26,13 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.mirroring.Job;
-import net.sf.drftpd.mirroring.JobManager;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.jobmanager.Job;
+import org.drftpd.jobmanager.JobManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.mirroring.archivetypes.IncompleteDirectoryException;
 import org.drftpd.mirroring.archivetypes.OfflineSlaveException;

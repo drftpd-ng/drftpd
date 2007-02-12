@@ -20,14 +20,14 @@ package org.drftpd.plugins;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import net.sf.drftpd.event.UserEvent;
-import net.sf.drftpd.util.CalendarUtils;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
 import org.drftpd.Bytes;
+import org.drftpd.event.UserEvent;
 import org.drftpd.tests.DummyUser;
+import org.drftpd.util.CalendarUtils;
 
 import java.util.Calendar;
 import java.util.Locale;

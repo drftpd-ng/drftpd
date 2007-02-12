@@ -17,11 +17,11 @@
  */
 package org.drftpd.plugins;
 
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.FtpListener;
-import net.sf.drftpd.event.UserEvent;
 
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.event.Event;
+import org.drftpd.event.FtpListener;
+import org.drftpd.event.UserEvent;
 
 
 /**

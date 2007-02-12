@@ -21,10 +21,14 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
 
+import org.drftpd.commandmanager.CommandHandler;
+import org.drftpd.commandmanager.CommandHandlerFactory;
+import org.drftpd.commandmanager.CommandManager;
+import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.conf.DatedSection;
 import org.tanesha.replacer.ReplacerEnvironment;

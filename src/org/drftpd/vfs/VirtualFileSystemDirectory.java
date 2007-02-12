@@ -32,8 +32,8 @@ import java.util.TreeMap;
 
 import org.drftpd.SFVInfo;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.exceptions.FileExistsException;
 
-import net.sf.drftpd.FileExistsException;
 
 /**
  * Lowest representation of a directory.<br>

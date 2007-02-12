@@ -20,14 +20,18 @@ package org.drftpd.commands;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.event.DirectoryFtpEvent;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commandmanager.CommandHandler;
+import org.drftpd.commandmanager.CommandHandlerFactory;
+import org.drftpd.commandmanager.CommandManager;
+import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.UnhandledCommandException;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.event.DirectoryFtpEvent;
+import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.vfs.DirectoryHandle;
 

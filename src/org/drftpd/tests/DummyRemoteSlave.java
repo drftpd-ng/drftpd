@@ -6,9 +6,9 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import net.sf.drftpd.SlaveUnavailableException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;

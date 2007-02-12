@@ -19,9 +19,9 @@ package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
 
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.RemoteSlave;
 
-import net.sf.drftpd.FileExistsException;
 
 /**
  * Lowest level of DirectoryHandles.<br>

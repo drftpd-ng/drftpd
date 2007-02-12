@@ -24,13 +24,13 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.SlaveFileException;
 
 import org.apache.log4j.BasicConfigurator;
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.sections.def.SectionManager;

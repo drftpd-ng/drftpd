@@ -26,9 +26,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.slave.DiskStatus;

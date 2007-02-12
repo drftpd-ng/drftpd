@@ -25,10 +25,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
-import net.sf.drftpd.FatalException;
-import net.sf.drftpd.NoAvailableSlaveException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.FatalException;
+import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;

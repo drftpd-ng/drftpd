@@ -20,11 +20,11 @@ package org.drftpd.slaveselection.filter;
 import java.net.InetAddress;
 import java.util.Properties;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.mirroring.Job;
-import net.sf.drftpd.mirroring.JobManager;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.jobmanager.Job;
+import org.drftpd.jobmanager.JobManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;

@@ -21,14 +21,14 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import net.sf.drftpd.DuplicateElementException;
-import net.sf.drftpd.event.UserEvent;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
+import org.drftpd.event.UserEvent;
+import org.drftpd.exceptions.DuplicateElementException;
 
 /**
  * Implements basic functionality for the User interface.

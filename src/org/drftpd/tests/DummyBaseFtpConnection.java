@@ -27,16 +27,16 @@ import java.net.Socket;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
-import net.sf.drftpd.FileExistsException;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.plugins.DataConnectionHandler;
 
 import org.apache.log4j.Logger;
+import org.drftpd.commandmanager.CommandManager;
+import org.drftpd.commands.DataConnectionHandler;
+import org.drftpd.event.Event;
+import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.DirectoryHandle;
 
 

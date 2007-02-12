@@ -24,23 +24,26 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
-import net.sf.drftpd.master.BaseFtpConnection;
-import net.sf.drftpd.master.FtpRequest;
-import net.sf.drftpd.master.command.CommandManager;
-import net.sf.drftpd.master.command.CommandManagerFactory;
-import net.sf.drftpd.master.command.plugins.Textoutput;
-import net.sf.drftpd.master.config.FtpConfig;
-import net.sf.drftpd.util.UserComparator;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
+import org.drftpd.commandmanager.CommandHandler;
+import org.drftpd.commandmanager.CommandHandlerFactory;
+import org.drftpd.commandmanager.CommandManager;
+import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Trial;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
+import org.drftpd.util.FtpRequest;
+import org.drftpd.util.UserComparator;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 

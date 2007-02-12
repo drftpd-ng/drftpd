@@ -23,10 +23,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.SlaveUnavailableException;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 
 /**

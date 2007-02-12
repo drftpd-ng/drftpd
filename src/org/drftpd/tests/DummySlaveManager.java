@@ -20,10 +20,10 @@ package org.drftpd.tests;
 import java.util.Collection;
 import java.util.HashMap;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 

@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.drftpd.NoAvailableSlaveException;
-import net.sf.drftpd.SlaveUnavailableException;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.FileHandle;
 

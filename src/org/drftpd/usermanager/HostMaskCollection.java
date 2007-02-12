@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-import net.sf.drftpd.DuplicateElementException;
 
 import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.exceptions.DuplicateElementException;
 
 import socks.server.Ident;
 

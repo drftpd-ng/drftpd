@@ -22,11 +22,11 @@ import java.util.Calendar;
 import java.util.Iterator;
 
 import junit.framework.TestCase;
-import net.sf.drftpd.event.Event;
-import net.sf.drftpd.event.UserEvent;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
+import org.drftpd.event.Event;
+import org.drftpd.event.UserEvent;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyUser;
 

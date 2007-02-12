@@ -22,10 +22,10 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import net.sf.drftpd.ObjectNotFoundException;
-import net.sf.drftpd.master.SlaveFileException;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.tests.DummyGlobalContext;
