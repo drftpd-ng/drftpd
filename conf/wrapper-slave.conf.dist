@@ -4,6 +4,9 @@
 # Java Application
 wrapper.java.command=java
 
+# Working Dir
+wrapper.working.dir=../
+
 # Java Main class.  This class must implement the WrapperListener interface
 #  or guarantee that the WrapperManager class is initialized.  Helper
 #  classes are provided to do this for you.  See the Integration section
@@ -13,9 +16,10 @@ wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 # Java Classpath (include wrapper.jar)  Add class path elements as
 #  needed starting from 1
 wrapper.java.classpath.1=lib/wrapper.jar
-wrapper.java.classpath.2=lib/log4j-1.2.8.jar
-wrapper.java.classpath.3=lib/slave.jar
-wrapper.java.classpath.4=lib/oro.jar
+wrapper.java.classpath.2=lib/jpf.jar
+wrapper.java.classpath.3=lib/jpf-boot.jar
+wrapper.java.classpath.4=lib/commons-logging-1.1.jar
+wrapper.java.classpath.5=lib/log4j-1.2.14.jar
 
 #URLBootStrap (more options further down, need to comment out item 3 above)
 #wrapper.java.classpath.3=classes/
@@ -27,7 +31,7 @@ wrapper.java.library.path.1=lib
 
 # Java Additional Parameters
 wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-default.properties
-
+wrapper.java.additional.2=-Djpf.boot.config=conf/boot-slave.properties
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=3
@@ -36,7 +40,7 @@ wrapper.java.initmemory=3
 wrapper.java.maxmemory=128
 
 # Application parameters.  Add parameters as needed starting from 1
-wrapper.app.parameter.1=org.drftpd.slave.Slave
+wrapper.app.parameter.1=org.java.plugin.boot.Boot
 
 #BootStrap for Slaves! (need to comment out information above)
 #wrapper.app.parameter.1=org.drftpd.bootstrap.URLBootStrap
