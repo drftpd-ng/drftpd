@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="DRFTPD Trunk Plugin Branch" default="help" basedir=".">
+<project name="DRFTPD Trunk Plugin Branch" default="build" basedir=".">
 	<property name="app.name" value="drftpd" />
 	<property name="app.version" value="2.1.0" />
 
@@ -29,12 +29,14 @@ check - checks plug-ins integrity
 			<format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
 			<format property="d-stamp" pattern="yyyy-MM-dd" />
 		</tstamp>
+		<delete dir="${basedir}/common" quiet="true" />
 		<delete dir="${basedir}/plugins" quiet="true" />
 		<delete dir="${basedir}/slave" quiet="true" />
 		<delete dir="${basedir}/master" quiet="true" />
 	</target>
 
 	<target name="-build-plugins">
+		<ant dir="src/common" target="${target}" />
 		<ant dir="src/slave" target="${target}" />
 		<ant dir="src/master" target="${target}" />
 	</target>
@@ -46,19 +48,23 @@ check - checks plug-ins integrity
 	</target>
 
 	<target name="check"
-	        depends="build"
-	        description="Checks plug-ins integrity">
+		depends="build"
+		description="Checks plug-ins integrity">
+		<jpf-check basedir="${basedir}/src/common"
+					includes="plugin.xml"
+					verbose="true"
+					usepathresolver="true" />
 		<jpf-check basedir="${basedir}/src/master"
-		           includes="plugin.xml"
-		           verbose="true"
-		           usepathresolver="true" />
+			includes="plugin.xml"
+			verbose="true"
+			usepathresolver="true" />
 		<jpf-check basedir="${basedir}/src/slave"
-		           includes="plugin.xml"
-		           verbose="true"
-		           usepathresolver="true" />
+			includes="plugin.xml"
+			verbose="true"
+			usepathresolver="true" />
 		<jpf-check basedir="${basedir}/src/plugins"
-		           includes="*/plugin.xml,*/plugin-fragment.xml"
-		           verbose="true"
-		           usepathresolver="true" />
+			includes="*/plugin.xml,*/plugin-fragment.xml"
+			verbose="true"
+			usepathresolver="true" />
 	</target>
 </project>

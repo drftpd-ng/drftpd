@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="master" version="2.1.0" class="org.drftpd.master.Boot">
+	<requires>
+		<import plugin-id="common" />
+		<import plugin-id="slave" />
+	</requires>
+	<runtime>
+		<library id="master" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="oro" path="../lib/oro.jar" type="code">
+		</library>
+		<library id="replacer" path="../lib/replacer.jar" type="code">
+		</library>
+		<library id="log4j" path="../lib/log4j-1.2.14.jar" type="code">
+		</library>
+	</runtime>
+</plugin>
