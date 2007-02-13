@@ -349,6 +349,14 @@ public class GlobalContext {
 		addTimeEvent(getUserManager());
 
 		try {
+			_sslContext = SSLGetContext.getSSLContext();
+		} catch (IOException e) {
+			logger.warn("Couldn't load SSLContext, SSL/TLS disabled - " + e.getMessage());
+		} catch (Exception e) {
+			logger.warn("Couldn't load SSLContext, SSL/TLS disabled", e);
+		}
+
+		try {
 			loadSlaveManager(getConfig().getProperties());
 		} catch (SlaveFileException e) {
 			throw new RuntimeException(e);
@@ -359,14 +367,6 @@ public class GlobalContext {
 		loadSlaveSelectionManager(getConfig().getProperties());
 		loadSectionManager(getConfig().getProperties());
 		loadPlugins(getConfig().getProperties());
-		
-		try {
-			_sslContext = SSLGetContext.getSSLContext();
-		} catch (IOException e) {
-			logger.warn("Couldn't load SSLContext, SSL/TLS disabled - " + e.getMessage());
-		} catch (Exception e) {
-			logger.warn("Couldn't load SSLContext, SSL/TLS disabled", e);
-		}
 	}
 
 	/**
