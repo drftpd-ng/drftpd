@@ -34,13 +34,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.net.ssl.SSLSocket;
-
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -55,7 +55,6 @@ import org.drftpd.master.config.FtpConfig;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
@@ -75,9 +74,7 @@ public class SlaveManager implements Runnable {
 	protected static final int actualTimeout = 60000; // one minute, evaluated
 														// on a SocketTimeout
 	
-	//protected List<RemoteSlave> _rslaves = new ArrayList<RemoteSlave>();
-	
-	protected HashMap<String,RemoteSlave> _rslaves = new HashMap<String,RemoteSlave>();
+	protected Map<String,RemoteSlave> _rslaves = Collections.synchronizedMap(new HashMap<String,RemoteSlave>());
 
 	private int _port;
 
@@ -204,7 +201,7 @@ public class SlaveManager implements Runnable {
 			rslave = getRemoteSlave(slaveName);
 			getSlaveFile(rslave.getName()).delete();
 			rslave.setOffline("Slave has been deleted");
-			_rslaves.remove(rslave);
+			_rslaves.remove(slaveName);
 			getGlobalContext().getRoot().removeSlave(rslave);
 		} catch (ObjectNotFoundException e) {
 			throw new IllegalArgumentException("Slave not found");
