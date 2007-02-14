@@ -96,12 +96,14 @@ public class CommitManager {
 	static class CommitHandler implements Runnable {
 
 		private CommitHandler() {
-			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
-			Thread.currentThread().setContextClassLoader(loader);
+
 		}
 
 		public void run() {
+			PluginManager manager = PluginManager.lookup(this);
+			PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
+			Thread.currentThread().setContextClassLoader(loader);
+			Thread.currentThread().setName("CommitHandler");
 			while(true) {
 				processAll(_commitInode);
 				processAll(_commitSlave);
