@@ -37,7 +37,7 @@ import org.drftpd.vfs.FileHandle;
 
 /**
  * @author zubov
- * @version $Id: TransferState.java 1610 2007-02-05 17:49:22Z fr0w $
+ * @version $Id$
  */
 public class TransferState {
 	
