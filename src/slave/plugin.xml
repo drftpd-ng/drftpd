@@ -8,7 +8,7 @@
 		<library id="slave" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="oro" path="../lib/oro.jar" type="code">
+		<library id="oro" path="../../lib/oro.jar" type="code">
 		</library>
 	</runtime>
 </plugin>

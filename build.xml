@@ -29,10 +29,8 @@ check - checks plug-ins integrity
 			<format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
 			<format property="d-stamp" pattern="yyyy-MM-dd" />
 		</tstamp>
-		<delete dir="${basedir}/common" quiet="true" />
+		<delete dir="${basedir}/core" quiet="true" />
 		<delete dir="${basedir}/plugins" quiet="true" />
-		<delete dir="${basedir}/slave" quiet="true" />
-		<delete dir="${basedir}/master" quiet="true" />
 	</target>
 
 	<target name="-build-plugins">

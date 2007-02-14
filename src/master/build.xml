@@ -6,7 +6,7 @@
 		propertyid="plugin.id"
 		propertyversion="plugin.version" />
 	<property name="plugin.home"
-		value="${basedir}/../../${plugin.id}" />
+		value="${basedir}/../../core/${plugin.id}" />
 	<path id="plugin.classpath">
 		<fileset dir="${basedir}/../../lib">
 			<include name="*.jar" />
