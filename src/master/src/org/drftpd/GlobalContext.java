@@ -20,6 +20,7 @@ package org.drftpd;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
@@ -50,6 +51,9 @@ import org.drftpd.usermanager.UserManager;
 import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
+import org.java.plugin.PluginManager;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @author mog
@@ -257,15 +261,42 @@ public class GlobalContext {
 	}
 
 	protected void loadUserManager(Properties cfg) {
-		try {
-			_usermanager = (AbstractUserManager) Class.forName(
-					PropertyHelper.getProperty(cfg, "master.usermanager"))
-					.newInstance();
-			_usermanager.init();
-		} catch (Exception e) {
-			throw new FatalException(
-					"Cannot create instance of usermanager, check master.usermanager in config file",
-					e);
+		//	Find the desired user manager plugin and initialise it
+		
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint umExtPoint = 
+			manager.getRegistry().getExtensionPoint( 
+					"master", "UserManager");
+		
+		/*	Iterate over all extensions that have been connected to the
+			UserManager extension point and init the desired one */
+
+		String desiredUm = PropertyHelper.getProperty(cfg, "master.usermanager");
+		
+		for (Iterator uManagers = umExtPoint.getConnectedExtensions().iterator();
+			uManagers.hasNext();) { 
+
+			Extension um = (Extension) uManagers.next(); 
+
+			try {
+				if (um.getDeclaringPluginDescriptor().getId().equals(desiredUm)) {
+					manager.activatePlugin(desiredUm);
+					ClassLoader umLoader = manager.getPluginClassLoader( 
+							um.getDeclaringPluginDescriptor());
+					Class umCls = umLoader.loadClass( 
+							um.getParameter("class").valueAsString());
+					_usermanager = (AbstractUserManager) umCls.newInstance();
+					_usermanager.init();
+				}
+			}
+			catch (Exception e) {
+				throw new FatalException(
+						"Cannot create instance of usermanager, check master.usermanager in config file",
+						e);
+			}
+		}
+		if (_usermanager == null) {
+			logger.fatal("Usermanager plugin not found, check master.usermanager in config file");
 		}
 	}
 

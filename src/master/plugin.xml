@@ -16,4 +16,7 @@
 		<library id="log4j" path="../../lib/log4j-1.2.14.jar" type="code">
 		</library>
 	</runtime>
+	<extension-point id="UserManager">
+		<parameter-def id="class" />
+	</extension-point>
 </plugin>

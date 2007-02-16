@@ -37,6 +37,7 @@ check - checks plug-ins integrity
 		<ant dir="src/common" target="${target}" />
 		<ant dir="src/slave" target="${target}" />
 		<ant dir="src/master" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.usermanager.javabeans" target="${target}" />
 	</target>
 
 	<target name="build" description="Builds entire project">
