@@ -16,6 +16,7 @@
  */
 package org.drftpd.usermanager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -415,4 +416,5 @@ public abstract class AbstractUser extends User {
 	public void setMaxSimDown(int maxSimDown) {
 		getKeyedMap().setObject(UserManagement.MAXSIMDN, maxSimDown);
 	}
+	public abstract void writeToDisk() throws IOException;
 }

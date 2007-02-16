@@ -1,5 +1,6 @@
 package org.drftpd.tests;
 
+import java.io.IOException;
 import java.util.Date;
 
 import org.drftpd.commands.UserManagement;
@@ -70,5 +71,8 @@ public class DummyUser extends AbstractUser {
 
     public AbstractUserManager getAbstractUserManager() {
         return _userManager;
+    }
+    public void writeToDisk() throws IOException {
+
     }
 }
