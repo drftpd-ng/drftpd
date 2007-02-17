@@ -2,7 +2,6 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.usermanager.javabeans" version="2.1.0">
 	<requires>
-		<import plugin-id="common"/>
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
