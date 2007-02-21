@@ -1,0 +1,24 @@
+AUTH=org.drftpd.commands.dataconnection.DataConnectionHandler.doAUTH
+CPSV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
+PROT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPROT
+PBSZ=org.drftpd.commands.dataconnection.DataConnectionHandler.doPBSZ
+MODE=org.drftpd.commands.dataconnection.DataConnectionHandler.doMODE
+PASV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
+PORT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPORT
+PRET=org.drftpd.commands.dataconnection.DataConnectionHandler.doPRET
+SSCN=org.drftpd.commands.dataconnection.DataConnectionHandler.doSSCN
+STRU=org.drftpd.commands.dataconnection.DataConnectionHandler.doSTRU
+SYST=org.drftpd.commands.dataconnection.DataConnectionHandler.doSYST
+TYPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doTYPE
+RETR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
+REST=org.drftpd.commands.dataconnection.DataConnectionHandler.doREST
+#SITE\ RESCAN=org.drftpd.commands.DataConnectionHandler
+SITE\ XDUPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doSITE_XDUPE
+STOR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
+#EPSV=org.drftpd.commands.DataConnectionHandler
+#EPRT=org.drftpd.commands.DataConnectionHandler
+
+IDNT=org.drftpd.commands.login.LoginHandler.doIDNT
+USER=org.drftpd.commands.login.LoginHandler.doUSER
+PASS=org.drftpd.commands.login.LoginHandler.doPASS
+QUIT=org.drftpd.commands.login.LoginHandler.doQUIT
