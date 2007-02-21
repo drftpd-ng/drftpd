@@ -31,6 +31,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,21 +39,21 @@ import java.util.Map;
 import javax.net.ssl.SSLSocket;
 
 
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.Reply;
-import org.drftpd.commandmanager.ReplyException;
+import org.drftpd.commandmanager.CommandManagerInterface;
+import org.drftpd.commandmanager.CommandRequestInterface;
+import org.drftpd.commandmanager.CommandResponseInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.ConnectionEvent;
 import org.drftpd.io.AddAsciiOutputStream;
+import org.drftpd.master.config.FtpConfig;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -88,7 +89,7 @@ public class BaseFtpConnection implements Runnable {
 	protected boolean _authenticated = false;
 
 	// protected ConnectionManager _cm;
-	private CommandManager _commandManager;
+	private CommandManagerInterface _commandManager;
 
 	protected Socket _controlSocket;
 	
@@ -137,13 +138,17 @@ public class BaseFtpConnection implements Runnable {
 	protected Thread _thread;
 
 	protected String _user;
+	
+	private Hashtable<String,String> _cmds;
 
 	protected BaseFtpConnection() {
 	}
 
 	public BaseFtpConnection(Socket soc) throws IOException {
+		_cmds = FtpConfig.getFtpConfig().getFtpCommands();
 		_commandManager = getGlobalContext().getConnectionManager()
-				.getCommandManagerFactory().initialize(this);
+				.getCommandManager();
+		_commandManager.initialize(FtpConfig.getFtpConfig().getFtpCommandsList());
 		setControlSocket(soc);
 		_lastActive = System.currentTimeMillis();
 		setCurrentDirectory(getGlobalContext().getRoot());
@@ -215,10 +220,6 @@ public class BaseFtpConnection implements Runnable {
 	 */
 	public InetAddress getClientAddress() {
 		return _controlSocket.getInetAddress();
-	}
-
-	public CommandManager getCommandManager() {
-		return _commandManager;
 	}
 
 	public GlobalContext getGlobalContext() {
@@ -386,7 +387,7 @@ public class BaseFtpConnection implements Runnable {
 			if (GlobalContext.getGlobalContext().isShutdown()) {
 				stop(GlobalContext.getGlobalContext().getShutdownMessage());
 			} else {
-				Reply response = new Reply(220, GlobalContext
+				FtpReply response = new FtpReply(220, GlobalContext
 						.getGlobalContext().getConfig().getLoginPrompt());
 				_out.print(response);
 			}
@@ -446,7 +447,7 @@ public class BaseFtpConnection implements Runnable {
 				}
 
 				if (!hasPermission(_request)) {
-					_out.print(Reply.RESPONSE_530_NOT_LOGGED_IN);
+					_out.print(new FtpReply(530,"Not logged in."));
 
 					continue;
 				}
@@ -459,7 +460,7 @@ public class BaseFtpConnection implements Runnable {
 			}
 
 			if (_stopRequestMessage != null) {
-				_out.print(new Reply(421, _stopRequestMessage));
+				_out.print(new FtpReply(421, _stopRequestMessage));
 			} else {
 				_out.println("421 Connection closing");
 			}
@@ -496,7 +497,7 @@ public class BaseFtpConnection implements Runnable {
 	/**
 	 * Execute the ftp command.
 	 */
-	public void service(FtpRequest request, PrintWriter out) throws IOException {
+	/*public void service(FtpRequest request, PrintWriter out) throws IOException {
 		Reply reply;
 
 		try {
@@ -519,6 +520,18 @@ public class BaseFtpConnection implements Runnable {
 
 		if (reply != null) {
 			out.print(reply);
+		}
+	}*/
+	public void service(FtpRequest ftpRequest, PrintWriter out) {
+		CommandRequestInterface cmdRequest = _commandManager
+				.newRequest(ftpRequest.getArgument(), _cmds.get(ftpRequest.getCommand()),
+						_currentDirectory, _user, this, ftpRequest.getCommand());
+		CommandResponseInterface cmdResponse = _commandManager
+				.execute(cmdRequest);
+		if (cmdResponse != null) {
+			_currentDirectory = cmdResponse.getCurrentDirectory();
+			_user = cmdResponse.getUser();
+			out.print(new FtpReply(cmdResponse));
 		}
 	}
 

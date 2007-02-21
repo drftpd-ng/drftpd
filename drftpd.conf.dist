@@ -15,6 +15,9 @@ master.slaveSSL=false
 #User manager to use, leave it for now
 master.usermanager=org.drftpd.usermanager.javabeans
 
+#Command manager to use, leave it for now
+master.commandmanager=org.drftpd.commandmanager
+
 #loaded plugins must use in sequential numbering
 #plugins.1=org.drftpd.plugins.SiteBotSSL
 #plugins.2=org.drftpd.plugins.Trial

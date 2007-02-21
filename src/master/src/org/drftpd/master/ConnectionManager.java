@@ -32,13 +32,17 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.commandmanager.CommandManagerFactory;
-import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.event.Event;
+import org.drftpd.exceptions.FatalException;
+import org.drftpd.master.FtpReply;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+import org.java.plugin.PluginManager;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @version $Id$
@@ -46,8 +50,6 @@ import org.drftpd.usermanager.User;
 public class ConnectionManager {
 	private static final Logger logger = Logger
 			.getLogger(ConnectionManager.class.getName());
-
-	private CommandManagerFactory _commandManagerFactory;
 
 	private static ConnectionManager _connectionManager = null;
 
@@ -60,7 +62,6 @@ public class ConnectionManager {
 	 *
 	 */
 	protected ConnectionManager() {
-		_commandManagerFactory = new CommandManagerFactory();
 
 		// getGlobalContext().addFtpListener(new RaceStatistics());
 		// getGlobalContext().addFtpListener(new Statistics());
@@ -170,7 +171,7 @@ public class ConnectionManager {
 		}
 	}
 
-	public Reply canLogin(BaseFtpConnection baseconn, User user) {
+	public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
 		int count = getGlobalContext().getConfig().getMaxUsersTotal();
 
 		// Math.max if the integer wraps
@@ -181,7 +182,7 @@ public class ConnectionManager {
 
 		// not >= because baseconn is already included
 		if (_conns.size() > count) {
-			return new Reply(550, "The site is full, try again later.");
+			return new FtpReply(550, "The site is full, try again later.");
 		}
 
 		int userCount = 0;
@@ -212,7 +213,7 @@ public class ConnectionManager {
 
 		if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) > 0) {
 			if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) <= userCount) {
-				return new Reply(530, "Sorry, your account is restricted to "
+				return new FtpReply(530, "Sorry, your account is restricted to "
 						+ user.getKeyedMap().getObjectInt(
 								UserManagement.MAXLOGINS)
 						+ " simultaneous logins.");
@@ -220,7 +221,7 @@ public class ConnectionManager {
 		}
 		if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) > 0) {
 			if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) <= ipCount) {
-				return new Reply(530,
+				return new FtpReply(530,
 						"Sorry, your maximum number of connections from this IP ("
 								+ user.getKeyedMap().getObjectInt(
 										UserManagement.MAXLOGINSIP)
@@ -230,7 +231,7 @@ public class ConnectionManager {
 
 		if (user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME).getTime() > System
 				.currentTimeMillis()) {
-			return new Reply(530, "Sorry you are banned until "
+			return new FtpReply(530, "Sorry you are banned until "
 					+ user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME)
 					+ "! ("
 					+ user.getKeyedMap().getObjectString(
@@ -240,11 +241,11 @@ public class ConnectionManager {
 		if (!baseconn.isSecure()
 				&& getGlobalContext().getConfig().checkPermission(
 						"userrejectinsecure", user)) {
-			return new Reply(530, "USE SECURE CONNECTION");
+			return new FtpReply(530, "USE SECURE CONNECTION");
 		} else if (baseconn.isSecure()
 				&& getGlobalContext().getConfig().checkPermission(
 						"userrejectsecure", user)) {
-			return new Reply(530, "USE INSECURE CONNECTION");
+			return new FtpReply(530, "USE INSECURE CONNECTION");
 		}
 
 		return null; // everything passed
@@ -254,8 +255,52 @@ public class ConnectionManager {
 		getGlobalContext().dispatchFtpEvent(event);
 	}
 
-	public CommandManagerFactory getCommandManagerFactory() {
-		return _commandManagerFactory;
+	public CommandManagerInterface getCommandManager() {
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint cmExtPoint = 
+			manager.getRegistry().getExtensionPoint( 
+					"master", "CommandManager");
+		
+		/*	Iterate over all extensions that have been connected to the
+			CommandManager extension point and return the desired one */
+
+		Properties cfg = getGlobalContext().getConfig().getProperties();
+
+		Class<?> cmCls = null;
+
+		String desiredCm = PropertyHelper.getProperty(cfg, "master.commandmanager");
+		
+		for (Iterator cManagers = cmExtPoint.getConnectedExtensions().iterator();
+			cManagers.hasNext();) { 
+
+			Extension cm = (Extension) cManagers.next(); 
+
+			try {
+				if (cm.getDeclaringPluginDescriptor().getId().equals(desiredCm)) {
+					// If plugin isn't already activated then activate it
+					if (!manager.isPluginActivated(cm.getDeclaringPluginDescriptor())) {
+						manager.activatePlugin(cm.getDeclaringPluginDescriptor().getId());
+					}
+					ClassLoader cmLoader = manager.getPluginClassLoader( 
+							cm.getDeclaringPluginDescriptor());
+					cmCls = cmLoader.loadClass( 
+							cm.getParameter("class").valueAsString());
+				}
+			}
+			catch (Exception e) {
+				throw new FatalException(
+						"Cannot create instance of commandmanager, check master.commandmanager in config file",
+						e);
+			}
+		}
+		try {
+			return (CommandManagerInterface) cmCls.newInstance();
+		}
+		catch (Exception e) {
+			throw new FatalException(
+					"Cannot create instance of commandmanager, check master.commandmanager in config file",
+					e);
+		}
 	}
 
 	/**

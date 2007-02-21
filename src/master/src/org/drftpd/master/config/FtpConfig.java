@@ -30,6 +30,7 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -41,6 +42,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.Reply;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.exceptions.FatalException;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.MessagePathPermission;
 import org.drftpd.permissions.PathPermission;
@@ -99,9 +101,15 @@ public class FtpConfig extends Observable implements ConfigInterface {
 
 	private boolean _useFileNames = false;
 
+	private static final String cmdConf = "conf/ftpcommands.conf";
+
 	private static final String newConf = "conf/perms.conf";
 
 	private static final String oldConf = "drftpd.conf";
+
+	private Hashtable<String, String> _cmds;
+
+	private ArrayList<String> _cmdsList;
 
 	protected PortRange _portRange;
 
@@ -325,6 +333,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
 			loadConfig1();
 			fr = new FileReader(newConf);
 			loadConfig2(fr);
+			loadFtpCommands();
 		} finally {
 			if (fis != null) {
 				fis.close();
@@ -473,6 +482,59 @@ public class FtpConfig extends Observable implements ConfigInterface {
 			// default portrange if none specified
 			_portRange = new PortRange(0);
 		}
+	}
+
+	private void loadFtpCommands() {
+		Hashtable<String, String> cmds = new Hashtable<String, String>();
+		ArrayList<String> cmdsList = new ArrayList<String>();
+		Properties props = new Properties();
+        FileInputStream stream = null;
+        try {
+        	stream = new FileInputStream(cmdConf); 
+            props.load(stream);
+		} catch (IOException e) {
+			throw new FatalException("Error loading "+cmdConf, e);
+		} finally {
+	    	if(stream != null) {
+	    		try {
+					stream.close();
+				} catch (IOException e) {
+				}
+	    	}
+	    }
+
+		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
+			try {
+				Map.Entry entry = (Map.Entry) iter.next();
+
+				String handler = (String) entry.getValue();
+
+				String cmd = (String) entry.getKey();
+
+				if (cmds.containsKey(cmd)) {
+					logger.warn(cmd + " is already mapped, ignoring duplicate entry");
+				}
+				else {
+					cmds.put(cmd, handler);
+					if (!cmdsList.contains(handler)) {
+						cmdsList.add(handler);
+					}
+				}
+			} catch (Exception e) {
+				throw new FatalException(e);
+			}
+		}
+
+		_cmds = cmds;
+		_cmdsList = cmdsList;
+	}
+
+	public Hashtable<String,String> getFtpCommands() {
+		return _cmds;
+	}
+
+	public ArrayList<String> getFtpCommandsList() {
+		return _cmdsList;
 	}
 
 	private void addGlobPathPermission(String key, StringTokenizer st)

@@ -92,10 +92,6 @@ public class FtpRequest implements Serializable {
 	 * Get ftp input argument.
 	 */
 	public String getArgument() {
-		if (argument == null) {
-			throw new IllegalStateException();
-		}
-
 		return argument;
 	}
 
