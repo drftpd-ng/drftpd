@@ -23,6 +23,7 @@
 		<javac destdir="${plugin.home}/classes"
 			srcdir="${basedir}/src"
 			classpathref="plugin.classpath"
+			excludes="**/commands/*,**/*Dummy*,**/*Test*"
 			source="1.5"
 			target="1.5"
 			debug="true"
