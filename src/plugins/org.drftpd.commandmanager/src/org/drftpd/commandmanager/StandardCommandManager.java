@@ -98,7 +98,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			try {
 				Class cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
 				CommandInterface cmdInstance = (CommandInterface) cmdCls.newInstance();
-				cmdInstance.initialize(methodString);
+				cmdInstance.initialize(methodString, pluginString);
 
 				Method m = cmdInstance.getClass().getMethod(methodString,
 						new Class[] {CommandRequest.class});

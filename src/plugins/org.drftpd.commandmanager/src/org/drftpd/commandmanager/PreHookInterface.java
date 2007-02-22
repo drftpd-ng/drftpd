@@ -14,13 +14,13 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.login;
+package org.drftpd.commandmanager;
 
 /**
  * @author djb61
  * @version $Id$
  */
-public interface PostHookInterface {
+public interface PreHookInterface {
 
 	public void initialize();
 }
