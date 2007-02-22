@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
+package org.drftpd.commands.dir;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -26,20 +26,17 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Checksum;
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
-import org.drftpd.commandmanager.Reply;
-import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
@@ -51,17 +48,15 @@ import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author mog
+ * @author djb61
  * @version $Id$
  */
-public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
+public class Dir extends CommandInterface {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
             "yyyyMMddHHmmss.SSS");
     private static final Logger logger = Logger.getLogger(Dir.class);
     protected InodeHandle _renameFrom = null;
 
-    public Dir() {
-        super();
-    }
 
     /**
      * <code>CDUP &lt;CRLF&gt;</code><br>
@@ -72,11 +67,24 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * syntaxes for naming the parent directory.  The reply codes
      * shall be identical to the reply codes of CWD.
      */
-    private Reply doCDUP(BaseFtpConnection conn) {
-        // change directory
-        conn.setCurrentDirectory(conn.getCurrentDirectory().getParent());
-        return new Reply(200,
-            "Directory changed to " + conn.getCurrentDirectory().getPath());
+    public CommandResponse doCDUP(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+    	// change directory
+    	DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
+    	response = new CommandResponse(200,
+                "Directory changed to " + newCurrentDirectory.getPath(),
+    			newCurrentDirectory, request.getUser());
+        doPostHooks(request, response);
+        return response;
     }
 
     /**
@@ -88,35 +96,59 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * parameters are similarly unchanged.  The argument is a
      * pathname specifying a directory.
      */
-    private Reply doCWD(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doCWD(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         DirectoryHandle newCurrentDirectory = null;
         
         try {
-        	newCurrentDirectory = conn.getCurrentDirectory().getDirectory(request.getArgument());
+        	newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument());
         } catch (FileNotFoundException ex) {
-            return new Reply(550, ex.getMessage());
+        	response = new CommandResponse(550, ex.getMessage());
+            doPostHooks(request, response);
+            return response;
         } catch (ObjectNotValidException e) {
-			return new Reply(550, request.getArgument() + ": is not a directory");
+        	response = new CommandResponse(550, request.getArgument() + ": is not a directory");
+            doPostHooks(request, response);
+            return response;
 		}
 
-        if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), newCurrentDirectory, true)) {
+        /*	TODO this should be reimplemented as part of the port
+         * of permissions to pre hooks.
+         */
+        /*if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), newCurrentDirectory, true)) {
             return new Reply(550, request.getArgument() + ": Not found");
 
             // reply identical to FileNotFoundException.getMessage() above
-        }
+        }*/
 
-        conn.setCurrentDirectory(newCurrentDirectory);
+        response = new CommandResponse(250,
+                "Directory changed to " + newCurrentDirectory.getPath(),
+                newCurrentDirectory, request.getUser());
 
-        Reply response = new Reply(250,
-                "Directory changed to " + newCurrentDirectory.getPath());
-        conn.getGlobalContext().getConfig().directoryMessage(response,
-            conn.getUserNull(), newCurrentDirectory);
+        /* TODO Since we aren't using conn for anything else at the moment
+         * it would be preferable to not restrict this to FTP frontend only
+         * , browsing a directory structure may well be a useful feature
+         * for another frontend
+         */
+        //GlobalContext.getGlobalContext().getConfig().directoryMessage(response,
+        //  request.getUser() == null ? null : GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(request.getUser()),
+        //		  newCurrentDirectory);
 
         // diz,mp3,racestats will all be hooked externally in the new commandhandlers
         // show cwd_mp3.txt if this is an mp3 release
@@ -318,6 +350,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
             }
         }
 */
+        doPostHooks(request, response);
         return response;
     }
 
@@ -327,37 +360,54 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * This command causes the file specified in the pathname to be
      * deleted at the server site.
      */
-    private Reply doDELE(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doDELE(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         // argument check
         if (!request.hasArgument()) {
             //out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         // get filenames
         String fileName = request.getArgument();
         InodeHandle requestedFile;
-        Reply reply = (Reply) Reply.RESPONSE_250_ACTION_OKAY.clone();
+        response = StandardCommandManager.genericResponse("RESPONSE_250_ACTION_OKAY");
+
         try {
 
-        requestedFile = conn.getCurrentDirectory().getInodeHandle(fileName); 
+        requestedFile = request.getCurrentDirectory().getInodeHandle(fileName); 
 
+        /* TODO reimplement with permissions pre hooks
+         * 
+         */
         // check permission
-        if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
+        /*if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
             if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile.getParent())) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
         } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile.getParent())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+        }*/
         
         if (requestedFile.isDirectory()) {
 			DirectoryHandle victim = (DirectoryHandle) requestedFile;
 			if (victim.getInodeHandles().size() != 0) {
-				return new Reply(550, requestedFile.getPath()
+				response = new CommandResponse(550, requestedFile.getPath()
 						+ ": Directory not empty");
+	            doPostHooks(request, response);
+	            return response;
 			}
 		}
 
@@ -365,32 +415,35 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         User uploader;
 
         try {
-			uploader = conn.getGlobalContext().getUserManager().getUserByName(
+			uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(
                     requestedFile.getUsername());
-            uploader.updateCredits((long) -(requestedFile.getSize() * conn
+            uploader.updateCredits((long) -(requestedFile.getSize() * GlobalContext
                     .getGlobalContext().getConfig().getCreditCheckRatio(
                             requestedFile.getParent(), uploader)));
-            if (!conn.getGlobalContext().getConfig().checkPathPermission(
-                    "nostatsup", uploader, conn.getCurrentDirectory())) {
+            if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission(
+                    "nostatsup", uploader, request.getCurrentDirectory())) {
                 uploader.updateUploadedBytes(-requestedFile.getSize());
             }
 		} catch (UserFileException e) {
-			reply.addComment("Error removing credits & stats: "
+			response.addComment("Error removing credits & stats: "
 					+ e.getMessage());
 		} catch (NoSuchUserException e) {
-			reply.addComment("User " + requestedFile.getUsername()
+			response.addComment("User " + requestedFile.getUsername()
 					+ " does not exist, cannot remove credits on deletion");
 		}
 
-        conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn.getUserNull(), "DELE", requestedFile.getParent()));
+		GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
+				getUserNull(request.getUser()),	"DELE", requestedFile.getParent()));
 			requestedFile.delete();
 		} catch (FileNotFoundException e) {
 			// good! we're done :)
-			return new Reply(550, e.getMessage());
+			response = new CommandResponse(550, e.getMessage());
+            doPostHooks(request, response);
+            return response;
 		}
 
-        return reply;
+		doPostHooks(request, response);
+        return response;
     }
 
     /**
@@ -398,12 +451,23 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      *
      * Returns the date and time of when a file was modified.
      */
-    private Reply doMDTM(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doMDTM(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         // argument check
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         // get filenames
@@ -411,9 +475,11 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         InodeHandle reqFile;
 
         try {
-            reqFile = conn.getCurrentDirectory().getInodeHandle(fileName);
+            reqFile = request.getCurrentDirectory().getInodeHandle(fileName);
         } catch (FileNotFoundException ex) {
-            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+        	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
         }
 
         //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
@@ -423,10 +489,14 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         // now print date
         //if (reqFile.exists()) {
         try {
-			return new Reply(213,
-			    DATE_FMT.format(new Date(reqFile.lastModified())));
+        	response = new CommandResponse(213,
+    			    DATE_FMT.format(new Date(reqFile.lastModified())));
+            doPostHooks(request, response);
+            return response;
 		} catch (FileNotFoundException e) {
-			return new Reply(550, e.getMessage());
+			response = new CommandResponse(550, e.getMessage());
+            doPostHooks(request, response);
+            return response;
 		}
 
         //out.print(ftpStatus.getResponse(213, request, user, args));
@@ -448,18 +518,29 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      *                   257
      *                   500, 501, 502, 421, 530, 550
      */
-    private Reply doMKD(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doMKD(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         // argument check
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
         
         
         
         String path = request.getArgument();
-        DirectoryHandle fakeDirectory = conn.getCurrentDirectory().getNonExistentDirectoryHandle(path);
+        DirectoryHandle fakeDirectory = request.getCurrentDirectory().getNonExistentDirectoryHandle(path);
         String dirName = fakeDirectory.getName();
 
         //check for NUKED dir
@@ -506,29 +587,42 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 		// *************************************
 
         if (!ListUtils.isLegalFileName(dirName)) {
-            return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN;
+        	response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
         }
 
-        if (!conn.getGlobalContext().getConfig().checkPathPermission("makedir", conn.getUserNull(), conn.getCurrentDirectory())) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
+        /* TODO: Reimplement with permissions pre hooks
+         * 
+         */
+        //if (!conn.getGlobalContext().getConfig().checkPathPermission("makedir", conn.getUserNull(), conn.getCurrentDirectory())) {
+        //    return Reply.RESPONSE_530_ACCESS_DENIED;
+        //}
 
         try {
         	DirectoryHandle newDir = null;
             try {
-				newDir = fakeDirectory.getParent().createDirectory(dirName,conn.getUserNull().getName(), conn.getUserNull().getGroup());
+				newDir = fakeDirectory.getParent().createDirectory(dirName,getUserNull(request.getUser()).getName(),
+						getUserNull(request.getUser()).getGroup());
 			} catch (FileNotFoundException e) {
-				return new Reply(550, "Parent directory does not exist");
+				response = new CommandResponse(550, "Parent directory does not exist");
+	            doPostHooks(request, response);
+	            return response;
 			}
   
-            conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                    conn.getUserNull(), "MKD", newDir));
+            GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
+                    getUserNull(request.getUser()), "MKD", newDir));
 
-            return new Reply(257, "\"" + newDir.getPath() +
-                "\" created.");
+            response = new CommandResponse(257, "\"" + newDir.getPath() +
+            	"\" created.");
+            doPostHooks(request, response);
+            return response;
+
         } catch (FileExistsException ex) {
-            return new Reply(550,
-                "directory " + dirName + " already exists");
+	        response = new CommandResponse(550,
+	                "directory " + dirName + " already exists");
+	        doPostHooks(request, response);
+	        return response;
         }
     }
 
@@ -538,10 +632,22 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * This command causes the name of the current working
      * directory to be returned in the reply.
      */
-    private Reply doPWD(BaseFtpConnection conn) {
-        return new Reply(257,
-            "\"" + conn.getCurrentDirectory().getPath() +
-            "\" is current directory");
+    public CommandResponse doPWD(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+    	response = new CommandResponse(257,
+                "\"" + request.getCurrentDirectory().getPath() +
+        "\" is current directory");
+        doPostHooks(request, response);
+        return response;
     }
 
     /**
@@ -552,8 +658,8 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * or as a subdirectory of the current working directory (if
      * the pathname is relative).
      */
-    private Reply doRMD(BaseFtpConnection conn) {
-    	return doDELE(conn);
+    public CommandResponse doRMD(CommandRequest request) {
+    	return doDELE(request);
     	// strange, the ftp rfc says it is exactly equal to DELE, we allow DELE to delete files
     	// that might be wrong, but saves me from writing this method...
 /*        FtpRequest request = conn.getRequest();
@@ -613,12 +719,23 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                               350
 
      */
-    private Reply doRNFR(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doRNFR(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         // argument check
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         // set state variable
@@ -627,20 +744,27 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
         //mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
         try {
-            _renameFrom = conn.getCurrentDirectory().getInodeHandle(request.getArgument());
+            _renameFrom = request.getCurrentDirectory().getInodeHandle(request.getArgument());
+            /* TODO: reimplement using pre hooks permissions
+             * 
+             */
             //check permission
-			if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
+			/*if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
 			    if (!conn.getGlobalContext().getConfig().checkPathPermission("renameown", conn.getUserNull(), _renameFrom.getParent())) {
 			        return Reply.RESPONSE_530_ACCESS_DENIED;
 			    }
 			} else if (!conn.getGlobalContext().getConfig().checkPathPermission("rename", conn.getUserNull(), _renameFrom.getParent())) {
 			    return Reply.RESPONSE_530_ACCESS_DENIED;
-			}
+			}*/
 		} catch (FileNotFoundException e) {
-            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
 		}
 
-        return new Reply(350, "File exists, ready for destination name");
+		response = new CommandResponse(350, "File exists, ready for destination name");
+        doPostHooks(request, response);
+        return response;
     }
 
     /**
@@ -651,52 +775,71 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * command.  Together the two commands cause a file to be
      * renamed.
      */
-    private Reply doRNTO(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doRNTO(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         // argument check
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         // set state variables
         if (_renameFrom == null) {
-            return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+        	response = StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
+        	doPostHooks(request, response);
+            return response;
         }
         
 		InodeHandle fromInode = _renameFrom;
         String argument = VirtualFileSystem.fixPath(request.getArgument());
         if (!(argument.startsWith(VirtualFileSystem.separator))) {
         	// Not a full path, let's make it one
-        	if (conn.getCurrentDirectory().isRoot()) {
+        	if (request.getCurrentDirectory().isRoot()) {
         		argument = VirtualFileSystem.separator + argument;
         	} else {
-        		argument = conn.getCurrentDirectory().getPath() + VirtualFileSystem.separator + argument;
+        		argument = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + argument;
         	}
         }
         DirectoryHandle toDir = null;
         String newName = null;
         try {
-			toDir = conn.getCurrentDirectory().getDirectory(argument);
+			toDir = request.getCurrentDirectory().getDirectory(argument);
 	        // toDir exists and is a directory, so we're just changing the parent directory and not the name
 			newName = fromInode.getName();
         } catch (FileNotFoundException e) {
         	// Directory does not exist, that means they may have specified _renameFrom's new name
         	// as the last part of the argument
         	try {
-				toDir = conn.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument));
+				toDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument));
 	        	newName = VirtualFileSystem.getLast(argument);
 			} catch (FileNotFoundException e1) {
 				// Destination doesn't exist
 				logger.debug("Destination doesn't exist", e1);
-				return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+				response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+	        	doPostHooks(request, response);
+	            return response;
 			} catch (ObjectNotValidException e1) {
 				// Destination isn't a Directory
 				logger.debug("Destination isn't a Directory", e1);
-				return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+				response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+	        	doPostHooks(request, response);
+	            return response;
 			}
         } catch (ObjectNotValidException e) {
-        	return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
+        	response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+        	doPostHooks(request, response);
+            return response;
 		}
         InodeHandle toInode = null;
        	if (fromInode.isDirectory()) {
@@ -706,12 +849,17 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
        	} else if (fromInode.isLink()) {
        		toInode = new LinkHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
        	} else {
-       		return new Reply(500, "Someone has extended the VFS beyond File/Directory/Link");
+       		response = new CommandResponse(500, "Someone has extended the VFS beyond File/Directory/Link");
+            doPostHooks(request, response);
+            return response;
        	}
 
 		try {
+			/* TODO reimplement using pre hooks permissions
+			 * 
+			 */
 			// check permission
-			if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
+			/*if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
 				if (!conn.getGlobalContext().getConfig().checkPathPermission(
 						"renameown", conn.getUserNull(), toInode.getParent())) {
 					return Reply.RESPONSE_530_ACCESS_DENIED;
@@ -720,7 +868,7 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 					.checkPathPermission("rename", conn.getUserNull(),
 							toInode.getParent())) {
 				return Reply.RESPONSE_530_ACCESS_DENIED;
-			}
+			}*/
 /*			logger.debug("before rename toInode-" +toInode);
 			logger.debug("before rename toInode.getPath()-" + toInode.getPath());
 			logger.debug("before rename toInode.getParent()-" + toInode.getParent());
@@ -729,11 +877,15 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 		} catch (FileNotFoundException e) {
 			logger.info("FileNotFoundException on renameTo()", e);
 
-			return new Reply(500, "FileNotFound - " + e.getMessage());
+			response = new CommandResponse(500, "FileNotFound - " + e.getMessage());
+            doPostHooks(request, response);
+            return response;
 		} catch (IOException e) {
 			logger.info("IOException on renameTo()", e);
 
-			return new Reply(500, "IOException - " + e.getMessage());
+			response = new CommandResponse(500, "IOException - " + e.getMessage());
+            doPostHooks(request, response);
+            return response;
 		}
 /*		logger.debug("after rename toInode-" +toInode);
 		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
@@ -741,13 +893,24 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 		logger.debug("after rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
 
 		// out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
-		return new Reply(250, request.getCommand() + " command successful.");
+		response = new CommandResponse(250, request.getCommand() + " command successful.");
+        doPostHooks(request, response);
+        return response;
     }
 
-    private Reply doSITE_CHOWN(BaseFtpConnection conn)
-        throws UnhandledCommandException {
-        FtpRequest req = conn.getRequest();
-        StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
+    public CommandResponse doSITE_CHOWN(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
         String owner = st.nextToken();
         String group = null;
         int pos = owner.indexOf('.');
@@ -755,18 +918,20 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         if (pos != -1) {
             group = owner.substring(pos + 1);
             owner = owner.substring(0, pos);
-        } else if ("SITE CHGRP".equals(req.getCommand())) {
+        } else if ("SITE CHGRP".equals(request.getOriginalCommand())) {
             group = owner;
             owner = null;
-        } else if (!"SITE CHOWN".equals(req.getCommand())) {
-            throw UnhandledCommandException.create(Dir.class, req);
+        } else if (!"SITE CHOWN".equals(request.getOriginalCommand())) {
+        	response = StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
+        	doPostHooks(request, response);
+            return response;
         }
 
-        Reply reply = new Reply(200);
+        response = new CommandResponse(200);
 
         while (st.hasMoreTokens()) {
             try {
-                InodeHandle file = conn.getCurrentDirectory().getInodeHandle(st.nextToken());
+                InodeHandle file = request.getCurrentDirectory().getInodeHandle(st.nextToken());
 
                 if (owner != null) {
                     file.setUsername(owner);
@@ -776,40 +941,62 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
                     file.setGroup(group);
                 }
             } catch (FileNotFoundException e) {
-                reply.addComment(e.getMessage());
+                response.addComment(e.getMessage());
             }
         }
 
-        return Reply.RESPONSE_200_COMMAND_OK;
+        response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    	doPostHooks(request, response);
+        return response;
     }
 
-    private Reply doSITE_LINK(BaseFtpConnection conn) {
-        if (!conn.getRequest().hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+    public CommandResponse doSITE_LINK(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+        if (!request.hasArgument()) {
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
-        StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument(),
+        StringTokenizer st = new StringTokenizer(request.getArgument(),
                 " ");
 
         if (st.countTokens() != 2) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         String targetName = st.nextToken();
         String linkName = st.nextToken();
 
         try {
-            conn.getCurrentDirectory().getInodeHandle(targetName); // checks if the inode exists.
-            conn.getCurrentDirectory().createLink(linkName,
-					targetName, conn.getUserNull().getName(),
-					conn.getUserNull().getGroup()); // create the link
+            request.getCurrentDirectory().getInodeHandle(targetName); // checks if the inode exists.
+            request.getCurrentDirectory().createLink(linkName,
+					targetName, getUserNull(request.getUser()).getName(),
+					getUserNull(request.getUser()).getGroup()); // create the link
 		} catch (FileExistsException e) {
-			return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
+			response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+        	doPostHooks(request, response);
+            return response;
 		} catch (FileNotFoundException e) {
-            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
 		}
 
-        return Reply.RESPONSE_200_COMMAND_OK;
+		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    	doPostHooks(request, response);
+        return response;
     }
 
     /**
@@ -847,12 +1034,24 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      * @param request
      * @param out
      */
-    private Reply doSITE_WIPE(BaseFtpConnection conn) {
-        if (!conn.getRequest().hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+    public CommandResponse doSITE_WIPE(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+        if (!request.hasArgument()) {
+            response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
-        String arg = conn.getRequest().getArgument();
+        String arg = request.getArgument();
 
         boolean recursive;
 
@@ -866,27 +1065,32 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
         InodeHandle wipeFile;
 
         try {
-			wipeFile = conn.getCurrentDirectory().getInodeHandle(arg);
+			wipeFile = request.getCurrentDirectory().getInodeHandle(arg);
 
 			if (wipeFile.isDirectory() && !recursive) {
 				if (((DirectoryHandle) wipeFile).getInodeHandles().size() != 0) {
-					return new Reply(200, "Can't wipe, directory not empty");
+					response = new CommandResponse(200, "Can't wipe, directory not empty");
+			        doPostHooks(request, response);
+			        return response;
 				}
 			}
 
 			// if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
-			conn.getGlobalContext().dispatchFtpEvent(
-					new DirectoryFtpEvent(conn.getUserNull(), "WIPE", wipeFile
+			GlobalContext.getGlobalContext().dispatchFtpEvent(
+					new DirectoryFtpEvent(getUserNull(request.getUser()), "WIPE", wipeFile
 							.getParent()));
 
 			// }
 			wipeFile.delete();
 		} catch (FileNotFoundException e) {
-			return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
 		}
 
-
-        return Reply.RESPONSE_200_COMMAND_OK;
+		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    	doPostHooks(request, response);
+        return response;
     }
 
     /**
@@ -894,20 +1098,35 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 	 * 
 	 * Returns the size of the file in bytes.
 	 */
-    private Reply doSIZE(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doSIZE(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         InodeHandle file;
 
         try {
-            file = conn.getCurrentDirectory().getInodeHandle(request.getArgument());
-			return new Reply(213, Long.toString(file.getSize()));
+            file = request.getCurrentDirectory().getInodeHandle(request.getArgument());
+            response = new CommandResponse(213, Long.toString(file.getSize()));
+            doPostHooks(request, response);
+            return response;
         } catch (FileNotFoundException ex) {
-            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+        	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
         }
     }
 
@@ -916,22 +1135,37 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
      *
      * Originally implemented by CuteFTP Pro and Globalscape FTP Server
      */
-    private Reply doXCRC(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doXCRC(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
 
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
         FileHandle myFile;
 
         try {
-            myFile = conn.getCurrentDirectory().getFile(st.nextToken());
+            myFile = request.getCurrentDirectory().getFile(st.nextToken());
         } catch (FileNotFoundException e) {
-            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+        	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
         } catch (ObjectNotValidException e) {
-        	return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+        	response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+        	doPostHooks(request, response);
+            return response;
 		}
 
         try {
@@ -939,84 +1173,28 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 				if (!st.nextToken().equals("0")
 						|| !st.nextToken().equals(
 								Long.toString(myFile.getSize()))) {
-					return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+					response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+		        	doPostHooks(request, response);
+		            return response;
 				}
 			}
 
-			return new Reply(250, "XCRC Successful. "
+			response = new CommandResponse(250, "XCRC Successful. "
 					+ Checksum.formatChecksum(myFile.getCheckSum()));
+	        doPostHooks(request, response);
+	        return response;
 		} catch (NoAvailableSlaveException e1) {
 			logger.warn("", e1);
 
-			return new Reply(550, "NoAvailableSlaveException: "
+			response = new CommandResponse(550, "NoAvailableSlaveException: "
 					+ e1.getMessage());
+	        doPostHooks(request, response);
+	        return response;
 		} catch (FileNotFoundException e) {
-			return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	doPostHooks(request, response);
+            return response;
 		}
-    }
-
-    public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
-        FtpRequest request = conn.getRequest();
-        String cmd = request.getCommand();
-
-        if ("CDUP".equals(cmd)) {
-            return doCDUP(conn);
-        }
-
-        if ("CWD".equals(cmd)) {
-            return doCWD(conn);
-        }
-
-        if ("MKD".equals(cmd)) {
-            return doMKD(conn);
-        }
-
-        if ("PWD".equals(cmd)) {
-            return doPWD(conn);
-        }
-
-        if ("RMD".equals(cmd)) {
-            return doRMD(conn);
-        }
-
-        if ("RNFR".equals(cmd)) {
-            return doRNFR(conn);
-        }
-
-        if ("RNTO".equals(cmd)) {
-            return doRNTO(conn);
-        }
-
-        if ("SITE LINK".equals(cmd)) {
-            return doSITE_LINK(conn);
-        }
-
-        if ("SITE WIPE".equals(cmd)) {
-            return doSITE_WIPE(conn);
-        }
-
-        if ("XCRC".equals(cmd)) {
-            return doXCRC(conn);
-        }
-
-        if ("MDTM".equals(cmd)) {
-            return doMDTM(conn);
-        }
-
-        if ("SIZE".equals(cmd)) {
-            return doSIZE(conn);
-        }
-
-        if ("DELE".equals(cmd)) {
-            return doDELE(conn);
-        }
-
-        if ("SITE CHOWN".equals(cmd) || "SITE CHGRP".equals(cmd)) {
-            return doSITE_CHOWN(conn);
-        }
-
-        throw UnhandledCommandException.create(Dir.class, request);
     }
 
 //    public String getHelp(String cmd) {
@@ -1028,21 +1206,22 @@ public class Dir implements CommandHandler, CommandHandlerFactory, Cloneable {
 //        else
 //            return "";
 //    }
-    
+    private User getUserNull(String user) {
+		if (user == null) {
+			return null;
+		}
+		try {
+			return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(
+					user);
+		} catch (NoSuchUserException e) {
+			return null;
+		} catch (UserFileException e) {
+			return null;
+		}
+	}
+
     public String[] getFeatReplies() {
         return null;
-    }
-
-    public CommandHandler initialize(BaseFtpConnection conn,
-        CommandManager initializer) {
-        try {
-            return (Dir) clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void load(CommandManagerFactory initializer) {
     }
 
     public void unload() {

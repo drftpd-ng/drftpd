@@ -22,3 +22,20 @@ IDNT=org.drftpd.commands.login.LoginHandler.doIDNT
 USER=org.drftpd.commands.login.LoginHandler.doUSER
 PASS=org.drftpd.commands.login.LoginHandler.doPASS
 QUIT=org.drftpd.commands.login.LoginHandler.doQUIT
+
+CDUP=org.drftpd.commands.dir.Dir.doCDUP
+CWD=org.drftpd.commands.dir.Dir.doCWD
+MKD=org.drftpd.commands.dir.Dir.doMKD
+PWD=org.drftpd.commands.dir.Dir.doPWD
+RMD=org.drftpd.commands.dir.Dir.doRMD
+RNFR=org.drftpd.commands.dir.Dir.doRNFR
+RNTO=org.drftpd.commands.dir.Dir.doRNTO
+DELE=org.drftpd.commands.dir.Dir.doDELE
+SITE\ WIPE=org.drftpd.commands.dir.Dir.doSITE_WIPE
+SITE\ CHOWN=org.drftpd.commands.dir.Dir.doSITE_CHOWN
+#collides with SITE CHGRP defined by UserManagement
+#SITE\ CHGRP=org.drftpd.commands.Dir
+SITE\ LINK=org.drftpd.commands.dir.Dir.doSITE_LINK
+XCRC=org.drftpd.commands.dir.Dir.doXCRC
+MDTM=org.drftpd.commands.dir.Dir.doMDTM
+SIZE=org.drftpd.commands.dir.Dir.doSIZE
