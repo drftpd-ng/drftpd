@@ -1206,19 +1206,6 @@ public class Dir extends CommandInterface {
 //        else
 //            return "";
 //    }
-    private User getUserNull(String user) {
-		if (user == null) {
-			return null;
-		}
-		try {
-			return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(
-					user);
-		} catch (NoSuchUserException e) {
-			return null;
-		} catch (UserFileException e) {
-			return null;
-		}
-	}
 
     public String[] getFeatReplies() {
         return null;

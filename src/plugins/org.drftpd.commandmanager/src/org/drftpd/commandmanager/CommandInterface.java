@@ -24,8 +24,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.PreHookInterface;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
@@ -188,5 +192,18 @@ public abstract class CommandInterface {
 			}
 		}
 		return _request;
+	}
+
+	protected User getUserNull(String user) {
+		if (user == null) {
+			return null;
+		}
+		try {
+			return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(user);
+		} catch (NoSuchUserException e) {
+			return null;
+		} catch (UserFileException e) {
+			return null;
+		}
 	}
 }
