@@ -165,7 +165,7 @@ public class GlobalContext {
 		return _zsConfig;
 	}
 
-	public ConnectionManager getConnectionManager() {
+	public static ConnectionManager getConnectionManager() {
 		return ConnectionManager.getConnectionManager();
 	}
 

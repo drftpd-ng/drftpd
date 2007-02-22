@@ -25,7 +25,6 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -139,6 +138,9 @@ public class BaseFtpConnection implements Runnable {
 
 	protected String _user;
 	
+	/**
+	 * @see org.drftpd.master.config.FtpConfig.getFtpCommands();
+	 */
 	private Hashtable<String,String> _cmds;
 
 	protected BaseFtpConnection() {
@@ -146,8 +148,7 @@ public class BaseFtpConnection implements Runnable {
 
 	public BaseFtpConnection(Socket soc) throws IOException {
 		_cmds = FtpConfig.getFtpConfig().getFtpCommands();
-		_commandManager = getGlobalContext().getConnectionManager()
-				.getCommandManager();
+		_commandManager = GlobalContext.getConnectionManager().getCommandManager();
 		_commandManager.initialize(FtpConfig.getFtpConfig().getFtpCommandsList());
 		setControlSocket(soc);
 		_lastActive = System.currentTimeMillis();

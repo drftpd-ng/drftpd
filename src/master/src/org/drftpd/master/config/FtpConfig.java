@@ -484,6 +484,11 @@ public class FtpConfig extends Observable implements ConfigInterface {
 		}
 	}
 
+	/**
+	 * Handles the load of the FTP Commands.
+	 * Firstly, it checks if <code>conf/ftpcommands.conf</code> exists, if not it halts the daemon.
+	 * After that it read the file and create a list of the existing commands.
+	 */
 	private void loadFtpCommands() {
 		Hashtable<String, String> cmds = new Hashtable<String, String>();
 		ArrayList<String> cmdsList = new ArrayList<String>();
@@ -529,10 +534,21 @@ public class FtpConfig extends Observable implements ConfigInterface {
 		_cmdsList = cmdsList;
 	}
 
+	/**
+	 * The Hashtable should look like this:<br><code>
+	 * Key -> Value<br>
+	 * "AUTH" -> "org.drftpd.commands.dataconnection.DataConnectionHandler.doAUTH"<br>
+	 * "USER" -> "org.drftpd.commands.login.LoginHandler.doUSER"</code>
+	 */
 	public Hashtable<String,String> getFtpCommands() {
 		return _cmds;
 	}
 
+	/**
+	 * The ArrayList should look like this:<br><code>
+	 * "org.drftpd.commands.dataconnection.DataConnectionHandler.doAUTH"<br>
+	 * "org.drftpd.commands.login.LoginHandler.doUSER"</code>
+	 */
 	public ArrayList<String> getFtpCommandsList() {
 		return _cmdsList;
 	}

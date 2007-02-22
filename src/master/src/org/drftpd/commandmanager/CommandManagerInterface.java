@@ -28,10 +28,28 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public interface CommandManagerInterface {
 
+	/**
+	 * Initialization routine.
+	 * @param requiredCmds, a list of commands read from the configuration file.
+	 * @see <code>org.drftpd.master.config.FtpConfig.getFtpCommandsList()</code> for more information about the ArrayList.
+	 */
 	public void initialize(ArrayList<String> requiredCmds);
 
+	/**
+	 * Executes the command. 
+	 */
 	public CommandResponseInterface execute(CommandRequestInterface request);
 
+	/**
+	 * To explain how this constructor works take this "CWD /PHOTOS/" as the request
+	 * and the current directory is "/".
+	 * @param argument, the argument of the command ("/PHOTOS/").
+	 * @param command, the 'mapped' command. ("org.drftpd.commands.Dir.doCWD").
+	 * @param directory, the current directory. ("/").
+	 * @param user, the issuer of the command.
+	 * @param connection, the control connection, where outputs should be written to.
+	 * @param originalCommand, the actual command name. ("CWD").
+	 */
 	public CommandRequestInterface newRequest(String argument, String command,
 			DirectoryHandle directory, String user, BaseFtpConnection connection, String originalCommand);
 }
