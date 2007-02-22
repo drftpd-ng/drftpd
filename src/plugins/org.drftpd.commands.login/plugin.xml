@@ -8,8 +8,6 @@
 		<library id="org.drftpd.commands.login" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="oro" path="../../lib/oro.jar" type="code">
-		</library>
 	</runtime>
 	<extension-point id="FrontendHook">
 		<parameter-def id="HookClass" />

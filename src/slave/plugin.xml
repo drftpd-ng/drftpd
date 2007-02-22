@@ -9,6 +9,7 @@
 			<export prefix="*" />
 		</library>
 		<library id="oro" path="../../lib/oro.jar" type="code">
+			<export prefix="*" />
 		</library>
 	</runtime>
 </plugin>

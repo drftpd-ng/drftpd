@@ -8,11 +8,8 @@
 		<library id="master" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="oro" path="../../lib/oro.jar" type="code">
-		</library>
 		<library id="replacer" path="../../lib/replacer.jar" type="code">
-		</library>
-		<library id="log4j" path="../../lib/log4j-1.2.14.jar" type="code">
+			<export prefix="*" />
 		</library>
 	</runtime>
 	<extension-point id="UserManager">
