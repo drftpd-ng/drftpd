@@ -183,7 +183,7 @@ public abstract class CommandInterface {
 				 * failed and we'll just move onto the next one
 				 */
 			}
-			if (!_request.getAllowed()) {
+			if (!_request.isAllowed()) {
 				break;
 			}
 		}

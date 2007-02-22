@@ -44,6 +44,10 @@ public class CommandResponse extends KeyedMap implements CommandResponseInterfac
 	public static final Key USER = new Key(CommandResponse.class, "user",
 			String.class);
 
+	public CommandResponse(int code) {
+		setCode(code);
+	}
+
 	public CommandResponse(int code, String message) {
 		setCode(code);
 		setMessage(message);
@@ -105,7 +109,7 @@ public class CommandResponse extends KeyedMap implements CommandResponseInterfac
 	}
 
 	public DirectoryHandle getCurrentDirectory() {
-		return (DirectoryHandle) getObject(CommandResponse.CURRENTDIRECTORY, new DirectoryHandle("/"));
+		return (DirectoryHandle) getObject(CommandResponse.CURRENTDIRECTORY, null);
 	}
 
 	public String getMessage() {

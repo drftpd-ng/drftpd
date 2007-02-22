@@ -491,7 +491,7 @@ public class BaseFtpConnection implements Runnable {
 						new ConnectionEvent(getUserNull(), "LOGOUT"));
 			}
 
-			getGlobalContext().getConnectionManager().remove(this);
+			GlobalContext.getConnectionManager().remove(this);
 		}
 	}
 
@@ -530,8 +530,10 @@ public class BaseFtpConnection implements Runnable {
 		CommandResponseInterface cmdResponse = _commandManager
 				.execute(cmdRequest);
 		if (cmdResponse != null) {
-			_currentDirectory = cmdResponse.getCurrentDirectory();
-			_user = cmdResponse.getUser();
+			if (cmdResponse.getCurrentDirectory() instanceof DirectoryHandle)
+				_currentDirectory = cmdResponse.getCurrentDirectory();
+			if (cmdResponse.getUser() instanceof String)
+				_user = cmdResponse.getUser();
 			out.print(new FtpReply(cmdResponse));
 		}
 	}
@@ -640,7 +642,7 @@ public class BaseFtpConnection implements Runnable {
 
 	public int transferCounter(char transferDirection) {
 		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-				getGlobalContext().getConnectionManager().getConnections());
+				GlobalContext.getConnectionManager().getConnections());
 		int count = 0;
 		for (Iterator<BaseFtpConnection> iter = conns.iterator(); iter
 				.hasNext();) {
@@ -670,7 +672,7 @@ public class BaseFtpConnection implements Runnable {
 	 * @param newUsername
 	 */
 	public static void fixBaseFtpConnUser(String oldUsername, String newUsername) {
-		List<BaseFtpConnection> list = GlobalContext.getGlobalContext().getConnectionManager().getConnections();
+		List<BaseFtpConnection> list = GlobalContext.getConnectionManager().getConnections();
 		synchronized (list) {
 			List<BaseFtpConnection> conns = Collections.unmodifiableList(list);
 			for (BaseFtpConnection conn : conns)

@@ -108,7 +108,7 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		}
 	}
 
-	public boolean getAllowed() {
+	public boolean isAllowed() {
 		return getObjectBoolean(CommandRequest.ALLOWED);
 	}
 
