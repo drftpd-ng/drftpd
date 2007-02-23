@@ -53,6 +53,8 @@ public abstract class CommandInterface {
 
 	private static final Logger logger = Logger.getLogger(CommandInterface.class);
 	
+	protected String[] _featReplies;
+
 	private HashMap<Integer, Object[]> _postHooks;
 
 	private HashMap<Integer, Object[]> _preHooks;
@@ -122,7 +124,7 @@ public abstract class CommandInterface {
 				.jprintf(ReplacerUtils.finalFormat(bundle, key), env);
 	}
 
-	public void initialize(String method, String pluginName) {
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		_postHooks = new HashMap<Integer, Object[]>();
 		_preHooks = new HashMap<Integer, Object[]>();
 		
@@ -291,5 +293,9 @@ public abstract class CommandInterface {
 		env = getReplacerEnvironment(env, getUserNull(user));
 
 		return jprintfExceptionStatic(bundle, key, env, getUserNull(user));
+	}
+
+	public String[] getFeatReplies() {
+		return _featReplies;
 	}
 }

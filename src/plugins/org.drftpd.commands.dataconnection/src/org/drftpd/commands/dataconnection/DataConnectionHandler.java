@@ -70,9 +70,10 @@ public class DataConnectionHandler extends CommandInterface {
 
     private ResourceBundle _bundle;
 
-    public void initialize(String method, String pluginName) {
-    	super.initialize(method, pluginName);
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
     	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    	_featReplies = populateFeat(method);
     }
 
     public CommandResponse doAUTH(CommandRequest request) {
@@ -1022,12 +1023,24 @@ public class DataConnectionHandler extends CommandInterface {
         return dataSocket;
     }*/
 
-    public String[] getFeatReplies() {
-        if (GlobalContext.getGlobalContext().getSSLContext() != null) {
-            return new String[] { "PRET", "AUTH SSL", "PBSZ", "CPSV" , "SSCN"};
-        }
-
-        return new String[] { "PRET" };
+    private String[] populateFeat(String method) {
+    	boolean sslContext = GlobalContext.getGlobalContext().getSSLContext() != null;
+    	if ("doAUTH".equals(method)) {
+    		return sslContext ? new String[] { "AUTH SSL" } : null;
+    	}
+    	if ("doPASVandCPSV".equals(method)) {
+    		return sslContext ? new String[] { "CPSV" } : null;
+    	}
+    	if ("doPBSZ".equals(method)) {
+    		return sslContext ? new String[] { "PBSZ" } : null;
+    	}
+    	if ("doSSCN".equals(method)) {
+    		return sslContext ? new String[] { "SSCN" } : null;
+    	}
+    	if ("doPRET".equals(method)) {
+    		return new String[] { "PRET" };
+    	}
+    	return null;
     }
     
     public String getHelp(String cmd) {

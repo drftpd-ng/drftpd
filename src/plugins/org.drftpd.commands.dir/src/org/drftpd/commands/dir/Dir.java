@@ -1207,10 +1207,6 @@ public class Dir extends CommandInterface {
 //            return "";
 //    }
 
-    public String[] getFeatReplies() {
-        return null;
-    }
-
     public void unload() {
     }
 }

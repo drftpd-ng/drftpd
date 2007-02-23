@@ -50,3 +50,9 @@ SITE\ ADDSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_ADDSLA
 SITE\ DELSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_DELSLAVE
 SITE\ SLAVESELECT=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVESELECT
 
+ABOR=org.drftpd.commands.misc.Misc.doABOR
+FEAT=org.drftpd.commands.misc.Misc.doFEAT
+SITE\ STAT=org.drftpd.commands.misc.Misc.doSITE_STAT
+SITE\ TIME=org.drftpd.commands.misc.Misc.doSITE_TIME
+SITE\ VERS=org.drftpd.commands.misc.Misc.doSITE_VERS
+#SITE\ HELP=org.drftpd.commands.misc.Misc.doSITE_HELP

@@ -51,8 +51,8 @@ public class LoginHandler extends CommandInterface {
     protected String _idntIdent;
     private ResourceBundle _bundle;
 
-    public void initialize(String method, String pluginName) {
-    	super.initialize(method, pluginName);
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
     	_bundle = ResourceBundle.getBundle(this.getClass().getName());
     }
 
@@ -310,10 +310,6 @@ public class LoginHandler extends CommandInterface {
         response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     	doPostHooks(request, response);
         return response;
-    }
-
-    public String[] getFeatReplies() {
-        return null;
     }
 
     public void unload() {

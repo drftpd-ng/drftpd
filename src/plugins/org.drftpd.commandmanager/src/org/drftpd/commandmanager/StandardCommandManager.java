@@ -98,7 +98,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			try {
 				Class cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
 				CommandInterface cmdInstance = (CommandInterface) cmdCls.newInstance();
-				cmdInstance.initialize(methodString, pluginString);
+				cmdInstance.initialize(methodString, pluginString, this);
 
 				Method m = cmdInstance.getClass().getMethod(methodString,
 						new Class[] {CommandRequest.class});
@@ -282,5 +282,9 @@ public class StandardCommandManager implements CommandManagerInterface {
 	public CommandRequestInterface newRequest(String argument, String command,
 			DirectoryHandle directory, String user, BaseFtpConnection connection, String originalCommand) {
 		return new CommandRequest(argument, command, directory, user, connection, originalCommand);
+	}
+
+	public HashMap<String,Object[]> getCommandHandlersMap() {
+		return _commands;
 	}
 }

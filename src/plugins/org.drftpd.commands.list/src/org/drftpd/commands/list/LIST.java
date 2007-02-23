@@ -338,10 +338,7 @@ public class LIST extends CommandInterface {
 
 				try {
 						os.close();
-						/* TODO fix this
-						 * 
-						 */
-						//response.addComment(conn.status());
+						response.addComment(conn.status());
 					return response;
 				} catch (IOException ioe) {
 					logger.error("", ioe);
@@ -370,10 +367,6 @@ public class LIST extends CommandInterface {
 	
 	public CommandResponse doNLST(CommandRequest request) {
 		//printNList(listFiles, detailOption, os);
-		return null;
-	}
-
-	public String[] getFeatReplies() {
 		return null;
 	}
 

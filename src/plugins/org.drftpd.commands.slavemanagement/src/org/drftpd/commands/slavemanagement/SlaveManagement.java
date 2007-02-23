@@ -56,8 +56,8 @@ public class SlaveManagement extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-    public void initialize(String method, String pluginName) {
-    	super.initialize(method, pluginName);
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
     	_bundle = ResourceBundle.getBundle(this.getClass().getName());
     }
 
@@ -600,7 +600,4 @@ public class SlaveManagement extends CommandInterface {
         return response;
     }
 
-    public String[] getFeatReplies() {
-        return null;
-    }
 }

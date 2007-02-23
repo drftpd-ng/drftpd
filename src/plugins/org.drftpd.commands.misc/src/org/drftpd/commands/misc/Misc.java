@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
+package org.drftpd.commands.misc;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -25,17 +25,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
-import org.drftpd.commandmanager.Reply;
-import org.drftpd.commandmanager.ReplyException;
-import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.slave.Slave;
 
@@ -43,8 +38,15 @@ import org.drftpd.slave.Slave;
 /**
  * @version $Id$
  */
-public class Misc implements CommandHandlerFactory, CommandHandler {
-    
+public class Misc extends CommandInterface {
+
+	private StandardCommandManager _cManager;
+	
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
+    	_cManager = cManager;
+    }
+
     /**
      * <code>ABOR &lt;CRLF&gt;</code><br>
      *
@@ -57,36 +59,52 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
      * Current implementation does not do anything. As here data
      * transfers are not multi-threaded.
      */
-    private Reply doABOR(BaseFtpConnection conn) {
-        return Reply.RESPONSE_226_CLOSING_DATA_CONNECTION;
+    public CommandResponse doABOR(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+    	response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+    	doPostHooks(request, response);
+        return response;
     }
 
     // LIST;NLST;RETR;STOR
-    private Reply doFEAT(BaseFtpConnection conn) {
-        PrintWriter out = conn.getControlWriter();
+    public CommandResponse doFEAT(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+        PrintWriter out = request.getConnection().getControlWriter();
         out.print("211-Extensions supported:\r\n");
 
-        for (Iterator iter = conn.getCommandManager().getCommandHandlersMap()
-                                 .values().iterator(); iter.hasNext();) {
-            CommandHandler hnd = (CommandHandler) iter.next();
-            String[] feat = hnd.getFeatReplies();
+        for (Object[] objs : _cManager.getCommandHandlersMap().values()) {
+        	CommandInterface hnd = (CommandInterface) objs[1];  
+        	String[] feat = hnd.getFeatReplies();  
+        	if (feat == null) {  
+        		continue;  
+        	}  
 
-            if (feat == null) {
-                continue;
-            }
-
-            for (int i = 0; i < feat.length; i++) {
+        	for (int i = 0; i < feat.length; i++) {
                 out.print(" " + feat[i] + "\r\n");
             }
         }
 
-        //				+ " CLNT\r\n"
-        //				+ " MDTM\r\n"
-        //				+ " PRET\r\n"
-        //				+ " SIZE\r\n"
-        //				+ " XCRC\r\n"
         out.print("211 End\r\n");
 
+        doPostHooks(request, null);
         return null;
     }
 
@@ -131,27 +149,58 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     //		out.write(ftpStatus.getResponse(214, tempRequest, user, args));
     //		return;
     //	}
-    private Reply doSITE_STAT(BaseFtpConnection conn) {
-        if (conn.getRequest().hasArgument()) {
-            return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+    public CommandResponse doSITE_STAT(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+        if (request.hasArgument()) {
+        	response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+        	doPostHooks(request, response);
+            return response;
         }
 
-        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+        response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
+        /* TODO maybe think of another way of doing this so as to not pull in
+         * BaseFtpConnection
+         */
+        BaseFtpConnection conn = request.getConnection();
         response.addComment(conn.status());
 
+        doPostHooks(request, response);
         return response;
     }
 
-    private Reply doSITE_TIME(BaseFtpConnection conn) {
-        if (conn.getRequest().hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+    public CommandResponse doSITE_TIME(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+    	if (request.hasArgument()) {
+        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	doPostHooks(request, response);
+            return response;
         }
 
-        return new Reply(200, "Server time is: " + new Date());
+    	response = new CommandResponse(200, "Server time is: " + new Date());
+        doPostHooks(request, response);
+        return response;
     }
 
-    private Reply doSITE_HELP(BaseFtpConnection conn) throws ReplyException {
+    /*private Reply doSITE_HELP(BaseFtpConnection conn) throws ReplyException {
     	Map handlers = conn.getCommandManager().getCommandHandlersMap();
     	if (conn.getRequest().hasArgument()) {
     		String cmd = conn.getRequest().getArgument().toLowerCase();
@@ -228,53 +277,22 @@ public class Misc implements CommandHandlerFactory, CommandHandler {
     		response.addComment("Help has no footer");
     	}
     	return response;
-    }
+    }*/
 
-    private Reply doSITE_VERS(BaseFtpConnection conn) {
-        return new Reply(200, Slave.VERSION);
-    }
-    
-    public Reply execute(BaseFtpConnection conn)
-        throws ReplyException {
-        String cmd = conn.getRequest().getCommand();
-
-        if ("ABOR".equals(cmd)) {
-            return doABOR(conn);
-        }
-
-        if ("FEAT".equals(cmd)) {
-            return doFEAT(conn);
-        }
-
-        if ("SITE STAT".equals(cmd)) {
-            return doSITE_STAT(conn);
-        }
-
-        if ("SITE TIME".equals(cmd)) {
-            return doSITE_TIME(conn);
-        }
-
-        if ("SITE VERS".equals(cmd)) {
-            return doSITE_VERS(conn);
-        }
-
-        if ("SITE HELP".equals(cmd)) {
-            return doSITE_HELP(conn);
-        }
-
-        throw UnhandledCommandException.create(Misc.class, conn.getRequest());
-    }
-
-    public CommandHandler initialize(BaseFtpConnection conn,
-        CommandManager initializer) {
-        return this;
-    }
-
-    public String[] getFeatReplies() {
-        return null;
-    }
-
-    public void load(CommandManagerFactory initializer) {
+    public CommandResponse doSITE_VERS(CommandRequest request) {
+    	CommandResponse response;
+    	request = doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		doPostHooks(request, response);
+    		return response;
+    	}
+    	response = new CommandResponse(200, Slave.VERSION);
+        doPostHooks(request, response);
+        return response;
     }
 
     public void unload() {
