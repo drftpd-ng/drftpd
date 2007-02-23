@@ -42,6 +42,7 @@ check - checks plug-ins integrity
 		<ant dir="src/plugins/org.drftpd.commands.dataconnection" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.login" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.dir" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.commands.slavemanagement" target="${target}" />
 	</target>
 
 	<target name="build" description="Builds entire project">
