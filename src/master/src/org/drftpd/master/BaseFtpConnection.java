@@ -34,6 +34,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.net.ssl.SSLSocket;
 
@@ -204,16 +205,18 @@ public class BaseFtpConnection implements Runnable {
 	public static String jprintf(Class class1, String key,
 			ReplacerEnvironment env, User user) {
 		env = getReplacerEnvironment(env, user);
+		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
 
-		return ReplacerUtils.jprintf(key, env, class1);
+		return ReplacerUtils.jprintf(key, env, bundle);
 	}
 
 	public static String jprintfExceptionStatic(Class class1, String key,
 			ReplacerEnvironment env, User user) throws FormatterException {
 		env = getReplacerEnvironment(env, user);
+		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
 
 		return SimplePrintf
-				.jprintf(ReplacerUtils.finalFormat(class1, key), env);
+				.jprintf(ReplacerUtils.finalFormat(bundle, key), env);
 	}
 
 	/**

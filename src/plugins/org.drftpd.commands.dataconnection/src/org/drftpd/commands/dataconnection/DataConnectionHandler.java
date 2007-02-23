@@ -68,6 +68,13 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class DataConnectionHandler extends CommandInterface {
     private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
 
+    private ResourceBundle _bundle;
+
+    public void initialize(String method, String pluginName) {
+    	super.initialize(method, pluginName);
+    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    }
+
     public CommandResponse doAUTH(CommandRequest request) {
     	CommandResponse response;
     	request = doPreHooks(request);
@@ -1173,7 +1180,7 @@ public class DataConnectionHandler extends CommandInterface {
 
             if (comparison != 0 && count >= comparison) {
             	response = new CommandResponse(550,
-            			conn.jprintf(DataConnectionHandler.class, "transfer.err.maxsim", env));
+            			jprintf(_bundle, "transfer.err.maxsim", env, request.getUser()));
         		doPostHooks(request, response);
                 return response;
             }
@@ -1615,8 +1622,8 @@ public class DataConnectionHandler extends CommandInterface {
             env.add("seconds", "" + ((float)status.getElapsed() / 1000F));
             env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
-            response = new CommandResponse(226, conn.jprintf(DataConnectionHandler.class,
-                    "transfer.complete", env));
+            response = new CommandResponse(226, jprintf(_bundle,
+                    "transfer.complete", env, request.getUser()));
 
             synchronized (conn.getGlobalContext()) { // need to synchronize
 														// here so only one

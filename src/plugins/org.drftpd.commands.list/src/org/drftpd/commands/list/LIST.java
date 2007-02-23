@@ -338,7 +338,10 @@ public class LIST extends CommandInterface {
 
 				try {
 						os.close();
-						response.addComment(conn.status());
+						/* TODO fix this
+						 * 
+						 */
+						//response.addComment(conn.status());
 					return response;
 				} catch (IOException ioe) {
 					logger.error("", ioe);

@@ -21,28 +21,21 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
 import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.Reply;
-import org.drftpd.commandmanager.ReplyPermissionDeniedException;
 import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commandmanager.UnhandledCommandException;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
@@ -50,7 +43,6 @@ import org.drftpd.slaveselection.filter.Filter;
 import org.drftpd.slaveselection.filter.ScoreChart;
 import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
-import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -61,7 +53,14 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class SlaveManagement extends CommandInterface {
-    
+
+	private ResourceBundle _bundle;
+
+    public void initialize(String method, String pluginName) {
+    	super.initialize(method, pluginName);
+    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    }
+
     public CommandResponse doSITE_SLAVESELECT(CommandRequest request) {
     	CommandResponse response;
     	request = doPreHooks(request);
@@ -232,21 +231,17 @@ public class SlaveManagement extends CommandInterface {
             ReplacerEnvironment env = new ReplacerEnvironment();
             env.add("slave", rslave.getName());
 
-            /* TODO get access to jprintf without going via
-             * BaseFtpConnection
-             */
-            BaseFtpConnection conn = request.getConnection();
             try {
                 SlaveStatus status = rslave.getSlaveStatusAvailable();
                 // what the hell is this doing here?!?
                 /*SiteBot.fillEnvSlaveStatus(env, status,
                     conn.getGlobalContext().getSlaveManager());*/
                 
-                response.addComment(conn.jprintf(SlaveManagement.class,
-                        "slaves", env));
+                response.addComment(jprintf(_bundle,
+                        "slaves", env, request.getUser()));
             } catch (SlaveUnavailableException e) {
-                response.addComment(conn.jprintf(SlaveManagement.class,
-                        "slaves.offline", env));
+                response.addComment(jprintf(_bundle,
+                        "slaves.offline", env, request.getUser()));
             }
         }
 
@@ -362,13 +357,12 @@ public class SlaveManagement extends CommandInterface {
         env.add("slavename", slavename);
 
         RemoteSlave rslave = null;
-        BaseFtpConnection conn = request.getConnection();
 
         try {
             rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
         } catch (ObjectNotFoundException e) {
-            response.addComment(conn.jprintf(SlaveManagement.class,
-                    "slave.notfound", env));
+            response.addComment(jprintf(_bundle,
+                    "slave.notfound", env, request.getUser()));
 
             doPostHooks(request, response);
             return response;
@@ -377,12 +371,12 @@ public class SlaveManagement extends CommandInterface {
         if (!arguments.hasMoreTokens()) {
             if (!rslave.getMasks().isEmpty()) {
                 env.add("masks", rslave.getMasks());
-                response.addComment(conn.jprintf(SlaveManagement.class,
-                        "slave.masks", env));
+                response.addComment(jprintf(_bundle,
+                        "slave.masks", env, request.getUser()));
             }
 
-            response.addComment(conn.jprintf(SlaveManagement.class,
-                    "slave.data.header", env));
+            response.addComment(jprintf(_bundle,
+                    "slave.data.header", request.getUser()));
 
             Map props = rslave.getProperties();
 
@@ -391,8 +385,8 @@ public class SlaveManagement extends CommandInterface {
                 Object value = props.get(key);
                 env.add("key", key);
                 env.add("value", value);
-                response.addComment(conn.jprintf(SlaveManagement.class,
-                        "slave.data", env));
+                response.addComment(jprintf(_bundle,
+                        "slave.data", env, request.getUser()));
             }
 
             doPostHooks(request, response);
@@ -413,8 +407,8 @@ public class SlaveManagement extends CommandInterface {
             rslave.setProperty(key, value);
             env.add("key", key);
             env.add("value", value);
-            response.addComment(conn.jprintf(SlaveManagement.class,
-                    "slave.set.success", env));
+            response.addComment(jprintf(_bundle,
+                    "slave.set.success", env, request.getUser()));
 
             doPostHooks(request, response);
             return response;
@@ -431,14 +425,14 @@ public class SlaveManagement extends CommandInterface {
         	try {
         		value = rslave.removeProperty(key);
         	} catch (KeyNotFoundException e) {
-        		response.addComment(conn.jprintf(SlaveManagement.class,
-        				"slave.unset.failure", env));
+        		response.addComment(jprintf(_bundle,
+        				"slave.unset.failure", env, request.getUser()));
         		doPostHooks(request, response);
         		return response;
         	}
         	env.add("value", value);
-        	response.addComment(conn.jprintf(SlaveManagement.class,
-        			"slave.unset.success", env));
+        	response.addComment(jprintf(_bundle,
+        			"slave.unset.success", env, request.getUser()));
         	doPostHooks(request, response);
         	return response;
         } else if (command.equalsIgnoreCase("addmask")) {
@@ -452,13 +446,13 @@ public class SlaveManagement extends CommandInterface {
             env.add("mask", mask);
             try {
 				rslave.addMask(mask);
-				response.addComment(conn.jprintf(SlaveManagement.class,
-						"slave.addmask.success", env));
+				response.addComment(jprintf(_bundle,
+						"slave.addmask.success", env, request.getUser()));
 				doPostHooks(request, response);
 				return response;
 			} catch (DuplicateElementException e) {
-				response = new CommandResponse(501, conn.jprintf(SlaveManagement.class,
-						"slave.addmask.dupe", env));
+				response = new CommandResponse(501, jprintf(_bundle,
+						"slave.addmask.dupe", env, request.getUser()));
 	            doPostHooks(request, response);
 	            return response;
 			}
@@ -473,13 +467,13 @@ public class SlaveManagement extends CommandInterface {
             env.add("mask", mask);
 
             if (rslave.removeMask(mask)) {
-            	response = new CommandResponse(200, conn.jprintf(SlaveManagement.class,
-                        "slave.delmask.success", env));
+            	response = new CommandResponse(200, jprintf(_bundle,
+                        "slave.delmask.success", env, request.getUser()));
                 doPostHooks(request, response);
                 return response;
             }
-            response = new CommandResponse(501, conn.jprintf(SlaveManagement.class,
-                    "slave.delmask.failed", env));
+            response = new CommandResponse(501, jprintf(_bundle,
+                    "slave.delmask.failed", env, request.getUser()));
             doPostHooks(request, response);
             return response;
         }
@@ -525,21 +519,20 @@ public class SlaveManagement extends CommandInterface {
 
         String slavename = arguments.nextToken();
         env.add("slavename", slavename);
-        BaseFtpConnection conn = request.getConnection();
 
         try {
             GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
         } catch (ObjectNotFoundException e) {
-            response.addComment(conn.jprintf(SlaveManagement.class,
-                    "delslave.notfound", env));
+            response.addComment(jprintf(_bundle,
+                    "delslave.notfound", env, request.getUser()));
 
             doPostHooks(request, response);
             return response;
         }
 
         GlobalContext.getGlobalContext().getSlaveManager().delSlave(slavename);
-        response.addComment(conn.jprintf(SlaveManagement.class,
-                "delslave.success", env));
+        response.addComment(jprintf(_bundle,
+                "delslave.success", env, request.getUser()));
 
         doPostHooks(request, response);
         return response;
@@ -589,20 +582,19 @@ public class SlaveManagement extends CommandInterface {
         	// only one argument
         }
 
-        BaseFtpConnection conn = request.getConnection();
         try {
             GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 
             response = new CommandResponse(501,
-                    conn.jprintf(SlaveManagement.class, "addslave.exists"));
+                    jprintf(_bundle, "addslave.exists", request.getUser()));
             doPostHooks(request, response);
             return response;
         } catch (ObjectNotFoundException e) {
         }
 
         GlobalContext.getGlobalContext().getSlaveManager().newSlave(slavename);
-        response.addComment(conn.jprintf(SlaveManagement.class,
-                "addslave.success", env));
+        response.addComment(jprintf(_bundle,
+                "addslave.success", env, request.getUser()));
 
         doPostHooks(request, response);
         return response;

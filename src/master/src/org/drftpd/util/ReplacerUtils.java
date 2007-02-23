@@ -36,19 +36,18 @@ public class ReplacerUtils {
 		super();
 	}
 
-	public static ReplacerFormat finalFormat(Class baseName, String key)
+	public static ReplacerFormat finalFormat(ResourceBundle bundle, String key)
 			throws FormatterException {
-		ResourceBundle bundle = ResourceBundle.getBundle(baseName.getName());
 
 		return ReplacerFormat.createFormat(bundle.getString(key));
 	}
 
 	public static String jprintf(String key, ReplacerEnvironment env,
-			Class class1) {
+			ResourceBundle bundle) {
 		try {
-			return SimplePrintf.jprintf(finalFormat(class1, key), env);
+			return SimplePrintf.jprintf(finalFormat(bundle, key), env);
 		} catch (Exception e) {
-			logger.warn("basename: " + class1.getName(), e);
+			//logger.warn("basename: " + class1.getName(), e);
 
 			return key;
 		}

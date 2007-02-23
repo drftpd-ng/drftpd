@@ -19,6 +19,7 @@ package org.drftpd.commands.login;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ResourceBundle;
 
 
 import org.apache.log4j.Logger;
@@ -48,6 +49,12 @@ public class LoginHandler extends CommandInterface {
      */
     protected InetAddress _idntAddress;
     protected String _idntIdent;
+    private ResourceBundle _bundle;
+
+    public void initialize(String method, String pluginName) {
+    	super.initialize(method, pluginName);
+    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    }
 
     /**
      * Syntax: IDNT ident@ip:dns
@@ -150,7 +157,7 @@ public class LoginHandler extends CommandInterface {
             conn.getGlobalContext().dispatchFtpEvent(new UserEvent(
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
-            response = new CommandResponse(230, conn.jprintf(LoginHandler.class, "pass.success"));
+            response = new CommandResponse(230, jprintf(_bundle, "pass.success", request.getUser()));
             
             /* TODO: Come back to this later
              * 
@@ -165,7 +172,7 @@ public class LoginHandler extends CommandInterface {
             return response;
         }
 
-        response = new CommandResponse(530, conn.jprintf(LoginHandler.class, "pass.fail"));
+        response = new CommandResponse(530, jprintf(_bundle, "pass.fail", request.getUser()));
         doPostHooks(request, response);
         return response;
     }
@@ -190,7 +197,7 @@ public class LoginHandler extends CommandInterface {
     	BaseFtpConnection conn = request.getConnection();
         conn.stop();
 
-        response = new CommandResponse(221, conn.jprintf(LoginHandler.class, "quit.success"));
+        response = new CommandResponse(221, jprintf(_bundle, "quit.success", request.getUser()));
         doPostHooks(request, response);
         return response;
     }
@@ -286,7 +293,7 @@ public class LoginHandler extends CommandInterface {
                 }
 
                 response = new CommandResponse(331,
-                        conn.jprintf(LoginHandler.class, "user.success"),
+                        jprintf(_bundle, "user.success", request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());
                 doPostHooks(request, response);
                 return response;

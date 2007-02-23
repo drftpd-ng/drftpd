@@ -22,18 +22,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.PreHookInterface;
+import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.util.ReplacerUtils;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.ReplacerFormat;
+import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author djb61
@@ -50,6 +60,67 @@ public abstract class CommandInterface {
 	private ArrayList<Integer> _postHookPriorities;
 
 	private ArrayList<Integer> _preHookPriorities;
+
+	public static ReplacerEnvironment getReplacerEnvironment(
+			ReplacerEnvironment env, User user) {
+		env = new ReplacerEnvironment(env);
+
+		if (user != null) {
+			for (Map.Entry<Key, Object> o : user.getKeyedMap().getAllObjects()
+					.entrySet()) {
+				env.add(o.getKey().toString(), o.getKey()
+						.toString(o.getValue()));
+				// logger.debug("Added "+o.getKey().toString()+"
+				// "+o.getKey().toString(o.getValue()));
+			}
+			env.add("user", user.getName());
+			env.add("username", user.getName());
+			env.add("idletime", "" + user.getIdleTime());
+			env.add("credits", Bytes.formatBytes(user.getCredits()));
+			env.add("ratio", ""
+					+ user.getKeyedMap().get((UserManagement.RATIO)));
+			env
+					.add("tagline", user.getKeyedMap().get(
+							(UserManagement.TAGLINE)));
+			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
+			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+			env.add("group", user.getGroup());
+			env.add("groups", user.getGroups());
+			env.add("averagespeed", Bytes.formatBytes(user.getUploadedTime()
+					+ (user.getDownloadedTime() / 2)));
+			env.add("ipmasks", user.getHostMaskCollection().toString());
+			env.add("isbanned",
+					""
+							+ ((user.getKeyedMap()
+									.getObjectDate(UserManagement.BAN_TIME))
+									.getTime() > System.currentTimeMillis()));
+			// } else {
+			// env.add("user", "<unknown>");
+		}
+		return env;
+	}
+
+	public static String jprintf(ReplacerFormat format,
+			ReplacerEnvironment env, User user) throws FormatterException {
+		env = getReplacerEnvironment(env, user);
+
+		return SimplePrintf.jprintf(format, env);
+	}
+
+	public static String jprintf(ResourceBundle bundle, String key,
+			ReplacerEnvironment env, User user) {
+		env = getReplacerEnvironment(env, user);
+
+		return ReplacerUtils.jprintf(key, env, bundle);
+	}
+
+	public static String jprintfExceptionStatic(ResourceBundle bundle, String key,
+			ReplacerEnvironment env, User user) throws FormatterException {
+		env = getReplacerEnvironment(env, user);
+
+		return SimplePrintf
+				.jprintf(ReplacerUtils.finalFormat(bundle, key), env);
+	}
 
 	public void initialize(String method, String pluginName) {
 		_postHooks = new HashMap<Integer, Object[]>();
@@ -107,7 +178,7 @@ public abstract class CommandInterface {
 		Collections.sort(_postHookPriorities);
 		Collections.reverse(_postHookPriorities);
 
-		/* Iterate through the ppre hook extensions registered for this plugin
+		/* Iterate through the pre hook extensions registered for this plugin
 		 * and find any which belong to the method we are using in this instance,
 		 * add these to a method map for later use.
 		 */
@@ -205,5 +276,20 @@ public abstract class CommandInterface {
 		} catch (UserFileException e) {
 			return null;
 		}
+	}
+
+	protected String jprintf(ResourceBundle bundle, String key, String user) {
+		return jprintf(bundle, key, null, getUserNull(user));
+	}
+
+	protected String jprintf(ResourceBundle bundle, String string, ReplacerEnvironment env, String user) {
+		return jprintf(bundle, string, env, getUserNull(user));
+	}
+
+	protected String jprintfException(ResourceBundle bundle, String key,
+			ReplacerEnvironment env, String user) throws FormatterException {
+		env = getReplacerEnvironment(env, getUserNull(user));
+
+		return jprintfExceptionStatic(bundle, key, env, getUserNull(user));
 	}
 }

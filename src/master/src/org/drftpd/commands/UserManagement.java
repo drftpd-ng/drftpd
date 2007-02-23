@@ -126,6 +126,8 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 	public static final Key BAN_REASON = new Key(UserManagement.class,
 			"ban_reason", String.class);
 
+	private ResourceBundle _bundle;
+
 	private Reply doSITE_ADDIP(BaseFtpConnection conn)
 			throws ImproperUsageException {
 		FtpRequest request = conn.getRequest();
@@ -2022,13 +2024,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 		try {
 			ReplacerFormat formatup = ReplacerUtils.finalFormat(
-					UserManagement.class, "who.up");
+					_bundle, "who.up");
 			ReplacerFormat formatdown = ReplacerUtils.finalFormat(
-					UserManagement.class, "who.down");
+					_bundle, "who.down");
 			ReplacerFormat formatidle = ReplacerUtils.finalFormat(
-					UserManagement.class, "who.idle");
+					_bundle, "who.idle");
 			ReplacerFormat formatcommand = ReplacerUtils.finalFormat(
-					UserManagement.class, "who.command");
+					_bundle, "who.command");
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
 					conn.getGlobalContext().getConnectionManager()
@@ -2116,13 +2118,13 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 		try {
 			ReplacerFormat formatup = ReplacerUtils.finalFormat(
-					UserManagement.class, "swho.up");
+					_bundle, "swho.up");
 			ReplacerFormat formatdown = ReplacerUtils.finalFormat(
-					UserManagement.class, "swho.down");
+					_bundle, "swho.down");
 			ReplacerFormat formatidle = ReplacerUtils.finalFormat(
-					UserManagement.class, "swho.idle");
+					_bundle, "swho.idle");
 			ReplacerFormat formatcommand = ReplacerUtils.finalFormat(
-					UserManagement.class, "swho.command");
+					_bundle, "swho.command");
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
 					conn.getGlobalContext().getConnectionManager()
@@ -2442,6 +2444,7 @@ public class UserManagement implements CommandHandler, CommandHandlerFactory {
 
 	public CommandHandler initialize(BaseFtpConnection conn,
 			CommandManager initializer) {
+		_bundle = ResourceBundle.getBundle(this.getClass().getName());
 		return this;
 	}
 

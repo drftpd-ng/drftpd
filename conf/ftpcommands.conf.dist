@@ -41,7 +41,6 @@ SITE\ LINK=org.drftpd.commands.dir.Dir.doSITE_LINK
 XCRC=org.drftpd.commands.dir.Dir.doXCRC
 MDTM=org.drftpd.commands.dir.Dir.doMDTM
 SIZE=org.drftpd.commands.dir.Dir.doSIZE
-SIZE=org.drftpd.commands.dir.Dir.doSIZE
 
 SITE\ SLAVES=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVES
 SITE\ REMERGE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_REMERGE
