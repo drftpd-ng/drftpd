@@ -23,6 +23,8 @@ USER=org.drftpd.commands.login.LoginHandler.doUSER
 PASS=org.drftpd.commands.login.LoginHandler.doPASS
 QUIT=org.drftpd.commands.login.LoginHandler.doQUIT
 
+LIST=org.drftpd.commands.list.LIST.doLIST
+
 CDUP=org.drftpd.commands.dir.Dir.doCDUP
 CWD=org.drftpd.commands.dir.Dir.doCWD
 MKD=org.drftpd.commands.dir.Dir.doMKD
@@ -39,6 +41,7 @@ SITE\ LINK=org.drftpd.commands.dir.Dir.doSITE_LINK
 XCRC=org.drftpd.commands.dir.Dir.doXCRC
 MDTM=org.drftpd.commands.dir.Dir.doMDTM
 SIZE=org.drftpd.commands.dir.Dir.doSIZE
+SIZE=org.drftpd.commands.dir.Dir.doSIZE
 
 SITE\ SLAVES=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVES
 SITE\ REMERGE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_REMERGE
@@ -47,3 +50,4 @@ SITE\ SLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVE
 SITE\ ADDSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_ADDSLAVE
 SITE\ DELSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_DELSLAVE
 SITE\ SLAVESELECT=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVESELECT
+

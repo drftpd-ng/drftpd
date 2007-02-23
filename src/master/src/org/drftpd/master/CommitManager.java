@@ -32,6 +32,7 @@ import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
 
 /**
+ * @author zubov
  * @version $Id$
  */
 public class CommitManager {

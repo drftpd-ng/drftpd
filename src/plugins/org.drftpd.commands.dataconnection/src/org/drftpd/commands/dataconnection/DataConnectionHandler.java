@@ -1135,7 +1135,7 @@ public class DataConnectionHandler extends CommandInterface {
 
         try {
             char direction = ts.getDirection(new FtpRequest(
-            		request.getOriginalCommand()+request.getArgument()));
+            		request.getOriginalCommand()));
             String cmd = request.getOriginalCommand();
             boolean isStor = cmd.equals("STOR");
             boolean isRetr = cmd.equals("RETR");

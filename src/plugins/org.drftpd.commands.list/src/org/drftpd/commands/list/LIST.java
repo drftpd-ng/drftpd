@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
+package org.drftpd.commands.list;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,16 +33,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-
 import org.apache.log4j.Logger;
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.Reply;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.TransferState;
-import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandleInterface;
@@ -53,9 +51,9 @@ import org.drftpd.vfs.ObjectNotValidException;
 /**
  * @author mog
  * 
- * @version $Id$
+ * @version $Id: LIST.java 1621 2007-02-13 20:41:31Z djb61 $
  */
-public class LIST implements CommandHandler, CommandHandlerFactory {
+public class LIST extends CommandInterface {
 	private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
 
 	private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
@@ -242,12 +240,11 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 	 * 
 	 * LIST 125, 150 226, 250 425, 426, 451 450 500, 501, 502, 421, 530
 	 */
-	public Reply execute(BaseFtpConnection conn) {
+	public CommandResponse doLIST(CommandRequest request) {
 		try {
-			FtpRequest request = conn.getRequest();
-
 			String directoryName = null;
 			String options = "";
+			BaseFtpConnection conn = request.getConnection();
 			TransferState ts = conn.getTransferState();
 
 			// String pattern = "*";
@@ -278,16 +275,13 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 			// boolean allOption = options.indexOf('a') != -1;
 			boolean fulldate = options.indexOf('T') != -1;
 			boolean detailOption = request.getCommand().equals("LIST")
-					|| request.getCommand().equals("STAT")
 					|| (options.indexOf('l') != -1);
 
 			// boolean directoryOption = options.indexOf("d") != -1;
 
-			if (!request.getCommand().equals("STAT")) {
-
-				if (!ts.isPasv() && !ts.isPort()) {
-					return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
-				}
+			if (!ts.isPasv() && !ts.isPort()) {
+					ts.reset();
+					return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
 			}
 
 			DirectoryHandle directoryFile;
@@ -297,91 +291,83 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 					directoryFile = conn.getCurrentDirectory().getDirectory(
 							directoryName);
 				} catch (FileNotFoundException ex) {
-					return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 				} catch (ObjectNotValidException e) {
-					return Reply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM;
+					return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
 				}
 
 				if (!conn.getGlobalContext().getConfig().checkPathPermission(
 						"privpath", conn.getUserNull(),
 						directoryFile.getParent(), true)) {
-					return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 				}
 			} else {
 				directoryFile = conn.getCurrentDirectory();
 			}
 
 			PrintWriter out = conn.getControlWriter();
-			Socket dataSocket = null;
 			Writer os;
 
-			if (request.getCommand().equals("STAT")) {
-				os = out;
-				out.write("213- Status of " + request.getArgument() + ":"
-						+ NEWLINE);
-			} else {
+
 				if (!ts.getSendFilesEncrypted()
 						&& conn.getGlobalContext().getConfig().checkPermission(
 								"denydiruncrypted", conn.getUserNull())) {
-					return new Reply(550, "Secure Listing Required");
+					return new CommandResponse(550, "Secure Listing Required");
 				}
 
 				out.write(Reply.RESPONSE_150_OK);
 				out.flush();
 
 				try {
-					dataSocket = ts.getDataSocketForLIST();
-					os = new PrintWriter(new OutputStreamWriter(dataSocket
+					os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST()
 							.getOutputStream()));
-
-					// out2 = dataSocket.getChannel();
 				} catch (IOException ex) {
 					logger.warn("from master", ex);
 
-					return new Reply(425, ex.getMessage());
+					return new CommandResponse(425, ex.getMessage());
 				}
-			}
 
 			// //////////////
 			logger.debug("Listing directoryFile - " + directoryFile);
 			List<InodeHandleInterface> listFiles = ListUtils.list(
 					directoryFile, conn);
-
 			// //////////////
 			try {
-				if (request.getCommand().equals("LIST")
-						|| request.getCommand().equals("STAT")) {
-					printList(listFiles, os, fulldate);
-				} else if (request.getCommand().equals("NLST")) {
-					printNList(listFiles, detailOption, os);
-				}
-
-				Reply response = (Reply) Reply.RESPONSE_226_CLOSING_DATA_CONNECTION
-						.clone();
+				printList(listFiles, os, fulldate);
+				CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
 
 				try {
-					if (!request.getCommand().equals("STAT")) {
 						os.close();
-						dataSocket.close();
 						response.addComment(conn.status());
-
-						return response;
-					}
-
-					return new Reply(213, "End of Status");
+					return response;
 				} catch (IOException ioe) {
 					logger.error("", ioe);
 
-					return new Reply(450, ioe.getMessage());
+					return new CommandResponse(450, ioe.getMessage());
 				}
 			} catch (IOException ex) {
 				logger.warn("from master", ex);
 
-				return new Reply(450, ex.getMessage());
+				return new CommandResponse(450, ex.getMessage());
 			}
 		} finally {
-			conn.getTransferState().reset();
+			request.getConnection().getTransferState().reset();
 		}
+	}
+	
+	public CommandResponse doSTAT(CommandRequest request) {
+/*		if (request.getCommand().equals("STAT")) {
+			os = out;
+			out.write("213- Status of " + request.getArgument() + ":"
+					+ NEWLINE);
+			return new Reply(213, "End of Status");
+		}*/
+		return null;
+	}
+	
+	public CommandResponse doNLST(CommandRequest request) {
+		//printNList(listFiles, detailOption, os);
+		return null;
 	}
 
 	public String[] getFeatReplies() {
@@ -404,19 +390,4 @@ public class LIST implements CommandHandler, CommandHandlerFactory {
 	// }
 	// return;
 	// }
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.sf.drftpd.master.command.CommandHandler#initialize(net.sf.drftpd.master.BaseFtpConnection)
-	 */
-	public CommandHandler initialize(BaseFtpConnection conn,
-			CommandManager initializer) {
-		return this;
-	}
-
-	public void load(CommandManagerFactory initializer) {
-	}
-
-	public void unload() {
-	}
 }

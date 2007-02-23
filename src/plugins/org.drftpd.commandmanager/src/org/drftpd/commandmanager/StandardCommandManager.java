@@ -136,7 +136,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 
 	public static CommandResponse genericResponse(String type) {
 		try {
-			return _genericResponses.get(type);
+			return (CommandResponse) _genericResponses.get(type).clone();
 		}
 		catch (NullPointerException e) {
 			logger.error("An unknown generic FTP response was used: "+type+
@@ -147,20 +147,11 @@ public class StandardCommandManager implements CommandManagerInterface {
 
 	public static CommandResponse genericResponse(String type, DirectoryHandle directory,
 			String user) {
-		try {
-			CommandResponse response = _genericResponses.get(type);
-			response.setCurrentDirectory(directory);
-			response.setUser(user);
-			return response;
-		}
-		catch (NullPointerException e) {
-			logger.error("An unknown generic FTP response was used: "+type+
-					" this is almost certainly a bug");
-			CommandResponse response = new CommandResponse(540, "No response message defined");
-			response.setCurrentDirectory(directory);
-			response.setUser(user);
-			return response;
-		}
+		CommandResponse response = null;
+		response = genericResponse(type);
+		response.setCurrentDirectory(directory);
+		response.setUser(user);
+		return response;
 	}
 
 	private static synchronized void initGenericResponses() {
