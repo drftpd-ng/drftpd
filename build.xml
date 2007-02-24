@@ -57,21 +57,9 @@ check - checks plug-ins integrity
 	<target name="check"
 		depends="build"
 		description="Checks plug-ins integrity">
-		<jpf-check basedir="${basedir}/src/common"
-					includes="plugin.xml"
+		<jpf-check basedir="${basedir}"
+					includes="core/*/plugin.xml,plugins/*/plugin.xml"
 					verbose="true"
 					usepathresolver="true" />
-		<jpf-check basedir="${basedir}/src/master"
-			includes="plugin.xml"
-			verbose="true"
-			usepathresolver="true" />
-		<jpf-check basedir="${basedir}/src/slave"
-			includes="plugin.xml"
-			verbose="true"
-			usepathresolver="true" />
-		<jpf-check basedir="${basedir}/src/plugins"
-			includes="*/plugin.xml,*/plugin-fragment.xml"
-			verbose="true"
-			usepathresolver="true" />
 	</target>
 </project>
