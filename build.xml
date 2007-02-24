@@ -44,6 +44,7 @@ check - checks plug-ins integrity
 		<ant dir="src/plugins/org.drftpd.commands.list" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.dir" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.slavemanagement" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.commands.sitemanagement" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.misc" target="${target}" />
 	</target>
 

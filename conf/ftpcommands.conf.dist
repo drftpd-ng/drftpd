@@ -50,6 +50,13 @@ SITE\ ADDSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_ADDSLA
 SITE\ DELSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_DELSLAVE
 SITE\ SLAVESELECT=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVESELECT
 
+SITE\ RELOAD=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_RELOAD
+SITE\ SHUTDOWN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_SHUTDOWN
+SITE\ LIST=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_LIST
+SITE\ LOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_LOADPLUGIN
+SITE\ UNLOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_UNLOADPLUGIN
+SITE\ PLUGINS=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_PLUGINS
+
 ABOR=org.drftpd.commands.misc.Misc.doABOR
 FEAT=org.drftpd.commands.misc.Misc.doFEAT
 SITE\ STAT=org.drftpd.commands.misc.Misc.doSITE_STAT

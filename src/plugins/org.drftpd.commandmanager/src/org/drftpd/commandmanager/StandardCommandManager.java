@@ -99,7 +99,6 @@ public class StandardCommandManager implements CommandManagerInterface {
 				Class cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
 				CommandInterface cmdInstance = (CommandInterface) cmdCls.newInstance();
 				cmdInstance.initialize(methodString, pluginString, this);
-
 				Method m = cmdInstance.getClass().getMethod(methodString,
 						new Class[] {CommandRequest.class});
 				_commands.put(requiredCmd,new Object[] {m,cmdInstance});
@@ -108,7 +107,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 				/* Should be safe to continue, just means this command class won't be
 				 * available
 				 */
-				logger.info("Failed to add command handler: "+requiredCmd);
+				logger.info("Failed to add command handler: "+requiredCmd, e);
 			}
 		}
 	}
