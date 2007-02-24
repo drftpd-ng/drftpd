@@ -247,24 +247,23 @@ public abstract class CommandInterface {
 	}
 
 	protected CommandRequest doPreHooks(CommandRequest request) {
-		CommandRequest _request = request;
-		_request.setAllowed(new Boolean(true));
+		request.setAllowed(new Boolean(true));
 		for (Integer key : _preHookPriorities) {
 			Object[] hook = _preHooks.get(key);
 			Method m = (Method) hook[0];
 			try {
-				_request = (CommandRequest) m.invoke(hook[1], new Object[] {_request});
+				request = (CommandRequest) m.invoke(hook[1], new Object[] {request});
 			}
 			catch (Exception e) {
 				/* Not that important, this just means that this pre hook
 				 * failed and we'll just move onto the next one
 				 */
 			}
-			if (!_request.isAllowed()) {
+			if (!request.isAllowed()) {
 				break;
 			}
 		}
-		return _request;
+		return request;
 	}
 
 	protected User getUserNull(String user) {
