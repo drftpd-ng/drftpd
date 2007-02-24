@@ -162,7 +162,7 @@ public abstract class CommandInterface {
 					Method m = postHookInstance.getClass().getMethod(
 							postHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class, CommandResponse.class});
-					_postHooks.put((Integer)postHook.getParameter("Priority").valueAsNumber(),
+					_postHooks.put(new Integer(postHook.getParameter("Priority").valueAsNumber().intValue()),
 							new Object[] {m,postHookInstance});
 				}
 				catch(Exception e) {
@@ -171,7 +171,7 @@ public abstract class CommandInterface {
 					 */
 					logger.info("Failed to add post hook handler to " +
 							pluginName + " from plugin: "
-							+postHook.getDeclaringPluginDescriptor().getId());
+							+postHook.getDeclaringPluginDescriptor().getId(),e);
 				}
 			}
 		}
@@ -212,7 +212,7 @@ public abstract class CommandInterface {
 					Method m = preHookInstance.getClass().getMethod(
 							preHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class});
-					_preHooks.put((Integer)preHook.getParameter("Priority").valueAsNumber(),
+					_preHooks.put(new Integer(preHook.getParameter("Priority").valueAsNumber().intValue()),
 							new Object[] {m,preHookInstance});
 				}
 				catch(Exception e) {
@@ -221,7 +221,7 @@ public abstract class CommandInterface {
 					 */
 					logger.info("Failed to add pre hook handler to " +
 							pluginName + " from plugin: "
-							+preHook.getDeclaringPluginDescriptor().getId());
+							+preHook.getDeclaringPluginDescriptor().getId(),e);
 				}
 			}
 		}
