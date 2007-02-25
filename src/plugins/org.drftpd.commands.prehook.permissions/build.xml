@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="org.drftpd.commands.prehook.permissions plug-in build file"
+         default="build"
+         basedir=".">
+	<jpf-info manifest="${basedir}/plugin.xml"
+		propertyid="plugin.id"
+		propertyversion="plugin.version" />
+	<property name="plugin.home"
+		value="${basedir}/../../../plugins/${plugin.id}" />
+	<path id="plugin.classpath">
+		<fileset dir="${basedir}/../../../lib">
+			<include name="*.jar" />
+		</fileset>
+		<dirset dir="${plugin.home}/../../">
+			<include name="core/common/classes" />
+			<include name="core/slave/classes" />
+			<include name="core/master/classes" />
+			<include name="plugins/org.drftpd.commandmanager/classes" />
+		</dirset>
+	</path>
+
+	<target name="build">
+		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
+		<mkdir dir="${plugin.home}/classes" />
+		<javac destdir="${plugin.home}/classes"
+			srcdir="${basedir}/src"
+			classpathref="plugin.classpath"
+			source="1.5"
+			target="1.5"
+			debug="true"
+			optimize="false">
+		</javac>
+		<copy todir="${plugin.home}/classes">
+			<fileset dir="${basedir}/src"
+				includes="**/*"
+				excludes="**/.*,**/*.java" />
+		</copy>
+		<copy todir="${plugin.home}" includeemptydirs="false">
+			<fileset dir="${basedir}"
+				excludes="classes/,.*,*build*,src/" />
+		</copy>
+	</target>
+</project>
