@@ -16,11 +16,28 @@
  */
 package org.drftpd.commandmanager;
 
+import java.lang.reflect.Method;
+
 /**
- * @author djb61
+ * @author zubov
  * @version $Id$
  */
-public interface PostHookInterface extends ExtensionParameterInterface {
+public class CommandWrapper {
 
-	public void initialize();
+	private Method _method = null;
+	private CommandInterface _ci = null;
+	
+	public CommandWrapper(Method m, CommandInterface ci) {
+		_method = m;
+		_ci = ci;
+	}
+	
+	public Method getMethod() {
+		return _method;
+	}
+	
+	public CommandInterface getCommandInterface() {
+		return _ci;
+	}
+	
 }

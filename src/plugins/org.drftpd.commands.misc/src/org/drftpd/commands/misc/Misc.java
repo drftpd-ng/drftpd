@@ -18,18 +18,12 @@
 package org.drftpd.commands.misc;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.CommandWrapper;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.slave.Slave;
@@ -90,12 +84,12 @@ public class Misc extends CommandInterface {
         PrintWriter out = request.getConnection().getControlWriter();
         out.print("211-Extensions supported:\r\n");
 
-        for (Object[] objs : _cManager.getCommandHandlersMap().values()) {
-        	CommandInterface hnd = (CommandInterface) objs[1];  
+        for (CommandWrapper wrapper : _cManager.getCommandHandlersMap().values()) {
+        	CommandInterface hnd = wrapper.getCommandInterface();
         	String[] feat = hnd.getFeatReplies();  
-        	if (feat == null) {  
+        	if (feat == null) {
         		continue;  
-        	}  
+        	}
 
         	for (int i = 0; i < feat.length; i++) {
                 out.print(" " + feat[i] + "\r\n");

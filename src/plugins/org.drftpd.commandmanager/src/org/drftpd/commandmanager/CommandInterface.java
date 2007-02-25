@@ -18,18 +18,17 @@
 package org.drftpd.commandmanager;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.PostHookInterface;
-import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -55,13 +54,11 @@ public abstract class CommandInterface {
 	
 	protected String[] _featReplies;
 
-	private HashMap<Integer, Object[]> _postHooks;
+	private SortedMap<Integer, Object[]> _postHooks;
 
-	private HashMap<Integer, Object[]> _preHooks;
+	private SortedMap<Integer, Object[]> _preHooks;
 
-	private ArrayList<Integer> _postHookPriorities;
-
-	private ArrayList<Integer> _preHookPriorities;
+	private HashMap<String,String> _extensionParameters = new HashMap<String,String>();
 
 	public static ReplacerEnvironment getReplacerEnvironment(
 			ReplacerEnvironment env, User user) {
@@ -125,8 +122,8 @@ public abstract class CommandInterface {
 	}
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		_postHooks = new HashMap<Integer, Object[]>();
-		_preHooks = new HashMap<Integer, Object[]>();
+		_postHooks = new TreeMap<Integer, Object[]>();
+		_preHooks = new TreeMap<Integer, Object[]>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 
@@ -157,6 +154,12 @@ public abstract class CommandInterface {
 					Class postHookCls = postHookLoader.loadClass(
 							postHook.getParameter("HookClass").valueAsString());
 					PostHookInterface postHookInstance = (PostHookInterface) postHookCls.newInstance();
+					
+					for (Object obj : postHook.getParameters()) {
+						Extension.Parameter param = (Extension.Parameter) obj;
+						postHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
+					}
+					
 					postHookInstance.initialize();
 
 					Method m = postHookInstance.getClass().getMethod(
@@ -175,10 +178,6 @@ public abstract class CommandInterface {
 				}
 			}
 		}
-
-		_postHookPriorities = new ArrayList<Integer>(_postHooks.keySet());
-		Collections.sort(_postHookPriorities);
-		Collections.reverse(_postHookPriorities);
 
 		/* Iterate through the pre hook extensions registered for this plugin
 		 * and find any which belong to the method we are using in this instance,
@@ -207,6 +206,12 @@ public abstract class CommandInterface {
 					Class preHookCls = preHookLoader.loadClass(
 							preHook.getParameter("HookClass").valueAsString());
 					PreHookInterface preHookInstance = (PreHookInterface) preHookCls.newInstance();
+					
+					for (Object obj : preHook.getParameters()) {
+						Extension.Parameter param = (Extension.Parameter) obj;
+						preHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
+					}
+					
 					preHookInstance.initialize();
 
 					Method m = preHookInstance.getClass().getMethod(
@@ -225,20 +230,16 @@ public abstract class CommandInterface {
 				}
 			}
 		}
-
-		_preHookPriorities = new ArrayList<Integer>(_preHooks.keySet());
-		Collections.sort(_preHookPriorities);
-		Collections.reverse(_preHookPriorities);
 	}
 
-	protected void doPostHooks(CommandRequest request, CommandResponse response) {
-		for (Integer key : _postHookPriorities) {
-			Object[] hook = _postHooks.get(key);
+	protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
+		for (Object[] hook : _postHooks.values()) {
 			Method m = (Method) hook[0];
 			try {
 				m.invoke(hook[1], new Object[] {request, response});
 			}
 			catch (Exception e) {
+				logger.error("Error while loading/invoking posthook " + m.toString(), e);
 				/* Not that important, this just means that this post hook
 				 * failed and we'll just move onto the next one
 				 */
@@ -246,24 +247,21 @@ public abstract class CommandInterface {
 		}
 	}
 
-	protected CommandRequest doPreHooks(CommandRequest request) {
-		request.setAllowed(new Boolean(true));
-		for (Integer key : _preHookPriorities) {
-			Object[] hook = _preHooks.get(key);
+	protected CommandRequest doPreHooks(CommandRequestInterface request) {
+		request.setAllowed(true);
+		for (Object[] hook : _preHooks.values()) {
 			Method m = (Method) hook[0];
 			try {
 				request = (CommandRequest) m.invoke(hook[1], new Object[] {request});
 			}
 			catch (Exception e) {
+				logger.error("Error while loading/invoking prehook " + m.toString(), e);
 				/* Not that important, this just means that this pre hook
 				 * failed and we'll just move onto the next one
 				 */
 			}
-			if (!request.isAllowed()) {
-				break;
-			}
 		}
-		return request;
+		return (CommandRequest) request;
 	}
 
 	protected User getUserNull(String user) {
@@ -277,6 +275,10 @@ public abstract class CommandInterface {
 		} catch (UserFileException e) {
 			return null;
 		}
+	}
+	
+	protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
+		return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
 	}
 
 	protected String jprintf(ResourceBundle bundle, String key, String user) {
@@ -296,5 +298,13 @@ public abstract class CommandInterface {
 
 	public String[] getFeatReplies() {
 		return _featReplies;
+	}
+	
+	public String getExtensionParameter(String key) {
+		return _extensionParameters.get(key);
+	}
+	
+	public void addExtensionParameter(String key, String value) {
+		_extensionParameters.put(key, value);
 	}
 }

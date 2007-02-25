@@ -42,12 +42,12 @@ public class StandardCommandManager implements CommandManagerInterface {
 
 	private static Hashtable<String,CommandResponse> _genericResponses;
 
-	private HashMap<String, Object[]> _commands;
+	private HashMap<String, CommandWrapper> _commands;
 
 	public void initialize(ArrayList<String> requiredCmds) {
 		initGenericResponses();
 
-		_commands = new HashMap<String, Object[]>();
+		_commands = new HashMap<String, CommandWrapper>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint cmdExtPoint = 
@@ -60,10 +60,9 @@ public class StandardCommandManager implements CommandManagerInterface {
 		 */
 		Hashtable<String,Extension> extensions = new Hashtable<String,Extension>();
 		for (Iterator commands = cmdExtPoint.getConnectedExtensions().iterator();
-		commands.hasNext();) { 
+		commands.hasNext();) {
 
 			Extension cmd = (Extension) commands.next();
-
 			String pluginId = cmd.getDeclaringPluginDescriptor().getId();
 			extensions.put(pluginId,cmd);
 		}
@@ -90,6 +89,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 					manager.activatePlugin(pluginString);
 				}
 				catch (PluginLifecycleException e) {
+					logger.debug("plugin lifecycle exception", e);
 					// Not overly concerned about this
 				}
 			}
@@ -98,10 +98,14 @@ public class StandardCommandManager implements CommandManagerInterface {
 			try {
 				Class cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
 				CommandInterface cmdInstance = (CommandInterface) cmdCls.newInstance();
+				for (Object obj : cmd.getParameters()) {
+					Extension.Parameter param = (Extension.Parameter) obj;
+					cmdInstance.addExtensionParameter(param.getId(), param.valueAsString());
+				}
 				cmdInstance.initialize(methodString, pluginString, this);
 				Method m = cmdInstance.getClass().getMethod(methodString,
 						new Class[] {CommandRequest.class});
-				_commands.put(requiredCmd,new Object[] {m,cmdInstance});
+				_commands.put(requiredCmd,new CommandWrapper(m,cmdInstance));
 			}
 			catch(Exception e) {
 				/* Should be safe to continue, just means this command class won't be
@@ -113,18 +117,27 @@ public class StandardCommandManager implements CommandManagerInterface {
 	}
 
 	public CommandResponseInterface execute(CommandRequestInterface request) {
-		Object[] cmdHandler = _commands.get(request.getCommand());
-		if (cmdHandler == null) {
+		CommandWrapper cmdWrapper = _commands.get(request.getCommand());
+		if (cmdWrapper == null) {
 			CommandResponseInterface cmdFailed = genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
 			cmdFailed.setUser(request.getUser());
 			cmdFailed.setCurrentDirectory(request.getCurrentDirectory());
 			return cmdFailed;
 		}
-		Method m = (Method) cmdHandler[0];
 		try {
-			return (CommandResponseInterface) m.invoke(cmdHandler[1], new Object[] {request});
-		}
-		catch (Exception e) {
+			CommandResponseInterface response = null;
+	    	request = cmdWrapper.getCommandInterface().doPreHooks(request);
+	    	if(!request.isAllowed()) {
+	    		response = request.getDeniedResponse();
+	    		if (response == null) {
+	    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+	    		}
+	    		return response;
+	    	}
+			response = (CommandResponseInterface) cmdWrapper.getMethod().invoke(cmdWrapper.getCommandInterface(), new Object[] {request});
+			cmdWrapper.getCommandInterface().doPostHooks(request, response);
+			return response;
+		} catch (Exception e) {
 			CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
 			cmdFailed.setUser(request.getUser());
 			cmdFailed.setCurrentDirectory(request.getCurrentDirectory());
@@ -283,7 +296,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 		return new CommandRequest(argument, command, directory, user, connection, originalCommand);
 	}
 
-	public HashMap<String,Object[]> getCommandHandlersMap() {
+	public HashMap<String,CommandWrapper> getCommandHandlersMap() {
 		return _commands;
 	}
 }

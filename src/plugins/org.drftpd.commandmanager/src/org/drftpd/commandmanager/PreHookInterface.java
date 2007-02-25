@@ -20,7 +20,7 @@ package org.drftpd.commandmanager;
  * @author djb61
  * @version $Id$
  */
-public interface PreHookInterface {
+public interface PreHookInterface extends ExtensionParameterInterface {
 
 	public void initialize();
 }

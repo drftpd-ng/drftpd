@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.prehook.permissions" version="2.1.0">
+	<requires>
+		<import plugin-id="org.drftpd.commands.slavemanagement" />
+		<import plugin-id="org.drftpd.commands.sitemanagement" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.prehook.permissions" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="AdminCheck1">
+		<parameter id="ParentMethod" value="doSITE_ADDSLAVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="permsTag" value="addslave" />
+		<parameter id="Priority" value="1000" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="AdminCheck2">
+		<parameter id="ParentMethod" value="doSITE_DELSLAVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1000" />
+		<parameter id="permsTag" value="delslave" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="AdminCheck3">
+		<parameter id="ParentMethod" value="doSITE_LIST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1000" />
+		<parameter id="permsTag" value="list" />
+	</extension>
+</plugin>

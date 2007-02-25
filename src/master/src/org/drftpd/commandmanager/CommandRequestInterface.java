@@ -45,4 +45,10 @@ public interface CommandRequestInterface {
 	public DirectoryHandle getCurrentDirectory();
 
 	public String getUser();
+
+	public boolean isAllowed();
+
+	public void setAllowed(boolean b);
+
+	public CommandResponseInterface getDeniedResponse();
 }

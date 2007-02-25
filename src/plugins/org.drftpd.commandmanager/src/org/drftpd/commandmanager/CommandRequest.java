@@ -17,10 +17,14 @@
  */
 package org.drftpd.commandmanager;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -148,5 +152,13 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		catch (KeyNotFoundException e) {
 			return false;
 		}
+	}
+
+	public User getUserObject() throws NoSuchUserException, UserFileException {
+		return GlobalContext.getGlobalContext().getUserManager().getUserByName(getUser());
+	}
+
+	public void setAllowed(boolean b) {
+		setAllowed(new Boolean(b));
 	}
 }

@@ -17,10 +17,13 @@
 package org.drftpd.commandmanager;
 
 /**
- * @author djb61
+ * @author zubov
  * @version $Id$
  */
-public interface PostHookInterface extends ExtensionParameterInterface {
+public interface ExtensionParameterInterface {
 
-	public void initialize();
+	public String getExtensionParameter(String key);
+	
+	public void addExtensionParameter(String key, String value);
+	
 }

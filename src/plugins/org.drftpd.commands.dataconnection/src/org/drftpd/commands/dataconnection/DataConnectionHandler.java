@@ -29,7 +29,6 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
@@ -37,6 +36,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.TransferEvent;
@@ -1026,7 +1026,7 @@ public class DataConnectionHandler extends CommandInterface {
     private String[] populateFeat(String method) {
     	boolean sslContext = GlobalContext.getGlobalContext().getSSLContext() != null;
     	if ("doAUTH".equals(method)) {
-    		return sslContext ? new String[] { "AUTH SSL" } : null;
+    		return sslContext ? new String[] { "AUTH TLS" } : null;
     	}
     	if ("doPASVandCPSV".equals(method)) {
     		return sslContext ? new String[] { "CPSV" } : null;

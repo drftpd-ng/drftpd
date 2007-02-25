@@ -188,7 +188,10 @@ public class FtpConfig extends Observable implements ConfigInterface {
 
 		return defaults;
 	}
-
+	
+	/**
+	 * Returns true if the user is not allowed to perform the action
+	 */
 	public boolean checkPermission(String key, User user) {
 		Permission perm = _permissions.get(key);
 
