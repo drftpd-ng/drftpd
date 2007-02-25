@@ -20,9 +20,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commands.TransferStatistics;
 import org.drftpd.master.config.FtpConfig;
-import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
 /**

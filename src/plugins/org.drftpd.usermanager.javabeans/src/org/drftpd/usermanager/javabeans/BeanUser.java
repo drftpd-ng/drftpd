@@ -27,7 +27,6 @@ import org.drftpd.master.CommitManager;
 import org.drftpd.master.Commitable;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;

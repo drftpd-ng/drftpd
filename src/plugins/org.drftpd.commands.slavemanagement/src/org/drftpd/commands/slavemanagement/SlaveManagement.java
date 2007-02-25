@@ -63,43 +63,36 @@ public class SlaveManagement extends CommandInterface {
 
     public CommandResponse doSITE_SLAVESELECT(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
         String argument = request.getArgument();
         StringTokenizer arguments = new StringTokenizer(argument);
         if (arguments.hasMoreTokens() == false) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
         String type = arguments.nextToken();
         if (arguments.hasMoreTokens() == false) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
         String path = arguments.nextToken();
         if (!path.startsWith(VirtualFileSystem.separator)) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
         char direction = Transfer.TRANSFER_UNKNOWN;
@@ -109,7 +102,6 @@ public class SlaveManagement extends CommandInterface {
         	direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
         } else {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
         Collection<RemoteSlave> slaves;
@@ -117,7 +109,6 @@ public class SlaveManagement extends CommandInterface {
 			slaves = GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves();
 		} catch (NoAvailableSlaveException e1) {
 			response = StandardCommandManager.genericResponse("RESPONSE_530_SLAVE_UNAVAILABLE");
-        	doPostHooks(request, response);
             return response;
 		}
         SlaveSelectionManager ssm = null;
@@ -126,7 +117,6 @@ public class SlaveManagement extends CommandInterface {
         } catch (ClassCastException e) {
         	response = new CommandResponse(500,
         			"You are attempting to test filter.SlaveSelectionManager yet you're using def.SlaveSelectionManager");
-            doPostHooks(request, response);
             return response;
         }
         response = new CommandResponse(500, "***End of SlaveSelection output***");
@@ -141,30 +131,25 @@ public class SlaveManagement extends CommandInterface {
         for (SlaveScore ss : sc.getSlaveScores()) {
         	response.addComment(ss.getRSlave().getName() + "=" + ss.getScore());
         }
-        doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doSITE_KICKSLAVE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
-    		return response;
+       		return response;
     	}
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -174,13 +159,11 @@ public class SlaveManagement extends CommandInterface {
             rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(request.getArgument());
         } catch (ObjectNotFoundException e) {
         	response = new CommandResponse(200, "No such slave");
-            doPostHooks(request, response);
             return response;
         }
 
         if (!rslave.isOnline()) {
         	response = new CommandResponse(200, "Slave is already offline");
-            doPostHooks(request, response);
             return response;
         }
 
@@ -188,7 +171,6 @@ public class SlaveManagement extends CommandInterface {
             getUserNull(request.getUser()).getName());
 
         response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    	doPostHooks(request, response);
         return response;
     }
 
@@ -198,13 +180,11 @@ public class SlaveManagement extends CommandInterface {
      */
     public CommandResponse doSITE_SLAVES(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	boolean showMore = request.hasArgument() &&
@@ -212,7 +192,6 @@ public class SlaveManagement extends CommandInterface {
 
         if (showMore && !getUserNull(request.getUser()).isAdmin()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -245,19 +224,16 @@ public class SlaveManagement extends CommandInterface {
             }
         }
 
-        doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doSITE_REMERGE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	/* TODO reminder to consider whether this permissions check
@@ -265,13 +241,11 @@ public class SlaveManagement extends CommandInterface {
     	 */
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
-            return response;
+        	return response;
         }
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -281,14 +255,12 @@ public class SlaveManagement extends CommandInterface {
             rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(request.getArgument());
         } catch (ObjectNotFoundException e) {
         	response = new CommandResponse(200, "No such slave");
-            doPostHooks(request, response);
             return response;
         }
 
         if (!rslave.isAvailable()) {
         	response = new CommandResponse(200,
             	"Slave is still merging from initial connect");
-            doPostHooks(request, response);
             return response;
         }
 
@@ -299,18 +271,15 @@ public class SlaveManagement extends CommandInterface {
             rslave.setOffline("IOException during remerge()");
 
             response = new CommandResponse(200, "IOException during remerge()");
-            doPostHooks(request, response);
             return response;
         } catch (SlaveUnavailableException e) {
             rslave.setOffline("Slave Unavailable during remerge()");
 
             response = new CommandResponse(200, "Slave Unavailable during remerge()");
-            doPostHooks(request, response);
             return response;
         }
 
         response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    	doPostHooks(request, response);
         return response;
     }
 
@@ -320,18 +289,15 @@ public class SlaveManagement extends CommandInterface {
      */
     public CommandResponse doSITE_SLAVE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -340,7 +306,6 @@ public class SlaveManagement extends CommandInterface {
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -349,7 +314,6 @@ public class SlaveManagement extends CommandInterface {
 
         if (!arguments.hasMoreTokens()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -364,7 +328,6 @@ public class SlaveManagement extends CommandInterface {
             response.addComment(jprintf(_bundle,
                     "slave.notfound", env, request.getUser()));
 
-            doPostHooks(request, response);
             return response;
         }
 
@@ -389,7 +352,6 @@ public class SlaveManagement extends CommandInterface {
                         "slave.data", env, request.getUser()));
             }
 
-            doPostHooks(request, response);
             return response;
         }
 
@@ -398,7 +360,6 @@ public class SlaveManagement extends CommandInterface {
         if (command.equalsIgnoreCase("set")) {
             if (arguments.countTokens() != 2) {
             	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            	doPostHooks(request, response);
                 return response;
             }
 
@@ -410,12 +371,10 @@ public class SlaveManagement extends CommandInterface {
             response.addComment(jprintf(_bundle,
                     "slave.set.success", env, request.getUser()));
 
-            doPostHooks(request, response);
             return response;
         } else if (command.equalsIgnoreCase("unset")) {
         	if (arguments.countTokens() != 1) {
         		response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            	doPostHooks(request, response);
                 return response;
         	}
 
@@ -427,18 +386,15 @@ public class SlaveManagement extends CommandInterface {
         	} catch (KeyNotFoundException e) {
         		response.addComment(jprintf(_bundle,
         				"slave.unset.failure", env, request.getUser()));
-        		doPostHooks(request, response);
         		return response;
         	}
         	env.add("value", value);
         	response.addComment(jprintf(_bundle,
         			"slave.unset.success", env, request.getUser()));
-        	doPostHooks(request, response);
         	return response;
         } else if (command.equalsIgnoreCase("addmask")) {
             if (arguments.countTokens() != 1) {
             	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            	doPostHooks(request, response);
                 return response;
             }
 
@@ -448,18 +404,15 @@ public class SlaveManagement extends CommandInterface {
 				rslave.addMask(mask);
 				response.addComment(jprintf(_bundle,
 						"slave.addmask.success", env, request.getUser()));
-				doPostHooks(request, response);
 				return response;
 			} catch (DuplicateElementException e) {
 				response = new CommandResponse(501, jprintf(_bundle,
 						"slave.addmask.dupe", env, request.getUser()));
-	            doPostHooks(request, response);
 	            return response;
 			}
         } else if (command.equalsIgnoreCase("delmask")) {
             if (arguments.countTokens() != 1) {
             	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            	doPostHooks(request, response);
                 return response;
             }
 
@@ -469,33 +422,27 @@ public class SlaveManagement extends CommandInterface {
             if (rslave.removeMask(mask)) {
             	response = new CommandResponse(200, jprintf(_bundle,
                         "slave.delmask.success", env, request.getUser()));
-                doPostHooks(request, response);
                 return response;
             }
             response = new CommandResponse(501, jprintf(_bundle,
                     "slave.delmask.failed", env, request.getUser()));
-            doPostHooks(request, response);
             return response;
         }
         response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-    	doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doSITE_DELSLAVE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -504,7 +451,6 @@ public class SlaveManagement extends CommandInterface {
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -513,7 +459,6 @@ public class SlaveManagement extends CommandInterface {
 
         if (!arguments.hasMoreTokens()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -526,7 +471,6 @@ public class SlaveManagement extends CommandInterface {
             response.addComment(jprintf(_bundle,
                     "delslave.notfound", env, request.getUser()));
 
-            doPostHooks(request, response);
             return response;
         }
 
@@ -534,24 +478,20 @@ public class SlaveManagement extends CommandInterface {
         response.addComment(jprintf(_bundle,
                 "delslave.success", env, request.getUser()));
 
-        doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doSITE_ADDSLAVE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -560,7 +500,6 @@ public class SlaveManagement extends CommandInterface {
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -568,7 +507,6 @@ public class SlaveManagement extends CommandInterface {
 
         if (!arguments.hasMoreTokens()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -577,7 +515,6 @@ public class SlaveManagement extends CommandInterface {
         
         if (arguments.hasMoreTokens()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         	// only one argument
         }
@@ -587,7 +524,6 @@ public class SlaveManagement extends CommandInterface {
 
             response = new CommandResponse(501,
                     jprintf(_bundle, "addslave.exists", request.getUser()));
-            doPostHooks(request, response);
             return response;
         } catch (ObjectNotFoundException e) {
         }
@@ -596,7 +532,6 @@ public class SlaveManagement extends CommandInterface {
         response.addComment(jprintf(_bundle,
                 "addslave.success", env, request.getUser()));
 
-        doPostHooks(request, response);
         return response;
     }
 

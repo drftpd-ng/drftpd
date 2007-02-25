@@ -36,7 +36,6 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.TransferEvent;
@@ -78,19 +77,16 @@ public class DataConnectionHandler extends CommandInterface {
 
     public CommandResponse doAUTH(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	SSLContext ctx = GlobalContext.getGlobalContext().getSSLContext();
         if (ctx == null) {
             response = new CommandResponse(400, "TLS not configured");
-            doPostHooks(request, response);
             return response;
         }
 
@@ -120,12 +116,10 @@ public class DataConnectionHandler extends CommandInterface {
             }
             conn.stop(e.getMessage());
 
-            doPostHooks(request, null);
             return null;
 		}
         s2 = null;
 
-        doPostHooks(request, null);
         return null;
     }
 
@@ -137,31 +131,26 @@ public class DataConnectionHandler extends CommandInterface {
      */
     public CommandResponse doMODE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
     	// argument check
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
         if (request.getArgument().equalsIgnoreCase("S")) {
         	response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        	doPostHooks(request, response);
             return response;
         }
 
         response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-    	doPostHooks(request, response);
         return response;
     }
 
@@ -175,13 +164,11 @@ public class DataConnectionHandler extends CommandInterface {
      */
     public CommandResponse doPASVandCPSV(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
@@ -192,7 +179,6 @@ public class DataConnectionHandler extends CommandInterface {
         	reset(conn);
         	response = new CommandResponse(500,
                 "You need to use a client supporting PRET (PRE Transfer) to use PASV");
-        	doPostHooks(request, response);
         	return response;
         }
         
@@ -210,7 +196,6 @@ public class DataConnectionHandler extends CommandInterface {
 			} catch (IOException e1) {
 				reset(conn);
 				response = new CommandResponse(500, e1.getMessage());
-		        doPostHooks(request, response);
 		        return response;
 			}
             try {
@@ -243,12 +228,10 @@ public class DataConnectionHandler extends CommandInterface {
 						// Strange, since we validated it existed in PRET, but this could definitely happen
 						reset(conn);
 						response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-						doPostHooks(request, response);
 				        return response;
 					} catch (NoAvailableSlaveException e) {
 						reset(conn);
 						response = StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
-						doPostHooks(request, response);
 				        return response;
 					} catch (SlaveUnavailableException e) {
 						// make it loop till it finds a good one
@@ -281,7 +264,6 @@ public class DataConnectionHandler extends CommandInterface {
 					} catch (NoAvailableSlaveException e) {
 						reset(conn);
 						response = StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
-						doPostHooks(request, response);
 				        return response;
 					} catch (SlaveUnavailableException e) {
 						// make it loop till it finds a good one
@@ -299,7 +281,6 @@ public class DataConnectionHandler extends CommandInterface {
 				}
         	} else {
         		response = StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
-				doPostHooks(request, response);
 		        return response;
         	}
         	ts.setTransferSlave(slave);
@@ -313,7 +294,6 @@ public class DataConnectionHandler extends CommandInterface {
         if (address.getAddress() == null || address.getAddress().getHostAddress() == null) {
         	response = new CommandResponse(500,
         			"Address is unresolvable, check pasv_addr setting on " + ts.getTransferSlave().getName());
-			doPostHooks(request, response);
 	        return response;
         }
         
@@ -321,31 +301,26 @@ public class DataConnectionHandler extends CommandInterface {
             ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
         response = new CommandResponse(227, "Entering Passive Mode (" + addrStr + ").");
         response.addComment("Using " + (ts.isLocalPreTransfer() ? "master" : ts.getTransferSlave().getName()) + " for upcoming transfer");
-        doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doPBSZ(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
         String cmd = request.getArgument();
 
         if ((cmd == null) || !cmd.equals("0")) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
         response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		doPostHooks(request, response);
         return response;
     }
 
@@ -367,13 +342,11 @@ public class DataConnectionHandler extends CommandInterface {
      */
     public CommandResponse doPORT(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
@@ -383,7 +356,6 @@ public class DataConnectionHandler extends CommandInterface {
         if (!request.hasArgument()) {
             //Syntax error in parameters or arguments
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
@@ -391,7 +363,6 @@ public class DataConnectionHandler extends CommandInterface {
 
         if (st.countTokens() != 6) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
@@ -403,7 +374,6 @@ public class DataConnectionHandler extends CommandInterface {
             clientAddr = InetAddress.getByName(dataSrvName);
         } catch (UnknownHostException ex) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
@@ -428,7 +398,6 @@ public class DataConnectionHandler extends CommandInterface {
             response.addComment("  http://drftpd.org/ for PRET capable clients");
             
             reset(conn);
-            doPostHooks(request, response);
 	        return response;
         }
 
@@ -442,7 +411,6 @@ public class DataConnectionHandler extends CommandInterface {
         } catch (NumberFormatException ex) {
         	reset(conn);
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
@@ -502,19 +470,16 @@ public class DataConnectionHandler extends CommandInterface {
 			// I don't want to deal with this at the PORT command, let's let it
 			// error at transfer()
 		}
-		doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doPRET(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
@@ -524,11 +489,9 @@ public class DataConnectionHandler extends CommandInterface {
         
         if (ts.isLocalPreTransfer()) {
         	response = new CommandResponse(200, "OK, planning to use master for upcoming LIST transfer");
-            doPostHooks(request, response);
             return response;
         }
     	response = setTransferFileFromPRETRequest(request);
-    	doPostHooks(request, response);
         return response;
     }
     
@@ -552,7 +515,6 @@ public class DataConnectionHandler extends CommandInterface {
 				} catch (ObjectNotValidException e) {
 					reset(conn);
 					response = new CommandResponse(550, "Requested target is not a file");
-		            doPostHooks(request, response);
 		            return response;
 				}
 				ts.setTransferFile(file);
@@ -598,31 +560,26 @@ public class DataConnectionHandler extends CommandInterface {
     
     public CommandResponse doSSCN(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
     	if (conn.getGlobalContext().getSSLContext() == null) {
     		response = new CommandResponse(500, "TLS not configured");
-    		doPostHooks(request, response);
             return response;
         }
         
         if (!(conn.getControlSocket() instanceof SSLSocket)) {
         	response = new CommandResponse(500, "You are not on a secure channel");
-    		doPostHooks(request, response);
             return response;
         }
         
         if (!conn.getTransferState().getSendFilesEncrypted()) {
         	response = new CommandResponse(500, "SSCN only works for encrypted transfers");
-    		doPostHooks(request, response);
             return response;
         }
         
@@ -636,31 +593,26 @@ public class DataConnectionHandler extends CommandInterface {
 		}
 		response = new CommandResponse(220,  "SSCN:"
 				+ (conn.getTransferState().getSSLHandshakeClientMode() ? "CLIENT" : "SERVER") + " METHOD");
-		doPostHooks(request, response);
         return response;
 	}
 
     public CommandResponse doPROT(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
     	if (conn.getGlobalContext().getSSLContext() == null) {
     		response = new CommandResponse(500, "TLS not configured");
-    		doPostHooks(request, response);
             return response;
         }
         
         if (!(conn.getControlSocket() instanceof SSLSocket)) {
         	response = new CommandResponse(500, "You are not on a secure channel");
-    		doPostHooks(request, response);
             return response;
         }
 
@@ -669,13 +621,11 @@ public class DataConnectionHandler extends CommandInterface {
             conn.getTransferState().setSendFilesEncrypted(false);
 
             response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    		doPostHooks(request, response);
             return response;
         }
 
         if (!request.hasArgument() || (request.getArgument().length() != 1)) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
@@ -686,7 +636,6 @@ public class DataConnectionHandler extends CommandInterface {
         	conn.getTransferState().setSendFilesEncrypted(false);
 
         	response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    		doPostHooks(request, response);
             return response;
 
         case 'P':
@@ -695,12 +644,10 @@ public class DataConnectionHandler extends CommandInterface {
         	conn.getTransferState().setSendFilesEncrypted(true);
 
         	response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    		doPostHooks(request, response);
             return response;
 
         default:
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
     }
@@ -716,13 +663,11 @@ public class DataConnectionHandler extends CommandInterface {
      */
     public CommandResponse doREST(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
@@ -731,7 +676,6 @@ public class DataConnectionHandler extends CommandInterface {
         if (!request.hasArgument()) {
         	reset(conn);
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
@@ -743,7 +687,6 @@ public class DataConnectionHandler extends CommandInterface {
         } catch (NumberFormatException ex) {
         	reset(conn);
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
@@ -751,13 +694,11 @@ public class DataConnectionHandler extends CommandInterface {
             resumePosition = 0;
             reset(conn);
             response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
         conn.getTransferState().setResumePosition(resumePosition);
 
         response = StandardCommandManager.genericResponse("RESPONSE_350_PENDING_FURTHER_INFORMATION");
-		doPostHooks(request, response);
         return response;
     }
 
@@ -836,17 +777,14 @@ public class DataConnectionHandler extends CommandInterface {
 */
     public CommandResponse doSITE_XDUPE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	response = StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
- 		doPostHooks(request, response);
         return response;
 
         //		resetState();
@@ -885,31 +823,26 @@ public class DataConnectionHandler extends CommandInterface {
      */
     public CommandResponse doSTRU(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         // argument check
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
         if (request.getArgument().equalsIgnoreCase("F")) {
         	response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-			doPostHooks(request, response);
 	        return response;
         }
 
         response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-		doPostHooks(request, response);
         return response;
     }
 
@@ -927,17 +860,14 @@ public class DataConnectionHandler extends CommandInterface {
          * String args[] = {systemName};
          */
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	response = StandardCommandManager.genericResponse("RESPONSE_215_SYSTEM_TYPE");
-		doPostHooks(request, response);
         return response;
 
         //String args[] = { "UNIX" };
@@ -951,13 +881,11 @@ public class DataConnectionHandler extends CommandInterface {
      */
     public CommandResponse doTYPE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
@@ -965,19 +893,16 @@ public class DataConnectionHandler extends CommandInterface {
         // get type from argument
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			doPostHooks(request, response);
 	        return response;
         }
 
         // set it
         if (conn.getTransferState().setType(request.getArgument().charAt(0))) {
         	response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-			doPostHooks(request, response);
 	        return response;
         }
 
         response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-		doPostHooks(request, response);
         return response;
     }
 
@@ -1133,13 +1058,11 @@ public class DataConnectionHandler extends CommandInterface {
     //TODO add APPE support
     public CommandResponse transfer(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
@@ -1149,7 +1072,6 @@ public class DataConnectionHandler extends CommandInterface {
                 conn.getGlobalContext().getConfig().checkPermission("denydatauncrypted", conn.getUserNull())) {
         	reset(conn);
         	response = new CommandResponse(530, "USE SECURE DATA CONNECTION");
-    		doPostHooks(request, response);
             return response;
         }
 
@@ -1165,7 +1087,6 @@ public class DataConnectionHandler extends CommandInterface {
 
             if (isAppe || isStou) {
             	response = StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
-         		doPostHooks(request, response);
                 return response;
             }
 
@@ -1173,7 +1094,6 @@ public class DataConnectionHandler extends CommandInterface {
             if (!request.hasArgument()) {
             	// reset(); already done in finally block
             	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-    			doPostHooks(request, response);
     	        return response;
             }
             
@@ -1194,7 +1114,6 @@ public class DataConnectionHandler extends CommandInterface {
             if (comparison != 0 && count >= comparison) {
             	response = new CommandResponse(550,
             			jprintf(_bundle, "transfer.err.maxsim", env, request.getUser()));
-        		doPostHooks(request, response);
                 return response;
             }
 
@@ -1207,11 +1126,9 @@ public class DataConnectionHandler extends CommandInterface {
 								request.getArgument()));
 					} catch (FileNotFoundException e) {
 						response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-		    			doPostHooks(request, response);
 		    	        return response;
 					} catch (ObjectNotValidException e) {
 						response = new CommandResponse(550, "Argument is not a file");
-			    		doPostHooks(request, response);
 			            return response;
 					}
 				} // else { ts.getTransferFile() is set, this is a PRET action
@@ -1371,13 +1288,11 @@ public class DataConnectionHandler extends CommandInterface {
 					if (!ts.getTransferFile().getSlaves().contains(ts.getTransferSlave())) {
 						// reset(); already done in finally block
 						response = StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
-		    			doPostHooks(request, response);
 		    	        return response;
 					}
 				} catch (FileNotFoundException e) {
 					// reset(); already done in finally block
 					response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-	    			doPostHooks(request, response);
 	    	        return response;
 				}
 				// reset(); already done in finally block
@@ -1412,7 +1327,6 @@ public class DataConnectionHandler extends CommandInterface {
 					// unavailable (e.g., file busy).
                 	// reset(); already done in finally block
                 	response = StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
-	    			doPostHooks(request, response);
 	    	        return response;
                 }
             } else { // ts.isPreTransfer() && ts.isPort()
@@ -1444,7 +1358,6 @@ public class DataConnectionHandler extends CommandInterface {
                         	// until we can upload multiple instances of files
             				response = StandardCommandManager.genericResponse(
         	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-        	    			doPostHooks(request, response);
         	    	        return response;
             			}
             			if (fh != null) {
@@ -1452,7 +1365,6 @@ public class DataConnectionHandler extends CommandInterface {
                         	// until we can upload multiple instances of files
             				response = StandardCommandManager.genericResponse(
         	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-        	    			doPostHooks(request, response);
         	    	        return response;
             			}
             			fh = conn.getCurrentDirectory().getNonExistentFileHandle(conn.getRequest().getArgument());
@@ -1461,7 +1373,6 @@ public class DataConnectionHandler extends CommandInterface {
                         	reset(conn);
                         	response = StandardCommandManager.genericResponse(
         	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
-        	    			doPostHooks(request, response);
         	    			return response;
                         }
     					ts.setTransferFile(fh.getParent().createFile(
@@ -1473,14 +1384,12 @@ public class DataConnectionHandler extends CommandInterface {
 					// reset is handled in finally
 					response = StandardCommandManager.genericResponse(
 	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-	    			doPostHooks(request, response);
 	    	        return response;
 				} catch (FileNotFoundException e) {
 					// reset is handled in finally
 					logger.debug("",e);
 					response = StandardCommandManager.genericResponse(
 	    					"RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-	    			doPostHooks(request, response);
 	    			return response;
 				}
             }
@@ -1497,13 +1406,11 @@ public class DataConnectionHandler extends CommandInterface {
 	                   	ts.setTransfer(ts.getTransferSlave().getTransfer(ci.getTransferIndex()));
 					} catch (SlaveUnavailableException e) {
 						response = StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
-		    			doPostHooks(request, response);
 		    	        return response;
 					} catch (RemoteIOException e) {
 						// couldn't talk to the slave, this is bad
 						ts.getTransferSlave().setOffline(e);
 						response = StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
-		    			doPostHooks(request, response);
 		    	        return response;
 					}
             } else if (ts.isPASVDownload() || ts.isPASVUpload()) {
@@ -1511,7 +1418,6 @@ public class DataConnectionHandler extends CommandInterface {
             } else {
             	// reset(); already done in finally block
             	response = StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
-    			doPostHooks(request, response);
     	        return response;
             }
 
@@ -1593,7 +1499,6 @@ public class DataConnectionHandler extends CommandInterface {
                 
                 response.addComment(ex.getMessage());
             	// reset(); already done in finally block
-                doPostHooks(request, response);
                 return response;
             } catch (SlaveUnavailableException e) {
             	logger.debug("", e);
@@ -1616,7 +1521,6 @@ public class DataConnectionHandler extends CommandInterface {
 
                 response.addComment(e.getLocalizedMessage());
             	// reset(); already done in finally block
-                doPostHooks(request, response);
                 return response;
             }
 
@@ -1654,7 +1558,6 @@ public class DataConnectionHandler extends CommandInterface {
             			// this is kindof odd
             			// it was a successful transfer, yet the file is gone
             			// lets just return the response
-            			doPostHooks(request, response);
                         return response;					
             		}
             	}
@@ -1715,7 +1618,6 @@ public class DataConnectionHandler extends CommandInterface {
 						new TransferEvent(conn, eventType, ts.getTransferFile(), conn
 								.getClientAddress(), ts.getTransferSlave(), ts.getTransfer()
 								.getAddress().getAddress(), ts.getType()));
-				doPostHooks(request, response);
                 return response;
         } finally {
             reset(conn);

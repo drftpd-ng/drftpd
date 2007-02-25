@@ -55,30 +55,25 @@ public class Misc extends CommandInterface {
      */
     public CommandResponse doABOR(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
-    	doPostHooks(request, response);
         return response;
     }
 
     // LIST;NLST;RETR;STOR
     public CommandResponse doFEAT(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
         PrintWriter out = request.getConnection().getControlWriter();
@@ -98,7 +93,6 @@ public class Misc extends CommandInterface {
 
         out.print("211 End\r\n");
 
-        doPostHooks(request, null);
         return null;
     }
 
@@ -145,18 +139,15 @@ public class Misc extends CommandInterface {
     //	}
     public CommandResponse doSITE_STAT(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
         if (request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -168,29 +159,24 @@ public class Misc extends CommandInterface {
         BaseFtpConnection conn = request.getConnection();
         response.addComment(conn.status());
 
-        doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doSITE_TIME(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	if (request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
     	response = new CommandResponse(200, "Server time is: " + new Date());
-        doPostHooks(request, response);
         return response;
     }
 
@@ -275,17 +261,14 @@ public class Misc extends CommandInterface {
 
     public CommandResponse doSITE_VERS(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	response = new CommandResponse(200, Slave.VERSION);
-        doPostHooks(request, response);
         return response;
     }
 

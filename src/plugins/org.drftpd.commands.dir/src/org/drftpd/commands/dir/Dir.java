@@ -69,13 +69,11 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doCDUP(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	// change directory
@@ -83,7 +81,6 @@ public class Dir extends CommandInterface {
     	response = new CommandResponse(200,
                 "Directory changed to " + newCurrentDirectory.getPath(),
     			newCurrentDirectory, request.getUser());
-        doPostHooks(request, response);
         return response;
     }
 
@@ -98,19 +95,16 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doCWD(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -120,11 +114,9 @@ public class Dir extends CommandInterface {
         	newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument());
         } catch (FileNotFoundException ex) {
         	response = new CommandResponse(550, ex.getMessage());
-            doPostHooks(request, response);
             return response;
         } catch (ObjectNotValidException e) {
         	response = new CommandResponse(550, request.getArgument() + ": is not a directory");
-            doPostHooks(request, response);
             return response;
 		}
 
@@ -350,7 +342,6 @@ public class Dir extends CommandInterface {
             }
         }
 */
-        doPostHooks(request, response);
         return response;
     }
 
@@ -362,13 +353,11 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doDELE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
@@ -376,7 +365,6 @@ public class Dir extends CommandInterface {
         if (!request.hasArgument()) {
             //out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -406,7 +394,6 @@ public class Dir extends CommandInterface {
 			if (victim.getInodeHandles().size() != 0) {
 				response = new CommandResponse(550, requestedFile.getPath()
 						+ ": Directory not empty");
-	            doPostHooks(request, response);
 	            return response;
 			}
 		}
@@ -438,11 +425,9 @@ public class Dir extends CommandInterface {
 		} catch (FileNotFoundException e) {
 			// good! we're done :)
 			response = new CommandResponse(550, e.getMessage());
-            doPostHooks(request, response);
             return response;
 		}
 
-		doPostHooks(request, response);
         return response;
     }
 
@@ -453,20 +438,17 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doMDTM(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         // argument check
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -478,7 +460,6 @@ public class Dir extends CommandInterface {
             reqFile = request.getCurrentDirectory().getInodeHandle(fileName);
         } catch (FileNotFoundException ex) {
         	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -491,11 +472,9 @@ public class Dir extends CommandInterface {
         try {
         	response = new CommandResponse(213,
     			    DATE_FMT.format(new Date(reqFile.lastModified())));
-            doPostHooks(request, response);
             return response;
 		} catch (FileNotFoundException e) {
 			response = new CommandResponse(550, e.getMessage());
-            doPostHooks(request, response);
             return response;
 		}
 
@@ -520,20 +499,17 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doMKD(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         // argument check
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
         
@@ -588,7 +564,6 @@ public class Dir extends CommandInterface {
 
         if (!ListUtils.isLegalFileName(dirName)) {
         	response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -606,7 +581,6 @@ public class Dir extends CommandInterface {
 						getUserNull(request.getUser()).getGroup());
 			} catch (FileNotFoundException e) {
 				response = new CommandResponse(550, "Parent directory does not exist");
-	            doPostHooks(request, response);
 	            return response;
 			}
   
@@ -615,13 +589,11 @@ public class Dir extends CommandInterface {
 
             response = new CommandResponse(257, "\"" + newDir.getPath() +
             	"\" created.");
-            doPostHooks(request, response);
             return response;
 
         } catch (FileExistsException ex) {
 	        response = new CommandResponse(550,
 	                "directory " + dirName + " already exists");
-	        doPostHooks(request, response);
 	        return response;
         }
     }
@@ -634,19 +606,16 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doPWD(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	response = new CommandResponse(257,
                 "\"" + request.getCurrentDirectory().getPath() +
         "\" is current directory");
-        doPostHooks(request, response);
         return response;
     }
 
@@ -721,20 +690,17 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doRNFR(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         // argument check
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -758,12 +724,10 @@ public class Dir extends CommandInterface {
 			}*/
 		} catch (FileNotFoundException e) {
 			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
 		}
 
 		response = new CommandResponse(350, "File exists, ready for destination name");
-        doPostHooks(request, response);
         return response;
     }
 
@@ -777,27 +741,23 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doRNTO(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         // argument check
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
         // set state variables
         if (_renameFrom == null) {
         	response = StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
-        	doPostHooks(request, response);
             return response;
         }
         
@@ -827,18 +787,15 @@ public class Dir extends CommandInterface {
 				// Destination doesn't exist
 				logger.debug("Destination doesn't exist", e1);
 				response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-	        	doPostHooks(request, response);
 	            return response;
 			} catch (ObjectNotValidException e1) {
 				// Destination isn't a Directory
 				logger.debug("Destination isn't a Directory", e1);
 				response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-	        	doPostHooks(request, response);
 	            return response;
 			}
         } catch (ObjectNotValidException e) {
         	response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-        	doPostHooks(request, response);
             return response;
 		}
         InodeHandle toInode = null;
@@ -850,7 +807,6 @@ public class Dir extends CommandInterface {
        		toInode = new LinkHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
        	} else {
        		response = new CommandResponse(500, "Someone has extended the VFS beyond File/Directory/Link");
-            doPostHooks(request, response);
             return response;
        	}
 
@@ -878,13 +834,11 @@ public class Dir extends CommandInterface {
 			logger.info("FileNotFoundException on renameTo()", e);
 
 			response = new CommandResponse(500, "FileNotFound - " + e.getMessage());
-            doPostHooks(request, response);
             return response;
 		} catch (IOException e) {
 			logger.info("IOException on renameTo()", e);
 
 			response = new CommandResponse(500, "IOException - " + e.getMessage());
-            doPostHooks(request, response);
             return response;
 		}
 /*		logger.debug("after rename toInode-" +toInode);
@@ -894,19 +848,17 @@ public class Dir extends CommandInterface {
 
 		// out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
 		response = new CommandResponse(250, request.getCommand() + " command successful.");
-        doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doSITE_CHOWN(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
+
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
@@ -923,7 +875,6 @@ public class Dir extends CommandInterface {
             owner = null;
         } else if (!"SITE CHOWN".equals(request.getOriginalCommand())) {
         	response = StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -946,24 +897,20 @@ public class Dir extends CommandInterface {
         }
 
         response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    	doPostHooks(request, response);
         return response;
     }
 
     public CommandResponse doSITE_LINK(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -972,7 +919,6 @@ public class Dir extends CommandInterface {
 
         if (st.countTokens() != 2) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -986,17 +932,14 @@ public class Dir extends CommandInterface {
 					getUserNull(request.getUser()).getGroup()); // create the link
 		} catch (FileExistsException e) {
 			response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-        	doPostHooks(request, response);
             return response;
 		} catch (FileNotFoundException e) {
 			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
 		}
 
 		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    	doPostHooks(request, response);
-        return response;
+         return response;
     }
 
     /**
@@ -1036,18 +979,15 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doSITE_WIPE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
         if (!request.hasArgument()) {
             response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -1070,7 +1010,6 @@ public class Dir extends CommandInterface {
 			if (wipeFile.isDirectory() && !recursive) {
 				if (((DirectoryHandle) wipeFile).getInodeHandles().size() != 0) {
 					response = new CommandResponse(200, "Can't wipe, directory not empty");
-			        doPostHooks(request, response);
 			        return response;
 				}
 			}
@@ -1084,12 +1023,10 @@ public class Dir extends CommandInterface {
 			wipeFile.delete();
 		} catch (FileNotFoundException e) {
 			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
 		}
 
 		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    	doPostHooks(request, response);
         return response;
     }
 
@@ -1100,19 +1037,16 @@ public class Dir extends CommandInterface {
 	 */
     public CommandResponse doSIZE(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -1121,11 +1055,9 @@ public class Dir extends CommandInterface {
         try {
             file = request.getCurrentDirectory().getInodeHandle(request.getArgument());
             response = new CommandResponse(213, Long.toString(file.getSize()));
-            doPostHooks(request, response);
             return response;
         } catch (FileNotFoundException ex) {
         	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
         }
     }
@@ -1137,19 +1069,16 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doXCRC(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
 
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -1160,11 +1089,9 @@ public class Dir extends CommandInterface {
             myFile = request.getCurrentDirectory().getFile(st.nextToken());
         } catch (FileNotFoundException e) {
         	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
         } catch (ObjectNotValidException e) {
         	response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-        	doPostHooks(request, response);
             return response;
 		}
 
@@ -1174,25 +1101,21 @@ public class Dir extends CommandInterface {
 						|| !st.nextToken().equals(
 								Long.toString(myFile.getSize()))) {
 					response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-		        	doPostHooks(request, response);
 		            return response;
 				}
 			}
 
 			response = new CommandResponse(250, "XCRC Successful. "
 					+ Checksum.formatChecksum(myFile.getCheckSum()));
-	        doPostHooks(request, response);
 	        return response;
 		} catch (NoAvailableSlaveException e1) {
 			logger.warn("", e1);
 
 			response = new CommandResponse(550, "NoAvailableSlaveException: "
 					+ e1.getMessage());
-	        doPostHooks(request, response);
 	        return response;
 		} catch (FileNotFoundException e) {
 			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        	doPostHooks(request, response);
             return response;
 		}
     }
@@ -1206,7 +1129,4 @@ public class Dir extends CommandInterface {
 //        else
 //            return "";
 //    }
-
-    public void unload() {
-    }
 }

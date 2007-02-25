@@ -62,20 +62,17 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doIDNT(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
         if (_idntAddress != null) {
             logger.error("Multiple IDNT commands");
             response = new CommandResponse(530, "Multiple IDNT commands");
-            doPostHooks(request, response);
             return response;
 
         }
@@ -84,7 +81,6 @@ public class LoginHandler extends CommandInterface {
             logger.warn("IDNT from non-bnc");
 
             response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -93,7 +89,6 @@ public class LoginHandler extends CommandInterface {
 
         if (pos1 == -1) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -101,7 +96,6 @@ public class LoginHandler extends CommandInterface {
 
         if (pos2 == -1) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -114,12 +108,10 @@ public class LoginHandler extends CommandInterface {
             //this will most likely cause control connection to become unsynchronized
             //but give error anyway, this error is unlikely to happen
             response = new CommandResponse(501, "IDNT FAILED: " + e.getMessage());
-            doPostHooks(request, response);
             return response;
         }
 
         // bnc doesn't expect any reply
-        doPostHooks(request, null);
         return null;
     }
 
@@ -132,19 +124,16 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doPASS(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
         if (conn.getUserNull() == null) {
         	response = StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -168,12 +157,10 @@ public class LoginHandler extends CommandInterface {
                 logger.warn("Error reading welcome", e);
             }*/
 
-            doPostHooks(request, response);
             return response;
         }
 
         response = new CommandResponse(530, jprintf(_bundle, "pass.fail", request.getUser()));
-        doPostHooks(request, response);
         return response;
     }
 
@@ -185,20 +172,17 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doQUIT(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
         conn.stop();
 
         response = new CommandResponse(221, jprintf(_bundle, "quit.success", request.getUser()));
-        doPostHooks(request, response);
         return response;
     }
 
@@ -213,13 +197,11 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doUSER(CommandRequest request) {
     	CommandResponse response;
-    	request = doPreHooks(request);
     	if(!request.isAllowed()) {
     		response = request.getDeniedResponse();
     		if (response == null) {
     			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     		}
-    		doPostHooks(request, response);
     		return response;
     	}
     	BaseFtpConnection conn = request.getConnection();
@@ -230,7 +212,6 @@ public class LoginHandler extends CommandInterface {
         // argument check
         if (!request.hasArgument()) {
         	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -240,12 +221,10 @@ public class LoginHandler extends CommandInterface {
             newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
         } catch (NoSuchUserException ex) {
         	response = new CommandResponse(530, ex.getMessage());
-            doPostHooks(request, response);
             return response;
         } catch (UserFileException ex) {
             logger.warn("", ex);
             response = new CommandResponse(530, "IOException: " + ex.getMessage());
-            doPostHooks(request, response);
             return response;
         } catch (RuntimeException ex) {
             logger.error("", ex);
@@ -255,7 +234,6 @@ public class LoginHandler extends CommandInterface {
              */
             //throw new ReplyException(ex);
             response = new CommandResponse(530, "RuntimeException: " + ex.getMessage());
-            doPostHooks(request, response);
             return response;
         }
 
@@ -270,7 +248,6 @@ public class LoginHandler extends CommandInterface {
         }
         if(!conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
         	response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        	doPostHooks(request, response);
             return response;
         }
 
@@ -288,19 +265,16 @@ public class LoginHandler extends CommandInterface {
 
                 if (ftpResponse != null) {
                 	response = new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
-                	doPostHooks(request, response);
                     return response;
                 }
 
                 response = new CommandResponse(331,
                         jprintf(_bundle, "user.success", request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());
-                doPostHooks(request, response);
                 return response;
             }
         } catch (MalformedPatternException e) {
         	response = new CommandResponse(530, e.getMessage());
-            doPostHooks(request, response);
             return response;
         }
 
@@ -308,10 +282,6 @@ public class LoginHandler extends CommandInterface {
         logger.warn("Failed hostmask check");
 
         response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    	doPostHooks(request, response);
         return response;
-    }
-
-    public void unload() {
     }
 }
