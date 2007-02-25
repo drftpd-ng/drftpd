@@ -190,11 +190,10 @@ public class FtpConfig extends Observable implements ConfigInterface {
 	}
 	
 	/**
-	 * Returns true if the user is not allowed to perform the action
+	 * Returns true if the user is allowed to perform the action
 	 */
 	public boolean checkPermission(String key, User user) {
 		Permission perm = _permissions.get(key);
-
 		return (perm == null) ? false : perm.check(user);
 	}
 
@@ -458,7 +457,10 @@ public class FtpConfig extends Observable implements ConfigInterface {
 						|| "userrejectinsecure".equals(cmd)
 						|| "denydiruncrypted".equals(cmd)
 						|| "denydatauncrypted".equals(cmd)
-						|| "give".equals(cmd) || "take".equals(cmd)) {
+						|| "give".equals(cmd) || "take".equals(cmd)
+						|| "list".equals(cmd)
+						|| "delslave".equals(cmd)
+						|| "addslave".equals(cmd)) {
 					if (_permissions.containsKey(cmd)) {
 						throw new RuntimeException(
 								"Duplicate key in perms.conf: " + cmd

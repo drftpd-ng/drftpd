@@ -157,8 +157,11 @@ public abstract class CommandInterface {
 					
 					for (Object obj : postHook.getParameters()) {
 						Extension.Parameter param = (Extension.Parameter) obj;
-						postHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
+						if (param.getDefinition().getType().equals(ExtensionPoint.ParameterDefinition.TYPE_STRING)) {
+							postHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
+						}
 					}
+
 					
 					postHookInstance.initialize();
 
@@ -209,7 +212,9 @@ public abstract class CommandInterface {
 					
 					for (Object obj : preHook.getParameters()) {
 						Extension.Parameter param = (Extension.Parameter) obj;
-						preHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
+						if (param.getDefinition().getType().equals(ExtensionPoint.ParameterDefinition.TYPE_STRING)) {
+							preHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
+						}
 					}
 					
 					preHookInstance.initialize();

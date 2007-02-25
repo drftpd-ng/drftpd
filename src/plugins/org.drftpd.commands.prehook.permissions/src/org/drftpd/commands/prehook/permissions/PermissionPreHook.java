@@ -46,11 +46,10 @@ public class PermissionPreHook implements PreHookInterface {
 			if (_key == null) {
 				logger.warn("Permission key " + PERMSTAG + " is not configured for command, must allow command");
 			} else if (FtpConfig.getFtpConfig().checkPermission(_key, request.getUserObject())) {
-				request.setDeniedResponse(new CommandResponse(500, "You do not have the proper permissions to " + _key));
-			} else {
 				// it worked, you passed the test
 				return request;
 			}
+			request.setDeniedResponse(new CommandResponse(500, "You do not have the proper permissions to " + _key));
 		} catch (NoSuchUserException e) {
 			request.setDeniedResponse(new CommandResponse(500, "You do not exist"));
 		} catch (UserFileException e) {
