@@ -68,20 +68,11 @@ public class Dir extends CommandInterface {
      * shall be identical to the reply codes of CWD.
      */
     public CommandResponse doCDUP(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
     	// change directory
     	DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
-    	response = new CommandResponse(200,
+    	return new CommandResponse(200,
                 "Directory changed to " + newCurrentDirectory.getPath(),
     			newCurrentDirectory, request.getUser());
-        return response;
     }
 
     /**
@@ -94,18 +85,9 @@ public class Dir extends CommandInterface {
      * pathname specifying a directory.
      */
     public CommandResponse doCWD(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         DirectoryHandle newCurrentDirectory = null;
@@ -113,11 +95,9 @@ public class Dir extends CommandInterface {
         try {
         	newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument());
         } catch (FileNotFoundException ex) {
-        	response = new CommandResponse(550, ex.getMessage());
-            return response;
+        	return new CommandResponse(550, ex.getMessage());
         } catch (ObjectNotValidException e) {
-        	response = new CommandResponse(550, request.getArgument() + ": is not a directory");
-            return response;
+        	return new CommandResponse(550, request.getArgument() + ": is not a directory");
 		}
 
         /*	TODO this should be reimplemented as part of the port
@@ -129,7 +109,7 @@ public class Dir extends CommandInterface {
             // reply identical to FileNotFoundException.getMessage() above
         }*/
 
-        response = new CommandResponse(250,
+        CommandResponse response = new CommandResponse(250,
                 "Directory changed to " + newCurrentDirectory.getPath(),
                 newCurrentDirectory, request.getUser());
 
@@ -352,26 +332,17 @@ public class Dir extends CommandInterface {
      * deleted at the server site.
      */
     public CommandResponse doDELE(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         // argument check
         if (!request.hasArgument()) {
             //out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         // get filenames
         String fileName = request.getArgument();
         InodeHandle requestedFile;
-        response = StandardCommandManager.genericResponse("RESPONSE_250_ACTION_OKAY");
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_250_ACTION_OKAY");
 
         try {
 
@@ -392,9 +363,8 @@ public class Dir extends CommandInterface {
         if (requestedFile.isDirectory()) {
 			DirectoryHandle victim = (DirectoryHandle) requestedFile;
 			if (victim.getInodeHandles().size() != 0) {
-				response = new CommandResponse(550, requestedFile.getPath()
+				return new CommandResponse(550, requestedFile.getPath()
 						+ ": Directory not empty");
-	            return response;
 			}
 		}
 
@@ -424,8 +394,7 @@ public class Dir extends CommandInterface {
 			requestedFile.delete();
 		} catch (FileNotFoundException e) {
 			// good! we're done :)
-			response = new CommandResponse(550, e.getMessage());
-            return response;
+			return new CommandResponse(550, e.getMessage());
 		}
 
         return response;
@@ -437,19 +406,10 @@ public class Dir extends CommandInterface {
      * Returns the date and time of when a file was modified.
      */
     public CommandResponse doMDTM(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         // argument check
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         // get filenames
@@ -459,8 +419,7 @@ public class Dir extends CommandInterface {
         try {
             reqFile = request.getCurrentDirectory().getInodeHandle(fileName);
         } catch (FileNotFoundException ex) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
 
         //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
@@ -470,12 +429,10 @@ public class Dir extends CommandInterface {
         // now print date
         //if (reqFile.exists()) {
         try {
-        	response = new CommandResponse(213,
+        	return new CommandResponse(213,
     			    DATE_FMT.format(new Date(reqFile.lastModified())));
-            return response;
 		} catch (FileNotFoundException e) {
-			response = new CommandResponse(550, e.getMessage());
-            return response;
+			return new CommandResponse(550, e.getMessage());
 		}
 
         //out.print(ftpStatus.getResponse(213, request, user, args));
@@ -498,19 +455,10 @@ public class Dir extends CommandInterface {
      *                   500, 501, 502, 421, 530, 550
      */
     public CommandResponse doMKD(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         // argument check
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
         
         
@@ -563,8 +511,7 @@ public class Dir extends CommandInterface {
 		// *************************************
 
         if (!ListUtils.isLegalFileName(dirName)) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
         }
 
         /* TODO: Reimplement with permissions pre hooks
@@ -580,21 +527,18 @@ public class Dir extends CommandInterface {
 				newDir = fakeDirectory.getParent().createDirectory(dirName,getUserNull(request.getUser()).getName(),
 						getUserNull(request.getUser()).getGroup());
 			} catch (FileNotFoundException e) {
-				response = new CommandResponse(550, "Parent directory does not exist");
-	            return response;
+				return new CommandResponse(550, "Parent directory does not exist");
 			}
   
             GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
                     getUserNull(request.getUser()), "MKD", newDir));
 
-            response = new CommandResponse(257, "\"" + newDir.getPath() +
+            return new CommandResponse(257, "\"" + newDir.getPath() +
             	"\" created.");
-            return response;
 
         } catch (FileExistsException ex) {
-	        response = new CommandResponse(550,
+	        return new CommandResponse(550,
 	                "directory " + dirName + " already exists");
-	        return response;
         }
     }
 
@@ -605,18 +549,9 @@ public class Dir extends CommandInterface {
      * directory to be returned in the reply.
      */
     public CommandResponse doPWD(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
-    	response = new CommandResponse(257,
+    	return new CommandResponse(257,
                 "\"" + request.getCurrentDirectory().getPath() +
         "\" is current directory");
-        return response;
     }
 
     /**
@@ -689,19 +624,10 @@ public class Dir extends CommandInterface {
 
      */
     public CommandResponse doRNFR(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         // argument check
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         // set state variable
@@ -723,12 +649,10 @@ public class Dir extends CommandInterface {
 			    return Reply.RESPONSE_530_ACCESS_DENIED;
 			}*/
 		} catch (FileNotFoundException e) {
-			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
 
-		response = new CommandResponse(350, "File exists, ready for destination name");
-        return response;
+		return new CommandResponse(350, "File exists, ready for destination name");
     }
 
     /**
@@ -740,25 +664,15 @@ public class Dir extends CommandInterface {
      * renamed.
      */
     public CommandResponse doRNTO(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         // argument check
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         // set state variables
         if (_renameFrom == null) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
         }
         
 		InodeHandle fromInode = _renameFrom;
@@ -786,17 +700,14 @@ public class Dir extends CommandInterface {
 			} catch (FileNotFoundException e1) {
 				// Destination doesn't exist
 				logger.debug("Destination doesn't exist", e1);
-				response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-	            return response;
+				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 			} catch (ObjectNotValidException e1) {
 				// Destination isn't a Directory
 				logger.debug("Destination isn't a Directory", e1);
-				response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-	            return response;
+				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 			}
         } catch (ObjectNotValidException e) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		}
         InodeHandle toInode = null;
        	if (fromInode.isDirectory()) {
@@ -806,8 +717,7 @@ public class Dir extends CommandInterface {
        	} else if (fromInode.isLink()) {
        		toInode = new LinkHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
        	} else {
-       		response = new CommandResponse(500, "Someone has extended the VFS beyond File/Directory/Link");
-            return response;
+       		return new CommandResponse(500, "Someone has extended the VFS beyond File/Directory/Link");
        	}
 
 		try {
@@ -833,13 +743,11 @@ public class Dir extends CommandInterface {
 		} catch (FileNotFoundException e) {
 			logger.info("FileNotFoundException on renameTo()", e);
 
-			response = new CommandResponse(500, "FileNotFound - " + e.getMessage());
-            return response;
+			return new CommandResponse(500, "FileNotFound - " + e.getMessage());
 		} catch (IOException e) {
 			logger.info("IOException on renameTo()", e);
 
-			response = new CommandResponse(500, "IOException - " + e.getMessage());
-            return response;
+			return new CommandResponse(500, "IOException - " + e.getMessage());
 		}
 /*		logger.debug("after rename toInode-" +toInode);
 		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
@@ -847,26 +755,20 @@ public class Dir extends CommandInterface {
 		logger.debug("after rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
 
 		// out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
-		response = new CommandResponse(250, request.getCommand() + " command successful.");
-        return response;
+		return new CommandResponse(250, request.getCommand() + " command successful.");
     }
 
     public CommandResponse doSITE_CHOWN(CommandRequest request) {
-    	CommandResponse response;
-
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
         String owner = st.nextToken();
         String group = null;
         int pos = owner.indexOf('.');
 
+        /* TODO this chgrp isn't actually accessible by site chgrp
+         * so we should either remove this (and in doing so remove the need
+         * for this to use getOriginalCommand) or map it to some other command
+         */
         if (pos != -1) {
             group = owner.substring(pos + 1);
             owner = owner.substring(0, pos);
@@ -874,11 +776,10 @@ public class Dir extends CommandInterface {
             group = owner;
             owner = null;
         } else if (!"SITE CHOWN".equals(request.getOriginalCommand())) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
         }
 
-        response = new CommandResponse(200);
+        CommandResponse response = new CommandResponse(200);
 
         while (st.hasMoreTokens()) {
             try {
@@ -901,25 +802,15 @@ public class Dir extends CommandInterface {
     }
 
     public CommandResponse doSITE_LINK(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument(),
                 " ");
 
         if (st.countTokens() != 2) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         String targetName = st.nextToken();
@@ -931,15 +822,12 @@ public class Dir extends CommandInterface {
 					targetName, getUserNull(request.getUser()).getName(),
 					getUserNull(request.getUser()).getGroup()); // create the link
 		} catch (FileExistsException e) {
-			response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-            return response;
+			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		} catch (FileNotFoundException e) {
-			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
 
-		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-         return response;
+		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
     /**
@@ -978,17 +866,8 @@ public class Dir extends CommandInterface {
      * @param out
      */
     public CommandResponse doSITE_WIPE(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
         if (!request.hasArgument()) {
-            response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         String arg = request.getArgument();
@@ -1009,8 +888,7 @@ public class Dir extends CommandInterface {
 
 			if (wipeFile.isDirectory() && !recursive) {
 				if (((DirectoryHandle) wipeFile).getInodeHandles().size() != 0) {
-					response = new CommandResponse(200, "Can't wipe, directory not empty");
-			        return response;
+					return new CommandResponse(200, "Can't wipe, directory not empty");
 				}
 			}
 
@@ -1022,12 +900,10 @@ public class Dir extends CommandInterface {
 			// }
 			wipeFile.delete();
 		} catch (FileNotFoundException e) {
-			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
 
-		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        return response;
+		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
     /**
@@ -1036,29 +912,18 @@ public class Dir extends CommandInterface {
 	 * Returns the size of the file in bytes.
 	 */
     public CommandResponse doSIZE(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         InodeHandle file;
 
         try {
             file = request.getCurrentDirectory().getInodeHandle(request.getArgument());
-            response = new CommandResponse(213, Long.toString(file.getSize()));
-            return response;
+            return new CommandResponse(213, Long.toString(file.getSize()));
         } catch (FileNotFoundException ex) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
     }
 
@@ -1068,18 +933,9 @@ public class Dir extends CommandInterface {
      * Originally implemented by CuteFTP Pro and Globalscape FTP Server
      */
     public CommandResponse doXCRC(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
 
         if (!request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -1088,11 +944,9 @@ public class Dir extends CommandInterface {
         try {
             myFile = request.getCurrentDirectory().getFile(st.nextToken());
         } catch (FileNotFoundException e) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         } catch (ObjectNotValidException e) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
 		}
 
         try {
@@ -1100,23 +954,19 @@ public class Dir extends CommandInterface {
 				if (!st.nextToken().equals("0")
 						|| !st.nextToken().equals(
 								Long.toString(myFile.getSize()))) {
-					response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-		            return response;
+					return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
 				}
 			}
 
-			response = new CommandResponse(250, "XCRC Successful. "
+			return new CommandResponse(250, "XCRC Successful. "
 					+ Checksum.formatChecksum(myFile.getCheckSum()));
-	        return response;
 		} catch (NoAvailableSlaveException e1) {
 			logger.warn("", e1);
 
-			response = new CommandResponse(550, "NoAvailableSlaveException: "
+			return new CommandResponse(550, "NoAvailableSlaveException: "
 					+ e1.getMessage());
-	        return response;
 		} catch (FileNotFoundException e) {
-			response = StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            return response;
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
     }
 

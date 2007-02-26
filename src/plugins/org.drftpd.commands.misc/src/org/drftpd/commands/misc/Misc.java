@@ -54,28 +54,11 @@ public class Misc extends CommandInterface {
      * transfers are not multi-threaded.
      */
     public CommandResponse doABOR(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
-    	response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
-        return response;
+    	return StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
     }
 
     // LIST;NLST;RETR;STOR
     public CommandResponse doFEAT(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
         PrintWriter out = request.getConnection().getControlWriter();
         out.print("211-Extensions supported:\r\n");
 
@@ -138,20 +121,11 @@ public class Misc extends CommandInterface {
     //		return;
     //	}
     public CommandResponse doSITE_STAT(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
         if (request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
         }
 
-        response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         /* TODO maybe think of another way of doing this so as to not pull in
          * BaseFtpConnection
@@ -163,21 +137,11 @@ public class Misc extends CommandInterface {
     }
 
     public CommandResponse doSITE_TIME(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
     	if (request.hasArgument()) {
-        	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-            return response;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
-    	response = new CommandResponse(200, "Server time is: " + new Date());
-        return response;
+    	return new CommandResponse(200, "Server time is: " + new Date());
     }
 
     /*private Reply doSITE_HELP(BaseFtpConnection conn) throws ReplyException {
@@ -260,16 +224,7 @@ public class Misc extends CommandInterface {
     }*/
 
     public CommandResponse doSITE_VERS(CommandRequest request) {
-    	CommandResponse response;
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
-    	response = new CommandResponse(200, Slave.VERSION);
-        return response;
+    	return new CommandResponse(200, Slave.VERSION);
     }
 
     public void unload() {
