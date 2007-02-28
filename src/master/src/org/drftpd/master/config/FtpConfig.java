@@ -27,6 +27,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -107,9 +108,7 @@ public class FtpConfig extends Observable implements ConfigInterface {
 
 	private static final String oldConf = "drftpd.conf";
 
-	private Hashtable<String, String> _cmds;
-
-	private ArrayList<String> _cmdsList;
+	private HashMap<String,Properties> _cmds;
 
 	protected PortRange _portRange;
 
@@ -495,67 +494,17 @@ public class FtpConfig extends Observable implements ConfigInterface {
 	 * After that it read the file and create a list of the existing commands.
 	 */
 	private void loadFtpCommands() {
-		Hashtable<String, String> cmds = new Hashtable<String, String>();
-		ArrayList<String> cmdsList = new ArrayList<String>();
-		Properties props = new Properties();
-        FileInputStream stream = null;
-        try {
-        	stream = new FileInputStream(cmdConf); 
-            props.load(stream);
-		} catch (IOException e) {
-			throw new FatalException("Error loading "+cmdConf, e);
-		} finally {
-	    	if(stream != null) {
-	    		try {
-					stream.close();
-				} catch (IOException e) {
-				}
-	    	}
-	    }
-
-		for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-			try {
-				Map.Entry entry = (Map.Entry) iter.next();
-
-				String handler = (String) entry.getValue();
-
-				String cmd = (String) entry.getKey();
-
-				if (cmds.containsKey(cmd)) {
-					logger.warn(cmd + " is already mapped, ignoring duplicate entry");
-				}
-				else {
-					cmds.put(cmd, handler);
-					if (!cmdsList.contains(handler)) {
-						cmdsList.add(handler);
-					}
-				}
-			} catch (Exception e) {
-				throw new FatalException(e);
-			}
-		}
-
-		_cmds = cmds;
-		_cmdsList = cmdsList;
+		_cmds = GlobalContext.loadCommandConfig(cmdConf);
 	}
 
 	/**
-	 * The Hashtable should look like this:<br><code>
+	 * The HashMap should look like this:<br><code>
 	 * Key -> Value<br>
-	 * "AUTH" -> "org.drftpd.commands.dataconnection.DataConnectionHandler.doAUTH"<br>
-	 * "USER" -> "org.drftpd.commands.login.LoginHandler.doUSER"</code>
+	 * "AUTH" -> Properties Object for AUTH<br>
+	 * "LIST" -> Properties Object for LIST</code>
 	 */
-	public Hashtable<String,String> getFtpCommands() {
+	public HashMap<String,Properties> getFtpCommands() {
 		return _cmds;
-	}
-
-	/**
-	 * The ArrayList should look like this:<br><code>
-	 * "org.drftpd.commands.dataconnection.DataConnectionHandler.doAUTH"<br>
-	 * "org.drftpd.commands.login.LoginHandler.doUSER"</code>
-	 */
-	public ArrayList<String> getFtpCommandsList() {
-		return _cmdsList;
 	}
 
 	private void addGlobPathPermission(String key, StringTokenizer st)

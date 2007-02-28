@@ -18,13 +18,16 @@
 package org.drftpd.commandmanager;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
+import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.config.FtpConfig;
 import org.drftpd.vfs.DirectoryHandle;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
@@ -42,12 +45,16 @@ public class StandardCommandManager implements CommandManagerInterface {
 
 	private static Hashtable<String,CommandResponse> _genericResponses;
 
-	private HashMap<String, CommandWrapper> _commands;
+	/**
+	 * This is a map of commands, e.x.:
+	 * "AUTH" -> CommandInstanceContainer (Instance of the CommandInterface and the appropriately attached Method)
+	 */
+	private HashMap<String, CommandInstanceContainer> _commands;
 
-	public void initialize(ArrayList<String> requiredCmds) {
+	public void initialize(HashMap<String,Properties> requiredCmds) {
 		initGenericResponses();
 
-		_commands = new HashMap<String, CommandWrapper>();
+		_commands = new HashMap<String, CommandInstanceContainer>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint cmdExtPoint = 
@@ -59,10 +66,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 		 * an extension based on its declaring plugin name.
 		 */
 		Hashtable<String,Extension> extensions = new Hashtable<String,Extension>();
-		for (Iterator commands = cmdExtPoint.getConnectedExtensions().iterator();
-		commands.hasNext();) {
-
-			Extension cmd = (Extension) commands.next();
+		for (Extension cmd : ((Collection<Extension>) cmdExtPoint.getConnectedExtensions())) {
 			String pluginId = cmd.getDeclaringPluginDescriptor().getId();
 			extensions.put(pluginId,cmd);
 		}
@@ -71,15 +75,20 @@ public class StandardCommandManager implements CommandManagerInterface {
 		 * 	extension attached for the command, is so add it to the commands
 		 * 	map to be used
 		 */
-		for (String requiredCmd : requiredCmds) {
-			int methodIndex = requiredCmd.lastIndexOf(".");
-			int classIndex = requiredCmd.lastIndexOf(".", methodIndex-1);
-			String methodString = requiredCmd.substring(methodIndex+1);
-			String classString = requiredCmd.substring(classIndex+1, methodIndex);
-			String pluginString = requiredCmd.substring(0, classIndex);
+		for (Entry<String,Properties> requiredCmd : requiredCmds.entrySet()) {
+			String methodString = requiredCmd.getValue().getProperty("method");
+			String classString = requiredCmd.getValue().getProperty("class");
+			String pluginString = requiredCmd.getValue().getProperty("plugin");
+			if (methodString == null || classString == null
+					|| pluginString == null) {
+				throw new FatalException(
+						"Cannot load command "
+								+ requiredCmd.getKey()
+								+ ", make sure method, class, and plugin are all specified");
+			}
 
 			if(!extensions.containsKey(pluginString)) {
-				logger.info("Command plugin "+pluginString+" not found");
+				logger.warn("Command plugin "+pluginString+" not found");
 				continue;
 			}
 			Extension cmd = extensions.get(pluginString);
@@ -98,14 +107,11 @@ public class StandardCommandManager implements CommandManagerInterface {
 			try {
 				Class cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
 				CommandInterface cmdInstance = (CommandInterface) cmdCls.newInstance();
-				for (Object obj : cmd.getParameters()) {
-					Extension.Parameter param = (Extension.Parameter) obj;
-					cmdInstance.addExtensionParameter(param.getId(), param.valueAsString());
-				}
 				cmdInstance.initialize(methodString, pluginString, this);
 				Method m = cmdInstance.getClass().getMethod(methodString,
 						new Class[] {CommandRequest.class});
-				_commands.put(requiredCmd,new CommandWrapper(m,cmdInstance));
+				_commands.put(requiredCmd.getKey(),new CommandInstanceContainer(m,cmdInstance));
+				logger.debug("Addming CommandInstance " + requiredCmd.getKey());
 			}
 			catch(Exception e) {
 				/* Should be safe to continue, just means this command class won't be
@@ -117,16 +123,19 @@ public class StandardCommandManager implements CommandManagerInterface {
 	}
 
 	public CommandResponseInterface execute(CommandRequestInterface request) {
-		CommandWrapper cmdWrapper = _commands.get(request.getCommand());
-		if (cmdWrapper == null) {
+		CommandInstanceContainer commandContainer = _commands.get(request.getCommand());
+		logger.debug("fetching " + request.getCommand());
+		if (commandContainer == null) {
+			logger.debug("commandContainer==null");
 			CommandResponseInterface cmdFailed = genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
 			cmdFailed.setUser(request.getUser());
 			cmdFailed.setCurrentDirectory(request.getCurrentDirectory());
 			return cmdFailed;
 		}
+		request.setProperties(FtpConfig.getFtpConfig().getFtpCommands().get(request.getCommand()));
 		try {
 			CommandResponseInterface response = null;
-	    	request = cmdWrapper.getCommandInterface().doPreHooks(request);
+	    	request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
 	    	if(!request.isAllowed()) {
 	    		response = request.getDeniedResponse();
 	    		if (response == null) {
@@ -134,8 +143,8 @@ public class StandardCommandManager implements CommandManagerInterface {
 	    		}
 	    		return response;
 	    	}
-			response = (CommandResponseInterface) cmdWrapper.getMethod().invoke(cmdWrapper.getCommandInterface(), new Object[] {request});
-			cmdWrapper.getCommandInterface().doPostHooks(request, response);
+			response = (CommandResponseInterface) commandContainer.getMethod().invoke(commandContainer.getCommandInterfaceInstance(), new Object[] {request});
+			commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
 			return response;
 		} catch (Exception e) {
 			CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
@@ -291,12 +300,13 @@ public class StandardCommandManager implements CommandManagerInterface {
 		return new CommandRequest(argument, command, directory, user);
 	}
 
-	public CommandRequestInterface newRequest(String argument, String command,
+	public CommandRequestInterface newRequest(String argument, Properties config,
 			DirectoryHandle directory, String user, BaseFtpConnection connection, String originalCommand) {
-		return new CommandRequest(argument, command, directory, user, connection, originalCommand);
+		
+		return new CommandRequest(originalCommand, argument, directory, user, connection, config);
 	}
 
-	public HashMap<String,CommandWrapper> getCommandHandlersMap() {
+	public HashMap<String,CommandInstanceContainer> getCommandHandlersMap() {
 		return _commands;
 	}
 }

@@ -18,6 +18,8 @@
 package org.drftpd.commandmanager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
 
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.vfs.DirectoryHandle;
@@ -30,10 +32,10 @@ public interface CommandManagerInterface {
 
 	/**
 	 * Initialization routine.
-	 * @param requiredCmds, a list of commands read from the configuration file.
-	 * @see <code>org.drftpd.master.config.FtpConfig.getFtpCommandsList()</code> for more information about the ArrayList.
+	 * @param requiredCmds, a map of commands and corresponding Properties read from the configuration file.
+	 * @see <code>org.drftpd.master.config.FtpConfig.getFtpCommandsMap()</code> for more information about the Map.
 	 */
-	public void initialize(ArrayList<String> requiredCmds);
+	public void initialize(HashMap<String,Properties> requiredCmds);
 
 	/**
 	 * Executes the command. 
@@ -50,6 +52,6 @@ public interface CommandManagerInterface {
 	 * @param connection, the control connection, where outputs should be written to.
 	 * @param originalCommand, the actual command name. ("CWD").
 	 */
-	public CommandRequestInterface newRequest(String argument, String command,
+	public CommandRequestInterface newRequest(String argument, Properties config,
 			DirectoryHandle directory, String user, BaseFtpConnection connection, String originalCommand);
 }

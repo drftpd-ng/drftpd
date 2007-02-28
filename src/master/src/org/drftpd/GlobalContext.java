@@ -17,16 +17,20 @@
  */
 package org.drftpd;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
+import java.util.Map.Entry;
 
 import javax.net.ssl.SSLContext;
-
 
 import org.apache.log4j.Logger;
 import org.drftpd.event.Event;
@@ -399,12 +403,86 @@ public class GlobalContext {
 		loadSectionManager(getConfig().getProperties());
 		loadPlugins(getConfig().getProperties());
 	}
+	
 
 	/**
 	 * Will return null if SSL/TLS is not configured
 	 */
 	public SSLContext getSSLContext() {
 		return _sslContext;
+	}
+
+	public static HashMap<String, Properties> loadCommandConfig(String cmdConf) {
+		HashMap<String,Properties> commandsConfig = new HashMap<String,Properties>();
+        LineNumberReader reader = null;
+        try {
+        	reader = new LineNumberReader(new FileReader(cmdConf));
+        	String curLine = null;
+        	
+        	while (reader.ready()) {
+        		curLine = reader.readLine().trim();
+        		if (curLine.startsWith("#") || curLine.equals("")) {
+        			// comment or blank line, ignore
+        			continue;
+        		}
+        		if (curLine.endsWith("{")) {
+        			// internal loop
+        			String cmdName = curLine.substring(0, curLine.lastIndexOf("{")-1).toLowerCase();
+    				if (commandsConfig.containsKey(cmdName)) {
+    					throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+    				}
+        			Properties p = getPropertiesUntilClosed(reader);
+        			logger.debug("Adding command " + cmdName);
+        			for (Entry<Object,Object> property : p.entrySet()) {
+        				logger.debug("key=" + property.getKey() + ",value=" + property.getValue());
+        			}
+        			commandsConfig.put(cmdName,p);
+        		} else {
+        			throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
+        		}
+        	}
+        	// done reading for new commands, must be finished
+        	return commandsConfig;
+		} catch (IOException e) {
+			throw new FatalException("Error loading "+cmdConf, e);
+		} catch (Exception e) {
+			if (reader != null) {
+				logger.error("Error reading line " + reader.getLineNumber() + " in " + cmdConf);
+			}
+			throw new FatalException(e);
+		} finally {
+	    	if(reader != null) {
+	    		try {
+					reader.close();
+				} catch (IOException e) {
+				}
+	    	}
+	    }
+	}
+
+	private static Properties getPropertiesUntilClosed(LineNumberReader reader) throws IOException {
+		Properties p = new Properties();
+		String curLine = null;
+    	while (reader.ready()) {
+    		curLine = reader.readLine().trim();
+    		if (curLine.startsWith("#") || curLine.equals("")) {
+    			// comment or blank line, ignore
+    			continue;
+    		}
+    		if (curLine.endsWith("}")) {
+    			// end of this block
+    			return p;
+    		}
+    		// internal loop
+    		int spaceIndex = curLine.indexOf(" ");
+    		if (spaceIndex == -1) {
+    			throw new FatalException("Line " + reader.getLineNumber() + " is not formatted properly");
+    		}
+    		String propName = curLine.substring(0, spaceIndex);
+    		String value = curLine.substring(spaceIndex).trim();
+    		p.put(propName, value);
+    	}
+    	throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
 	}
 
 	/*	*//**

@@ -17,6 +17,10 @@
  */
 package org.drftpd.commandmanager;
 
+import java.util.Properties;
+
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -51,4 +55,12 @@ public interface CommandRequestInterface {
 	public void setAllowed(boolean b);
 
 	public CommandResponseInterface getDeniedResponse();
+
+	public Properties getProperties();
+
+	public void setProperties(Properties properties);
+	
+	public void setObject(Key key, Object value);
+	
+	public Object getObject(Key key) throws KeyNotFoundException;
 }

@@ -17,27 +17,27 @@
 package org.drftpd.commandmanager;
 
 import java.lang.reflect.Method;
+import java.util.Properties;
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class CommandWrapper {
+public class CommandInstanceContainer {
 
 	private Method _method = null;
-	private CommandInterface _ci = null;
+	private CommandInterface _interfaceInstance = null;
 	
-	public CommandWrapper(Method m, CommandInterface ci) {
+	public CommandInstanceContainer(Method m, CommandInterface interfaceInstance) {
 		_method = m;
-		_ci = ci;
+		_interfaceInstance = interfaceInstance;
 	}
 	
 	public Method getMethod() {
 		return _method;
 	}
 	
-	public CommandInterface getCommandInterface() {
-		return _ci;
-	}
-	
+	public CommandInterface getCommandInterfaceInstance() {
+		return _interfaceInstance;
+	}	
 }

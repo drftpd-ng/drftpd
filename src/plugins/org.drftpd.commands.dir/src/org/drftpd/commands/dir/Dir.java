@@ -772,10 +772,10 @@ public class Dir extends CommandInterface {
         if (pos != -1) {
             group = owner.substring(pos + 1);
             owner = owner.substring(0, pos);
-        } else if ("SITE CHGRP".equals(request.getOriginalCommand())) {
+        } else if ("SITE CHGRP".equals(request.getCommand())) {
             group = owner;
             owner = null;
-        } else if (!"SITE CHOWN".equals(request.getOriginalCommand())) {
+        } else if (!"SITE CHOWN".equals(request.getCommand())) {
         	return StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
         }
 

@@ -16,14 +16,27 @@
  */
 package org.drftpd.commandmanager;
 
+import java.lang.reflect.Method;
+import java.util.Properties;
+
 /**
  * @author zubov
  * @version $Id$
  */
-public interface ExtensionParameterInterface {
-
-	public String getExtensionParameter(String key);
+public class HookContainer<T> {
+	private Method _method = null;
+	private T _interfaceInstance = null;
 	
-	public void addExtensionParameter(String key, String value);
+	public HookContainer(Method m, T interfaceInstance) {
+		_method = m;
+		_interfaceInstance = interfaceInstance;
+	}
 	
+	public Method getMethod() {
+		return _method;
+	}
+	
+	public T getHookInterfaceInstance() {
+		return _interfaceInstance;
+	}
 }

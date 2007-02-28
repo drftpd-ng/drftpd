@@ -18,9 +18,10 @@ package org.drftpd.commands.prehook.permissions;
 
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.master.config.FtpConfig;
+import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
 /**
@@ -31,23 +32,21 @@ public class PermissionPreHook implements PreHookInterface {
 	
 	private static final Logger logger = Logger.getLogger(PermissionPreHook.class);
 	
-	private static final String PERMSTAG = "permsTag";
-	
-	private String _key = null;
-	
 	public void initialize() {
 		
 	}
 	
-	public CommandRequest doPermissionCheck(CommandRequest request) {
+	public CommandRequestInterface doPermissionCheck(CommandRequest request) {
+		
 		try {
-			if (_key == null) {
-				logger.warn("Permission key " + PERMSTAG + " is not configured for command, must allow command");
-			} else if (FtpConfig.getFtpConfig().checkPermission(_key, request.getUserObject())) {
+			Permission perm = request.getPermission();
+			if (perm == null) {
+				logger.warn("Permissions are not configured for command " + request.getCommand());
+			} else if (perm.check(request.getUserObject())) {
 				// it worked, you passed the test
 				return request;
 			}
-			request.setDeniedResponse(new CommandResponse(500, "You do not have the proper permissions to " + _key));
+			request.setDeniedResponse(new CommandResponse(500, "You do not have the proper permissions for command " + request.getCommand()));
 		} catch (NoSuchUserException e) {
 			request.setDeniedResponse(new CommandResponse(500, "You do not exist"));
 		} catch (UserFileException e) {
@@ -56,17 +55,5 @@ public class PermissionPreHook implements PreHookInterface {
 		request.setAllowed(false);
 		return request;
 	}
-
-	public void addExtensionParameter(String id, String key) {
-		// only one I care about is permsTag
-		if (id.equalsIgnoreCase(PERMSTAG)) {
-			logger.debug("Setting " + PERMSTAG + " key for " + key);
-			_key = key;
-		}
-	}
-
-	public String getExtensionParameter(String key) {
-		// we don't need this
-		return null;
-	}
+	
 }

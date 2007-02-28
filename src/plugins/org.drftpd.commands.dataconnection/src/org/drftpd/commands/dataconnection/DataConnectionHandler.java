@@ -84,7 +84,7 @@ public class DataConnectionHandler extends CommandInterface {
         Socket s = conn.getControlSocket();
 
         //reply success
-        conn.getControlWriter().write(new FtpReply(234, request.getOriginalCommand()
+        conn.getControlWriter().write(new FtpReply(234, request.getCommand()
         		+ request.getArgument() + " successful").toString());
         conn.getControlWriter().flush();
         SSLSocket s2 = null;
@@ -152,7 +152,7 @@ public class DataConnectionHandler extends CommandInterface {
                 "You need to use a client supporting PRET (PRE Transfer) to use PASV");
         }
         
-        if (request.getOriginalCommand().equals("CPSV")) {
+        if (request.getCommand().equals("CPSV")) {
         	conn.getTransferState().setSSLHandshakeClientMode(true);
         }
 
@@ -910,9 +910,8 @@ public class DataConnectionHandler extends CommandInterface {
         }
 
         try {
-            char direction = ts.getDirection(new FtpRequest(
-            		request.getOriginalCommand()));
-            String cmd = request.getOriginalCommand();
+            String cmd = request.getCommand();
+            char direction = ts.getDirection(new FtpRequest(cmd));
             boolean isStor = cmd.equals("STOR");
             boolean isRetr = cmd.equals("RETR");
             boolean isAppe = cmd.equals("APPE");

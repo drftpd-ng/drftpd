@@ -139,18 +139,12 @@ public class BaseFtpConnection implements Runnable {
 
 	protected String _user;
 	
-	/**
-	 * @see org.drftpd.master.config.FtpConfig.getFtpCommands();
-	 */
-	private Hashtable<String,String> _cmds;
-
 	protected BaseFtpConnection() {
 	}
 
 	public BaseFtpConnection(Socket soc) throws IOException {
-		_cmds = FtpConfig.getFtpConfig().getFtpCommands();
 		_commandManager = GlobalContext.getConnectionManager().getCommandManager();
-		_commandManager.initialize(FtpConfig.getFtpConfig().getFtpCommandsList());
+		_commandManager.initialize(FtpConfig.getFtpConfig().getFtpCommands());
 		setControlSocket(soc);
 		_lastActive = System.currentTimeMillis();
 		setCurrentDirectory(getGlobalContext().getRoot());
@@ -527,9 +521,10 @@ public class BaseFtpConnection implements Runnable {
 		}
 	}*/
 	public void service(FtpRequest ftpRequest, PrintWriter out) {
-		CommandRequestInterface cmdRequest = _commandManager
-				.newRequest(ftpRequest.getArgument(), _cmds.get(ftpRequest.getCommand()),
-						_currentDirectory, _user, this, ftpRequest.getCommand());
+		CommandRequestInterface cmdRequest = _commandManager.newRequest(
+				ftpRequest.getArgument(), FtpConfig.getFtpConfig()
+						.getFtpCommands().get(ftpRequest.getCommand()),
+				_currentDirectory, _user, this, ftpRequest.getCommand());
 		CommandResponseInterface cmdResponse = _commandManager
 				.execute(cmdRequest);
 		if (cmdResponse != null) {

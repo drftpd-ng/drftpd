@@ -1,65 +1,91 @@
-AUTH=org.drftpd.commands.dataconnection.DataConnectionHandler.doAUTH
-CPSV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
-PROT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPROT
-PBSZ=org.drftpd.commands.dataconnection.DataConnectionHandler.doPBSZ
-MODE=org.drftpd.commands.dataconnection.DataConnectionHandler.doMODE
-PASV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
-PORT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPORT
-PRET=org.drftpd.commands.dataconnection.DataConnectionHandler.doPRET
-SSCN=org.drftpd.commands.dataconnection.DataConnectionHandler.doSSCN
-STRU=org.drftpd.commands.dataconnection.DataConnectionHandler.doSTRU
-SYST=org.drftpd.commands.dataconnection.DataConnectionHandler.doSYST
-TYPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doTYPE
-RETR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
-REST=org.drftpd.commands.dataconnection.DataConnectionHandler.doREST
+AUTH {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doAUTH
+perms *
+}
+
+#CPSV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
+#PROT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPROT
+#PBSZ=org.drftpd.commands.dataconnection.DataConnectionHandler.doPBSZ
+#MODE=org.drftpd.commands.dataconnection.DataConnectionHandler.doMODE
+#PASV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
+#PORT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPORT
+#PRET=org.drftpd.commands.dataconnection.DataConnectionHandler.doPRET
+#SSCN=org.drftpd.commands.dataconnection.DataConnectionHandler.doSSCN
+#STRU=org.drftpd.commands.dataconnection.DataConnectionHandler.doSTRU
+#SYST=org.drftpd.commands.dataconnection.DataConnectionHandler.doSYST
+#TYPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doTYPE
+#RETR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
+#REST=org.drftpd.commands.dataconnection.DataConnectionHandler.doREST
 #SITE\ RESCAN=org.drftpd.commands.DataConnectionHandler
-SITE\ XDUPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doSITE_XDUPE
-STOR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
+#SITE\ XDUPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doSITE_XDUPE
+#STOR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
 #EPSV=org.drftpd.commands.DataConnectionHandler
 #EPRT=org.drftpd.commands.DataConnectionHandler
 
-IDNT=org.drftpd.commands.login.LoginHandler.doIDNT
-USER=org.drftpd.commands.login.LoginHandler.doUSER
-PASS=org.drftpd.commands.login.LoginHandler.doPASS
-QUIT=org.drftpd.commands.login.LoginHandler.doQUIT
+#IDNT=org.drftpd.commands.login.LoginHandler.doIDNT
 
-LIST=org.drftpd.commands.list.LIST.doLIST
+USER {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doUSER
+perms *
+}
 
-CDUP=org.drftpd.commands.dir.Dir.doCDUP
-CWD=org.drftpd.commands.dir.Dir.doCWD
-MKD=org.drftpd.commands.dir.Dir.doMKD
-PWD=org.drftpd.commands.dir.Dir.doPWD
-RMD=org.drftpd.commands.dir.Dir.doRMD
-RNFR=org.drftpd.commands.dir.Dir.doRNFR
-RNTO=org.drftpd.commands.dir.Dir.doRNTO
-DELE=org.drftpd.commands.dir.Dir.doDELE
-SITE\ WIPE=org.drftpd.commands.dir.Dir.doSITE_WIPE
-SITE\ CHOWN=org.drftpd.commands.dir.Dir.doSITE_CHOWN
+PASS {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doPASS
+perms *
+}
+
+#QUIT=org.drftpd.commands.login.LoginHandler.doQUIT
+
+#LIST=org.drftpd.commands.list.LIST.doLIST
+
+#CDUP=org.drftpd.commands.dir.Dir.doCDUP
+#CWD=org.drftpd.commands.dir.Dir.doCWD
+#MKD=org.drftpd.commands.dir.Dir.doMKD
+#PWD=org.drftpd.commands.dir.Dir.doPWD
+#RMD=org.drftpd.commands.dir.Dir.doRMD
+#RNFR=org.drftpd.commands.dir.Dir.doRNFR
+#RNTO=org.drftpd.commands.dir.Dir.doRNTO
+#DELE=org.drftpd.commands.dir.Dir.doDELE
+#SITE\ WIPE=org.drftpd.commands.dir.Dir.doSITE_WIPE
+#SITE\ CHOWN=org.drftpd.commands.dir.Dir.doSITE_CHOWN
 #collides with SITE CHGRP defined by UserManagement
 #SITE\ CHGRP=org.drftpd.commands.Dir
-SITE\ LINK=org.drftpd.commands.dir.Dir.doSITE_LINK
-XCRC=org.drftpd.commands.dir.Dir.doXCRC
-MDTM=org.drftpd.commands.dir.Dir.doMDTM
-SIZE=org.drftpd.commands.dir.Dir.doSIZE
+#SITE\ LINK=org.drftpd.commands.dir.Dir.doSITE_LINK
+#XCRC=org.drftpd.commands.dir.Dir.doXCRC
+#MDTM=org.drftpd.commands.dir.Dir.doMDTM
+#SIZE=org.drftpd.commands.dir.Dir.doSIZE
 
-SITE\ SLAVES=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVES
-SITE\ REMERGE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_REMERGE
-SITE\ KICKSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_KICKSLAVE
-SITE\ SLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVE
-SITE\ ADDSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_ADDSLAVE
-SITE\ DELSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_DELSLAVE
-SITE\ SLAVESELECT=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVESELECT
+#SITE\ SLAVES=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVES
+#SITE\ REMERGE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_REMERGE
+#SITE\ KICKSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_KICKSLAVE
+#SITE\ SLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVE
+#SITE\ ADDSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_ADDSLAVE
+#SITE\ DELSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_DELSLAVE
+#SITE\ SLAVESELECT=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVESELECT
 
-SITE\ RELOAD=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_RELOAD
-SITE\ SHUTDOWN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_SHUTDOWN
-SITE\ LIST=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_LIST
-SITE\ LOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_LOADPLUGIN
-SITE\ UNLOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_UNLOADPLUGIN
-SITE\ PLUGINS=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_PLUGINS
+#SITE\ RELOAD=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_RELOAD
+#SITE\ SHUTDOWN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_SHUTDOWN
 
-ABOR=org.drftpd.commands.misc.Misc.doABOR
-FEAT=org.drftpd.commands.misc.Misc.doFEAT
-SITE\ STAT=org.drftpd.commands.misc.Misc.doSITE_STAT
-SITE\ TIME=org.drftpd.commands.misc.Misc.doSITE_TIME
-SITE\ VERS=org.drftpd.commands.misc.Misc.doSITE_VERS
+SITE LIST {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_LIST
+perms *
+}
+
+#SITE\ LOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_LOADPLUGIN
+#SITE\ UNLOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_UNLOADPLUGIN
+#SITE\ PLUGINS=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_PLUGINS
+
+#ABOR=org.drftpd.commands.misc.Misc.doABOR
+#FEAT=org.drftpd.commands.misc.Misc.doFEAT
+#SITE\ STAT=org.drftpd.commands.misc.Misc.doSITE_STAT
+#SITE\ TIME=org.drftpd.commands.misc.Misc.doSITE_TIME
+#SITE\ VERS=org.drftpd.commands.misc.Misc.doSITE_VERS
 #SITE\ HELP=org.drftpd.commands.misc.Misc.doSITE_HELP

@@ -25,7 +25,6 @@
 		<parameter-def id="HookMethod" />
 		<parameter-def id="ParentMethod" />
 		<parameter-def id="Priority" type="number" />
-		<parameter-def id="permsTag" type="string" />
 	</extension-point>
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="SiteManagementHandler">
 	</extension>

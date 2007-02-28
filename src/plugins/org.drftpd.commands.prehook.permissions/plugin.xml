@@ -22,7 +22,6 @@
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1000" />
-		<parameter id="permsTag" value="delslave" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="AdminCheck3">
 		<parameter id="ParentMethod" value="doSITE_LIST" />

@@ -17,11 +17,17 @@
  */
 package org.drftpd.commandmanager;
 
+import java.util.Collections;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.config.FtpConfig;
+import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -50,12 +56,11 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 
 	public static final Key CURRENT_DIRECTORY = new Key(CommandRequest.class, "current_directory",
 			DirectoryHandle.class);
-	
-	public static final Key ORIGINAL_COMMAND = new Key(CommandRequest.class, "original_command",
-			String.class);
 
 	public static final Key USER = new Key(CommandRequest.class, "user",
 			String.class);
+
+	private static final Key PROPERTIES = new Key(CommandRequest.class, "properties", Properties.class);
 
 	public CommandRequest(String argument, String command,
 			DirectoryHandle directory, String user) {
@@ -65,14 +70,14 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		setUser(user);
 	}
 
-	public CommandRequest(String argument, String command, DirectoryHandle directory,
-			String user, BaseFtpConnection connection, String originalCommand) {
+	public CommandRequest(String command, String argument, DirectoryHandle directory,
+			String user, BaseFtpConnection connection, Properties p) {
 		setArgument(argument);
 		setCommand(command);
 		setConnection(connection);
 		setCurrentDirectory(directory);
-		setOriginalCommand(originalCommand);
 		setUser(user);
+		setProperties(p);
 	}
 
 	public void setAllowed(Boolean allowed) {
@@ -82,12 +87,6 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 	public void setArgument(String argument) {
 		if (argument != null) {
 			setObject(CommandRequest.ARGUMENT, argument);
-		}
-	}
-
-	public void setCommand(String command) {
-		if (command != null) {
-			setObject(CommandRequest.COMMAND, command);
 		}
 	}
 
@@ -102,8 +101,8 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		setObject(CommandRequest.DENIED_RESPONSE, response);
 	}
 
-	public void setOriginalCommand(String command) {
-		setObject(CommandRequest.ORIGINAL_COMMAND, command);
+	public void setCommand(String command) {
+		setObject(CommandRequest.COMMAND, command.toLowerCase());
 	}
 
 	public void setUser(String currentUser) {
@@ -119,9 +118,21 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 	public String getArgument() {
 		return (String) getObject(CommandRequest.ARGUMENT, "");
 	}
-
-	public String getCommand() {
-		return (String) getObject(CommandRequest.COMMAND, "");
+	
+	public Permission getPermission() {
+		Properties p = getProperties();
+		if (p == null) {
+			return new Permission(Collections.singletonList("=siteop"));
+		}
+		String perms = p.getProperty("perms");
+		if (perms == null) {
+			return new Permission(Collections.singletonList("=siteop"));
+		}
+		StringTokenizer st = new StringTokenizer(perms);
+		if (!st.hasMoreTokens()) {
+			return new Permission(Collections.singletonList("=siteop"));
+		}
+		return new Permission(FtpConfig.makeUsers(st));
 	}
 
 	public CommandResponse getDeniedResponse() {
@@ -136,8 +147,8 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		return (DirectoryHandle) getObject(CommandRequest.CURRENT_DIRECTORY, new DirectoryHandle("/"));
 	}
 
-	public String getOriginalCommand() {
-		return (String) getObject(CommandRequest.ORIGINAL_COMMAND, null);
+	public String getCommand() {
+		return (String) getObject(CommandRequest.COMMAND, null);
 	}
 
 	public String getUser() {
@@ -152,6 +163,17 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		catch (KeyNotFoundException e) {
 			return false;
 		}
+	}
+	
+	public void setProperties(Properties properties) {
+		if (properties == null) {
+			return;
+		}
+		setObject(CommandRequest.PROPERTIES, properties);
+	}
+	
+	public Properties getProperties() {
+		return (Properties) getObject(CommandRequest.PROPERTIES, new Properties());
 	}
 
 	public User getUserObject() throws NoSuchUserException, UserFileException {

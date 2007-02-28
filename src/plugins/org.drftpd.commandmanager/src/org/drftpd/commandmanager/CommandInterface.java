@@ -53,9 +53,9 @@ public abstract class CommandInterface {
 	
 	protected String[] _featReplies;
 
-	private SortedMap<Integer, Object[]> _postHooks;
+	private SortedMap<Integer, HookContainer<PostHookInterface>> _postHooks;
 
-	private SortedMap<Integer, Object[]> _preHooks;
+	private SortedMap<Integer, HookContainer<PreHookInterface>> _preHooks;
 
 	private HashMap<String,String> _extensionParameters = new HashMap<String,String>();
 
@@ -121,8 +121,8 @@ public abstract class CommandInterface {
 	}
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		_postHooks = new TreeMap<Integer, Object[]>();
-		_preHooks = new TreeMap<Integer, Object[]>();
+		_postHooks = new TreeMap<Integer, HookContainer<PostHookInterface>>();
+		_preHooks = new TreeMap<Integer, HookContainer<PreHookInterface>>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 
@@ -154,21 +154,13 @@ public abstract class CommandInterface {
 							postHook.getParameter("HookClass").valueAsString());
 					PostHookInterface postHookInstance = (PostHookInterface) postHookCls.newInstance();
 					
-					for (Object obj : postHook.getParameters()) {
-						Extension.Parameter param = (Extension.Parameter) obj;
-						if (param.getDefinition().getType().equals(ExtensionPoint.ParameterDefinition.TYPE_STRING)) {
-							postHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
-						}
-					}
-
-					
 					postHookInstance.initialize();
 
 					Method m = postHookInstance.getClass().getMethod(
 							postHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class, CommandResponse.class});
 					_postHooks.put(new Integer(postHook.getParameter("Priority").valueAsNumber().intValue()),
-							new Object[] {m,postHookInstance});
+							new HookContainer<PostHookInterface>(m,postHookInstance));
 				}
 				catch(Exception e) {
 					/* Should be safe to continue, just means this post hook won't be
@@ -209,20 +201,13 @@ public abstract class CommandInterface {
 							preHook.getParameter("HookClass").valueAsString());
 					PreHookInterface preHookInstance = (PreHookInterface) preHookCls.newInstance();
 					
-					for (Object obj : preHook.getParameters()) {
-						Extension.Parameter param = (Extension.Parameter) obj;
-						if (param.getDefinition().getType().equals(ExtensionPoint.ParameterDefinition.TYPE_STRING)) {
-							preHookInstance.addExtensionParameter(param.getId(), param.valueAsString());
-						}
-					}
-					
 					preHookInstance.initialize();
 
 					Method m = preHookInstance.getClass().getMethod(
 							preHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class});
 					_preHooks.put(new Integer(preHook.getParameter("Priority").valueAsNumber().intValue()),
-							new Object[] {m,preHookInstance});
+							new HookContainer<PreHookInterface>(m,preHookInstance));
 				}
 				catch(Exception e) {
 					/* Should be safe to continue, just means this post hook won't be
@@ -237,10 +222,10 @@ public abstract class CommandInterface {
 	}
 
 	protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
-		for (Object[] hook : _postHooks.values()) {
-			Method m = (Method) hook[0];
+		for (HookContainer<PostHookInterface> hook : _postHooks.values()) {
+			Method m = hook.getMethod();
 			try {
-				m.invoke(hook[1], new Object[] {request, response});
+				m.invoke(hook.getHookInterfaceInstance(), new Object[] {request, response});
 			}
 			catch (Exception e) {
 				logger.error("Error while loading/invoking posthook " + m.toString(), e);
@@ -251,12 +236,12 @@ public abstract class CommandInterface {
 		}
 	}
 
-	protected CommandRequest doPreHooks(CommandRequestInterface request) {
+	protected CommandRequestInterface doPreHooks(CommandRequestInterface request) {
 		request.setAllowed(true);
-		for (Object[] hook : _preHooks.values()) {
-			Method m = (Method) hook[0];
+		for (HookContainer<PreHookInterface> hook : _preHooks.values()) {
+			Method m = hook.getMethod();
 			try {
-				request = (CommandRequest) m.invoke(hook[1], new Object[] {request});
+				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[] {request});
 			}
 			catch (Exception e) {
 				logger.error("Error while loading/invoking prehook " + m.toString(), e);
@@ -265,7 +250,7 @@ public abstract class CommandInterface {
 				 */
 			}
 		}
-		return (CommandRequest) request;
+		return (CommandRequestInterface) request;
 	}
 
 	protected User getUserNull(String user) {
