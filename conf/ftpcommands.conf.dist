@@ -5,26 +5,118 @@ method doAUTH
 perms *
 }
 
-#CPSV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
-#PROT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPROT
-#PBSZ=org.drftpd.commands.dataconnection.DataConnectionHandler.doPBSZ
-#MODE=org.drftpd.commands.dataconnection.DataConnectionHandler.doMODE
-#PASV=org.drftpd.commands.dataconnection.DataConnectionHandler.doPASVandCPSV
-#PORT=org.drftpd.commands.dataconnection.DataConnectionHandler.doPORT
-#PRET=org.drftpd.commands.dataconnection.DataConnectionHandler.doPRET
-#SSCN=org.drftpd.commands.dataconnection.DataConnectionHandler.doSSCN
+CPSV {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPASVandCPSV
+perms *
+}
+
+PROT {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPROT
+perms *
+}
+
+PBSZ {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPBSZ
+perms *
+}
+
+MODE {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doMODE
+perms *
+}
+
+PASV {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPASVandCPSV
+perms *
+}
+
+PORT {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPORT
+perms *
+}
+
+PRET {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPRET
+perms *
+}
+
+SSCN {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doSSCN
+perms *
+}
+
+
 #STRU=org.drftpd.commands.dataconnection.DataConnectionHandler.doSTRU
-#SYST=org.drftpd.commands.dataconnection.DataConnectionHandler.doSYST
-#TYPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doTYPE
-#RETR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
-#REST=org.drftpd.commands.dataconnection.DataConnectionHandler.doREST
+
+SYST {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doSYST
+perms *
+}
+
+TYPE {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doTYPE
+perms *
+}
+
+RETR {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method transfer
+perms *
+}
+
+REST {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doREST
+perms *
+}
+
 #SITE\ RESCAN=org.drftpd.commands.DataConnectionHandler
-#SITE\ XDUPE=org.drftpd.commands.dataconnection.DataConnectionHandler.doSITE_XDUPE
-#STOR=org.drftpd.commands.dataconnection.DataConnectionHandler.transfer
+
+SITE\ XUPE {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doSITE_XUPE
+perms *
+}
+
+STOR {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method transfer
+perms *
+}
+
 #EPSV=org.drftpd.commands.DataConnectionHandler
 #EPRT=org.drftpd.commands.DataConnectionHandler
 
-#IDNT=org.drftpd.commands.login.LoginHandler.doIDNT
+IDNT {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doIDNT
+perms *
+}
 
 USER {
 plugin org.drftpd.commands.login
@@ -40,37 +132,183 @@ method doPASS
 perms *
 }
 
-#QUIT=org.drftpd.commands.login.LoginHandler.doQUIT
+QUIT {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doQUIT
+perms *
+}
 
-#LIST=org.drftpd.commands.list.LIST.doLIST
+LIST {
+plugin org.drftpd.commands.list
+class LIST
+method doLIST
+perms *
+}
 
-#CDUP=org.drftpd.commands.dir.Dir.doCDUP
-#CWD=org.drftpd.commands.dir.Dir.doCWD
-#MKD=org.drftpd.commands.dir.Dir.doMKD
-#PWD=org.drftpd.commands.dir.Dir.doPWD
-#RMD=org.drftpd.commands.dir.Dir.doRMD
-#RNFR=org.drftpd.commands.dir.Dir.doRNFR
-#RNTO=org.drftpd.commands.dir.Dir.doRNTO
-#DELE=org.drftpd.commands.dir.Dir.doDELE
-#SITE\ WIPE=org.drftpd.commands.dir.Dir.doSITE_WIPE
-#SITE\ CHOWN=org.drftpd.commands.dir.Dir.doSITE_CHOWN
+CDUP {
+plugin org.drftpd.commands.dir
+class Dir
+method doCDUP
+perms *
+}
+
+CWD {
+plugin org.drftpd.commands.dir
+class Dir
+method doCWD
+perms *
+}
+
+MKD {
+plugin org.drftpd.commands.dir
+class Dir
+method doMKD
+perms *
+}
+
+PWD {
+plugin org.drftpd.commands.dir
+class Dir
+method doPWD
+perms *
+}
+
+RMD {
+plugin org.drftpd.commands.dir
+class Dir
+method doRMD
+perms *
+}
+
+RNFR {
+plugin org.drftpd.commands.dir
+class Dir
+method doRNFR
+perms *
+}
+
+RNTO {
+plugin org.drftpd.commands.dir
+class Dir
+method doRNTO
+perms *
+}
+
+DELE {
+plugin org.drftpd.commands.dir
+class Dir
+method doDELE
+perms *
+}
+
+SITE\ WIPE {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_WIPE
+perms =wipe
+}
+
+SITE\ CHOWN {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_CHOWN
+perms =siteop
+}
+
 #collides with SITE CHGRP defined by UserManagement
 #SITE\ CHGRP=org.drftpd.commands.Dir
-#SITE\ LINK=org.drftpd.commands.dir.Dir.doSITE_LINK
-#XCRC=org.drftpd.commands.dir.Dir.doXCRC
-#MDTM=org.drftpd.commands.dir.Dir.doMDTM
-#SIZE=org.drftpd.commands.dir.Dir.doSIZE
 
-#SITE\ SLAVES=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVES
-#SITE\ REMERGE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_REMERGE
-#SITE\ KICKSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_KICKSLAVE
-#SITE\ SLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVE
-#SITE\ ADDSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_ADDSLAVE
-#SITE\ DELSLAVE=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_DELSLAVE
-#SITE\ SLAVESELECT=org.drftpd.commands.slavemanagement.SlaveManagement.doSITE_SLAVESELECT
+SITE\ LINK  {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_LINK
+perms =siteop
+}
 
-#SITE\ RELOAD=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_RELOAD
-#SITE\ SHUTDOWN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_SHUTDOWN
+XCRC {
+plugin org.drftpd.commands.dir
+class Dir
+method doXCRC
+perms *
+}
+
+MDTM {
+plugin org.drftpd.commands.dir
+class Dir
+method doMDTM
+perms *
+}
+
+SIZE {
+plugin org.drftpd.commands.dir
+class Dir
+method doSIZE
+perms *
+}
+
+SITE\ SLAVES {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_SLAVES
+perms *
+}
+
+SITE\ REMERGE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_REMERGE
+perms =siteop
+}
+
+SITE\ KICKSLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_KICKSLAVE
+perms =siteop
+}
+
+SITE\ SLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_SLAVE
+perms *
+}
+
+SITE\ ADDSLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_ADDSLAVE
+perms =siteop
+}
+
+SITE\ DELSLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_DELSLAVE
+perms =siteop
+}
+
+SITE\ SLAVESELECT {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_SLAVESELECT
+perms *
+}
+
+SITE\ RELOAD {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_RELOAD
+perms =siteop
+}
+
+SITE\ SHUTDOWN {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_SHUTDOWN
+perms =siteop
+}
 
 SITE LIST {
 plugin org.drftpd.commands.sitemanagement
@@ -79,13 +317,64 @@ method doSITE_LIST
 perms *
 }
 
-#SITE\ LOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_LOADPLUGIN
-#SITE\ UNLOADPLUGIN=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_UNLOADPLUGIN
-#SITE\ PLUGINS=org.drftpd.commands.sitemanagement.SiteManagementHandler.doSITE_PLUGINS
+SITE\ LOADPLUGIN {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_LOADPLUGIN
+perms =siteop
+}
 
-#ABOR=org.drftpd.commands.misc.Misc.doABOR
-#FEAT=org.drftpd.commands.misc.Misc.doFEAT
-#SITE\ STAT=org.drftpd.commands.misc.Misc.doSITE_STAT
-#SITE\ TIME=org.drftpd.commands.misc.Misc.doSITE_TIME
-#SITE\ VERS=org.drftpd.commands.misc.Misc.doSITE_VERS
-#SITE\ HELP=org.drftpd.commands.misc.Misc.doSITE_HELP
+SITE\ UNLOADPLUGIN {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_UNLOADPLUGIN
+perms -siteop
+}
+
+SITE\ PLUGINS {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_PLUGINS
+perms =siteop
+}
+
+ABOR {
+plugin org.drftpd.commands.misc
+class Misc
+method doABOR
+perms *
+}
+
+FEAT {
+plugin org.drftpd.commands.misc
+class Misc
+method doFEAT
+perms *
+}
+
+SITE\ STAT {
+plugin org.drftpd.commands.misc
+class Misc
+method doSITE_STAT
+perms *
+}
+SITE\ TIME {
+plugin org.drftpd.commands.misc
+class Misc
+method doSITE_TIME
+perms *
+}
+
+SITE\ VERS {
+plugin org.drftpd.commands.misc
+class Misc
+method doSITE_VERS
+perms *
+}
+
+SITE\ HELP {
+plugin org.drftpd.commands.misc
+class Misc
+method doSITE_HELP
+perms *
+}
