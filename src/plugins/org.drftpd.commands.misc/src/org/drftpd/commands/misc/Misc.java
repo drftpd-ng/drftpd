@@ -59,7 +59,8 @@ public class Misc extends CommandInterface {
 
     // LIST;NLST;RETR;STOR
     public CommandResponse doFEAT(CommandRequest request) {
-        PrintWriter out = request.getConnection().getControlWriter();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        PrintWriter out = conn.getControlWriter();
         out.print("211-Extensions supported:\r\n");
 
         for (CommandInstanceContainer container : _cManager.getCommandHandlersMap().values()) {
@@ -130,7 +131,7 @@ public class Misc extends CommandInterface {
         /* TODO maybe think of another way of doing this so as to not pull in
          * BaseFtpConnection
          */
-        BaseFtpConnection conn = request.getConnection();
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         response.addComment(conn.status());
 
         return response;

@@ -43,7 +43,6 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.Reply;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.exceptions.FatalException;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.MessagePathPermission;
 import org.drftpd.permissions.PathPermission;
@@ -102,13 +101,9 @@ public class FtpConfig extends Observable implements ConfigInterface {
 
 	private boolean _useFileNames = false;
 
-	private static final String cmdConf = "conf/ftpcommands.conf";
-
 	private static final String newConf = "conf/perms.conf";
 
 	private static final String oldConf = "drftpd.conf";
-
-	private HashMap<String,Properties> _cmds;
 
 	protected PortRange _portRange;
 
@@ -334,7 +329,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
 			loadConfig1();
 			fr = new FileReader(newConf);
 			loadConfig2(fr);
-			loadFtpCommands();
 		} finally {
 			if (fis != null) {
 				fis.close();
@@ -486,25 +480,6 @@ public class FtpConfig extends Observable implements ConfigInterface {
 			// default portrange if none specified
 			_portRange = new PortRange(0);
 		}
-	}
-
-	/**
-	 * Handles the load of the FTP Commands.
-	 * Firstly, it checks if <code>conf/ftpcommands.conf</code> exists, if not it halts the daemon.
-	 * After that it read the file and create a list of the existing commands.
-	 */
-	private void loadFtpCommands() {
-		_cmds = GlobalContext.loadCommandConfig(cmdConf);
-	}
-
-	/**
-	 * The HashMap should look like this:<br><code>
-	 * Key -> Value<br>
-	 * "AUTH" -> Properties Object for AUTH<br>
-	 * "LIST" -> Properties Object for LIST</code>
-	 */
-	public HashMap<String,Properties> getFtpCommands() {
-		return _cmds;
 	}
 
 	private void addGlobPathPermission(String key, StringTokenizer st)

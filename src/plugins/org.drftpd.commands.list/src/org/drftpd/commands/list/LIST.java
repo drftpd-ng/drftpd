@@ -243,7 +243,7 @@ public class LIST extends CommandInterface {
 		try {
 			String directoryName = null;
 			String options = "";
-			BaseFtpConnection conn = request.getConnection();
+			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
 			TransferState ts = conn.getTransferState();
 
 			// String pattern = "*";
@@ -350,7 +350,8 @@ public class LIST extends CommandInterface {
 				return new CommandResponse(450, ex.getMessage());
 			}
 		} finally {
-			request.getConnection().getTransferState().reset();
+			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+			conn.getTransferState().reset();
 		}
 	}
 	

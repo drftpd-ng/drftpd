@@ -25,7 +25,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.Session;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -51,11 +51,11 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 	public static final Key COMMAND = new Key(CommandRequest.class, "command",
 			String.class);
 
-	public static final Key CONNECTION = new Key(CommandRequest.class, "connection",
-			BaseFtpConnection.class);
-
 	public static final Key CURRENT_DIRECTORY = new Key(CommandRequest.class, "current_directory",
 			DirectoryHandle.class);
+
+	public static final Key SESSION = new Key(CommandRequest.class, "session",
+			Session.class);
 
 	public static final Key USER = new Key(CommandRequest.class, "user",
 			String.class);
@@ -71,11 +71,11 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 	}
 
 	public CommandRequest(String command, String argument, DirectoryHandle directory,
-			String user, BaseFtpConnection connection, Properties p) {
+			String user, Session session, Properties p) {
 		setArgument(argument);
 		setCommand(command);
-		setConnection(connection);
 		setCurrentDirectory(directory);
+		setSession(session);
 		setUser(user);
 		setProperties(p);
 	}
@@ -90,9 +90,6 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		}
 	}
 
-	public void setConnection(BaseFtpConnection connection) {
-		setObject(CommandRequest.CONNECTION, connection);
-	}
 	public void setCurrentDirectory(DirectoryHandle currentDirectory) {
 		setObject(CommandRequest.CURRENT_DIRECTORY, currentDirectory);
 	}
@@ -103,6 +100,10 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 
 	public void setCommand(String command) {
 		setObject(CommandRequest.COMMAND, command.toLowerCase());
+	}
+
+	public void setSession(Session session) {
+		setObject(CommandRequest.SESSION, session);
 	}
 
 	public void setUser(String currentUser) {
@@ -139,16 +140,16 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		return (CommandResponse) getObject(CommandRequest.DENIED_RESPONSE, null);
 	}
 
-	public BaseFtpConnection getConnection() {
-		return (BaseFtpConnection) getObject(CommandRequest.CONNECTION, null);
-	}
-
 	public DirectoryHandle getCurrentDirectory() {
 		return (DirectoryHandle) getObject(CommandRequest.CURRENT_DIRECTORY, new DirectoryHandle("/"));
 	}
 
 	public String getCommand() {
 		return (String) getObject(CommandRequest.COMMAND, null);
+	}
+
+	public Session getSession() {
+		return (Session) getObject(CommandRequest.SESSION, null);
 	}
 
 	public String getUser() {

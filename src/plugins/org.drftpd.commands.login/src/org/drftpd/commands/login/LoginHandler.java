@@ -61,7 +61,7 @@ public class LoginHandler extends CommandInterface {
      * Returns nothing on success.
      */
     public CommandResponse doIDNT(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         if (_idntAddress != null) {
             logger.error("Multiple IDNT commands");
             return new CommandResponse(530, "Multiple IDNT commands");
@@ -110,7 +110,7 @@ public class LoginHandler extends CommandInterface {
      * user name command.
      */
     public CommandResponse doPASS(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         if (conn.getUserNull() == null) {
         	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
         }
@@ -148,7 +148,7 @@ public class LoginHandler extends CommandInterface {
      * in progress, the server closes the control connection.
      */
     public CommandResponse doQUIT(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         conn.stop();
 
         return new CommandResponse(221, jprintf(_bundle, "quit.success", request.getUser()));
@@ -164,7 +164,7 @@ public class LoginHandler extends CommandInterface {
      * the control connections are made.
      */
     public CommandResponse doUSER(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
 
         conn.setAuthenticated(false);
         conn.setUser(null);

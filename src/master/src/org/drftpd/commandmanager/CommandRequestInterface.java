@@ -21,7 +21,7 @@ import java.util.Properties;
 
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.Session;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -34,9 +34,9 @@ public interface CommandRequestInterface {
 
 	public void setCommand(String command);
 
-	public void setConnection(BaseFtpConnection connection);
-
 	public void setCurrentDirectory(DirectoryHandle currentDirectory);
+
+	public void setSession(Session session);
 
 	public void setUser(String currentUser);
 
@@ -44,9 +44,9 @@ public interface CommandRequestInterface {
 
 	public String getCommand();
 
-	public BaseFtpConnection getConnection();
-
 	public DirectoryHandle getCurrentDirectory();
+
+	public Session getSession();
 
 	public String getUser();
 

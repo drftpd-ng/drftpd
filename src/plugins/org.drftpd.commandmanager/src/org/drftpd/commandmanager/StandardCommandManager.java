@@ -26,8 +26,7 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.drftpd.exceptions.FatalException;
-import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.master.config.FtpConfig;
+import org.drftpd.master.Session;
 import org.drftpd.vfs.DirectoryHandle;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
@@ -128,11 +127,9 @@ public class StandardCommandManager implements CommandManagerInterface {
 		if (commandContainer == null) {
 			logger.debug("commandContainer==null");
 			CommandResponseInterface cmdFailed = genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
-			cmdFailed.setUser(request.getUser());
-			cmdFailed.setCurrentDirectory(request.getCurrentDirectory());
 			return cmdFailed;
 		}
-		request.setProperties(FtpConfig.getFtpConfig().getFtpCommands().get(request.getCommand()));
+		request.setProperties(request.getSession().getCommands().get(request.getCommand()));
 		try {
 			CommandResponseInterface response = null;
 	    	request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
@@ -148,8 +145,6 @@ public class StandardCommandManager implements CommandManagerInterface {
 			return response;
 		} catch (Exception e) {
 			CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
-			cmdFailed.setUser(request.getUser());
-			cmdFailed.setCurrentDirectory(request.getCurrentDirectory());
 			logger.error("Command "+request.getCommand()+" failed",e);
 			return cmdFailed;
 		}
@@ -300,10 +295,10 @@ public class StandardCommandManager implements CommandManagerInterface {
 		return new CommandRequest(argument, command, directory, user);
 	}
 
-	public CommandRequestInterface newRequest(String argument, Properties config,
-			DirectoryHandle directory, String user, BaseFtpConnection connection, String originalCommand) {
+	public CommandRequestInterface newRequest(String originalCommand, String argument,
+			DirectoryHandle directory, String user, Session session, Properties config) {
 		
-		return new CommandRequest(originalCommand, argument, directory, user, connection, config);
+		return new CommandRequest(originalCommand, argument, directory, user, session, config);
 	}
 
 	public HashMap<String,CommandInstanceContainer> getCommandHandlersMap() {

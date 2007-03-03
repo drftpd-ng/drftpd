@@ -14,7 +14,6 @@
 		<parameter id="ParentMethod" value="doSITE_ADDSLAVE" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
-		<parameter id="permsTag" value="addslave" />
 		<parameter id="Priority" value="1000" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="AdminCheck2">
@@ -28,6 +27,5 @@
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1000" />
-		<parameter id="permsTag" value="list" />
 	</extension>
 </plugin>

@@ -80,7 +80,7 @@ public class DataConnectionHandler extends CommandInterface {
             return new CommandResponse(400, "TLS not configured");
         }
 
-        BaseFtpConnection conn = request.getConnection();
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         Socket s = conn.getControlSocket();
 
         //reply success
@@ -143,7 +143,7 @@ public class DataConnectionHandler extends CommandInterface {
      */
     public CommandResponse doPASVandCPSV(CommandRequest request) {
 
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	TransferState ts = conn.getTransferState();
     	ts.setPasv(true);
         if (!ts.isPreTransfer()) {
@@ -319,7 +319,7 @@ public class DataConnectionHandler extends CommandInterface {
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
-        BaseFtpConnection conn = request.getConnection();
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         String portHostAddress = clientAddr.getHostAddress();
         String clientHostAddress = conn.getControlSocket().getInetAddress()
                                        .getHostAddress();
@@ -415,7 +415,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
 
     public CommandResponse doPRET(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	reset(conn);
         TransferState ts = conn.getTransferState();
         ts.setPreTransferRequest(new FtpRequest(request.getArgument()));
@@ -427,7 +427,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
     
     public CommandResponse setTransferFileFromPRETRequest(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	TransferState ts = conn.getTransferState();
         FtpRequest ghostRequest = ts.getPretRequest();
         if (ghostRequest == null) {
@@ -481,7 +481,7 @@ public class DataConnectionHandler extends CommandInterface {
     }
     
     public CommandResponse doSSCN(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	if (conn.getGlobalContext().getSSLContext() == null) {
     		return new CommandResponse(500, "TLS not configured");
         }
@@ -507,7 +507,7 @@ public class DataConnectionHandler extends CommandInterface {
 	}
 
     public CommandResponse doPROT(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	if (conn.getGlobalContext().getSSLContext() == null) {
     		return new CommandResponse(500, "TLS not configured");
         }
@@ -557,7 +557,7 @@ public class DataConnectionHandler extends CommandInterface {
      * cause file transfer to resume.
      */
     public CommandResponse doREST(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
 
         // argument check
         if (!request.hasArgument()) {
@@ -734,7 +734,7 @@ public class DataConnectionHandler extends CommandInterface {
      * The argument specifies the representation type.
      */
     public CommandResponse doTYPE(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
 
         // get type from argument
         if (!request.hasArgument()) {
@@ -900,7 +900,7 @@ public class DataConnectionHandler extends CommandInterface {
      */
     //TODO add APPE support
     public CommandResponse transfer(CommandRequest request) {
-    	BaseFtpConnection conn = request.getConnection();
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	TransferState ts = conn.getTransferState();
         ReplacerEnvironment env = new ReplacerEnvironment();
         if (!ts.getSendFilesEncrypted() &&

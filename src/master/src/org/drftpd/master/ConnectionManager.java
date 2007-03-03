@@ -24,7 +24,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -52,7 +54,13 @@ public class ConnectionManager {
 	private static final Logger logger = Logger
 			.getLogger(ConnectionManager.class.getName());
 
+	private static final String cmdConf = "conf/ftpcommands.conf";
+
 	private static ConnectionManager _connectionManager = null;
+
+	private HashMap<String,Properties> _cmds;
+
+	private CommandManagerInterface _commandManager = null;
 
 	private List<BaseFtpConnection> _conns = Collections
 			.synchronizedList(new ArrayList<BaseFtpConnection>());
@@ -128,6 +136,7 @@ public class ConnectionManager {
 			
 			GlobalContext.getGlobalContext().init();
 
+			getConnectionManager().loadCommands();
 			Properties cfg = getGlobalContext().getConfig().getProperties();
 
 			/** listen for connections * */
@@ -257,51 +266,45 @@ public class ConnectionManager {
 	}
 
 	public CommandManagerInterface getCommandManager() {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint cmExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"master", "CommandManager");
-		
-		/*	Iterate over all extensions that have been connected to the
-			CommandManager extension point and return the desired one */
+		if (_commandManager == null) {
+			PluginManager manager = PluginManager.lookup(this);
+			ExtensionPoint cmExtPoint = 
+				manager.getRegistry().getExtensionPoint( 
+						"master", "CommandManager");
+			
+			/*	Iterate over all extensions that have been connected to the
+				CommandManager extension point and return the desired one */
+	
+			Properties cfg = getGlobalContext().getConfig().getProperties();
+	
+			Class<?> cmCls = null;
+	
+			String desiredCm = PropertyHelper.getProperty(cfg, "master.commandmanager");
 
-		Properties cfg = getGlobalContext().getConfig().getProperties();
-
-		Class<?> cmCls = null;
-
-		String desiredCm = PropertyHelper.getProperty(cfg, "master.commandmanager");
-		
-		for (Iterator cManagers = cmExtPoint.getConnectedExtensions().iterator();
-			cManagers.hasNext();) { 
-
-			Extension cm = (Extension) cManagers.next(); 
-
-			try {
-				if (cm.getDeclaringPluginDescriptor().getId().equals(desiredCm)) {
-					// If plugin isn't already activated then activate it
-					if (!manager.isPluginActivated(cm.getDeclaringPluginDescriptor())) {
-						manager.activatePlugin(cm.getDeclaringPluginDescriptor().getId());
+			for (Extension cm : ((Collection<Extension>) cmExtPoint.getConnectedExtensions())) {
+				try {
+					if (cm.getDeclaringPluginDescriptor().getId().equals(desiredCm)) {
+						// If plugin isn't already activated then activate it
+						if (!manager.isPluginActivated(cm.getDeclaringPluginDescriptor())) {
+							manager.activatePlugin(cm.getDeclaringPluginDescriptor().getId());
+						}
+						ClassLoader cmLoader = manager.getPluginClassLoader( 
+								cm.getDeclaringPluginDescriptor());
+						cmCls = cmLoader.loadClass( 
+								cm.getParameter("class").valueAsString());
+						_commandManager = (CommandManagerInterface) cmCls.newInstance();
+						_commandManager.initialize(getCommands());
+						return _commandManager;
 					}
-					ClassLoader cmLoader = manager.getPluginClassLoader( 
-							cm.getDeclaringPluginDescriptor());
-					cmCls = cmLoader.loadClass( 
-							cm.getParameter("class").valueAsString());
+				}
+				catch (Exception e) {
+					throw new FatalException(
+							"Cannot create instance of commandmanager, check master.commandmanager in config file",
+							e);
 				}
 			}
-			catch (Exception e) {
-				throw new FatalException(
-						"Cannot create instance of commandmanager, check master.commandmanager in config file",
-						e);
-			}
 		}
-		try {
-			return (CommandManagerInterface) cmCls.newInstance();
-		}
-		catch (Exception e) {
-			throw new FatalException(
-					"Cannot create instance of commandmanager, check master.commandmanager in config file",
-					e);
-		}
+		return _commandManager;
 	}
 
 	/**
@@ -385,5 +388,24 @@ public class ConnectionManager {
 
 		_conns.add(conn);
 		conn.start();
+	}
+
+	/**
+	 * Handles the load of the FTP Commands.
+	 * Firstly, it checks if <code>conf/ftpcommands.conf</code> exists, if not it halts the daemon.
+	 * After that it read the file and create a list of the existing commands.
+	 */
+	private void loadCommands() {
+		_cmds = GlobalContext.loadCommandConfig(cmdConf);
+	}
+
+	/**
+	 * The HashMap should look like this:<br><code>
+	 * Key -> Value<br>
+	 * "AUTH" -> Properties Object for AUTH<br>
+	 * "LIST" -> Properties Object for LIST</code>
+	 */
+	public HashMap<String,Properties> getCommands() {
+		return _cmds;
 	}
 }

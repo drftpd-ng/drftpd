@@ -30,10 +30,11 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import javax.net.ssl.SSLSocket;
@@ -53,7 +54,6 @@ import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.ConnectionEvent;
 import org.drftpd.io.AddAsciiOutputStream;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -74,7 +74,7 @@ import org.tanesha.replacer.SimplePrintf;
  * @author mog
  * @version $Id$
  */
-public class BaseFtpConnection implements Runnable {
+public class BaseFtpConnection extends Session implements Runnable {
 	private static final Logger debuglogger = Logger
 			.getLogger(BaseFtpConnection.class.getName() + ".service");
 
@@ -144,7 +144,7 @@ public class BaseFtpConnection implements Runnable {
 
 	public BaseFtpConnection(Socket soc) throws IOException {
 		_commandManager = GlobalContext.getConnectionManager().getCommandManager();
-		_commandManager.initialize(FtpConfig.getFtpConfig().getFtpCommands());
+		setCommands(GlobalContext.getConnectionManager().getCommands());
 		setControlSocket(soc);
 		_lastActive = System.currentTimeMillis();
 		setCurrentDirectory(getGlobalContext().getRoot());
@@ -522,9 +522,8 @@ public class BaseFtpConnection implements Runnable {
 	}*/
 	public void service(FtpRequest ftpRequest, PrintWriter out) {
 		CommandRequestInterface cmdRequest = _commandManager.newRequest(
-				ftpRequest.getArgument(), FtpConfig.getFtpConfig()
-						.getFtpCommands().get(ftpRequest.getCommand()),
-				_currentDirectory, _user, this, ftpRequest.getCommand());
+				ftpRequest.getCommand(), ftpRequest.getArgument(),
+				_currentDirectory, _user, this, getCommands().get(ftpRequest.getCommand()));
 		CommandResponseInterface cmdResponse = _commandManager
 				.execute(cmdRequest);
 		if (cmdResponse != null) {

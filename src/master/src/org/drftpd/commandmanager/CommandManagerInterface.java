@@ -17,11 +17,10 @@
  */
 package org.drftpd.commandmanager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.Session;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -45,13 +44,13 @@ public interface CommandManagerInterface {
 	/**
 	 * To explain how this constructor works take this "CWD /PHOTOS/" as the request
 	 * and the current directory is "/".
+	 * @param originalCommand, the actual command name. ("CWD").
 	 * @param argument, the argument of the command ("/PHOTOS/").
-	 * @param command, the 'mapped' command. ("org.drftpd.commands.Dir.doCWD").
 	 * @param directory, the current directory. ("/").
 	 * @param user, the issuer of the command.
-	 * @param connection, the control connection, where outputs should be written to.
-	 * @param originalCommand, the actual command name. ("CWD").
+	 * @param session, the Session object provided by the frontend for storing data.
+	 * @param config, the Properties object containing details and setting for the command sent.
 	 */
-	public CommandRequestInterface newRequest(String argument, Properties config,
-			DirectoryHandle directory, String user, BaseFtpConnection connection, String originalCommand);
+	public CommandRequestInterface newRequest(String originalCommand, String argument,
+			DirectoryHandle directory, String user, Session session, Properties config);
 }
