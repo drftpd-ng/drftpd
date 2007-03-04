@@ -7,17 +7,12 @@
 		propertyversion="plugin.version" />
 	<property name="plugin.home"
 		value="${basedir}/../../../plugins/${plugin.id}" />
-	<path id="plugin.classpath">
-		<fileset dir="${basedir}/../../../lib">
-			<include name="*.jar" />
-		</fileset>
-		<dirset dir="${plugin.home}/../../">
-			<include name="core/common/classes" />
-			<include name="core/master/classes" />
-			<include name="core/slave/classes" />
-			<include name="plugins/org.drftpd.commandmanager/classes" />
-		</dirset>
-	</path>
+	<jpf-path
+		basedir="${basedir}/../../.."
+		pathid="plugin.classpath"
+		pluginid="${plugin.id}"
+		includes="core/*/plugin.xml,plugins/*/plugin.xml,src/plugins/${plugin.id}/plugin.xml"
+		verbose="true" />
 
 	<target name="build">
 		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>

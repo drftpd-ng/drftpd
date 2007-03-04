@@ -22,11 +22,8 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.Map.Entry;
@@ -278,7 +275,7 @@ public class GlobalContext {
 
 		String desiredUm = PropertyHelper.getProperty(cfg, "master.usermanager");
 		
-		for (Extension um : ((Collection<Extension>) umExtPoint.getConnectedExtensions())) {
+		for (Extension um : umExtPoint.getConnectedExtensions()) {
 			try {
 				if (um.getDeclaringPluginDescriptor().getId().equals(desiredUm)) {
 					manager.activatePlugin(desiredUm);

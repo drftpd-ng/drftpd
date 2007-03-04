@@ -19,7 +19,6 @@ package org.drftpd.commandmanager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Properties;
@@ -69,7 +68,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 		 * an extension based on its declaring plugin name.
 		 */
 		Hashtable<String,Extension> extensions = new Hashtable<String,Extension>();
-		for (Extension cmd : ((Collection<Extension>) cmdExtPoint.getConnectedExtensions())) {
+		for (Extension cmd : cmdExtPoint.getConnectedExtensions()) {
 			String pluginId = cmd.getDeclaringPluginDescriptor().getId();
 			extensions.put(pluginId,cmd);
 		}

@@ -24,7 +24,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -281,7 +280,7 @@ public class ConnectionManager {
 	
 			String desiredCm = PropertyHelper.getProperty(cfg, "master.commandmanager");
 
-			for (Extension cm : ((Collection<Extension>) cmExtPoint.getConnectedExtensions())) {
+			for (Extension cm : cmExtPoint.getConnectedExtensions()) {
 				try {
 					if (cm.getDeclaringPluginDescriptor().getId().equals(desiredCm)) {
 						// If plugin isn't already activated then activate it

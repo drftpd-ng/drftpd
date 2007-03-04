@@ -7,15 +7,12 @@
 		propertyversion="plugin.version" />
 	<property name="plugin.home"
 		value="${basedir}/../../core/${plugin.id}" />
-	<path id="plugin.classpath">
-		<fileset dir="${basedir}/../../lib">
-			<include name="*.jar" />
-		</fileset>
-		<dirset dir="${plugin.home}/../">
-			<include name="common/classes" />
-			<include name="slave/classes" />
-		</dirset>
-	</path>
+	<jpf-path
+		basedir="${basedir}/../.."
+		pathid="plugin.classpath"
+		pluginid="${plugin.id}"
+		includes="core/*/plugin.xml,src/${plugin.id}/plugin.xml"
+		verbose="true" />
 
 	<target name="build">
 		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>

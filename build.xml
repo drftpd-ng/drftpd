@@ -60,8 +60,8 @@ check - checks plug-ins integrity
 		depends="build"
 		description="Checks plug-ins integrity">
 		<jpf-check basedir="${basedir}"
-					includes="core/*/plugin.xml,plugins/*/plugin.xml"
-					verbose="true"
-					usepathresolver="true" />
+			includes="core/*/plugin.xml,plugins/*/plugin.xml"
+			verbose="true"
+			usepathresolver="true" />
 	</target>
 </project>
