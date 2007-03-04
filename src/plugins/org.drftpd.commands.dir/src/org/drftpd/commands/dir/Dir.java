@@ -31,6 +31,7 @@ import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -55,7 +56,8 @@ public class Dir extends CommandInterface {
     private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
             "yyyyMMddHHmmss.SSS");
     private static final Logger logger = Logger.getLogger(Dir.class);
-    protected InodeHandle _renameFrom = null;
+
+    private static final Key RENAMEFROM = new Key(Dir.class, "renamefrom", InodeHandle.class);
 
 
     /**
@@ -636,7 +638,7 @@ public class Dir extends CommandInterface {
         //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
         //mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
         try {
-            _renameFrom = request.getCurrentDirectory().getInodeHandle(request.getArgument());
+            request.getSession().setObject(RENAMEFROM, request.getCurrentDirectory().getInodeHandle(request.getArgument()));
             /* TODO: reimplement using pre hooks permissions
              * 
              */
@@ -671,11 +673,11 @@ public class Dir extends CommandInterface {
         }
 
         // set state variables
-        if (_renameFrom == null) {
+        InodeHandle fromInode = (InodeHandle) request.getSession().getObject(RENAMEFROM, null);
+        if (fromInode == null) {
         	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
         }
         
-		InodeHandle fromInode = _renameFrom;
         String argument = VirtualFileSystem.fixPath(request.getArgument());
         if (!(argument.startsWith(VirtualFileSystem.separator))) {
         	// Not a full path, let's make it one
@@ -755,7 +757,7 @@ public class Dir extends CommandInterface {
 		logger.debug("after rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
 
 		// out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
-		return new CommandResponse(250, request.getCommand() + " command successful.");
+		return new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
     }
 
     public CommandResponse doSITE_CHOWN(CommandRequest request) {
