@@ -29,7 +29,7 @@ import org.drftpd.dynamicdata.KeyedMap;
  */
 public class Session extends KeyedMap {
 
-	public static final Key COMMANDS = new Key(Session.class, "session",
+	public static final Key COMMANDS = new Key(Session.class, "commands",
 			HashMap.class);
 
 	public void setCommands(HashMap<String,Properties> commands) {

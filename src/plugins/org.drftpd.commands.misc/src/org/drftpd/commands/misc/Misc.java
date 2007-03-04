@@ -18,8 +18,16 @@
 package org.drftpd.commands.misc;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.Map.Entry;
+import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandInstanceContainer;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -27,6 +35,9 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.slave.Slave;
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.SimplePrintf;
 
 
 /**
@@ -34,11 +45,17 @@ import org.drftpd.slave.Slave;
  */
 public class Misc extends CommandInterface {
 
+	private static final Logger logger = Logger
+		.getLogger(Misc.class);
+
 	private StandardCommandManager _cManager;
+
+	private ResourceBundle _bundle;
 	
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_cManager = cManager;
+    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
     }
 
     /**
@@ -145,84 +162,85 @@ public class Misc extends CommandInterface {
     	return new CommandResponse(200, "Server time is: " + new Date());
     }
 
-    /*private Reply doSITE_HELP(BaseFtpConnection conn) throws ReplyException {
-    	Map handlers = conn.getCommandManager().getCommandHandlersMap();
-    	if (conn.getRequest().hasArgument()) {
-    		String cmd = conn.getRequest().getArgument().toLowerCase();
-    		for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
-    			CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
-    			if (conn.getCommandManager().getHandledCommands(hnd.getClass())
-    					.contains("SITE " + cmd.toUpperCase())) {
-    				if (!conn.getGlobalContext().getConfig()
-    						.checkPathPermission(cmd, conn.getUserNull(),
-    								conn.getCurrentDirectory(), true)) {
-    					return new Reply(501,
-								"You do not have permissions for that command");
-    				}
-    				try {
-    					Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-    					return response.addComment(ResourceBundle.getBundle(
-    							hnd.getClass().getName()).getString(
-    									"help." + cmd + ".specific"));
-    				} catch (MissingResourceException e) {
-    					throw new ReplyException(cmd + " in "
-    							+ hnd.getClass().getName()
-								+ " does not have any specific help, bug your siteop", e);
-    				}
+    public CommandResponse doSITE_HELP(CommandRequest request) {
+    	/* TODO: the old implementation would check whether the issuing
+    	 * user had permissions for the command before giving specific
+    	 * help or listing that command in general help, this implementation
+    	 * currently does not.
+    	 */
+    	if (request.hasArgument()) {
+    		CommandResponse response;
+    		Properties cmdProperties = request.getSession().getCommands().get(request.getArgument());
+    		if (cmdProperties == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+    			response.addComment("The " + request.getArgument() + " command does not exist");
+    			return response;
+    		}
+    		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    		String helpString = cmdProperties.getProperty("help.specific");
+    		if (helpString == null) {
+    			response.addComment("Bug your siteop to add help for the "
+						+ request.getArgument() + "\" " + "command");
+    		}
+    		else {
+    			ReplacerEnvironment env = new ReplacerEnvironment();
+    			env.add("command", request.getArgument().toUpperCase());
+    			try {
+    				response.addComment(SimplePrintf.jprintf(helpString,env));
+    			}
+    			catch (FormatterException e) {
+    				response.addComment(request.getArgument() 
+    						+ " command has an invalid help.specific definition");
     			}
     		}
-    		throw new ReplyException("the " + cmd + " command does not exist");
+    		return response;
     	}
     	// global list of commands with help
     	HashMap<String, String> helpInfo = new HashMap<String, String>();
-    	String pad = "            ";
-    	for (Iterator iter = handlers.keySet().iterator(); iter.hasNext();) {
-    		CommandHandler hnd = (CommandHandler) handlers.get(iter.next());
-    		List<String> handledCmds = conn.getCommandManager()
-			.getHandledCommands(hnd.getClass());
-    		
-    		for (String cmd : handledCmds) {
-    			try {
-    				cmd = cmd.substring("SITE ".length()).toLowerCase();
-    				if (!conn.getGlobalContext().getConfig()
-    						.checkPathPermission(cmd, conn.getUserNull(),
-    								conn.getCurrentDirectory(), true)) {
-    					continue;
-    				}
-    				try {
-    					String help = ResourceBundle.getBundle(
-    							hnd.getClass().getName()).getString(
-    									"help." + cmd);
-    					helpInfo.put(cmd, pad.substring(cmd.length()) + cmd.toUpperCase() + " : " + help);
-    				} catch (MissingResourceException e) {
-    					helpInfo.put(cmd, cmd + " in "
-								+ hnd.getClass().getName()
-								+ " does not have any help, bug your siteop");
-    				}
-    			} catch (java.lang.StringIndexOutOfBoundsException e) {
-    			}
+    	HashMap<String, Properties> cmdProperties = request.getSession().getCommands();
+    	String pad = "                 ";
+    	for (Entry<String,Properties> cmd :  cmdProperties.entrySet()) {
+    		String helpString = cmd.getValue().getProperty("help");
+    		if (helpString == null) {
+    			/* TODO: Probably better to just ignore
+    			 * any command without help in this list as we now
+    			 * list all commands not just "site" commands like
+    			 * the old implementation
+    			 */
+    			helpString = cmd.getKey().toUpperCase() 
+    				+ " does not have any help, bug your siteop";
+    		}
+    		try {
+    			helpInfo.put(cmd.getKey(), pad.substring(cmd.getKey().length()) 
+    					+ cmd.getKey().toUpperCase() + " : " + helpString);
+    		}
+    		catch (java.lang.StringIndexOutOfBoundsException e) {
+    			/* TODO: This is a really really bad way of doing
+    			 * things and is not at all portable to future third
+    			 * party commands so we need a different approach.
+    			 */
+    			logger.error("Help command pad string too short");
     		}
     	}
+    	System.out.println("here");
     	ArrayList<String> sortedList = new ArrayList<String>(helpInfo.keySet());
     	Collections.sort(sortedList);
-    	Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
+    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     	try {
-    		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
-    				.getString("help.header"));
+    		response.addComment(_bundle.getString("help.header"));
     	} catch (MissingResourceException e) {
     		response.addComment("Help has no header");
     	}
-    	for (Iterator i = sortedList.iterator(); i.hasNext();) {
-    		response.addComment(helpInfo.get(i.next()));
+    	for (String cmd : sortedList) {
+    		response.addComment(helpInfo.get(cmd));
     	}
     	try {
-    		response.addComment(ResourceBundle.getBundle(Misc.class.getName())
-    				.getString("help.footer"));
+    		response.addComment(_bundle.getString("help.footer"));
     	} catch (MissingResourceException e) {
     		response.addComment("Help has no footer");
     	}
     	return response;
-    }*/
+    }
 
     public CommandResponse doSITE_VERS(CommandRequest request) {
     	return new CommandResponse(200, Slave.VERSION);

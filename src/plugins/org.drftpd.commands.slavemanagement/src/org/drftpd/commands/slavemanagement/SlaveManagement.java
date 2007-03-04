@@ -61,26 +61,26 @@ public class SlaveManagement extends CommandInterface {
     	_bundle = ResourceBundle.getBundle(this.getClass().getName());
     }
 
-    public CommandResponse doSITE_SLAVESELECT(CommandRequest request) {
+    public CommandResponse doSITE_SLAVESELECT(CommandRequest request) throws ImproperUsageException {
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
         if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
         String argument = request.getArgument();
         StringTokenizer arguments = new StringTokenizer(argument);
         if (arguments.hasMoreTokens() == false) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
         String type = arguments.nextToken();
         if (arguments.hasMoreTokens() == false) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
         String path = arguments.nextToken();
         if (!path.startsWith(VirtualFileSystem.separator)) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
         char direction = Transfer.TRANSFER_UNKNOWN;
         if (type.equalsIgnoreCase("up")) {
@@ -88,7 +88,7 @@ public class SlaveManagement extends CommandInterface {
         } else if (type.equalsIgnoreCase("down")) {
         	direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
         } else {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
         Collection<RemoteSlave> slaves;
 		try {
@@ -234,7 +234,7 @@ public class SlaveManagement extends CommandInterface {
      * Usage: site slave slavename [set,addmask,delmask]
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_SLAVE(CommandRequest request) {
+    public CommandResponse doSITE_SLAVE(CommandRequest request) throws ImproperUsageException {
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
@@ -243,14 +243,14 @@ public class SlaveManagement extends CommandInterface {
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
 
         String argument = request.getArgument();
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
 
         String slavename = arguments.nextToken();
@@ -295,8 +295,7 @@ public class SlaveManagement extends CommandInterface {
 
         if (command.equalsIgnoreCase("set")) {
             if (arguments.countTokens() != 2) {
-            	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                return response;
+            	throw new ImproperUsageException();
             }
 
             String key = arguments.nextToken();
@@ -310,8 +309,7 @@ public class SlaveManagement extends CommandInterface {
             return response;
         } else if (command.equalsIgnoreCase("unset")) {
         	if (arguments.countTokens() != 1) {
-        		response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                return response;
+        		throw new ImproperUsageException();
         	}
 
         	String key = arguments.nextToken();
@@ -330,8 +328,7 @@ public class SlaveManagement extends CommandInterface {
         	return response;
         } else if (command.equalsIgnoreCase("addmask")) {
             if (arguments.countTokens() != 1) {
-            	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                return response;
+            	throw new ImproperUsageException();
             }
 
             String mask = arguments.nextToken();
@@ -348,27 +345,23 @@ public class SlaveManagement extends CommandInterface {
 			}
         } else if (command.equalsIgnoreCase("delmask")) {
             if (arguments.countTokens() != 1) {
-            	response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                return response;
+            	throw new ImproperUsageException();
             }
 
             String mask = arguments.nextToken();
             env.add("mask", mask);
 
             if (rslave.removeMask(mask)) {
-            	response = new CommandResponse(200, jprintf(_bundle,
+            	return new CommandResponse(200, jprintf(_bundle,
                         "slave.delmask.success", env, request.getUser()));
-                return response;
             }
-            response = new CommandResponse(501, jprintf(_bundle,
+            return new CommandResponse(501, jprintf(_bundle,
                     "slave.delmask.failed", env, request.getUser()));
-            return response;
         }
-        response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        return response;
+        throw new ImproperUsageException();
     }
 
-    public CommandResponse doSITE_DELSLAVE(CommandRequest request) {
+    public CommandResponse doSITE_DELSLAVE(CommandRequest request) throws ImproperUsageException {
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
@@ -377,14 +370,14 @@ public class SlaveManagement extends CommandInterface {
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
 
         String argument = request.getArgument();
         StringTokenizer arguments = new StringTokenizer(argument);
 
         if (!arguments.hasMoreTokens()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
 
         String slavename = arguments.nextToken();
@@ -406,7 +399,7 @@ public class SlaveManagement extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_ADDSLAVE(CommandRequest request) {
+    public CommandResponse doSITE_ADDSLAVE(CommandRequest request) throws ImproperUsageException {
     	if (!getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
@@ -415,20 +408,20 @@ public class SlaveManagement extends CommandInterface {
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer arguments = new StringTokenizer(request.getArgument());
 
         if (!arguments.hasMoreTokens()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
 
         String slavename = arguments.nextToken();
         env.add("slavename", slavename);
         
         if (arguments.hasMoreTokens()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         	// only one argument
         }
 

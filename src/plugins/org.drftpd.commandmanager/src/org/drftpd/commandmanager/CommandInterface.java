@@ -18,8 +18,8 @@
 package org.drftpd.commandmanager;
 
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
@@ -133,10 +133,7 @@ public abstract class CommandInterface {
 		ExtensionPoint postHookExtPoint = 
 			manager.getRegistry().getExtensionPoint(pluginName, "PostHook");
 
-		for (Iterator postHooks = postHookExtPoint.getConnectedExtensions().iterator();
-			postHooks.hasNext();) { 
-
-			Extension postHook = (Extension) postHooks.next();
+		for (Extension postHook : ((Collection<Extension>) postHookExtPoint.getConnectedExtensions())) {
 
 			if (postHook.getParameter("ParentMethod").valueAsString().equals(method)) {
 				if (!manager.isPluginActivated(postHook.getDeclaringPluginDescriptor())) {
@@ -180,10 +177,7 @@ public abstract class CommandInterface {
 		ExtensionPoint preHookExtPoint = 
 			manager.getRegistry().getExtensionPoint(pluginName, "PreHook");
 
-		for (Iterator preHooks = preHookExtPoint.getConnectedExtensions().iterator();
-			preHooks.hasNext();) { 
-
-			Extension preHook = (Extension) preHooks.next();
+		for (Extension preHook : ((Collection<Extension>) preHookExtPoint.getConnectedExtensions())) {
 
 			if (preHook.getParameter("ParentMethod").valueAsString().equals(method)) {
 				if (!manager.isPluginActivated(preHook.getDeclaringPluginDescriptor())) {

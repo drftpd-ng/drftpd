@@ -17,6 +17,7 @@
  */
 package org.drftpd.commandmanager;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +33,9 @@ import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
+import org.tanesha.replacer.FormatterException;
+import org.tanesha.replacer.ReplacerEnvironment;
+import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author djb61
@@ -110,7 +114,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 				Method m = cmdInstance.getClass().getMethod(methodString,
 						new Class[] {CommandRequest.class});
 				_commands.put(requiredCmd.getKey(),new CommandInstanceContainer(m,cmdInstance));
-				logger.debug("Addming CommandInstance " + requiredCmd.getKey());
+				logger.debug("Adding CommandInstance " + requiredCmd.getKey());
 			}
 			catch(Exception e) {
 				/* Should be safe to continue, just means this command class won't be
@@ -130,24 +134,51 @@ public class StandardCommandManager implements CommandManagerInterface {
 			return cmdFailed;
 		}
 		request.setProperties(request.getSession().getCommands().get(request.getCommand()));
-		try {
-			CommandResponseInterface response = null;
-	    	request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
-	    	if(!request.isAllowed()) {
-	    		response = request.getDeniedResponse();
-	    		if (response == null) {
-	    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+		CommandResponseInterface response = null;
+    	request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
+    	if(!request.isAllowed()) {
+    		response = request.getDeniedResponse();
+    		if (response == null) {
+    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    		}
+    		return response;
+    	}
+    	try {
+    		try {
+    			response = (CommandResponseInterface) commandContainer.getMethod().invoke(commandContainer.getCommandInterfaceInstance(), new Object[] {request});
+    		}
+    		catch (InvocationTargetException e) {
+    			throw e.getCause();
+    		}
+    	}
+    	catch (Throwable e2) {
+    		if (e2 instanceof ImproperUsageException) {
+	    		response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+	    		String helpString = request.getProperties().getProperty("help.specific");
+	    		if (helpString == null) {
+	    			response.addComment("Bug your siteop to add help for the "
+							+ request.getCommand() + "\" " + "command");
 	    		}
-	    		return response;
-	    	}
-			response = (CommandResponseInterface) commandContainer.getMethod().invoke(commandContainer.getCommandInterfaceInstance(), new Object[] {request});
-			commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
-			return response;
-		} catch (Exception e) {
-			CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
-			logger.error("Command "+request.getCommand()+" failed",e);
-			return cmdFailed;
-		}
+	    		else {
+	    			ReplacerEnvironment env = new ReplacerEnvironment();
+	    			env.add("command", request.getCommand().toUpperCase());
+	    			try {
+	    				response.addComment(SimplePrintf.jprintf(helpString,env));
+	    			}
+	    			catch (FormatterException e) {
+	    				response.addComment(request.getCommand().toUpperCase()
+	    						+ " command has an invalid help.specific definition");
+	    			}
+	    		}
+    		}
+    		else {
+    			CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
+    			logger.error("Command "+request.getCommand()+" failed",e2);
+    			return cmdFailed;
+    		}
+    	}
+    	commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
+		return response;
 	}
 
 	public static CommandResponse genericResponse(String type) {

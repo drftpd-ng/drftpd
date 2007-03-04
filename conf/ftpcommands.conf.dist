@@ -94,11 +94,12 @@ perms *
 
 #SITE\ RESCAN=org.drftpd.commands.DataConnectionHandler
 
-SITE\ XUPE {
+SITE XDUPE {
 plugin org.drftpd.commands.dataconnection
 class DataConnectionHandler
-method doSITE_XUPE
+method doSITE_XDUPE
 perms *
+help Command not implemented
 }
 
 STOR {
@@ -202,28 +203,34 @@ method doDELE
 perms *
 }
 
-SITE\ WIPE {
+SITE WIPE {
 plugin org.drftpd.commands.dir
 class Dir
 method doSITE_WIPE
 perms =wipe
+help Deletes files without removing credits.
+help.specific ${command} [-r] <file/dir>\n Deletes files without removing credits. -r means delete recursively.
 }
 
-SITE\ CHOWN {
+SITE CHOWN {
 plugin org.drftpd.commands.dir
 class Dir
 method doSITE_CHOWN
 perms =siteop
+help Changes ownership of a file/directory.
+help.specific ${command} <user>[.<group>] <file>\n Changes ownership of a file/directory.
 }
 
 #collides with SITE CHGRP defined by UserManagement
 #SITE\ CHGRP=org.drftpd.commands.Dir
 
-SITE\ LINK  {
+SITE LINK  {
 plugin org.drftpd.commands.dir
 class Dir
 method doSITE_LINK
 perms =siteop
+help Creates a symbolic link.
+help.specific ${command} <target> <linkname>\n Creates a symbolic link.
 }
 
 XCRC {
@@ -247,67 +254,85 @@ method doSIZE
 perms *
 }
 
-SITE\ SLAVES {
+SITE SLAVES {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVES
 perms *
+help List the slave added to the site and the status of each.
+help.specific ${command}\n\ List the slave added to the site and the status of each.
 }
 
-SITE\ REMERGE {
+SITE REMERGE {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_REMERGE
 perms =siteop
+help Rebuilds the file database of the specified slave.
+help.specific ${command} <SLAVENAME>\n\ Rebuilds the file database of the specified slave.
 }
 
-SITE\ KICKSLAVE {
+SITE KICKSLAVE {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_KICKSLAVE
 perms =siteop
+help Kick a slave offline.
+help.specific ${command} <SLAVENAME>\n\ Kicks the specified slave offline.
 }
 
-SITE\ SLAVE {
+SITE SLAVE {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVE
 perms *
+help Show or modify information about a specific slave.
+help.specific ${command} <SLAVENAME>\n\ Show the stored information set on the specified slave.\n\${command} <SLAVENAME> SET <key> <value>\n\ Add any information you want to the slave.\n\${command} <SLAVENAME> UNSET <key>\n\ Remove any information you want from the slave.\n\${command} <SLAVENAME> ADDMASK <ident@host>\n\ Add a host mask that the specified slave is allowed to connect from.\n\${command} <SLAVENAME> DELMASK <ident@host>\n\ Remove a host mask that the specified slave is allowed to connect from.
 }
 
-SITE\ ADDSLAVE {
+SITE ADDSLAVE {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_ADDSLAVE
 perms =siteop
+help Add a slave to the site.
+help.specific ${command} <SLAVENAME>\n\ Add the specified slave to the site.\n\ Note: Be sure to use SITE SLAVE <SLAVENAME> ADDMASK <ident@host>\n\       to allow the slave to connect
 }
 
-SITE\ DELSLAVE {
+SITE DELSLAVE {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_DELSLAVE
 perms =siteop
+help Remove a slave from the site.
+help.specific ${command} <SLAVENAME>\n\ Remove the specified slave from the site.
 }
 
-SITE\ SLAVESELECT {
+SITE SLAVESELECT {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVESELECT
 perms *
+help Gives the value of each slave for your current SlaveSelection config
+help.specific ${command} <TYPE> </FULLPATH>\n\<TYPE> is one of up,down,jobdown,jobup\n\</FULLPATH> needs to start with "/" should not exist
 }
 
-SITE\ RELOAD {
+SITE RELOAD {
 plugin org.drftpd.commands.sitemanagement
 class SiteManagementHandler
 method doSITE_RELOAD
 perms =siteop
+help Reload the config files
+help.specific ${command}\n\ Reload the config files
 }
 
-SITE\ SHUTDOWN {
+SITE SHUTDOWN {
 plugin org.drftpd.commands.sitemanagement
 class SiteManagementHandler
 method doSITE_SHUTDOWN
 perms =siteop
+help Shutdown the ftp server
+help.specific ${command}\n\ Shutdown the ftp server
 }
 
 SITE LIST {
@@ -315,27 +340,35 @@ plugin org.drftpd.commands.sitemanagement
 class SiteManagementHandler
 method doSITE_LIST
 perms *
+help This will raw list files in the current directory
+help.specific ${command}\n\ This will raw list files in the current directory
 }
 
-SITE\ LOADPLUGIN {
+SITE LOADPLUGIN {
 plugin org.drftpd.commands.sitemanagement
 class SiteManagementHandler
 method doSITE_LOADPLUGIN
 perms =siteop
+help Load a plugin
+help.specific ${command} <CLASS>\n\ Load a plugin\n\  <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
 }
 
-SITE\ UNLOADPLUGIN {
+SITE UNLOADPLUGIN {
 plugin org.drftpd.commands.sitemanagement
 class SiteManagementHandler
 method doSITE_UNLOADPLUGIN
-perms -siteop
+perms =siteop
+help Unload a plugin
+help.specific ${command} <CLASS>\n\ Unload a plugin\n\  <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
 }
 
-SITE\ PLUGINS {
+SITE PLUGINS {
 plugin org.drftpd.commands.sitemanagement
 class SiteManagementHandler
 method doSITE_PLUGINS
 perms =siteop
+help List the currently active plugins
+help.specific ${command}\n\ List the currently active plugins
 }
 
 ABOR {
@@ -352,29 +385,292 @@ method doFEAT
 perms *
 }
 
-SITE\ STAT {
+SITE STAT {
 plugin org.drftpd.commands.misc
 class Misc
 method doSITE_STAT
 perms *
+help Show simple user stats
+help.specific ${command}\n\ Show simple user stats
 }
-SITE\ TIME {
+SITE TIME {
 plugin org.drftpd.commands.misc
 class Misc
 method doSITE_TIME
 perms *
+help Show current server time
+help.specific ${command}\n\ Show current server time
 }
 
-SITE\ VERS {
+SITE VERS {
 plugin org.drftpd.commands.misc
 class Misc
 method doSITE_VERS
 perms *
+help Show drftpd version
+help.specific ${command}\n\ Show drftpd version
 }
 
-SITE\ HELP {
+SITE HELP {
 plugin org.drftpd.commands.misc
 class Misc
 method doSITE_HELP
 perms *
+help duh! it does this dummy!
+help.specific ${command} <site cmd> will display specific information on that command
+}
+
+SITE ADDIP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_ADDIP
+perms *
+help Add a new mask to a user
+help.specific ${command} <username> <ident@ip>
+}
+
+SITE ADDUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_ADDUSER
+perms *
+help Add a new user
+help.specific ${command} <user> <password> [<ident@ip#1> ...]
+}
+
+SITE CHANGE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_CHANGE
+perms *
+help Change parameters for a user
+help..specific ${command} <username> <field> <value>\n\Valid fields: group, created, ratio, idle_time, credits, tagline\n\              num_logins # [opt perIP], comment, group_ratio #min #max\n\              group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
+}
+
+SITE CHGRP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_CHGRP
+perms *
+help Change secondary groups for a user
+help.specific ${command} <user> <group> [<group> ...]
+}
+
+SITE CHPASS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_CHPASS
+perms *
+help Change password for a user
+help.specific ${command} <user> <password>
+}
+
+SITE DEBUG {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DEBUG
+perms *
+help Allows you to see stacktraces on command errors
+}
+
+SITE DELIP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DELIP
+perms *
+help Remove a mask from a user
+help.specific ${command} <user> <ident@ip> ...
+}
+
+SITE DELUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DELUSER
+perms *
+help Delete a user
+help.specific ${command} <user> [reason]
+}
+
+SITE GADDUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_ADDUSER
+perms *
+help Add a new user to the specified group
+help.specific ${command} <group> <user> <password> [<ident@ip#1 ..]
+}
+
+SITE GINFO {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GINFO
+perms *
+help Show information on a group
+help.specific ${command} <group>
+}
+
+SITE GIVE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GIVE
+perms *
+help Give a user credits
+help.specific ${command} <user> <bytes>
+}
+
+SITE GROUP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GROUP
+perms *
+help Change parameters for a group
+help.specific ${command} <group> <field> <value>\n\Valid fields: ratio, num_logins # [opt perIP], max_sim #dn #up
+}
+
+SITE GROUPS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GROUPS
+perms *
+help Lists the groups on the site
+}
+
+SITE GRPREN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GRPREN
+perms *
+help Rename a group
+help.specific ${command} <oldgroup> <newgroup>
+}
+
+SITE KICK {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_KICK
+perms *
+help Kick a users current connections to the site
+help.specific ${command} <user>
+}
+
+SITE PASSWD {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_PASSWD
+perms *
+help Change your password
+help.specific ${command} <password>
+}
+
+SITE PURGE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_PURGE
+perms *
+help Permanently remove a user from the site
+help.specific ${command} <username>
+}
+
+SITE READD {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_READD
+perms *
+help Readd a deleted user
+help.specific ${command} <user>
+}
+
+SITE RENUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_RENUSER
+perms *
+help Rename a user
+help.specific ${command} <old_username> <new_username>
+}
+
+SITE SEEN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_SEEN
+perms *
+help Show when a user last connected
+help.specific ${command} <user>
+}
+
+SITE TAGLINE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_TAGLINE
+perms *
+help Change your tagline
+help.specific ${command} <tagline>
+}
+
+SITE TAKE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_TAKE
+perms *
+help Remove credits from a user
+help.specific ${command} <user> <bytes>
+}
+
+SITE USER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_USER
+perms *
+help Show details for a user
+help.specific ${command} <user>
+}
+
+SITE USERS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_USERS
+perms *
+help List all usernames added to the site
+}
+
+SITE WHO {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_WHO
+perms *
+help Show who's online
+}
+
+SITE SWHO {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_SWHO
+perms *
+help Show who's online
+}
+
+SITE BAN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_BAN
+perms *
+help Ban a user from logging onto the site for a specified amount of time.
+help.specific ${command} <user> <minutes> [reason]
+}
+
+SITE UNBAN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_UNBAN
+perms *
+help Removes a ban for the specified user.
+help.specific ${command} <user>
+}
+
+SITE BANS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_BANS
+perms *
+help List the current users banned on the site.
 }
