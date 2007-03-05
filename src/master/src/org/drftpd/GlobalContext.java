@@ -474,7 +474,13 @@ public class GlobalContext {
     		}
     		String propName = curLine.substring(0, spaceIndex);
     		String value = curLine.substring(spaceIndex).trim();
-    		p.put(propName, value);
+    		String concatenate = p.getProperty(propName);
+    		if (concatenate == null) {
+        		p.put(propName, value);    			
+    		} else {
+    			p.put(propName, concatenate + "\n" + value);
+    		}
+
     	}
     	throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
 	}

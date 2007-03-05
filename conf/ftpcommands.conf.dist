@@ -209,7 +209,8 @@ class Dir
 method doSITE_WIPE
 perms =wipe
 help Deletes files without removing credits.
-help.specific ${command} [-r] <file/dir>\n Deletes files without removing credits. -r means delete recursively.
+help.specific ${command} [-r] <file/dir>
+help.specific Deletes files without removing credits. -r means delete recursively.
 }
 
 SITE CHOWN {
@@ -218,7 +219,8 @@ class Dir
 method doSITE_CHOWN
 perms =siteop
 help Changes ownership of a file/directory.
-help.specific ${command} <user>[.<group>] <file>\n Changes ownership of a file/directory.
+help.specific ${command} <user>[.<group>] <file>
+help.specific Changes ownership of a file/directory.
 }
 
 #collides with SITE CHGRP defined by UserManagement
@@ -230,7 +232,8 @@ class Dir
 method doSITE_LINK
 perms =siteop
 help Creates a symbolic link.
-help.specific ${command} <target> <linkname>\n Creates a symbolic link.
+help.specific ${command} <target> <linkname>
+help.specific Creates a symbolic link.
 }
 
 XCRC {
@@ -260,7 +263,8 @@ class SlaveManagement
 method doSITE_SLAVES
 perms *
 help List the slave added to the site and the status of each.
-help.specific ${command}\n\ List the slave added to the site and the status of each.
+help.specific ${command}
+help.specific List the slave added to the site and the status of each.
 }
 
 SITE REMERGE {
@@ -269,7 +273,8 @@ class SlaveManagement
 method doSITE_REMERGE
 perms =siteop
 help Rebuilds the file database of the specified slave.
-help.specific ${command} <SLAVENAME>\n\ Rebuilds the file database of the specified slave.
+help.specific ${command} <SLAVENAME>
+help.specific Rebuilds the file database of the specified slave.
 }
 
 SITE KICKSLAVE {
@@ -278,7 +283,8 @@ class SlaveManagement
 method doSITE_KICKSLAVE
 perms =siteop
 help Kick a slave offline.
-help.specific ${command} <SLAVENAME>\n\ Kicks the specified slave offline.
+help.specific ${command} <SLAVENAME>
+help.specific Kicks the specified slave offline.
 }
 
 SITE SLAVE {
@@ -287,7 +293,16 @@ class SlaveManagement
 method doSITE_SLAVE
 perms *
 help Show or modify information about a specific slave.
-help.specific ${command} <SLAVENAME>\n\ Show the stored information set on the specified slave.\n\${command} <SLAVENAME> SET <key> <value>\n\ Add any information you want to the slave.\n\${command} <SLAVENAME> UNSET <key>\n\ Remove any information you want from the slave.\n\${command} <SLAVENAME> ADDMASK <ident@host>\n\ Add a host mask that the specified slave is allowed to connect from.\n\${command} <SLAVENAME> DELMASK <ident@host>\n\ Remove a host mask that the specified slave is allowed to connect from.
+help.specific ${command} <SLAVENAME>
+help.specific Show the stored information set on the specified slave.
+help.specific ${command} <SLAVENAME> SET <key> <value>
+help.specific Add any information you want to the slave.
+help.specific ${command} <SLAVENAME> UNSET <key>
+help.specific Remove any information you want from the slave.
+help.specific ${command} <SLAVENAME> ADDMASK <ident@host>
+help.specific Add a host mask that the specified slave is allowed to connect from.
+help.specific ${command} <SLAVENAME> DELMASK <ident@host>
+help.specific Remove a host mask that the specified slave is allowed to connect from.
 }
 
 SITE ADDSLAVE {
@@ -296,7 +311,10 @@ class SlaveManagement
 method doSITE_ADDSLAVE
 perms =siteop
 help Add a slave to the site.
-help.specific ${command} <SLAVENAME>\n\ Add the specified slave to the site.\n\ Note: Be sure to use SITE SLAVE <SLAVENAME> ADDMASK <ident@host>\n\       to allow the slave to connect
+help.specific ${command} <SLAVENAME>
+help.specific Add the specified slave to the site.
+help.specific Note: Be sure to use SITE SLAVE <SLAVENAME> ADDMASK <ident@host>
+help.specific to allow the slave to connect
 }
 
 SITE DELSLAVE {
@@ -305,7 +323,8 @@ class SlaveManagement
 method doSITE_DELSLAVE
 perms =siteop
 help Remove a slave from the site.
-help.specific ${command} <SLAVENAME>\n\ Remove the specified slave from the site.
+help.specific ${command} <SLAVENAME>
+help.specific Remove the specified slave from the site.
 }
 
 SITE SLAVESELECT {
@@ -314,7 +333,9 @@ class SlaveManagement
 method doSITE_SLAVESELECT
 perms *
 help Gives the value of each slave for your current SlaveSelection config
-help.specific ${command} <TYPE> </FULLPATH>\n\<TYPE> is one of up,down,jobdown,jobup\n\</FULLPATH> needs to start with "/" should not exist
+help.specific ${command} <TYPE> </FULLPATH>
+help.specific <TYPE> is one of up,down,jobdown,jobup
+help.specific </FULLPATH> needs to start with "/" should not exist
 }
 
 SITE RELOAD {
@@ -323,7 +344,8 @@ class SiteManagementHandler
 method doSITE_RELOAD
 perms =siteop
 help Reload the config files
-help.specific ${command}\n\ Reload the config files
+help.specific ${command}
+help.specific Reload the config files
 }
 
 SITE SHUTDOWN {
@@ -332,7 +354,8 @@ class SiteManagementHandler
 method doSITE_SHUTDOWN
 perms =siteop
 help Shutdown the ftp server
-help.specific ${command}\n\ Shutdown the ftp server
+help.specific ${command}
+help.specific Shutdown the ftp server
 }
 
 SITE LIST {
@@ -341,7 +364,8 @@ class SiteManagementHandler
 method doSITE_LIST
 perms *
 help This will raw list files in the current directory
-help.specific ${command}\n\ This will raw list files in the current directory
+help.specific ${command}
+help.specific This will raw list files in the current directory
 }
 
 SITE LOADPLUGIN {
@@ -350,7 +374,9 @@ class SiteManagementHandler
 method doSITE_LOADPLUGIN
 perms =siteop
 help Load a plugin
-help.specific ${command} <CLASS>\n\ Load a plugin\n\  <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
+help.specific ${command} <CLASS>
+help.specific Load a plugin
+help.specific <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
 }
 
 SITE UNLOADPLUGIN {
@@ -359,7 +385,9 @@ class SiteManagementHandler
 method doSITE_UNLOADPLUGIN
 perms =siteop
 help Unload a plugin
-help.specific ${command} <CLASS>\n\ Unload a plugin\n\  <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
+help.specific ${command} <CLASS>
+help.specific Unload a plugin
+help.specific <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
 }
 
 SITE PLUGINS {
@@ -368,7 +396,8 @@ class SiteManagementHandler
 method doSITE_PLUGINS
 perms =siteop
 help List the currently active plugins
-help.specific ${command}\n\ List the currently active plugins
+help.specific ${command}
+help.specific List the currently active plugins
 }
 
 ABOR {
@@ -391,7 +420,8 @@ class Misc
 method doSITE_STAT
 perms *
 help Show simple user stats
-help.specific ${command}\n\ Show simple user stats
+help.specific ${command}
+help.specific Show simple user stats
 }
 SITE TIME {
 plugin org.drftpd.commands.misc
@@ -399,7 +429,8 @@ class Misc
 method doSITE_TIME
 perms *
 help Show current server time
-help.specific ${command}\n\ Show current server time
+help.specific ${command}
+help.specific Show current server time
 }
 
 SITE VERS {
@@ -408,7 +439,8 @@ class Misc
 method doSITE_VERS
 perms *
 help Show drftpd version
-help.specific ${command}\n\ Show drftpd version
+help.specific ${command}
+help.specific Show drftpd version
 }
 
 SITE HELP {
@@ -444,7 +476,10 @@ class UserManagementHandler
 method doSITE_CHANGE
 perms *
 help Change parameters for a user
-help..specific ${command} <username> <field> <value>\n\Valid fields: group, created, ratio, idle_time, credits, tagline\n\              num_logins # [opt perIP], comment, group_ratio #min #max\n\              group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
+help..specific ${command} <username> <field> <value>
+help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
+help.specific num_logins # [opt perIP], comment, group_ratio #min #max
+help.specific group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
 }
 
 SITE CHGRP {
@@ -524,7 +559,8 @@ class UserManagementHandler
 method doSITE_GROUP
 perms *
 help Change parameters for a group
-help.specific ${command} <group> <field> <value>\n\Valid fields: ratio, num_logins # [opt perIP], max_sim #dn #up
+help.specific ${command} <group> <field> <value>
+help.specific Valid fields: ratio, num_logins # [opt perIP], max_sim #dn #up
 }
 
 SITE GROUPS {
