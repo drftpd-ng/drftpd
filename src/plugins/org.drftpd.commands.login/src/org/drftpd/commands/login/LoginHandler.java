@@ -17,6 +17,7 @@
  */
 package org.drftpd.commands.login;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
@@ -29,6 +30,7 @@ import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.event.UserEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
@@ -126,14 +128,11 @@ public class LoginHandler extends CommandInterface {
 
             CommandResponse response = new CommandResponse(230, jprintf(_bundle, "pass.success", request.getUser()));
             
-            /* TODO: Come back to this later
-             * 
-             */
-            /*try {
-                Textoutput.addTextToResponse(response, "welcome");
+            try {
+                addTextToResponse(response, "text/welcome.txt");
             } catch (IOException e) {
                 logger.warn("Error reading welcome", e);
-            }*/
+            }
 
             return response;
         }
@@ -186,21 +185,14 @@ public class LoginHandler extends CommandInterface {
         } catch (RuntimeException ex) {
             logger.error("", ex);
 
-            /* TODO: Come back to this later
-             * 
-             */
-            //throw new ReplyException(ex);
             return new CommandResponse(530, "RuntimeException: " + ex.getMessage());
         }
 
         if (newUser.isDeleted()) {
-        	/* TODO Come back and fix this
-        	 * 
-        	 *
-        	return new Reply(530,
+        	return new CommandResponse(530,
         			(String)newUser.getKeyedMap().getObject(
         					UserManagement.REASON,
-							Reply.RESPONSE_530_ACCESS_DENIED.getMessage()));*/
+        					StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
         if(!conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");

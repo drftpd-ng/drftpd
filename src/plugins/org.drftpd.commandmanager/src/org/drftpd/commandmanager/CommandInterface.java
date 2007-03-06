@@ -17,8 +17,12 @@
  */
 package org.drftpd.commandmanager;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.SortedMap;
@@ -55,8 +59,6 @@ public abstract class CommandInterface {
 	private SortedMap<Integer, HookContainer<PostHookInterface>> _postHooks;
 
 	private SortedMap<Integer, HookContainer<PreHookInterface>> _preHooks;
-
-	private HashMap<String,String> _extensionParameters = new HashMap<String,String>();
 
 	public static ReplacerEnvironment getReplacerEnvironment(
 			ReplacerEnvironment env, User user) {
@@ -281,12 +283,11 @@ public abstract class CommandInterface {
 	public String[] getFeatReplies() {
 		return _featReplies;
 	}
-	
-	public String getExtensionParameter(String key) {
-		return _extensionParameters.get(key);
-	}
-	
-	public void addExtensionParameter(String key, String value) {
-		_extensionParameters.put(key, value);
+
+	public void addTextToResponse(CommandResponse response, String file)
+		throws FileNotFoundException, IOException {
+		response.addComment(new BufferedReader(
+            new InputStreamReader(
+                new FileInputStream(file), "ISO-8859-1")));
 	}
 }

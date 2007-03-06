@@ -17,6 +17,8 @@
  */
 package org.drftpd.commandmanager;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Vector;
 
 import org.drftpd.dynamicdata.Key;
@@ -64,6 +66,14 @@ public class CommandResponse extends KeyedMap implements CommandResponseInterfac
 		setMessage(message);
 		setCurrentDirectory(directory);
 		setUser(user);
+	}
+
+	public void addComment(BufferedReader in) throws IOException {
+		String line;
+
+		while ((line = in.readLine()) != null) { // throws IOException
+			this.addComment(line);
+		}
 	}
 
 	public void addComment(Object comment) {

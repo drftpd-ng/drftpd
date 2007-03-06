@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -179,8 +180,8 @@ public class Misc extends CommandInterface {
     		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     		String helpString = cmdProperties.getProperty("help.specific");
     		if (helpString == null) {
-    			response.addComment("Bug your siteop to add help for the "
-						+ request.getArgument() + "\" " + "command");
+    			response.addComment("Bug your siteop to add help for the \""
+						+ request.getArgument() + "\" command");
     		}
     		else {
     			ReplacerEnvironment env = new ReplacerEnvironment();
@@ -198,31 +199,47 @@ public class Misc extends CommandInterface {
     	// global list of commands with help
     	HashMap<String, String> helpInfo = new HashMap<String, String>();
     	HashMap<String, Properties> cmdProperties = request.getSession().getCommands();
-    	String pad = "                 ";
+    	// find which commands we should ignore
+    	String noHelp = request.getProperties().getProperty("nohelp");
+    	ArrayList<String> noHelpCommands = new ArrayList<String>();
+    	if (noHelp != null) {
+    		StringTokenizer st = new StringTokenizer(noHelp, ",");
+    		while (st.hasMoreTokens()) {
+    			noHelpCommands.add(st.nextToken().toLowerCase());
+    		}
+    	}
+    	// find the longest command to enable padding
+    	int cmdLength = 0;
+    	for (String cmd : _cManager.getCommandHandlersMap().keySet()) {
+    		if (cmd.length() > cmdLength && !noHelpCommands.contains(cmd)) {
+    			cmdLength = cmd.length();
+    		}
+    	}
+    	String pad = "";
+    	for (int i = 0; i < cmdLength; i++) {
+    		pad = pad + " ";
+    	}
     	for (Entry<String,Properties> cmd :  cmdProperties.entrySet()) {
     		String helpString = cmd.getValue().getProperty("help");
     		if (helpString == null) {
-    			/* TODO: Probably better to just ignore
-    			 * any command without help in this list as we now
-    			 * list all commands not just "site" commands like
-    			 * the old implementation
-    			 */
-    			helpString = cmd.getKey().toUpperCase() 
-    				+ " does not have any help, bug your siteop";
+    			if (!noHelpCommands.contains(cmd.getKey())) {
+    				helpString = cmd.getKey() 
+    					+ " does not have any help, bug your siteop";
+    			}
     		}
     		try {
-    			helpInfo.put(cmd.getKey(), pad.substring(cmd.getKey().length()) 
-    					+ cmd.getKey().toUpperCase() + " : " + helpString);
+    			if (helpString != null) {
+    				helpInfo.put(cmd.getKey(), pad.substring(cmd.getKey().length()) 
+    					+ cmd.getKey() + " : " + helpString);
+    			}
     		}
     		catch (java.lang.StringIndexOutOfBoundsException e) {
-    			/* TODO: This is a really really bad way of doing
-    			 * things and is not at all portable to future third
-    			 * party commands so we need a different approach.
+    			/* This really should not happen anymore but will leave
+    			 * this check for now
     			 */
     			logger.error("Help command pad string too short");
     		}
     	}
-    	System.out.println("here");
     	ArrayList<String> sortedList = new ArrayList<String>(helpInfo.keySet());
     	Collections.sort(sortedList);
     	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

@@ -15,26 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
+package org.drftpd.commands.transferstatistics;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
-import org.drftpd.commandmanager.Reply;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commandmanager.UnhandledCommandException;
-import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Trial;
@@ -42,7 +43,6 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
-import org.drftpd.util.FtpRequest;
 import org.drftpd.util.UserComparator;
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -50,8 +50,15 @@ import org.tanesha.replacer.ReplacerEnvironment;
 /**
  * @version $Id$
  */
-public class TransferStatistics implements CommandHandler, CommandHandlerFactory  {
+public class TransferStatistics extends CommandInterface  {
     private static final Logger logger = Logger.getLogger(TransferStatistics.class);
+
+    private ResourceBundle _bundle;
+
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
+    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    }
 
     public static long getStats(String command, User user) {
         // AL MONTH WK DAY
@@ -98,6 +105,9 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
                 TransferStatistics.class, command));
     }
 
+    /* TODO: not sure this method is actually
+     * use anywhere
+     */
     public static long getFiles(String command, User user) {
         // AL MONTH WK DAY
         String period = command.substring(0, command.length() - 2);
@@ -166,39 +176,38 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
      * USAGE: site stats [<user>]
      *        Display a user's upload/download statistics.
      */
-    public Reply doSITE_STATS(BaseFtpConnection conn) {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doSITE_STATS(CommandRequest request) {
 
         if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         User user;
 
         if (!request.hasArgument()) {
-            user = conn.getUserNull();
+            user = getUserNull(request.getUser());
         } else {
             try {
-                user = conn.getGlobalContext().getUserManager().getUserByName(request.getArgument());
+                user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getArgument());
             } catch (NoSuchUserException e) {
-                return new Reply(200, "No such user: " + e.getMessage());
+                return new CommandResponse(200, "No such user: " + e.getMessage());
             } catch (UserFileException e) {
                 logger.log(Level.WARN, "", e);
 
-                return new Reply(200, e.getMessage());
+                return new CommandResponse(200, e.getMessage());
             }
         }
 
-        if (conn.getUserNull().isGroupAdmin() &&
-                !conn.getUserNull().getGroup().equals(user.getGroup())) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        } else if (!conn.getUserNull().isAdmin() &&
-                !user.equals(conn.getUserNull())) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
+        if (getUserNull(request.getUser()).isGroupAdmin() &&
+                !getUserNull(request.getUser()).getGroup().equals(user.getGroup())) {
+        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        } else if (!getUserNull(request.getUser()).isAdmin() &&
+                !user.equals(getUserNull(request.getUser()))) {
+        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
-        Reply response = (Reply) Reply.RESPONSE_200_COMMAND_OK.clone();
-        UserManager userman = conn.getGlobalContext().getUserManager();
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        UserManager userman = GlobalContext.getGlobalContext().getUserManager();
         response.addComment("created: " +
             user.getKeyedMap().getObject(UserManagement.CREATED, ""));
         response.addComment("rank alup: " +
@@ -241,19 +250,43 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
 
         return response;
     }
+    public CommandResponse doSITE_ALUP(CommandRequest request) {
+    	return execute(request, "alup");
+    }
 
-    public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
-        FtpRequest request = conn.getRequest();
+    public CommandResponse doSITE_ALDN(CommandRequest request) {
+    	return execute(request, "aldn");
+    }
 
-        if (request.getCommand().equals("SITE STATS")) {
-            return doSITE_STATS(conn);
-        }
+    public CommandResponse doSITE_MONTHUP(CommandRequest request) {
+    	return execute(request, "monthup");
+    }
 
-        Collection<User> users = conn.getGlobalContext().getUserManager().getAllUsers();
+    public CommandResponse doSITE_MONTHDN(CommandRequest request) {
+    	return execute(request, "monthdn");
+    }
+
+    public CommandResponse doSITE_WKUP(CommandRequest request) {
+    	return execute(request, "wkup");
+    }
+
+    public CommandResponse doSITE_WKDN(CommandRequest request) {
+    	return execute(request, "wkdn");
+    }
+
+    public CommandResponse doSITE_DAYUP(CommandRequest request) {
+    	return execute(request, "dayup");
+    }
+
+    public CommandResponse doSITE_DAYDN(CommandRequest request) {
+    	return execute(request, "daydn");
+    }
+
+    private CommandResponse execute(CommandRequest request, String type) {
+
+        Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
         
         int count = 10; // default # of users to list
-        request = conn.getRequest();
 
         if (request.hasArgument()) {
             StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -265,6 +298,9 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
             }
 
             if (st.hasMoreTokens()) {
+            	/* TODO Likely this will need revisiting
+            	 * to move to prehooks
+            	 */
                 Permission perm = new Permission(FtpConfig.makeUsers(st));
 
                 for (Iterator iter = users.iterator(); iter.hasNext();) {
@@ -277,16 +313,14 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
             }
         }
 
-        final String command = request.getCommand();
-        Reply response = new Reply(200);
-        String type = command.substring("SITE ".length()).toLowerCase();
+        CommandResponse response = new CommandResponse(200);
         ArrayList<User> users2 = new ArrayList<User>(users);
         Collections.sort(users2, new UserComparator(type));
 
         try {
-            Textoutput.addTextToResponse(response, type + "_header");
+            addTextToResponse(response, "text/" + type + "_header.txt");
         } catch (IOException ioe) {
-            logger.warn("Error reading " + type + "_header", ioe);
+            logger.warn("Error reading " + "text/" + type + "_header.txt", ioe);
         }
 
         int i = 0;
@@ -331,8 +365,7 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
             env.add("dnfiles", "" + user.getDownloadedFiles());
             env.add("dnrate", getDownRate(user, Trial.PERIOD_ALL));
 
-            response.addComment(BaseFtpConnection.jprintf(
-                    TransferStatistics.class, "transferstatistics" + type, env,
+            response.addComment(jprintf(_bundle, "transferstatistics" + type, env,
                     user));
 
             //			response.addComment(
@@ -343,7 +376,7 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
         }
 
         try {
-            Textoutput.addTextToResponse(response, type + "_footer");
+            addTextToResponse(response, "text/" + type + "_footer.txt");
         } catch (IOException ioe) {
             logger.warn("Error reading " + type + "_footer", ioe);
         }
@@ -373,20 +406,5 @@ public class TransferStatistics implements CommandHandler, CommandHandlerFactory
         double rate = user.getDownloadedBytesForPeriod(period) / s;
 
         return Bytes.formatBytes((long) rate) + "/s";
-    }
-
-    public String[] getFeatReplies() {
-        return null;
-    }
-
-    public CommandHandler initialize(BaseFtpConnection conn,
-        CommandManager initializer) {
-        return this;
-    }
-
-    public void load(CommandManagerFactory initializer) {
-    }
-
-    public void unload() {
     }
 }

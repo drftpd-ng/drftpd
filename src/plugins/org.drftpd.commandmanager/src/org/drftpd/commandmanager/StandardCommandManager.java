@@ -155,8 +155,8 @@ public class StandardCommandManager implements CommandManagerInterface {
 	    		response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 	    		String helpString = request.getProperties().getProperty("help.specific");
 	    		if (helpString == null) {
-	    			response.addComment("Bug your siteop to add help for the "
-							+ request.getCommand() + "\" " + "command");
+	    			response.addComment("Bug your siteop to add help for the \""
+							+ request.getCommand() + "\" command");
 	    		}
 	    		else {
 	    			ReplacerEnvironment env = new ReplacerEnvironment();

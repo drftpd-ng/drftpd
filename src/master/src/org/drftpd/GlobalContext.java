@@ -463,7 +463,7 @@ public class GlobalContext {
     			// comment or blank line, ignore
     			continue;
     		}
-    		if (curLine.endsWith("}")) {
+    		if (curLine.equals("}")) {
     			// end of this block
     			return p;
     		}

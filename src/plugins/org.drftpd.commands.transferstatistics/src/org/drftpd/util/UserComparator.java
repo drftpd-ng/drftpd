@@ -19,7 +19,7 @@ package org.drftpd.util;
 
 import java.util.Comparator;
 
-import org.drftpd.commands.TransferStatistics;
+import org.drftpd.commands.transferstatistics.TransferStatistics;
 import org.drftpd.usermanager.User;
 
 

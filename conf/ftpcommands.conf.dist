@@ -450,6 +450,7 @@ method doSITE_HELP
 perms *
 help duh! it does this dummy!
 help.specific ${command} <site cmd> will display specific information on that command
+nohelp ABOR,AUTH,CDUP,CPSV,CWD,DELE,FEAT,IDNT,LIST,MDTM,MKD,MODE,PASS,PASV,PBSZ,PORT,PRET,PROT,PWD,QUIT,REST,RETR,RMD,RNFR,RNTO,SIZE,SSCN,STOR,SYST,TYPE,USER,XCRC
 }
 
 SITE ADDIP {
@@ -476,7 +477,7 @@ class UserManagementHandler
 method doSITE_CHANGE
 perms *
 help Change parameters for a user
-help..specific ${command} <username> <field> <value>
+help.specific ${command} <username> <field> <value>
 help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
 help.specific num_logins # [opt perIP], comment, group_ratio #min #max
 help.specific group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
@@ -709,4 +710,122 @@ class UserManagementHandler
 method doSITE_BANS
 perms *
 help List the current users banned on the site.
+}
+
+SITE RULES {
+plugin org.drftpd.commands.textoutput
+class Textoutput
+method doTEXT_OUTPUT
+perms *
+help Displays the site rules
+file text/rules.txt
+}
+
+SITE WELCOME {
+plugin org.drftpd.commands.textoutput
+class Textoutput
+method doTEXT_OUTPUT
+perms *
+help Displays site welcome message
+file text/welcome.txt
+}
+
+SITE REQUEST {
+plugin org.drftpd.commands.request
+class Request
+method doSITE_REQUEST
+perms *
+help Add a request
+help.specific ${command} <nameofrequest>
+}
+
+SITE REQFILLED {
+plugin org.drftpd.commands.request
+class Request
+method doSITE_REQFILLED
+perms *
+help Fill a request
+help.specific ${command} <nameofrequest>
+}
+
+SITE SECTIONS {
+plugin org.drftpd.commands.sections
+class Sections
+method doSITE_SECTIONS
+perms *
+help List the currently defined sections on the site.
+help.specific ${command}
+help.specific List the currently defined sections on the site.
+}
+
+SITE ALUP {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_ALUP
+perms *
+help Lists the top uploaders of all time
+}
+
+SITE ALDN {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_ALDN
+perms *
+help Lists the top downloaders of all time
+}
+
+SITE MONTHUP {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_MONTHUP
+perms *
+help Lists the top uploaders for the month
+}
+
+SITE MONTHDN {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_MONTHDN
+perms *
+help Lists the top downloaders for the month
+}
+
+SITE WKUP {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_WKUP
+perms *
+help Lists the top uploaders for the week
+}
+
+SITE WKDN {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_WKDN
+perms *
+help Lists the top downloaders for the week
+}
+
+SITE DAYUP {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_DAYUP
+perms *
+help Lists the top uploaders for the day
+}
+
+SITE DAYDN {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_DAYDN
+perms *
+help Lists the top downloaders for the day
+}
+
+SITE STATS {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_STATS
+perms *
+help Show user stats
 }
