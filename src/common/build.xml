@@ -7,11 +7,15 @@
 		propertyversion="plugin.version" />
 	<property name="plugin.home"
 		value="${basedir}/../../core/${plugin.id}" />
+	<copy todir="${plugin.home}" includeemptydirs="false">
+		<fileset dir="${basedir}"
+			excludes="classes/,.*,*build*,src/" />
+	</copy>
 	<jpf-path
 		basedir="${basedir}/../.."
 		pathid="plugin.classpath"
 		pluginid="${plugin.id}"
-		includes="core/*/plugin.xml,src/${plugin.id}/plugin.xml"
+		includes="core/*/plugin.xml"
 		verbose="true" />
 
 	<target name="build">
@@ -29,10 +33,6 @@
 			<fileset dir="${basedir}/src"
 				includes="**/*"
 				excludes="**/.*,**/*.java" />
-		</copy>
-		<copy todir="${plugin.home}" includeemptydirs="false">
-			<fileset dir="${basedir}"
-				excludes="classes/,.*,*build*,src/" />
 		</copy>
 	</target>
 </project>
