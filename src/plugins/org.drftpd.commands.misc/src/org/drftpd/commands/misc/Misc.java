@@ -79,6 +79,7 @@ public class Misc extends CommandInterface {
     public CommandResponse doFEAT(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         PrintWriter out = conn.getControlWriter();
+        ArrayList<String> featFound = new ArrayList<String>();
         out.print("211-Extensions supported:\r\n");
 
         for (CommandInstanceContainer container : _cManager.getCommandHandlersMap().values()) {
@@ -87,9 +88,12 @@ public class Misc extends CommandInterface {
         	if (feat == null) {
         		continue;  
         	}
-
+        	
         	for (int i = 0; i < feat.length; i++) {
-                out.print(" " + feat[i] + "\r\n");
+                if (!featFound.contains(feat[i])) {
+                	out.print(" " + feat[i] + "\r\n");
+                	featFound.add(feat[i]);
+                }
             }
         }
 

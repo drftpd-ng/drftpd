@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
+package org.drftpd.commands.mlst;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,13 +27,13 @@ import java.util.List;
 
 
 import org.apache.log4j.Logger;
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
-import org.drftpd.commandmanager.Reply;
-import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.FtpReply;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandleInterface;
 import org.drftpd.vfs.ListUtils;
@@ -44,45 +44,52 @@ import org.drftpd.vfs.ObjectNotValidException;
  * @author mog
  * @version $Id$
  */
-public class MLST implements CommandHandler, CommandHandlerFactory {
+public class MLST extends CommandInterface {
     private static final Logger logger = Logger.getLogger(MLST.class);
 
-    public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException {
-        String command = conn.getRequest().getCommand();
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
+    	_featReplies = new String[] {
+            "MLST type*,x.crc32*,size*,modify*,unix.owner*,unix.group*,x.slaves*,x.xfertime*"
+        };;
+    }
 
-        DirectoryHandle dir = conn.getCurrentDirectory();
+    public CommandResponse doMLSTandMLSD(CommandRequest request) {
+        String command = request.getCommand();
 
-        if (conn.getRequest().hasArgument()) {
+        DirectoryHandle dir = request.getCurrentDirectory();
+
+        if (request.hasArgument()) {
             try {
                 try {
-					dir = dir.getDirectory((conn.getRequest().getArgument()));
+					dir = dir.getDirectory((request.getArgument()));
 				} catch (ObjectNotValidException e) {
-					return new Reply(500, "Target is not a directory, MLST only works on Directories");
+					return new CommandResponse(500, "Target is not a directory, MLST only works on Directories");
 				}
             } catch (FileNotFoundException e) {
-                return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+                return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
             }
         }
 
-        if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), dir, true)) {
-            return Reply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
+        if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", getUserNull(request.getUser()), dir, true)) {
+        	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
 
+        BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         PrintWriter out = conn.getControlWriter();
 
-        if ("MLST".equals(command)) {
+        if ("MLST".equalsIgnoreCase(command)) {
             out.print("250- Begin\r\n");
             out.print(toMLST(dir) + "\r\n");
             out.print("250 End.\r\n");
 
             return null;
-        } else if ("MLSD".equals(command)) {
+        } else if ("MLSD".equalsIgnoreCase(command)) {
         	
             if (!conn.getTransferState().isPasv() && !conn.getTransferState().isPort()) {
-                return Reply.RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS;
+            	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
             }
-            out.print(Reply.RESPONSE_150_OK);
+            out.print(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
             out.flush();
 
             try {
@@ -100,27 +107,13 @@ public class MLST implements CommandHandler, CommandHandlerFactory {
                 logger.warn("", e1);
 
                 //425 Can't open data connection
-                return new Reply(425, e1.getMessage());
+                return new CommandResponse(425, e1.getMessage());
             }
 
-            return Reply.RESPONSE_226_CLOSING_DATA_CONNECTION;
+            return StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
         }
 
-        return Reply.RESPONSE_500_SYNTAX_ERROR;
-    }
-
-    public String[] getFeatReplies() {
-        return new String[] {
-            "MLST type*,x.crc32*,size*,modify*,unix.owner*,unix.group*,x.slaves*,x.xfertime*"
-        };
-    }
-
-    public CommandHandler initialize(BaseFtpConnection conn,
-        CommandManager initializer) {
-        return this;
-    }
-
-    public void load(CommandManagerFactory initializer) {
+        return StandardCommandManager.genericResponse("RESPONSE_500_SYNTAX_ERROR");
     }
 
     private String toMLST(InodeHandleInterface file) {
@@ -130,8 +123,5 @@ public class MLST implements CommandHandler, CommandHandlerFactory {
         //add perm=
         //add 
         return ret;
-    }
-
-    public void unload() {
     }
 }

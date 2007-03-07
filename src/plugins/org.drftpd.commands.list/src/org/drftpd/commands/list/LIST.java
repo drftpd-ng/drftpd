@@ -36,9 +36,9 @@ import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.Reply;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.FtpReply;
 import org.drftpd.master.TransferState;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
@@ -273,7 +273,7 @@ public class LIST extends CommandInterface {
 			// check options
 			// boolean allOption = options.indexOf('a') != -1;
 			boolean fulldate = options.indexOf('T') != -1;
-			boolean detailOption = request.getCommand().equals("LIST")
+			boolean detailOption = request.getCommand().equalsIgnoreCase("LIST")
 					|| (options.indexOf('l') != -1);
 
 			// boolean directoryOption = options.indexOf("d") != -1;
@@ -314,7 +314,7 @@ public class LIST extends CommandInterface {
 					return new CommandResponse(550, "Secure Listing Required");
 				}
 
-				out.write(Reply.RESPONSE_150_OK);
+				out.print(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
 				out.flush();
 
 				try {
