@@ -51,7 +51,7 @@ public class MLST extends CommandInterface {
     	super.initialize(method, pluginName, cManager);
     	_featReplies = new String[] {
             "MLST type*,x.crc32*,size*,modify*,unix.owner*,unix.group*,x.slaves*,x.xfertime*"
-        };;
+        };
     }
 
     public CommandResponse doMLSTandMLSD(CommandRequest request) {
