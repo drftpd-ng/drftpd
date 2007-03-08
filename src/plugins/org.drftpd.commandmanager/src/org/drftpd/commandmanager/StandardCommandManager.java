@@ -19,12 +19,18 @@ package org.drftpd.commandmanager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventSubscriber;
+import org.drftpd.GlobalContext;
+import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.Session;
 import org.drftpd.vfs.DirectoryHandle;
@@ -40,7 +46,7 @@ import org.tanesha.replacer.SimplePrintf;
  * @author djb61
  * @version $Id$
  */
-public class StandardCommandManager implements CommandManagerInterface {
+public class StandardCommandManager implements CommandManagerInterface, EventSubscriber {
 
 	private static final Logger logger = Logger
 			.getLogger(StandardCommandManager.class);
@@ -51,12 +57,18 @@ public class StandardCommandManager implements CommandManagerInterface {
 	 * This is a map of commands, e.x.:
 	 * "AUTH" -> CommandInstanceContainer (Instance of the CommandInterface and the appropriately attached Method)
 	 */
-	private HashMap<String, CommandInstanceContainer> _commands;
+	private Map<String, CommandInstanceContainer> _commands;
+
+	public StandardCommandManager() {
+		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+	}
 
 	public void initialize(HashMap<String,Properties> requiredCmds) {
-		initGenericResponses();
+		if (_commands == null ) {
+			initGenericResponses();
+		}
 
-		_commands = new HashMap<String, CommandInstanceContainer>();
+		_commands = Collections.synchronizedMap(new HashMap<String, CommandInstanceContainer>());
 		
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint cmdExtPoint = 
@@ -331,7 +343,26 @@ public class StandardCommandManager implements CommandManagerInterface {
 		return new CommandRequest(originalCommand, argument, directory, user, session, config);
 	}
 
-	public HashMap<String,CommandInstanceContainer> getCommandHandlersMap() {
+	public Map<String,CommandInstanceContainer> getCommandHandlersMap() {
 		return _commands;
+	}
+
+	public void onEvent(Object event) {
+		if (event instanceof UnloadPluginEvent) {
+			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String plugin : pluginEvent.getParentPlugins()) {
+				if (plugin.equals(currentPlugin)) {
+					for (Iterator iter = _commands.entrySet().iterator(); iter.hasNext();) {
+						Entry<String, CommandInstanceContainer> entry = (Entry<String, CommandInstanceContainer>) iter.next();
+						if (manager.getPluginFor(entry.getValue().getCommandInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							logger.debug("Removing command "+ entry.getKey());
+							iter.remove();
+						}
+					}
+				}
+			}
+		}
 	}
 }

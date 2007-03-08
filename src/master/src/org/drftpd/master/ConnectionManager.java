@@ -32,11 +32,13 @@ import java.util.Properties;
 
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.event.Event;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.FtpReply;
 import org.drftpd.slave.Slave;
@@ -49,7 +51,7 @@ import org.java.plugin.registry.ExtensionPoint;
 /**
  * @version $Id$
  */
-public class ConnectionManager {
+public class ConnectionManager implements EventSubscriber {
 	private static final Logger logger = Logger
 			.getLogger(ConnectionManager.class.getName());
 
@@ -76,6 +78,7 @@ public class ConnectionManager {
 
 		// loadTimer();
 		getGlobalContext().getSlaveManager().addShutdownHook();
+		GlobalContext.getEventService().subscribe(ReloadEvent.class, this);
 	}
 
 	public static ConnectionManager getConnectionManager() {
@@ -406,5 +409,16 @@ public class ConnectionManager {
 	 */
 	public HashMap<String,Properties> getCommands() {
 		return _cmds;
+	}
+
+	public void onEvent(Object event) {
+		if (event instanceof ReloadEvent) {
+			logger.info("Reloading "+ cmdConf +", origin "+((ReloadEvent)event).getOrigin());
+			loadCommands();
+			_commandManager.initialize(getCommands());
+			for (BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
+				conn.setCommands(getCommands());
+			}
+		}
 	}
 }

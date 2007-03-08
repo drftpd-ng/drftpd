@@ -17,6 +17,7 @@
  */
 package org.drftpd.commands.sitemanagement;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -37,13 +38,22 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.ConnectionEvent;
 import org.drftpd.event.FtpListener;
+import org.drftpd.event.ReloadEvent;
+import org.drftpd.event.LoadPluginEvent;
+import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.java.plugin.JpfException;
+import org.java.plugin.PluginManager;
+import org.java.plugin.boot.DefaultPluginsCollector;
+import org.java.plugin.registry.PluginDescriptor;
+import org.java.plugin.util.ExtendedProperties;
 
 /**
  * @author mog
@@ -52,6 +62,8 @@ import org.drftpd.vfs.InodeHandle;
  */
 public class SiteManagementHandler extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(SiteManagementHandler.class);
+
+	private static final String jpfConf = "conf/boot-master.properties";
 
 	public CommandResponse doSITE_LIST(CommandRequest request) {
 
@@ -89,9 +101,9 @@ public class SiteManagementHandler extends CommandInterface {
 		return response;
 	}
 
-	public CommandResponse doSITE_LOADPLUGIN(CommandRequest request) {
+	public CommandResponse doSITE_LOADPLUGIN(CommandRequest request) throws ImproperUsageException {
 
-		if (!request.hasArgument()) {
+		/*if (!request.hasArgument()) {
 			return new CommandResponse(500, "Usage: site load className");
 		}
 
@@ -103,17 +115,63 @@ public class SiteManagementHandler extends CommandInterface {
 					"Was not able to find the class you are trying to load");
 		}
 
-		GlobalContext.getGlobalContext().addFtpListener(ftpListener);
+		GlobalContext.getGlobalContext().addFtpListener(ftpListener);*/
 
-		return new CommandResponse(200, "Successfully loaded your plugin");
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+		ExtendedProperties jpfProps = new ExtendedProperties();
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream(jpfConf);
+			jpfProps.load(fis);
+		}
+		catch (IOException e) {
+			logger.debug("Exception loading JPF properties",e);
+			return new CommandResponse(500,e.getMessage());
+		}
+		finally {
+			if (fis != null) {
+				try {
+					fis.close();
+				}
+				catch (IOException e) {
+					logger.debug("Exception closing input stream",e);
+				}
+			}
+		}
+		PluginManager manager = PluginManager.lookup(this);
+		DefaultPluginsCollector collector = new DefaultPluginsCollector();
+		try {
+			collector.configure(jpfProps);
+		}
+		catch (Exception e) {
+			logger.debug("Exception configuring plugins collector",e);
+			return new CommandResponse(500,e.getMessage());
+		}
+		try {
+			manager.publishPlugins(collector.collectPluginLocations().toArray(new PluginManager.PluginLocation[0]));
+		}
+		catch (JpfException e) {
+			logger.debug("Exception publishing plugins", e);
+			return new CommandResponse(500,e.getMessage());
+		}
+		GlobalContext.getEventService().publish(new LoadPluginEvent(request.getArgument()));
+		return new CommandResponse(200, "Successfully loaded plugin");
 	}
 
 	public CommandResponse doSITE_PLUGINS(CommandRequest request) {
 
-		CommandResponse response = new CommandResponse(200, "Command ok");
+		/*CommandResponse response = new CommandResponse(200, "Command ok");
 		response.addComment("Plugins loaded:");
 		for (FtpListener listener : GlobalContext.getGlobalContext().getFtpListeners()) {
 			response.addComment(listener.getClass().getName());
+		}
+		return response;*/
+		CommandResponse response = new CommandResponse(200, "Command ok");
+		response.addComment("Plugins loaded:");
+		for (PluginDescriptor pluginDesc : PluginManager.lookup(this).getRegistry().getPluginDescriptors()) {
+			response.addComment(pluginDesc.getId());
 		}
 		return response;
 	}
@@ -132,6 +190,7 @@ public class SiteManagementHandler extends CommandInterface {
 				// not loaded, don't reload
 			}
 
+			GlobalContext.getEventService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
 			// can't reload commands for now
 			//conn.getGlobalContext().getConnectionManager()
 				//	.getCommandManagerFactory().reload();
@@ -192,8 +251,8 @@ public class SiteManagementHandler extends CommandInterface {
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
-	public CommandResponse doSITE_UNLOADPLUGIN(CommandRequest request) {
-		if (!request.hasArgument()) {
+	public CommandResponse doSITE_UNLOADPLUGIN(CommandRequest request) throws ImproperUsageException {
+		/*if (!request.hasArgument()) {
 			return new CommandResponse(500, "Usage: site unload className");
 		}
 		for (FtpListener ftpListener : GlobalContext.getGlobalContext()
@@ -214,7 +273,26 @@ public class SiteManagementHandler extends CommandInterface {
 			}
 		}
 
-		return new CommandResponse(500, "Could not find your plugin on the site");
+		return new CommandResponse(500, "Could not find your plugin on the site");*/
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+		PluginManager manager = PluginManager.lookup(this);
+		PluginDescriptor pluginDesc;
+		try {
+			pluginDesc = PluginManager.lookup(this).getRegistry()
+				.getPluginDescriptor(request.getArgument());
+		}
+		catch (IllegalArgumentException e) {
+			return new CommandResponse(500, "No such plugin loaded");
+		}
+		GlobalContext.getEventService().publish(new UnloadPluginEvent(request.getArgument()));
+		manager.deactivatePlugin(request.getArgument());
+		if (manager.isPluginActivated(pluginDesc)) {
+			return new CommandResponse(500, "Unable to unload plugin");
+		}
+		manager.getRegistry().unregister(new String[] {request.getArgument()});
+		return new CommandResponse(200, "Successfully unloaded your plugin");
 	}
 
 	private FtpListener getFtpListener(String arg) {

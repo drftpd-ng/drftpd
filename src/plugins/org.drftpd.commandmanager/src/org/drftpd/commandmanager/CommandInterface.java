@@ -23,16 +23,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -50,15 +54,19 @@ import org.tanesha.replacer.SimplePrintf;
  * @author djb61
  * @version $Id$
  */
-public abstract class CommandInterface {
+public abstract class CommandInterface implements EventSubscriber {
 
 	private static final Logger logger = Logger.getLogger(CommandInterface.class);
 	
 	protected String[] _featReplies;
 
-	private SortedMap<Integer, HookContainer<PostHookInterface>> _postHooks;
+	private Map<Integer, HookContainer<PostHookInterface>> _postHooks;
 
-	private SortedMap<Integer, HookContainer<PreHookInterface>> _preHooks;
+	private Map<Integer, HookContainer<PreHookInterface>> _preHooks;
+
+	public CommandInterface() {
+		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+	}
 
 	public static ReplacerEnvironment getReplacerEnvironment(
 			ReplacerEnvironment env, User user) {
@@ -122,8 +130,8 @@ public abstract class CommandInterface {
 	}
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		_postHooks = new TreeMap<Integer, HookContainer<PostHookInterface>>();
-		_preHooks = new TreeMap<Integer, HookContainer<PreHookInterface>>();
+		_postHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PostHookInterface>>());
+		_preHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PreHookInterface>>());
 		
 		PluginManager manager = PluginManager.lookup(this);
 
@@ -289,5 +297,31 @@ public abstract class CommandInterface {
 		response.addComment(new BufferedReader(
             new InputStreamReader(
                 new FileInputStream(file), "ISO-8859-1")));
+	}
+
+	public void onEvent(Object event) {
+		if (event instanceof UnloadPluginEvent) {
+			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String plugin : pluginEvent.getParentPlugins()) {
+				if (plugin.equals(currentPlugin)) {
+					for (Iterator iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
+						Entry<Integer, HookContainer<PostHookInterface>> entry = (Entry<Integer, HookContainer<PostHookInterface>>) iter.next();
+						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							logger.debug("Removing post hook " + pluginEvent.getPlugin() + " from " + currentPlugin);
+							iter.remove();
+						}
+					}
+					for (Iterator iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
+						Entry<Integer, HookContainer<PreHookInterface>> entry = (Entry<Integer, HookContainer<PreHookInterface>>) iter.next();
+						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							logger.debug("Removing pre hook " + pluginEvent.getPlugin() + " from " + currentPlugin);
+							iter.remove();
+						}
+					}
+				}
+			}
+		}
 	}
 }

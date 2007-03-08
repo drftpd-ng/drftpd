@@ -31,6 +31,8 @@ import java.util.Map.Entry;
 import javax.net.ssl.SSLContext;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.ThreadSafeEventService;
 import org.drftpd.event.Event;
 import org.drftpd.event.FtpListener;
 import org.drftpd.event.MessageEvent;
@@ -94,6 +96,8 @@ public class GlobalContext {
 
 	private static DirectoryHandle root = new DirectoryHandle(
 			VirtualFileSystem.separator);
+
+	private static EventService eventService = new ThreadSafeEventService();
 
 	public void reloadFtpConfig() throws IOException {
 		_zsConfig = new ZipscriptConfig(this);
@@ -483,6 +487,10 @@ public class GlobalContext {
 
     	}
     	throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
+	}
+
+	public static EventService getEventService() {
+		return eventService;
 	}
 
 	/*	*//**
