@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.nuke" version="2.1.0">
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.nuke" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="FrontendHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+	</extension-point>
+	<extension-point id="PostHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension-point id="PreHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="NukeHandler"></extension>
+	
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="NukeCheck">
+		<parameter id="ParentMethod" value="doMKD" />
+		<parameter id="HookClass" value="org.drftpd.commands.nuke.NukePreHook" />
+		<parameter id="HookMethod" value="doNukeCheck" />
+		<parameter id="Priority" value="1000" />
+	</extension>
+</plugin>
