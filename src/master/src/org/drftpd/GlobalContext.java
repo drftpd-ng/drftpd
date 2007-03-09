@@ -45,6 +45,7 @@ import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.config.FtpConfig;
+import org.drftpd.master.config.PluginsConfig;
 import org.drftpd.master.config.ZipscriptConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
@@ -73,6 +74,8 @@ public class GlobalContext {
 	private static GlobalContext _gctx;
 
 	protected ZipscriptConfig _zsConfig;
+	
+	private PluginsConfig _pluginsConfig;
 
 	private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
 
@@ -166,6 +169,14 @@ public class GlobalContext {
 		}
 	}
 
+	public PluginsConfig getPluginsConfig() {
+		return _pluginsConfig;
+	}
+	
+	public void loadPluginsConfig() {
+		_pluginsConfig = new PluginsConfig();
+	}
+	
 	public ZipscriptConfig getZsConfig() {
 		assert _zsConfig != null;
 		return _zsConfig;
@@ -400,6 +411,7 @@ public class GlobalContext {
 		loadSlaveSelectionManager(getConfig().getProperties());
 		loadSectionManager(getConfig().getProperties());
 		loadPlugins(getConfig().getProperties());
+		loadPluginsConfig();
 	}
 	
 
