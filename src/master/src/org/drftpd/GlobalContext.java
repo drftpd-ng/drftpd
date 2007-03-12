@@ -46,7 +46,6 @@ import org.drftpd.master.SlaveManager;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.master.config.PluginsConfig;
-import org.drftpd.master.config.ZipscriptConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
 import org.drftpd.sections.SectionManagerInterface;
@@ -72,8 +71,6 @@ public class GlobalContext {
 	private static final Logger logger = Logger.getLogger(GlobalContext.class);
 
 	private static GlobalContext _gctx;
-
-	protected ZipscriptConfig _zsConfig;
 	
 	private PluginsConfig _pluginsConfig;
 
@@ -103,7 +100,6 @@ public class GlobalContext {
 	private static EventService eventService = new ThreadSafeEventService();
 
 	public void reloadFtpConfig() throws IOException {
-		_zsConfig = new ZipscriptConfig(this);
 		FtpConfig.reload();
 	}
 	
@@ -175,11 +171,6 @@ public class GlobalContext {
 	
 	public void loadPluginsConfig() {
 		_pluginsConfig = new PluginsConfig();
-	}
-	
-	public ZipscriptConfig getZsConfig() {
-		assert _zsConfig != null;
-		return _zsConfig;
 	}
 
 	public static ConnectionManager getConnectionManager() {
@@ -328,7 +319,7 @@ public class GlobalContext {
 	
 	class Shutdown implements Runnable {
 		public void run() {
-			while(GlobalContext.getGlobalContext().getConnectionManager().getConnections().size() > 0) {
+			while(GlobalContext.getConnectionManager().getConnections().size() > 0) {
 				logger.info("Waiting for connections to be shutdown...");
 				try {
 					Thread.sleep(1000);

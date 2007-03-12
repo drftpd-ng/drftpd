@@ -19,7 +19,7 @@ package org.drftpd.vfs;
 
 import java.util.TreeMap;
 
-public class CaseInsensitiveTreeMap<K, V> extends TreeMap {
+public class CaseInsensitiveTreeMap<K, V> extends TreeMap<K, V> {
 
 	private static CaseInsensitiveComparator<String> comparer = new CaseInsensitiveComparator<String>();
 
@@ -27,5 +27,4 @@ public class CaseInsensitiveTreeMap<K, V> extends TreeMap {
 	public CaseInsensitiveTreeMap() {
 		super(comparer);
 	}
-
 }

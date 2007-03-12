@@ -54,7 +54,7 @@ public class Sections extends CommandInterface {
             	DatedSection ds = (DatedSection) section;
             	ds.processNewDate(new Date());
             }
-            response.addComment(jprintf(_bundle, "section", env, request.getUser()));
+            response.addComment(request.getSession().jprintf(_bundle, "section", env, request.getUser()));
         }
 
         return response;

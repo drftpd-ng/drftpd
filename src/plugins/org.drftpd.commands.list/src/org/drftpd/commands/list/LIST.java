@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
-import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -44,8 +43,11 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandleInterface;
 import org.drftpd.vfs.LinkHandle;
-import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.java.plugin.PluginLifecycleException;
+import org.java.plugin.PluginManager;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @author mog
@@ -328,11 +330,39 @@ public class LIST extends CommandInterface {
 
 			// //////////////
 			logger.debug("Listing directoryFile - " + directoryFile);
-			List<InodeHandleInterface> listFiles = ListUtils.list(
-					directoryFile, conn);
+			ListElementsContainer container = new ListElementsContainer(
+					request.getSession(), request.getUser());
+			container = ListUtils.list(directoryFile, container);
+			
+			PluginManager manager = PluginManager.lookup(this);
+			ExtensionPoint listExtPoint = 
+				manager.getRegistry().getExtensionPoint( 
+						"org.drftpd.commands.list", "AddElements");
+			for (Extension listExt : listExtPoint.getConnectedExtensions()) {
+				try {
+					manager.activatePlugin(listExt.getDeclaringPluginDescriptor().getId());
+					ClassLoader listLoader = manager.getPluginClassLoader( 
+							listExt.getDeclaringPluginDescriptor());
+					Class listCls = listLoader.loadClass( 
+								listExt.getParameter("class").valueAsString());
+					AddListElementsInterface listAddon = (AddListElementsInterface) listCls.newInstance();
+					container = listAddon.addElements(directoryFile,container);
+				}
+				catch (PluginLifecycleException e) {
+					logger.debug("plugin lifecycle exception", e);
+				}
+				catch (ClassNotFoundException e) {
+					logger.debug("bad plugin.xml or badly installed plugin: "+
+							listExt.getDeclaringPluginDescriptor().getId(),e);
+				}
+				catch (Exception e) {
+					logger.debug("failed to load class for list extension from: "+
+							listExt.getDeclaringPluginDescriptor().getId(),e);
+				}
+			}
 			// //////////////
 			try {
-				printList(listFiles, os, fulldate);
+				printList(container.getElements(), os, fulldate);
 				CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
 
 				try {

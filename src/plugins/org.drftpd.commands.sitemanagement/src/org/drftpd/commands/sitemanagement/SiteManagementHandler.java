@@ -168,7 +168,7 @@ public class SiteManagementHandler extends CommandInterface {
 			response.addComment(listener.getClass().getName());
 		}
 		return response;*/
-		CommandResponse response = new CommandResponse(200, "Command ok");
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		response.addComment("Plugins loaded:");
 		for (PluginDescriptor pluginDesc : PluginManager.lookup(this).getRegistry().getPluginDescriptors()) {
 			response.addComment(pluginDesc.getId());

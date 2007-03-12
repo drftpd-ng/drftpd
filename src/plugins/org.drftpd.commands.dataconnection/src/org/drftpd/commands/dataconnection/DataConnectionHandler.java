@@ -38,6 +38,7 @@ import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -65,6 +66,10 @@ import org.tanesha.replacer.ReplacerEnvironment;
  */
 public class DataConnectionHandler extends CommandInterface {
     private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
+
+    public static final Key CHECKSUM = new Key(DataConnectionHandler.class, "checksum", Long.class);
+
+    public static final Key TRANSFER_FILE = new Key(DataConnectionHandler.class, "transfer_file", FileHandle.class);
 
     private ResourceBundle _bundle;
 
@@ -152,7 +157,7 @@ public class DataConnectionHandler extends CommandInterface {
                 "You need to use a client supporting PRET (PRE Transfer) to use PASV");
         }
         
-        if (request.getCommand().equals("CPSV")) {
+        if (request.getCommand().equalsIgnoreCase("CPSV")) {
         	conn.getTransferState().setSSLHandshakeClientMode(true);
         }
 
@@ -912,10 +917,10 @@ public class DataConnectionHandler extends CommandInterface {
         try {
             String cmd = request.getCommand();
             char direction = ts.getDirection(new FtpRequest(cmd));
-            boolean isStor = cmd.equals("STOR");
-            boolean isRetr = cmd.equals("RETR");
-            boolean isAppe = cmd.equals("APPE");
-            boolean isStou = cmd.equals("STOU");
+            boolean isStor = cmd.equalsIgnoreCase("STOR");
+            boolean isRetr = cmd.equalsIgnoreCase("RETR");
+            boolean isAppe = cmd.equalsIgnoreCase("APPE");
+            boolean isStou = cmd.equalsIgnoreCase("STOU");
             String eventType = isRetr ? "RETR" : "STOR";
 
             if (isAppe || isStou) {
@@ -944,7 +949,7 @@ public class DataConnectionHandler extends CommandInterface {
 
             if (comparison != 0 && count >= comparison) {
             	return new CommandResponse(550,
-            			jprintf(_bundle, "transfer.err.maxsim", env, request.getUser()));
+            			conn.jprintf(_bundle, "transfer.err.maxsim", env, request.getUser()));
             }
 
             // get filenames
@@ -953,6 +958,8 @@ public class DataConnectionHandler extends CommandInterface {
             	if (ts.getTransferFile() == null) {
 					try {
 						ts.setTransferFile(conn.getCurrentDirectory().getFile(
+								request.getArgument()));
+						request.getSession().setObject(TRANSFER_FILE,conn.getCurrentDirectory().getFile(
 								request.getArgument()));
 					} catch (FileNotFoundException e) {
 						return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
@@ -1009,50 +1016,6 @@ public class DataConnectionHandler extends CommandInterface {
                         "Requested action not taken. File name not allowed.");
                 }
 
-                //do our zipscript sfv checks
-                String checkName = targetFileName.toLowerCase();
-                ZipscriptConfig zsCfg = conn.getGlobalContext().getZsConfig();
-                boolean SfvFirstEnforcedPath = zsCfg.checkSfvFirstEnforcedPath(targetDir, 
-                		conn.getUserNull()); 
-                try {
-                    SFVFile sfv = conn.getCurrentDirectory().lookupSFVFile();
-                    if (checkName.endsWith(".sfv") && 
-                    	!zsCfg.multiSfvAllowed()) {
-                        return new Reply(533,
-                        	"Requested action not taken. Multiple SFV files not allowed.");
-                    }
-                    if (SfvFirstEnforcedPath && 
-                    		!zsCfg.checkAllowedExtension(checkName)) {
-                		// filename not explicitly permitted, check for sfv entry
-                        boolean allow = false;
-                        if (zsCfg.restrictSfvEnabled()) {
-                            for (Iterator iter = sfv.getNames().iterator(); iter.hasNext();) {
-                                String name = (String) iter.next();
-                                if (name.toLowerCase().equals(checkName)) {
-                                    allow = true;
-                                    break;
-                                }
-                            }
-                            if (!allow) {
-                                return new Reply(533,
-                                	"Requested action not taken. File not found in sfv.");
-                            }
-                        }
-                    }
-                } catch (FileNotFoundException e1) {
-                    // no sfv found in dir 
-                	if ( !zsCfg.checkAllowedExtension(checkName) && 
-                			SfvFirstEnforcedPath ) {
-                		// filename not explicitly permitted
-                		// ForceSfvFirst is on, and file is in an enforced path.
-                        return new Reply(533,
-                        	"Requested action not taken. You must upload sfv first.");
-                	}
-                } catch (IOException e1) {
-                    //error reading sfv, do nothing
-                } catch (NoAvailableSlaveException e1) {
-                    //sfv not online, do nothing
-                }
             } else {
             	// reset(); already done in finally block
             	throw UnhandledCommandException.create(
@@ -1358,8 +1321,10 @@ public class DataConnectionHandler extends CommandInterface {
             env.add("seconds", "" + ((float)status.getElapsed() / 1000F));
             env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
-            CommandResponse response = new CommandResponse(226, jprintf(_bundle,
+            CommandResponse response = new CommandResponse(226, conn.jprintf(_bundle,
                     "transfer.complete", env, request.getUser()));
+            request.getSession().setObject(CHECKSUM,status.getChecksum());
+            request.getSession().setObject(TRANSFER_FILE,ts.getTransferFile());
 
             synchronized (conn.getGlobalContext()) { // need to synchronize
 														// here so only one
@@ -1443,155 +1408,17 @@ public class DataConnectionHandler extends CommandInterface {
         }
     }
 
-    public void unload() {
+    /* Add separate methods for STOR/RETR which will allow us to hook them separately
+     * , for now they will just in turn call the old method but this may change later
+     */
+    public CommandResponse doRETR(CommandRequest request) {
+    	return transfer(request);
     }
 
-/*    *//**
-	 * @param isRetr
-	 * @param isStor
-	 * @param status
-	 * @param response
-	 * @param targetFileName
-	 * @param targetDir
-	 *            Returns true if crc check was okay, i.e, if credits should be
-	 *            altered
-	 *//*
-    private boolean zipscript(boolean isRetr, boolean isStor, long checksum,
-        Reply response, String targetFileName,
-        LinkedRemoteFileInterface targetDir) {
-        // zipscript
-        logger.debug("Running zipscript on file " + targetFileName +
-            " with CRC of " + checksum);
-
-        if (isRetr) {
-            //compare checksum from transfer to cached checksum
-            logger.debug("checksum from transfer = " + checksum);
-
-            if (checksum != 0) {
-                response.addComment("Checksum from transfer: " +
-                    Checksum.formatChecksum(checksum));
-
-                long cachedChecksum;
-                cachedChecksum = _transferFile.getCheckSumCached();
-
-                if (cachedChecksum == 0) {
-                    _transferFile.setCheckSum(checksum);
-                } else if (cachedChecksum != checksum) {
-                    response.addComment(
-                        "WARNING: checksum from transfer didn't match cached checksum");
-                    logger.info("checksum from transfer " +
-                        Checksum.formatChecksum(checksum) +
-                        "didn't match cached checksum" +
-                        Checksum.formatChecksum(cachedChecksum) + " for " +
-                        _transferFile.toString() + " from slave " +
-                        _rslave.getName(), new Throwable());
-                }
-
-                //compare checksum from transfer to checksum from sfv
-                try {
-                    long sfvChecksum = _transferFile.getParentFileNull()
-                                                    .lookupSFVFile()
-                                                    .getChecksum(_transferFile.getName());
-
-                    if (sfvChecksum == checksum) {
-                        response.addComment(
-                            "checksum from transfer matched checksum in .sfv");
-                    } else {
-                        response.addComment(
-                            "WARNING: checksum from transfer didn't match checksum in .sfv");
-                    }
-                } catch (NoAvailableSlaveException e1) {
-                    response.addComment(
-                        "slave with .sfv offline, checksum not verified");
-                } catch (FileNotFoundException e1) {
-                    //continue without verification
-                } catch (NoSFVEntryException e1) {
-                    //file not found in .sfv, continue
-                } catch (IOException e1) {
-                    logger.info("", e1);
-                    response.addComment("IO Error reading sfv file: " +
-                        e1.getMessage());
-                }
-            } else { // slave has disabled download crc
-
-                //response.addComment("Slave has disabled download checksum");
-            }
-        } else if (isStor) {
-            if (!targetFileName.toLowerCase().endsWith(".sfv")) {
-                try {
-                	long sfvChecksum = targetDir.lookupSFVFile().getChecksum(targetFileName);
-                     If no exceptions are thrown means that the sfv is avaible and has a entry
-                     * for that file.
-                     * With this certain, we can assume that files that have CRC32 = 0 either is a
-                     * 0byte file (bug!) or checksummed transfers are disabled(size is different
-                     * from 0bytes though).                 
-                     
-
-                    if (checksum == sfvChecksum) {
-                    	// Good! transfer checksum matches sfv checksum
-                        response.addComment("checksum match: SLAVE/SFV:" +
-                            Long.toHexString(checksum));
-                    } else if (checksum == 0) {
-                    	// Here we have to conditions:
-                    	if (_transferFile.length() == 0) {
-                    		// The file has checksum = 0 and the size = 0 
-                    		// then it should be deleted.
-                    		response.addComment("0Byte File, Deleting...");
-                    		_transferFile.delete();
-                    		return false;
-                    	} else
-                    		// The file has checksum = 0, although the size is != 0,
-                    		// meaning that we are not using checked transfers.
-                    		response.addComment("checksum match: SLAVE/SFV: DISABLED");
-                    } else {
-                        response.addComment("checksum mismatch: SLAVE: " +
-                            Long.toHexString(checksum) + " SFV: " +
-                            Long.toHexString(sfvChecksum));
-                        response.addComment(" deleting file");
-                        response.setMessage("Checksum mismatch, deleting file");
-                        _transferFile.delete();
-
-                        //				getUser().updateCredits(
-                        //					- ((long) getUser().getRatio() * transferedBytes));
-                        //				getUser().updateUploadedBytes(-transferedBytes);
-                        // response.addComment(conn.status());
-                        return false; // don't modify credits
-
-                        //				String badtargetFilename = targetFilename + ".bad";
-                        //
-                        //				try {
-                        //					LinkedRemoteFile badtargetFile =
-                        //						targetDir.getFile(badtargetFilename);
-                        //					badtargetFile.delete();
-                        //					response.addComment(
-                        //						"zipscript - removing "
-                        //							+ badtargetFilename
-                        //							+ " to be replaced with new file");
-                        //				} catch (FileNotFoundException e2) {
-                        //					//good, continue...
-                        //					response.addComment(
-                        //						"zipscript - checksum mismatch, renaming to "
-                        //							+ badtargetFilename);
-                        //				}
-                        //				targetFile.renameTo(targetDir.getPath() +
-                        // badtargetFilename);
-                    }
-                } catch (NoAvailableSlaveException e) {
-                    response.addComment(
-                        "zipscript - SFV unavailable, slave(s) with .sfv file is offline");
-                } catch (NoSFVEntryException e) {
-                    response.addComment("zipscript - no entry in sfv for file");
-                } catch (IOException e) {
-                    response.addComment(
-                        "zipscript - SFV unavailable, IO error: " +
-                        e.getMessage());
-                }
-            }
-        }
-
-        return true; // modify credits, transfer was okay
+    public CommandResponse doSTOR(CommandRequest request) {
+    	return transfer(request);
     }
-*/
+
 /*	public synchronized void handshakeCompleted(HandshakeCompletedEvent arg0) {
 		_handshakeCompleted = true;
 		notifyAll();

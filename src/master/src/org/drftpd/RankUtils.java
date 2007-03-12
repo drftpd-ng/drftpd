@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 
 
 import org.drftpd.util.GroupPosition;
@@ -41,8 +40,7 @@ public class RankUtils {
 			Collection<FileHandle> files) {
 		ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
 
-		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
+		for (FileHandle file : files) {
 			String groupname;
 			try {
 				groupname = file.getGroup();
@@ -53,8 +51,7 @@ public class RankUtils {
 
 			GroupPosition stat = null;
 
-			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
-				GroupPosition stat2 = (GroupPosition) iter2.next();
+			for (GroupPosition stat2 : ret) {
 
 				if (stat2.getGroupname().equals(groupname)) {
 					stat = stat2;
@@ -89,16 +86,14 @@ public class RankUtils {
 		return ret;
 	}
 
-	public static Collection userSort(Collection<FileHandle> files,
+	public static Collection<UploaderPosition> userSort(Collection<FileHandle> files,
 			String type, String sort) {
 		ArrayList<UploaderPosition> ret = new ArrayList<UploaderPosition>();
 
-		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
+		for (FileHandle file :  files) {
 			UploaderPosition stat = null;
 
-			for (Iterator iter2 = ret.iterator(); iter2.hasNext();) {
-				UploaderPosition stat2 = (UploaderPosition) iter2.next();
+			for (UploaderPosition stat2 : ret) {
 
 				try {
 					if (stat2.getUsername().equals(file.getUsername())) {
@@ -139,7 +134,7 @@ public class RankUtils {
 	}
 }
 
-class UserComparator implements Comparator {
+class UserComparator implements Comparator<UploaderPosition> {
 	private String _sort;
 
 	private String _type;
@@ -161,9 +156,7 @@ class UserComparator implements Comparator {
 		return 0;
 	}
 
-	public int compare(Object o1, Object o2) {
-		UploaderPosition u1 = (UploaderPosition) o1;
-		UploaderPosition u2 = (UploaderPosition) o2;
+	public int compare(UploaderPosition u1, UploaderPosition u2) {
 
 		long thisVal = getType(_type, u1);
 		long anotherVal = getType(_type, u2);

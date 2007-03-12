@@ -53,8 +53,8 @@ check - checks plug-ins integrity
 		<ant dir="src/plugins/org.drftpd.commands.sections" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.transferstatistics" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.dummy" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.mlst" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.prehook.permissions" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.commands.zipscript" target="${target}" />
 	</target>
 
 	<target name="build" description="Builds entire project">

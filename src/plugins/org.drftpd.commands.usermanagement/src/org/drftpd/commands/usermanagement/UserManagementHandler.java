@@ -45,6 +45,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.Session;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.HostMask;
@@ -76,7 +77,8 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_ADDIP(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (getUserNull(request.getUser()).isAdmin() && getUserNull(request.getUser()).isGroupAdmin()) {
+		Session session = request.getSession();
+		if (session.getUserNull(request.getUser()).isAdmin() && session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -87,7 +89,7 @@ public class UserManagementHandler extends CommandInterface {
 		String[] args = request.getArgument().split(" ");
 
 		if (args.length < 2) {
-			return new CommandResponse(501, jprintf(_bundle,
+			return new CommandResponse(501, session.jprintf(_bundle,
 					"addip.specify", request.getUser()));
 		}
 
@@ -98,8 +100,8 @@ public class UserManagementHandler extends CommandInterface {
 			myUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(
 					args[0]);
 
-			if (getUserNull(request.getUser()).isGroupAdmin()
-					&& !getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+			if (session.getUserNull(request.getUser()).isGroupAdmin()
+					&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
 
@@ -112,13 +114,13 @@ public class UserManagementHandler extends CommandInterface {
 
 				try {
 					myUser.addIPMask(string);
-					response.addComment(jprintf(_bundle,
+					response.addComment(session.jprintf(_bundle,
 							"addip.success", env, request.getUser()));
-					logger.info("'" + getUserNull(request.getUser()).getName()
+					logger.info("'" + session.getUserNull(request.getUser()).getName()
 							+ "' added ip '" + string + "' to '"
 							+ myUser.getName() + "'");
 				} catch (DuplicateElementException e) {
-					response.addComment(jprintf(_bundle,
+					response.addComment(session.jprintf(_bundle,
 							"addip.dupe", env, request.getUser()));
 				}
 			}
@@ -178,6 +180,7 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_ADDUSER(CommandRequest request)
 			throws ImproperUsageException {
 
+		Session session = request.getSession();
 		/* TODO: This will need to be implemented differently to allow
 		 * for other frontends.
 		 */
@@ -189,7 +192,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		String newGroup = null;
 
-		if (getUserNull(request.getUser()).isGroupAdmin()) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin()) {
 			if (isGAdduser) {
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
@@ -197,23 +200,23 @@ public class UserManagementHandler extends CommandInterface {
 			int users;
 
 			users = GlobalContext.getGlobalContext().getUserManager()
-					.getAllUsersByGroup(getUserNull(request.getUser()).getGroup())
+					.getAllUsersByGroup(session.getUserNull(request.getUser()).getGroup())
 					.size();
 			logger.debug("Group "
-					+ getUserNull(request.getUser()).getGroup()
+					+ session.getUserNull(request.getUser()).getGroup()
 					+ " is "
 					+ GlobalContext.getGlobalContext().getUserManager()
 							.getAllUsersByGroup(
-									getUserNull(request.getUser()).getGroup()));
+									session.getUserNull(request.getUser()).getGroup()));
 
-			if (users >= getUserNull(request.getUser()).getKeyedMap().getObjectInt(
+			if (users >= session.getUserNull(request.getUser()).getKeyedMap().getObjectInt(
 					UserManagement.GROUPSLOTS)) {
-				return new CommandResponse(452, jprintf(_bundle,
+				return new CommandResponse(452, session.jprintf(_bundle,
 						"adduser.noslots", request.getUser()));
 			}
 
-			newGroup = getUserNull(request.getUser()).getGroup();
-		} else if (!getUserNull(request.getUser()).isAdmin()) {
+			newGroup = session.getUserNull(request.getUser()).getGroup();
+		} else if (!session.getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -327,10 +330,10 @@ public class UserManagementHandler extends CommandInterface {
 					newUsername);
 			newUser.setPassword(pass);
 			newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"adduser.success", env, request.getUser()));
 			newUser.getKeyedMap().setObject(UserManagement.COMMENT,
-					"Added by " + getUserNull(request.getUser()).getName());
+					"Added by " + session.getUserNull(request.getUser()).getName());
 			newUser.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
 			newUser.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
 			newUser.getKeyedMap().setObject(UserManagement.MINRATIO, 3F);
@@ -362,18 +365,18 @@ public class UserManagementHandler extends CommandInterface {
 
 			if (newGroup != null) {
 				newUser.setGroup(newGroup);
-				logger.info("'" + getUserNull(request.getUser()).getName() + "' added '"
+				logger.info("'" + session.getUserNull(request.getUser()).getName() + "' added '"
 						+ newUser.getName() + "' with group "
 						+ newUser.getGroup() + "'");
 				env.add("primgroup", newUser.getGroup());
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"adduser.primgroup", env, request.getUser()));
 			} else {
-				logger.info("'" + getUserNull(request.getUser()).getName() + "' added '"
+				logger.info("'" + session.getUserNull(request.getUser()).getName() + "' added '"
 						+ newUser.getName() + "'");
 			}
 		} catch (NoSuchElementException ex) {
-			return new CommandResponse(501, jprintf(_bundle,
+			return new CommandResponse(501, session.jprintf(_bundle,
 					"adduser.missingpass", request.getUser()));
 		} catch (UserFileException ex) {
 			return new CommandResponse(452, ex.getMessage());
@@ -391,13 +394,13 @@ public class UserManagementHandler extends CommandInterface {
 
 				try {
 					newUser.addIPMask(string);
-					response.addComment(jprintf(_bundle,
+					response.addComment(session.jprintf(_bundle,
 							"addip.success", env, request.getUser()));
-					logger.info("'" + getUserNull(request.getUser()).getName()
+					logger.info("'" + session.getUserNull(request.getUser()).getName()
 							+ "' added ip '" + string + "' to '"
 							+ newUser.getName() + "'");
 				} catch (DuplicateElementException e1) {
-					response.addComment(jprintf(_bundle,
+					response.addComment(session.jprintf(_bundle,
 							"addip.dupe", env, request.getUser()));
 				}
 			}
@@ -517,7 +520,8 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_CHANGE(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin() && !getUserNull(request.getUser()).isGroupAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -555,7 +559,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		String command = arguments.nextToken().toLowerCase();
 
-		if (getUserNull(request.getUser()).isGroupAdmin() && !command.equals("ratio")) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin() && !command.equals("ratio")) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -585,10 +589,10 @@ public class UserManagementHandler extends CommandInterface {
 
 			float ratio = Float.parseFloat(commandArguments[0]);
 
-			if (getUserNull(request.getUser()).isGroupAdmin()
-					&& !getUserNull(request.getUser()).isAdmin()) {
+			if (session.getUserNull(request.getUser()).isGroupAdmin()
+					&& !session.getUserNull(request.getUser()).isAdmin()) {
 				// //// Group Admin Ratio //////
-				if (!getUserNull(request.getUser()).getGroup().equals(
+				if (!session.getUserNull(request.getUser()).getGroup().equals(
 						userToChange.getGroup())) {
 					return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 				}
@@ -598,7 +602,7 @@ public class UserManagementHandler extends CommandInterface {
 
 					for (Iterator iter = GlobalContext.getGlobalContext()
 							.getUserManager().getAllUsersByGroup(
-									getUserNull(request.getUser()).getGroup())
+									session.getUserNull(request.getUser()).getGroup())
 							.iterator(); iter.hasNext();) {
 						if (((User) iter.next()).getKeyedMap()
 								.getObjectFloat(UserManagement.RATIO) == 0F) {
@@ -606,21 +610,21 @@ public class UserManagementHandler extends CommandInterface {
 						}
 					}
 
-					if (usedleechslots >= getUserNull(request.getUser()).getKeyedMap()
+					if (usedleechslots >= session.getUserNull(request.getUser()).getKeyedMap()
 							.getObjectInt(UserManagement.LEECHSLOTS)) {
-						return new CommandResponse(452, jprintf(_bundle,
+						return new CommandResponse(452, session.jprintf(_bundle,
 										"changeratio.nomoreslots", request.getUser()));
 					}
-				} else if (ratio < getUserNull(request.getUser()).getMinRatio()
-						|| ratio > getUserNull(request.getUser()).getMaxRatio()) {
-					env.add("minratio", getUserNull(request.getUser()).getMinRatio());
-					env.add("maxratio", getUserNull(request.getUser()).getMaxRatio());
-					return new CommandResponse(452, jprintf(_bundle,
+				} else if (ratio < session.getUserNull(request.getUser()).getMinRatio()
+						|| ratio > session.getUserNull(request.getUser()).getMaxRatio()) {
+					env.add("minratio", session.getUserNull(request.getUser()).getMinRatio());
+					env.add("maxratio", session.getUserNull(request.getUser()).getMaxRatio());
+					return new CommandResponse(452, session.jprintf(_bundle,
 							"changeratio.invalidratio", env, request.getUser()));
 				}
 
 				logger.info("'"
-						+ getUserNull(request.getUser()).getName()
+						+ session.getUserNull(request.getUser()).getName()
 						+ "' changed ratio for '"
 						+ userToChange.getName()
 						+ "' from '"
@@ -630,12 +634,12 @@ public class UserManagementHandler extends CommandInterface {
 						new Float(ratio));
 				env.add("newratio", Float.toString(userToChange.getKeyedMap()
 						.getObjectFloat(UserManagement.RATIO)));
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"changeratio.success", env, request.getUser()));
 			} else {
 				// Ratio changes by an admin //
 				logger.info("'"
-						+ getUserNull(request.getUser()).getName()
+						+ session.getUserNull(request.getUser()).getName()
 						+ "' changed ratio for '"
 						+ userToChange.getName()
 						+ "' from '"
@@ -645,7 +649,7 @@ public class UserManagementHandler extends CommandInterface {
 						new Float(ratio));
 				env.add("newratio", Float.toString(userToChange.getKeyedMap()
 						.getObjectFloat(UserManagement.RATIO)));
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"changeratio.success", env, request.getUser()));
 			}
 		} else if ("credits".equals(command)) {
@@ -654,17 +658,17 @@ public class UserManagementHandler extends CommandInterface {
 			}
 
 			long credits = Bytes.parseBytes(commandArguments[0]);
-			logger.info("'" + getUserNull(request.getUser()).getName()
+			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed credits for '" + userToChange.getName()
 					+ "' from '" + userToChange.getCredits() + " to '"
 					+ credits + "'");
 			userToChange.setCredits(credits);
 			env.add("newcredits", Bytes.formatBytes(userToChange.getCredits()));
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"changecredits.success", env, request.getUser()));
 		} else if ("comment".equals(command)) {
 			logger.info("'"
-					+ getUserNull(request.getUser()).getName()
+					+ session.getUserNull(request.getUser()).getName()
 					+ "' changed comment for '"
 					+ userToChange.getName()
 					+ "' from '"
@@ -675,7 +679,7 @@ public class UserManagementHandler extends CommandInterface {
 					fullCommandArgument);
 			env.add("comment", userToChange.getKeyedMap().getObjectString(
 					UserManagement.COMMENT));
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"changecomment.success", env, request.getUser()));
 		} else if ("idle_time".equals(command)) {
 			if (commandArguments.length != 1) {
@@ -684,13 +688,13 @@ public class UserManagementHandler extends CommandInterface {
 
 			int idleTime = Integer.parseInt(commandArguments[0]);
 			env.add("oldidletime", "" + userToChange.getIdleTime());
-			logger.info("'" + getUserNull(request.getUser()).getName()
+			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed idle_time for '" + userToChange.getName()
 					+ "' from '" + userToChange.getIdleTime() + " to '"
 					+ idleTime + "'");
 			userToChange.setIdleTime(idleTime);
 			env.add("newidletime", "" + idleTime);
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"changeidletime.success", env, request.getUser()));
 		} else if ("num_logins".equals(command)) {
 			// [# sim logins] [# sim logins/ip]
@@ -713,7 +717,7 @@ public class UserManagementHandler extends CommandInterface {
 				}
 
 				logger.info("'"
-						+ getUserNull(request.getUser()).getName()
+						+ session.getUserNull(request.getUser()).getName()
 						+ "' changed num_logins for '"
 						+ userToChange.getName()
 						+ "' from '"
@@ -729,7 +733,7 @@ public class UserManagementHandler extends CommandInterface {
 						UserManagement.MAXLOGINSIP, numLoginsIP);
 				env.add("numlogins", "" + numLogins);
 				env.add("numloginsip", "" + numLoginsIP);
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"changenumlogins.success", env, request.getUser()));
 			} catch (NumberFormatException ex) {
 				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -752,7 +756,7 @@ public class UserManagementHandler extends CommandInterface {
 				env.add("minratio", "" + minRatio);
 				env.add("maxratio", "" + maxRatio);
 
-				logger.info("'" + getUserNull(request.getUser()).getName()
+				logger.info("'" + session.getUserNull(request.getUser()).getName()
 						+ "' changed gadmin min/max ratio for user '"
 						+ userToChange.getName() + "' group '"
 						+ userToChange.getGroup() + "' from '"
@@ -766,7 +770,7 @@ public class UserManagementHandler extends CommandInterface {
 				userToChange.setMinRatio(minRatio);
 				userToChange.setMaxRatio(maxRatio);
 
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"changegadminratio.success", env, request.getUser()));
 
 			} catch (NumberFormatException ex) {
@@ -788,7 +792,7 @@ public class UserManagementHandler extends CommandInterface {
 
 				logger
 						.info("'"
-								+ getUserNull(request.getUser()).getName()
+								+ session.getUserNull(request.getUser()).getName()
 								+ "' changed max simultaneous download/upload slots for '"
 								+ userToChange.getName() + "' from '"
 								+ userToChange.getMaxSimDown() + "' '"
@@ -803,7 +807,7 @@ public class UserManagementHandler extends CommandInterface {
 				userToChange.setMaxSimDown(maxdn);
 				env.add("maxdn", "" + maxdn);
 				env.add("maxup", "" + maxup);
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"changemaxsim.success", env, request.getUser()));
 
 			} catch (NumberFormatException ex) {
@@ -814,13 +818,13 @@ public class UserManagementHandler extends CommandInterface {
 				throw new ImproperUsageException();
 			}
 
-			logger.info("'" + getUserNull(request.getUser()).getName()
+			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed primary group for '" + userToChange.getName()
 					+ "' from '" + userToChange.getGroup() + "' to '"
 					+ commandArguments[0] + "'");
 			userToChange.setGroup(commandArguments[0]);
 			env.add("primgroup", userToChange.getGroup());
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"changeprimgroup.success", env, request.getUser()));
 
 			// group_slots Number of users a GADMIN is allowed to add.
@@ -845,7 +849,7 @@ public class UserManagementHandler extends CommandInterface {
 				}
 
 				logger.info("'"
-						+ getUserNull(request.getUser()).getName()
+						+ session.getUserNull(request.getUser()).getName()
 						+ "' changed group_slots for '"
 						+ userToChange.getName()
 						+ "' from '"
@@ -865,7 +869,7 @@ public class UserManagementHandler extends CommandInterface {
 				env.add("groupleechslots", ""
 						+ userToChange.getKeyedMap().getObjectInt(
 								UserManagement.LEECHSLOTS));
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"changegroupslots.success", env, request.getUser()));
 			} catch (NumberFormatException ex) {
 				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -887,7 +891,7 @@ public class UserManagementHandler extends CommandInterface {
 			}
 
 			logger.info("'"
-					+ getUserNull(request.getUser()).getName()
+					+ session.getUserNull(request.getUser()).getName()
 					+ "' changed created for '"
 					+ userToChange.getName()
 					+ "' from '"
@@ -896,7 +900,7 @@ public class UserManagementHandler extends CommandInterface {
 			userToChange.getKeyedMap()
 					.setObject(UserManagement.CREATED, myDate);
 
-			response = new CommandResponse(200, jprintf(_bundle,
+			response = new CommandResponse(200, session.jprintf(_bundle,
 					"changecreated.success", env, request.getUser()));
 		} else if ("wkly_allotment".equals(command)) {
 			if (commandArguments.length != 1) {
@@ -905,7 +909,7 @@ public class UserManagementHandler extends CommandInterface {
 
 			long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
 			logger.info("'"
-					+ getUserNull(request.getUser()).getName()
+					+ session.getUserNull(request.getUser()).getName()
 					+ "' changed wkly_allotment for '"
 					+ userToChange.getName()
 					+ "' from '"
@@ -921,7 +925,7 @@ public class UserManagementHandler extends CommandInterface {
 				throw new ImproperUsageException();
 			}
 
-			logger.info("'" + getUserNull(request.getUser()).getName()
+			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed tagline for '" + userToChange.getName()
 					+ "' from '"
 					+ userToChange.getKeyedMap().getObject(UserManagement.TAGLINE, "")
@@ -961,7 +965,8 @@ public class UserManagementHandler extends CommandInterface {
 	 */
 	public CommandResponse doSITE_CHGRP(CommandRequest request) throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -995,14 +1000,14 @@ public class UserManagementHandler extends CommandInterface {
 
 			try {
 				myUser.removeSecondaryGroup(string);
-				logger.info("'" + getUserNull(request.getUser()).getName() + "' removed '"
+				logger.info("'" + session.getUserNull(request.getUser()).getName() + "' removed '"
 						+ myUser.getName() + "' from group '" + string + "'");
 				response.addComment(myUser.getName() + " removed from group "
 						+ string);
 			} catch (NoSuchFieldException e1) {
 				try {
 					myUser.addSecondaryGroup(string);
-					logger.info("'" + getUserNull(request.getUser()).getName()
+					logger.info("'" + session.getUserNull(request.getUser()).getName()
 							+ "' added '" + myUser.getName() + "' to group '"
 							+ string + "'");
 					response.addComment(myUser.getName() + " added to group "
@@ -1038,7 +1043,8 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_CHPASS(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1057,7 +1063,7 @@ public class UserManagementHandler extends CommandInterface {
 					.getUserByName(args[0]);
 			myUser.setPassword(args[1]);
 			myUser.commit();
-			logger.info("'" + getUserNull(request.getUser()).getName()
+			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed password for '" + myUser.getName() + "'");
 
 			return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1080,7 +1086,8 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_DELIP(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin() && !getUserNull(request.getUser()).isGroupAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1107,8 +1114,8 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "IO error: " + e.getMessage());
 		}
 
-		if (getUserNull(request.getUser()).isGroupAdmin()
-				&& !getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin()
+				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1120,7 +1127,7 @@ public class UserManagementHandler extends CommandInterface {
 			try {
 				myUser.removeIpMask(string);
 				logger
-						.info("'" + getUserNull(request.getUser()).getName()
+						.info("'" + session.getUserNull(request.getUser()).getName()
 								+ "' removed ip '" + string + "' from '"
 								+ myUser + "'");
 				response.addComment("Removed " + string);
@@ -1137,11 +1144,12 @@ public class UserManagementHandler extends CommandInterface {
 
 	public CommandResponse doSITE_DELUSER(CommandRequest request) throws ImproperUsageException {
 
+		Session session = request.getSession();
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 
-		if (!getUserNull(request.getUser()).isAdmin() && !getUserNull(request.getUser()).isGroupAdmin()) {
+		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1158,8 +1166,8 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
 		}
 
-		if (getUserNull(request.getUser()).isGroupAdmin()
-				&& !getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin()
+				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1175,7 +1183,7 @@ public class UserManagementHandler extends CommandInterface {
 			logger.error("", e1);
 			return new CommandResponse(452, "Error committing user: " + e1.getMessage());
 		}
-		logger.info("'" + getUserNull(request.getUser()).getName() + "' deleted user '"
+		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' deleted user '"
 				+ myUser.getName() + "' with reason '" + reason + "'");
 		logger.debug("reason "
 				+ myUser.getKeyedMap().getObjectString(UserManagement.REASON));
@@ -1184,8 +1192,9 @@ public class UserManagementHandler extends CommandInterface {
 
 	public CommandResponse doSITE_GINFO(CommandRequest request)
 			throws ImproperUsageException {
+		Session session = request.getSession();
 		// security
-		if (!getUserNull(request.getUser()).isAdmin() && !getUserNull(request.getUser()).isGroupAdmin()) {
+		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 		// syntax
@@ -1195,8 +1204,8 @@ public class UserManagementHandler extends CommandInterface {
 		// gadmin
 		String group = request.getArgument();
 
-		if (getUserNull(request.getUser()).isGroupAdmin()
-				&& !getUserNull(request.getUser()).getGroup().equals(group)) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin()
+				&& !session.getUserNull(request.getUser()).getGroup().equals(group)) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1297,8 +1306,9 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_GIVE(CommandRequest request)
 			throws ImproperUsageException {
 
+		Session session = request.getSession();
 		if (!GlobalContext.getGlobalContext().getConfig().checkPermission("give",
-				getUserNull(request.getUser()))) {
+				session.getUserNull(request.getUser()))) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1340,16 +1350,16 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, credits + " is not a positive number.");
 		}
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
-			if (credits > getUserNull(request.getUser()).getCredits()) {
+		if (!session.getUserNull(request.getUser()).isAdmin()) {
+			if (credits > session.getUserNull(request.getUser()).getCredits()) {
 				return new CommandResponse(452,
 						"You cannot give more credits than you have.");
 			}
 
-			getUserNull(request.getUser()).updateCredits(-credits);
+			session.getUserNull(request.getUser()).updateCredits(-credits);
 		}
 
-		logger.info("'" + getUserNull(request.getUser()).getName() + "' transfered "
+		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' transfered "
 				+ Bytes.formatBytes(credits) + " ('" + credits + "') to '"
 				+ myUser.getName() + "'");
 		myUser.updateCredits(credits);
@@ -1366,7 +1376,7 @@ public class UserManagementHandler extends CommandInterface {
 		int numLogin = 0, numLoginIP = 0, maxUp = 0, maxDn = 0;
 		String opt, group;
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
+		if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1463,7 +1473,7 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_GRPREN(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
+		if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1525,7 +1535,8 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_KICK(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1536,7 +1547,7 @@ public class UserManagementHandler extends CommandInterface {
 		String arg = request.getArgument();
 		int pos = arg.indexOf(' ');
 		String username;
-		String message = "Kicked by " + getUserNull(request.getUser()).getName();
+		String message = "Kicked by " + session.getUserNull(request.getUser()).getName();
 
 		if (pos == -1) {
 			username = arg;
@@ -1547,7 +1558,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-				GlobalContext.getGlobalContext().getConnectionManager().getConnections());
+				GlobalContext.getConnectionManager().getConnections());
 
 		for (Iterator iter = conns.iterator(); iter.hasNext();) {
 			BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
@@ -1566,13 +1577,14 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_PASSWD(CommandRequest request)
 			throws ImproperUsageException {
 
+		Session session = request.getSession();
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 
-		logger.info("'" + getUserNull(request.getUser()).getName()
+		logger.info("'" + session.getUserNull(request.getUser()).getName()
 				+ "' changed his password");
-		getUserNull(request.getUser()).setPassword(request.getArgument());
+		session.getUserNull(request.getUser()).setPassword(request.getArgument());
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
@@ -1580,7 +1592,8 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_PURGE(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin() && !getUserNull(request.getUser()).isGroupAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1604,13 +1617,13 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "User isn't deleted");
 		}
 
-		if (getUserNull(request.getUser()).isGroupAdmin()
-				&& !getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin()
+				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
 		myUser.purge();
-		logger.info("'" + getUserNull(request.getUser()).getName() + "' purged '"
+		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' purged '"
 				+ myUser.getName() + "'");
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1618,7 +1631,8 @@ public class UserManagementHandler extends CommandInterface {
 
 	public CommandResponse doSITE_READD(CommandRequest request) throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin() && !getUserNull(request.getUser()).isGroupAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1637,8 +1651,8 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "IO error: " + e.getMessage());
 		}
 
-		if (getUserNull(request.getUser()).isGroupAdmin()
-				&& !getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin()
+				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1648,7 +1662,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		myUser.setDeleted(false);
 		myUser.getKeyedMap().remove(UserManagement.REASON);
-		logger.info("'" + getUserNull(request.getUser()).getName() + "' readded '"
+		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' readded '"
 				+ myUser.getName() + "'");
 		try {
 			myUser.commit();
@@ -1662,7 +1676,8 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_RENUSER(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1682,7 +1697,7 @@ public class UserManagementHandler extends CommandInterface {
 			String oldUsername = myUser.getName();
 			myUser.rename(args[1]);
 			BaseFtpConnection.fixBaseFtpConnUser(oldUsername, myUser.getName());
-			logger.info("'" + getUserNull(request.getUser()).getName() + "' renamed '"
+			logger.info("'" + session.getUserNull(request.getUser()).getName() + "' renamed '"
 					+ oldUsername + "' to '" + myUser.getName() + "'");
 		} catch (NoSuchUserException e) {
 			return new CommandResponse(452, "No such user: " + e.getMessage());
@@ -1721,18 +1736,19 @@ public class UserManagementHandler extends CommandInterface {
 
 	public CommandResponse doSITE_TAGLINE(CommandRequest request) throws ImproperUsageException {
 
+		Session session = request.getSession();
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 
 		try {
-			logger.info("'" + getUserNull(request.getUser()).getName()
+			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed his tagline from '"
-					+ getUserNull(request.getUser()).getKeyedMap().getObject(UserManagement.TAGLINE, "")
+					+ session.getUserNull(request.getUser()).getKeyedMap().getObject(UserManagement.TAGLINE, "")
 					+ "' to '" + request.getArgument() + "'");
-			getUserNull(request.getUser()).getKeyedMap().setObject(UserManagement.TAGLINE,
+			session.getUserNull(request.getUser()).getKeyedMap().setObject(UserManagement.TAGLINE,
 					request.getArgument());
-			getUserNull(request.getUser()).commit();
+			session.getUserNull(request.getUser()).commit();
 		} catch (UserFileException e) {
 			return new CommandResponse(452, "Error committing user: " + e.getMessage());
 		}
@@ -1740,7 +1756,8 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_DEBUG(CommandRequest request) {
-		User user = getUserNull(request.getUser());
+		Session session = request.getSession();
+		User user = session.getUserNull(request.getUser());
 		if (!request.hasArgument()) {
 			user.getKeyedMap().setObject(
 					UserManagement.DEBUG,
@@ -1756,7 +1773,7 @@ public class UserManagementHandler extends CommandInterface {
 		} catch (UserFileException e) {
 			return new CommandResponse(452, "Error committing user: " + e.getMessage());
 		}
-		return new CommandResponse(200, jprintf(_bundle, "debug", request.getUser()));
+		return new CommandResponse(200, session.jprintf(_bundle, "debug", request.getUser()));
 	}
 
 	/**
@@ -1772,8 +1789,9 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_TAKE(CommandRequest request)
 			throws ImproperUsageException {
 
+		Session session = request.getSession();
 		if (!GlobalContext.getGlobalContext().getConfig().checkPermission("take",
-				getUserNull(request.getUser()))) {
+				session.getUserNull(request.getUser()))) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1805,7 +1823,7 @@ public class UserManagementHandler extends CommandInterface {
 				return new CommandResponse(452, "Credits must be a positive number.");
 			}
 
-			logger.info("'" + getUserNull(request.getUser()).getName() + "' took "
+			logger.info("'" + session.getUserNull(request.getUser()).getName() + "' took "
 					+ Bytes.formatBytes(credits) + " ('" + credits
 					+ "') from '" + myUser.getName() + "'");
 			myUser.updateCredits(-credits);
@@ -1837,7 +1855,8 @@ public class UserManagementHandler extends CommandInterface {
 	 */
 	public CommandResponse doSITE_USER(CommandRequest request) throws ImproperUsageException {
 
-		if (!getUserNull(request.getUser()).isAdmin() && !getUserNull(request.getUser()).isGroupAdmin()) {
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1861,8 +1880,8 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "Userfile error: " + ex.getMessage());
 		}
 
-		if (getUserNull(request.getUser()).isGroupAdmin()
-				&& !getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+		if (session.getUserNull(request.getUser()).isGroupAdmin()
+				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
@@ -1894,14 +1913,14 @@ public class UserManagementHandler extends CommandInterface {
 
 		// ReplacerEnvironment env =
 		// BaseFtpConnection.getReplacerEnvironment(null, myUser);
-		response.addComment(jprintf(_bundle,
+		response.addComment(Session.jprintf(_bundle,
 				"user", null, myUser));
 		return response;
 	}
 
 	public CommandResponse doSITE_USERS(CommandRequest request) {
 
-		if (!getUserNull(request.getUser()).isAdmin()) {
+		if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -1936,6 +1955,7 @@ public class UserManagementHandler extends CommandInterface {
 	 * Lists currently connected users.
 	 */
 	public CommandResponse doSITE_WHO(CommandRequest request) {
+		Session session = request.getSession();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		long users = 0;
 		long speedup = 0;
@@ -1953,8 +1973,7 @@ public class UserManagementHandler extends CommandInterface {
 					_bundle, "who.command");
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-					GlobalContext.getGlobalContext().getConnectionManager()
-							.getConnections());
+					GlobalContext.getConnectionManager().getConnections());
 
 			for (Iterator iter = conns.iterator(); iter.hasNext();) {
 				BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
@@ -2018,9 +2037,9 @@ public class UserManagementHandler extends CommandInterface {
 			env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
 			env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
 			response.addComment("");
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"who.statusspeed", env, request.getUser()));
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"who.statususers", env, request.getUser()));
 
 			return response;
@@ -2030,6 +2049,7 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_SWHO(CommandRequest request) {
+		Session session = request.getSession();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		long users = 0;
 		long speedup = 0;
@@ -2047,8 +2067,7 @@ public class UserManagementHandler extends CommandInterface {
 					_bundle, "swho.command");
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-					GlobalContext.getGlobalContext().getConnectionManager()
-							.getConnections());
+					GlobalContext.getConnectionManager().getConnections());
 
 			for (Iterator iter = conns.iterator(); iter.hasNext();) {
 				BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
@@ -2115,9 +2134,9 @@ public class UserManagementHandler extends CommandInterface {
 			env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
 			env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
 			response.addComment("");
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"swho.statusspeed", env, request.getUser()));
-			response.addComment(jprintf(_bundle,
+			response.addComment(session.jprintf(_bundle,
 					"swho.statususers", env, request.getUser()));
 
 			return response;
@@ -2129,6 +2148,7 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_BAN(CommandRequest request)
 			throws ImproperUsageException {
 
+		Session session = request.getSession();
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -2162,11 +2182,11 @@ public class UserManagementHandler extends CommandInterface {
 
 		String banMsg;
 		if (st.hasMoreTokens()) {
-			banMsg = "[" + getUserNull(request.getUser()).getName() + "]";
+			banMsg = "[" + session.getUserNull(request.getUser()).getName() + "]";
 			while (st.hasMoreTokens())
 				banMsg += " " + st.nextToken();
 		} else {
-			banMsg = "Banned by " + getUserNull(request.getUser()).getName() + " for "
+			banMsg = "Banned by " + session.getUserNull(request.getUser()).getName() + " for "
 					+ banTime + "m";
 		}
 
@@ -2229,7 +2249,7 @@ public class UserManagementHandler extends CommandInterface {
 			if (timeleft > 0) {
 				ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("timeleft", "" + (timeleft / 60000));
-				response.addComment(jprintf(
+				response.addComment(Session.jprintf(
 						_bundle, "bans", env, user));
 			}
 		}

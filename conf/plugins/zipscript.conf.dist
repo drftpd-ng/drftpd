@@ -3,9 +3,6 @@
 #show status bar in dir listings [true/false]
 statusbar.enabled=true
 
-#showing offline files [true/fase]
-files.offline.enabled=true
-
 #showing missing files [true/false]
 files.missing.enabled=true
 

@@ -68,67 +68,6 @@ public abstract class CommandInterface implements EventSubscriber {
 		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
 	}
 
-	public static ReplacerEnvironment getReplacerEnvironment(
-			ReplacerEnvironment env, User user) {
-		env = new ReplacerEnvironment(env);
-
-		if (user != null) {
-			for (Map.Entry<Key, Object> o : user.getKeyedMap().getAllObjects()
-					.entrySet()) {
-				env.add(o.getKey().toString(), o.getKey()
-						.toString(o.getValue()));
-				// logger.debug("Added "+o.getKey().toString()+"
-				// "+o.getKey().toString(o.getValue()));
-			}
-			env.add("user", user.getName());
-			env.add("username", user.getName());
-			env.add("idletime", "" + user.getIdleTime());
-			env.add("credits", Bytes.formatBytes(user.getCredits()));
-			env.add("ratio", ""
-					+ user.getKeyedMap().get((UserManagement.RATIO)));
-			env
-					.add("tagline", user.getKeyedMap().get(
-							(UserManagement.TAGLINE)));
-			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
-			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.add("group", user.getGroup());
-			env.add("groups", user.getGroups());
-			env.add("averagespeed", Bytes.formatBytes(user.getUploadedTime()
-					+ (user.getDownloadedTime() / 2)));
-			env.add("ipmasks", user.getHostMaskCollection().toString());
-			env.add("isbanned",
-					""
-							+ ((user.getKeyedMap()
-									.getObjectDate(UserManagement.BAN_TIME))
-									.getTime() > System.currentTimeMillis()));
-			// } else {
-			// env.add("user", "<unknown>");
-		}
-		return env;
-	}
-
-	public static String jprintf(ReplacerFormat format,
-			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment(env, user);
-
-		return SimplePrintf.jprintf(format, env);
-	}
-
-	public static String jprintf(ResourceBundle bundle, String key,
-			ReplacerEnvironment env, User user) {
-		env = getReplacerEnvironment(env, user);
-
-		return ReplacerUtils.jprintf(key, env, bundle);
-	}
-
-	public static String jprintfExceptionStatic(ResourceBundle bundle, String key,
-			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment(env, user);
-
-		return SimplePrintf
-				.jprintf(ReplacerUtils.finalFormat(bundle, key), env);
-	}
-
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		_postHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PostHookInterface>>());
 		_preHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PreHookInterface>>());
@@ -151,6 +90,7 @@ public abstract class CommandInterface implements EventSubscriber {
 					}
 					catch (PluginLifecycleException e) {
 						// Not overly concerned about this
+						logger.debug("plugin lifecycle exception", e);
 					}
 				}
 				ClassLoader postHookLoader = manager.getPluginClassLoader( 
@@ -194,6 +134,7 @@ public abstract class CommandInterface implements EventSubscriber {
 						manager.activatePlugin(preHook.getDeclaringPluginDescriptor().getId());
 					}
 					catch (PluginLifecycleException e) {
+						logger.debug("plugin lifecycle exception", e);
 						// Not overly concerned about this
 					}
 				}
@@ -255,37 +196,9 @@ public abstract class CommandInterface implements EventSubscriber {
 		}
 		return (CommandRequestInterface) request;
 	}
-
-	protected User getUserNull(String user) {
-		if (user == null) {
-			return null;
-		}
-		try {
-			return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(user);
-		} catch (NoSuchUserException e) {
-			return null;
-		} catch (UserFileException e) {
-			return null;
-		}
-	}
 	
 	protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
 		return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
-	}
-
-	protected String jprintf(ResourceBundle bundle, String key, String user) {
-		return jprintf(bundle, key, null, getUserNull(user));
-	}
-
-	protected String jprintf(ResourceBundle bundle, String string, ReplacerEnvironment env, String user) {
-		return jprintf(bundle, string, env, getUserNull(user));
-	}
-
-	protected String jprintfException(ResourceBundle bundle, String key,
-			ReplacerEnvironment env, String user) throws FormatterException {
-		env = getReplacerEnvironment(env, getUserNull(user));
-
-		return jprintfExceptionStatic(bundle, key, env, getUserNull(user));
 	}
 
 	public String[] getFeatReplies() {
@@ -306,15 +219,15 @@ public abstract class CommandInterface implements EventSubscriber {
 			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
 			for (String plugin : pluginEvent.getParentPlugins()) {
 				if (plugin.equals(currentPlugin)) {
-					for (Iterator iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
-						Entry<Integer, HookContainer<PostHookInterface>> entry = (Entry<Integer, HookContainer<PostHookInterface>>) iter.next();
+					for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
+						Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
 						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
 							logger.debug("Removing post hook " + pluginEvent.getPlugin() + " from " + currentPlugin);
 							iter.remove();
 						}
 					}
-					for (Iterator iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
-						Entry<Integer, HookContainer<PreHookInterface>> entry = (Entry<Integer, HookContainer<PreHookInterface>>) iter.next();
+					for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
+						Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
 						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
 							logger.debug("Removing pre hook " + pluginEvent.getPlugin() + " from " + currentPlugin);
 							iter.remove();

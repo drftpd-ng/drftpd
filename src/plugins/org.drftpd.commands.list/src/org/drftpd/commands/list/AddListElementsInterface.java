@@ -14,29 +14,15 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commandmanager;
+package org.drftpd.commands.list;
 
-import java.lang.reflect.Method;
+import org.drftpd.vfs.DirectoryHandle;
 
 /**
- * @author zubov
+ * @author djb61
  * @version $Id$
  */
-public class CommandInstanceContainer {
+public interface AddListElementsInterface {
 
-	private Method _method = null;
-	private CommandInterface _interfaceInstance = null;
-	
-	public CommandInstanceContainer(Method m, CommandInterface interfaceInstance) {
-		_method = m;
-		_interfaceInstance = interfaceInstance;
-	}
-	
-	public Method getMethod() {
-		return _method;
-	}
-	
-	public CommandInterface getCommandInterfaceInstance() {
-		return _interfaceInstance;
-	}	
+	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container);
 }

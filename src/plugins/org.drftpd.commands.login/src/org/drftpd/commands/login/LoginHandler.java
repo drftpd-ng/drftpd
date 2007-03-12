@@ -126,7 +126,7 @@ public class LoginHandler extends CommandInterface {
             conn.getGlobalContext().dispatchFtpEvent(new UserEvent(
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
-            CommandResponse response = new CommandResponse(230, jprintf(_bundle, "pass.success", request.getUser()));
+            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", request.getUser()));
             
             try {
                 addTextToResponse(response, "text/welcome.txt");
@@ -137,7 +137,7 @@ public class LoginHandler extends CommandInterface {
             return response;
         }
 
-        return new CommandResponse(530, jprintf(_bundle, "pass.fail", request.getUser()));
+        return new CommandResponse(530, conn.jprintf(_bundle, "pass.fail", request.getUser()));
     }
 
     /**
@@ -150,7 +150,7 @@ public class LoginHandler extends CommandInterface {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         conn.stop();
 
-        return new CommandResponse(221, jprintf(_bundle, "quit.success", request.getUser()));
+        return new CommandResponse(221, conn.jprintf(_bundle, "quit.success", request.getUser()));
     }
 
     /**
@@ -215,7 +215,7 @@ public class LoginHandler extends CommandInterface {
                 }
 
                 return new CommandResponse(331,
-                        jprintf(_bundle, "user.success", request.getUser()),
+                        conn.jprintf(_bundle, "user.success", request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());
             }
         } catch (MalformedPatternException e) {

@@ -28,16 +28,10 @@ import java.util.Set;
 
 
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVInfo;
-import org.drftpd.SFVStatus;
-import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.NoSFVEntryException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.slave.RemoteIOException;
 
 /**
  * @author zubov
@@ -50,77 +44,6 @@ public class DirectoryHandle extends InodeHandle implements
 		super(path);
 	}
 	
-	public SFVInfo getSFVInfo() throws FileNotFoundException, NoAvailableSlaveException {
-		try {
-			SFVInfo sfvInfo = getInode().getSFVInfo();
-			try {
-				FileHandle sfvFile = getFile(sfvInfo.getSFVFileName());
-				if (sfvFile.exists()) {
-					if (sfvFile.getCheckSum() == sfvInfo.getChecksum()) {
-						// 	passed all tests
-						return sfvInfo;
-					}
-				}
-			} catch (FileNotFoundException e) {
-				// just continue, it couldn't find the previous sfv file, the line below here will remove it
-				// we will then continue to try to find a new one right afterward
-			}
-			removeSFVInfo();
-		} catch (KeyNotFoundException e1) {
-			// bah, let's load it
-		} catch (ObjectNotValidException e) {
-			// the previous sfv file is not longer of type VirtualFileSystemFile
-			removeSFVInfo();
-		}
-
-		for (FileHandle file : getFiles()) {
-			if (file.getName().toLowerCase().endsWith(".sfv")) {
-				while (true) {
-					SFVInfo info = null;
-					RemoteSlave rslave = file.getASlaveForFunction();
-					String index;
-					try {
-						index = rslave.issueSFVFileToSlave(file.getPath());
-						info = rslave.fetchSFVInfoFromIndex(index);
-					} catch (SlaveUnavailableException e) {
-						// okay, it went offline while trying, continue
-						continue;
-					} catch (RemoteIOException e) {
-						// okay, it had an error while trying, let's try again
-						continue;
-					}
-					setSFVInfo(info);
-					return info;
-				}
-			}
-		}
-		throw new FileNotFoundException("No SFV file in directory");
-	}
-	
-	private void removeSFVInfo() throws FileNotFoundException {
-		getInode().removeSFVInfo();
-	}
-
-	private void setSFVInfo(SFVInfo info) throws FileNotFoundException {
-		getInode().setSFVInfo(info);
-	}
-
-	public SFVStatus getSFVStatus() throws FileNotFoundException, NoAvailableSlaveException {
-		int offline = 0;
-		int present = 0;
-		for (FileHandle file : getParent().getFiles()) {
-			if (file.isFile()) {
-				if (!file.isUploading()) {
-					present++;
-				}
-				if (!file.isAvailable()) {
-					offline++;
-				}
-			}
-		}
-		return new SFVStatus(getSFVInfo().getEntries().size(), offline, present);
-	}
-
 	/**
 	 * @param reason
 	 * @throws FileNotFoundException if this Directory does not exist
@@ -163,7 +86,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @see org.drftpd.vfs.InodleHandle#getInode()
 	 */
 	@Override
-	protected VirtualFileSystemDirectory getInode()
+	public VirtualFileSystemDirectory getInode()
 			throws FileNotFoundException {
 		VirtualFileSystemInode inode = super.getInode();
 		if (inode instanceof VirtualFileSystemDirectory) {

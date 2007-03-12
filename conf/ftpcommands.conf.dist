@@ -81,7 +81,7 @@ perms *
 RETR {
 plugin org.drftpd.commands.dataconnection
 class DataConnectionHandler
-method transfer
+method doRETR
 perms *
 }
 
@@ -105,7 +105,7 @@ help Command not implemented
 STOR {
 plugin org.drftpd.commands.dataconnection
 class DataConnectionHandler
-method transfer
+method doSTOR
 perms *
 }
 
@@ -144,6 +144,20 @@ LIST {
 plugin org.drftpd.commands.list
 class LIST
 method doLIST
+perms *
+}
+
+MLST {
+plugin org.drftpd.commands.list
+class MLST
+method doMLSTandMLSD
+perms *
+}
+
+MLSD {
+plugin org.drftpg.commands.list
+class MLST
+method doMLSTandMLSD
 perms *
 }
 
@@ -836,7 +850,7 @@ class Nuke
 method doSITE_NUKE
 perms =nuke
 help Nuke a directory.
-help.specific site nuke <directory> <multiplier> <message>
+help.specific ${command} <directory> <multiplier> <message>
 }
 
 SITE UNNUKE {
@@ -845,7 +859,7 @@ class Nuke
 method doSITE_UNNUKE
 perms =nuke
 help Unnuke a directory.
-help.specific site unnuke <directory>
+help.specific ${command} <directory>
 }
 
 SITE NUKES {

@@ -226,7 +226,8 @@ public class Nuke extends CommandInterface {
         try {
             nukeDir.renameTo(nukeDir.getNonExistentDirectoryHandle(toFullPath)); // rename.
             nukeDir = currentDir.getDirectory(toFullPath);
-            nukeDir.createDirectory("REASON-" + reason, request.getUser(), getUserNull(request.getUser()).getGroup());
+            nukeDir.createDirectory("REASON-" + reason, request.getUser(),
+            		request.getSession().getUserNull(request.getUser()).getGroup());
         } catch (IOException ex) {
             logger.warn(ex, ex);
             CommandResponse r = new CommandResponse(500, "Nuke failed!");
@@ -239,7 +240,7 @@ public class Nuke extends CommandInterface {
         NukeData nd = 
 			new NukeData(request.getUser(), nukeDirPath, reason, nukees, multiplier, nukedAmount, nukeDirSize);
 
-        NukeEvent nuke = new NukeEvent(getUserNull(request.getUser()), "NUKE", nd);
+        NukeEvent nuke = new NukeEvent(request.getSession().getUserNull(request.getUser()), "NUKE", nd);
         
         // adding to the nukelog.
         NukeBeans.getNukeBeans().add(nd);
@@ -400,7 +401,7 @@ public class Nuke extends CommandInterface {
 		}
         
         nukeData.setReason(reason);
-        NukeEvent nukeEvent = new NukeEvent(getUserNull(request.getUser()), "UNNUKE", nukeData);
+        NukeEvent nukeEvent = new NukeEvent(request.getSession().getUserNull(request.getUser()), "UNNUKE", nukeData);
         GlobalContext.getGlobalContext().dispatchFtpEvent(nukeEvent);
 
         return response;

@@ -30,6 +30,7 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.master.Session;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -75,10 +76,10 @@ public class Request extends CommandInterface {
 
 			        //if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
 			        GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-			                getUserNull(request.getUser()), "REQFILLED", dir));
+			                request.getSession().getUserNull(request.getUser()), "REQFILLED", dir));
 
 			        //}
-			        getUserNull(request.getUser()).getKeyedMap().incrementObjectLong(REQUESTSFILLED);
+			        request.getSession().getUserNull(request.getUser()).getKeyedMap().incrementObjectLong(REQUESTSFILLED);
 
 			        return new CommandResponse(200,
 			            "OK, renamed " + myreqname + " to " + filledname);
@@ -92,8 +93,9 @@ public class Request extends CommandInterface {
     }
 
     public CommandResponse doSITE_REQUEST(CommandRequest request) {
+    	Session session = request.getSession();
         if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("request",
-                    getUserNull(request.getUser()), request.getCurrentDirectory())) {
+                    session.getUserNull(request.getUser()), request.getCurrentDirectory())) {
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -101,25 +103,25 @@ public class Request extends CommandInterface {
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
-        String createdDirName = REQPREFIX + getUserNull(request.getUser()).getName() +
+        String createdDirName = REQPREFIX + session.getUserNull(request.getUser()).getName() +
             "-" + request.getArgument().trim();
 
         try {
             DirectoryHandle createdDir;
 			try {
 				createdDir = request.getCurrentDirectory()
-				                                  .createDirectory(getUserNull(request.getUser())
+					.createDirectory(session.getUserNull(request.getUser())
 				                                                       .getName(),
-				        getUserNull(request.getUser()).getGroup(), createdDirName);
+				        session.getUserNull(request.getUser()).getGroup(), createdDirName);
 			} catch (FileNotFoundException e) {
 				return new CommandResponse(500, "Current directory does not exist, please CWD /");
 			}
 
             //if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
             GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                    getUserNull(request.getUser()), "REQUEST", createdDir));
+                    session.getUserNull(request.getUser()), "REQUEST", createdDir));
 
-            getUserNull(request.getUser()).getKeyedMap().incrementObjectLong(REQUESTS);
+            session.getUserNull(request.getUser()).getKeyedMap().incrementObjectLong(REQUESTS);
 
             //conn.getUser().addRequests();
             return new CommandResponse(257, "\"" + createdDir.getPath() +

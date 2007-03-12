@@ -46,7 +46,7 @@ public class PluginsConfig {
 		
 		for (File file : dir.listFiles()) {
 			if (file.isFile()) {
-				loadConf(file.getPath());
+				loadConf(file);
 			} // else, ignore it.
 		}
 	}
@@ -55,16 +55,16 @@ public class PluginsConfig {
 		return _propertiesMap;
 	}
 
-	private void loadConf(String fileName) {
+	private void loadConf(File file) {
 		FileInputStream fis = null;
 
 		try {			
-			fis = new FileInputStream(fileName);
+			fis = new FileInputStream(file);
 
 			Properties cfg = new Properties();
 			cfg.load(fis);
 
-			getPropertiesMap().put(fileName, cfg);
+			getPropertiesMap().put(file.getName(), cfg);
 		} catch (FileNotFoundException e) {
 			logger.error("Weird the file was just there, how come it's gone?", e);
 		} catch (IOException e) {
@@ -89,7 +89,7 @@ public class PluginsConfig {
 	public Properties getPropertiesForPlugin(String pluginName) {
 		if (!pluginName.endsWith(".conf"))
 			pluginName.concat(".conf");
-		
+
 		return getPropertiesMap().get(pluginName);
 	}
 

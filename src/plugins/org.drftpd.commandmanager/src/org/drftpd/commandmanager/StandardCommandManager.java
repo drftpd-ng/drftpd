@@ -354,8 +354,8 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
 			for (String plugin : pluginEvent.getParentPlugins()) {
 				if (plugin.equals(currentPlugin)) {
-					for (Iterator iter = _commands.entrySet().iterator(); iter.hasNext();) {
-						Entry<String, CommandInstanceContainer> entry = (Entry<String, CommandInstanceContainer>) iter.next();
+					for (Iterator<Entry<String,CommandInstanceContainer>> iter = _commands.entrySet().iterator(); iter.hasNext();) {
+						Entry<String, CommandInstanceContainer> entry = iter.next();
 						if (manager.getPluginFor(entry.getValue().getCommandInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
 							logger.debug("Removing command "+ entry.getKey());
 							iter.remove();

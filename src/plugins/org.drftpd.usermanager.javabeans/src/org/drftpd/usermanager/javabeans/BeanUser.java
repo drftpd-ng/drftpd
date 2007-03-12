@@ -24,7 +24,6 @@ import java.io.Serializable;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.master.CommitManager;
-import org.drftpd.master.Commitable;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
@@ -35,7 +34,7 @@ import org.java.plugin.PluginManager;
  * @author mog
  * @version $Id$
  */
-public class BeanUser extends AbstractUser implements Serializable, Commitable {
+public class BeanUser extends AbstractUser implements Serializable {
 
 	private BeanUserManager _um;
 

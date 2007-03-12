@@ -37,6 +37,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.Session;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.filter.Filter;
@@ -62,7 +63,7 @@ public class SlaveManagement extends CommandInterface {
     }
 
     public CommandResponse doSITE_SLAVESELECT(CommandRequest request) throws ImproperUsageException {
-    	if (!getUserNull(request.getUser()).isAdmin()) {
+    	if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -119,7 +120,8 @@ public class SlaveManagement extends CommandInterface {
     }
 
     public CommandResponse doSITE_KICKSLAVE(CommandRequest request) {
-    	if (!getUserNull(request.getUser()).isAdmin()) {
+    	Session session = request.getSession();
+    	if (!session.getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -140,7 +142,7 @@ public class SlaveManagement extends CommandInterface {
         }
 
         rslave.setOffline("Slave kicked by " +
-            getUserNull(request.getUser()).getName());
+            session.getUserNull(request.getUser()).getName());
 
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
@@ -150,10 +152,11 @@ public class SlaveManagement extends CommandInterface {
      * USAGE: SITE SLAVES
      */
     public CommandResponse doSITE_SLAVES(CommandRequest request) {
+    	Session session = request.getSession();
     	boolean showMore = request.hasArgument() &&
             (request.getArgument().equalsIgnoreCase("more"));
 
-        if (showMore && !getUserNull(request.getUser()).isAdmin()) {
+        if (showMore && !session.getUserNull(request.getUser()).isAdmin()) {
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -178,10 +181,10 @@ public class SlaveManagement extends CommandInterface {
                 /*SiteBot.fillEnvSlaveStatus(env, status,
                     conn.getGlobalContext().getSlaveManager());*/
                 
-                response.addComment(jprintf(_bundle,
+                response.addComment(session.jprintf(_bundle,
                         "slaves", env, request.getUser()));
             } catch (SlaveUnavailableException e) {
-                response.addComment(jprintf(_bundle,
+                response.addComment(session.jprintf(_bundle,
                         "slaves.offline", env, request.getUser()));
             }
         }
@@ -193,7 +196,7 @@ public class SlaveManagement extends CommandInterface {
     	/* TODO reminder to consider whether this permissions check
     	 * would be better suited as a pre hook
     	 */
-    	if (!getUserNull(request.getUser()).isAdmin()) {
+    	if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -235,7 +238,8 @@ public class SlaveManagement extends CommandInterface {
      * @throws ImproperUsageException
      */
     public CommandResponse doSITE_SLAVE(CommandRequest request) throws ImproperUsageException {
-    	if (!getUserNull(request.getUser()).isAdmin()) {
+    	Session session = request.getSession();
+    	if (!session.getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -261,7 +265,7 @@ public class SlaveManagement extends CommandInterface {
         try {
             rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
         } catch (ObjectNotFoundException e) {
-            response.addComment(jprintf(_bundle,
+            response.addComment(session.jprintf(_bundle,
                     "slave.notfound", env, request.getUser()));
 
             return response;
@@ -270,11 +274,11 @@ public class SlaveManagement extends CommandInterface {
         if (!arguments.hasMoreTokens()) {
             if (!rslave.getMasks().isEmpty()) {
                 env.add("masks", rslave.getMasks());
-                response.addComment(jprintf(_bundle,
+                response.addComment(session.jprintf(_bundle,
                         "slave.masks", env, request.getUser()));
             }
 
-            response.addComment(jprintf(_bundle,
+            response.addComment(session.jprintf(_bundle,
                     "slave.data.header", request.getUser()));
 
             Map props = rslave.getProperties();
@@ -284,7 +288,7 @@ public class SlaveManagement extends CommandInterface {
                 Object value = props.get(key);
                 env.add("key", key);
                 env.add("value", value);
-                response.addComment(jprintf(_bundle,
+                response.addComment(session.jprintf(_bundle,
                         "slave.data", env, request.getUser()));
             }
 
@@ -303,7 +307,7 @@ public class SlaveManagement extends CommandInterface {
             rslave.setProperty(key, value);
             env.add("key", key);
             env.add("value", value);
-            response.addComment(jprintf(_bundle,
+            response.addComment(session.jprintf(_bundle,
                     "slave.set.success", env, request.getUser()));
 
             return response;
@@ -318,12 +322,12 @@ public class SlaveManagement extends CommandInterface {
         	try {
         		value = rslave.removeProperty(key);
         	} catch (KeyNotFoundException e) {
-        		response.addComment(jprintf(_bundle,
+        		response.addComment(session.jprintf(_bundle,
         				"slave.unset.failure", env, request.getUser()));
         		return response;
         	}
         	env.add("value", value);
-        	response.addComment(jprintf(_bundle,
+        	response.addComment(session.jprintf(_bundle,
         			"slave.unset.success", env, request.getUser()));
         	return response;
         } else if (command.equalsIgnoreCase("addmask")) {
@@ -335,11 +339,11 @@ public class SlaveManagement extends CommandInterface {
             env.add("mask", mask);
             try {
 				rslave.addMask(mask);
-				response.addComment(jprintf(_bundle,
+				response.addComment(session.jprintf(_bundle,
 						"slave.addmask.success", env, request.getUser()));
 				return response;
 			} catch (DuplicateElementException e) {
-				response = new CommandResponse(501, jprintf(_bundle,
+				response = new CommandResponse(501, session.jprintf(_bundle,
 						"slave.addmask.dupe", env, request.getUser()));
 	            return response;
 			}
@@ -352,17 +356,18 @@ public class SlaveManagement extends CommandInterface {
             env.add("mask", mask);
 
             if (rslave.removeMask(mask)) {
-            	return new CommandResponse(200, jprintf(_bundle,
+            	return new CommandResponse(200, session.jprintf(_bundle,
                         "slave.delmask.success", env, request.getUser()));
             }
-            return new CommandResponse(501, jprintf(_bundle,
+            return new CommandResponse(501, session.jprintf(_bundle,
                     "slave.delmask.failed", env, request.getUser()));
         }
         throw new ImproperUsageException();
     }
 
     public CommandResponse doSITE_DELSLAVE(CommandRequest request) throws ImproperUsageException {
-    	if (!getUserNull(request.getUser()).isAdmin()) {
+    	Session session = request.getSession();
+    	if (!session.getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -386,21 +391,22 @@ public class SlaveManagement extends CommandInterface {
         try {
             GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
         } catch (ObjectNotFoundException e) {
-            response.addComment(jprintf(_bundle,
+            response.addComment(session.jprintf(_bundle,
                     "delslave.notfound", env, request.getUser()));
 
             return response;
         }
 
         GlobalContext.getGlobalContext().getSlaveManager().delSlave(slavename);
-        response.addComment(jprintf(_bundle,
+        response.addComment(session.jprintf(_bundle,
                 "delslave.success", env, request.getUser()));
 
         return response;
     }
 
     public CommandResponse doSITE_ADDSLAVE(CommandRequest request) throws ImproperUsageException {
-    	if (!getUserNull(request.getUser()).isAdmin()) {
+    	Session session = request.getSession();
+    	if (!session.getUserNull(request.getUser()).isAdmin()) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -429,12 +435,12 @@ public class SlaveManagement extends CommandInterface {
             GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 
             return new CommandResponse(501,
-                    jprintf(_bundle, "addslave.exists", request.getUser()));
+                    session.jprintf(_bundle, "addslave.exists", request.getUser()));
          } catch (ObjectNotFoundException e) {
         }
 
         GlobalContext.getGlobalContext().getSlaveManager().newSlave(slavename);
-        response.addComment(jprintf(_bundle,
+        response.addComment(session.jprintf(_bundle,
                 "addslave.success", env, request.getUser()));
 
         return response;

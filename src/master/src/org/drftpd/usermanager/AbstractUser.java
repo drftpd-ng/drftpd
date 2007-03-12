@@ -30,6 +30,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.UserEvent;
 import org.drftpd.exceptions.DuplicateElementException;
+import org.drftpd.master.Commitable;
 
 /**
  * Implements basic functionality for the User interface.
@@ -38,7 +39,7 @@ import org.drftpd.exceptions.DuplicateElementException;
  * @author mog
  * @version $Id$
  */
-public abstract class AbstractUser extends User {
+public abstract class AbstractUser extends User implements Commitable {
 	private static final Logger logger = Logger.getLogger(AbstractUser.class);
 
 	public static void checkValidGroupName(String group) {

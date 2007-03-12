@@ -26,6 +26,9 @@
 		<parameter-def id="ParentMethod" />
 		<parameter-def id="Priority" type="number" />
 	</extension-point>
+	<extension-point id="AddElements">
+		<parameter-def id="class" />
+	</extension-point>
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ListHandler">
 	</extension>
 </plugin>

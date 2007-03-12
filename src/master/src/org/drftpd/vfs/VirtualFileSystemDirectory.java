@@ -30,8 +30,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.drftpd.SFVInfo;
-import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.FileExistsException;
 
 
@@ -53,15 +51,6 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		_files = new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
 	}
 	
-	public void setSFVInfo(SFVInfo sfvFile) {
-		getKeyedMap().setObject(SFVInfo.SFV, sfvFile);
-		commit();
-	}
-	
-	public SFVInfo getSFVInfo() throws KeyNotFoundException {
-		return (SFVInfo) getKeyedMap().getObject(SFVInfo.SFV);
-	}
-
 	/**
 	 * Add another inode to the directory tree.
 	 * @param inode
@@ -269,10 +258,4 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	public String toString() {
 		return "Directory" + super.toString();
 	}
-
-	public void removeSFVInfo() {
-		getKeyedMap().remove(SFVInfo.SFV);
-		commit();
-	}
-
 }

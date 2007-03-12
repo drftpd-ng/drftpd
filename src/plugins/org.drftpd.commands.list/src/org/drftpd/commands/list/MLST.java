@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.mlst;
+package org.drftpd.commands.list;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,7 +23,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.Socket;
-import java.util.List;
 
 
 import org.apache.log4j.Logger;
@@ -36,7 +35,6 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandleInterface;
-import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 
 
@@ -71,7 +69,8 @@ public class MLST extends CommandInterface {
             }
         }
 
-        if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", getUserNull(request.getUser()), dir, true)) {
+        if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", 
+        		request.getSession().getUserNull(request.getUser()), dir, true)) {
         	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
 
@@ -95,10 +94,12 @@ public class MLST extends CommandInterface {
             try {
             	
                 Socket sock = conn.getTransferState().getDataSocketForLIST();
-                List<InodeHandleInterface> files = ListUtils.list(dir, conn);
+                ListElementsContainer container = new ListElementsContainer(
+    					request.getSession(), request.getUser());
+    			container = ListUtils.list(dir, container);
                 Writer os = new OutputStreamWriter(sock.getOutputStream());
 
-                for (InodeHandleInterface inode : files) {
+                for (InodeHandleInterface inode : container.getElements()) {
                     os.write(toMLST(inode) + "\r\n");
                 }
 

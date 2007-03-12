@@ -35,6 +35,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.Session;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -194,135 +195,6 @@ public class Dir extends CommandInterface {
 			}
 		}
 
-        // show race stats
-        if (conn.getGlobalContext().getZsConfig().raceStatsEnabled()) {
-            try {
-                SFVFile sfvfile = newCurrentDirectory.lookupSFVFile();
-                Collection racers = RankUtils.userSort(sfvfile.getFiles(),
-                        "bytes", "high");
-                Collection groups = RankUtils.topFileGroup(sfvfile.getFiles());
-
-                String racerline = bundle.getString("cwd.racers.body");
-                //logger.debug("racerline = " + racerline);
-                String groupline = bundle.getString("cwd.groups.body");
-
-                ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
-                        conn.getUserNull());
-
-                //Start building race message
-                String racetext = bundle.getString("cwd.racestats.header") + "\n";
-                racetext += bundle.getString("cwd.racers.header") + "\n";
-
-                ReplacerFormat raceformat = null;
-
-                //Add racer stats
-                int position = 1;
-
-                for (Iterator iter = racers.iterator(); iter.hasNext();) {
-                    UploaderPosition stat = (UploaderPosition) iter.next();
-                    User raceuser;
-
-                    try {
-                        raceuser = conn.getGlobalContext().getUserManager()
-                                       .getUserByName(stat.getUsername());
-                    } catch (NoSuchUserException e2) {
-                        continue;
-                    } catch (UserFileException e2) {
-                        logger.log(Level.FATAL, "Error reading userfile", e2);
-
-                        continue;
-                    }
-
-                    ReplacerEnvironment raceenv = new ReplacerEnvironment();
-
-                    raceenv.add("speed",
-                        Bytes.formatBytes(stat.getXferspeed()) + "/s");
-                    raceenv.add("user", stat.getUsername());
-                    raceenv.add("group", raceuser.getGroup());
-                    raceenv.add("files", "" + stat.getFiles());
-                    raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
-                    raceenv.add("position", String.valueOf(position));
-                    raceenv.add("percent",
-                        Integer.toString(
-                            (stat.getFiles() * 100) / sfvfile.size()) + "%");
-
-                    try {
-                        racetext += (SimplePrintf.jprintf(racerline,
-                            raceenv) + "\n");
-                        position++;
-                    } catch (FormatterException e) {
-                        logger.warn(e);
-                    }
-                }
-
-                racetext += bundle.getString("cwd.racers.footer") + "\n";
-                racetext += bundle.getString("cwd.groups.header") + "\n";
-
-                //add groups stats
-                position = 1;
-
-                for (Iterator iter = groups.iterator(); iter.hasNext();) {
-                    GroupPosition stat = (GroupPosition) iter.next();
-
-                    ReplacerEnvironment raceenv = new ReplacerEnvironment();
-
-                    raceenv.add("group", stat.getGroupname());
-                    raceenv.add("position", String.valueOf(position));
-                    raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
-                    raceenv.add("files", Integer.toString(stat.getFiles()));
-                    raceenv.add("percent",
-                        Integer.toString(
-                            (stat.getFiles() * 100) / sfvfile.size()) + "%");
-                    raceenv.add("speed",
-                        Bytes.formatBytes(stat.getXferspeed()) + "/s");
-
-                    try {
-                        racetext += (SimplePrintf.jprintf(groupline,
-                            raceenv) + "\n");
-                        position++;
-                    } catch (FormatterException e) {
-                        logger.warn(e);
-                    }
-                }
-
-                racetext += bundle.getString("cwd.groups.footer") + "\n";
-
-                env.add("totalfiles", Integer.toString(sfvfile.size()));
-                env.add("totalbytes", Bytes.formatBytes(sfvfile.getTotalBytes()));
-                env.add("totalspeed",
-                    Bytes.formatBytes(sfvfile.getXferspeed()) + "/s");
-                env.add("totalpercent",
-                    Integer.toString(
-                        (sfvfile.getStatus().getPresent() * 100) / sfvfile.size()) +
-                    "%");
-
-                racetext += bundle.getString("cwd.totals.body") + "\n";
-                racetext += bundle.getString("cwd.racestats.footer") + "\n";
-
-                try {
-                    raceformat = ReplacerFormat.createFormat(racetext);
-                } catch (FormatterException e1) {
-                    logger.warn(e1);
-                }
-
-                try {
-                    if (raceformat == null) {
-                        response.addComment("cwd.uploaders");
-                    } else {
-                        response.addComment(SimplePrintf.jprintf(raceformat, env));
-                    }
-                } catch (FormatterException e) {
-                    response.addComment("cwd.uploaders");
-                    logger.warn("", e);
-                }
-            } catch (RuntimeException ex) {
-                logger.error("", ex);
-            } catch (IOException e) {
-                //Error fetching SFV, ignore
-            } catch (NoAvailableSlaveException e) {
-                //Error fetching SFV, ignore
-            }
-        }
 */
         return response;
     }
@@ -392,7 +264,7 @@ public class Dir extends CommandInterface {
 		}
 
 		GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-				getUserNull(request.getUser()),	"DELE", requestedFile.getParent()));
+				request.getSession().getUserNull(request.getUser()), "DELE", requestedFile.getParent()));
 			requestedFile.delete();
 		} catch (FileNotFoundException e) {
 			// good! we're done :)
@@ -463,8 +335,7 @@ public class Dir extends CommandInterface {
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
         
-        
-        
+        Session session = request.getSession();
         String path = request.getArgument();
         DirectoryHandle fakeDirectory = request.getCurrentDirectory().getNonExistentDirectoryHandle(path);
         String dirName = fakeDirectory.getName();
@@ -526,14 +397,14 @@ public class Dir extends CommandInterface {
         try {
         	DirectoryHandle newDir = null;
             try {
-				newDir = fakeDirectory.getParent().createDirectory(dirName,getUserNull(request.getUser()).getName(),
-						getUserNull(request.getUser()).getGroup());
+				newDir = fakeDirectory.getParent().createDirectory(dirName,session.getUserNull(request.getUser()).getName(),
+						session.getUserNull(request.getUser()).getGroup());
 			} catch (FileNotFoundException e) {
 				return new CommandResponse(550, "Parent directory does not exist");
 			}
   
             GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                    getUserNull(request.getUser()), "MKD", newDir));
+                    session.getUserNull(request.getUser()), "MKD", newDir));
 
             return new CommandResponse(257, "\"" + newDir.getPath() +
             	"\" created.");
@@ -821,8 +692,8 @@ public class Dir extends CommandInterface {
         try {
             request.getCurrentDirectory().getInodeHandle(targetName); // checks if the inode exists.
             request.getCurrentDirectory().createLink(linkName,
-					targetName, getUserNull(request.getUser()).getName(),
-					getUserNull(request.getUser()).getGroup()); // create the link
+					targetName, request.getSession().getUserNull(request.getUser()).getName(),
+					request.getSession().getUserNull(request.getUser()).getGroup()); // create the link
 		} catch (FileExistsException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		} catch (FileNotFoundException e) {
@@ -896,7 +767,7 @@ public class Dir extends CommandInterface {
 
 			// if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
 			GlobalContext.getGlobalContext().dispatchFtpEvent(
-					new DirectoryFtpEvent(getUserNull(request.getUser()), "WIPE", wipeFile
+					new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "WIPE", wipeFile
 							.getParent()));
 
 			// }

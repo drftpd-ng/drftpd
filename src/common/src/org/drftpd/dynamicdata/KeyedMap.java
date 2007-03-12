@@ -27,6 +27,7 @@ import java.util.Map;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class KeyedMap<K, V> extends Hashtable {
 	public KeyedMap() {
 		super();

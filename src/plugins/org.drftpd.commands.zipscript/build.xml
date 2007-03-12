@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.commands.mlst plug-in build file"
+<project name="org.drftpd.commands.zipscript plug-in build file"
          default="build"
          basedir=".">
 	<jpf-info manifest="${basedir}/plugin.xml"

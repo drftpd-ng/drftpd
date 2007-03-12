@@ -28,6 +28,7 @@ import org.drftpd.vfs.CaseInsensitiveTreeMap;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class SFVInfo implements Serializable {
 
 	private CaseInsensitiveTreeMap<String, Long> _entries = null;

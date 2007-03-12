@@ -37,6 +37,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.config.FtpConfig;
+import org.drftpd.master.Session;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Trial;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -178,6 +179,7 @@ public class TransferStatistics extends CommandInterface  {
      */
     public CommandResponse doSITE_STATS(CommandRequest request) {
 
+    	Session session = request.getSession();
         if (!request.hasArgument()) {
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
@@ -185,7 +187,7 @@ public class TransferStatistics extends CommandInterface  {
         User user;
 
         if (!request.hasArgument()) {
-            user = getUserNull(request.getUser());
+            user = session.getUserNull(request.getUser());
         } else {
             try {
                 user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getArgument());
@@ -198,11 +200,11 @@ public class TransferStatistics extends CommandInterface  {
             }
         }
 
-        if (getUserNull(request.getUser()).isGroupAdmin() &&
-                !getUserNull(request.getUser()).getGroup().equals(user.getGroup())) {
+        if (session.getUserNull(request.getUser()).isGroupAdmin() &&
+                !session.getUserNull(request.getUser()).getGroup().equals(user.getGroup())) {
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        } else if (!getUserNull(request.getUser()).isAdmin() &&
-                !user.equals(getUserNull(request.getUser()))) {
+        } else if (!session.getUserNull(request.getUser()).isAdmin() &&
+                !user.equals(session.getUserNull(request.getUser()))) {
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -365,7 +367,7 @@ public class TransferStatistics extends CommandInterface  {
             env.add("dnfiles", "" + user.getDownloadedFiles());
             env.add("dnrate", getDownRate(user, Trial.PERIOD_ALL));
 
-            response.addComment(jprintf(_bundle, "transferstatistics" + type, env,
+            response.addComment(Session.jprintf(_bundle, "transferstatistics" + type, env,
                     user));
 
             //			response.addComment(

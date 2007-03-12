@@ -31,7 +31,7 @@ public class DummyUser extends AbstractUser {
         return true;
     }
 
-    public void commit() throws UserFileException {
+    public void commit() {
     }
 
     public void purge() {
@@ -75,4 +75,7 @@ public class DummyUser extends AbstractUser {
     public void writeToDisk() throws IOException {
 
     }
+    public String descriptiveName() {
+		return getName();
+	}
 }
