@@ -464,7 +464,7 @@ method doSITE_HELP
 perms *
 help duh! it does this dummy!
 help.specific ${command} <site cmd> will display specific information on that command
-nohelp ABOR,AUTH,CDUP,CPSV,CWD,DELE,FEAT,IDNT,LIST,MDTM,MKD,MODE,PASS,PASV,PBSZ,PORT,PRET,PROT,PWD,QUIT,REST,RETR,RMD,RNFR,RNTO,SIZE,SSCN,STOR,SYST,TYPE,USER,XCRC
+nohelp ABOR,AUTH,CDUP,CLNT,CPSV,CWD,DELE,FEAT,IDNT,LIST,MDTM,MKD,MLSD,MLST,MODE,NOOP,PASS,PASV,PBSZ,PORT,PRET,PROT,PWD,QUIT,REST,RETR,RMD,RNFR,RNTO,SIZE,SSCN,STOR,SYST,TYPE,USER,XCRC
 }
 
 SITE ADDIP {
@@ -868,4 +868,18 @@ class Nuke
 method doSITE_NUKES
 perms *
 help List all nuked directories.
+}
+
+NOOP {
+plugin org.drftpd.commands.dummy
+class Dummy
+method doDUMMY
+perms *
+}
+
+CLNT {
+plugin org.drftpd.commands.dummy
+class Dummy
+method doDUMMY
+perms *
 }

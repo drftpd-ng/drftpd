@@ -157,6 +157,16 @@ public class SiteManagementHandler extends CommandInterface {
 			logger.debug("Exception publishing plugins", e);
 			return new CommandResponse(500,e.getMessage());
 		}
+		PluginDescriptor newPlugin;
+		try {
+			newPlugin = manager.getRegistry().getPluginDescriptor(request.getArgument());
+		}
+		catch (IllegalArgumentException e) {
+			return new CommandResponse(500, "No such plugin could be found");
+		}
+		if (manager.isPluginActivated(newPlugin)) {
+			return new CommandResponse(500, "Plugin is already loaded and active");
+		}
 		GlobalContext.getEventService().publish(new LoadPluginEvent(request.getArgument()));
 		return new CommandResponse(200, "Successfully loaded plugin");
 	}
@@ -171,8 +181,13 @@ public class SiteManagementHandler extends CommandInterface {
 		return response;*/
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		response.addComment("Plugins loaded:");
+		ArrayList<String> plugins = new ArrayList<String>();
 		for (PluginDescriptor pluginDesc : PluginManager.lookup(this).getRegistry().getPluginDescriptors()) {
-			response.addComment(pluginDesc.getId());
+			plugins.add(pluginDesc.getId());
+		}
+		Collections.sort(plugins);
+		for (String pluginName : plugins) {
+			response.addComment(pluginName);
 		}
 		return response;
 	}
