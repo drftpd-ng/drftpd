@@ -352,8 +352,11 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
 			PluginManager manager = PluginManager.lookup(this);
 			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String plugin : pluginEvent.getParentPlugins()) {
-				if (plugin.equals(currentPlugin)) {
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String plugin = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (plugin.equals(currentPlugin) && extension.equals("Command")) {
 					for (Iterator<Entry<String,CommandInstanceContainer>> iter = _commands.entrySet().iterator(); iter.hasNext();) {
 						Entry<String, CommandInstanceContainer> entry = iter.next();
 						if (manager.getPluginFor(entry.getValue().getCommandInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {

@@ -17,7 +17,6 @@
 package org.drftpd.commandmanager;
 
 import java.lang.reflect.Method;
-import java.util.Properties;
 
 /**
  * @author zubov

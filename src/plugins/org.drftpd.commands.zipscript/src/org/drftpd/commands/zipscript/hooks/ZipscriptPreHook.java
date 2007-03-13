@@ -55,7 +55,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 		_sfvFirstRequired = GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf").getProperty("sfvfirst.required").equals("true");
 		_sfvFirstAllowNoExt = GlobalContext.getGlobalContext().getPluginsConfig().
-			getPropertiesForPlugin("zipscript.conf").getProperty("allowedexts").equals("true");
+			getPropertiesForPlugin("zipscript.conf").getProperty("sfvfirst.allownoext").equals("true");
 		if (_sfvFirstRequired) {
 			try {
 				// this one gets perms defined in sfvfirst.users

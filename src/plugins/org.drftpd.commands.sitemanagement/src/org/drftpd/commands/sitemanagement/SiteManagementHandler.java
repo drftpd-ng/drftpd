@@ -52,6 +52,7 @@ import org.drftpd.vfs.InodeHandle;
 import org.java.plugin.JpfException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.boot.DefaultPluginsCollector;
+import org.java.plugin.registry.PluginAttribute;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.util.ExtendedProperties;
 
@@ -181,6 +182,7 @@ public class SiteManagementHandler extends CommandInterface {
 		try {
 			GlobalContext.getGlobalContext().getSectionManager().reload();
 			GlobalContext.getGlobalContext().reloadFtpConfig();
+			GlobalContext.getGlobalContext().loadPluginsConfig();
 			GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
 
 			try {
@@ -285,6 +287,17 @@ public class SiteManagementHandler extends CommandInterface {
 		}
 		catch (IllegalArgumentException e) {
 			return new CommandResponse(500, "No such plugin loaded");
+		}
+		/* Check whether this plugin allows unloading, to do this an attribute
+		 * named DenyUnload is set to "true" in the plugins manifest, if this
+		 * attribute does not exist or contains anything else it is assumed that
+		 * unloading is permitted.
+		 */
+		PluginAttribute unloadAttribute = pluginDesc.getAttribute("DenyUnload");
+		if (unloadAttribute != null) {
+			if (unloadAttribute.getValue().equalsIgnoreCase("true")) {
+				return new CommandResponse(500, "Unloading of this plugin is prohibited");
+			}
 		}
 		GlobalContext.getEventService().publish(new UnloadPluginEvent(request.getArgument()));
 		manager.deactivatePlugin(request.getArgument());

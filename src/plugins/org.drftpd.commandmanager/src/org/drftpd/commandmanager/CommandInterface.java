@@ -26,29 +26,20 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventSubscriber;
-import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.util.ReplacerUtils;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author djb61
@@ -134,8 +125,8 @@ public abstract class CommandInterface implements EventSubscriber {
 						manager.activatePlugin(preHook.getDeclaringPluginDescriptor().getId());
 					}
 					catch (PluginLifecycleException e) {
-						logger.debug("plugin lifecycle exception", e);
 						// Not overly concerned about this
+						logger.debug("plugin lifecycle exception", e);
 					}
 				}
 				ClassLoader preHookLoader = manager.getPluginClassLoader( 
@@ -217,19 +208,24 @@ public abstract class CommandInterface implements EventSubscriber {
 			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
 			PluginManager manager = PluginManager.lookup(this);
 			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String plugin : pluginEvent.getParentPlugins()) {
-				if (plugin.equals(currentPlugin)) {
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String plugin = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (plugin.equals(currentPlugin) && extension.equals("PostHook")) {
 					for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
 						Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
 						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							logger.debug("Removing post hook " + pluginEvent.getPlugin() + " from " + currentPlugin);
+							logger.debug("Removing post hook provided by " + pluginEvent.getPlugin() + " from " + currentPlugin);
 							iter.remove();
 						}
 					}
+				}
+				if (plugin.equals(currentPlugin) && extension.equals("PreHook")) {
 					for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
 						Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
 						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							logger.debug("Removing pre hook " + pluginEvent.getPlugin() + " from " + currentPlugin);
+							logger.debug("Removing pre hook provided by " + pluginEvent.getPlugin() + " from " + currentPlugin);
 							iter.remove();
 						}
 					}

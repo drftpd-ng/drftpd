@@ -116,11 +116,8 @@ public class ZipscriptList implements AddListElementsInterface {
 
 				if (missingFilesEnabled) {
 					for (String fileName : sfvfile.getEntries().keySet()) {
-						// TODO Not sure this is the best approach
-						try {
-							dir.getFile(fileName);
-						}
-						catch (Exception e) {
+						FileHandle file = new FileHandle(dir.getPath()+VirtualFileSystem.separator+fileName);
+						if (!file.exists()) {
 							env.add("mfilename",fileName);
 							container.getElements().add(new LightRemoteInode(
 									container.getSession().jprintf(bundle, "files.missing.filename",env,container.getUser()),

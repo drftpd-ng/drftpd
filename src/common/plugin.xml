@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="common" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
 	<runtime>
 		<library id="common" path="classes/" type="code">
 			<export prefix="*" />

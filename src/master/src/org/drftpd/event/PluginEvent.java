@@ -32,19 +32,12 @@ public class PluginEvent {
 
 	private String _plugin;
 
-	/* TODO It may be beneficial to provide the
-	 * extension points in the parent plugins that the
-	 * plugin being affected uses, this would particularly
-	 * be useful for efficiency in removing references
-	 * when a plugin has multiple possible extension points
-	 * as it would know which is being affected and only
-	 * has to deal with those.
-	 */
 	public PluginEvent(String pluginName) {
 		_parentPlugins = new ArrayList<String>();
 		for (Extension parent : PluginManager.lookup(this).getRegistry()
 			.getPluginDescriptor(pluginName).getExtensions()) {
-			_parentPlugins.add(parent.getExtendedPluginId());
+			_parentPlugins.add(parent.getExtendedPluginId()+"@"+
+					parent.getExtendedPointId());
 		}
 		_plugin = pluginName;
 	}
