@@ -311,25 +311,19 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(501, e.getMessage());
 		}
 
-		try {
-			while (st.hasMoreTokens()) {
-				String string = st.nextToken().replace(",",""); // strip commas (for easy copy+paste)
-				env.add("mask", string);
-				try {
-					newUser.addIPMask(string);
-					response.addComment(session.jprintf(_bundle, "addip.success", env, request.getUser()));
-					logger.info("'" + request.getUser() + "' added ip '" + string + "' to '"+ newUser.getName() + "'");
-				} catch (DuplicateElementException e1) {
-					response.addComment(session.jprintf(_bundle, "addip.dupe", env, request.getUser()));
-				}
+		while (st.hasMoreTokens()) {
+			String string = st.nextToken().replace(",",""); // strip commas (for easy copy+paste)
+			env.add("mask", string);
+			try {
+				newUser.addIPMask(string);
+				response.addComment(session.jprintf(_bundle, "addip.success", env, request.getUser()));
+				logger.info("'" + request.getUser() + "' added ip '" + string + "' to '"+ newUser.getName() + "'");
+			} catch (DuplicateElementException e1) {
+				response.addComment(session.jprintf(_bundle, "addip.dupe", env, request.getUser()));
 			}
-
-			newUser.commit();
-		} catch (UserFileException ex) {
-			logger.warn("", ex);
-
-			return new CommandResponse(452, ex.getMessage());
 		}
+
+		newUser.commit();
 
 		return response;
 	}
@@ -857,12 +851,7 @@ public class UserManagementHandler extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		try {
-			userToChange.commit();
-		} catch (UserFileException e) {
-			logger.warn("", e);
-			response.addComment(e.getMessage());
-		}
+		userToChange.commit();
 
 		return response;
 	}
@@ -937,11 +926,7 @@ public class UserManagementHandler extends CommandInterface {
 				}
 			}
 		}
-		try {
-			myUser.commit();
-		} catch (UserFileException e) {
-			return new CommandResponse(452, "Error committing user: " + e.getMessage());
-		}
+		myUser.commit();
 		return response;
 	}
 
@@ -1096,12 +1081,7 @@ public class UserManagementHandler extends CommandInterface {
 			myUser.getKeyedMap().setObject(UserManagement.REASON,
 					reason = st.nextToken("").substring(1));
 		}
-		try {
-			myUser.commit();
-		} catch (UserFileException e1) {
-			logger.error("", e1);
-			return new CommandResponse(452, "Error committing user: " + e1.getMessage());
-		}
+		myUser.commit();
 		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' deleted user '"
 				+ myUser.getName() + "' with reason '" + reason + "'");
 		logger.debug("reason "
@@ -1583,12 +1563,7 @@ public class UserManagementHandler extends CommandInterface {
 		myUser.getKeyedMap().remove(UserManagement.REASON);
 		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' readded '"
 				+ myUser.getName() + "'");
-		try {
-			myUser.commit();
-		} catch (UserFileException e1) {
-			logger.error(e1);
-			return new CommandResponse(452, "Error committing user: " + e1.getMessage());
-		}
+		myUser.commit();
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
@@ -1660,17 +1635,15 @@ public class UserManagementHandler extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		try {
-			logger.info("'" + session.getUserNull(request.getUser()).getName()
-					+ "' changed his tagline from '"
-					+ session.getUserNull(request.getUser()).getKeyedMap().getObject(UserManagement.TAGLINE, "")
-					+ "' to '" + request.getArgument() + "'");
-			session.getUserNull(request.getUser()).getKeyedMap().setObject(UserManagement.TAGLINE,
-					request.getArgument());
-			session.getUserNull(request.getUser()).commit();
-		} catch (UserFileException e) {
-			return new CommandResponse(452, "Error committing user: " + e.getMessage());
-		}
+		User u = session.getUserNull(request.getUser());
+		
+		logger.info("'" + request.getUser()	+ "' changed his tagline from '"
+				+ u.getKeyedMap().getObject(UserManagement.TAGLINE, "")
+				+ "' to '" + request.getArgument() + "'");
+		
+		u.getKeyedMap().setObject(UserManagement.TAGLINE,	request.getArgument());
+		u.commit();
+		
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
@@ -1687,11 +1660,7 @@ public class UserManagementHandler extends CommandInterface {
 			user.getKeyedMap().setObject(UserManagement.DEBUG,
 					Boolean.valueOf(arg.equals("true") || arg.equals("on")));
 		}
-		try {
-			user.commit();
-		} catch (UserFileException e) {
-			return new CommandResponse(452, "Error committing user: " + e.getMessage());
-		}
+		user.commit();
 		return new CommandResponse(200, session.jprintf(_bundle, "debug", request.getUser()));
 	}
 
@@ -2112,12 +2081,7 @@ public class UserManagementHandler extends CommandInterface {
 		myUser.getKeyedMap().setObject(UserManagement.BAN_TIME,
 				new Date(System.currentTimeMillis() + (banTime * 60000)));
 		myUser.getKeyedMap().setObject(UserManagement.BAN_REASON, banMsg);
-		try {
-			myUser.commit();
-		} catch (UserFileException e) {
-			logger.warn("", e);
-			return new CommandResponse(200, e.getMessage());
-		}
+		myUser.commit();
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
@@ -2147,12 +2111,7 @@ public class UserManagementHandler extends CommandInterface {
 		myUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
 		myUser.getKeyedMap().setObject(UserManagement.BAN_REASON, "");
 
-		try {
-			myUser.commit();
-		} catch (UserFileException e) {
-			logger.warn("", e);
-			return new CommandResponse(200, e.getMessage());
-		}
+		myUser.commit();
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}

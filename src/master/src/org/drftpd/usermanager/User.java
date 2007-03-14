@@ -49,7 +49,7 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	 * @throws UserFileException
 	 *             if an error saving the userfile occured.
 	 */
-	public abstract void commit() throws UserFileException;
+	public abstract void commit();
 
 	public abstract long getCredits();
 

@@ -100,8 +100,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	protected transient int _errors;
 
-	private transient GlobalContext _gctx;
-
 	private transient long _lastDownloadSending = 0;
 
 	protected transient long _lastNetworkError;
@@ -141,15 +139,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_keysAndValues = new Properties();
 		_ipMasks = new HostMaskCollection();
 		_renameQueue = new LinkedList<QueuedOperation>();
-	}
-
-	/**
-	 * Used by everything including tests
-	 */
-	public RemoteSlave(String name, GlobalContext gctx) {
-		this(name);
-		_gctx = gctx;
-		commit();
 	}
 
 	public final static Hashtable rslavesToHashtable(Collection rslaves) {

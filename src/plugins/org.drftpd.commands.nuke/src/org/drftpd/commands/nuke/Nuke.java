@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
@@ -204,13 +203,7 @@ public class Nuke extends CommandInterface {
             nukee.getKeyedMap().incrementObjectLong(NUKED);
             nukee.getKeyedMap().setObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
 
-            try {
-                nukee.commit();
-            } catch (UserFileException e1) {
-                response.addComment("Error writing userfile: " +
-                    e1.getMessage());
-                logger.log(Level.WARN, "Error writing userfile", e1);
-            }
+            nukee.commit();
 
             response.addComment(nukee.getName() + " " +
                 Bytes.formatBytes(debt));
@@ -370,12 +363,7 @@ public class Nuke extends CommandInterface {
 
             nukee.getKeyedMap().incrementObjectInt(NUKED, -1);
 
-            try {
-                nukee.commit();
-            } catch (UserFileException e) {
-                logger.fatal("Error saving userfile for " + nukee.getName(), e);
-                response.addComment("Error saving userfile for " + nukee.getName());
-            }
+            nukee.commit();
 
             response.addComment(nukeeName + ": restored " +
                 Bytes.formatBytes(nukedAmount));

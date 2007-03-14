@@ -224,12 +224,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public void resetDay(Date d) {
 		for (User user : getAllUsers()) {			
 			user.resetDay(d);
-			try {
-				user.commit();
-			} catch (UserFileException e) {
-				logger.error("Error saving: '"+user.getName()+"'", e);
-				continue;
-			}
+			user.commit();
 		}
 	} 
 
@@ -239,12 +234,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public void resetHour(Date d) {
 		for (User user : getAllUsers()) {			
 			user.resetHour(d);
-			try {
-				user.commit();
-			} catch (UserFileException e) {
-				logger.error("Error saving: '"+user.getName()+"'", e);
-				continue;
-			}
+			user.commit();
 		}
 	} 
 
@@ -253,15 +243,9 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetMonth(java.util.Date)
 	 */
 	public void resetMonth(Date d) {
-
 		for (User user : getAllUsers()) {			
 			user.resetMonth(d);	
-			try {
-				user.commit();
-			} catch (UserFileException e) {
-				logger.error("Error saving: '"+user.getName()+"'", e);
-				continue;
-			}
+			user.commit();
 		}
 	}
 
@@ -269,15 +253,9 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetWeek(java.util.Date)
 	 */
 	public void resetWeek(Date d) {
-
 		for (User user : getAllUsers()) {			
 			user.resetWeek(d);	
-			try {
-				user.commit();
-			} catch (UserFileException e) {
-				logger.error("Error saving: '"+user.getName()+"'", e);
-				continue;
-			}
+			user.commit();
 		}
 
 	}
@@ -286,15 +264,9 @@ public abstract class AbstractUserManager implements UserManager {
 	 * @see org.drftpd.master.cron.TimeEventInterface#resetYear(java.util.Date)
 	 */
 	public void resetYear(Date d) {
-
 		for (User user : getAllUsers()) {			
 			user.resetYear(d);		
-			try {
-				user.commit();
-			} catch (UserFileException e) {
-				logger.error("Error saving: '"+user.getName()+"'", e);
-				continue;
-			}
+			user.commit();
 		}
 	}
 }

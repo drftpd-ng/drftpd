@@ -1390,11 +1390,7 @@ public class DataConnectionHandler extends CommandInterface {
 						}
 					}
 
-					try {
-						conn.getUserNull().commit();
-					} catch (UserFileException e) {
-						logger.warn("", e);
-					}
+					conn.getUserNull().commit();
 				}
 
             // Dispatch for both STOR and RETR

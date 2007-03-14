@@ -29,6 +29,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,6 +53,7 @@ import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.config.FtpConfig;
+import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
@@ -63,7 +65,7 @@ import org.java.plugin.PluginManager;
  * @author mog
  * @version $Id$
  */
-public class SlaveManager implements Runnable {
+public class SlaveManager implements Runnable, TimeEventInterface {
 	private static final Logger logger = Logger.getLogger(SlaveManager.class
 			.getName());
 
@@ -582,6 +584,41 @@ public class SlaveManager implements Runnable {
 				rslave.simpleRename(fromPath, toDirPath, toName);
 			}
 		}
+	}
+
+	public void resetDay(Date d) {
+		for (RemoteSlave rs : _rslaves.values()) {
+			rs.resetDay(d);
+			rs.commit();
+		}
+	}
+
+	public void resetHour(Date d) {
+		for (RemoteSlave rs : _rslaves.values()) {
+			rs.resetHour(d);
+			rs.commit();
+		}		
+	}
+
+	public void resetMonth(Date d) {
+		for (RemoteSlave rs : _rslaves.values()) {
+			rs.resetMonth(d);
+			rs.commit();
+		}	
+	}
+
+	public void resetWeek(Date d) {
+		for (RemoteSlave rs : _rslaves.values()) {
+			rs.resetWeek(d);
+			rs.commit();
+		}	
+	}
+
+	public void resetYear(Date d) {
+		for (RemoteSlave rs : _rslaves.values()) {
+			rs.resetYear(d);
+			rs.commit();
+		}	
 	}
 }
 
