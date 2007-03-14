@@ -1,3 +1,21 @@
+/*
+ * This file is part of DrFTPD, Distributed FTP Daemon.
+ *
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 package org.drftpd.master.config;
 
 import java.io.File;
@@ -10,6 +28,14 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Plugin Configuraiton loader.<br>
+ * Every file that is in 'conf/plugins' is subject to be loaded.<br>
+ * From now on you don't need to create your own configuration reader for your plugin,
+ * simply use PluginsConfig.getPropertiesForPlugin("plugin.name").
+ * @author fr0w
+ * @version $Id$
+ */
 public class PluginsConfig {
 	private final static String pluginsConfPath = "conf/plugins/";
 
@@ -23,7 +49,7 @@ public class PluginsConfig {
 	}
 	
 	/**
-	 * Prints the load configurations.
+	 * Prints the loaded configurations.
 	 * @param args
 	 */
 	public void dumpHashMap() {
@@ -39,22 +65,32 @@ public class PluginsConfig {
 		}
 	}
 
+	/**
+	 * Makes a list of all files in 'conf/plugins' and start reading all files that has the '.conf' extension.
+	 */
 	public void loadConfigs() {
 		File dir = new File(pluginsConfPath);
 		if (!dir.isDirectory())
 			throw new RuntimeException(pluginsConfPath + " is not a directory");
 		
 		for (File file : dir.listFiles()) {
-			if (file.isFile()) {
+			if (file.isFile() && file.getName().endsWith(".conf")) {
 				loadConf(file);
 			} // else, ignore it.
 		}
 	}
-
+	
+	/**
+	 * @return all configurations.
+	 */
 	public HashMap<String, Properties> getPropertiesMap() {
 		return _propertiesMap;
 	}
 
+	/**
+	 * Load a java.util.Propreties-like file.
+	 * @param file
+	 */
 	private void loadConf(File file) {
 		FileInputStream fis = null;
 
@@ -83,14 +119,25 @@ public class PluginsConfig {
 	 * Accepts either 'pluginName' or 'pluginName.conf' as parameter.
 	 * Ex: zipscript and zipscript.conf are valid parameters.
 	 * 
+	 * If the Properties object is not found on the map, it will return
+	 * an empty Properties object.
+	 * 
 	 * @param pluginName
 	 * @return The Properties table for the plugin.
 	 */
 	public Properties getPropertiesForPlugin(String pluginName) {
 		if (!pluginName.endsWith(".conf"))
-			pluginName.concat(".conf");
+			pluginName = pluginName + ".conf";
 
-		return getPropertiesMap().get(pluginName);
+		Properties cfg = getPropertiesMap().get(pluginName);
+		
+		if (cfg == null) {
+			cfg = new Properties();
+			logger.debug("'"+pluginName + "' configuration file was not found. " +
+					"Returning an empty Propertie object.", new Throwable());
+		}
+		
+		return cfg;
 	}
 
 }

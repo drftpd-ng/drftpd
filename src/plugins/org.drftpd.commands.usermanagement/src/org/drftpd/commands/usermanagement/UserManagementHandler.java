@@ -16,9 +16,6 @@
  */
 package org.drftpd.commands.usermanagement;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,7 +45,7 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.Session;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
-import org.drftpd.usermanager.HostMask;
+import org.drftpd.plugins.Statistics;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
@@ -234,155 +231,83 @@ public class UserManagementHandler extends CommandInterface {
 			env.add("targetuser", newUsername);
 			String pass = st.nextToken();
 
-			// Changed To Read In From File :)
-			String confFile = "conf/defaultuser.conf";
+			Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("defaultuser");
 
-			Properties cfg = new Properties();
-			FileInputStream file = null;
-
-			String ratio;
-			String max_logins;
-			String max_logins_ip;
-			String max_uploads;
-			String max_downloads;
-			String wkly_allotment;
-			String credits;
-			String idle_time;
-			String tagline;
-
-			try {
-				file = new FileInputStream(confFile);
-				cfg.load(file);
-
-				ratio = cfg.getProperty("ratio");
-				max_logins = cfg.getProperty("max_logins");
-				max_logins_ip = cfg.getProperty("max_logins_ip");
-				max_uploads = cfg.getProperty("max_uploads");
-				max_downloads = cfg.getProperty("max_downloads");
-				wkly_allotment = cfg.getProperty("wkly_allotment");
-				credits = cfg.getProperty("credits");
-				idle_time = cfg.getProperty("idle_time");
-				tagline = cfg.getProperty("tagline");
-
-				if (ratio == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'ratio' in " + confFile);
-				}
-				if (max_logins == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'max_logins' in " + confFile);
-				}
-				if (max_logins_ip == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'max_logins_ip' in " + confFile);
-				}
-				if (max_uploads == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'max_uploads' in " + confFile);
-				}
-				if (max_downloads == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'max_downloads' in " + confFile);
-				}
-				if (wkly_allotment == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'wkly_allotment' in " + confFile);
-				}
-				if (credits == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'credits' in " + confFile);
-				}
-				if (idle_time == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'idle_time' in " + confFile);
-				}
-				if (tagline == null) {
-					throw new ImproperUsageException(
-							"Unspecified value 'tagline' in " + confFile);
-				}
-
-			} catch (FileNotFoundException e) {
-				logger.error("Error reading " + confFile, e);
-				throw new RuntimeException(e.getMessage());
-			} catch (IOException e) {
-				logger.error("Error reading " + confFile, e);
-				throw new RuntimeException(e.getMessage());
-			} finally {
-				try {
-					if (file != null) {
-						file.close();
-					}
-				} catch (IOException e) {
-				}
-			}
-
+			String ratio = cfg.getProperty("ratio", "3.0");
+			String minratio = cfg.getProperty("min_ratio", "3.0");
+			String maxratio = cfg.getProperty("max_ratio", "3.0");
+			String maxlogins = cfg.getProperty("max_logins", "2");
+			String maxloginsip = cfg.getProperty("max_logins_ip", "2");
+			String maxsimup = cfg.getProperty("max_uploads", "2");
+			String maxsimdn = cfg.getProperty("max_downloads", "2");
+			String idletime = cfg.getProperty("idle_time", "300");  
+			String wklyallot= cfg.getProperty("wkly_allotment", "0");
+			String credits = cfg.getProperty("credits", "0b");
+			String tagline = cfg.getProperty("tagline", "No tagline set.");
+			String group = cfg.getProperty("group", "nogroup");
+			
 			float ratioVal = Float.parseFloat(ratio);
-			int max_loginsVal = Integer.parseInt(max_logins);
-			int max_logins_ipVal = Integer.parseInt(max_logins_ip);
-			int max_uploadsVal = Integer.parseInt(max_uploads);
-			int max_downloadsVal = Integer.parseInt(max_downloads);
-			int idle_timeVal = Integer.parseInt(idle_time);
+			float minratioVal = Float.parseFloat(minratio);
+			float maxratioVal = Float.parseFloat(maxratio);
+			int maxloginsVal = Integer.parseInt(maxlogins);
+			int maxloginsipVal = Integer.parseInt(maxloginsip);
+			int maxsimupVal = Integer.parseInt(maxsimup);
+			int maxsimdnVal = Integer.parseInt(maxsimdn);
+			int idletimeVal = Integer.parseInt(idletime);
 			long creditsVal = Bytes.parseBytes(credits);
-			long wkly_allotmentVal = Bytes.parseBytes(wkly_allotment);
+			long wklyallotVal = Bytes.parseBytes(wklyallot);
+
 
 			// action, no more NoSuchElementException below here
-			newUser = GlobalContext.getGlobalContext().getUserManager().create(
-					newUsername);
+			newUser = GlobalContext.getGlobalContext().getUserManager().create(newUsername);
+			
 			newUser.setPassword(pass);
 			newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-			response.addComment(session.jprintf(_bundle,
-					"adduser.success", env, request.getUser()));
-			newUser.getKeyedMap().setObject(UserManagement.COMMENT,
-					"Added by " + session.getUserNull(request.getUser()).getName());
+			newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
+			newUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
+			newUser.getKeyedMap().setObject(UserManagement.COMMENT,	"Added by " + session.getUserNull(request.getUser()).getName());
 			newUser.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
 			newUser.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
-			newUser.getKeyedMap().setObject(UserManagement.MINRATIO, 3F);
-			newUser.getKeyedMap().setObject(UserManagement.MAXRATIO, 3F);
-			newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
-			newUser.getKeyedMap()
-					.setObject(UserManagement.LASTSEEN, new Date());
+			newUser.getKeyedMap().setObject(UserManagement.MINRATIO, minratioVal);
+			newUser.getKeyedMap().setObject(UserManagement.MAXRATIO, maxratioVal);
+
+			newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
 			newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
-			newUser.getKeyedMap()
-					.setObject(UserManagement.BAN_TIME, new Date());
-			// newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
-			// newUser.getKeyedMap().setObject(Nuke.NUKED,0);
-			// newUser.getKeyedMap().setObject(Nuke.NUKEDBYTES,new Long(0));
+
 			newUser.getKeyedMap().setObject(UserManagement.TAGLINE, tagline);
 			newUser.getKeyedMap().setObject(UserManagement.RATIO, ratioVal);
-			newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS,
-					max_loginsVal);
-			newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP,
-					max_logins_ipVal);
-			newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP,
-					max_uploadsVal);
-			newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN,
-					max_downloadsVal);
-			newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT,
-					wkly_allotmentVal);
+			newUser.getKeyedMap().setObject(UserManagement.MAXLOGINS, maxloginsVal);
+			newUser.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, maxloginsipVal);
+			newUser.getKeyedMap().setObject(UserManagement.MAXSIMUP, maxsimupVal);
+			newUser.getKeyedMap().setObject(UserManagement.MAXSIMDN, maxsimdnVal);
+			newUser.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT, wklyallotVal);
 
-			newUser.setIdleTime(idle_timeVal);
+			newUser.setIdleTime(idletimeVal);
 			newUser.setCredits(creditsVal);
-
+			
 			if (newGroup != null) {
 				newUser.setGroup(newGroup);
-				logger.info("'" + session.getUserNull(request.getUser()).getName() + "' added '"
+				logger.info("'" + request.getUser() + "' added '"
 						+ newUser.getName() + "' with group "
 						+ newUser.getGroup() + "'");
 				env.add("primgroup", newUser.getGroup());
-				response.addComment(session.jprintf(_bundle,
-						"adduser.primgroup", env, request.getUser()));
+				response.addComment(session.jprintf(_bundle, "adduser.primgroup", env, request.getUser()));
 			} else {
-				logger.info("'" + session.getUserNull(request.getUser()).getName() + "' added '"
-						+ newUser.getName() + "'");
+				logger.info("'" + request.getUser() + "' added '"+ newUser.getName() + "'");
+				newUser.setGroup(group);
 			}
-		} catch (NoSuchElementException ex) {
-			return new CommandResponse(501, session.jprintf(_bundle,
-					"adduser.missingpass", request.getUser()));
-		} catch (UserFileException ex) {
-			return new CommandResponse(452, ex.getMessage());
-		} catch (ImproperUsageException e) {
-			return new CommandResponse(501, e.getMessage());
+			
+			newUser.commit();
+			
+			response.addComment(session.jprintf(_bundle, "adduser.success", env, request.getUser()));
+			
+		} catch (NoSuchElementException e) {
+			return new CommandResponse(501, session.jprintf(_bundle, "adduser.missingpass", request.getUser()));
+		} catch (UserFileException e) {
+			logger.error(e, e);
+			return new CommandResponse(452, e.getMessage());			
 		} catch (NumberFormatException e) {
+			logger.error(e, e);
 			return new CommandResponse(501, e.getMessage());
 		}
 
@@ -390,18 +315,12 @@ public class UserManagementHandler extends CommandInterface {
 			while (st.hasMoreTokens()) {
 				String string = st.nextToken().replace(",",""); // strip commas (for easy copy+paste)
 				env.add("mask", string);
-				new HostMask(string); // validate hostmask
-
 				try {
 					newUser.addIPMask(string);
-					response.addComment(session.jprintf(_bundle,
-							"addip.success", env, request.getUser()));
-					logger.info("'" + session.getUserNull(request.getUser()).getName()
-							+ "' added ip '" + string + "' to '"
-							+ newUser.getName() + "'");
+					response.addComment(session.jprintf(_bundle, "addip.success", env, request.getUser()));
+					logger.info("'" + request.getUser() + "' added ip '" + string + "' to '"+ newUser.getName() + "'");
 				} catch (DuplicateElementException e1) {
-					response.addComment(session.jprintf(_bundle,
-							"addip.dupe", env, request.getUser()));
+					response.addComment(session.jprintf(_bundle, "addip.dupe", env, request.getUser()));
 				}
 			}
 
