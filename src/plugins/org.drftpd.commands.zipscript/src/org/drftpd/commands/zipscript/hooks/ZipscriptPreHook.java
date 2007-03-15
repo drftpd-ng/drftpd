@@ -18,6 +18,7 @@
 package org.drftpd.commands.zipscript.hooks;
 
 import java.io.FileNotFoundException;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -49,18 +50,19 @@ public class ZipscriptPreHook implements PreHookInterface {
 	private boolean _sfvFirstAllowNoExt;
 
 	public void initialize() {
+		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
+			getPropertiesForPlugin("zipscript.conf");
+		if (cfg == null) {
+			logger.fatal("conf/zipscript.conf not found");
+		}
 		// SFV First PathPermissions
-		String sfvFirstUsers = GlobalContext.getGlobalContext().getPluginsConfig().
-			getPropertiesForPlugin("zipscript.conf").getProperty("sfvfirst.users");
-		_sfvFirstRequired = GlobalContext.getGlobalContext().getPluginsConfig().
-			getPropertiesForPlugin("zipscript.conf").getProperty("sfvfirst.required").equals("true");
-		_sfvFirstAllowNoExt = GlobalContext.getGlobalContext().getPluginsConfig().
-			getPropertiesForPlugin("zipscript.conf").getProperty("sfvfirst.allownoext").equals("true");
+		String sfvFirstUsers = cfg.getProperty("sfvfirst.users");
+		_sfvFirstRequired = cfg.getProperty("sfvfirst.required").equals("true");
+		_sfvFirstAllowNoExt = cfg.getProperty("sfvfirst.allownoext").equals("true");
 		if (_sfvFirstRequired) {
 			try {
 				// this one gets perms defined in sfvfirst.users
-				StringTokenizer st = new StringTokenizer(GlobalContext.getGlobalContext()
-						.getPluginsConfig().getPropertiesForPlugin("zipscript.conf")
+				StringTokenizer st = new StringTokenizer(cfg
 						.getProperty("sfvfirst.pathcheck"));
 				while (st.hasMoreTokens()) {
 					GlobalContext.getGlobalContext().getConfig().addPathPermission(
@@ -70,8 +72,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 									.makeUsers(new StringTokenizer(
 											sfvFirstUsers, " "))));
 				}
-				st = new StringTokenizer(GlobalContext.getGlobalContext()
-						.getPluginsConfig().getPropertiesForPlugin("zipscript.conf")
+				st = new StringTokenizer(cfg
 						.getProperty("sfvfirst.pathignore"));
 				while (st.hasMoreTokens()) {
 					GlobalContext.getGlobalContext().getConfig().addPathPermission(
@@ -149,8 +150,9 @@ public class ZipscriptPreHook implements PreHookInterface {
 		if (_sfvFirstAllowNoExt && !file.contains(".")) {
 			return true;
 		}
-		StringTokenizer st = new StringTokenizer(GlobalContext.getGlobalContext().getPluginsConfig().
-				getPropertiesForPlugin("zipscript.conf").getProperty("allowedexts"));
+		String allowedExts = GlobalContext.getGlobalContext().getPluginsConfig().
+			getPropertiesForPlugin("zipscript.conf").getProperty("allowedexts") + " sfv";
+		StringTokenizer st = new StringTokenizer(allowedExts);
 		while (st.hasMoreElements()) {
 			String ext = "." + st.nextElement().toString().toLowerCase();
 			if (file.toLowerCase().endsWith(ext)) {

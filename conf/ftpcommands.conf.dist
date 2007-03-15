@@ -883,3 +883,15 @@ class Dummy
 method doDUMMY
 perms *
 }
+
+SITE RESCAN {
+plugin org.drftpd.commands.zipscript
+class ZipscriptCommands
+method doSITE_RESCAN
+perms *
+help sfv scans the files in the current directory.
+help.specific ${command} [-r] [force] [delete] - sfv scans the files in the current directory.
+help.specific The -r options recursively scans all directories below the current directory as well.
+help.specific The force option makes the slave recalculate the checksums.
+help.specific The delete option removes bad files rather than just reporting them.
+}

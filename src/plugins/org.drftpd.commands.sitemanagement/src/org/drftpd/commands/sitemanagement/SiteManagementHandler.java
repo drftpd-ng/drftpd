@@ -189,6 +189,7 @@ public class SiteManagementHandler extends CommandInterface {
 		for (String pluginName : plugins) {
 			response.addComment(pluginName);
 		}
+		response.addComment(plugins.size()+" plugins currently loaded.");
 		return response;
 	}
 

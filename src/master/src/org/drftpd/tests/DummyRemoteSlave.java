@@ -6,8 +6,6 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-
-import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.master.RemoteSlave;
@@ -22,9 +20,10 @@ import org.drftpd.slave.async.AsyncResponse;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class DummyRemoteSlave extends RemoteSlave {
-    public DummyRemoteSlave(String name, GlobalContext gctx) {
-        super(name, gctx);
+    public DummyRemoteSlave(String name) {
+        super(name);
     }
 
 	public int getPort() {

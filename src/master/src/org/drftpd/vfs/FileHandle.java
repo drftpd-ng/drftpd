@@ -131,7 +131,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	/**
 	 * @return the CRC32 of the file.
 	 * @throws FileNotFoundException if there's no such file.
-	 * @throws NoAvailableSlaveException if there's no avaiable slave.
+	 * @throws NoAvailableSlaveException if there's no available slave.
 	 */
 	public long getCheckSum() throws NoAvailableSlaveException,
 			FileNotFoundException {
@@ -151,6 +151,28 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 			}
 		}
 		return checksum;
+	}
+
+	/**
+	 * @return the CRC32 of the file ignoring the cached value.
+	 * @throws FileNotFoundException if there's no such file.
+	 * @throws NoAvailableSlaveException if there's no available slave.
+	 */
+	public long getCheckSumFromSlave() throws NoAvailableSlaveException,
+			FileNotFoundException {
+		long checksum = 0L;
+		while (true) {
+			RemoteSlave rslave = getASlaveForFunction();
+			try {
+				checksum = rslave.getCheckSumForPath(getPath());
+				getInode().setChecksum(checksum);
+				return checksum;
+			} catch (IOException e) {
+				rslave.setOffline(e);
+			} catch (SlaveUnavailableException e) {
+				continue;
+			}
+		}
 	}
 
 	/**
