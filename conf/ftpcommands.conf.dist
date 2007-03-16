@@ -2,7 +2,6 @@ AUTH {
 plugin org.drftpd.commands.dataconnection
 class DataConnectionHandler
 method doAUTH
-perms *
 }
 
 CPSV {
@@ -116,28 +115,24 @@ IDNT {
 plugin org.drftpd.commands.login
 class LoginHandler
 method doIDNT
-perms *
 }
 
 USER {
 plugin org.drftpd.commands.login
 class LoginHandler
 method doUSER
-perms *
 }
 
 PASS {
 plugin org.drftpd.commands.login
 class LoginHandler
 method doPASS
-perms *
 }
 
 QUIT {
 plugin org.drftpd.commands.login
 class LoginHandler
 method doQUIT
-perms *
 }
 
 LIST {

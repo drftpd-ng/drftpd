@@ -109,7 +109,7 @@ public class ListUtils {
 			//				listFiles.add(element);
 			//				continue;
 			//			} else if (
-			boolean offlineFilesEnabled = FtpConfig.getFtpConfig().getProperties().getProperty("files.offline.enabled").equals("true");
+			boolean offlineFilesEnabled = FtpConfig.getFtpConfig().getProperties().getProperty("files.offline.enabled", "true").equals("true");
 			
 			if (offlineFilesEnabled && element.isFile()) {
 				if (!((FileHandleInterface) element).isAvailable()) {

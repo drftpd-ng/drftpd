@@ -114,10 +114,6 @@ public class Reply implements Cloneable {
 	public static final Reply RESPONSE_530_ACCESS_DENIED = new Reply(530,
 			"Access denied");
 
-	/** 530 Not logged in. */
-	public static final Reply RESPONSE_530_NOT_LOGGED_IN = new Reply(530,
-			"Not logged in.");
-
 	public static final Reply RESPONSE_530_SLAVE_UNAVAILABLE = new Reply(530,
 			"No transfer-slave(s) available");
 

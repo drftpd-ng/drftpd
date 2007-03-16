@@ -117,13 +117,6 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	public abstract boolean isMemberOf(String group);
 
 	/**
-	 * Returns the nuker.
-	 * 
-	 * @return boolean
-	 */
-	public abstract boolean isNuker();
-
-	/**
 	 * User logout
 	 */
 	public abstract void logout();

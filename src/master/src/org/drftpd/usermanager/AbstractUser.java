@@ -251,10 +251,6 @@ public abstract class AbstractUser extends User implements Commitable {
 		return false;
 	}
 
-	public boolean isNuker() {
-		return isMemberOf("nuke");
-	}
-
 	public void logout() {
 	}
 

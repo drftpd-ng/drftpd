@@ -89,6 +89,17 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		 * 	extension attached for the command, is so add it to the commands
 		 * 	map to be used
 		 */
+		// can be used to create extension directives for permissions based off of your
+		// command plugins in ftpcommands.conf
+		/*
+		FileWriter fw = null;
+		try {
+			 fw = new FileWriter("plugin.xml.extensions");
+		} catch (IOException e1) {
+			logger.debug(e1);
+		}
+		int x = 1;
+		*/
 		for (Entry<String,Properties> requiredCmd : requiredCmds.entrySet()) {
 			String methodString = requiredCmd.getValue().getProperty("method");
 			String classString = requiredCmd.getValue().getProperty("class");
@@ -105,6 +116,17 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 				logger.warn("Command plugin "+pluginString+" not found");
 				continue;
 			}
+/*			try {
+				fw.write("	<extension plugin-id=\"" + pluginString + "\" point-id=\"PreHook\" id=\"Permissions" + x++ + "\">\n");
+				fw.write("		<parameter id=\"ParentMethod\" value=\"" + methodString + "\" />\n");
+				fw.write("		<parameter id=\"HookClass\" value=\"org.drftpd.commands.prehook.permissions.PermissionPreHook\" />\n");
+				fw.write("		<parameter id=\"HookMethod\" value=\"doPermissionCheck\" />\n");
+				fw.write("		<parameter id=\"Priority\" value=\"1\" />\n");
+				fw.write("	</extension>\n");
+			} catch (IOException e1) {
+				logger.debug(e1);
+			}
+*/			
 			Extension cmd = extensions.get(pluginString);
 			//	If plugin isn't already activated then activate it
 			if (!manager.isPluginActivated(cmd.getDeclaringPluginDescriptor())) {
@@ -134,13 +156,17 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 				logger.info("Failed to add command handler: "+requiredCmd, e);
 			}
 		}
+/*		try {
+			fw.close();
+		} catch (IOException e) {
+			logger.debug(e);
+		}
+*/	
 	}
 
 	public CommandResponseInterface execute(CommandRequestInterface request) {
 		CommandInstanceContainer commandContainer = _commands.get(request.getCommand());
-		logger.debug("fetching " + request.getCommand());
 		if (commandContainer == null) {
-			logger.debug("commandContainer==null");
 			CommandResponseInterface cmdFailed = genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
 			return cmdFailed;
 		}

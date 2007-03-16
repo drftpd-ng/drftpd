@@ -63,9 +63,6 @@ public class SlaveManagement extends CommandInterface {
     }
 
     public CommandResponse doSITE_SLAVESELECT(CommandRequest request) throws ImproperUsageException {
-    	if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
-    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
 
         if (!request.hasArgument()) {
         	throw new ImproperUsageException();
@@ -121,9 +118,6 @@ public class SlaveManagement extends CommandInterface {
 
     public CommandResponse doSITE_KICKSLAVE(CommandRequest request) {
     	Session session = request.getSession();
-    	if (!session.getUserNull(request.getUser()).isAdmin()) {
-    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
 
         if (!request.hasArgument()) {
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -155,10 +149,6 @@ public class SlaveManagement extends CommandInterface {
     	Session session = request.getSession();
     	boolean showMore = request.hasArgument() &&
             (request.getArgument().equalsIgnoreCase("more"));
-
-        if (showMore && !session.getUserNull(request.getUser()).isAdmin()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
 
         Collection slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
         CommandResponse response = new CommandResponse(200,
@@ -193,13 +183,6 @@ public class SlaveManagement extends CommandInterface {
     }
 
     public CommandResponse doSITE_REMERGE(CommandRequest request) {
-    	/* TODO reminder to consider whether this permissions check
-    	 * would be better suited as a pre hook
-    	 */
-    	if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
-    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
-
         if (!request.hasArgument()) {
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
@@ -239,9 +222,6 @@ public class SlaveManagement extends CommandInterface {
      */
     public CommandResponse doSITE_SLAVE(CommandRequest request) throws ImproperUsageException {
     	Session session = request.getSession();
-    	if (!session.getUserNull(request.getUser()).isAdmin()) {
-    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
 
         CommandResponse response = new CommandResponse(200);
         ReplacerEnvironment env = new ReplacerEnvironment();
@@ -367,10 +347,7 @@ public class SlaveManagement extends CommandInterface {
 
     public CommandResponse doSITE_DELSLAVE(CommandRequest request) throws ImproperUsageException {
     	Session session = request.getSession();
-    	if (!session.getUserNull(request.getUser()).isAdmin()) {
-    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
-
+    	
         CommandResponse response = new CommandResponse(200);
         ReplacerEnvironment env = new ReplacerEnvironment();
 
@@ -406,9 +383,6 @@ public class SlaveManagement extends CommandInterface {
 
     public CommandResponse doSITE_ADDSLAVE(CommandRequest request) throws ImproperUsageException {
     	Session session = request.getSession();
-    	if (!session.getUserNull(request.getUser()).isAdmin()) {
-    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
 
         CommandResponse response = new CommandResponse(200);
         ReplacerEnvironment env = new ReplacerEnvironment();

@@ -200,14 +200,6 @@ public class TransferStatistics extends CommandInterface  {
             }
         }
 
-        if (session.getUserNull(request.getUser()).isGroupAdmin() &&
-                !session.getUserNull(request.getUser()).getGroup().equals(user.getGroup())) {
-        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        } else if (!session.getUserNull(request.getUser()).isAdmin() &&
-                !user.equals(session.getUserNull(request.getUser()))) {
-        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
-
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         UserManager userman = GlobalContext.getGlobalContext().getUserManager();
         response.addComment("created: " +
