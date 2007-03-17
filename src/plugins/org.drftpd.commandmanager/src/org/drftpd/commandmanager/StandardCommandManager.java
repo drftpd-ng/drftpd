@@ -248,7 +248,7 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 
 		/** 150 File status okay; about to open data connection. */
 		genericResponses.put("RESPONSE_150_OK",
-				new CommandResponse(150,"File status okay; about to open data connection.\r\n"));
+				new CommandResponse(150,"File status okay; about to open data connection."));
 
 		/** 200 Command okay */
 		genericResponses.put("RESPONSE_200_COMMAND_OK",

@@ -885,8 +885,6 @@ public class DataConnectionHandler extends CommandInterface {
 					try {
 						ts.setTransferFile(conn.getCurrentDirectory().getFile(
 								request.getArgument()));
-						request.getSession().setObject(TRANSFER_FILE,conn.getCurrentDirectory().getFile(
-								request.getArgument()));
 					} catch (FileNotFoundException e) {
 						return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 					} catch (ObjectNotValidException e) {
@@ -1249,8 +1247,8 @@ public class DataConnectionHandler extends CommandInterface {
 
             CommandResponse response = new CommandResponse(226, conn.jprintf(_bundle,
                     "transfer.complete", env, request.getUser()));
-            request.getSession().setObject(CHECKSUM,status.getChecksum());
-            request.getSession().setObject(TRANSFER_FILE,ts.getTransferFile());
+            response.setObject(CHECKSUM,status.getChecksum());
+            response.setObject(TRANSFER_FILE,ts.getTransferFile());
 
             synchronized (conn.getGlobalContext()) { // need to synchronize
 														// here so only one

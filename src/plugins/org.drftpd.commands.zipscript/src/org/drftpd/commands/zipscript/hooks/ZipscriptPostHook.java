@@ -76,13 +76,13 @@ public class ZipscriptPostHook implements PostHookInterface {
 		}
 		FileHandle transferFile;
 		try {
-			transferFile =  (FileHandle) request.getSession().getObject(DataConnectionHandler.TRANSFER_FILE);
+			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
 		}
 		String transferFileName = transferFile.getName();
-		long checksum = request.getSession().getObjectLong(DataConnectionHandler.CHECKSUM);
+		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
 		logger.debug("Running zipscript on retrieved file " + transferFileName +
 				" with CRC of " + checksum);
 
@@ -125,13 +125,13 @@ public class ZipscriptPostHook implements PostHookInterface {
 		}
 		FileHandle transferFile;
 		try {
-			transferFile =  (FileHandle) request.getSession().getObject(DataConnectionHandler.TRANSFER_FILE);
+			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
 		}
 		String transferFileName = transferFile.getName();
-		long checksum = request.getSession().getObjectLong(DataConnectionHandler.CHECKSUM);
+		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
 		logger.debug("Running zipscript on stored file " + transferFileName +
 				" with CRC of " + checksum);
 		if (!transferFileName.toLowerCase().endsWith(".sfv")) {
@@ -189,12 +189,6 @@ public class ZipscriptPostHook implements PostHookInterface {
 		return;
 	}
 
-	public void doZipscriptCleanup(CommandRequest request, CommandResponse response) {
-		// Remove transferfile/checksum keys
-		request.getSession().remove(DataConnectionHandler.TRANSFER_FILE);
-		request.getSession().remove(DataConnectionHandler.CHECKSUM);
-	}
-
 	public void doZipscriptCWDStatsHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
 			// CWD failed, abort stats
@@ -226,7 +220,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 		}
 		FileHandle transferFile;
 		try {
-			transferFile =  (FileHandle) request.getSession().getObject(DataConnectionHandler.TRANSFER_FILE);
+			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
@@ -259,7 +253,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 		}
 		FileHandle deleFile;
 		try {
-			deleFile =  (FileHandle) request.getSession().getObject(Dir.DELEFILE);
+			deleFile =  (FileHandle) response.getObject(Dir.DELEFILE);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;

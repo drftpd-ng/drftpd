@@ -224,9 +224,9 @@ public class Dir extends CommandInterface {
 
         requestedFile = request.getCurrentDirectory().getInodeHandle(fileName); 
 
-        // Store the file being deleted in the session keyedmap
+        // Store the file being deleted in the response keyedmap
         if (requestedFile.isFile()) {
-        	request.getSession().setObject(DELEFILE, requestedFile);
+        	response.setObject(DELEFILE, requestedFile);
         }
         /* TODO reimplement with permissions pre hooks
          * 

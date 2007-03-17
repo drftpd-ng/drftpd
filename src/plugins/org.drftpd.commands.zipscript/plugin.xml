@@ -77,18 +77,6 @@
 		<parameter id="HookMethod" value="doZipscriptWIPECleanupHook" />
 		<parameter id="Priority" value="10" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptRETRPostCheckCleanup">
-		<parameter id="ParentMethod" value="doRETR" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
-		<parameter id="HookMethod" value="doZipscriptCleanup" />
-		<parameter id="Priority" value="50000" />
-	</extension>
-	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORPostCheckCleanup">
-		<parameter id="ParentMethod" value="doSTOR" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
-		<parameter id="HookMethod" value="doZipscriptCleanup" />
-		<parameter id="Priority" value="50000" />
-	</extension>
 	<extension plugin-id="org.drftpd.commands.list" point-id="AddElements" id="ZipscriptListElements">
 		<parameter id="class" value="org.drftpd.commands.zipscript.list.ZipscriptList" />
 	</extension>
