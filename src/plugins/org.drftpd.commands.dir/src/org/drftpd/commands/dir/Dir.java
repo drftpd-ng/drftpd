@@ -60,6 +60,8 @@ public class Dir extends CommandInterface {
 
     private static final Key RENAMEFROM = new Key(Dir.class, "renamefrom", InodeHandle.class);
 
+    public static final Key DELEFILE = new Key(Dir.class, "delefile", FileHandle.class);
+
 
     /**
      * <code>CDUP &lt;CRLF&gt;</code><br>
@@ -222,6 +224,10 @@ public class Dir extends CommandInterface {
 
         requestedFile = request.getCurrentDirectory().getInodeHandle(fileName); 
 
+        // Store the file being deleted in the session keyedmap
+        if (requestedFile.isFile()) {
+        	request.getSession().setObject(DELEFILE, requestedFile);
+        }
         /* TODO reimplement with permissions pre hooks
          * 
          */
@@ -761,7 +767,7 @@ public class Dir extends CommandInterface {
 
 			if (wipeFile.isDirectory() && !recursive) {
 				if (((DirectoryHandle) wipeFile).getInodeHandles().size() != 0) {
-					return new CommandResponse(200, "Can't wipe, directory not empty");
+					return new CommandResponse(550, "Can't wipe, directory not empty");
 				}
 			}
 

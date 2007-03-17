@@ -150,7 +150,7 @@ perms *
 }
 
 MLSD {
-plugin org.drftpg.commands.list
+plugin org.drftpd.commands.list
 class MLST
 method doMLSTandMLSD
 perms *
@@ -886,7 +886,16 @@ method doSITE_RESCAN
 perms *
 help sfv scans the files in the current directory.
 help.specific ${command} [-r] [force] [delete] - sfv scans the files in the current directory.
-help.specific The -r options recursively scans all directories below the current directory as well.
-help.specific The force option makes the slave recalculate the checksums.
-help.specific The delete option removes bad files rather than just reporting them.
+help.specific     The -r option recursively scans all directories below the current directory as well.
+help.specific     The force option makes the slave recalculate the checksums.
+help.specific     The delete option removes bad files rather than just reporting them.
+}
+
+SITE FIXLINKS {
+plugin org.drftpd.commands.zipscript
+class ZipscriptCommands
+method doSITE_FIXLINKS
+perms *
+help removes invalid links and creates missing incomplete links if enabled.
+help.specific ${command}
 }

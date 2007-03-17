@@ -139,6 +139,23 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	/**
+	 * @return a set containing only the links of this dir.
+	 * (no directories or files included.)
+	 * @throws FileNotFoundException
+	 */
+	public Set<LinkHandle> getLinks() throws FileNotFoundException {
+		Set<LinkHandle> set = new HashSet<LinkHandle>();
+		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter
+				.hasNext();) {
+			InodeHandle handle = iter.next();
+			if (handle instanceof LinkHandle) {
+				set.add((LinkHandle) handle);
+			}
+		}
+		return (Set<LinkHandle>) set;
+	}
+
+	/**
 	 * @param name
 	 * @return 
 	 * @throws FileNotFoundException

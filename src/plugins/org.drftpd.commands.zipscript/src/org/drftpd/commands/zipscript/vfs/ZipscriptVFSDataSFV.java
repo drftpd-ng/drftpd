@@ -117,7 +117,7 @@ public class ZipscriptVFSDataSFV {
 		return (SFVInfo) vfsDir.getKeyedMap().getObject(SFVInfo.SFV);
 	}
 
-	private void removeSFVInfo() throws FileNotFoundException {
+	public void removeSFVInfo() throws FileNotFoundException {
 		_dir.getInode().getKeyedMap().remove(SFVInfo.SFV);
 		_dir.getInode().commit();
 	}

@@ -11,15 +11,13 @@ cwd.id3info.enabled=true
 
 #enable race stats [true/false]
 cwd.racestats.enabled=true
+stor.racestats.enabled=true
 
 #only allow files found in the sfv file [true/false]
 sfv.restrict.files=true
 
 #set the following line to enable/disable file_id.diz info
 cwd.dizinfo.enabled=true
-
-#allow multiple sfv files in one dir [true/false]
-allow.multi.sfv=false
 
 #disallow files before sfv [true/false]
 sfvfirst.required=true
@@ -39,3 +37,9 @@ sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
 #who has their restricted by the sfv-first system ?
 #if you wanted siteop group to be exempt, put: !=siteop *
 sfvfirst.users=*
+
+#enable incomplete links creation [true/false]
+incomplete.links=true
+
+#directories to add incomplete link in parent of parent rather than just parent
+incomplete.useparent=(vobsubs?|subs?|subtitles?|extras|(cd|dvd|dis[ck])[1-9])$

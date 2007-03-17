@@ -47,10 +47,34 @@
 		<parameter id="HookMethod" value="doZipscriptSTORPostCheck" />
 		<parameter id="Priority" value="10" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDPostCheck">
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDStats">
 		<parameter id="ParentMethod" value="doCWD" />
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
-		<parameter id="HookMethod" value="doZipscriptCWDPostHook" />
+		<parameter id="HookMethod" value="doZipscriptCWDStatsHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORStats">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORStatsHook" />
+		<parameter id="Priority" value="11" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORIncompleteLink">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORIncompleteHook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptDELEIncompleteLink">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptDELECleanupHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptWIPEIncompleteLink">
+		<parameter id="ParentMethod" value="doSITE_WIPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptWIPECleanupHook" />
 		<parameter id="Priority" value="10" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptRETRPostCheckCleanup">

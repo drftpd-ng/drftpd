@@ -95,17 +95,15 @@ public class ZipscriptPreHook implements PreHookInterface {
 		}
 		String checkName = request.getArgument().toLowerCase();
 		// Read config
-		boolean multiSfvAllowed = GlobalContext.getGlobalContext().getPluginsConfig().
-			getPropertiesForPlugin("zipscript.conf").getProperty("allow.multi.sfv").equals("true");
-		boolean restrictSfvEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
-			getPropertiesForPlugin("zipscript.conf").getProperty("sfv.restrict.files").equals("true");
+		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
+			getPropertiesForPlugin("zipscript.conf");
+		boolean restrictSfvEnabled = cfg.getProperty("sfv.restrict.files").equals("true");
 		boolean sfvFirstEnforcedPath = checkSfvFirstEnforcedPath(request.getCurrentDirectory(), 
 				request.getSession().getUserNull(request.getUser()));
-		logger.debug("sfv first: "+sfvFirstEnforcedPath);
 		try {
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
 			SFVInfo sfv = sfvData.getSFVInfo();
-			if (checkName.endsWith(".sfv") && !multiSfvAllowed) {
+			if (checkName.endsWith(".sfv")) {
 				request.setAllowed(false);
 				request.setDeniedResponse(new CommandResponse(533,
 					"Requested action not taken. Multiple SFV files not allowed."));

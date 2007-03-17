@@ -18,9 +18,9 @@
 package org.drftpd.commands.zipscript.hooks;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Level;
@@ -35,6 +35,8 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.commands.dir.Dir;
+import org.drftpd.commands.zipscript.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -46,6 +48,8 @@ import org.drftpd.util.GroupPosition;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.LinkHandle;
+import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -191,140 +195,270 @@ public class ZipscriptPostHook implements PostHookInterface {
 		request.getSession().remove(DataConnectionHandler.CHECKSUM);
 	}
 
-	public void doZipscriptCWDPostHook(CommandRequest request, CommandResponse response) {
+	public void doZipscriptCWDStatsHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
 			// CWD failed, abort stats
 			return;
 		}
-		// show race stats
-		if (true) {//GlobalContext.getGlobalContext().getZsConfig().raceStatsEnabled()) {
+		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
+		getPropertiesForPlugin("zipscript.conf");
+		if (cfg.getProperty("cwd.racestats.enabled").equals("true")) {
+			addRaceStats(request, response);
+		}
+	}
+
+	public void doZipscriptSTORStatsHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 226) {
+			// STOR failed, abort stats
+			return;
+		}
+		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
+		getPropertiesForPlugin("zipscript.conf");
+		if (cfg.getProperty("stor.racestats.enabled").equals("true")) {
+			addRaceStats(request, response);
+		}
+	}
+
+	public void doZipscriptSTORIncompleteHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 226) {
+			// STOR failed, abort link
+			return;
+		}
+		FileHandle transferFile;
+		try {
+			transferFile =  (FileHandle) request.getSession().getObject(DataConnectionHandler.TRANSFER_FILE);
+		} catch (KeyNotFoundException e) {
+			// We don't have a file, we shouldn't have ended up here but return anyway
+			return;
+		}
+		String transferFileName = transferFile.getName();
+		if (transferFileName.toLowerCase().endsWith(".sfv")) {
+			LinkUtils.processLink(request, "create");
+		}
+		else {
+			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
 			try {
-				DirectoryHandle dir = response.getCurrentDirectory();
-				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
-				ResourceBundle bundle = ResourceBundle.getBundle(this.getClass().getName());
-				SFVInfo sfvInfo = sfvData.getSFVInfo();
 				SFVStatus sfvStatus = sfvData.getSFVStatus();
-				Collection<UploaderPosition> racers = RankUtils.userSort(getSFVFiles(dir, sfvData),
-						"bytes", "high");
-				Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
-
-				String racerline = bundle.getString("cwd.racers.body");
-				//logger.debug("racerline = " + racerline);
-				String groupline = bundle.getString("cwd.groups.body");
-
-				ReplacerEnvironment env = Session.getReplacerEnvironment(null,
-						request.getSession().getUserNull(request.getUser()));
-
-				//Start building race message
-				String racetext = bundle.getString("cwd.racestats.header") + "\n";
-				racetext += bundle.getString("cwd.racers.header") + "\n";
-
-				ReplacerFormat raceformat = null;
-
-				//Add racer stats
-				int position = 1;
-
-				for (UploaderPosition stat : racers) {
-					User raceuser;
-
-					try {
-						raceuser = GlobalContext.getGlobalContext().getUserManager()
-						.getUserByName(stat.getUsername());
-					} catch (NoSuchUserException e2) {
-						continue;
-					} catch (UserFileException e2) {
-						logger.log(Level.FATAL, "Error reading userfile", e2);
-
-						continue;
-					}
-
-					ReplacerEnvironment raceenv = new ReplacerEnvironment();
-
-					raceenv.add("speed",
-							Bytes.formatBytes(stat.getXferspeed()) + "/s");
-					raceenv.add("user", stat.getUsername());
-					raceenv.add("group", raceuser.getGroup());
-					raceenv.add("files", "" + stat.getFiles());
-					raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
-					raceenv.add("position", String.valueOf(position));
-					raceenv.add("percent",
-							Integer.toString(
-									(stat.getFiles() * 100) / sfvInfo.getSize()) + "%");
-
-					try {
-						racetext += (SimplePrintf.jprintf(racerline,
-								raceenv) + "\n");
-						position++;
-					} catch (FormatterException e) {
-						logger.warn(e);
-					}
+				if (sfvStatus.isFinished()) {
+					// dir is complete, remove link
+					LinkUtils.processLink(request, "delete");
 				}
-
-				racetext += bundle.getString("cwd.racers.footer") + "\n";
-				racetext += bundle.getString("cwd.groups.header") + "\n";
-
-				//add groups stats
-				position = 1;
-
-				for (GroupPosition stat: groups) {
-					ReplacerEnvironment raceenv = new ReplacerEnvironment();
-
-					raceenv.add("group", stat.getGroupname());
-					raceenv.add("position", String.valueOf(position));
-					raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
-					raceenv.add("files", Integer.toString(stat.getFiles()));
-					raceenv.add("percent",
-							Integer.toString(
-									(stat.getFiles() * 100) / sfvInfo.getSize()) + "%");
-					raceenv.add("speed",
-							Bytes.formatBytes(stat.getXferspeed()) + "/s");
-
-					try {
-						racetext += (SimplePrintf.jprintf(groupline,
-								raceenv) + "\n");
-						position++;
-					} catch (FormatterException e) {
-						logger.warn(e);
-					}
-				}
-
-				racetext += bundle.getString("cwd.groups.footer") + "\n";
-
-				env.add("totalfiles", Integer.toString(sfvInfo.getSize()));
-				env.add("totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
-				env.add("totalspeed",
-						Bytes.formatBytes(getXferspeed(dir, sfvData)) + "/s");
-				env.add("totalpercent",
-						Integer.toString(
-								(sfvStatus.getPresent() * 100) / sfvInfo.getSize()) +
-								"%");
-
-				racetext += bundle.getString("cwd.totals.body") + "\n";
-				racetext += bundle.getString("cwd.racestats.footer") + "\n";
-
-				try {
-					raceformat = ReplacerFormat.createFormat(racetext);
-				} catch (FormatterException e1) {
-					logger.warn(e1);
-				}
-
-				try {
-					if (raceformat == null) {
-						response.addComment("cwd.uploaders");
-					} else {
-						response.addComment(SimplePrintf.jprintf(raceformat, env));
-					}
-				} catch (FormatterException e) {
-					response.addComment("cwd.uploaders");
-					logger.warn("", e);
-				}
-			} catch (RuntimeException ex) {
-				logger.error("", ex);
-			} catch (IOException e) {
-				//Error fetching SFV, ignore
 			} catch (NoAvailableSlaveException e) {
-				//Error fetching SFV, ignore
+				// Slave holding sfv is unavailable
+			} catch (FileNotFoundException e) {
+				// No sfv in dir
 			}
+		}
+		return;
+	}
+
+	public void doZipscriptDELECleanupHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 250) {
+			// DELE failed, abort cleanup
+			return;
+		}
+		FileHandle deleFile;
+		try {
+			deleFile =  (FileHandle) request.getSession().getObject(Dir.DELEFILE);
+		} catch (KeyNotFoundException e) {
+			// We don't have a file, we shouldn't have ended up here but return anyway
+			return;
+		}
+		String deleFileName = deleFile.getName();
+		if (deleFileName.endsWith(".sfv")) {
+			LinkUtils.processLink(request, "delete");
+			try {
+				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
+				sfvData.removeSFVInfo();
+			} catch(FileNotFoundException e) {
+				// No inode to remove sfvinfo from
+			}
+		}
+		else {
+			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
+			try {
+				SFVStatus sfvStatus = sfvData.getSFVStatus();
+				if (!sfvStatus.isFinished()) {
+					// dir is now incomplete, add link
+					LinkUtils.processLink(request, "create");
+				}
+			} catch (NoAvailableSlaveException e) {
+				// Slave holding sfv is unavailable
+			} catch (FileNotFoundException e) {
+				// No sfv in dir
+			}
+		}
+		return;
+	}
+
+	public void doZipscriptWIPECleanupHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 200) {
+			// WIPE failed, abort cleanup
+			return;
+		}
+		try {
+			for (LinkHandle link : request.getCurrentDirectory().getLinks()) {
+				try {
+					link.getTargetDirectory().getPath();
+				} catch (FileNotFoundException e1) {
+					// Link target no longer exists, remote it
+					link.delete();
+				} catch (ObjectNotValidException e1) {
+					// Link target isn't a directory, delete the link as it is bad
+					link.delete();
+					continue;
+				}
+			}
+		} catch (FileNotFoundException e2) {
+			logger.warn("Invalid link in dir " + request.getCurrentDirectory().getPath(),e2);
+		}
+		// Have to check parent too to allow for the case of wiping a special subdir
+		try {
+			for (LinkHandle link : request.getCurrentDirectory().getParent().getLinks()) {
+				try {
+					link.getTargetDirectory().getPath();
+				} catch (FileNotFoundException e1) {
+					// Link target no longer exists, remote it
+					link.delete();
+				} catch (ObjectNotValidException e1) {
+					// Link target isn't a directory, delete the link as it is bad
+					link.delete();
+					continue;
+				}
+			}
+		} catch (FileNotFoundException e2) {
+			logger.warn("Invalid link in dir " + request.getCurrentDirectory().getParent().getPath(),e2);
+		}
+	}
+
+	private void addRaceStats(CommandRequest request, CommandResponse response) {
+		// show race stats
+		try {
+			DirectoryHandle dir = request.getCurrentDirectory();
+			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
+			ResourceBundle bundle = ResourceBundle.getBundle(this.getClass().getName());
+			SFVInfo sfvInfo = sfvData.getSFVInfo();
+			SFVStatus sfvStatus = sfvData.getSFVStatus();
+			Collection<UploaderPosition> racers = RankUtils.userSort(getSFVFiles(dir, sfvData),
+					"bytes", "high");
+			Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
+
+			String racerline = bundle.getString("cwd.racers.body");
+			String groupline = bundle.getString("cwd.groups.body");
+
+			ReplacerEnvironment env = Session.getReplacerEnvironment(null,
+					request.getSession().getUserNull(request.getUser()));
+
+			//Start building race message
+			String racetext = bundle.getString("cwd.racestats.header") + "\n";
+			racetext += bundle.getString("cwd.racers.header") + "\n";
+
+			ReplacerFormat raceformat = null;
+
+			//Add racer stats
+			int position = 1;
+
+			for (UploaderPosition stat : racers) {
+				User raceuser;
+
+				try {
+					raceuser = GlobalContext.getGlobalContext().getUserManager()
+					.getUserByName(stat.getUsername());
+				} catch (NoSuchUserException e2) {
+					continue;
+				} catch (UserFileException e2) {
+					logger.log(Level.FATAL, "Error reading userfile", e2);
+
+					continue;
+				}
+
+				ReplacerEnvironment raceenv = new ReplacerEnvironment();
+
+				raceenv.add("speed",
+						Bytes.formatBytes(stat.getXferspeed()) + "/s");
+				raceenv.add("user", stat.getUsername());
+				raceenv.add("group", raceuser.getGroup());
+				raceenv.add("files", "" + stat.getFiles());
+				raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
+				raceenv.add("position", String.valueOf(position));
+				raceenv.add("percent",
+						Integer.toString(
+								(stat.getFiles() * 100) / sfvInfo.getSize()) + "%");
+
+				try {
+					racetext += (SimplePrintf.jprintf(racerline,
+							raceenv) + "\n");
+					position++;
+				} catch (FormatterException e) {
+					logger.warn(e);
+				}
+			}
+
+			racetext += bundle.getString("cwd.racers.footer") + "\n";
+			racetext += bundle.getString("cwd.groups.header") + "\n";
+
+			//add groups stats
+			position = 1;
+
+			for (GroupPosition stat: groups) {
+				ReplacerEnvironment raceenv = new ReplacerEnvironment();
+
+				raceenv.add("group", stat.getGroupname());
+				raceenv.add("position", String.valueOf(position));
+				raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
+				raceenv.add("files", Integer.toString(stat.getFiles()));
+				raceenv.add("percent",
+						Integer.toString(
+								(stat.getFiles() * 100) / sfvInfo.getSize()) + "%");
+				raceenv.add("speed",
+						Bytes.formatBytes(stat.getXferspeed()) + "/s");
+
+				try {
+					racetext += (SimplePrintf.jprintf(groupline,
+							raceenv) + "\n");
+					position++;
+				} catch (FormatterException e) {
+					logger.warn(e);
+				}
+			}
+
+			racetext += bundle.getString("cwd.groups.footer") + "\n";
+
+			env.add("completefiles", Integer.toString(sfvStatus.getPresent()));
+			env.add("totalfiles", Integer.toString(sfvInfo.getSize()));
+			env.add("totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
+			env.add("totalspeed",
+					Bytes.formatBytes(getXferspeed(dir, sfvData)) + "/s");
+			env.add("totalpercent",
+					Integer.toString(
+							(sfvStatus.getPresent() * 100) / sfvInfo.getSize()) +
+							"%");
+
+			racetext += bundle.getString("cwd.totals.body") + "\n";
+			racetext += bundle.getString("cwd.racestats.footer") + "\n";
+
+			try {
+				raceformat = ReplacerFormat.createFormat(racetext);
+			} catch (FormatterException e1) {
+				logger.warn(e1);
+			}
+
+			try {
+				if (raceformat == null) {
+					response.addComment("cwd.uploaders");
+				} else {
+					response.addComment(SimplePrintf.jprintf(raceformat, env));
+				}
+			} catch (FormatterException e) {
+				response.addComment("cwd.uploaders");
+				logger.warn("", e);
+			}
+		} catch (RuntimeException ex) {
+			logger.error("", ex);
+		} catch (FileNotFoundException e) {
+			//Error fetching SFV, ignore
+		} catch (NoAvailableSlaveException e) {
+			//Error fetching SFV, ignore
 		}
 	}
 
@@ -337,7 +471,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 	 */
 
 	private Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-		throws FileNotFoundException, NoAvailableSlaveException {
+	throws FileNotFoundException, NoAvailableSlaveException {
 		Collection<FileHandle> files = new ArrayList<FileHandle>();
 		SFVInfo sfvInfo = sfvData.getSFVInfo();
 
@@ -351,7 +485,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 	}
 
 	private long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-		throws FileNotFoundException, NoAvailableSlaveException {
+	throws FileNotFoundException, NoAvailableSlaveException {
 		long totalBytes = 0;
 
 		for (FileHandle file : getSFVFiles(dir, sfvData)) {
@@ -363,7 +497,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 	}
 
 	private long getSFVTotalXfertime(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-		throws FileNotFoundException, NoAvailableSlaveException {
+	throws FileNotFoundException, NoAvailableSlaveException {
 		long totalXfertime = 0;
 
 		for (FileHandle file : getSFVFiles(dir, sfvData)) {
@@ -375,12 +509,12 @@ public class ZipscriptPostHook implements PostHookInterface {
 	}
 
 	private long getXferspeed(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-		throws FileNotFoundException, NoAvailableSlaveException {
+	throws FileNotFoundException, NoAvailableSlaveException {
 		long totalXfertime = getSFVTotalXfertime(dir, sfvData);
-        if (totalXfertime / 1000 == 0) {
-            return 0;
-        }
+		if (totalXfertime / 1000 == 0) {
+			return 0;
+		}
 
-        return getSFVTotalBytes(dir, sfvData) / (totalXfertime / 1000);
-    }
+		return getSFVTotalBytes(dir, sfvData) / (totalXfertime / 1000);
+	}
 }

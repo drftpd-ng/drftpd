@@ -52,7 +52,6 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferStatus;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ListUtils;

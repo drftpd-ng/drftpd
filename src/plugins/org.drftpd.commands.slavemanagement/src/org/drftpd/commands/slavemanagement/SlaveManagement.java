@@ -223,7 +223,7 @@ public class SlaveManagement extends CommandInterface {
     public CommandResponse doSITE_SLAVE(CommandRequest request) throws ImproperUsageException {
     	Session session = request.getSession();
 
-        CommandResponse response = new CommandResponse(200);
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!request.hasArgument()) {
@@ -348,7 +348,7 @@ public class SlaveManagement extends CommandInterface {
     public CommandResponse doSITE_DELSLAVE(CommandRequest request) throws ImproperUsageException {
     	Session session = request.getSession();
     	
-        CommandResponse response = new CommandResponse(200);
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!request.hasArgument()) {
@@ -384,7 +384,7 @@ public class SlaveManagement extends CommandInterface {
     public CommandResponse doSITE_ADDSLAVE(CommandRequest request) throws ImproperUsageException {
     	Session session = request.getSession();
 
-        CommandResponse response = new CommandResponse(200);
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         ReplacerEnvironment env = new ReplacerEnvironment();
 
         if (!request.hasArgument()) {

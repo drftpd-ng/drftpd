@@ -96,7 +96,15 @@ public abstract class CommandInterface implements EventSubscriber {
 					Method m = postHookInstance.getClass().getMethod(
 							postHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class, CommandResponse.class});
-					_postHooks.put(new Integer(postHook.getParameter("Priority").valueAsNumber().intValue()),
+					int priority = postHook.getParameter("Priority").valueAsNumber().intValue();
+					if (_postHooks.containsKey(new Integer(priority))) {
+						logger.warn(pluginName + " already has a post hook with priority " +
+								priority + " adding " + postHook.getId() + " with next available priority");
+						while (_postHooks.containsKey(new Integer(priority))) {
+							priority++;
+						}
+					}
+					_postHooks.put(new Integer(priority),
 							new HookContainer<PostHookInterface>(m,postHookInstance));
 				}
 				catch(Exception e) {
@@ -141,7 +149,15 @@ public abstract class CommandInterface implements EventSubscriber {
 					Method m = preHookInstance.getClass().getMethod(
 							preHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class});
-					_preHooks.put(new Integer(preHook.getParameter("Priority").valueAsNumber().intValue()),
+					int priority = preHook.getParameter("Priority").valueAsNumber().intValue();
+					if (_preHooks.containsKey(new Integer(priority))) {
+						logger.warn(pluginName + " already has a pre hook with priority " +
+								priority + " adding " + preHook.getId() + " with next available priority");
+						while (_preHooks.containsKey(new Integer(priority))) {
+							priority++;
+						}
+					}
+					_preHooks.put(new Integer(priority),
 							new HookContainer<PreHookInterface>(m,preHookInstance));
 				}
 				catch(Exception e) {

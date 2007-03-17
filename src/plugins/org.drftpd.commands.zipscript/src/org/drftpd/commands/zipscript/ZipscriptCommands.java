@@ -20,10 +20,15 @@ package org.drftpd.commands.zipscript;
 import java.io.FileNotFoundException;
 import java.util.Map.Entry;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
+
+import org.apache.log4j.Logger;
 import org.drftpd.Checksum;
+import org.drftpd.GlobalContext;
 import org.drftpd.SFVInfo;
+import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -33,6 +38,8 @@ import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.LinkHandle;
+import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
 
 /**
@@ -40,6 +47,8 @@ import org.drftpd.vfs.VirtualFileSystem;
  * @version $Id$
  */
 public class ZipscriptCommands extends CommandInterface {
+
+	private static final Logger logger = Logger.getLogger(ZipscriptCommands.class);
 
 	public CommandResponse doSITE_RESCAN(CommandRequest request) throws ImproperUsageException {
 
@@ -66,7 +75,7 @@ public class ZipscriptCommands extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
 		dirs.add(request.getCurrentDirectory());
-		while (dirs.size() > 0 ) {
+		while (dirs.size() > 0) {
 			DirectoryHandle workingDir = dirs.poll();
 			SFVInfo workingSfv;
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(workingDir);
@@ -134,6 +143,88 @@ public class ZipscriptCommands extends CommandInterface {
 				response.addComment(file.getName() + " SFV: " +
 						Checksum.formatChecksum(sfvChecksum) + " SLAVE: " +
 						Checksum.formatChecksum(fileChecksum) + " " + status);
+			}
+			Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
+				getPropertiesForPlugin("zipscript.conf");
+			// Check if incomplete links are enabled
+			if (cfg.getProperty("incomplete.links").equals("true")) {
+				// check incomplete status and update links
+				CommandRequest tempReq = (CommandRequest) request.clone();
+				tempReq.setCurrentDirectory(workingDir);
+				try {
+					SFVStatus sfvStatus = sfvData.getSFVStatus();
+					if (sfvStatus.isFinished()) {
+						// dir is complete, remove link if needed
+						LinkUtils.processLink(tempReq, "delete");
+					}
+					else {
+						// dir is incomplete, add link if needed
+						LinkUtils.processLink(tempReq, "create");
+					}
+				} catch (NoAvailableSlaveException e) {
+					// Slave holding sfv is unavailable
+				} catch (FileNotFoundException e) {
+					// No sfv in dir
+				}
+			}
+		}
+		return response;
+	}
+
+	public CommandResponse doSITE_FIXLINKS(CommandRequest request) throws ImproperUsageException {
+		if (request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+		dirs.add(request.getCurrentDirectory());
+		while (dirs.size() > 0) {
+			DirectoryHandle workingDir = dirs.poll();
+			try {
+				for (LinkHandle link : workingDir.getLinks()) {
+					try {
+						link.getTargetDirectory().getPath();
+					} catch (FileNotFoundException e1) {
+						// Link target no longer exists, remote it
+						link.delete();
+					} catch (ObjectNotValidException e1) {
+						// Link target isn't a directory, delete the link as it is bad
+						link.delete();
+						continue;
+					}
+				}
+			} catch (FileNotFoundException e2) {
+				logger.warn("Invalid link in dir " + workingDir.getPath(),e2);
+			}
+			try {
+				dirs.addAll(workingDir.getDirectories());
+			}
+			catch (FileNotFoundException e1) {
+				response.addComment("Error recursively listing: "+workingDir.getPath());
+			}
+			Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
+			getPropertiesForPlugin("zipscript.conf");
+			// Check if incomplete links are enabled
+			if (cfg.getProperty("incomplete.links").equals("true")) {
+				// check incomplete status and update links
+				CommandRequest tempReq = (CommandRequest) request.clone();
+				tempReq.setCurrentDirectory(workingDir);
+				try {
+					ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(workingDir);
+					SFVStatus sfvStatus = sfvData.getSFVStatus();
+					if (sfvStatus.isFinished()) {
+						// dir is complete, remove link if needed
+						LinkUtils.processLink(tempReq, "delete");
+					}
+					else {
+						// dir is incomplete, add link if needed
+						LinkUtils.processLink(tempReq, "create");
+					}
+				} catch (NoAvailableSlaveException e) {
+					// Slave holding sfv is unavailable
+				} catch (FileNotFoundException e) {
+					// No sfv in dir
+				}
 			}
 		}
 		return response;
