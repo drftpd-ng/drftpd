@@ -20,8 +20,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.NoSuchElementException;
 import java.util.Properties;
@@ -42,14 +44,19 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.ConnectionManager;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.master.Session;
+import org.drftpd.master.TransferState;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Statistics;
+import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.util.FtpRequest;
 import org.drftpd.util.ReplacerUtils;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -1842,195 +1849,91 @@ public class UserManagementHandler extends CommandInterface {
 	/**
 	 * Lists currently connected users.
 	 */
-	public CommandResponse doSITE_WHO(CommandRequest request) {
+	public CommandResponse doListConnections(CommandRequest request, boolean swho) {
 		Session session = request.getSession();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		long users = 0;
+		
+		String type = swho ? "swho" : "who";
+		
 		long speedup = 0;
 		long speeddn = 0;
 		long speed = 0;
 
-		try {
-			ReplacerFormat formatup = ReplacerUtils.finalFormat(
-					_bundle, "who.up");
-			ReplacerFormat formatdown = ReplacerUtils.finalFormat(
-					_bundle, "who.down");
-			ReplacerFormat formatidle = ReplacerUtils.finalFormat(
-					_bundle, "who.idle");
-			ReplacerFormat formatcommand = ReplacerUtils.finalFormat(
-					_bundle, "who.command");
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-					GlobalContext.getConnectionManager().getConnections());
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		
+		List<BaseFtpConnection> conns = Collections.unmodifiableList(ConnectionManager.getConnectionManager().getConnections());
+		for (BaseFtpConnection conn : conns) {
+			if (!conn.isAuthenticated()) {
+				continue;
+			}
+			
+			User user;
 
-			for (Iterator iter = conns.iterator(); iter.hasNext();) {
-				BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
+			try {
+				user = conn.getUser();
+			} catch (NoSuchUserException e) {
+				// user was deleted maybe? who knows?
+				// very unlikely to happen.
+				continue;
+			}
 
-				if (conn2.isAuthenticated()) {
-					users++;
+			if (GlobalContext.getGlobalContext().getConfig().
+					checkPathPermission("hideinwho", user,	conn.getCurrentDirectory())) {
+				continue;
+			}
 
-					User user;
+			// StringBuffer status = new StringBuffer();
+			env.add("targetuser", user.getName());
+			env.add("ip", conn.getClientAddress().getHostAddress());
 
-					try {
-						user = conn2.getUser();
-					} catch (NoSuchUserException e) {
-						continue;
+			synchronized (conn) {
+				TransferState ts = conn.getTransferState();
+				String command = request.getCommand();
+				
+				env.add("idle", Time.formatTime(System.currentTimeMillis() - conn.getLastActive()));
+				
+				if (!conn.isExecuting()) {
+					response.addComment(conn.jprintf(_bundle, type+".idle", env, request.getUser()));
+				} else if (ts.isTransfering()) {
+					speed = ts.getTransfer().getXferSpeed();
+					env.add("speed", Bytes.formatBytes(speed)+"/s");
+					env.add("slave", ts.getTransferSlave().getName());
+					env.add("file", ts.getTransferFile().getPath());
+					char direction = ts.getDirection(new FtpRequest(command));
+					if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+						response.addComment(conn.jprintf(_bundle, type+".up", env, request.getUser()));
+						speedup += speed;
 					}
-
-					if (GlobalContext.getGlobalContext().getConfig()
-							.checkPathPermission("hideinwho", user,
-									conn2.getCurrentDirectory())) {
-						continue;
+					else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+						response.addComment(conn.jprintf(_bundle, type+".down", env, request.getUser()));
+						speeddn += speed;
 					}
-
-					// StringBuffer status = new StringBuffer();
-					env.add("idle", Time.formatTime(System.currentTimeMillis()
-							- conn2.getLastActive()));
-					env.add("targetuser", user.getName());
-					/*
-					 * synchronized (conn2.getDataConnectionHandler()) { if
-					 * (!conn2.isExecuting()) {
-					 * response.addComment(SimplePrintf.jprintf( formatidle,
-					 * env)); } else if (conn2.getDataConnectionHandler()
-					 * .isTransfering()) { try { speed =
-					 * conn2.getDataConnectionHandler()
-					 * .getTransfer().getXferSpeed(); } catch
-					 * (ObjectNotFoundException e) { logger.debug("This is a
-					 * bug, please report it", e); speed = 0; } env.add("speed",
-					 * Bytes.formatBytes(speed) + "/s"); env.add("file",
-					 * conn2.getDataConnectionHandler()
-					 * .getTransferFile().getName()); env.add("slave",
-					 * conn2.getDataConnectionHandler()
-					 * .getTranferSlave().getName());
-					 *
-					 * if (conn2.getDirection() ==
-					 * Transfer.TRANSFER_RECEIVING_UPLOAD) {
-					 * response.addComment(SimplePrintf.jprintf( formatup,
-					 * env)); speedup += speed; } else if (conn2.getDirection() ==
-					 * Transfer.TRANSFER_SENDING_DOWNLOAD) {
-					 * response.addComment(SimplePrintf.jprintf( formatdown,
-					 * env)); speeddn += speed; } } else { env.add("command",
-					 * conn2.getRequest().getCommand());
-					 * response.addComment(SimplePrintf.jprintf( formatcommand,
-					 * env)); } }
-					 */
-					// Have to move data from DataConnectionHandler to
-					// BaseFtpConnection
+				} else {
+					env.add("command", command);
+					response.addComment(conn.jprintf(_bundle, type+".command", env, request.getUser()));
 				}
 			}
 
-			env.add("currentusers", "" + users);
-			env.add("maxusers", ""
-					+ GlobalContext.getGlobalContext().getConfig().getMaxUsersTotal());
-			env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
-			env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
-			response.addComment("");
-			response.addComment(session.jprintf(_bundle,
-					"who.statusspeed", env, request.getUser()));
-			response.addComment(session.jprintf(_bundle,
-					"who.statususers", env, request.getUser()));
-
-			return response;
-		} catch (FormatterException e) {
-			return new CommandResponse(452, e.getMessage());
 		}
+
+		env.add("currentusers", conns.size());
+		env.add("maxusers", GlobalContext.getGlobalContext().getConfig().getMaxUsersTotal());
+		env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
+		env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
+		response.addComment("");
+		response.addComment(session.jprintf(_bundle, type+".statusspeed", env, request.getUser()));
+		response.addComment(session.jprintf(_bundle, type+".statususers", env, request.getUser()));
+
+		return response;
 	}
+	
 
 	public CommandResponse doSITE_SWHO(CommandRequest request) {
-		Session session = request.getSession();
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		long users = 0;
-		long speedup = 0;
-		long speeddn = 0;
-		long speed = 0;
-
-		try {
-			ReplacerFormat formatup = ReplacerUtils.finalFormat(
-					_bundle, "swho.up");
-			ReplacerFormat formatdown = ReplacerUtils.finalFormat(
-					_bundle, "swho.down");
-			ReplacerFormat formatidle = ReplacerUtils.finalFormat(
-					_bundle, "swho.idle");
-			ReplacerFormat formatcommand = ReplacerUtils.finalFormat(
-					_bundle, "swho.command");
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-					GlobalContext.getConnectionManager().getConnections());
-
-			for (Iterator iter = conns.iterator(); iter.hasNext();) {
-				BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
-
-				if (conn2.isAuthenticated()) {
-					users++;
-
-					User user;
-
-					try {
-						user = conn2.getUser();
-					} catch (NoSuchUserException e) {
-						continue;
-					}
-
-					// if
-					// (conn.getGlobalContext().getConfig().checkPathPermission("hideinwho",
-					// user, conn2.getCurrentDirectory())) {
-					// continue;
-					// }
-
-					// StringBuffer status = new StringBuffer();
-					env.add("idle", Time.formatTime(System.currentTimeMillis()
-							- conn2.getLastActive()));
-					env.add("targetuser", user.getName());
-					env.add("ip", conn2.getClientAddress().getHostAddress());
-
-					/*
-					 * synchronized (conn2.getDataConnectionHandler()) { if
-					 * (!conn2.isExecuting()) {
-					 * response.addComment(SimplePrintf.jprintf( formatidle,
-					 * env)); } else if (conn2.getDataConnectionHandler()
-					 * .isTransfering()) { try { speed =
-					 * conn2.getDataConnectionHandler()
-					 * .getTransfer().getXferSpeed(); } catch
-					 * (ObjectNotFoundException e) { logger.debug("This is a
-					 * bug, please report it", e); } env.add("speed",
-					 * Bytes.formatBytes(speed) + "/s"); env.add("file",
-					 * conn2.getDataConnectionHandler()
-					 * .getTransferFile().getName()); env.add("slave",
-					 * conn2.getDataConnectionHandler()
-					 * .getTranferSlave().getName());
-					 *
-					 * if (conn2.getTransferDirection() ==
-					 * Transfer.TRANSFER_RECEIVING_UPLOAD) {
-					 * response.addComment(SimplePrintf.jprintf( formatup,
-					 * env)); speedup += speed; } else if
-					 * (conn2.getTransferDirection() ==
-					 * Transfer.TRANSFER_SENDING_DOWNLOAD) {
-					 * response.addComment(SimplePrintf.jprintf( formatdown,
-					 * env)); speeddn += speed; } } else { env.add("command",
-					 * conn2.getRequest().getCommand());
-					 * response.addComment(SimplePrintf.jprintf( formatcommand,
-					 * env)); } }
-					 */
-					// Have to move data from DataConnectionHandler to
-					// BaseFtpConnection
-				}
-			}
-
-			env.add("currentusers", "" + users);
-			env.add("maxusers", ""
-					+ GlobalContext.getGlobalContext().getConfig().getMaxUsersTotal());
-			env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
-			env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
-			response.addComment("");
-			response.addComment(session.jprintf(_bundle,
-					"swho.statusspeed", env, request.getUser()));
-			response.addComment(session.jprintf(_bundle,
-					"swho.statususers", env, request.getUser()));
-
-			return response;
-		} catch (FormatterException e) {
-			return new CommandResponse(452, e.getMessage());
-		}
+		return doListConnections(request, true);
+	}
+	
+	public CommandResponse doSITE_WHO(CommandRequest request) {
+		return doListConnections(request, false);
 	}
 
 	public CommandResponse doSITE_BAN(CommandRequest request)

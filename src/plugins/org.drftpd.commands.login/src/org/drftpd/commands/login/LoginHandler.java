@@ -37,6 +37,7 @@ import org.drftpd.master.FtpReply;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
@@ -214,8 +215,12 @@ public class LoginHandler extends CommandInterface {
                 	return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
                 }
 
+                
+                ReplacerEnvironment env = new ReplacerEnvironment();
+                env.add("user", newUser.getName());
+                
                 return new CommandResponse(331,
-                        conn.jprintf(_bundle, "user.success", request.getUser()),
+                        conn.jprintf(_bundle, "user.success", env, request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());
             }
         } catch (MalformedPatternException e) {

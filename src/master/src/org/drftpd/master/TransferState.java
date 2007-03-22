@@ -256,7 +256,7 @@ public class TransferState {
 		_transfer = transfer;
 	}
 	
-	public boolean isTransferring() {
+	public boolean isTransfering() {
 		return getTransfer() != null;
 	}
 	

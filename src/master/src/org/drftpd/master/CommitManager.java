@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.drftpd.usermanager.AbstractUser;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.VirtualFileSystemInode;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
@@ -39,7 +39,7 @@ public class CommitManager {
 
 	private static final Logger logger = Logger.getLogger(CommitManager.class);
 	
-	private static Map<AbstractUser, Date> _commitUser = null;
+	private static Map<User, Date> _commitUser = null;
 	private static Map<VirtualFileSystemInode, Date> _commitInode = null;
 	private static Map<RemoteSlave, Date> _commitSlave = null;
 	
@@ -48,13 +48,13 @@ public class CommitManager {
 	}
 	
 	public static void start() {
-		_commitUser = new HashMap<AbstractUser, Date>();
+		_commitUser = new HashMap<User, Date>();
 		_commitInode = new HashMap<VirtualFileSystemInode, Date>();
 		_commitSlave = new HashMap<RemoteSlave, Date>();
 		new Thread(new CommitHandler()).start();
 	}
 	
-	public static void add(AbstractUser user) {
+	public static void add(User user) {
 		synchronized(_commitUser) {
 			// overwrites previous value if it exists
 			_commitUser.put(user, new Date());
