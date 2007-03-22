@@ -30,12 +30,15 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLSocket;
 
@@ -112,11 +115,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 	
 	protected DirectoryHandle _currentDirectory;
 
-	/**
-	 * Is the client running a command?
-	 */
-	protected boolean _executing;
-
 	private BufferedReader _in;
 
 	/**
@@ -138,7 +136,11 @@ public class BaseFtpConnection extends Session implements Runnable {
 	protected Thread _thread;
 
 	protected String _user;
-	
+
+	private ThreadPoolExecutor _pool;
+
+	private boolean _authDone = false;
+
 	protected BaseFtpConnection() {
 	}
 
@@ -334,7 +336,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * Returns true if client is executing a command.
 	 */
 	public boolean isExecuting() {
-		return _executing;
+		return _pool.getActiveCount() > 0;
 	}
 
 	public boolean isSecure() {
@@ -371,6 +373,9 @@ public class BaseFtpConnection extends Session implements Runnable {
 			_thread.setName("FtpConn thread " + _thread.getId()
 					+ " from <iphidden>");
 		}
+		_pool = (ThreadPoolExecutor) new ThreadPoolExecutor(1, Integer.MAX_VALUE,
+                60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                new CommandThreadFactory(_thread.getName()));
 
 		try {
 			// in =
@@ -412,6 +417,9 @@ public class BaseFtpConnection extends Session implements Runnable {
 					int idleTime;
 					try {
 						idleTime = getUser().getIdleTime();
+						if (idleTime > 0) {
+							_pool.setKeepAliveTime(idleTime, TimeUnit.SECONDS);
+						}
 					} catch (NoSuchUserException e) {
 						idleTime = 60;
 						// user not logged in yet
@@ -451,9 +459,13 @@ public class BaseFtpConnection extends Session implements Runnable {
 				}
 
 				// execute command
-				_executing = true;
-				service(_request, _out);
-				_executing = false;
+				_pool.execute(new CommandThread(_request, this));
+				if (_request.getCommand().equalsIgnoreCase("AUTH")) {
+					while(!_authDone) {
+						Thread.sleep(100);
+					}
+				}
+				poolStatus();
 				_lastActive = System.currentTimeMillis();
 			}
 
@@ -489,49 +501,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 			}
 
 			GlobalContext.getConnectionManager().remove(this);
-		}
-	}
-
-	/**
-	 * Execute the ftp command.
-	 */
-	/*public void service(FtpRequest request, PrintWriter out) throws IOException {
-		Reply reply;
-
-		try {
-			reply = _commandManager.execute(this);
-		} catch (Throwable e) {
-			int replycode = e instanceof ReplyException ? ((ReplyException) e)
-					.getReplyCode() : 500;
-			reply = new Reply(replycode, e.getMessage());
-			try {
-				if (getUser().getKeyedMap().getObjectBoolean(
-						UserManagement.DEBUG)) {
-					StringWriter sw = new StringWriter();
-					e.printStackTrace(new PrintWriter(sw));
-					reply.addComment(sw.toString());
-				}
-			} catch (NoSuchUserException e1) {
-			}
-			logger.warn("", e);
-		}
-
-		if (reply != null) {
-			out.print(reply);
-		}
-	}*/
-	public void service(FtpRequest ftpRequest, PrintWriter out) {
-		CommandRequestInterface cmdRequest = _commandManager.newRequest(
-				ftpRequest.getCommand(), ftpRequest.getArgument(),
-				_currentDirectory, _user, this, getCommands().get(ftpRequest.getCommand()));
-		CommandResponseInterface cmdResponse = _commandManager
-				.execute(cmdRequest);
-		if (cmdResponse != null) {
-			if (cmdResponse.getCurrentDirectory() instanceof DirectoryHandle)
-				_currentDirectory = cmdResponse.getCurrentDirectory();
-			if (cmdResponse.getUser() instanceof String)
-				_user = cmdResponse.getUser();
-			out.print(new FtpReply(cmdResponse));
 		}
 	}
 
@@ -675,6 +644,62 @@ public class BaseFtpConnection extends Session implements Runnable {
 			for (BaseFtpConnection conn : conns)
 				if (conn.getUsername().equals(oldUsername))
 					conn.setUser(newUsername);
+		}
+	}
+
+	public synchronized void printOutput(Object o) {
+		_out.print(o);
+		_out.flush();
+	}
+
+	public void authDone() {
+		_authDone = true;
+	}
+
+	public void poolStatus() {
+		logger.debug("pool size: "+_pool.getPoolSize());
+		logger.debug("active threads: "+_pool.getActiveCount());
+	}
+
+	class CommandThread implements Runnable {
+
+		private FtpRequest _ftpRequest;
+
+		private BaseFtpConnection _conn;
+
+		private CommandThread(FtpRequest ftpRequest, BaseFtpConnection conn) {
+			_ftpRequest = ftpRequest;
+			_conn = conn;
+		}
+
+		public void run() {
+			CommandRequestInterface cmdRequest = _commandManager.newRequest(
+					_ftpRequest.getCommand(), _ftpRequest.getArgument(),
+					_currentDirectory, _user, _conn, _conn.getCommands().get(_ftpRequest.getCommand()));
+			CommandResponseInterface cmdResponse = _commandManager
+				.execute(cmdRequest);
+			if (cmdResponse != null) {
+				if (cmdResponse.getCurrentDirectory() instanceof DirectoryHandle)
+					_currentDirectory = cmdResponse.getCurrentDirectory();
+				if (cmdResponse.getUser() instanceof String)
+					_user = cmdResponse.getUser();
+				printOutput(new FtpReply(cmdResponse));
+			}
+		}
+	}
+
+	class CommandThreadFactory implements ThreadFactory {
+
+		String _parentName;
+
+		private CommandThreadFactory(String parentName) {
+			_parentName = parentName;
+		}
+
+		public Thread newThread(Runnable r) {
+			Thread ret = Executors.defaultThreadFactory().newThread(r);
+			ret.setName(_parentName + " - " + ret.getName());
+			return ret;
 		}
 	}
 }

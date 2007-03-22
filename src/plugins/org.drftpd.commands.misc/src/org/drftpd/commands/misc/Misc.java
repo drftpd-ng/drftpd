@@ -35,6 +35,8 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.FtpReply;
+import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.Slave;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -71,16 +73,21 @@ public class Misc extends CommandInterface {
      * Current implementation does not do anything. As here data
      * transfers are not multi-threaded.
      */
-    public CommandResponse doABOR(CommandRequest request) {
-    	return StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+	public CommandResponse doABOR(CommandRequest request) {
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+    	RemoteTransfer transfer = conn.getTransferState().getTransfer();
+    	if (transfer != null) {
+    		transfer.abort("Transfer aborted.");
+    		conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED")));
+    	}
+    	return new CommandResponse(226, request.getCommand() + " command successful");
     }
 
     // LIST;NLST;RETR;STOR
     public CommandResponse doFEAT(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        PrintWriter out = conn.getControlWriter();
         ArrayList<String> featFound = new ArrayList<String>();
-        out.print("211-Extensions supported:\r\n");
+        conn.printOutput("211-Extensions supported:\r\n");
 
         for (CommandInstanceContainer container : _cManager.getCommandHandlersMap().values()) {
         	CommandInterface hnd = container.getCommandInterfaceInstance();
@@ -91,13 +98,13 @@ public class Misc extends CommandInterface {
         	
         	for (int i = 0; i < feat.length; i++) {
                 if (!featFound.contains(feat[i])) {
-                	out.print(" " + feat[i] + "\r\n");
+                	conn.printOutput(" " + feat[i] + "\r\n");
                 	featFound.add(feat[i]);
                 }
             }
         }
 
-        out.print("211 End\r\n");
+        conn.printOutput("211 End\r\n");
 
         return null;
     }

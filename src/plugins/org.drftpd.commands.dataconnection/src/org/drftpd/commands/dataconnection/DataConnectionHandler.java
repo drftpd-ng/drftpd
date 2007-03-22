@@ -88,9 +88,8 @@ public class DataConnectionHandler extends CommandInterface {
         Socket s = conn.getControlSocket();
 
         //reply success
-        conn.getControlWriter().write(new FtpReply(234, request.getCommand()
-        		+ request.getArgument() + " successful").toString());
-        conn.getControlWriter().flush();
+        conn.printOutput(new FtpReply(234, request.getCommand()
+        		+ " " + request.getArgument() + " successful").toString());
         SSLSocket s2 = null;
         try {
             s2 = (SSLSocket) ctx.getSocketFactory().createSocket(s,
@@ -99,6 +98,7 @@ public class DataConnectionHandler extends CommandInterface {
             s2.setUseClientMode(false);
             s2.setSoTimeout(10000);
             s2.startHandshake();
+            conn.authDone();
         } catch (IOException e) {
             logger.warn("", e);
             if (s2 != null) {
