@@ -862,7 +862,7 @@ public class DataConnectionHandler extends CommandInterface {
 //          Checks maxsim up/down
             // _simup OR _simdown = 0, exempt
             int comparison = 0;
-            int count = conn.transferCounter(direction);
+            int count = BaseFtpConnection.countTransfersForUser(conn.getUserNull(), direction);
             env.add("maxsim", count);
 
             if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {

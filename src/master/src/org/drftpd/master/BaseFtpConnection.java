@@ -28,9 +28,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -488,15 +486,17 @@ public class BaseFtpConnection extends Session implements Runnable {
 				try {
 					getUser().updateLastAccessTime();
 				} catch (NoSuchUserException e) {
-					logger
-							.error("User does not exist, yet user is authenticated, this is a bug");
+					logger.error("User does not exist, yet user is authenticated, this is a bug");
 				}
-				getGlobalContext().dispatchFtpEvent(
-						new ConnectionEvent(getUserNull(), "LOGOUT"));
+				
+				getGlobalContext().dispatchFtpEvent(new ConnectionEvent(getUserNull(), "LOGOUT"));
 			}
 
 			GlobalContext.getConnectionManager().remove(this);
 			GlobalContext.getConnectionManager().dumpThreadPool();
+			
+			Thread t = Thread.currentThread();
+			t.setName(ConnectionThreadFactory.getIdleThreadName(t.getId()));
 		}
 	}
 
@@ -602,25 +602,17 @@ public class BaseFtpConnection extends Session implements Runnable {
 		return _controlSocket.getOutputStream();
 	}
 
-	public int transferCounter(char transferDirection) {
-		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-				GlobalContext.getConnectionManager().getConnections());
+	public static int countTransfersForUser(User user, char transferDirection) {
+		List<BaseFtpConnection> conns = Collections.unmodifiableList(GlobalContext.getConnectionManager().getConnections());
+		
 		int count = 0;
-		for (Iterator<BaseFtpConnection> iter = conns.iterator(); iter
-				.hasNext();) {
-			BaseFtpConnection conn2 = iter.next();
-
-			/*
-			 * synchronized (conn2.getDataConnectionHandler()) {
-			 * 
-			 * if (conn2.getUserNull() == getUserNull()) { if
-			 * (!conn2.isExecuting()) { continue; } if
-			 * (conn2.getDataConnectionHandler().isTransfering() &&
-			 * (conn2.getTransferDirection() == transferDirection)) { count++; } } }
-			 */
-			// This needs to be addressed after session
-			// information is stored in BaseFtpConnection and not
-			// DataConnectionHandler
+		for (BaseFtpConnection conn : conns) {
+			if (conn.getUserNull() == user) {
+				if (conn.getTransferState().isTransfering() &&
+						conn.getTransferDirection() == transferDirection) {
+					count++;
+				} // else we dont need to process it.
+			}
 		}
 		return count;
 	}

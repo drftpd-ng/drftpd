@@ -29,7 +29,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -194,8 +196,8 @@ public class ConnectionManager implements EventSubscriber {
 		int maxAliveThreads = maxUserConnected + getGlobalContext().getConfig().getMaxUsersExempt();
 		int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
 		
-		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3, TimeUnit.MINUTES, 
-				new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.DiscardPolicy ());
+		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS, 
+				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.DiscardPolicy ());
 		
 		// that's java1.6, can't used this for now.
 		// _pool.allowCoreThreadTimeOut(false);
@@ -408,4 +410,16 @@ public class ConnectionManager implements EventSubscriber {
 			}
 		}
 	}
+}
+
+class ConnectionThreadFactory implements ThreadFactory {
+	public static String getIdleThreadName(long threadId) {
+		return "FtpConnection Handler-"+ threadId + " - Waiting for connections";
+	}
+	
+	public Thread newThread(Runnable r) {
+		Thread t = Executors.defaultThreadFactory().newThread(r);
+		t.setName(getIdleThreadName(t.getId()));
+		return t;
+	}	
 }

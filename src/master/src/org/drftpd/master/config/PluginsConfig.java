@@ -100,6 +100,11 @@ public class PluginsConfig {
 			Properties cfg = new Properties();
 			cfg.load(fis);
 
+			String skipTag = cfg.getProperty("skip");
+			if (skipTag != null && skipTag.equals("true")) {
+				return; // we were told to skip the file.				
+			}
+			
 			getPropertiesMap().put(file.getName(), cfg);
 		} catch (FileNotFoundException e) {
 			logger.error("Weird the file was just there, how come it's gone?", e);
