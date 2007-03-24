@@ -573,7 +573,7 @@ public class Slave {
 
 	public Transfer getTransfer(TransferIndex index) {
 		synchronized (_transfers) {
-			return (Transfer) _transfers.get(index);
+			return _transfers.get(index);
 		}
 	}
 

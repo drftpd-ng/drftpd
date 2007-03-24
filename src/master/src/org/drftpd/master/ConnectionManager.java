@@ -24,11 +24,14 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.Security;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Vector;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 
 import org.apache.log4j.Logger;
@@ -63,8 +66,9 @@ public class ConnectionManager implements EventSubscriber {
 
 	private CommandManagerInterface _commandManager = null;
 
-	private List<BaseFtpConnection> _conns = Collections
-			.synchronizedList(new ArrayList<BaseFtpConnection>());
+	private List<BaseFtpConnection> _conns = new Vector<BaseFtpConnection>();
+	
+	private ThreadPoolExecutor _pool;
 
 	/**
 	 * If you're creating a ConnectionManager object and it's not part of a TestCase
@@ -168,8 +172,10 @@ public class ConnectionManager implements EventSubscriber {
 						.getProperty(cfg, "master.port")));
 				logger.info("Listening on port " + server.getLocalPort());
 			}
-
-			while (true) {
+			
+			getConnectionManager().createThreadPool();
+			
+			while (true) {		
 				getConnectionManager().start(server.accept());
 			}
 
@@ -181,6 +187,26 @@ public class ConnectionManager implements EventSubscriber {
 
 			return;
 		}
+	}
+	
+	public void createThreadPool() {
+		int maxUserConnected = getGlobalContext().getConfig().getMaxUsersTotal();
+		int maxAliveThreads = maxUserConnected + getGlobalContext().getConfig().getMaxUsersExempt();
+		int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
+		
+		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3, TimeUnit.MINUTES, 
+				new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.DiscardPolicy ());
+		
+		// that's java1.6, can't used this for now.
+		// _pool.allowCoreThreadTimeOut(false);
+		
+		_pool.prestartAllCoreThreads();
+	}
+	
+	public void dumpThreadPool() {
+		logger.debug("Active threads: "+_pool.getActiveCount()+" / Completed Tasks: "+ _pool.getCompletedTaskCount());
+		logger.debug("Pool information - Min # of threads: "+_pool.getCorePoolSize()+" / Max: "+ _pool.getMaximumPoolSize());
+		logger.debug("Current # of threads: " + _pool.getPoolSize());
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
@@ -320,44 +346,6 @@ public class ConnectionManager implements EventSubscriber {
 		return GlobalContext.getGlobalContext();
 	}
 
-	private void loadTimer() {
-		/*
-		 * TimerTask timerLogoutIdle = new TimerTask() { public void run() { try {
-		 * timerLogoutIdle(); } catch (Throwable t) { logger.error("Error in
-		 * timerLogoutIdle TimerTask", t); } } };
-		 * 
-		 * //run every 10 seconds
-		 * getGlobalContext().getTimer().schedule(timerLogoutIdle, 10 * 1000, 10 *
-		 * 1000);
-		 */
-
-		/*
-		 * TimerTask timerSave = new TimerTask() { public void run() { try {
-		 * getGlobalContext().getSlaveManager().saveFilelist();
-		 * 
-		 * try { getGlobalContext().getUserManager().saveAll(); } catch
-		 * (UserFileException e) { logger.log(Level.FATAL, "Error saving all
-		 * users", e); } } catch (Throwable t) { logger.error("Error in
-		 * timerSave TimerTask", t); } } };
-		 */
-		/*
-		 * TimerTask timerGarbageCollect = new TimerTask() { public void run() {
-		 * logger.debug("Memory free before GC :" +
-		 * Bytes.formatBytes(Runtime.getRuntime().freeMemory()) + "/" +
-		 * Bytes.formatBytes(Runtime.getRuntime().totalMemory())); System.gc();
-		 * logger.debug("Memory free after GC :" +
-		 * Bytes.formatBytes(Runtime.getRuntime().freeMemory()) + "/" +
-		 * Bytes.formatBytes(Runtime.getRuntime().totalMemory())); } };
-		 */
-
-		// run every hour
-		// / getGlobalContext().getTimer().schedule(timerSave, 60 * 60 * 1000,
-		// 60 * 60 * 1000);
-		// run every minute
-		// getGlobalContext().getTimer().schedule(timerGarbageCollect, 60 *
-		// 1000, 60 * 1000);
-	}
-
 	public void remove(BaseFtpConnection conn) {
 		if (!_conns.remove(conn)) {
 			throw new RuntimeException("connections.remove() returned false.");
@@ -387,9 +375,8 @@ public class ConnectionManager implements EventSubscriber {
 		 */
 
 		BaseFtpConnection conn = new BaseFtpConnection(sock);
-
 		_conns.add(conn);
-		conn.start();
+		_pool.execute(conn);
 	}
 
 	/**

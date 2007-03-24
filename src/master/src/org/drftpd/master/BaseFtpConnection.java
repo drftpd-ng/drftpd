@@ -362,6 +362,9 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * Server one FTP connection.
 	 */
 	public void run() {
+		_thread = Thread.currentThread();
+		GlobalContext.getConnectionManager().dumpThreadPool();
+		
 		_lastActive = System.currentTimeMillis();
 		if (!GlobalContext.getGlobalContext().getConfig().getHideIps()) {
 			logger.info("Handling new request from "
@@ -373,18 +376,12 @@ public class BaseFtpConnection extends Session implements Runnable {
 			_thread.setName("FtpConn thread " + _thread.getId()
 					+ " from <iphidden>");
 		}
-		_pool = (ThreadPoolExecutor) new ThreadPoolExecutor(1, Integer.MAX_VALUE,
+		
+		_pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE,
                 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
                 new CommandThreadFactory(_thread.getName()));
 
 		try {
-			// in =
-			// new BufferedReader(
-			// new InputStreamReader(_controlSocket.getInputStream()));
-			// out = new PrintWriter(
-			// //new FtpWriter( no need for spying :P
-			// new BufferedWriter(
-			// new OutputStreamWriter(_controlSocket.getOutputStream())));
 			_controlSocket.setSoTimeout(1000);
 
 			if (GlobalContext.getGlobalContext().isShutdown()) {
@@ -398,7 +395,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 			while (!_stopRequest) {
 				_out.flush();
 
-				// notifyObserver();
 				String commandLine = null;
 
 				try {
@@ -441,7 +437,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 					break;
 				}
 
-				// spyRequest(commandLine);
 				if (commandLine.equals("")) {
 					continue;
 				}
@@ -501,6 +496,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 			}
 
 			GlobalContext.getConnectionManager().remove(this);
+			GlobalContext.getConnectionManager().dumpThreadPool();
 		}
 	}
 
