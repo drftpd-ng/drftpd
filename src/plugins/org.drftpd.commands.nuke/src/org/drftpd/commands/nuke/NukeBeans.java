@@ -30,12 +30,11 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.vfs.CaseInsensitiveTreeMap;
+import org.drftpd.misc.LRUMap;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
 
@@ -61,7 +60,7 @@ public class NukeBeans {
 
 	private static String nukeFile = "nukebeans.xml";
 
-	private CaseInsensitiveTreeMap<String, NukeData> _nukes = new CaseInsensitiveTreeMap<String, NukeData>();
+	private LRUMap<String, NukeData> _nukes = new LRUMap<String, NukeData>(200);
 	
 	private ClassLoader _prevCL;
 
@@ -74,7 +73,7 @@ public class NukeBeans {
 	 */
 	public synchronized NukeData get(String path)
 			throws ObjectNotFoundException {
-		NukeData ne = (NukeData) _nukes.get(path);
+		NukeData ne = _nukes.get(path);
 		if (ne == null)
 			throw new ObjectNotFoundException("No nukelog for: " + path);
 		return ne;
@@ -115,7 +114,7 @@ public class NukeBeans {
 	 *             if this path is not on the nukelog.
 	 */
 	public synchronized void remove(String path) throws ObjectNotFoundException {
-		NukeData ne = (NukeData) _nukes.remove(path);
+		NukeData ne = _nukes.remove(path);
 		if (ne == null)
 			throw new ObjectNotFoundException("No nukelog for: " + path);
 		try {
@@ -131,7 +130,7 @@ public class NukeBeans {
 	 */
 	@SuppressWarnings("unchecked")
 	public synchronized Collection<NukeData> getAll() {
-		return (Collection<NukeData>) _nukes.values();
+		return _nukes.values();
 	}
 
 	/**
@@ -191,6 +190,7 @@ public class NukeBeans {
 							"path", "reason", "nukees", "multiplier", "amount",
 							"size", "time" }));
 
+			enc.setPersistenceDelegate(LRUMap.class, new DefaultPersistenceDelegate(new String[] { "maxSize" } ));
 			enc.writeObject(_nukes);
 		} catch (IOException ex) {
 			throw new IOException(ex.getMessage());
@@ -222,13 +222,13 @@ public class NukeBeans {
 
 	public static void newInstance() {
 		_nukeBeans = new NukeBeans();
-		_nukeBeans.loadTreeMap();
+		_nukeBeans.loadLRUMap();
 	}
 
 	/**
 	 * @param TreeMap
 	 */
-	public void setTreeMap(CaseInsensitiveTreeMap<String, NukeData> nukes) {
+	public void setLRUMap(LRUMap<String, NukeData> nukes) {
 		_nukes = nukes;
 	}
 	
@@ -236,7 +236,7 @@ public class NukeBeans {
 	 * Deserializes the Nukelog Map.
 	 */
 	@SuppressWarnings("unchecked")
-	private void loadTreeMap() {
+	private void loadLRUMap() {
 		saveClassLoader();
 		// de-serializing the Hashtable.
 		XMLDecoder xd = null;
@@ -244,11 +244,10 @@ public class NukeBeans {
 			xd = new XMLDecoder(new FileInputStream(nukeFile));
 
 			switchClassLoaders();
-			CaseInsensitiveTreeMap<String, NukeData> nukees = (CaseInsensitiveTreeMap<String, NukeData>) xd
-					.readObject();
+			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) xd.readObject();
 
 			logger.debug("Loaded log from .xml, size: " + nukees.size());
-			_nukeBeans.setTreeMap(nukees);
+			_nukeBeans.setLRUMap(nukees);
 		} catch (FileNotFoundException e) {
 			// nukelog does not exists yet.
 		} finally {
