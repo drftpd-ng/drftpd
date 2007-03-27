@@ -201,7 +201,7 @@ public abstract class CommandInterface implements EventSubscriber {
 				 */
 			}
 		}
-		return (CommandRequestInterface) request;
+		return request;
 	}
 	
 	protected User getUserObject(String user) throws NoSuchUserException, UserFileException {

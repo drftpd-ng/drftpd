@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -68,24 +69,43 @@ public class LIST extends CommandInterface {
 	private final static String[] MONTHS = { "Jan", "Feb", "Mar", "Apr", "May",
 			"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-	private final static String NEWLINE = "\r\n";
+	protected final static String NEWLINE = "\r\n";
 
-	/*    */
-
-	/**
-	 * Get file name.
-	 */
-
-	/*
-	 * private static String getName(LinkedRemoteFileInterface fl) { String
-	 * flName = fl.getName();
-	 * 
-	 * int lastIndex = flName.lastIndexOf("/");
-	 * 
-	 * if (lastIndex == -1) { return flName; } else { return
-	 * flName.substring(lastIndex + 1); } }
-	 */
-
+	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<AddListElementsInterface>();
+	
+	@Override
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+		super.initialize(method, pluginName, cManager);
+		
+		// load extensions just once and save the instances for later use.
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint listExtPoint = 
+			manager.getRegistry().getExtensionPoint( 
+					"org.drftpd.commands.list", "AddElements");
+		for (Extension listExt : listExtPoint.getConnectedExtensions()) {
+			try {
+				manager.activatePlugin(listExt.getDeclaringPluginDescriptor().getId());
+				ClassLoader listLoader = manager.getPluginClassLoader( 
+						listExt.getDeclaringPluginDescriptor());
+				Class listCls = listLoader.loadClass( 
+							listExt.getParameter("class").valueAsString());
+				AddListElementsInterface listAddon = (AddListElementsInterface) listCls.newInstance();
+				_listAddons.add(listAddon);
+			}
+			catch (PluginLifecycleException e) {
+				logger.debug("plugin lifecycle exception", e);
+			}
+			catch (ClassNotFoundException e) {
+				logger.debug("bad plugin.xml or badly installed plugin: "+
+						listExt.getDeclaringPluginDescriptor().getId(),e);
+			}
+			catch (Exception e) {
+				logger.debug("failed to load class for list extension from: "+
+						listExt.getDeclaringPluginDescriptor().getId(),e);
+			}
+		}		
+	}
+	
 	/**
 	 * Get permission string.
 	 */
@@ -188,8 +208,7 @@ public class LIST extends CommandInterface {
 	 */
 	private static void printList(Collection<InodeHandleInterface> files, Writer os, boolean fulldate)
 			throws IOException {
-		// out = new BufferedWriter(out);
-		os.write("total 0" + NEWLINE);
+		//os.write("total 0" + NEWLINE); - do we need this?
 
 		// print file list
 		for (Iterator<InodeHandleInterface> iter = files.iterator(); iter.hasNext();) {
@@ -241,7 +260,7 @@ public class LIST extends CommandInterface {
 	 * 
 	 * LIST 125, 150 226, 250 425, 426, 451 450 500, 501, 502, 421, 530
 	 */
-	public CommandResponse doLIST(CommandRequest request) {
+	public CommandResponse list(CommandRequest request, boolean isStat) {
 		try {
 			String directoryName = null;
 			String options = "";
@@ -280,12 +299,13 @@ public class LIST extends CommandInterface {
 
 			// boolean directoryOption = options.indexOf("d") != -1;
 
-			if (!ts.isPasv() && !ts.isPort()) {
-					ts.reset();
+			if (!ts.isPasv() && !ts.isPort() && !isStat) {
+					//ts.reset(); issued on the finally block.
 					return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
 			}
 
 			DirectoryHandle directoryFile;
+			CommandResponse response = null;			
 
 			if (directoryName != null) {
 				try {
@@ -306,77 +326,53 @@ public class LIST extends CommandInterface {
 				directoryFile = conn.getCurrentDirectory();
 			}
 
-			PrintWriter out = conn.getControlWriter();
-			Writer os;
+			Writer os = null;
 
-
+			if (isStat) {
+				response = new CommandResponse(213, "End of STAT");
+				conn.printOutput("213-STAT"+NEWLINE);
+				os = conn.getControlWriter();
+			} else {
 				if (!ts.getSendFilesEncrypted()
 						&& conn.getGlobalContext().getConfig().checkPermission(
 								"denydiruncrypted", conn.getUserNull())) {
 					return new CommandResponse(550, "Secure Listing Required");
 				}
 
-				out.print(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
-				out.flush();
+				conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
 
 				try {
-					os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST()
-							.getOutputStream()));
+					os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST().getOutputStream()));
 				} catch (IOException ex) {
 					logger.warn("from master", ex);
-
 					return new CommandResponse(425, ex.getMessage());
 				}
+			}
 
 			// //////////////
 			logger.debug("Listing directoryFile - " + directoryFile);
-			ListElementsContainer container = new ListElementsContainer(
-					request.getSession(), request.getUser());
+
+			ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser());
 			container = ListUtils.list(directoryFile, container);
-			
-			PluginManager manager = PluginManager.lookup(this);
-			ExtensionPoint listExtPoint = 
-				manager.getRegistry().getExtensionPoint( 
-						"org.drftpd.commands.list", "AddElements");
-			for (Extension listExt : listExtPoint.getConnectedExtensions()) {
-				try {
-					manager.activatePlugin(listExt.getDeclaringPluginDescriptor().getId());
-					ClassLoader listLoader = manager.getPluginClassLoader( 
-							listExt.getDeclaringPluginDescriptor());
-					Class listCls = listLoader.loadClass( 
-								listExt.getParameter("class").valueAsString());
-					AddListElementsInterface listAddon = (AddListElementsInterface) listCls.newInstance();
-					container = listAddon.addElements(directoryFile,container);
-				}
-				catch (PluginLifecycleException e) {
-					logger.debug("plugin lifecycle exception", e);
-				}
-				catch (ClassNotFoundException e) {
-					logger.debug("bad plugin.xml or badly installed plugin: "+
-							listExt.getDeclaringPluginDescriptor().getId(),e);
-				}
-				catch (Exception e) {
-					logger.debug("failed to load class for list extension from: "+
-							listExt.getDeclaringPluginDescriptor().getId(),e);
-				}
+
+			// execute list addons.
+			for (AddListElementsInterface listAddon : _listAddons) {
+				container = listAddon.addElements(directoryFile,container);
 			}
-			// //////////////
+
 			try {
 				printList(container.getElements(), os, fulldate);
-				CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
-
-				try {
-						os.close();
-						response.addComment(conn.status());
+				
+				if (isStat)
 					return response;
-				} catch (IOException ioe) {
-					logger.error("", ioe);
-
-					return new CommandResponse(450, ioe.getMessage());
+				else {
+					os.close(); // also flushes the Writer.
+					response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+					response.addComment(conn.status());
+					return response;
 				}
 			} catch (IOException ex) {
 				logger.warn("from master", ex);
-
 				return new CommandResponse(450, ex.getMessage());
 			}
 		} finally {
@@ -386,34 +382,15 @@ public class LIST extends CommandInterface {
 	}
 	
 	public CommandResponse doSTAT(CommandRequest request) {
-/*		if (request.getCommand().equals("STAT")) {
-			os = out;
-			out.write("213- Status of " + request.getArgument() + ":"
-					+ NEWLINE);
-			return new Reply(213, "End of Status");
-		}*/
-		return null;
+		return list(request, true);
 	}
 	
+	public CommandResponse doLIST(CommandRequest request) {
+		return list(request, false);
+	}
+		
 	public CommandResponse doNLST(CommandRequest request) {
 		//printNList(listFiles, detailOption, os);
 		return null;
 	}
-
-	/**
-	 * <code>STAT [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
-	 * 
-	 * This command shall cause a status response to be sent over the control
-	 * connection in the form of a reply.
-	 */
-
-	// public void doSTAT(FtpRequest request, PrintWriter out) {
-	// reset();
-	// if (request.hasArgument()) {
-	// doLIST(request, out);
-	// } else {
-	// out.print(FtpReply.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
-	// }
-	// return;
-	// }
 }

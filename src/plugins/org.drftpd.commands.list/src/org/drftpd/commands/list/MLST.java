@@ -21,20 +21,25 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.Socket;
-
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandleInterface;
+import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 
 
@@ -44,6 +49,8 @@ import org.drftpd.vfs.ObjectNotValidException;
  */
 public class MLST extends CommandInterface {
     private static final Logger logger = Logger.getLogger(MLST.class);
+    
+    public static final SimpleDateFormat timeval = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -52,21 +59,25 @@ public class MLST extends CommandInterface {
         };
     }
 
-    public CommandResponse doMLSTandMLSD(CommandRequest request) {
-        String command = request.getCommand();
-
+    public CommandResponse doMLST(CommandRequest request) {
+    	return doMLSTandMLSD(request, true);
+    }
+    
+    public CommandResponse doMLSD(CommandRequest request) {
+    	return doMLSTandMLSD(request, false);
+    }
+    
+    public CommandResponse doMLSTandMLSD(CommandRequest request, boolean isMlst) {
         DirectoryHandle dir = request.getCurrentDirectory();
 
         if (request.hasArgument()) {
-            try {
-                try {
-					dir = dir.getDirectory((request.getArgument()));
-				} catch (ObjectNotValidException e) {
-					return new CommandResponse(500, "Target is not a directory, MLST only works on Directories");
-				}
-            } catch (FileNotFoundException e) {
-                return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-            }
+        	try {
+        		dir = dir.getDirectory((request.getArgument()));
+        	} catch (FileNotFoundException e) {
+        		return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+        	}  catch (ObjectNotValidException e) {
+        		return new CommandResponse(500, "Target is not a directory, MLST only works on Directories");
+        	}
         }
 
         if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", 
@@ -76,53 +87,99 @@ public class MLST extends CommandInterface {
 
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         PrintWriter out = conn.getControlWriter();
-
-        if ("MLST".equalsIgnoreCase(command)) {
-            out.print("250- Begin\r\n");
-            out.print(toMLST(dir) + "\r\n");
-            out.print("250 End.\r\n");
-
-            return null;
-        } else if ("MLSD".equalsIgnoreCase(command)) {
-        	
+        PrintWriter os = null; // listing writer.
+        
+        if (isMlst) {
+        	conn.printOutput("250-MLST"+LIST.NEWLINE);
+        	os = out;
+        } else {
             if (!conn.getTransferState().isPasv() && !conn.getTransferState().isPort()) {
             	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
             }
-            out.print(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
-            out.flush();
+            
+			try {
+				os = new PrintWriter(new OutputStreamWriter(conn.getTransferState().getDataSocketForLIST().getOutputStream()));
+			} catch (IOException ex) {
+				logger.warn(ex);
+				return new CommandResponse(425, ex.getMessage());
+			}
 
-            try {
-            	
-                Socket sock = conn.getTransferState().getDataSocketForLIST();
-                ListElementsContainer container = new ListElementsContainer(
-    					request.getSession(), request.getUser());
-    			container = ListUtils.list(dir, container);
-                Writer os = new OutputStreamWriter(sock.getOutputStream());
-
-                for (InodeHandleInterface inode : container.getElements()) {
-                    os.write(toMLST(inode) + "\r\n");
-                }
-
-                os.close();
-            } catch (IOException e1) {
-                logger.warn("", e1);
-
-                //425 Can't open data connection
-                return new CommandResponse(425, e1.getMessage());
-            }
-
-            return StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+            conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
         }
+        
+        ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser());
+		container = ListUtils.list(dir, container);
 
-        return StandardCommandManager.genericResponse("RESPONSE_500_SYNTAX_ERROR");
+        for (InodeHandleInterface inode : container.getElements()) {
+            os.write(toMLST(inode) + LIST.NEWLINE);
+        }
+        
+        if (isMlst) 
+        	return new CommandResponse(250, "End of MLST");
+        else {
+        	os.close();
+        	return StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+        }
     }
+    
+    public static String toMLST(InodeHandleInterface inode) {
+    	StringBuffer ret = new StringBuffer();
 
-    private String toMLST(InodeHandleInterface file) {
-        String ret = // MLSTSerialize.toMLST(file);
-        	"mlst"; // -zubov
+    	try {
+    		if (inode.isLink()) {
+    			ret.append("type=OS.unix=slink:" + ((LinkHandle) inode).getTargetString() + ";");
+    		} else if (inode.isFile()) {
+    			ret.append("type=file;");
+    		} else if (inode.isDirectory()) {
+    			ret.append("type=dir;");
+    		} else {
+    			throw new RuntimeException("type");
+    		}
 
-        //add perm=
-        //add 
-        return ret;
+    		FileHandle file = null;
+    		boolean isFileHandle = false;
+    		if (inode.isFile() && inode instanceof FileHandle) {
+    			file = (FileHandle) inode;
+    			isFileHandle = true;
+    		}
+    		
+    		try {
+				if (isFileHandle && file.getCheckSum() != 0) {
+					ret.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
+				}
+			} catch (NoAvailableSlaveException e) {
+				logger.debug("Unable to fetch checksum for: "+inode.getPath());
+			}
+
+    		ret.append("size=" + inode.getSize() + ";");
+    		ret.append("modify=" + timeval.format(new Date(inode.lastModified())) +";");
+
+    		ret.append("unix.owner=" + inode.getUsername() + ";");
+    		ret.append("unix.group=" + inode.getGroup() + ";");
+
+    		if (isFileHandle) {
+    			Iterator<RemoteSlave> iter = file.getSlaves().iterator();
+    			ret.append("x.slaves=");
+
+    			if (iter.hasNext()) {
+    				ret.append(iter.next().getName());
+
+    				while (iter.hasNext()) {
+    					ret.append("," + iter.next().getName());
+    				}
+    			}
+
+    			ret.append(";");
+    		}
+
+    		if (isFileHandle && file.getXfertime() != 0) {
+    			ret.append("x.xfertime=" + file.getXfertime() + ";");
+    		}
+
+    		ret.append(" " + inode.getName());
+    	} catch (FileNotFoundException e) {
+    		logger.error("The file was there and now it's gone, how?", e);
+    	}
+    	return ret.toString();
     }
 }

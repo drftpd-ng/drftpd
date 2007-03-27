@@ -84,6 +84,11 @@ public class LightRemoteInode implements Serializable, InodeHandleInterface {
 		_username = username;
 		_group = group;
 	}
+	
+	public LightRemoteInode(String fileName, String username, String group, boolean isDir, long lastModified, long size) {
+		this(fileName, username, group, lastModified, size);
+		_isDirectory = isDir;
+	}
 
 	public boolean isDirectory() {
 		return _isDirectory;
