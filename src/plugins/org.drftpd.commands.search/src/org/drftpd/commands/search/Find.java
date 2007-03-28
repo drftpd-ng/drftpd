@@ -355,16 +355,10 @@ public class Find extends CommandInterface {
 		}
 	}
 
-	//TODO can we depend on the zipscript?
 	private static class OptionOffline implements Option {
 		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
 			DirectoryHandle dir = (DirectoryHandle) inode;
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);			
-			try {
-				return sfvData.getSFVStatus().getOffline() != 0;
-			} catch (Exception e) {
-				return false;
-			}
+			return dir.hasOfflineFiles();
 		}
 	}
 
@@ -445,7 +439,6 @@ public class Find extends CommandInterface {
 			return;
 		}
 		
-		//TODO optimize me, checking using regexp for all dirs is possibly slow
 		if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true)) {
 			return;
 		}

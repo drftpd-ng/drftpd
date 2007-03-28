@@ -112,6 +112,30 @@ public class DirectoryHandle extends InodeHandle implements
 		}
 		return (Set<FileHandle>) set;
 	}
+	
+	/**
+	 * @return true if the dir has offline files.
+	 * @throws FileNotFoundException
+	 */
+	public boolean hasOfflineFiles() throws FileNotFoundException {
+		return getOfflineFiles().size() != 0;
+	}
+	
+	/**
+	 * @return a set containing only the offline files of this dir.
+	 * @throws FileNotFoundException
+	 */
+	public Set<FileHandle> getOfflineFiles() throws FileNotFoundException {
+		Set<FileHandle> allFiles = getFiles();
+		Set<FileHandle> offlineFiles = new HashSet<FileHandle>(allFiles.size());
+		
+		for (FileHandle file : allFiles) {
+			if (!file.isAvailable())
+				offlineFiles.add(file);
+		}
+		
+		return offlineFiles;
+	}
 
 	/**
 	 * @return all InodeHandles inside this dir.
