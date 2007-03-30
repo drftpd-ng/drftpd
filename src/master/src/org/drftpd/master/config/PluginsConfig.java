@@ -38,13 +38,14 @@ import org.apache.log4j.Logger;
  */
 public class PluginsConfig {
 	private final static String pluginsConfPath = "conf/plugins/";
+	private final static File pluginsConfFile = new File(pluginsConfPath);
 
 	private static final Logger logger = Logger.getLogger(PluginsConfig.class);
 			
 	private HashMap<String, Properties> _propertiesMap = new HashMap<String, Properties>();
 
 	public PluginsConfig() {
-		loadConfigs();
+		loadConfigs(pluginsConfFile);
 		dumpHashMap();
 	}
 	
@@ -68,15 +69,18 @@ public class PluginsConfig {
 	/**
 	 * Makes a list of all files in 'conf/plugins' and start reading all files that has the '.conf' extension.
 	 */
-	public void loadConfigs() {
-		File dir = new File(pluginsConfPath);
+	public void loadConfigs(File dir) {
 		if (!dir.isDirectory())
 			throw new RuntimeException(pluginsConfPath + " is not a directory");
 		
 		for (File file : dir.listFiles()) {
-			if (file.isFile() && file.getName().endsWith(".conf")) {
+			if (file.getName().startsWith(".")) {
+				continue;
+			} else if (file.isFile() && file.getName().endsWith(".conf")) {
 				loadConf(file);
-			} // else, ignore it.
+			} else if (file.isDirectory()){
+				loadConfigs(file);
+			}
 		}
 	}
 	
@@ -105,7 +109,8 @@ public class PluginsConfig {
 				return; // we were told to skip the file.				
 			}
 			
-			getPropertiesMap().put(file.getName(), cfg);
+			String key = file.getPath().substring("conf/plugins/".length());
+			getPropertiesMap().put(key, cfg);
 		} catch (FileNotFoundException e) {
 			logger.error("Weird the file was just there, how come it's gone?", e);
 		} catch (IOException e) {

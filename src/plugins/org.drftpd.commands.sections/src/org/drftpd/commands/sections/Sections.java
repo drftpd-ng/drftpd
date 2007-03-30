@@ -17,14 +17,17 @@
  */
 package org.drftpd.commands.sections;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.ResourceBundle;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.conf.DatedSection;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -43,13 +46,18 @@ public class Sections extends CommandInterface {
     }
 
     public CommandResponse doSITE_SECTIONS(CommandRequest request) {
-        CommandResponse response = new CommandResponse(200);
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         ReplacerEnvironment env = new ReplacerEnvironment();
 
-        for (SectionInterface section : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
+        ArrayList<SectionInterface> sections = 
+        	new ArrayList<SectionInterface>(GlobalContext.getGlobalContext().getSectionManager().getSections());
+        
+        Collections.sort(sections, new SectionComparator());
+        
+        for (SectionInterface section : sections) {
             env.add("section", section.getName());
-            env.add("path", section.getCurrentDirectory());
+            env.add("path", section.getCurrentDirectory().getPath());
             if (section instanceof DatedSection) {
             	DatedSection ds = (DatedSection) section;
             	ds.processNewDate(new Date());
@@ -59,4 +67,11 @@ public class Sections extends CommandInterface {
 
         return response;
     }
+    
+    private class SectionComparator implements Comparator<SectionInterface> {
+		public int compare(SectionInterface o1, SectionInterface o2) {
+			return o1.getName().compareToIgnoreCase(o2.getName());
+		}    	
+    }
 }
+

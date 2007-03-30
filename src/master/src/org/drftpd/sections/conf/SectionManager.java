@@ -21,8 +21,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 
@@ -44,7 +46,7 @@ public class SectionManager implements SectionManagerInterface {
 	private PlainSection _emptySection = new PlainSection(this, "",
 			GlobalContext.getGlobalContext().getRoot());
 
-	private Hashtable<String, SectionInterface> _sections;
+	private HashMap<String, SectionInterface> _sections;
 
 	public SectionManager() {
 		reload();
@@ -55,7 +57,7 @@ public class SectionManager implements SectionManagerInterface {
 	}
 
 	public SectionInterface getSection(String string) {
-		SectionInterface s = (SectionInterface) _sections.get(string);
+		SectionInterface s = _sections.get(string);
 
 		if (s != null) {
 			return s;
@@ -64,8 +66,12 @@ public class SectionManager implements SectionManagerInterface {
 		return _emptySection;
 	}
 
-	public Collection getSections() {
+	public Collection<SectionInterface> getSections() {
 		return Collections.unmodifiableCollection(_sections.values());
+	}
+	
+	public Map<String, SectionInterface> getSectionsMap() {
+		return Collections.unmodifiableMap(_sections);
 	}
 
 	private SectionInterface lookup(String string) {
@@ -87,7 +93,7 @@ public class SectionManager implements SectionManagerInterface {
 	}
 	public void reload() {
 		Properties p = new Properties();
-		Hashtable<String, SectionInterface> sections = new Hashtable<String, SectionInterface>();
+		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
 		FileInputStream stream = null;
         try {
         	stream = new FileInputStream("conf/sections.conf");

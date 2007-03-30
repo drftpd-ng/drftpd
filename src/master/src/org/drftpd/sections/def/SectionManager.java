@@ -21,7 +21,9 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -132,5 +134,19 @@ public class SectionManager implements SectionManagerInterface {
 		public String getBasePath() {
 			return getPath();
 		}
+	}
+
+	public Map<String, SectionInterface> getSectionsMap() {
+		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
+		
+		try {
+			for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectories()) {
+				sections.put(dir.getName(), new Section(dir));
+			}
+		} catch (FileNotFoundException e) {
+			return Collections.EMPTY_MAP;
+		}
+		
+		return sections;
 	}
 }

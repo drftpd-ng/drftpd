@@ -30,7 +30,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
@@ -45,7 +44,6 @@ import org.drftpd.commands.UserManagement;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.master.Session;
 import org.drftpd.master.TransferState;
 import org.drftpd.master.config.FtpConfig;
@@ -57,10 +55,8 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.FtpRequest;
-import org.drftpd.util.ReplacerUtils;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
 /**
@@ -908,7 +904,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "IO error reading user: " + e.getMessage());
 		}
 
-		CommandResponse response = new CommandResponse(200);
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");;
 
 		for (int i = 1; i < args.length; i++) {
 			String string = args[i];

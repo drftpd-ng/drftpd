@@ -37,6 +37,7 @@ import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
@@ -501,7 +502,7 @@ public class Find extends CommandInterface {
 		return str.substring(start + 1, end);
 	}
 
-	public CommandResponse doFIND(CommandRequest request) {
+	public CommandResponse doFIND(CommandRequest request) throws ImproperUsageException {
 
 		Collection<String> argsList = new ArrayList<String>();
 		
@@ -523,7 +524,7 @@ public class Find extends CommandInterface {
 			
 			if (!arg.equalsIgnoreCase("-offline") && !arg.equalsIgnoreCase("-nouser") && !arg.equalsIgnoreCase("-nogroup")
 					&& !arg.equalsIgnoreCase("-incomplete") && !iter.hasNext()) {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");			
+				throw new ImproperUsageException();			
 			}
 			
 			if (arg.equalsIgnoreCase("-user")) {
@@ -550,7 +551,7 @@ public class Find extends CommandInterface {
 				try {
 					offset = Integer.parseInt(iter.next());
 				} catch (NumberFormatException e) {
-					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+					throw new ImproperUsageException();
 				}
 
 				options.add(new OptionMTime(offset));
@@ -567,7 +568,7 @@ public class Find extends CommandInterface {
 				try {
 					size = Bytes.parseBytes(bytes);
 				} catch (NumberFormatException e) {
-					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+					throw new ImproperUsageException();
 				}
 
 				options.add(new OptionSize(size, bigger));
@@ -579,7 +580,7 @@ public class Find extends CommandInterface {
 				} else if (type.equals("d")) {
 					files = false;
 				} else {
-					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+					throw new ImproperUsageException();
 				}
 			} else if (arg.equalsIgnoreCase("-nouser")) {
 				options.add(new OptionUser("nobody"));
@@ -626,7 +627,7 @@ public class Find extends CommandInterface {
 
 							continue;
 						} else if (!iter.hasNext()) {
-							return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+							throw new ImproperUsageException();
 						} else {
 							action += (" " + iter.next());
 						}
@@ -655,7 +656,7 @@ public class Find extends CommandInterface {
 					Action findAction = getAction(action.toLowerCase());
 
 					if (findAction == null) {
-						return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+						throw new ImproperUsageException();
 					}
 
 					if (findAction instanceof ActionWipe) {
@@ -667,7 +668,7 @@ public class Find extends CommandInterface {
 					actions.add(findAction);
 				}
 			} else {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+				throw new ImproperUsageException();
 			}
 		}
 

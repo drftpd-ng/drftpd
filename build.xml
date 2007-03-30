@@ -55,6 +55,7 @@ check - checks plug-ins integrity
 		<ant dir="src/plugins/org.drftpd.commands.dummy" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.zipscript" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.search" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.commands.newhandler" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.prehook.permissions" target="${target}" />
 	</target>
 

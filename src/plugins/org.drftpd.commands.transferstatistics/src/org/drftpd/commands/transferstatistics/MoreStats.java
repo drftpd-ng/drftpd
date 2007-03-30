@@ -175,9 +175,9 @@ public class MoreStats extends CommandInterface {
 
         //morestats.grpstats=| ${grp,-15} |${grpname,7} |${files,8} | ${megs,9} | ${members,9} |
         try {
-        	addTextToResponse(response, "g" + type.toLowerCase() + "_header.txt");
+        	addTextToResponse(response, "text/g" + type.toLowerCase() + "_header.txt");
         } catch (IOException ioe) {
-            logger.warn("Error reading " + "g" + type.toLowerCase() +"_header.txt");
+            logger.warn("Error reading " + "text/g" + type.toLowerCase() +"_header.txt");
         }
 
         int i = 0;
@@ -209,9 +209,9 @@ public class MoreStats extends CommandInterface {
         }
 
         try {
-            addTextToResponse(response,"g" + type.toLowerCase() + "_footer.txt");
+            addTextToResponse(response,"text/g" + type.toLowerCase() + "_footer.txt");
         } catch (IOException ioe) {
-            logger.warn("Error reading " + "g" + type.toLowerCase() + "_footer.txt");
+            logger.warn("Error reading " + "text/" + type.toLowerCase() + "_footer.txt");
         }
 
         return response;
@@ -326,9 +326,9 @@ public class MoreStats extends CommandInterface {
         }
 
         try {
-            addTextToResponse(response, "traffic_header.txt");
+            addTextToResponse(response, "text/traffic_header.txt");
         } catch (IOException ioe) {
-            logger.warn("Error reading traffic_header - " + ioe.getMessage());
+            logger.warn("Error reading text/traffic_header - " + ioe.getMessage());
         }
 
         addTrafficComment("Total Uploads", TotalUpAvrage, TotalUp, TotalFilesUp, response);
@@ -341,9 +341,9 @@ public class MoreStats extends CommandInterface {
         addTrafficComment("Day Downloads", DayDnAvrage, DayDn, DayFilesDn, response);
 
         try {
-            addTextToResponse(response, "traffic_footer.txt");
+            addTextToResponse(response, "text/traffic_footer.txt");
         } catch (IOException ioe) {
-            logger.warn("Error reading traffic_footer - " + ioe.getMessage());
+            logger.warn("Error reading text/traffic_footer - " + ioe.getMessage());
         }
 
         return response;

@@ -26,6 +26,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
@@ -80,9 +81,9 @@ public class Search extends CommandInterface {
         }
     }
 
-	public CommandResponse search(CommandRequest request, boolean search, boolean dupe) {
+	public CommandResponse search(CommandRequest request, boolean search, boolean dupe) throws ImproperUsageException {
         if (!request.hasArgument()) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
         
         ArrayList<String> searchStrings = new ArrayList<String>();
@@ -108,11 +109,11 @@ public class Search extends CommandInterface {
         return response;
 	}
 	
-	public CommandResponse doSEARCH(CommandRequest request) {
+	public CommandResponse doSEARCH(CommandRequest request) throws ImproperUsageException {
 		return search(request, true, false);
 	}
 	
-	public CommandResponse doDUPE(CommandRequest request) {
+	public CommandResponse doDUPE(CommandRequest request) throws ImproperUsageException {
 		return search(request, false, true);
 	}
 }

@@ -1001,7 +1001,7 @@ class Find
 method doFIND
 perms *
 help Searches for files and diretories in the filesystem w/ some neat filters and actions.
-help.specific SITE FIND <options> -action <action>
+help.specific ${command} <options> -action <action>
 help.specific Options: -user <user> -group <group> -nogroup -nouser
 help.specific Options: -mtime [-]n -type [f|d] -slave <slave> -size [-]size
 help.specific Options: -name <name>(* for wildcard) -incomplete [min % incomplete] -offline
@@ -1020,3 +1020,14 @@ help.specific Example: SITE FIND -action printf(filename: #f size: #s)
 help.specific Multipe options and actions are allowed. If multiple options are given a file must match all options for action to be taken
 }
 
+SITE NEW {
+plugin org.drftpd.commands.newhandler
+class New
+method doNEW
+perms *
+help Will list newly uploaded directories.
+help.specific ${command} - List the newest dirs in all sections.
+help.specific ${command} <number> - List the <number> newest dirs in all sections.
+help.specific ${command} <section> - List the newest dirs in <section>.
+help.specific ${command} <section> <number> - List the <number> newest dirs in <section>.
+}
