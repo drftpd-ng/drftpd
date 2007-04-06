@@ -21,4 +21,7 @@
 	<extension-point id="CommandManager">
 		<parameter-def id="class" />
 	</extension-point>
+	<extension-point id="SlaveSelection">
+		<parameter-def id="class" />
+	</extension-point>
 </plugin>

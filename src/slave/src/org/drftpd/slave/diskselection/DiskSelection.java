@@ -55,7 +55,7 @@ public class DiskSelection {
 					"DiskSelection has already been initialized.");
 		}
 		_diskSelection = new DiskSelection(rootCollection);
-                _diskSelection.readConf();
+        _diskSelection.readConf();
 	}
 
 	public static DiskSelection getDiskSelection() {

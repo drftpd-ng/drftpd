@@ -20,7 +20,6 @@ package org.drftpd.sections;
 import java.util.Collection;
 import java.util.Map;
 
-import org.drftpd.master.ConnectionManager;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -28,8 +27,6 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public interface SectionManagerInterface {
-	public ConnectionManager getConnectionManager();
-
 	public Collection<SectionInterface> getSections();
 	
 	public Map<String, SectionInterface> getSectionsMap();

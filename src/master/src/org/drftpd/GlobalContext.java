@@ -123,22 +123,26 @@ public class GlobalContext {
 	 * 
 	 */
 	private void loadSlaveSelectionManager(Properties cfg) {
-		try {
-			Constructor c = Class
-					.forName(
-							cfg
-									.getProperty("slaveselection",
-											"org.drftpd.slaveselection.def.DefaultSlaveSelectionManager"))
-					.getConstructor(new Class[] { GlobalContext.class });
-			_slaveSelectionManager = (SlaveSelectionManagerInterface) c
-					.newInstance(new Object[] { this });
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) {
-				throw (RuntimeException) e;
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint extPoint = manager.getRegistry().getExtensionPoint("master", "SlaveSelection");
+		
+		String desiredSL = PropertyHelper.getProperty(cfg, "slaveselection");
+		for (Extension ext : extPoint.getConnectedExtensions()) {
+			if (desiredSL.equals(ext.getDeclaringPluginDescriptor().getId())) {
+				try {
+					manager.activatePlugin(desiredSL);
+					String className = ext.getParameter("class").valueAsString();
+					ClassLoader cl = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
+					Class clazz = cl.loadClass(className);
+					_slaveSelectionManager = (SlaveSelectionManagerInterface) clazz.newInstance();
+				} catch (Throwable t) {
+					throw new FatalException("Unable to load the slaveselection plugin, check config.", t);
+				}
 			}
-
-			throw new FatalException(e);
 		}
+		
+		if (_slaveSelectionManager == null)
+			throw new FatalException("Unable to find the slaveselection plugin, check config.");
 	}
 
 	/**

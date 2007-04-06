@@ -17,8 +17,6 @@
  */
 package org.drftpd.tests;
 
-import java.util.Properties;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.sections.SectionManagerInterface;
@@ -29,18 +27,6 @@ import org.drftpd.sections.SectionManagerInterface;
  * @version $Id$
  */
 public class DummyGlobalContext extends GlobalContext {
-    public DummyGlobalContext() {
-    }
-
-    public void loadPlugins(Properties cfg) {
-        super.loadPlugins(cfg);
-    }
-
-    public void loadUserManager(Properties cfg, String cfgFileName) {
-        super.loadUserManager(cfg);
-    }
-
-
     public void setSectionManager(SectionManagerInterface manager) {
         _sections = manager;
     }

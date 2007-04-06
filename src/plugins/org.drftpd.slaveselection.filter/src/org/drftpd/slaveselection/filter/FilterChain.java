@@ -25,12 +25,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
@@ -39,8 +38,6 @@ import org.drftpd.vfs.InodeHandleInterface;
  * @version $Id$
  */
 public class FilterChain {
-	private SlaveSelectionManagerInterface _ssm;
-
 	private String _cfgfileName;
 
 	private ArrayList<Filter> _filters;
@@ -52,30 +49,32 @@ public class FilterChain {
 		return new ArrayList<Filter>(_filters);
 	}
 
-	public FilterChain(SlaveSelectionManagerInterface ssm, Properties p) {
-		_ssm = ssm;
-		reload(p);
-	}
-
-	public FilterChain(SlaveSelectionManagerInterface ssm, String cfgFileName)
+	public FilterChain(String cfgFileName)
 			throws FileNotFoundException, IOException {
-		_ssm = ssm;
 		_cfgfileName = cfgFileName;
 		reload();
 	}
 
-	public void filter(ScoreChart sc, User user, InetAddress peer,
+	public void filter(ScoreChart sc, BaseFtpConnection conn,
 			char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
+		
+		User u = null;
+		InetAddress peer = null;
+		
+		if (conn != null) {
+			u = conn.getUserNull();
+			peer = conn.getClientAddress();
+		}
+		
 		for (Filter filter : _filters) {
-			filter.process(sc, user, peer, direction, file, sourceSlave);
+			filter.process(sc, u, peer, direction, file, sourceSlave);
 		}
 	}
 
-	public RemoteSlave getBestSlave(ScoreChart sc, User user, InetAddress peer,
-			char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
+	public RemoteSlave getBestSlave(ScoreChart sc, BaseFtpConnection conn, char direction, InodeHandleInterface file, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
-		filter(sc, user, peer, direction, file, sourceSlave);
+		filter(sc, conn, direction, file, sourceSlave);
 		RemoteSlave rslave = sc.getBestSlave();
 		rslave.setLastDirection(direction, System.currentTimeMillis());
 		return rslave;
@@ -114,12 +113,11 @@ public class FilterChain {
 			}
 
 			try {
-				Class[] SIG = new Class[] { FilterChain.class, int.class,
-						Properties.class };
+				Class[] SIG = new Class[] { int.class, Properties.class };
 
 				Filter filter = (Filter) Class.forName(type)
 						.getConstructor(SIG).newInstance(
-								new Object[] { this, new Integer(i), p });
+								new Object[] { new Integer(i), p });
 				filters.add(filter);
 			} catch (Exception e) {
 				throw new FatalException(i + ".filter = " + type, e);
@@ -131,6 +129,6 @@ public class FilterChain {
 	}
 
 	public GlobalContext getGlobalContext() {
-		return _ssm.getGlobalContext();
+		return GlobalContext.getGlobalContext();
 	}
 }

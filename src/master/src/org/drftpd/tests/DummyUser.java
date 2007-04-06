@@ -6,7 +6,6 @@ import java.util.Date;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.usermanager.UserManager;
 
 

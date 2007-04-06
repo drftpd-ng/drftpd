@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.slaveselection.filter" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.slaveselection.filter" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="Filter">
+	</extension-point>
+	<extension plugin-id="master" point-id="SlaveSelection" id="SlaveSelectionFilter">
+		<parameter id="class" value="org.drftpd.slaveselection.filter.SlaveSelectionManager"/>
+	</extension>
+</plugin>

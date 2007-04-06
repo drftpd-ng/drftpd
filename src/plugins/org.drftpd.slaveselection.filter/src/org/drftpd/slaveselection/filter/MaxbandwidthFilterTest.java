@@ -17,26 +17,21 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.IOException;
-import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.SlaveManager;
 import org.drftpd.slave.DiskStatus;
-import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
-import org.drftpd.vfs.CaseInsensitiveTreeMap;
+import org.drftpd.vfs.DirectoryHandle;
 
 
 /**
@@ -66,74 +61,16 @@ public class MaxbandwidthFilterTest extends TestCase {
         Properties p = new Properties();
         p.put("1.maxbandwidth", "800kb");
 
-        Filter f = new MaxbandwidthFilter(new FC(), 1, p);
+        Filter f = new MaxbandwidthFilter(1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
-        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD,
-            new LinkedRemoteFilePath("/"), null);
+        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/"), null);
         assertEquals(sc.getBestSlave(), rslaves[1]);
-    }
-
-    @SuppressWarnings("unchecked")
-	public static class LinkedRemoteFilePath extends LightRemoteInode {
-        private String _path;
-
-        public LinkedRemoteFilePath(String path) {
-        	super(path, 0, 0);
-            _path = path;
-        }
-
-        public String getPath() {
-            return _path;
-        }
-
-        public void deleteOthers(Set destSlaves) {
-        }
-
-        public void remerge(CaseInsensitiveTreeMap lightRemoteFiles,
-            RemoteSlave rslave) throws IOException {
-        }
-    }
-
-    public class FC extends FilterChain {
-        public SlaveManager getSlaveManager() {
-            try {
-                return new SM();
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    public class SM extends SlaveManager {
-        public SM() throws RemoteException {
-            super();
-        }
-
-        public RemoteSlave getSlave(String s) throws ObjectNotFoundException {
-            if (s == null) {
-                throw new RuntimeException();
-            }
-
-            if (rslaves[0] == null) {
-                throw new RuntimeException();
-            }
-
-            if (s.equals(rslaves[0].getName())) {
-                return rslaves[0];
-            }
-
-            if (s.equals(rslaves[1].getName())) {
-                return rslaves[1];
-            }
-
-            throw new ObjectNotFoundException();
-        }
     }
 
     public class RS extends DummyRemoteSlave {
         public RS(String name, Collection duh) {
-            super(name, null);
+            super(name);
         }
 
         public SlaveStatus getSlaveStatusAvailable() {

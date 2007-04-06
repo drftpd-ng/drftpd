@@ -3,6 +3,7 @@
 <plugin id="org.drftpd.commands.slavemanagement" version="2.1.0">
 	<requires>
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.slaveselection.filter" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.slavemanagement" path="classes/" type="code">

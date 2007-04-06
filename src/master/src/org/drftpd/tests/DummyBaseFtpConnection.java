@@ -27,11 +27,8 @@ import java.net.Socket;
 import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commands.DataConnectionHandler;
-import org.drftpd.event.Event;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -46,14 +43,12 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class DummyBaseFtpConnection extends BaseFtpConnection {
     private InetAddress _clientAddress;
-    private DataConnectionHandler _dch;
     private StringWriter _out2;
     private DummyServerSocketFactory _serverSocketFactory;
     private DummySocketFactory _socketFactory;
 	private static final Logger logger = Logger.getLogger(DummyBaseFtpConnection.class);
 
-    public DummyBaseFtpConnection(DataConnectionHandler dch) {
-        _dch = dch;
+    public DummyBaseFtpConnection() {
         _socketFactory = new DummySocketFactory();
         _serverSocketFactory = new DummyServerSocketFactory(_socketFactory);
 
@@ -67,24 +62,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 		}
         _out2 = new StringWriter();
         _out = new PrintWriter(_out2);
-    }
-
-    protected Object clone() throws CloneNotSupportedException {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated
-     */
-    protected void dispatchFtpEvent(Event event) {
-        throw new UnsupportedOperationException();
-    }
-
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
-    public boolean equals(Object obj) {
-        throw new UnsupportedOperationException();
     }
 
     public InetAddress getClientAddress() {
@@ -101,14 +78,6 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 
     public Socket getControlSocket() {
         return new DummySocket();
-    }
-
-    public DataConnectionHandler getDataConnectionHandler() {
-        if (_dch == null) {
-            throw new NullPointerException("No DataConnectionHandler set");
-        }
-
-        return _dch;
     }
 
     public char getDirection() {

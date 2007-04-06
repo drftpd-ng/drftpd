@@ -18,45 +18,49 @@
 package org.drftpd.slaveselection.filter;
 
 import java.util.Arrays;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.slave.DiskStatus;
+import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
 
 
 /**
- * @author zubov
+ * @author mog
  * @version $Id$
  */
-public class CycleFilterTest extends TestCase {
-    /**
-     * Constructor for CycleFilterTest.
-     * @param arg0
-     */
-    public CycleFilterTest(String arg0) {
-        super(arg0);
-    }
+public class BandwidthFilterTest extends TestCase {
+	public void testBandwidth() throws NoAvailableSlaveException, ObjectNotFoundException {
+		Properties p = new Properties();
+		p.put("1.multiplier", "3");
+		
+		Filter f = new BandwidthFilter(1, p);
+		
+		SlaveStatus status = new SlaveStatus(new DiskStatus(0, 0), 0, 0, 100, 0, 100, 0);
+		RemoteSlave[] list = { new RS("slave1", status) };
+		ScoreChart sc = new ScoreChart(Arrays.asList(list));
+		
+		f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
+		
+		assertEquals(-300, sc.getScoreForSlave(list[0]).getScore());
+	}
+	
+	public class RS extends DummyRemoteSlave {
+		private SlaveStatus _status;
 
-    public static void main(String[] args) {
-        junit.textui.TestRunner.run(CycleFilterTest.class);
-    }
-
-    public void testProcess()
-        throws NoAvailableSlaveException, ObjectNotFoundException {
-        RemoteSlave[] rslaves = {
-                new DummyRemoteSlave("slave1", null),
-                new DummyRemoteSlave("slave2", null),
-                new DummyRemoteSlave("slave3", null)
-            };
-        ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
-        Filter f = new CycleFilter(null, 0, null);
-        f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
-        assertEquals(1, sc.getSlaveScore(rslaves[0]).getScore());
-        assertEquals(0, sc.getSlaveScore(rslaves[1]).getScore());
-        assertEquals(0, sc.getSlaveScore(rslaves[2]).getScore());
-    }
+		public RS(String name, SlaveStatus status) {
+			super(name);
+			_status = status;
+		}
+		
+        public SlaveStatus getSlaveStatusAvailable() {
+            return _status;
+        }
+	}
 }

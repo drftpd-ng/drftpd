@@ -20,10 +20,8 @@ package org.drftpd.tests;
 import java.util.Collection;
 import java.util.HashMap;
 
-
-import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveFileException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 
@@ -33,19 +31,15 @@ import org.drftpd.master.SlaveManager;
  * @version $Id$
  */
 public class DummySlaveManager extends SlaveManager {
-    public DummySlaveManager() throws SlaveFileException {
-        super();
-    }
-
-	public DummySlaveManager(GlobalContext gctx) {
-		
-	}
-
 	public void setSlaves(HashMap<String,RemoteSlave> rslaves) {
         _rslaves = rslaves;
     }
 
     public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
         return getSlaves();
+    }
+    
+    public RemoteSlave getRemoteSlave(String s) throws ObjectNotFoundException {
+    	return new DummyRemoteSlave(s);
     }
 }

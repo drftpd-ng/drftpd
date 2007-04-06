@@ -21,48 +21,53 @@ import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Properties;
 
-
+import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
-import org.drftpd.Time;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
 /**
- * @author mog
+ * @author zubov
  * @version $Id$
  */
-public class MintimeonlineFilter extends Filter {
-	private long _minTime;
+public class MaxbandwidthFilter extends Filter {
+	private long _maxBandwidth;
 
-	private float _multiplier;
-
-	public MintimeonlineFilter(FilterChain fc, int i, Properties p) {
-		_minTime = Time
-				.parseTime(PropertyHelper.getProperty(p, i + ".mintime"));
-		_multiplier = BandwidthFilter.parseMultiplier(PropertyHelper
-				.getProperty(p, i + ".multiplier"));
+	public MaxbandwidthFilter(int i, Properties p) {
+		super(i, p);
+		String max = PropertyHelper.getProperty(p, i+ ".maxbandwidth");
+		int slashIndex = max.indexOf('/'); // parse kb/s too.
+		
+		if (slashIndex != -1) {
+			max = max.substring(0, slashIndex-1);
+		}
+		
+		_maxBandwidth = Bytes.parseBytes(max);
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
 			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
-		process(scorechart, user, peer, direction, dir, System
-				.currentTimeMillis());
-	}
-
-	protected void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandleInterface dir, long currentTime)
-			throws NoAvailableSlaveException {
-		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
+		for (Iterator<SlaveScore> iter = scorechart.getSlaveScores().iterator(); iter
 				.hasNext();) {
-			ScoreChart.SlaveScore score = (ScoreChart.SlaveScore) iter.next();
-			long lastTransfer = currentTime
-					- score.getRSlave().getLastTransferForDirection(direction);
+			SlaveScore slavescore = iter.next();
+			SlaveStatus status;
 
-			if (lastTransfer < _minTime) {
-				score.addScore(-(long) (lastTransfer * _multiplier));
+			try {
+				status = slavescore.getRSlave().getSlaveStatusAvailable();
+			} catch (SlaveUnavailableException e) {
+				// how come the slave is offline? it was just online.
+				iter.remove();
+				continue;
+			}
+
+			if (status.getThroughputDirection(direction) > _maxBandwidth) {
+				iter.remove();
 			}
 		}
 	}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="org.drftpd.slaveselection.filter plug-in build file"
+         default="build"
+         basedir=".">
+	<jpf-info manifest="${basedir}/plugin.xml"
+		propertyid="plugin.id"
+		propertyversion="plugin.version" />
+	<property name="plugin.home"
+		value="${basedir}/../../../plugins/${plugin.id}" />
+	<copy todir="${plugin.home}" includeemptydirs="false">
+		<fileset dir="${basedir}"
+			excludes="classes/,.*,*build*,src/" />
+	</copy>
+	<jpf-path
+		basedir="${basedir}/../../.."
+		pathid="plugin.classpath"
+		pluginid="${plugin.id}"
+		includes="core/*/plugin.xml,plugins/*/plugin.xml"
+		verbose="true" />
+
+	<target name="build">
+		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
+		<mkdir dir="${plugin.home}/classes" />
+		<javac destdir="${plugin.home}/classes"
+			srcdir="${basedir}/src"
+			classpathref="plugin.classpath"
+			excludes="**/*Test*"
+			source="1.5"
+			target="1.5"
+			debug="true"
+			optimize="false">
+		</javac>
+		<copy todir="${plugin.home}/classes">
+			<fileset dir="${basedir}/src"
+				includes="**/*"
+				excludes="**/.*,**/*.java" />
+		</copy>
+	</target>
+</project>

@@ -21,53 +21,43 @@ import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Properties;
 
-
-import org.apache.log4j.Logger;
-import org.drftpd.Bytes;
 import org.drftpd.PropertyHelper;
-import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
 /**
- * @author zubov
+ * Removes bandwidth * multiplier from the score.
+ * 
+ * @author mog
  * @version $Id$
  */
-public class MaxbandwidthFilter extends Filter {
-	private static final Logger logger = Logger
-			.getLogger(MaxbandwidthFilter.class);
+public class BandwidthFilter extends Filter {
+	protected float _multiplier;
 
-	private long _maxBandwidth;
-
-	public MaxbandwidthFilter(FilterChain ssm, int i, Properties p) {
-		_maxBandwidth = Bytes.parseBytes(PropertyHelper.getProperty(p, i
-				+ ".maxbandwidth"));
+	public BandwidthFilter(int i, Properties p) {
+		super(i, p);
+		_multiplier = parseMultiplier(PropertyHelper.getProperty(p, i+ ".multiplier"));
 	}
 
-	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
-				.hasNext();) {
-			ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iter
-					.next();
-			SlaveStatus status;
+	public void process(ScoreChart scorechart, User user, InetAddress source,
+			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
+		for (Iterator<SlaveScore> iter = scorechart.getSlaveScores().iterator(); iter.hasNext();) {
+			SlaveScore score = iter.next();
+			SlaveStatus status = null;
 
 			try {
-				status = slavescore.getRSlave().getSlaveStatusAvailable();
-			} catch (Exception e) {
+				status = score.getRSlave().getSlaveStatusAvailable();
+			} catch (SlaveUnavailableException e) {
+				// how come the slave is offline? it was just online.
 				iter.remove();
-				logger.debug("removed " + slavescore.getRSlave().getName()
-						+ " because of exception", e);
-
 				continue;
 			}
 
-			if (status.getThroughputDirection(direction) > _maxBandwidth) {
-				iter.remove();
-			}
+			score.addScore(-(long) (status.getThroughputDirection(direction) * _multiplier));
 		}
 	}
 }

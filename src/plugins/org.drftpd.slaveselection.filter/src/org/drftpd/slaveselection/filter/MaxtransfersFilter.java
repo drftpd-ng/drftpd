@@ -18,69 +18,58 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
-
+import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.slave.SlaveStatus;
+import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
 /**
- * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the
- * one in that has been unused for the longest time.
- * 
- * @author mog, zubov
- * @version $Id$
+ * @author zubov
  */
-public class CycleFilter extends Filter {
-	public CycleFilter(FilterChain fc, int i, Properties p) {
+public class MaxtransfersFilter extends Filter {
+	private long _maxTransfers;
+
+	public MaxtransfersFilter(int i, Properties p) {
+		super(i, p);
+		_maxTransfers = Long.parseLong(PropertyHelper.getProperty(p, i+ ".maxtransfers"));
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
 			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
-		ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart
-				.getSlaveScores());
+		for (Iterator<SlaveScore> iter = scorechart.getSlaveScores().iterator(); iter
+				.hasNext();) {
+			SlaveScore score = iter.next();
+			SlaveStatus status;
 
-		while (true) {
-			if (tempList.isEmpty()) {
-				return;
+			try {
+				status = score.getRSlave().getSlaveStatusAvailable();
+			} catch (SlaveUnavailableException e) {
+				// how come the slave is offline? it was just online.
+				iter.remove();
+				continue;
 			}
 
-			ScoreChart.SlaveScore first = (ScoreChart.SlaveScore) tempList
-					.get(0);
-			ArrayList<SlaveScore> equalList = new ArrayList<SlaveScore>();
-			equalList.add(first);
-			tempList.remove(first);
+			int transfers = 0;
 
-			for (Iterator iter = tempList.iterator(); iter.hasNext();) {
-				ScoreChart.SlaveScore match = (ScoreChart.SlaveScore) iter
-						.next();
-
-				if (match.compareTo(first) == 0) {
-					equalList.add(match);
-					iter.remove();
-				}
+			if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+				transfers = status.getTransfersReceiving();
+			} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+				transfers = status.getTransfersSending();
+			} else {
+				throw new IllegalArgumentException("Direction was not one of download or upload");
 			}
 
-			ScoreChart.SlaveScore leastUsed = first;
-
-			for (Iterator iter = equalList.iterator(); iter.hasNext();) {
-				ScoreChart.SlaveScore match = (ScoreChart.SlaveScore) iter
-						.next();
-
-				if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
-						.getRSlave().getLastTransferForDirection(direction)) {
-					leastUsed = match;
-				}
-			}
-
-			if (leastUsed != null) {
-				leastUsed.addScore(1);
+			if (transfers > _maxTransfers) {
+				iter.remove();
 			}
 		}
 	}

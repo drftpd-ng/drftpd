@@ -39,6 +39,7 @@ check - checks plug-ins integrity
 		<ant dir="src/master" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.usermanager.javabeans" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commandmanager" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.slaveselection.filter" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.dataconnection" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.login" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.list" target="${target}" />

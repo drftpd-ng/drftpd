@@ -20,12 +20,11 @@ package org.drftpd.slaveselection.filter;
 import java.net.InetAddress;
 import java.util.Properties;
 
-
-import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
+import org.drftpd.Time;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.jobmanager.Job;
-import org.drftpd.jobmanager.JobManager;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
@@ -33,33 +32,32 @@ import org.drftpd.vfs.InodeHandleInterface;
  * @author mog
  * @version $Id$
  */
-public class MaxUploadsPerSlaveJob extends Filter {
-	private GlobalContext _gctx;
+public class MintimeonlineFilter extends Filter {
+	private long _minTime;
 
-	public MaxUploadsPerSlaveJob(FilterChain fc, int i, Properties p) {
-		_gctx = fc.getGlobalContext();
-	}
+	private float _multiplier;
 
-	public MaxUploadsPerSlaveJob(GlobalContext gctx) {
-		_gctx = gctx;
+	public MintimeonlineFilter(int i, Properties p) {
+		super(i, p);
+		_minTime = Time.parseTime(PropertyHelper.getProperty(p, i + ".mintime"));
+		_multiplier = parseMultiplier(PropertyHelper.getProperty(p, i + ".multiplier"));
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
 			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
-		process(scorechart, sourceSlave);
+		process(scorechart, user, peer, direction, dir, System.currentTimeMillis());
 	}
 
-	public void process(ScoreChart scorechart, RemoteSlave sourceSlave) {
-		if (sourceSlave == null)
-			return;
-		JobManager jm = _gctx.getJobManager();
-		for (Job job : jm.getAllJobsFromQueue()) {
-			synchronized (job) {
-				if (job.isTransferring()) {
-					if (job.getSourceSlave().equals(sourceSlave))
-						scorechart.removeSlaveScore(job.getDestinationSlave());
-				}
+	protected void process(ScoreChart scorechart, User user, InetAddress peer,
+			char direction, InodeHandleInterface dir, long currentTime)
+			throws NoAvailableSlaveException {
+		
+		for (SlaveScore score : scorechart.getSlaveScores()) {
+			long lastTransfer = currentTime	- score.getRSlave().getLastTransferForDirection(direction);
+
+			if (lastTransfer < _minTime) {
+				score.addScore(-(long) (lastTransfer * _multiplier));
 			}
 		}
 	}

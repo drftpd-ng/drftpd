@@ -18,59 +18,69 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
 
-import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.slave.SlaveStatus;
-import org.drftpd.slave.Transfer;
+import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
 /**
- * @author zubov
+ * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the
+ * one in that has been unused for the longest time.
+ * 
+ * @author mog, zubov
+ * @version $Id$
  */
-public class MaxtransfersFilter extends Filter {
-	private long _maxTransfers;
-
-	public MaxtransfersFilter(FilterChain ssm, int i, Properties p) {
-		_maxTransfers = Long.parseLong(PropertyHelper.getProperty(p, i
-				+ ".maxtransfers"));
+public class CycleFilter extends Filter {
+	public CycleFilter(int i, Properties p) {
+		super(i, p);
 	}
 
 	public void process(ScoreChart scorechart, User user, InetAddress peer,
 			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
-		for (Iterator iter = scorechart.getSlaveScores().iterator(); iter
-				.hasNext();) {
-			ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iter
-					.next();
-			SlaveStatus status;
+		
+		ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart
+				.getSlaveScores());
 
-			try {
-				status = slavescore.getRSlave().getSlaveStatusAvailable();
-			} catch (Exception e) {
-				iter.remove();
-
-				continue;
+		while (true) {
+			if (tempList.isEmpty()) {
+				return;
 			}
 
-			int transfers = 0;
+			SlaveScore first = tempList.get(0);
+			
+			ArrayList<SlaveScore> equalList = new ArrayList<SlaveScore>();
+			equalList.add(first);
+			tempList.remove(first);
 
-			if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-				transfers = status.getTransfersReceiving();
-			} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-				transfers = status.getTransfersSending();
-			} else {
-				throw new IllegalArgumentException(
-						"Direction was not one of download or upload");
+			for (Iterator<SlaveScore> iter = tempList.iterator(); iter.hasNext();) {
+				SlaveScore match = iter.next();
+
+				if (match.compareTo(first) == 0) {
+					equalList.add(match);
+					iter.remove();
+				}
 			}
 
-			if (transfers > _maxTransfers) {
-				iter.remove();
+			SlaveScore leastUsed = first;
+
+			for (Iterator<SlaveScore> iter = equalList.iterator(); iter.hasNext();) {
+				SlaveScore match = iter.next();
+
+				if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
+						.getRSlave().getLastTransferForDirection(direction)) {
+					leastUsed = match;
+				}
+			}
+
+			if (leastUsed != null) {
+				leastUsed.addScore(1);
 			}
 		}
 	}

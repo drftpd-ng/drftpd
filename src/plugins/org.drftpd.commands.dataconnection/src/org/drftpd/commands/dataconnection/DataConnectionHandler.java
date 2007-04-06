@@ -187,20 +187,15 @@ public class DataConnectionHandler extends CommandInterface {
  				while (slave == null) {
 					try {
 						slave = conn.getGlobalContext()
-								.getSlaveSelectionManager().getASlave(
-										ts.getTransferFile().getAvailableSlaves(),
+								.getSlaveSelectionManager().getASlave(conn,
 										Transfer.TRANSFER_SENDING_DOWNLOAD,
-										conn, ts.getTransferFile());
+										 ts.getTransferFile());
 						String index = slave.issueListenToSlave(
 								ts.getSendFilesEncrypted(), ts
 										.getSSLHandshakeClientMode());
 						ci = slave.fetchTransferResponseFromIndex(index);
 			            ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
 			            address = new InetSocketAddress(slave.getPASVIP(),ts.getTransfer().getAddress().getPort());
-					} catch (FileNotFoundException e) {
-						// Strange, since we validated it existed in PRET, but this could definitely happen
-						reset(conn);
-						return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 					} catch (NoAvailableSlaveException e) {
 						reset(conn);
 						return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
@@ -221,11 +216,9 @@ public class DataConnectionHandler extends CommandInterface {
 					try {
 						slave = conn.getGlobalContext()
 								.getSlaveSelectionManager().getASlave(
-										conn.getGlobalContext()
-												.getSlaveManager()
-												.getAvailableSlaves(),
+										conn,
 										Transfer.TRANSFER_RECEIVING_UPLOAD,
-										conn, ts.getTransferFile());
+										ts.getTransferFile());
 						String index = slave.issueListenToSlave(
 								ts.getSendFilesEncrypted(), ts
 										.getSSLHandshakeClientMode());
@@ -386,16 +379,14 @@ public class DataConnectionHandler extends CommandInterface {
 				if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 					ts.setTransferSlave(conn.getGlobalContext()
 							.getSlaveSelectionManager().getASlave(
-									conn.getGlobalContext().getSlaveManager()
-											.getAvailableSlaves(),
-									Transfer.TRANSFER_SENDING_DOWNLOAD, conn,
+									conn,
+									Transfer.TRANSFER_SENDING_DOWNLOAD,
 									ts.getTransferFile()));
 				} else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 					ts.setTransferSlave(conn.getGlobalContext()
 							.getSlaveSelectionManager().getASlave(
-									conn.getGlobalContext().getSlaveManager()
-											.getAvailableSlaves(),
-									Transfer.TRANSFER_RECEIVING_UPLOAD, conn,
+									conn,
+									Transfer.TRANSFER_RECEIVING_UPLOAD,
 									ts.getTransferFile()));
 				}
 				response.addComment("Using "
@@ -1017,19 +1008,15 @@ public class DataConnectionHandler extends CommandInterface {
                     if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 							ts.setTransferSlave(conn.getGlobalContext()
 								.getSlaveSelectionManager().getASlave(
-										conn.getGlobalContext()
-												.getSlaveManager()
-												.getAvailableSlaves(),
+										conn,
 										Transfer.TRANSFER_SENDING_DOWNLOAD,
-										conn, ts.getTransferFile()));
+										ts.getTransferFile()));
 					} else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 						ts.setTransferSlave(conn.getGlobalContext()
 								.getSlaveSelectionManager().getASlave(
-										conn.getGlobalContext()
-												.getSlaveManager()
-												.getAvailableSlaves(),
+										conn,
 										Transfer.TRANSFER_RECEIVING_UPLOAD,
-										conn, ts.getTransferFile()));
+										ts.getTransferFile()));
 					} else {
 						// reset(); already done in finally block
 						throw new RuntimeException();
@@ -1242,7 +1229,7 @@ public class DataConnectionHandler extends CommandInterface {
             env = new ReplacerEnvironment();
             env.add("bytes", Bytes.formatBytes(status.getTransfered()));
             env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
-            env.add("seconds", "" + ((float)status.getElapsed() / 1000F));
+            env.add("seconds", "" + (status.getElapsed() / 1000F));
             env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
             CommandResponse response = new CommandResponse(226, conn.jprintf(_bundle,

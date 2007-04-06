@@ -61,11 +61,11 @@ public class MinfreespaceFilterTest extends TestCase {
             };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
-        Filter f = new MinfreespaceFilter(null, 1, p);
+        Filter f = new MinfreespaceFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
 
         assertEquals(Bytes.parseBytes("-50MB"),
-            sc.getSlaveScore(rslaves[0]).getScore());
+            sc.getScoreForSlave(rslaves[0]).getScore());
     }
 
     public static class RemoteSlaveTesting extends DummyRemoteSlave {
@@ -73,7 +73,7 @@ public class MinfreespaceFilterTest extends TestCase {
 
         public RemoteSlaveTesting(String name, Collection masks,
             SlaveStatus status) {
-            super(name, null);
+            super(name);
             _status = status;
         }
 

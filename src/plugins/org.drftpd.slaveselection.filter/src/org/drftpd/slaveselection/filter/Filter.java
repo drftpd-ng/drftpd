@@ -18,6 +18,7 @@
 package org.drftpd.slaveselection.filter;
 
 import java.net.InetAddress;
+import java.util.Properties;
 
 
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -33,7 +34,56 @@ import org.drftpd.vfs.InodeHandleInterface;
  * @version $Id$
  */
 public abstract class Filter {
+	public Filter(int i, Properties p) {
+		
+	}
+	
 	public abstract void process(ScoreChart scorechart, User user,
 			InetAddress peer, char direction, InodeHandleInterface inode,
 			RemoteSlave sourceSlave) throws NoAvailableSlaveException;
+	
+	public static float parseMultiplier(String string) {
+		if (string.equalsIgnoreCase("remove")) {
+			return 0;
+		}
+
+		boolean isMultiplier;
+		float multiplier = 1;
+
+		while (string.length() != 0) {
+			char c = string.charAt(0);
+
+			if (c == '*') {
+				isMultiplier = true;
+				string = string.substring(1);
+			} else if (c == '/') {
+				isMultiplier = false;
+				string = string.substring(1);
+			} else {
+				isMultiplier = true;
+			}
+
+			int pos = string.indexOf('*');
+
+			if (pos == -1) {
+				pos = string.length();
+			}
+
+			int tmp = string.indexOf('/');
+
+			if ((tmp != -1) && (tmp < pos)) {
+				pos = tmp;
+			}
+
+			if (isMultiplier) {
+				multiplier *= Float.parseFloat(string.substring(0, pos));
+			} else {
+				multiplier /= Float.parseFloat(string.substring(0, pos));
+			}
+
+			string = string.substring(pos);
+		}
+
+		return multiplier;
+	}
 }

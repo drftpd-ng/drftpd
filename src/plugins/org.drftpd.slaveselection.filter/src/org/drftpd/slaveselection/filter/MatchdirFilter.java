@@ -21,38 +21,48 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Properties;
 
-
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.Pattern;
+import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.PropertyHelper;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.config.FtpConfig;
-import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
-import java.util.StringTokenizer;
-
 /**
+ * Example slaveselection entry:
+ * 
+ * <pre>
+ *  &lt;n&gt;.filter=matchdir
+ *  &lt;n&gt;.assign=&lt;slavename&gt;+100000
+ *  &lt;n&gt;.match=&lt;path glob match&gt;
+ * </pre>
+ * 
  * @author mog
  * @version $Id$
  */
-public class UserFilter extends Filter {
-	private Permission _perm;
+public class MatchdirFilter extends Filter {
+	private ArrayList<AssignParser> _assigns;
 
-	private ArrayList<MatchdirFilter.AssignSlave> _assigns;
+	private Pattern _p;
 
-	public UserFilter(FilterChain fc, int i, Properties p)
-			throws ObjectNotFoundException {
-		_perm = new Permission(FtpConfig.makeUsers(new StringTokenizer(
-				PropertyHelper.getProperty(p, i + ".perm"))));
-		_assigns = MatchdirFilter.parseAssign(PropertyHelper.getProperty(p, i
-				+ ".assign"), fc.getGlobalContext().getSlaveManager());
+	private Perl5Matcher _m = new Perl5Matcher();
+	
+	public MatchdirFilter(int i, Properties p) {
+		super(i, p);
+		try {
+			_assigns = AssignSlave.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
+			_p = new GlobCompiler().compile(PropertyHelper.getProperty(p, i	+ ".match"));
+		} catch (Exception e) {
+			throw new FatalException(e);
+		}
 	}
 
-	public void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
-			throws NoAvailableSlaveException {
-		MatchdirFilter.doAssign(_assigns, scorechart);
+	public void process(ScoreChart scorechart, User user, InetAddress source,
+			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
+		if (_m.matches(file.getPath(), _p)) {
+			AssignSlave.addScoresToChart(_assigns, scorechart);
+		}
 	}
 }

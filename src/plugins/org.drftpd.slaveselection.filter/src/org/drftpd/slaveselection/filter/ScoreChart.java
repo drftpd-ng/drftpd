@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
-
-import org.apache.log4j.Logger;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -32,18 +30,9 @@ import org.drftpd.master.RemoteSlave;
  * @version $Id$
  */
 public class ScoreChart {
-	private static final Logger logger = Logger.getLogger(ScoreChart.class);
-
-	/**
-	 * Contains {@link SlaveScore} elements.
-	 */
 	private ArrayList<SlaveScore> _scoreChart;
 
-	/**
-	 * @param slaves
-	 *            Collection of ONLINE slaves (this is not verified by
-	 *            scorechart, you can use offline slaves for JUnit tests etc.)
-	 */
+
 	public ScoreChart(Collection<RemoteSlave> slaves) {
 		_scoreChart = new ArrayList<SlaveScore>();
 		for (RemoteSlave rslave : slaves) {
@@ -56,50 +45,42 @@ public class ScoreChart {
 	}
 
 	public SlaveScore getBestSlaveScore() throws NoAvailableSlaveException {
-		SlaveScore bestscore;
-		Iterator iter = getSlaveScores().iterator();
+		SlaveScore bestScore;
+		
+		Iterator<SlaveScore> iter = getSlaveScores().iterator();
 
-		if (!iter.hasNext()) {
+		if (isEmpty()) {
 			throw new NoAvailableSlaveException();
 		}
 
-		bestscore = (SlaveScore) iter.next();
-		logger.debug(bestscore);
+		bestScore = iter.next();
 
-		for (; iter.hasNext();) {
-			SlaveScore score = (SlaveScore) iter.next();
-			logger.debug(score);
+		while (iter.hasNext()) {
+			SlaveScore score = iter.next();
 
-			if (score.getScore() > bestscore.getScore()) {
-				bestscore = score;
+			if (score.getScore() > bestScore.getScore()) {
+				bestScore = score;
 			}
 		}
 
-		if (bestscore == null) {
+		if (bestScore == null) {
 			throw new NoAvailableSlaveException();
 		}
 
-		return bestscore;
+		return bestScore;
 	}
 
 	/**
-	 * Returns the {@link SlaveScore} entry for the RemoteSlave rslave.
-	 * 
-	 * @param rslave
-	 *            The RemoteSlave to get the SlaveScore for.
+	 * Returns the SlaveScore entry for the RemoteSlave rslave.
 	 */
-	public SlaveScore getSlaveScore(RemoteSlave rslave)
-			throws ObjectNotFoundException {
-		for (Iterator iter = _scoreChart.iterator(); iter.hasNext();) {
-			SlaveScore score = (SlaveScore) iter.next();
-
+	public SlaveScore getScoreForSlave(RemoteSlave rslave) throws ObjectNotFoundException {
+		for (SlaveScore score : getSlaveScores()) {
 			if (score.getRSlave().equals(rslave)) {
 				return score;
 			}
 		}
 
-		throw new ObjectNotFoundException(rslave.getName()
-				+ " not in ScoreChart");
+		throw new ObjectNotFoundException(rslave.getName() + " not in ScoreChart");
 	}
 
 	/**
@@ -109,19 +90,22 @@ public class ScoreChart {
 		return _scoreChart;
 	}
 
-	public void removeSlaveScore(RemoteSlave rslave) {
-		for (Iterator iter = _scoreChart.iterator(); iter.hasNext();) {
-			SlaveScore score = (SlaveScore) iter.next();
+	public void removeSlaveFromChart(RemoteSlave rslave) {
+		for (Iterator<SlaveScore> iter = _scoreChart.iterator(); iter.hasNext();) {
+			SlaveScore score = iter.next();
 
 			if (score.getRSlave().equals(rslave)) {
 				iter.remove();
 			}
 		}
 	}
+	
+	public void addScoreToSlave(RemoteSlave rslave, long score) throws ObjectNotFoundException {
+		getScoreForSlave(rslave).addScore(score);
+	}
 
-	public static class SlaveScore implements Comparable {
+	public static class SlaveScore implements Comparable<SlaveScore> {
 		private RemoteSlave _rslave;
-
 		private long _score;
 
 		public SlaveScore(RemoteSlave rslave) {
@@ -129,17 +113,11 @@ public class ScoreChart {
 		}
 
 		public void addScore(long score) {
-			// logger.debug("Added "+score+" to "+getRSlave().getName());
 			_score += score;
 		}
 
-		public int compareTo(Object o) {
-			SlaveScore s = (SlaveScore) o;
-
-			// int thisVal = this.value;
-			// int anotherVal = anotherInteger.value;
-			return ((getScore() < s.getScore()) ? (-1) : ((getScore() == s
-					.getScore()) ? 0 : 1));
+		public int compareTo(SlaveScore s) {
+			return ((getScore() < s.getScore()) ? (-1) : ((getScore() == s.getScore()) ? 0 : 1));
 		}
 
 		public RemoteSlave getRSlave() {
@@ -151,8 +129,7 @@ public class ScoreChart {
 		}
 
 		public String toString() {
-			return "SlaveScore[rslave=" + getRSlave().getName() + ",score="
-					+ getScore() + "]";
+			return "SlaveScore[rslave=" + getRSlave().getName() + ",score="+ getScore() + "]";
 		}
 	}
 
