@@ -25,6 +25,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -151,8 +152,7 @@ public class SlaveManagement extends CommandInterface {
             (request.getArgument().equalsIgnoreCase("more"));
 
         Collection slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
-        CommandResponse response = new CommandResponse(200,
-                "OK, " + slaves.size() + " slaves listed.");
+        CommandResponse response = new CommandResponse(200, "OK, " + slaves.size() + " slaves listed.");
 
         for (Iterator iter = GlobalContext.getGlobalContext().getSlaveManager()
                                  .getSlaves().iterator(); iter.hasNext();) {
@@ -163,19 +163,23 @@ public class SlaveManagement extends CommandInterface {
             }
 
             ReplacerEnvironment env = new ReplacerEnvironment();
-            env.add("slave", rslave.getName());
-
-            try {
-                SlaveStatus status = rslave.getSlaveStatusAvailable();
-                // what the hell is this doing here?!?
-                /*SiteBot.fillEnvSlaveStatus(env, status,
-                    conn.getGlobalContext().getSlaveManager());*/
-                
-                response.addComment(session.jprintf(_bundle,
-                        "slaves", env, request.getUser()));
-            } catch (SlaveUnavailableException e) {
-                response.addComment(session.jprintf(_bundle,
-                        "slaves.offline", env, request.getUser()));
+			env.add("slave", rslave.getName());
+            
+            if (rslave.isOnline()) {
+            	if (!rslave.isAvailable()) {
+            		response.addComment(session.jprintf(_bundle, "slave.remerging", env, request.getUser()));
+            	} else {            		
+            		try {
+            			SlaveStatus status = rslave.getSlaveStatus();
+            			fillEnvWithSlaveStatus(env, status);
+            			response.addComment(session.jprintf(_bundle, "slave.online", env, request.getUser()));
+            		} catch (SlaveUnavailableException e) {
+            			// should never happen since we tested slave status w/ isOnline and isAvaiable.
+            			throw new RuntimeException("There's a bug somewhere in the code, the slave was avaiable not it isn't.", e);
+            		}   
+            	}
+            } else {
+            	response.addComment(session.jprintf(_bundle, "slave.offline", env, request.getUser()));
             }
         }
 
@@ -419,5 +423,27 @@ public class SlaveManagement extends CommandInterface {
 
         return response;
     }
+    
+    public static void fillEnvWithSlaveStatus(ReplacerEnvironment env, SlaveStatus status) {
+    	env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
+    	env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
+    	env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
 
+    	if (status.getDiskSpaceCapacity() == 0) {
+    		env.add("diskfreepercent", "n/a");
+    		env.add("diskusedpercent", "n/a");
+    	} else {
+    		env.add("diskfreepercent", ((status.getDiskSpaceAvailable() * 100) / status.getDiskSpaceCapacity()) +"%");
+    		env.add("diskusedpercent", ((status.getDiskSpaceUsed() * 100) / status.getDiskSpaceCapacity()) +"%");
+    	}
+
+    	env.add("xfers", "" + status.getTransfers());
+    	env.add("xfersdn", "" + status.getTransfersSending());
+    	env.add("xfersup", "" + status.getTransfersReceiving());
+    	env.add("xfersdown", "" + status.getTransfersSending());
+
+    	env.add("throughput", Bytes.formatBytes(status.getThroughput()) + "/s");
+    	env.add("throughputup",	Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
+    	env.add("throughputdown", Bytes.formatBytes(status.getThroughputSending()) + "/s");
+    }
 }

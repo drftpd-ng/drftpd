@@ -20,6 +20,8 @@ package org.drftpd.tests;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.sections.SectionManagerInterface;
+import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.usermanager.AbstractUserManager;
 
 
 /**
@@ -35,11 +37,11 @@ public class DummyGlobalContext extends GlobalContext {
         _slaveManager = slavem;
     }
 
-    public void setUserManager(DummyUserManager um) {
+    public void setUserManager(AbstractUserManager um) {
         _usermanager = um;
     }
 
-    public void setSlaveSelectionManager(DummySlaveSelectionManager dssm) {
+    public void setSlaveSelectionManager(SlaveSelectionManagerInterface dssm) {
         _slaveSelectionManager = dssm;
     }
 }

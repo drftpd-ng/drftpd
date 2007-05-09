@@ -17,10 +17,12 @@
  */
 package org.drftpd.sections.conf;
 
+import java.io.FileNotFoundException;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
@@ -30,45 +32,46 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class PlainSection implements SectionInterface {
-	private DirectoryHandle _dir;
-
-	private SectionManager _mgr;
-
 	private String _name;
-
-	public PlainSection(SectionManager mgr, int i, Properties p) {
-		this(mgr, PropertyHelper.getProperty(p, i + ".name"),
-				new DirectoryHandle(PropertyHelper.getProperty(p, i + ".path")));
+	
+	protected DirectoryHandle _basePath;
+	
+	public PlainSection(int i, Properties p) {
+		this(PropertyHelper.getProperty(p, i + ".name"), new DirectoryHandle(PropertyHelper.getProperty(p, i+ ".path")));
 	}
-
-	public PlainSection(SectionManager mgr, String name, DirectoryHandle path) {
-		_mgr = mgr;
+	
+	public PlainSection(String name, DirectoryHandle dir) {
 		_name = name;
-		_dir = path;
-
+		_basePath = dir;
 	}
-
-	public DirectoryHandle getCurrentDirectory() {
-		return _dir;
-	}
-
-	public Set<DirectoryHandle> getDirectories() {
-		return Collections.singleton(getCurrentDirectory());
-	}
-
+	
 	public String getName() {
 		return _name;
 	}
 
-	public String getPath() {
-		return _dir.getPath();
-	}
-
-	public String getBasePath() {
-		return getPath();
-	}
-
 	public DirectoryHandle getBaseDirectory() {
-		return getCurrentDirectory();
+		return _basePath;
+	}
+	
+	public String getBasePath() {
+		return _basePath.getPath();
+	}
+	
+	public DirectoryHandle getCurrentDirectory() {
+		return getBaseDirectory();
+	}
+
+
+	@SuppressWarnings("unchecked")
+	public Set<DirectoryHandle> getDirectories() {
+		try {
+			return getBaseDirectory().getDirectories();
+		} catch (FileNotFoundException e) {
+			return Collections.EMPTY_SET;
+		}
+	}
+	
+	protected static GlobalContext getGlobalContext() {
+		return GlobalContext.getGlobalContext();
 	}
 }

@@ -17,16 +17,15 @@
  */
 package org.drftpd.commands.misc;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.MissingResourceException;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandInstanceContainer;

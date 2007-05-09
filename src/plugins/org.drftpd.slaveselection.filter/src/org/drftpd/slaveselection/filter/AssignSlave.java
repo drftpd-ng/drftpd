@@ -37,8 +37,7 @@ public class AssignSlave {
 			AssignParser ap = new AssignParser(toParse, _gctx);
 			list.add(ap);
 		}
-		
-		
+				
 		list.trimToSize();
 		return list;
 	}

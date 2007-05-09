@@ -171,7 +171,7 @@ public class Slave {
 		} else {
 			_cipherSuites = new String[cipherSuites.size()];
 			for (int x = 0; x < _cipherSuites.length; x++) {
-				_cipherSuites[x] = (String) cipherSuites.get(x);
+				_cipherSuites[x] = cipherSuites.get(x);
 			}
 		}
 
@@ -672,7 +672,7 @@ public class Slave {
 			return;
 		}
 
-		Transfer t = (Transfer) _transfers.get(ti);
+		Transfer t = _transfers.get(ti);
 		t.abort(args[1]);
 	}
 

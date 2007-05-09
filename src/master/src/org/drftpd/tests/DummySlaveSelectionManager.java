@@ -7,7 +7,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.jobmanager.Job;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 import org.drftpd.vfs.InodeHandle;
 
 
@@ -15,7 +15,7 @@ import org.drftpd.vfs.InodeHandle;
  * @author zubov
  * @version $Id$
  */
-public class DummySlaveSelectionManager extends SlaveSelectionManagerInterface {
+public class DummySlaveSelectionManager extends SlaveSelectionManager {
     public DummySlaveSelectionManager() throws IOException {
 		super();
 	}

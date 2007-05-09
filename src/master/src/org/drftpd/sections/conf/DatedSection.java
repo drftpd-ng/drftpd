@@ -20,17 +20,13 @@ package org.drftpd.sections.conf;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TimeZone;
 
-
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.cron.TimeEventInterface;
@@ -43,49 +39,31 @@ import org.drftpd.vfs.ObjectNotValidException;
  * @author mog
  * @version $Id$
  */
-public class DatedSection implements SectionInterface, TimeEventInterface {
-	// The code assumes that the following constants are in a increasing
-	// sequence.
-	static final int TOP_OF_TROUBLE = -1;
-
-	static final int TOP_OF_MINUTE = 0;
-
-	static final int TOP_OF_HOUR = 1;
-
-	static final int HALF_DAY = 2;
-
-	static final int TOP_OF_DAY = 3;
-
-	static final int TOP_OF_WEEK = 4;
-
-	static final int TOP_OF_MONTH = 5;
+public class DatedSection extends PlainSection implements SectionInterface, TimeEventInterface {
+	// The code assumes that the following constants are in a increasing sequence.
+	protected static final int TOP_OF_TROUBLE = -1;
+	protected static final int TOP_OF_MINUTE = 0;
+	protected static final int TOP_OF_HOUR = 1;
+	protected static final int HALF_DAY = 2;
+	protected static final int TOP_OF_DAY = 3;
+	protected static final int TOP_OF_WEEK = 4;
+	protected static final int TOP_OF_MONTH = 5;
 
 	// The gmtTimeZone is used only in computeCheckPeriod() method.
-	static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
+	private static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
 
 	private static final Logger logger = Logger.getLogger(DatedSection.class);
 
-	private DirectoryHandle _basePath;
-
 	private SimpleDateFormat _dateFormat;
-
-	private SectionManager _sectionManager;
-
-	private String _name;
 
 	private String _now;
 
 	private RollingCalendar rc = new RollingCalendar();
 
-	public DatedSection(SectionManager mgr, int i, Properties p) {
-		_sectionManager = mgr;
-		_name = PropertyHelper.getProperty(p, i + ".name");
-		_basePath = new DirectoryHandle(PropertyHelper.getProperty(p, i
-				+ ".path"));
+	public DatedSection(int i, Properties p) {
+		super(i, p);
 		_now = PropertyHelper.getProperty(p, i + ".now");
-
-		_dateFormat = new SimpleDateFormat(PropertyHelper.getProperty(p, i
-				+ ".dated"), Locale.getDefault());
+		_dateFormat = new SimpleDateFormat(PropertyHelper.getProperty(p, i+ ".dated"), Locale.getDefault());
 
 		// rollingcalendar...
 		int type = computeCheckPeriod();
@@ -97,39 +75,9 @@ public class DatedSection implements SectionInterface, TimeEventInterface {
 		getGlobalContext().addTimeEvent(this);
 	}
 
-	private GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
-
-	public DirectoryHandle getBaseDirectory() {
-		return _basePath;
-	}
-
 	public DirectoryHandle getCurrentDirectory() {
 		String dateDirPath = _dateFormat.format(new Date());
-		// System.out.println(new Date());
-		// System.out.println(dateDirPath);
-		// System.out.println(_dateFormat.getCalendar());
-		// System.out.println(_dateFormat.getTimeZone());
-		//_dateFormat.setTimeZone(TimeZone.getDefault());
-		// System.out.println(_dateFormat.getTimeZone());
 		return getBaseDirectory().getNonExistentDirectoryHandle(dateDirPath);
-	}
-
-	public Set<DirectoryHandle> getDirectories() {
-		try {
-			return getBaseDirectory().getDirectories();
-		} catch (FileNotFoundException e) {
-			return Collections.EMPTY_SET;
-		}
-	}
-
-	public String getName() {
-		return _name;
-	}
-
-	public String getPath() {
-		return getCurrentDirectory().getPath();
 	}
 
 	// This method computes the roll over period by looping over the
@@ -172,44 +120,44 @@ public class DatedSection implements SectionInterface, TimeEventInterface {
 	void printPeriodicity(int type) {
 		switch (type) {
 		case TOP_OF_MINUTE:
-			logger.debug("DatedSection [" + _name
+			logger.debug("DatedSection [" + getName()
 					+ "] to be rolled every minute.");
 
 			break;
 
 		case TOP_OF_HOUR:
-			logger.debug("DatedSection [" + _name
+			logger.debug("DatedSection [" + getName()
 					+ "] to be rolled on top of every hour.");
 
 			break;
 
 		case HALF_DAY:
-			logger.debug("DatedSection [" + _name
+			logger.debug("DatedSection [" + getName()
 					+ "] to be rolled at midday and midnight.");
 
 			break;
 
 		case TOP_OF_DAY:
-			logger.debug("DatedSection [" + _name
+			logger.debug("DatedSection [" + getName()
 					+ "] to be rolled at midnight.");
 
 			break;
 
 		case TOP_OF_WEEK:
-			logger.debug("DatedSection [" + _name
+			logger.debug("DatedSection [" + getName()
 					+ "] to be rolled at start of week.");
 
 			break;
 
 		case TOP_OF_MONTH:
-			logger.debug("DatedSection [" + _name
+			logger.debug("DatedSection [" + getName()
 					+ "] to be rolled at start of every month.");
 
 			break;
 
 		default:
 			logger
-					.warn("Unknown periodicity for DatedSection [" + _name
+					.warn("Unknown periodicity for DatedSection [" + getName()
 							+ "].");
 		}
 	}

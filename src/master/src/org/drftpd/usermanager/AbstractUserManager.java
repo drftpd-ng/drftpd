@@ -25,8 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
-
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -44,9 +42,6 @@ import se.mog.io.PermissionDeniedException;
  */
 public abstract class AbstractUserManager implements UserManager {
 	protected HashMap<String, SoftReference<User>> _users;
-
-	private static final Logger logger = Logger
-			.getLogger(AbstractUserManager.class);
 
 	public abstract void init() throws UserFileException;
 	

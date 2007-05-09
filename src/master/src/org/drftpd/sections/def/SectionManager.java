@@ -67,6 +67,7 @@ public class SectionManager implements SectionManagerInterface {
 		return GlobalContext.getGlobalContext();
 	}
 
+	@SuppressWarnings("unchecked")
 	public Collection<SectionInterface> getSections() {
 		ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
 
@@ -111,6 +112,7 @@ public class SectionManager implements SectionManagerInterface {
 			return _lrf;
 		}
 
+		@SuppressWarnings("unchecked")
 		public Set<DirectoryHandle> getDirectories() {
 			try {
 				return _lrf.getDirectories();
@@ -136,6 +138,7 @@ public class SectionManager implements SectionManagerInterface {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public Map<String, SectionInterface> getSectionsMap() {
 		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
 		

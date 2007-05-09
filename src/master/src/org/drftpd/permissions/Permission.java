@@ -44,7 +44,7 @@ public class Permission {
 		boolean allow = false;
 
 		for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
-			String aclUser = (String) iter.next();
+			String aclUser = iter.next();
 			allow = true;
 
 			if (aclUser.charAt(0) == '!') {

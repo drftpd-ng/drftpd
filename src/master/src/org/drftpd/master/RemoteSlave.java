@@ -27,7 +27,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -42,7 +41,6 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
-
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -76,8 +74,8 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
-import org.drftpd.usermanager.Entity;
 import org.drftpd.stats.ExtendedTimedStats;
+import org.drftpd.usermanager.Entity;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.HostMaskCollection;
 import org.drftpd.vfs.InodeHandle;
@@ -88,9 +86,7 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class RemoteSlave extends ExtendedTimedStats implements Runnable, Comparable<RemoteSlave>,
-		Serializable, Entity, Commitable {
-	private static final long serialVersionUID = -6973935289361817125L;
-
+		Entity, Commitable {
 	private final String[] transientFields = { "available",
 			"lastDownloadSending", "lastUploadReceiving" };
 

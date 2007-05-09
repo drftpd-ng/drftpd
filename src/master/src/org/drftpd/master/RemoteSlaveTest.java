@@ -54,9 +54,9 @@ public class RemoteSlaveTest extends TestCase {
         //sm.setGlobalContext(gc); -zubov
         ((GC) gc).setSlaveManager(sm);
 
-        RemoteSlave rslave1 = new DummyRemoteSlave("test1", gc);
-        RemoteSlave rslave2 = new DummyRemoteSlave("test1", gc);
-        RemoteSlave rslave3 = new DummyRemoteSlave("test2", gc);
+        RemoteSlave rslave1 = new DummyRemoteSlave("test1");
+        RemoteSlave rslave2 = new DummyRemoteSlave("test1");
+        RemoteSlave rslave3 = new DummyRemoteSlave("test2");
         assertTrue(rslave1.equals(rslave1));
         assertTrue(rslave1.equals(rslave2));
         assertFalse(rslave1.equals(rslave3));
@@ -96,7 +96,7 @@ public class RemoteSlaveTest extends TestCase {
         //sm.setGlobalContext(gc); -zubov
         gc.setSlaveManager(sm);
 
-        DummyRemoteSlave rslave = new DummyRemoteSlave("test", gc);
+        DummyRemoteSlave rslave = new DummyRemoteSlave("test");
         sm.addSlave(rslave);
         rslave.setProperty("errortimeout", "100");
         rslave.setProperty("maxerrors", "2");
@@ -137,7 +137,7 @@ public class RemoteSlaveTest extends TestCase {
         private HashSet<String> _filelist = null;
 
         public RemergeRemoteSlave(String name, GlobalContext gctx) {
-            super(name, gctx);
+            super(name);
         }
 
         /**

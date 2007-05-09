@@ -22,11 +22,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-
 
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
@@ -40,11 +38,9 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
-	private static final Class[] CONSTRUCTOR_SIG = new Class[] {
-			SectionManager.class, int.class, Properties.class };
+	private static final Class[] CONSTRUCTOR_SIG = new Class[] { int.class, Properties.class };
 
-	private PlainSection _emptySection = new PlainSection(this, "",
-			GlobalContext.getGlobalContext().getRoot());
+	private PlainSection _emptySection = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
 
 	private HashMap<String, SectionInterface> _sections;
 
@@ -115,13 +111,13 @@ public class SectionManager implements SectionManagerInterface {
 					break;
 				String type = p.getProperty(i + ".type", "plain");
 				try {
-					Class clazz = Class.forName("org.drftpd.sections.conf."
+					Class<?> clazz = Class.forName("org.drftpd.sections.conf."
 							+ type.substring(0, 1).toUpperCase()
 							+ type.substring(1) + "Section");
 					SectionInterface section = (SectionInterface) clazz
 							.getDeclaredConstructor(CONSTRUCTOR_SIG)
 							.newInstance(
-									new Object[] { this, new Integer(i), p });
+									new Object[] { new Integer(i), p });
 					sections.put(name, section);
 				} catch (Exception e1) {
 					throw new FatalException("Unknown section type: " + i

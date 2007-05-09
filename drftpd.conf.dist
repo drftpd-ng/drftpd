@@ -26,12 +26,8 @@ master.commandmanager=org.drftpd.commandmanager
 #plugins.5=net.drmods.plugins.ftp.AutoFreeSpace
 #plugins.6=org.drftpd.plugins.DIZPlugin
 
-#leave slaveselection manager as is and use default configs in:
-# 1. slaveselection-up.conf.dist
-# 2. slaveselection-down.conf.dist
-# 3. slaveselection-master.conf.dist
-# alternate is org.drftpd.slaveselection.def.SlaveSelectionManager
-slaveselection=org.drftpd.slaveselection.filter.SlaveSelectionManager
+# filtering slaveselection, check slaveselection-*.conf for more info.
+slaveselection=org.drftpd.slaveselection.filter
 
 # this defines each directory under / as a section, "site sections"
 # alternate is org.drftpd.sections.conf.SectionManager

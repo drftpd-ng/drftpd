@@ -33,6 +33,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
@@ -66,9 +67,9 @@ public class JobManagerTest extends TestCase {
         DummyGlobalContext dgc = new DummyGlobalContext();
         //dgc.setSlaveManager(new DummySlaveManager(dgc));
 
-        DummyRemoteSlave rslave1 = new DummyRemoteSlave("slave1", dgc);
-        DummyRemoteSlave rslave2 = new DummyRemoteSlave("slave2", dgc);
-        DummyRemoteSlave rslave3 = new DummyRemoteSlave("slave3", dgc);
+        DummyRemoteSlave rslave1 = new DummyRemoteSlave("slave1");
+        DummyRemoteSlave rslave2 = new DummyRemoteSlave("slave2");
+        DummyRemoteSlave rslave3 = new DummyRemoteSlave("slave3");
         _slaveList = new ArrayList<RemoteSlave>();
         _slaveList.add(rslave1);
         _slaveList.add(rslave2);
@@ -82,12 +83,20 @@ public class JobManagerTest extends TestCase {
 
         DummySlaveManager dsm = null;
 
-        dsm = new DummySlaveManager(dgc);
+        dsm = new DummySlaveManager();
 
         dgc.setSlaveManager(dsm);
 
-        DummySlaveSelectionManager dssm = new DummySlaveSelectionManager();
+        SlaveSelectionManager dssm = null;
+        
+		try {
+			dssm = new DummySlaveSelectionManager();
+		} catch (IOException e) {
+			// do nothing.
+		}
+		
         dgc.setSlaveSelectionManager(dssm);
+        
         _jm = GlobalContext.getGlobalContext().getJobManager();
         file = new JobtestFileHandle("/path/file1.txt");
         file.addSlave(rslave1);

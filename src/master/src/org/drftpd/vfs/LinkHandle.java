@@ -42,7 +42,7 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 	}
 	
 	public void setTarget(String path) throws FileNotFoundException {
-		((VirtualFileSystemLink) getInode()).setLinkPath(path);
+		getInode().setLinkPath(path);
 	}
 
 	public DirectoryHandle getTargetDirectory() throws FileNotFoundException,
