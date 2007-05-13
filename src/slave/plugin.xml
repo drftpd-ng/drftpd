@@ -21,4 +21,10 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
+	
+	<extension-point id="Handler">
+		<parameter-def id="Name" />
+		<parameter-def id="Class" />
+		<parameter-def id="Method" />
+	</extension-point>
 </plugin>

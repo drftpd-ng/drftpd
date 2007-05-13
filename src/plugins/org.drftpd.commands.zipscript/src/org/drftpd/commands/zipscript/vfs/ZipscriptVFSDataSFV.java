@@ -19,17 +19,20 @@ package org.drftpd.commands.zipscript.vfs;
 
 import java.io.FileNotFoundException;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.SFVInfo;
 import org.drftpd.SFVStatus;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.protocol.zipscript.ZipscriptIssuer;
 import org.drftpd.slave.RemoteIOException;
+import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.vfs.CaseInsensitiveTreeMap;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystemDirectory;
 
 /**
@@ -73,8 +76,8 @@ public class ZipscriptVFSDataSFV {
 					RemoteSlave rslave = file.getASlaveForFunction();
 					String index;
 					try {
-						index = rslave.issueSFVFileToSlave(file.getPath());
-						info = rslave.fetchSFVInfoFromIndex(index);
+						index = getSFVIssuer().issueSFVFileToSlave(rslave, file.getPath());
+						info = fetchSFVInfoFromIndex(rslave, index);
 					} catch (SlaveUnavailableException e) {
 						// okay, it went offline while trying, continue
 						continue;
@@ -120,5 +123,13 @@ public class ZipscriptVFSDataSFV {
 	public void removeSFVInfo() throws FileNotFoundException {
 		_dir.getInode().getKeyedMap().remove(SFVInfo.SFV);
 		_dir.getInode().commit();
+	}
+	
+	public static SFVInfo fetchSFVInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+		return ((AsyncResponseSFVInfo) rslave.fetchResponse(index)).getSFV();
+	}
+	
+	public ZipscriptIssuer getSFVIssuer() {
+		return (ZipscriptIssuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(ZipscriptIssuer.class);
 	}
 }

@@ -192,7 +192,7 @@ public class Transfer {
 
 	private Transfer getUploadForPath(String path)
 			throws ObjectNotFoundException {
-		for (Iterator iter = _slave.getTransfers().iterator(); iter.hasNext();) {
+		for (Iterator iter = _slave.getTransfersList().iterator(); iter.hasNext();) {
 			Transfer transfer = (Transfer) iter.next();
 			synchronized (transfer) {
 				if (!transfer.isReceivingUploading()) {

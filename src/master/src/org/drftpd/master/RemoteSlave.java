@@ -45,15 +45,14 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVInfo;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.SlaveEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.id3.ID3Tag;
 import org.drftpd.io.SafeFileOutputStream;
+import org.drftpd.protocol.ProtocolException;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.RemoteIOException;
@@ -65,20 +64,16 @@ import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseChecksum;
-import org.drftpd.slave.async.AsyncResponseDIZFile;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.slave.async.AsyncResponseID3Tag;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
 import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
 import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.HostMaskCollection;
-import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author mog
@@ -129,6 +124,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private transient ObjectOutputStream _sout;
 
 	private transient HashMap<TransferIndex, RemoteTransfer> _transfers;
+	
+	private transient boolean _isHandshaking;
 
 	public RemoteSlave(String name) {
 		_name = name;
@@ -363,18 +360,29 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	/**
 	 * Called when the slave connects
+	 * @throws ProtocolException 
 	 */
 	private void initializeSlaveAfterThreadIsRunning() throws IOException,
-			SlaveUnavailableException {
+	SlaveUnavailableException, ProtocolException {
 		commit();
 		processQueue();
 
-		String maxPathIndex = issueMaxPathToSlave();
+		if (SlaveManager.getBasicIssuer() == null) {
+			logger.debug("BasicIssuer == null");
+		}
+		
+		String maxPathIndex = SlaveManager.getBasicIssuer().issueMaxPathToSlave(this);
 		_maxPath = fetchMaxPathFromIndex(maxPathIndex);
 		logger.debug("maxpath was received");
 
-		String remergeIndex = issueRemergeToSlave("/");
-		fetchRemergeResponseFromIndex(remergeIndex);
+		String remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/");
+
+		try {
+			fetchResponse(remergeIndex, 0);
+		} catch (RemoteIOException e) {
+			throw new IOException(e);
+		}
+
 		getGlobalContext().getSlaveManager().putRemergeQueue(
 				new RemergeMessage(this));
 		setAvailable(true);
@@ -396,7 +404,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 
 		try {
-			String index = issuePingToSlave();
+			String index = SlaveManager.getBasicIssuer().issuePingToSlave(this);
 			fetchResponse(index);
 		} catch (SlaveUnavailableException e) {
 			setOffline(e);
@@ -419,7 +427,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 			if (destFile == null) { // delete
 				try {
-					fetchResponse(issueDeleteToSlave(sourceFile), 300000);
+					fetchResponse(SlaveManager.getBasicIssuer().issueDeleteToSlave(this, sourceFile), 300000);
 				} catch (RemoteIOException e) {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
 						throw (IOException) e.getCause();
@@ -434,7 +442,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				String destDir = destFile.substring(0, destFile
 						.lastIndexOf("/"));
 				try {
-					fetchResponse(issueRenameToSlave(sourceFile, destDir,
+					fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, sourceFile, destDir,
 							fileName));
 				} catch (RemoteIOException e) {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
@@ -496,7 +504,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 */
 	public void simpleDelete(String path) {
 		try {
-			fetchResponse(issueDeleteToSlave(path), 300000);
+			fetchResponse(SlaveManager.getBasicIssuer().issueDeleteToSlave(this, path), 300000);
 		} catch (RemoteIOException e) {
 			if (e.getCause() instanceof FileNotFoundException) {
 				return;
@@ -525,7 +533,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			simplePath = toDirPath + "/" + toName;
 		}
 		try {
-			fetchResponse(issueRenameToSlave(from, toDirPath, toName));
+			fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, from, toDirPath, toName));
 		} catch (RemoteIOException e) {
 			setOffline(e);
 			addQueueRename(from, simplePath);
@@ -568,21 +576,26 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_transfers = new HashMap<TransferIndex, RemoteTransfer>();
 		_errors = 0;
 		_lastNetworkError = System.currentTimeMillis();
-		start();
+		
+		try {
+			GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().handshakeWithSlave(this);
+		} catch (ProtocolException e) {
+			setOffline(e);
+		}
+		
 		class RemergeThread implements Runnable {
 			public void run() {
 				try {
+					
 					initializeSlaveAfterThreadIsRunning();
-				} catch (IOException e) {
-					setOffline(e);
-				} catch (SlaveUnavailableException e) {
+				} catch (Exception e) {
 					setOffline(e);
 				}
 			}
 		}
 
-		new Thread(new RemergeThread(), "RemoteSlaveRemerge - " + getName())
-				.start();
+		new Thread(new RemergeThread(), "RemoteSlaveRemerge - " + getName()).start();		
+		start();
 	}
 
 	private void start() {
@@ -596,12 +609,16 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return ((AsyncResponseChecksum) fetchResponse(index)).getChecksum();
 	}
 
-	public ID3Tag fetchID3TagFromIndex(String index) throws RemoteIOException,
+	/*
+	  	TODO move this to another place
+	  	
+		public ID3Tag fetchID3TagFromIndex(String index) throws RemoteIOException,
 			SlaveUnavailableException {
 		return ((AsyncResponseID3Tag) fetchResponse(index)).getTag();
 	}
+	*/
 
-	private synchronized String fetchIndex() throws SlaveUnavailableException {
+	public synchronized String fetchIndex() throws SlaveUnavailableException {
 		while (isOnline()) {
 			try {
 				return _indexPool.pop();
@@ -620,14 +637,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				"Slave was offline or went offline while fetching an index");
 	}
 
-	public int fetchMaxPathFromIndex(String maxPathIndex)
-			throws SlaveUnavailableException {
+	public int fetchMaxPathFromIndex(String maxPathIndex) throws SlaveUnavailableException {
 		try {
-			return ((AsyncResponseMaxPath) fetchResponse(maxPathIndex))
-					.getMaxPath();
+			return ((AsyncResponseMaxPath) fetchResponse(maxPathIndex)).getMaxPath();
 		} catch (RemoteIOException e) {
-			throw new FatalException(
-					"this is not possible, slave had an error processing maxpath...");
+			throw new FatalException("Slave had an error processing maxpath");
 		}
 	}
 
@@ -688,15 +702,14 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return rar;
 	}
 
+	/*
+		TODO move this out of here.
+		
 	public String fetchDIZFileFromIndex(String index) throws RemoteIOException,
 			SlaveUnavailableException {
 		return ((AsyncResponseDIZFile) fetchResponse(index)).getDIZ();
 	}
-
-	public SFVInfo fetchSFVInfoFromIndex(String index)
-			throws RemoteIOException, SlaveUnavailableException {
-		return ((AsyncResponseSFVInfo) fetchResponse(index)).getSFV();
-	}
+	*/
 
 	public synchronized String getPASVIP() throws SlaveUnavailableException {
 		if (!isOnline())
@@ -713,126 +726,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return ((_socket != null) && _socket.isConnected());
 	}
 
-	/**
-	 * 
-	 * @param path
-	 * @return
-	 * @throws SlaveUnavailableException
-	 */
-	public String issueChecksumToSlave(String path)
-			throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "checksum", path));
-
-		return index;
-	}
-
 	public long getCheckSumForPath(String path) throws IOException,
 			SlaveUnavailableException {
 		try {
-			return fetchChecksumFromIndex(issueChecksumToSlave(path));
+			return fetchChecksumFromIndex(SlaveManager.getBasicIssuer().issueChecksumToSlave(this, path));
 		} catch (RemoteIOException e) {
 			throw e.getCause();
 		}
-	}
-
-	public String issueConnectToSlave(String ip, int port,
-			boolean encryptedDataChannel, boolean useSSLClientHandshake)
-			throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "connect", ip + ":" + port
-				+ "," + encryptedDataChannel + "," + useSSLClientHandshake));
-
-		return index;
-	}
-
-	/**
-	 * @return String index, needs to be used to fetch the response
-	 */
-	public String issueDeleteToSlave(String sourceFile)
-			throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "delete", sourceFile));
-
-		return index;
-	}
-
-	public String issueID3TagToSlave(String path)
-			throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "id3tag", path));
-
-		return index;
-	}
-
-	public String issueListenToSlave(boolean isSecureTransfer,
-			boolean useSSLClientMode) throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "listen", ""
-				+ isSecureTransfer + ":" + useSSLClientMode));
-
-		return index;
-	}
-
-	public String issueMaxPathToSlave() throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommand(index, "maxpath"));
-
-		return index;
-	}
-
-	private String issuePingToSlave() throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommand(index, "ping"));
-
-		return index;
-	}
-
-	public String issueReceiveToSlave(String name, char c, long position,
-			TransferIndex tindex) throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "receive", c + ","
-				+ position + "," + tindex + "," + name));
-
-		return index;
-	}
-
-	public String issueRenameToSlave(String from, String toDirPath,
-			String toName) throws SlaveUnavailableException {
-		if (toDirPath.length() == 0) { // needed for files in root
-			toDirPath = "/";
-		}
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "rename", from + ","
-				+ toDirPath + "," + toName));
-
-		return index;
-	}
-
-	public String issueDIZFileToSlave(InodeHandle file)
-			throws SlaveUnavailableException {
-		String index = fetchIndex();
-		AsyncCommand ac = new AsyncCommandArgument(index, "dizfile", file
-				.getPath());
-
-		sendCommand(ac);
-		return index;
-	}
-
-	public String issueSFVFileToSlave(String path)
-			throws SlaveUnavailableException {
-		String index = fetchIndex();
-		AsyncCommand ac = new AsyncCommandArgument(index, "sfvfile", path);
-		sendCommand(ac);
-
-		return index;
-	}
-
-	public String issueStatusToSlave() throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommand(index, "status"));
-
-		return index;
 	}
 
 	public String moreInfo() {
@@ -867,7 +767,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 						&& ((getActualTimeout() / 2 < (System
 								.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout() / 2 < (System
 								.currentTimeMillis() - _lastCommandSent)))) {
-					pingIndex = issuePingToSlave();
+					pingIndex = SlaveManager.getBasicIssuer().issuePingToSlave(this);
 				} else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
 					setOffline("Slave seems to have gone offline, have not received a response in "
 							+ (System.currentTimeMillis() - _lastResponseReceived)
@@ -1034,16 +934,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 	}
 
-	public void issueAbortToSlave(TransferIndex transferIndex, String reason)
-			throws SlaveUnavailableException {
-		if (reason == null) {
-			reason = "null";
-		}
-		sendCommand(new AsyncCommandArgument("abort", "abort", transferIndex
-				.toString()
-				+ "," + reason));
-	}
-
 	public ConnectInfo fetchTransferResponseFromIndex(String index)
 			throws RemoteIOException, SlaveUnavailableException {
 		AsyncResponseTransfer art = (AsyncResponseTransfer) fetchResponse(index);
@@ -1055,7 +945,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 * Will not set a slave offline, it is the job of the calling thread to
 	 * decide to do this
 	 */
-	private synchronized void sendCommand(AsyncCommand rac)
+	public synchronized void sendCommand(AsyncCommandArgument rac)
 			throws SlaveUnavailableException {
 		if (rac == null) {
 			throw new NullPointerException();
@@ -1075,32 +965,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					"error sending command (exception already handled)", e);
 		}
 		_lastCommandSent = System.currentTimeMillis();
-	}
-
-	public String issueSendToSlave(String name, char c, long position,
-			TransferIndex tindex) throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "send", c + "," + position
-				+ "," + tindex + "," + name));
-
-		return index;
-	}
-
-	public String issueRemergeToSlave(String path)
-			throws SlaveUnavailableException {
-		String index = fetchIndex();
-		sendCommand(new AsyncCommandArgument(index, "remerge", path));
-
-		return index;
-	}
-
-	public void fetchRemergeResponseFromIndex(String index) throws IOException,
-			SlaveUnavailableException {
-		try {
-			fetchResponse(index, 0);
-		} catch (RemoteIOException e) {
-			throw (IOException) e.getCause();
-		}
 	}
 
 	public boolean checkConnect(Socket socket) throws MalformedPatternException {
@@ -1250,5 +1114,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				out.close();
 			}
 		}
+	}
+
+	public ObjectOutputStream getOutputStream() {
+		return _sout;
+	}
+	
+	public ObjectInputStream getInputStream() {
+		return _sin;
 	}
 }

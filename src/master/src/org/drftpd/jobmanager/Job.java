@@ -28,6 +28,7 @@ import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.SlaveManager;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.FileHandle;
 
@@ -260,8 +261,7 @@ public class Job {
 				long localChecksum = 0;
 
 				try {
-					String index = destSlave.issueChecksumToSlave(getFile()
-							.getPath());
+					String index = SlaveManager.getBasicIssuer().issueChecksumToSlave(destSlave, getFile().getPath());
 					remoteChecksum = destSlave.fetchChecksumFromIndex(index);
 				} catch (SlaveUnavailableException e2) {
 					logger.debug("SlaveUnavailableException from ", e2);

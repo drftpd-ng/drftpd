@@ -52,13 +52,15 @@ public class DIZInfo {
 		_total = total;
 	}
 
-	public static DIZInfo fetchDiz(FileHandle file)
+	/*
+	 	TODO fix that whenever DIZ checking is remade.
+	  
+	 public static DIZInfo fetchDiz(FileHandle file)
 			throws NoAvailableSlaveException, IOException {
 		RemoteSlave aSlave = file.getAvailableSlaves().iterator().next();
 		try {
 			DIZInfo dizInfo = new DIZInfo();
-			String diz = aSlave.fetchDIZFileFromIndex(aSlave
-					.issueDIZFileToSlave(file));
+			String diz = aSlave.fetchDIZFileFromIndex(RemoteSlave.getBasicIssuer().issueDIZFileToSlave(aSlave, file));
 			dizInfo.setDiz(diz);
 			dizInfo.setTotal(fetchTotal(diz));
 			return dizInfo;
@@ -71,7 +73,7 @@ public class DIZInfo {
 		} catch (SlaveUnavailableException e) {
 			throw new NoAvailableSlaveException();
 		}
-	}
+	}*/
 
 	private static int fetchTotal(String diz) throws IOException {
 		Integer total;

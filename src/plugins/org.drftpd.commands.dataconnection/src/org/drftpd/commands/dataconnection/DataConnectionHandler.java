@@ -46,6 +46,7 @@ import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.SlaveManager;
 import org.drftpd.master.TransferState;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -190,7 +191,7 @@ public class DataConnectionHandler extends CommandInterface {
 								.getSlaveSelectionManager().getASlave(conn,
 										Transfer.TRANSFER_SENDING_DOWNLOAD,
 										 ts.getTransferFile());
-						String index = slave.issueListenToSlave(
+						String index = SlaveManager.getBasicIssuer().issueListenToSlave(slave,
 								ts.getSendFilesEncrypted(), ts
 										.getSSLHandshakeClientMode());
 						ci = slave.fetchTransferResponseFromIndex(index);
@@ -219,7 +220,7 @@ public class DataConnectionHandler extends CommandInterface {
 										conn,
 										Transfer.TRANSFER_RECEIVING_UPLOAD,
 										ts.getTransferFile());
-						String index = slave.issueListenToSlave(
+						String index = SlaveManager.getBasicIssuer().issueListenToSlave(slave,
 								ts.getSendFilesEncrypted(), ts
 										.getSSLHandshakeClientMode());
 						ci = slave.fetchTransferResponseFromIndex(index);
@@ -1093,7 +1094,7 @@ public class DataConnectionHandler extends CommandInterface {
             if (ts.isPort()) {
                     String index;
 					try {
-						index = ts.getTransferSlave().issueConnectToSlave(ts.getPortAddress()
+						index = SlaveManager.getBasicIssuer().issueConnectToSlave(ts.getTransferSlave(), ts.getPortAddress()
 								.getAddress().getHostAddress(), ts.getPortAddress()
 								.getPort(), ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
 	                    ConnectInfo ci = ts.getTransferSlave().fetchTransferResponseFromIndex(index);

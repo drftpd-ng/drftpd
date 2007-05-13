@@ -17,13 +17,11 @@
  */
 package org.drftpd.commands.slavemanagement;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
@@ -39,6 +37,8 @@ import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.Session;
+import org.drftpd.master.SlaveManager;
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.filter.Filter;
@@ -205,9 +205,9 @@ public class SlaveManagement extends CommandInterface {
         }
 
         try {
-            rslave.fetchRemergeResponseFromIndex(rslave.issueRemergeToSlave(
-                    request.getCurrentDirectory().getPath()));
-        } catch (IOException e) {
+            rslave.fetchResponse(SlaveManager.getBasicIssuer().issueRemergeToSlave(rslave,
+                    request.getCurrentDirectory().getPath()), 0);
+        } catch (RemoteIOException e) {
             rslave.setOffline("IOException during remerge()");
 
             return new CommandResponse(200, "IOException during remerge()");

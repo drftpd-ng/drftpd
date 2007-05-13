@@ -1,11 +1,16 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.commands.zipscript" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptProtocol"/>
+	</attributes>
+	
 	<requires>
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
 		<import plugin-id="org.drftpd.commands.list" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.zipscript" path="classes/" type="code">
@@ -80,6 +85,10 @@
 	<extension plugin-id="org.drftpd.commands.list" point-id="AddElements" id="ZipscriptListElements">
 		<parameter id="class" value="org.drftpd.commands.zipscript.list.ZipscriptList" />
 	</extension>
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ZipscriptCommandsHandler">
+	
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ZipscriptCommandsHandler" />
+	
+	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptProtocol">
+		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.ZipscriptIssuer" />
 	</extension>
 </plugin>

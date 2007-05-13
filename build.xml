@@ -37,6 +37,8 @@ check - checks plug-ins integrity
 		<ant dir="src/common" target="${target}" />
 		<ant dir="src/slave" target="${target}" />
 		<ant dir="src/master" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.protocol.slave.def" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.protocol.master.def" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.usermanager.javabeans" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commandmanager" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.slaveselection.filter" target="${target}" />
@@ -55,6 +57,7 @@ check - checks plug-ins integrity
 		<ant dir="src/plugins/org.drftpd.commands.transferstatistics" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.dummy" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.zipscript" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.protocol.zipscript" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.search" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.newhandler" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.prehook.permissions" target="${target}" />

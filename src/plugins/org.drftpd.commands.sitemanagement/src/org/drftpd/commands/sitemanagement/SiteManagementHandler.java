@@ -298,10 +298,8 @@ public class SiteManagementHandler extends CommandInterface {
 		PluginManager manager = PluginManager.lookup(this);
 		PluginDescriptor pluginDesc;
 		try {
-			pluginDesc = PluginManager.lookup(this).getRegistry()
-				.getPluginDescriptor(request.getArgument());
-		}
-		catch (IllegalArgumentException e) {
+			pluginDesc = manager.getRegistry().getPluginDescriptor(request.getArgument());
+		} catch (IllegalArgumentException e) {
 			return new CommandResponse(500, "No such plugin loaded");
 		}
 		/* Check whether this plugin allows unloading, to do this an attribute

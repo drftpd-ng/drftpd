@@ -31,6 +31,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.slave.async.AsyncCommand;
+import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;
@@ -66,7 +67,7 @@ public class TestSlave extends Slave {
 		_sout.flush();
 
 	}
-    protected synchronized void sendResponse(AsyncResponse response) {
+    public synchronized void sendResponse(AsyncResponse response) {
         if (response == null) {
             // handler doesn't return anything or it sends reply on it's own
             // (threaded for example)
@@ -104,10 +105,10 @@ public class TestSlave extends Slave {
     }
     private void listenForCommands() throws IOException {
         while (true) {
-            AsyncCommand ac;
+            AsyncCommandArgument ac;
 
             try {
-                ac = (AsyncCommand) _sin.readObject();
+                ac = (AsyncCommandArgument) _sin.readObject();
 
                 if (ac == null) {
                     continue;
@@ -121,9 +122,9 @@ public class TestSlave extends Slave {
 
             logger.debug("Slave fetched " + ac);
             class AsyncCommandHandler implements Runnable {
-                private AsyncCommand _command = null;
+                private AsyncCommandArgument _command = null;
 
-                public AsyncCommandHandler(AsyncCommand command) {
+                public AsyncCommandHandler(AsyncCommandArgument command) {
                     _command = command;
                 }
 
@@ -139,7 +140,7 @@ public class TestSlave extends Slave {
             new Thread(new AsyncCommandHandler(ac)).start();
         }
     }
-    private AsyncResponse handleCommand(AsyncCommand ac) {
+    private AsyncResponse handleCommand(AsyncCommandArgument ac) {
         if (ac.getName().equals("remerge")) {
         	List<LightRemoteInode> mergeFiles = new ArrayList<LightRemoteInode>();
         	

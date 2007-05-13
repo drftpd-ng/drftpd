@@ -54,6 +54,9 @@ import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.master.cron.TimeEventInterface;
+import org.drftpd.protocol.master.AbstractBasicIssuer;
+import org.drftpd.protocol.master.AbstractIssuer;
+import org.drftpd.protocol.master.MasterProtocolCentral;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
@@ -76,6 +79,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	protected static final int actualTimeout = 60000; // one minute, evaluated
 														// on a SocketTimeout
 	
+	
+	private static AbstractBasicIssuer _basicIssuer = null;
+	
 	protected Map<String,RemoteSlave> _rslaves = Collections.synchronizedMap(new HashMap<String,RemoteSlave>());
 
 	private int _port;
@@ -87,20 +93,19 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	private RemergeThread _remergeThread;
 
 	private boolean _sslSlaves;
+	
+	private MasterProtocolCentral _central;
 
+	public SlaveManager() {
+		
+	}
+	
 	public SlaveManager(Properties p) throws SlaveFileException {
 		this();
-		_port = Integer.parseInt(PropertyHelper.getProperty(p,
-				"master.bindport"));
-		_sslSlaves = p.getProperty("master.slaveSSL", "false")
-				.equalsIgnoreCase("true");
+		_port = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
+		_sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
+		_central = new MasterProtocolCentral();
 		loadSlaves();
-	}
-
-	/**
-	 * For JUnit tests
-	 */
-	public SlaveManager() {
 	}
 
 	private void loadSlaves() throws SlaveFileException {
@@ -302,8 +307,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		return allStatus;
 	}
 
-	public HashMap getAllStatusArray() {
-		// SlaveStatus[] ret = new SlaveStatus[getSlaves().size()];
+	public HashMap<String, SlaveStatus> getAllStatusArray() {
 		HashMap<String, SlaveStatus> ret = new HashMap<String, SlaveStatus>(
 				getSlaves().size());
 
@@ -321,25 +325,6 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		return ret;
 	}
 
-	// private Random rand = new Random();
-	// public RemoteSlave getASlave() {
-	// ArrayList retSlaves = new ArrayList();
-	// for (Iterator iter = this.rslaves.iterator(); iter.hasNext();) {
-	// RemoteSlave rslave = (RemoteSlave) iter.next();
-	// if (!rslave.isAvailable())
-	// continue;
-	// retSlaves.add(rslave);
-	// }
-	//
-	// int num = rand.nextInt(retSlaves.size());
-	// logger.fine(
-	// "Slave "
-	// + num
-	// + " selected out of "
-	// + retSlaves.size()
-	// + " available slaves");
-	// return (RemoteSlave) retSlaves.get(num);
-	// }
 	/**
 	 * Returns a modifiable list of available RemoteSlave's
 	 */
@@ -483,17 +468,17 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 									+ rslave.getName()));
 					logger.error(socket.getInetAddress()
 							+ " is not a valid ip for " + rslave.getName());
-					socket.close();
-
+					socket.close();					
+					
 					continue;
 				}
-
+				
 				rslave.connect(socket, in, out);
 			} catch (Exception e) {
 				rslave.setOffline(e);
 				logger.error(e);
 			} catch (Throwable t) {
-				logger.error("FATAL: Throwable in SalveManager loop");
+				logger.fatal("Throwable in SalveManager loop", t);
 			}
 		}
 	}
@@ -549,7 +534,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		for (RemoteSlave rslave : slaves) {
 			String index = null;
 			try {
-				index = rslave.issueDeleteToSlave(directory.getPath());
+				AbstractBasicIssuer basicIssuer = (AbstractBasicIssuer) getIssuerForClass(AbstractBasicIssuer.class); 
+				index = basicIssuer.issueDeleteToSlave(rslave, directory.getPath());
 				slaveMap.put(rslave, index);
 			} catch (SlaveUnavailableException e) {
 				rslave.addQueueDelete(directory.getPath());
@@ -585,6 +571,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			}
 		}
 	}
+	
+	public MasterProtocolCentral getProtocolCentral() {
+		return _central;
+	}
+	
+	public AbstractIssuer getIssuerForClass(Class clazz) {
+		return _central.getIssuerForClass(clazz);
+	}
 
 	public void resetDay(Date d) {
 		for (RemoteSlave rs : _rslaves.values()) {
@@ -619,6 +613,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			rs.resetYear(d);
 			rs.commit();
 		}	
+	}
+
+	public static AbstractBasicIssuer getBasicIssuer() {
+		if (_basicIssuer == null) { // avoid unecessary lookups.
+			_basicIssuer = (AbstractBasicIssuer) GlobalContext.getGlobalContext().getSlaveManager().
+						getProtocolCentral().getIssuerForClass(AbstractBasicIssuer.class);
+		}
+		return _basicIssuer; 
 	}
 }
 
@@ -658,7 +660,7 @@ class RemergeThread extends Thread {
 		}
 	}
 
-	private GlobalContext getGlobalContext() {
+	private static GlobalContext getGlobalContext() {
 		return GlobalContext.getGlobalContext();
 	}
 }

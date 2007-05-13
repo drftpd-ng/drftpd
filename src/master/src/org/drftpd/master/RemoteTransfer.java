@@ -20,7 +20,6 @@ package org.drftpd.master;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -136,7 +135,7 @@ public class RemoteTransfer {
 				return;
 			}
 			try {
-				_rslave.issueAbortToSlave(getTransferIndex(), reason);
+				SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
 			} catch (SlaveUnavailableException e) {
 				_status = new TransferStatus(getTransferIndex(), e);
 				_pointer = null;
@@ -147,8 +146,9 @@ public class RemoteTransfer {
 	public void receiveFile(String path, char type, long position)
 			throws IOException, SlaveUnavailableException {
 		_path = path;
-		String index = _rslave.issueReceiveToSlave(path, type, position,
-				getTransferIndex());
+		
+		String index = SlaveManager.getBasicIssuer().issueReceiveToSlave(_rslave, path, type, position,	getTransferIndex());
+		
 		_state = Transfer.TRANSFER_RECEIVING_UPLOAD;
 		try {
 			_rslave.fetchResponse(index);
@@ -161,8 +161,7 @@ public class RemoteTransfer {
 	public void sendFile(String path, char type, long position)
 			throws IOException, SlaveUnavailableException {
 		_path = path;
-		String index = _rslave.issueSendToSlave(path, type, position,
-				getTransferIndex());
+		String index = SlaveManager.getBasicIssuer().issueSendToSlave(_rslave, path, type, position,	getTransferIndex());
 		_state = Transfer.TRANSFER_SENDING_DOWNLOAD;
 		try {
 			_rslave.fetchResponse(index);

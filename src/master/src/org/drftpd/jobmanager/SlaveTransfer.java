@@ -23,6 +23,8 @@ import java.io.IOException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
+import org.drftpd.master.SlaveManager;
+import org.drftpd.protocol.master.AbstractBasicIssuer;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;
@@ -87,8 +89,10 @@ public class SlaveTransfer {
 		// first argument in issueListenToSlave() and the third option
 		// in issueConnectToSlave(), maybe do an option later, is this wanted?
 
+		AbstractBasicIssuer basicIssuer = SlaveManager.getBasicIssuer();
+		
 		try {
-			String destIndex = _destSlave.issueListenToSlave(_secureTransfer, false); 
+			String destIndex = basicIssuer.issueListenToSlave(_destSlave, _secureTransfer, false); 
 			ConnectInfo ci = _destSlave
 					.fetchTransferResponseFromIndex(destIndex);
 			_destTransfer = _destSlave.getTransfer(ci.getTransferIndex());
@@ -99,7 +103,7 @@ public class SlaveTransfer {
 		}
 
 		try {
-			String srcIndex = _srcSlave.issueConnectToSlave(_destTransfer
+			String srcIndex = basicIssuer.issueConnectToSlave(_srcSlave, _destTransfer
 					.getAddress().getAddress().getHostAddress(), _destTransfer
 					.getLocalPort(), _secureTransfer, true); 
 			ConnectInfo ci = _srcSlave.fetchTransferResponseFromIndex(srcIndex);
