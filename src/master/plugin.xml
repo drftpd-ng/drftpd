@@ -21,10 +21,12 @@
 	<extension-point id="CommandManager">
 		<parameter-def id="class" />
 	</extension-point>
+	<extension-point id="Plugin">
+		<parameter-def id="class" />
+	</extension-point>
 	<extension-point id="SlaveSelection">
 		<parameter-def id="class" />
-	</extension-point>	
-		
+	</extension-point>
 	<extension-point id="ProtocolExtension">
 		<parameter-def id="IssuerClass" />
 	</extension-point>
