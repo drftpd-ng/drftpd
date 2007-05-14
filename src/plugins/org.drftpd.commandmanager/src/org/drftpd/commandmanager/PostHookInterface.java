@@ -22,5 +22,5 @@ package org.drftpd.commandmanager;
  */
 public interface PostHookInterface {
 
-	public void initialize();
+	public void initialize(StandardCommandManager cManager);
 }

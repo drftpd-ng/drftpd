@@ -53,10 +53,12 @@ public class LoginHandler extends CommandInterface {
     protected InetAddress _idntAddress;
     protected String _idntIdent;
     private ResourceBundle _bundle;
+    private String _keyPrefix;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
-    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
     }
 
     /**
@@ -124,10 +126,10 @@ public class LoginHandler extends CommandInterface {
         // login failure - close connection
         if (conn.getUserNull().checkPassword(pass)) {
             conn.setAuthenticated(true);
-            conn.getGlobalContext().dispatchFtpEvent(new UserEvent(
+            GlobalContext.getEventService().publish(new UserEvent(
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
-            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", request.getUser()));
+            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, _keyPrefix+"pass.success", request.getUser()));
             
             try {
                 addTextToResponse(response, "text/welcome.txt");
@@ -138,7 +140,7 @@ public class LoginHandler extends CommandInterface {
             return response;
         }
 
-        return new CommandResponse(530, conn.jprintf(_bundle, "pass.fail", request.getUser()));
+        return new CommandResponse(530, conn.jprintf(_bundle, _keyPrefix+"pass.fail", request.getUser()));
     }
 
     /**
@@ -151,7 +153,7 @@ public class LoginHandler extends CommandInterface {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         conn.stop();
 
-        return new CommandResponse(221, conn.jprintf(_bundle, "quit.success", request.getUser()));
+        return new CommandResponse(221, conn.jprintf(_bundle, _keyPrefix+"quit.success", request.getUser()));
     }
 
     /**
@@ -220,7 +222,7 @@ public class LoginHandler extends CommandInterface {
                 env.add("user", newUser.getName());
                 
                 return new CommandResponse(331,
-                        conn.jprintf(_bundle, "user.success", env, request.getUser()),
+                        conn.jprintf(_bundle, _keyPrefix+"user.success", env, request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());
             }
         } catch (MalformedPatternException e) {

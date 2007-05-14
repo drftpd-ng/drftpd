@@ -73,9 +73,12 @@ public class DataConnectionHandler extends CommandInterface {
 
     private ResourceBundle _bundle;
 
+    private String _keyPrefix;
+
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
-    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
     	_featReplies = populateFeat(method);
     }
 
@@ -422,7 +425,7 @@ public class DataConnectionHandler extends CommandInterface {
     	return setTransferFileFromPRETRequest(request);
     }
     
-    public CommandResponse setTransferFileFromPRETRequest(CommandRequest request) {
+    private CommandResponse setTransferFileFromPRETRequest(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	TransferState ts = conn.getTransferState();
         FtpRequest ghostRequest = ts.getPretRequest();
@@ -822,7 +825,7 @@ public class DataConnectionHandler extends CommandInterface {
      * resumes?
      */
     //TODO add APPE support
-    public CommandResponse transfer(CommandRequest request) {
+    private CommandResponse transfer(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	TransferState ts = conn.getTransferState();
         ReplacerEnvironment env = new ReplacerEnvironment();
@@ -867,7 +870,7 @@ public class DataConnectionHandler extends CommandInterface {
 
             if (comparison != 0 && count >= comparison) {
             	return new CommandResponse(550,
-            			conn.jprintf(_bundle, "transfer.err.maxsim", env, request.getUser()));
+            			conn.jprintf(_bundle, _keyPrefix+"transfer.err.maxsim", env, request.getUser()));
             }
 
             // get filenames
@@ -1234,7 +1237,7 @@ public class DataConnectionHandler extends CommandInterface {
             env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
             CommandResponse response = new CommandResponse(226, conn.jprintf(_bundle,
-                    "transfer.complete", env, request.getUser()));
+                    _keyPrefix+"transfer.complete", env, request.getUser()));
             response.setObject(CHECKSUM,status.getChecksum());
             response.setObject(TRANSFER_FILE,ts.getTransferFile());
 
@@ -1306,7 +1309,7 @@ public class DataConnectionHandler extends CommandInterface {
 				}
 
             // Dispatch for both STOR and RETR
-				conn.getGlobalContext().dispatchFtpEvent(
+            GlobalContext.getEventService().publish(
 						new TransferEvent(conn, eventType, ts.getTransferFile(), conn
 								.getClientAddress(), ts.getTransferSlave(), ts.getTransfer()
 								.getAddress().getAddress(), ts.getType()));

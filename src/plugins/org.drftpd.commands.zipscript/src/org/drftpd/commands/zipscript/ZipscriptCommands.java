@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.util.Map.Entry;
 import java.util.LinkedList;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 
@@ -49,6 +50,12 @@ import org.drftpd.vfs.VirtualFileSystem;
 public class ZipscriptCommands extends CommandInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptCommands.class);
+
+	private ResourceBundle _bundle;
+
+	public void initialize(StandardCommandManager cManager) {
+		_bundle = cManager.getResourceBundle();
+	}
 
 	public CommandResponse doSITE_RESCAN(CommandRequest request) throws ImproperUsageException {
 
@@ -155,11 +162,11 @@ public class ZipscriptCommands extends CommandInterface {
 					SFVStatus sfvStatus = sfvData.getSFVStatus();
 					if (sfvStatus.isFinished()) {
 						// dir is complete, remove link if needed
-						LinkUtils.processLink(tempReq, "delete");
+						LinkUtils.processLink(tempReq, "delete", _bundle);
 					}
 					else {
 						// dir is incomplete, add link if needed
-						LinkUtils.processLink(tempReq, "create");
+						LinkUtils.processLink(tempReq, "create", _bundle);
 					}
 				} catch (NoAvailableSlaveException e) {
 					// Slave holding sfv is unavailable
@@ -214,11 +221,11 @@ public class ZipscriptCommands extends CommandInterface {
 					SFVStatus sfvStatus = sfvData.getSFVStatus();
 					if (sfvStatus.isFinished()) {
 						// dir is complete, remove link if needed
-						LinkUtils.processLink(tempReq, "delete");
+						LinkUtils.processLink(tempReq, "delete", _bundle);
 					}
 					else {
 						// dir is incomplete, add link if needed
-						LinkUtils.processLink(tempReq, "create");
+						LinkUtils.processLink(tempReq, "create", _bundle);
 					}
 				} catch (NoAvailableSlaveException e) {
 					// Slave holding sfv is unavailable

@@ -21,6 +21,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
@@ -32,7 +33,7 @@ public class PermissionPreHook implements PreHookInterface {
 	
 	private static final Logger logger = Logger.getLogger(PermissionPreHook.class);
 	
-	public void initialize() {
+	public void initialize(StandardCommandManager cManager) {
 		
 	}
 	

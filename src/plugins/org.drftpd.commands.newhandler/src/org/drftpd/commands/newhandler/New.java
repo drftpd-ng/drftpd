@@ -53,26 +53,18 @@ public class New extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(New.class);
 
 	private ResourceBundle _bundle;
-	
-	private int _defaultCount = 0;
-	private int _maxCount = 0;
-	private String _sectionFilter = "";
+	private String _keyPrefix;
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
-    	_bundle = ResourceBundle.getBundle(New.class.getName());
-    	
-    	// load config.
-    	configure(GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("new"));
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
     }
-    
-	private void configure(Properties cfg) {
-		_defaultCount = Integer.parseInt(cfg.getProperty("default", "5"));
-		_maxCount = Integer.parseInt(cfg.getProperty("max", "25"));
-		_sectionFilter = cfg.getProperty("filtered_sections", "").trim();
-	}
 
 	public CommandResponse doNEW(CommandRequest request) throws ImproperUsageException {
+		int defaultCount = Integer.parseInt(request.getProperties().getProperty("default", "5"));;
+		int maxCount = Integer.parseInt(request.getProperties().getProperty("max", "25"));
+		String sectionFilter = request.getProperties().getProperty("filtered_sections", "").trim();;
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
 		SectionManagerInterface sectionManager = GlobalContext.getGlobalContext().getSectionManager();
@@ -82,7 +74,7 @@ public class New extends CommandInterface {
 		// site new <number>
 		// site new <section> <number>
 		SectionInterface specificSection = null;
-		int count = _defaultCount;
+		int count = defaultCount;
 		boolean allSections = false;
 		
 		if (request.hasArgument()) {
@@ -96,8 +88,8 @@ public class New extends CommandInterface {
 				if (isInteger(parm)) { // found a number.
 					count = Integer.parseInt(parm);
 					
-					if (count > _maxCount)
-						count = _maxCount;
+					if (count > maxCount)
+						count = maxCount;
 					
 					if (specificSection == null) { // not section specified, adding all.
 						sections.putAll(sectionManager.getSectionsMap());
@@ -121,7 +113,7 @@ public class New extends CommandInterface {
 		}
 		
 		if (allSections) {
-			for (String s : _sectionFilter.split(" ")) {
+			for (String s : sectionFilter.split(" ")) {
 				sections.remove(s);
 			}
 		}
@@ -157,7 +149,7 @@ public class New extends CommandInterface {
 				env.add("files", "" + dir.getInodeHandles().size());
 				env.add("size", Bytes.formatBytes(dir.getSize()));
 				env.add("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
-				response.addComment(ReplacerUtils.jprintf("new", env, _bundle));
+				response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new", env, request.getUser()));
 			} catch (FileNotFoundException e) {
 				logger.error("The directory was just there! How come it's gone?", e);
 			}

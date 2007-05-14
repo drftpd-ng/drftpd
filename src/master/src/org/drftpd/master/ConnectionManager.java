@@ -42,16 +42,11 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.event.Event;
 import org.drftpd.event.ReloadEvent;
-import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.FtpReply;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @version $Id$
@@ -61,6 +56,8 @@ public class ConnectionManager implements EventSubscriber {
 			.getLogger(ConnectionManager.class.getName());
 
 	private static final String cmdConf = "conf/ftpcommands.conf";
+
+	private static final String themeDir = "conf/themes/ftp";
 
 	private static ConnectionManager _connectionManager = null;
 
@@ -291,47 +288,11 @@ public class ConnectionManager implements EventSubscriber {
 		return null; // everything passed
 	}
 
-	public void dispatchFtpEvent(Event event) {
-		getGlobalContext().dispatchFtpEvent(event);
-	}
-
 	public CommandManagerInterface getCommandManager() {
 		if (_commandManager == null) {
-			PluginManager manager = PluginManager.lookup(this);
-			ExtensionPoint cmExtPoint = 
-				manager.getRegistry().getExtensionPoint( 
-						"master", "CommandManager");
-			
-			/*	Iterate over all extensions that have been connected to the
-				CommandManager extension point and return the desired one */
-	
-			Properties cfg = getGlobalContext().getConfig().getProperties();
-	
-			Class<?> cmCls = null;
-	
-			String desiredCm = PropertyHelper.getProperty(cfg, "master.commandmanager");
-
-			for (Extension cm : cmExtPoint.getConnectedExtensions()) {
-				try {
-					if (cm.getDeclaringPluginDescriptor().getId().equals(desiredCm)) {
-						// If plugin isn't already activated then activate it
-						if (!manager.isPluginActivated(cm.getDeclaringPluginDescriptor())) {
-							manager.activatePlugin(cm.getDeclaringPluginDescriptor().getId());
-						}
-						ClassLoader cmLoader = manager.getPluginClassLoader( 
-								cm.getDeclaringPluginDescriptor());
-						cmCls = cmLoader.loadClass( 
-								cm.getParameter("class").valueAsString());
-						_commandManager = (CommandManagerInterface) cmCls.newInstance();
-						_commandManager.initialize(getCommands());
-						return _commandManager;
-					}
-				}
-				catch (Exception e) {
-					throw new FatalException(
-							"Cannot create instance of commandmanager, check master.commandmanager in config file",
-							e);
-				}
+			_commandManager = getGlobalContext().getCommandManager();
+			if (_commandManager != null) {
+				_commandManager.initialize(getCommands(), themeDir);
 			}
 		}
 		return _commandManager;
@@ -404,7 +365,7 @@ public class ConnectionManager implements EventSubscriber {
 		if (event instanceof ReloadEvent) {
 			logger.info("Reloading "+ cmdConf +", origin "+((ReloadEvent)event).getOrigin());
 			loadCommands();
-			_commandManager.initialize(getCommands());
+			_commandManager.initialize(getCommands(), themeDir);
 			for (BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
 				conn.setCommands(getCommands());
 			}

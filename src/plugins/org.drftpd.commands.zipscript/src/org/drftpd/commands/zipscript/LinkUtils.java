@@ -39,9 +39,9 @@ public class LinkUtils {
 
 	private static final Logger logger = Logger.getLogger(LinkUtils.class);
 
-	public static void processLink(CommandRequest request, String mode) {
+	public static void processLink(CommandRequest request, String mode, ResourceBundle bundle) {
 		DirectoryHandle dir = request.getCurrentDirectory();
-		ResourceBundle bundle = ResourceBundle.getBundle(LinkUtils.class.getName());
+		String keyPrefix = LinkUtils.class.getName();
 		boolean knownDir = false;
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
@@ -65,13 +65,13 @@ public class LinkUtils {
 			env.add("directory", dir.getParent().getName());
 			env.add("subdir", dir.getName());
 			linkName = request.getSession().jprintf(bundle,
-						"incomplete.subdirlink", env, request.getUser());
+						keyPrefix+".incomplete.subdirlink", env, request.getUser());
 		}
 		else {
 			targetDir = dir.getParent();
 			env.add("directory", dir.getName());
 			linkName = request.getSession().jprintf(bundle,
-						"incomplete.link", env, request.getUser());
+						keyPrefix+".incomplete.link", env, request.getUser());
 		}
 		if (mode.equals("create")) {
 			try {

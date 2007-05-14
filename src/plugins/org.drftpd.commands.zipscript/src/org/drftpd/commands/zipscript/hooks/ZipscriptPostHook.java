@@ -34,13 +34,13 @@ import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.Session;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -64,8 +64,13 @@ public class ZipscriptPostHook implements PostHookInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptPostHook.class);
 
-	public void initialize() {
+	private ResourceBundle _bundle;
 
+	private String _keyPrefix;
+
+	public void initialize(StandardCommandManager cManager) {
+		_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
 	}
 
 	public void doZipscriptRETRPostCheck(CommandRequest request, CommandResponse response) {
@@ -227,7 +232,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 		}
 		String transferFileName = transferFile.getName();
 		if (transferFileName.toLowerCase().endsWith(".sfv")) {
-			LinkUtils.processLink(request, "create");
+			LinkUtils.processLink(request, "create", _bundle);
 		}
 		else {
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
@@ -235,7 +240,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 				SFVStatus sfvStatus = sfvData.getSFVStatus();
 				if (sfvStatus.isFinished()) {
 					// dir is complete, remove link
-					LinkUtils.processLink(request, "delete");
+					LinkUtils.processLink(request, "delete", _bundle);
 				}
 			} catch (NoAvailableSlaveException e) {
 				// Slave holding sfv is unavailable
@@ -260,7 +265,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 		}
 		String deleFileName = deleFile.getName();
 		if (deleFileName.endsWith(".sfv")) {
-			LinkUtils.processLink(request, "delete");
+			LinkUtils.processLink(request, "delete", _bundle);
 			try {
 				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
 				sfvData.removeSFVInfo();
@@ -274,7 +279,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 				SFVStatus sfvStatus = sfvData.getSFVStatus();
 				if (!sfvStatus.isFinished()) {
 					// dir is now incomplete, add link
-					LinkUtils.processLink(request, "create");
+					LinkUtils.processLink(request, "create", _bundle);
 				}
 			} catch (NoAvailableSlaveException e) {
 				// Slave holding sfv is unavailable
@@ -330,22 +335,21 @@ public class ZipscriptPostHook implements PostHookInterface {
 		try {
 			DirectoryHandle dir = request.getCurrentDirectory();
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
-			ResourceBundle bundle = ResourceBundle.getBundle(this.getClass().getName());
 			SFVInfo sfvInfo = sfvData.getSFVInfo();
 			SFVStatus sfvStatus = sfvData.getSFVStatus();
 			Collection<UploaderPosition> racers = RankUtils.userSort(getSFVFiles(dir, sfvData),
 					"bytes", "high");
 			Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
 
-			String racerline = bundle.getString("cwd.racers.body");
-			String groupline = bundle.getString("cwd.groups.body");
+			String racerline = _bundle.getString(_keyPrefix+"cwd.racers.body");
+			String groupline = _bundle.getString(_keyPrefix+"cwd.groups.body");
 
-			ReplacerEnvironment env = Session.getReplacerEnvironment(null,
+			ReplacerEnvironment env = request.getSession().getReplacerEnvironment(null,
 					request.getSession().getUserNull(request.getUser()));
 
 			//Start building race message
-			String racetext = bundle.getString("cwd.racestats.header") + "\n";
-			racetext += bundle.getString("cwd.racers.header") + "\n";
+			String racetext = _bundle.getString(_keyPrefix+"cwd.racestats.header") + "\n";
+			racetext += _bundle.getString(_keyPrefix+"cwd.racers.header") + "\n";
 
 			ReplacerFormat raceformat = null;
 
@@ -388,8 +392,8 @@ public class ZipscriptPostHook implements PostHookInterface {
 				}
 			}
 
-			racetext += bundle.getString("cwd.racers.footer") + "\n";
-			racetext += bundle.getString("cwd.groups.header") + "\n";
+			racetext += _bundle.getString(_keyPrefix+"cwd.racers.footer") + "\n";
+			racetext += _bundle.getString(_keyPrefix+"cwd.groups.header") + "\n";
 
 			//add groups stats
 			position = 1;
@@ -416,7 +420,7 @@ public class ZipscriptPostHook implements PostHookInterface {
 				}
 			}
 
-			racetext += bundle.getString("cwd.groups.footer") + "\n";
+			racetext += _bundle.getString(_keyPrefix+"cwd.groups.footer") + "\n";
 
 			env.add("completefiles", Integer.toString(sfvStatus.getPresent()));
 			env.add("totalfiles", Integer.toString(sfvInfo.getSize()));
@@ -426,10 +430,10 @@ public class ZipscriptPostHook implements PostHookInterface {
 			env.add("totalpercent",
 					Integer.toString(
 							(sfvStatus.getPresent() * 100) / sfvInfo.getSize()) +
-							"%");
+			"%");
 
-			racetext += bundle.getString("cwd.totals.body") + "\n";
-			racetext += bundle.getString("cwd.racestats.footer") + "\n";
+			racetext += _bundle.getString(_keyPrefix+"cwd.totals.body") + "\n";
+			racetext += _bundle.getString(_keyPrefix+"cwd.racestats.footer") + "\n";
 
 			try {
 				raceformat = ReplacerFormat.createFormat(racetext);

@@ -41,7 +41,6 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.ConnectionEvent;
-import org.drftpd.event.FtpListener;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
@@ -103,21 +102,6 @@ public class SiteManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_LOADPLUGIN(CommandRequest request) throws ImproperUsageException {
-
-		/*if (!request.hasArgument()) {
-			return new CommandResponse(500, "Usage: site load className");
-		}
-
-		FtpListener ftpListener = getFtpListener(request
-				.getArgument());
-
-		if (ftpListener == null) {
-			return new CommandResponse(500,
-					"Was not able to find the class you are trying to load");
-		}
-
-		GlobalContext.getGlobalContext().addFtpListener(ftpListener);*/
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -218,14 +202,6 @@ public class SiteManagementHandler extends CommandInterface {
 
 			return new CommandResponse(200, e.getMessage());
 		}
-		try {
-			GlobalContext.getGlobalContext().dispatchFtpEvent(
-					new ConnectionEvent(GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getUser()), "RELOAD"));
-		} catch (NoSuchUserException e1) {
-			return new CommandResponse(500, "You apparently don't exist as a user anymore");
-		} catch (UserFileException e1) {
-			return new CommandResponse(500, "You're userfile is broken");
-		}
 
 		// ugly hack to clear resourcebundle cache
 		// see
@@ -270,28 +246,6 @@ public class SiteManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_UNLOADPLUGIN(CommandRequest request) throws ImproperUsageException {
-		/*if (!request.hasArgument()) {
-			return new CommandResponse(500, "Usage: site unload className");
-		}
-		for (FtpListener ftpListener : GlobalContext.getGlobalContext()
-				.getFtpListeners()) {
-			if (ftpListener.getClass().getName().equals(
-					"org.drftpd.plugins." + request.getArgument())
-					|| ftpListener.getClass().getName().equals(
-							request.getArgument())) {
-				try {
-					ftpListener.unload();
-				} catch (RuntimeException e) {
-					return new CommandResponse(200,
-							"Exception unloading plugin, plugin removed");
-				} finally {
-					GlobalContext.getGlobalContext().delFtpListener(ftpListener);
-				}
-				return new CommandResponse(200, "Successfully unloaded your plugin");
-			}
-		}
-
-		return new CommandResponse(500, "Could not find your plugin on the site");*/
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -320,46 +274,5 @@ public class SiteManagementHandler extends CommandInterface {
 		}
 		manager.getRegistry().unregister(new String[] {request.getArgument()});
 		return new CommandResponse(200, "Successfully unloaded your plugin");
-	}
-
-	private FtpListener getFtpListener(String arg) {
-		FtpListener ftpListener = null;
-
-		try {
-			ftpListener = (FtpListener) Class.forName(
-					"org.drftpd.plugins." + arg).newInstance();
-		} catch (InstantiationException e) {
-			logger
-					.error(
-							"Was not able to create an instance of the class, did not load",
-							e);
-
-			return null;
-		} catch (IllegalAccessException e) {
-			logger.error("This will not happen, I do not exist", e);
-			return null;
-		} catch (ClassNotFoundException e) {
-		}
-
-		if (ftpListener == null) {
-			try {
-				ftpListener = (FtpListener) Class.forName(arg).newInstance();
-			} catch (InstantiationException e) {
-				logger
-						.error(
-								"Was not able to create an instance of the class, did not load",
-								e);
-
-				return null;
-			} catch (IllegalAccessException e) {
-				logger.error("This will not happen, I do not exist", e);
-
-				return null;
-			} catch (ClassNotFoundException e) {
-				return null;
-			}
-		}
-
-		return ftpListener;
 	}
 }

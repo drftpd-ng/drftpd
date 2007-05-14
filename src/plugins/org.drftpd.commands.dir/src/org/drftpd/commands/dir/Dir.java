@@ -209,75 +209,80 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doDELE(CommandRequest request) {
 
-        // argument check
-        if (!request.hasArgument()) {
-            //out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
+    	// argument check
+    	if (!request.hasArgument()) {
+    		//out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+    		return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+    	}
 
-        // get filenames
-        String fileName = request.getArgument();
-        InodeHandle requestedFile;
-        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_250_ACTION_OKAY");
+    	// get filenames
+    	String fileName = request.getArgument();
+    	InodeHandle requestedFile;
+    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_250_ACTION_OKAY");
 
-        try {
+    	try {
 
-        requestedFile = request.getCurrentDirectory().getInodeHandle(fileName); 
+    		requestedFile = request.getCurrentDirectory().getInodeHandle(fileName); 
 
-        // Store the file being deleted in the response keyedmap
-        if (requestedFile.isFile()) {
-        	response.setObject(DELEFILE, requestedFile);
-        }
-        /* TODO reimplement with permissions pre hooks
-         * 
-         */
-        // check permission
-        /*if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
+    		// Store the file being deleted in the response keyedmap
+    		if (requestedFile.isFile()) {
+    			response.setObject(DELEFILE, requestedFile);
+    		}
+    		/* TODO reimplement with permissions pre hooks
+    		 * 
+    		 */
+    		// check permission
+    		/*if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
             if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile.getParent())) {
                 return Reply.RESPONSE_530_ACCESS_DENIED;
             }
         } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile.getParent())) {
             return Reply.RESPONSE_530_ACCESS_DENIED;
         }*/
-        
-        if (requestedFile.isDirectory()) {
-			DirectoryHandle victim = (DirectoryHandle) requestedFile;
-			if (victim.getInodeHandles().size() != 0) {
-				return new CommandResponse(550, requestedFile.getPath()
-						+ ": Directory not empty");
-			}
-		}
+
+    		if (requestedFile.isDirectory()) {
+    			DirectoryHandle victim = (DirectoryHandle) requestedFile;
+    			if (victim.getInodeHandles().size() != 0) {
+    				return new CommandResponse(550, requestedFile.getPath()
+    						+ ": Directory not empty");
+    			}
+    		}
 
 
-        User uploader;
+    		User uploader;
 
-        try {
-			uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(
-                    requestedFile.getUsername());
-            uploader.updateCredits((long) -(requestedFile.getSize() * GlobalContext
-                    .getGlobalContext().getConfig().getCreditCheckRatio(
-                            requestedFile.getParent(), uploader)));
-            if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission(
-                    "nostatsup", uploader, request.getCurrentDirectory())) {
-                uploader.updateUploadedBytes(-requestedFile.getSize());
-            }
-		} catch (UserFileException e) {
-			response.addComment("Error removing credits & stats: "
-					+ e.getMessage());
-		} catch (NoSuchUserException e) {
-			response.addComment("User " + requestedFile.getUsername()
-					+ " does not exist, cannot remove credits on deletion");
-		}
+    		try {
+    			uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(
+    					requestedFile.getUsername());
+    			uploader.updateCredits((long) -(requestedFile.getSize() * GlobalContext
+    					.getGlobalContext().getConfig().getCreditCheckRatio(
+    							requestedFile.getParent(), uploader)));
+    			if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission(
+    					"nostatsup", uploader, request.getCurrentDirectory())) {
+    				uploader.updateUploadedBytes(-requestedFile.getSize());
+    			}
+    		} catch (UserFileException e) {
+    			response.addComment("Error removing credits & stats: "
+    					+ e.getMessage());
+    		} catch (NoSuchUserException e) {
+    			response.addComment("User " + requestedFile.getUsername()
+    					+ " does not exist, cannot remove credits on deletion");
+    		}
 
-		GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-				request.getSession().getUserNull(request.getUser()), "DELE", requestedFile.getParent()));
-			requestedFile.delete();
-		} catch (FileNotFoundException e) {
-			// good! we're done :)
-			return new CommandResponse(550, e.getMessage());
-		}
+    		if (requestedFile.isFile()) {
+    			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
+    					request.getSession().getUserNull(request.getUser()), "DELE", requestedFile.getParent()));
+    		} else if (requestedFile.isDirectory()) {
+    			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
+    					request.getSession().getUserNull(request.getUser()), "RMD", (DirectoryHandle)requestedFile));
+    		}
+    		requestedFile.delete();
+    	} catch (FileNotFoundException e) {
+    		// good! we're done :)
+    		return new CommandResponse(550, e.getMessage());
+    	}
 
-        return response;
+    	return response;
     }
 
     /**
@@ -409,7 +414,7 @@ public class Dir extends CommandInterface {
 				return new CommandResponse(550, "Parent directory does not exist");
 			}
   
-            GlobalContext.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
+			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
                     session.getUserNull(request.getUser()), "MKD", newDir));
 
             return new CommandResponse(257, "\"" + newDir.getPath() +
@@ -772,7 +777,7 @@ public class Dir extends CommandInterface {
 			}
 
 			// if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
-			GlobalContext.getGlobalContext().dispatchFtpEvent(
+			GlobalContext.getEventService().publish(
 					new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "WIPE", wipeFile
 							.getParent()));
 

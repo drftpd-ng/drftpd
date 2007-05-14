@@ -276,21 +276,21 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void resetDay(Date resetDate) {
-		GlobalContext.getGlobalContext().dispatchFtpEvent(new UserEvent(this, "RESETDAY", resetDate
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETDAY", resetDate
 				.getTime()));
 		super.resetDay(resetDate);
 		logger.info("Reset daily stats for " + getName());
 	}
 
 	public void resetMonth(Date resetDate) {
-		GlobalContext.getGlobalContext().dispatchFtpEvent(new UserEvent(this, "RESETMONTH", resetDate
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETMONTH", resetDate
 				.getTime()));
 		super.resetMonth(resetDate);
 		logger.info("Reset monthly stats for " + getName());
 	}
 
 	public void resetWeek(Date resetDate) {
-		GlobalContext.getGlobalContext().dispatchFtpEvent(new UserEvent(this, "RESETWEEK", resetDate
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate
 				.getTime()));
 		super.resetWeek(resetDate);
 		

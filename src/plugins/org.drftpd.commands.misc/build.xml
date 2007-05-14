@@ -11,6 +11,9 @@
 		<fileset dir="${basedir}"
 			excludes="classes/,.*,*build*,src/" />
 	</copy>
+	<themetask
+		basedir="${basedir}/../../.."
+		plugindir="${basedir}/src" />
 	<jpf-path
 		basedir="${basedir}/../../.."
 		pathid="plugin.classpath"
@@ -32,7 +35,7 @@
 		<copy todir="${plugin.home}/classes">
 			<fileset dir="${basedir}/src"
 				includes="**/*"
-				excludes="**/.*,**/*.java" />
+				excludes="**/.*,**/*.java,**/*.properties" />
 		</copy>
 	</target>
 </project>

@@ -46,7 +46,7 @@ public interface UserManager extends TimeEventInterface {
 			throws NoSuchUserException, UserFileException;
 
 	public abstract User getUserByIdent(String ident)
-			throws NoSuchUserException, UserFileException;
+			throws NoSuchUserException;
 
 	public abstract User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException;

@@ -124,7 +124,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private transient ObjectOutputStream _sout;
 
 	private transient HashMap<TransferIndex, RemoteTransfer> _transfers;
-	
+
 	private transient boolean _isHandshaking;
 
 	public RemoteSlave(String name) {
@@ -380,14 +380,14 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		try {
 			fetchResponse(remergeIndex, 0);
 		} catch (RemoteIOException e) {
-			throw new IOException(e);
+			throw new IOException(e.getMessage());
 		}
 
 		getGlobalContext().getSlaveManager().putRemergeQueue(
 				new RemergeMessage(this));
 		setAvailable(true);
 		logger.info("Slave added: '" + getName() + "' status: " + _status);
-		getGlobalContext().dispatchFtpEvent(new SlaveEvent("ADDSLAVE", this));
+		GlobalContext.getEventService().publish(new SlaveEvent("ADDSLAVE", this));
 	}
 
 	/**
@@ -880,7 +880,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_status = null;
 
 		if (_isAvailable) {
-			getGlobalContext().dispatchFtpEvent(
+			GlobalContext.getEventService().publish(
 					new SlaveEvent("DELSLAVE", reason, this));
 		}
 

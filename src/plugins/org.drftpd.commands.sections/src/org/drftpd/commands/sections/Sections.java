@@ -40,9 +40,12 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class Sections extends CommandInterface {
 	private ResourceBundle _bundle;
 
+	private String _keyPrefix;
+
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
-    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
     }
 
     public CommandResponse doSITE_SECTIONS(CommandRequest request) {
@@ -62,7 +65,7 @@ public class Sections extends CommandInterface {
             	DatedSection ds = (DatedSection) section;
             	ds.processNewDate(new Date());
             }
-            response.addComment(request.getSession().jprintf(_bundle, "section", env, request.getUser()));
+            response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"section", env, request.getUser()));
         }
 
         return response;

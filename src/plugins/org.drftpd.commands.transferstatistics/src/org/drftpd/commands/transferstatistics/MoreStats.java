@@ -50,10 +50,13 @@ public class MoreStats extends CommandInterface {
     private static final Logger logger = Logger.getLogger(MoreStats.class);
     
 	private ResourceBundle _bundle;
+
+	private String _keyPrefix;
     
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
-    	_bundle = ResourceBundle.getBundle(MoreStats.class.getName());
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
     }
 
     public static int getPeriod(String strperiod) {
@@ -205,7 +208,7 @@ public class MoreStats extends CommandInterface {
             env.add("average", Bytes.formatBytes((long) avrage));
 
             env.add("members", grp.getMembers());
-            response.addComment(ReplacerUtils.jprintf("morestats.grpstats", env, _bundle));
+            response.addComment(ReplacerUtils.jprintf(_keyPrefix+"morestats.grpstats", env, _bundle));
         }
 
         try {
@@ -255,7 +258,7 @@ public class MoreStats extends CommandInterface {
         env.add("average", Bytes.formatBytes((long) avrage));
         env.add("megs", Bytes.formatBytes(megs));
         env.add("files", Integer.toString(files));
-        response.addComment(ReplacerUtils.jprintf("morestats.trafficstats", env, _bundle));
+        response.addComment(ReplacerUtils.jprintf(_keyPrefix+"morestats.trafficstats", env, _bundle));
     }
 
     public CommandResponse doSITE_TRAFFIC(CommandRequest request) {

@@ -56,9 +56,12 @@ public class TransferStatistics extends CommandInterface  {
 
     private ResourceBundle _bundle;
 
+    private String _keyPrefix;
+
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
-    	_bundle = ResourceBundle.getBundle(this.getClass().getName());
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
     }
 
     public static long getStats(String command, User user) {
@@ -360,8 +363,8 @@ public class TransferStatistics extends CommandInterface  {
             env.add("dnfiles", "" + user.getDownloadedFiles());
             env.add("dnrate", getDownRate(user, Trial.PERIOD_ALL));
 
-            response.addComment(Session.jprintf(_bundle, "transferstatistics" + type, env,
-                    user));
+            response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"transferstatistics" + type, env,
+                    user.getName()));
 
             //			response.addComment(
             //	user.getUsername()

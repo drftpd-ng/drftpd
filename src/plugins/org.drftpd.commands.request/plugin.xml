@@ -2,6 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.commands.request" version="2.1.0">
 	<requires>
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 	</requires>
 	<runtime>

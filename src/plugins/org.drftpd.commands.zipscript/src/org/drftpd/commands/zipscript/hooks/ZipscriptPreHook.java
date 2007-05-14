@@ -30,6 +30,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.config.FtpConfig;
@@ -49,7 +50,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 
 	private boolean _sfvFirstAllowNoExt;
 
-	public void initialize() {
+	public void initialize(StandardCommandManager cManager) {
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
 		if (cfg == null) {

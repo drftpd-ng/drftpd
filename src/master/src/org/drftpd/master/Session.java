@@ -31,17 +31,14 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.ReplacerUtils;
-import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
 
 /**
  * @author djb61
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public class Session extends KeyedMap {
+public abstract class Session extends KeyedMap {
 
 	public static final Key COMMANDS = new Key(Session.class, "commands",
 			HashMap.class);
@@ -55,7 +52,7 @@ public class Session extends KeyedMap {
 		return (HashMap<String,Properties>) getObject(Session.COMMANDS, null);
 	}
 
-	public static ReplacerEnvironment getReplacerEnvironment(
+	public ReplacerEnvironment getReplacerEnvironment(
 			ReplacerEnvironment env, User user) {
 		env = new ReplacerEnvironment(env);
 
@@ -94,7 +91,7 @@ public class Session extends KeyedMap {
 		return env;
 	}
 
-	public static String jprintf(ReplacerFormat format,
+	/*public static String jprintf(ReplacerFormat format,
 			ReplacerEnvironment env, User user) throws FormatterException {
 		env = getReplacerEnvironment(env, user);
 
@@ -114,7 +111,7 @@ public class Session extends KeyedMap {
 
 		return SimplePrintf
 				.jprintf(ReplacerUtils.finalFormat(bundle, key), env);
-	}
+	}*/
 
 	public User getUserNull(String user) {
 		if (user == null) {
@@ -134,17 +131,21 @@ public class Session extends KeyedMap {
 	}
 
 	public String jprintf(ResourceBundle bundle, String key, String user) {
-		return jprintf(bundle, key, null, getUserNull(user));
+		return ReplacerUtils.jprintf(key, getReplacerEnvironment(null, getUserNull(user)), bundle);
 	}
 
 	public String jprintf(ResourceBundle bundle, String string, ReplacerEnvironment env, String user) {
-		return jprintf(bundle, string, env, getUserNull(user));
+		return ReplacerUtils.jprintf(string, getReplacerEnvironment(env, getUserNull(user)), bundle);
 	}
 
-	public String jprintfException(ResourceBundle bundle, String key,
+	/*public String jprintfException(ResourceBundle bundle, String key,
 			ReplacerEnvironment env, String user) throws FormatterException {
 		env = getReplacerEnvironment(env, getUserNull(user));
 
 		return jprintfExceptionStatic(bundle, key, env, getUserNull(user));
-	}
+	}*/
+
+	public abstract boolean isSecure();
+
+	public abstract void printOutput(Object o);
 }

@@ -72,11 +72,14 @@ public class LIST extends CommandInterface {
 	protected final static String NEWLINE = "\r\n";
 
 	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<AddListElementsInterface>();
+
+	private StandardCommandManager _cManager;
 	
 	@Override
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
-		
+		_cManager = cManager;
+
 		// load extensions just once and save the instances for later use.
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint listExtPoint = 
@@ -352,7 +355,7 @@ public class LIST extends CommandInterface {
 			// //////////////
 			logger.debug("Listing directoryFile - " + directoryFile);
 
-			ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser());
+			ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser(), _cManager);
 			container = ListUtils.list(directoryFile, container);
 
 			// execute list addons.

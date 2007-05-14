@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.drftpd.master.Session;
+import org.drftpd.util.ExtendedPropertyResourceBundle;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -32,9 +33,10 @@ public interface CommandManagerInterface {
 	/**
 	 * Initialization routine.
 	 * @param requiredCmds, a map of commands and corresponding Properties read from the configuration file.
+	 * @param themeDir the location relative to drftpd root path of the theme files for the calling frontend
 	 * @see <code>org.drftpd.master.config.FtpConfig.getFtpCommandsMap()</code> for more information about the Map.
 	 */
-	public void initialize(HashMap<String,Properties> requiredCmds);
+	public void initialize(HashMap<String,Properties> requiredCmds, String themeDir);
 
 	/**
 	 * Executes the command. 
@@ -53,4 +55,6 @@ public interface CommandManagerInterface {
 	 */
 	public CommandRequestInterface newRequest(String originalCommand, String argument,
 			DirectoryHandle directory, String user, Session session, Properties config);
+
+	public ExtendedPropertyResourceBundle getResourceBundle();
 }

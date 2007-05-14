@@ -61,9 +61,35 @@ check - checks plug-ins integrity
 		<ant dir="src/plugins/org.drftpd.commands.search" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.newhandler" target="${target}" />
 		<ant dir="src/plugins/org.drftpd.commands.prehook.permissions" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.plugins.sitebot" target="${target}" />
+		<ant dir="src/plugins/org.drftpd.plugins.sitebot.announce.def" target="${target}" />
 	</target>
 
 	<target name="build" description="Builds entire project">
+		<!-- compile tools classes -->
+		<javac
+			srcdir="src/tools"
+			classpathref="classpath"
+			excludes=""
+			target="1.5"
+			debug="true"
+			optimize="false"/>
+		<!-- create tools jar -->
+		<jar destfile="lib/${app.name}-tools.jar">
+			<manifest>
+				<attribute name="Class-Path" value="ant.jar"/>
+				<attribute name="Specification-Title" value="DrFTPd - tools library"/>
+				<attribute name="Specification-Version" value="${app.version}"/>
+				<attribute name="Specification-Vendor" value="http://www.drftpd.org"/>
+				<attribute name="Implementation-Title" value="org.drftpd.tools"/>
+				<attribute name="Implementation-Version" value="${app.version}"/>
+				<attribute name="Implementation-Vendor" value="http://www.drftpd.org"/>
+			</manifest>
+			<fileset dir="src/tools"/>
+		</jar>
+		<!-- declare theme task -->
+		<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/${app.name}-tools.jar"/>
+		<!-- build plugins -->
 		<antcall target="-build-plugins">
 			<param name="target" value="build" />
 		</antcall>

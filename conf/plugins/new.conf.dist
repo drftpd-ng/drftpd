@@ -1,6 +1,0 @@
-# specify the default number of dirs to show
-default=5
-# specify the maximum number of dirs to show (overrides user input)
-max=25
-# specify the sections to exclude from output (space separated)
-filtered_sections=REQUESTS

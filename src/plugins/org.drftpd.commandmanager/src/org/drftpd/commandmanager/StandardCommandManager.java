@@ -17,6 +17,10 @@
  */
 package org.drftpd.commandmanager;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -33,6 +37,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.Session;
+import org.drftpd.util.ExtendedPropertyResourceBundle;
 import org.drftpd.vfs.DirectoryHandle;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
@@ -51,7 +56,14 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 	private static final Logger logger = Logger
 			.getLogger(StandardCommandManager.class);
 
+	private static final String _defaultThemeDir = "conf/themes/ftp";
 	private static Hashtable<String,CommandResponse> _genericResponses;
+
+	private ExtendedPropertyResourceBundle _defaultTheme;
+
+	private ExtendedPropertyResourceBundle _theme;
+
+	private ExtendedPropertyResourceBundle _fallbackTheme;
 
 	/**
 	 * This is a map of commands, e.x.:
@@ -63,7 +75,67 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
 	}
 
-	public void initialize(HashMap<String,Properties> requiredCmds) {
+	public void initialize(HashMap<String,Properties> requiredCmds, String themeDir) {
+		// Load the default theme for the frontend as well as any user overrides
+		FileInputStream defaultIs = null;
+		try {
+			defaultIs = new FileInputStream(new File(themeDir+File.separator+"core.theme.default"));
+			_defaultTheme = new ExtendedPropertyResourceBundle(defaultIs);
+		} catch (FileNotFoundException e) {
+			logger.error("No default theme file core.theme.default found in: "+themeDir,e);
+		} catch (IOException e) {
+			logger.error("Error loading core.theme.default from: "+themeDir,e);
+		} finally {
+			try {
+				if (defaultIs != null) {
+					defaultIs.close();
+				}
+			} catch (IOException e) {
+				// FileInputStream already closed
+			}
+		}
+		FileInputStream userIs = null;
+		try {
+			userIs = new FileInputStream(new File(themeDir+File.separator+"core.theme"));
+			_theme = new ExtendedPropertyResourceBundle(userIs);
+		} catch (FileNotFoundException e) {
+			// Means the user hasn't specified any overrides, since we can't have an
+			// empty bundle, just point this to the default
+			_theme = _defaultTheme;
+		} catch (IOException e) {
+			// Means the user did specify overrides but they can't be loaded, point
+			// to the default to keep things functional but log a warning to make
+			// the user aware of the problem
+			_theme = _defaultTheme;
+			logger.warn("Error loading core.theme from: "+themeDir,e);
+		} finally {
+			try {
+				if (userIs != null) {
+					userIs.close();
+				}
+			} catch (IOException e) {
+				// FileInputStream already closed
+			}
+		}
+		// Set the parent bundle to the default to allow access to any non-overriden values
+		// if there is an override file
+		if (!_theme.equals(_defaultTheme)) {
+			_theme.setParent(_defaultTheme);
+		}
+		// If this isn't the base ftp frontend then add the default ftp theme as a final
+		// fallback theme
+		if (!themeDir.equals(_defaultThemeDir)) {
+			FileInputStream fallbackIs = null;
+			try {
+				fallbackIs = new FileInputStream(new File(_defaultThemeDir+File.separator+"core.theme.default"));
+				_fallbackTheme = new ExtendedPropertyResourceBundle(fallbackIs);
+			} catch (FileNotFoundException e) {
+				logger.error("Base ftp default theme not found: "+_defaultThemeDir+File.separator+"core.theme.default",e);
+			} catch (IOException e) {
+				logger.error("Error loading base ftp default theme: "+_defaultThemeDir+File.separator+"core.theme.default",e);
+			}
+			_defaultTheme.setParent(_fallbackTheme);
+		}
 		if (_commands == null ) {
 			initGenericResponses();
 		}
@@ -393,5 +465,9 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 				}
 			}
 		}
+	}
+
+	public ExtendedPropertyResourceBundle getResourceBundle() {
+		return _theme;
 	}
 }

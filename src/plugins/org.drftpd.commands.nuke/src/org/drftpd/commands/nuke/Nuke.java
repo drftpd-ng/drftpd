@@ -238,7 +238,7 @@ public class Nuke extends CommandInterface {
         // adding to the nukelog.
         NukeBeans.getNukeBeans().add(nd);
         
-        GlobalContext.getGlobalContext().dispatchFtpEvent(nuke);
+        GlobalContext.getEventService().publish(nuke);
 
         return response;
     }
@@ -390,7 +390,7 @@ public class Nuke extends CommandInterface {
         
         nukeData.setReason(reason);
         NukeEvent nukeEvent = new NukeEvent(request.getSession().getUserNull(request.getUser()), "UNNUKE", nukeData);
-        GlobalContext.getGlobalContext().dispatchFtpEvent(nukeEvent);
+        GlobalContext.getEventService().publish(nukeEvent);
 
         return response;
     }

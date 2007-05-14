@@ -179,8 +179,7 @@ public abstract class AbstractUserManager implements UserManager {
 		return GlobalContext.getGlobalContext();
 	}
 
-	public User getUserByIdent(String ident) throws NoSuchUserException,
-			UserFileException {
+	public User getUserByIdent(String ident) throws NoSuchUserException {
 		for (Iterator iter = getAllUsers().iterator(); iter.hasNext();) {
 			User user = (User) iter.next();
 			try {

@@ -46,7 +46,8 @@ public class ZipscriptList implements AddListElementsInterface {
 
 	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
 
-		ResourceBundle bundle = ResourceBundle.getBundle(this.getClass().getName());
+		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
+		String keyPrefix = this.getClass().getName()+".";
 		try {
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
 			SFVInfo sfvfile = sfvData.getSFVInfo();
@@ -65,7 +66,7 @@ public class ZipscriptList implements AddListElementsInterface {
 					env.add("missing.number","" + sfvstatus.getMissing());
 					env.add("missing.percent","" + (sfvstatus.getMissing() * 100) / sfvfile.getSize());
 					env.add("missing",container.getSession().jprintf(bundle,
-							"statusbar.missing",env, container.getUser()));
+							keyPrefix+"statusbar.missing",env, container.getUser()));
 				} else {
 					env.add("missing","");
 				}
@@ -76,7 +77,7 @@ public class ZipscriptList implements AddListElementsInterface {
 						/ sfvfile.getSize());
 				env.add("complete.totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
 				env.add("complete", container.getSession().jprintf(bundle,
-						"statusbar.complete", env, container.getUser()));
+						keyPrefix+"statusbar.complete", env, container.getUser()));
 
 				if (sfvstatus.getOffline() != 0) {
 					env.add("offline.number","" + sfvstatus.getOffline());
@@ -84,7 +85,7 @@ public class ZipscriptList implements AddListElementsInterface {
 					env.add("online.number","" + sfvstatus.getPresent());
 					env.add("online.percent","" + (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent());
 					env.add("offline",container.getSession().jprintf(bundle,
-							"statusbar.offline",env,container.getUser()));
+							keyPrefix+"statusbar.offline",env,container.getUser()));
 				} else {
 					env.add("offline","");
 				}
@@ -103,7 +104,7 @@ public class ZipscriptList implements AddListElementsInterface {
 
 				String statusDirName = null;
 				statusDirName = container.getSession().jprintf(bundle,
-						"statusbar.format",env, container.getUser());
+						keyPrefix+"statusbar.format",env, container.getUser());
 
 				if (statusDirName == null) {
 					throw new RuntimeException();
@@ -120,7 +121,7 @@ public class ZipscriptList implements AddListElementsInterface {
 						if (!file.exists()) {
 							env.add("mfilename",fileName);
 							container.getElements().add(new LightRemoteInode(
-									container.getSession().jprintf(bundle, "files.missing.filename",env,container.getUser()),
+									container.getSession().jprintf(bundle, keyPrefix+"files.missing.filename",env,container.getUser()),
 									"drftpd", "drftpd", dir.lastModified(), 0L));
 						}
 					}

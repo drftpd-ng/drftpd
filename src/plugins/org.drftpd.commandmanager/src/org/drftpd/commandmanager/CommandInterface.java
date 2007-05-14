@@ -91,7 +91,7 @@ public abstract class CommandInterface implements EventSubscriber {
 							postHook.getParameter("HookClass").valueAsString());
 					PostHookInterface postHookInstance = (PostHookInterface) postHookCls.newInstance();
 					
-					postHookInstance.initialize();
+					postHookInstance.initialize(cManager);
 
 					Method m = postHookInstance.getClass().getMethod(
 							postHook.getParameter("HookMethod").valueAsString(),
@@ -144,7 +144,7 @@ public abstract class CommandInterface implements EventSubscriber {
 							preHook.getParameter("HookClass").valueAsString());
 					PreHookInterface preHookInstance = (PreHookInterface) preHookCls.newInstance();
 					
-					preHookInstance.initialize();
+					preHookInstance.initialize(cManager);
 
 					Method m = preHookInstance.getClass().getMethod(
 							preHook.getParameter("HookMethod").valueAsString(),

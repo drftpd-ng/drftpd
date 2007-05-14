@@ -33,6 +33,7 @@ import javax.net.ssl.SSLContext;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.ThreadSafeEventService;
+import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.event.Event;
 import org.drftpd.event.FtpListener;
 import org.drftpd.event.MessageEvent;
@@ -74,7 +75,9 @@ public class GlobalContext {
 	
 	private PluginsConfig _pluginsConfig;
 
-	private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
+	//private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
+
+	private ArrayList<PluginInterface> _plugins = new ArrayList<PluginInterface>();
 
 	protected JobManager _jm;
 
@@ -148,7 +151,7 @@ public class GlobalContext {
 	/**
 	 * Calls init(this) on the argument
 	 */
-	public synchronized void addFtpListener(FtpListener listener) {
+	/*public synchronized void addFtpListener(FtpListener listener) {
 		listener.init();
 		_ftpListeners.add(listener);
 	}
@@ -167,7 +170,7 @@ public class GlobalContext {
 				logger.warn("RuntimeException dispatching event", e);
 			}
 		}
-	}
+	}*/
 
 	public PluginsConfig getPluginsConfig() {
 		return _pluginsConfig;
@@ -181,8 +184,12 @@ public class GlobalContext {
 		return ConnectionManager.getConnectionManager();
 	}
 
-	public List<FtpListener> getFtpListeners() {
+	/*public List<FtpListener> getFtpListeners() {
 		return new ArrayList<FtpListener>(_ftpListeners);
+	}*/
+
+	public List<PluginInterface> getPlugins() {
+		return new ArrayList<PluginInterface>(_plugins);
 	}
 
 	/**
@@ -229,7 +236,69 @@ public class GlobalContext {
 		return _shutdownMessage != null;
 	}
 
-	protected void loadPlugins(Properties cfg) {
+	public CommandManagerInterface getCommandManager() {
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint cmExtPoint = 
+			manager.getRegistry().getExtensionPoint( 
+					"master", "CommandManager");
+
+		/*	Iterate over all extensions that have been connected to the
+				CommandManager extension point and return the desired one */
+
+		Properties cfg = getGlobalContext().getConfig().getProperties();
+
+		Class<?> cmCls = null;
+
+		String desiredCm = PropertyHelper.getProperty(cfg, "master.commandmanager");
+
+		for (Extension cm : cmExtPoint.getConnectedExtensions()) {
+			try {
+				if (cm.getDeclaringPluginDescriptor().getId().equals(desiredCm)) {
+					// If plugin isn't already activated then activate it
+					if (!manager.isPluginActivated(cm.getDeclaringPluginDescriptor())) {
+						manager.activatePlugin(cm.getDeclaringPluginDescriptor().getId());
+					}
+					ClassLoader cmLoader = manager.getPluginClassLoader( 
+							cm.getDeclaringPluginDescriptor());
+					cmCls = cmLoader.loadClass( 
+							cm.getParameter("class").valueAsString());
+					CommandManagerInterface commandManager = (CommandManagerInterface) cmCls.newInstance();
+					return commandManager;
+				}
+			}
+			catch (Exception e) {
+				throw new FatalException(
+						"Cannot create instance of commandmanager, check master.commandmanager in config file",
+						e);
+			}
+		}
+		return null;
+	}
+
+	private void loadPlugins() {
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint pluginExtPoint = 
+			manager.getRegistry().getExtensionPoint( 
+					"master", "Plugin");
+
+		for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
+			try {
+				manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+				ClassLoader pluginLoader = manager.getPluginClassLoader( 
+						plugin.getDeclaringPluginDescriptor());
+				Class<?> pluginCls = pluginLoader.loadClass( 
+						plugin.getParameter("class").valueAsString());
+				PluginInterface newPlugin = (PluginInterface) pluginCls.newInstance();
+				newPlugin.startPlugin();
+				_plugins.add(newPlugin);
+			}
+			catch (Exception e) {
+				logger.warn("Error loading plugin " + 
+						plugin.getDeclaringPluginDescriptor().getId(),e);
+			}
+		}
+	}
+	/*protected void loadPlugins(Properties cfg) {
 		for (int i = 1;; i++) {
 			String classname = cfg.getProperty("plugins." + i);
 
@@ -245,7 +314,7 @@ public class GlobalContext {
 				throw new FatalException("Error loading plugins", e);
 			}
 		}
-	}
+	}*/
 
 	private void loadSectionManager(Properties cfg) {
 		try {
@@ -314,7 +383,7 @@ public class GlobalContext {
 	 */
 	public void shutdown(String message) {
 		_shutdownMessage = message;
-		dispatchFtpEvent(new MessageEvent("SHUTDOWN", message));
+		GlobalContext.getEventService().publish(new MessageEvent("SHUTDOWN", message));
 		getConnectionManager().shutdownPrivate(message);
 		new Thread(new Shutdown()).start();
 	}
@@ -349,7 +418,7 @@ public class GlobalContext {
 		return getConfig().getPortRange();
 	}
 
-	public FtpListener getFtpListener(Class clazz)
+	/*public FtpListener getFtpListener(Class clazz)
 			throws ObjectNotFoundException {
 		for (FtpListener listener : new ArrayList<FtpListener>(
 				getFtpListeners())) {
@@ -360,7 +429,7 @@ public class GlobalContext {
 		}
 
 		throw new ObjectNotFoundException();
-	}
+	}*/
 
 	public static GlobalContext getGlobalContext() {
 		if (_gctx == null) {
@@ -403,8 +472,8 @@ public class GlobalContext {
 		getJobManager().startJobs();
 		loadSlaveSelectionManager(getConfig().getProperties());
 		loadSectionManager(getConfig().getProperties());
-		loadPlugins(getConfig().getProperties());
 		loadPluginsConfig();
+		loadPlugins();
 	}
 	
 

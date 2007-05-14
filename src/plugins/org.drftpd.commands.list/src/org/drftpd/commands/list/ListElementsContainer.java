@@ -18,6 +18,7 @@ package org.drftpd.commands.list;
 
 import java.util.ArrayList;
 
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.Session;
 import org.drftpd.vfs.InodeHandleInterface;
 
@@ -40,11 +41,14 @@ public class ListElementsContainer {
 
 	private String _user;
 
-	public ListElementsContainer(Session session, String user) {
+	private StandardCommandManager _cManager;
+
+	public ListElementsContainer(Session session, String user, StandardCommandManager cManager) {
 		_numOnline = 0;
 		_numTotal = 0;
 		_session = session;
 		_user = user;
+		_cManager = cManager;
 	}
 
 	public void addFileType(String type) {
@@ -73,6 +77,10 @@ public class ListElementsContainer {
 
 	public String getUser() {
 		return _user;
+	}
+
+	public StandardCommandManager getCommandManager() {
+		return _cManager;
 	}
 
 	public void setNumOnline(int numOnline) {

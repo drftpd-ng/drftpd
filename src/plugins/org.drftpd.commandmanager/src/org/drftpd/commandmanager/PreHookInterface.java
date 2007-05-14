@@ -22,5 +22,5 @@ package org.drftpd.commandmanager;
  */
 public interface PreHookInterface {
 
-	public void initialize();
+	public void initialize(StandardCommandManager cManager);
 }

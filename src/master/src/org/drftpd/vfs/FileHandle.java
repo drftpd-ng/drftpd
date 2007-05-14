@@ -238,6 +238,13 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 		getInode().setSize(size);
 	}
 
+	/**
+	 * Returns the size of the file in bytes
+	 */
+	public long getSize() throws FileNotFoundException {
+		return getInode().getSize();
+	}
+
 	@Override
 	public boolean isDirectory() {
 		return false;

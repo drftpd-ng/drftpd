@@ -150,7 +150,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		setCurrentDirectory(getGlobalContext().getRoot());
 	}
 
-	public static ReplacerEnvironment getReplacerEnvironment(
+	public static ReplacerEnvironment getReplacerEnvironment2(
 			ReplacerEnvironment env, User user) {
 		env = new ReplacerEnvironment(env);
 
@@ -191,14 +191,14 @@ public class BaseFtpConnection extends Session implements Runnable {
 
 	public static String jprintf(ReplacerFormat format,
 			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment(env, user);
+		env = getReplacerEnvironment2(env, user);
 
 		return SimplePrintf.jprintf(format, env);
 	}
 
 	public static String jprintf(Class class1, String key,
 			ReplacerEnvironment env, User user) {
-		env = getReplacerEnvironment(env, user);
+		env = getReplacerEnvironment2(env, user);
 		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
 
 		return ReplacerUtils.jprintf(key, env, bundle);
@@ -206,7 +206,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 
 	public static String jprintfExceptionStatic(Class class1, String key,
 			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment(env, user);
+		env = getReplacerEnvironment2(env, user);
 		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
 
 		return SimplePrintf
@@ -489,7 +489,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 					logger.error("User does not exist, yet user is authenticated, this is a bug");
 				}
 				
-				getGlobalContext().dispatchFtpEvent(new ConnectionEvent(getUserNull(), "LOGOUT"));
+				GlobalContext.getEventService().publish(new ConnectionEvent(getUserNull(), "LOGOUT"));
 			}
 
 			GlobalContext.getConnectionManager().remove(this);

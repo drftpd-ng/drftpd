@@ -54,6 +54,8 @@ public class ListUtils {
 		ArrayList<String> fileTypes = container.getFileTypes();
 		int numOnline = container.getNumOnline();
 		int numTotal = container.getNumTotal();
+		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
+		String keyPrefix = ListUtils.class.getName()+".";
 		//boolean id3found = false;
 		//ID3Tag mp3tag = null;
 
@@ -115,8 +117,7 @@ public class ListUtils {
 				if (!((FileHandleInterface) element).isAvailable()) {
 					ReplacerEnvironment env = new ReplacerEnvironment();
 					env.add("ofilename", element.getName());
-					ResourceBundle bundle = ResourceBundle.getBundle(ListUtils.class.getName());
-					String oFileName = container.getSession().jprintf(bundle, "files.offline.filename", env, container.getUser());
+					String oFileName = container.getSession().jprintf(bundle, keyPrefix+"files.offline.filename", env, container.getUser());
 
 					listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
 					numTotal++;

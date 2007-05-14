@@ -22,6 +22,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -33,7 +34,7 @@ import org.drftpd.vfs.DirectoryHandle;
 public class NukePreHook implements PreHookInterface {
 	private static final Logger logger = Logger.getLogger(NukePreHook.class);
 	
-	public void initialize() {
+	public void initialize(StandardCommandManager cManager) {
 	}
 	
 	public CommandRequestInterface doNukeCheck(CommandRequest request) {

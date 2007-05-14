@@ -13,12 +13,10 @@ package org.drftpd.util;
  * Use this code is very simple :
  * 
  * Use "Encrypt" with the text to encrypt
- * 		-> The function will encrypt and return the text with +OK at the biginning"
+ * 		-> The function will encrypt and return the text with +OK at the beginning"
  * 
  * Use "Decrypt" with the text to decrypt
  * 		--> The text must include the +OK or mcps at the front"
- * 
- * There are a good exemple in "Main" function
  * 
  * To Use Key > 16 char, you must update two jar files in your jre or jdk.
  * 		Java Cryptography Extension (JCE)
@@ -28,6 +26,7 @@ package org.drftpd.util;
  * 		-> local_policy.jar
  * 		-> US_export_policy.jar
  * 
+ * 
  */
 
 import java.io.UnsupportedEncodingException;
@@ -36,101 +35,108 @@ import java.security.InvalidKeyException;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.log4j.Logger;
+
 public class Blowfish {
+
+	private static final Logger logger = Logger.getLogger(Blowfish.class);
+
+	private static final String BEGIN = "+OK ";
+
+	private static final String B64 = "./0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+	private Cipher _ecipher;
+
+	private SecretKeySpec _skeySpec;
 
 	/*
 	 * Constructor of Blowfish class Key param
 	 */
 
 	public Blowfish(String key) {
-		skeySpec = new SecretKeySpec(key.getBytes(), "Blowfish");
+		_skeySpec = new SecretKeySpec(key.getBytes(), "Blowfish");
 		// Preparing Blowfish mode
 		try {
-			ecipher = Cipher.getInstance("Blowfish/ECB/NoPadding");
+			_ecipher = Cipher.getInstance("Blowfish/ECB/NoPadding");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	/* Encrypt function */
-	public String Encrypt(String tocrypt) {
+	/* Encrypt function	 */
+	public String encrypt(String tocrypt) {
 
 		// Mode cypher in Encrypt mode
 		try {
-			ecipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+			_ecipher.init(Cipher.ENCRYPT_MODE, _skeySpec);
 		} catch (InvalidKeyException e) {
-			e.printStackTrace();
+			logger.warn("Invalid blowfish key",e);
 		}
 
-		String REncrypt = "";
+		String rEncrypt = "";
 		// Paddind the String
-		byte[] BEncrypt = tocrypt.getBytes();
-		int Taille = BEncrypt.length;
-		int Limit = 8 - (BEncrypt.length % 8);
-		byte[] buff = new byte[Taille + Limit];
+		byte[] bEncrypt = tocrypt.getBytes();
+		int taille = bEncrypt.length;
+		int limit = 8 - (bEncrypt.length % 8);
+		byte[] buff = new byte[taille + limit];
 
-		for (int i = 0; i < Taille; i++)
-			buff[i] = BEncrypt[i];
+		for (int i = 0; i < taille; i++)
+			buff[i] = bEncrypt[i];
 
-		for (int i = Taille; i < Taille + Limit; i++)
+		for (int i = taille; i < taille + limit; i++)
 			buff[i] = 0x0;
 
-		try {
+		try { 
 			// Encrypt the padding string
-			byte[] encrypted = ecipher.doFinal(buff);
+			byte[] encrypted = _ecipher.doFinal(buff); 
 			// B64 ENCRYPTION (mircryption needed)
-			REncrypt = bytetoB64(encrypted);
+			rEncrypt = bytetoB64(encrypted);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.warn("Exception whilst encrypting blowfish string",e);
 		}
 
-		REncrypt = Begin.concat(REncrypt);
-		return REncrypt;
+		rEncrypt = BEGIN.concat(rEncrypt);
+		return rEncrypt;
 	}
 
 	/* Decrypt function */
-	public String Decrypt(String encrypt) throws UnsupportedEncodingException {
+	public String decrypt(String encrypt) throws UnsupportedEncodingException {
 
-		if (encrypt.startsWith("+OK ")) {
-			encrypt = encrypt.substring(4, encrypt.length());
-		}
-		if (encrypt.startsWith("mcps ")) {
-			encrypt = encrypt.substring(5, encrypt.length());
-		}
+		if(encrypt.startsWith("+OK ")) {encrypt = encrypt.substring(4,encrypt.length());}
+		if(encrypt.startsWith("mcps "))	{encrypt = encrypt.substring(5,encrypt.length());}
 
 		// B64 DECRYPTION (mircryption needed)
-		byte[] Again = B64tobyte(encrypt);
+		byte[] again = b64tobyte(encrypt); 
 
 		byte[] decrypted = null;
 
 		try {
 			// Mode cypher in Decrypt mode
-			ecipher.init(Cipher.DECRYPT_MODE, skeySpec);
-			decrypted = ecipher.doFinal(Again);
+			_ecipher.init(Cipher.DECRYPT_MODE, _skeySpec);
+			decrypted = _ecipher.doFinal(again);
 
 			// Recup exact length
 			int leng = 0;
-			while (decrypted[leng] != 0x0) {
-				leng++;
-			}
-			byte[] Final = new byte[leng];
+			while(decrypted[leng] != 0x0) {leng++;}
+			byte[] finalArray = new byte[leng];
 			// Format & Limit the Result String
 			int i = 0;
-			while (decrypted[i] != 0x0) {
-				Final[i] = decrypted[i];
+			while(decrypted[i] != 0x0) {
+				finalArray[i] = decrypted[i];
 				i++;
-			}
-			// Force again the encoding result string
-			return new String(Final, "8859_1");
+			}			
+			//Force again the encoding result string
+			return new String(finalArray,"8859_1");
 		} catch (Exception e) {
-			// return e.getMessage();
+			//return e.getMessage();
 			// Exception, not necessary padding, return directly
 			// The decypted string
-			return new String(decrypted, "8859_1");
+			logger.warn("Exception whilst decrypting blowfish string",e);
+			return new String(decrypted,"8859_1");
 		}
 	}
 
-	public static byte[] B64tobyte(String ec) {
+	public static byte[] b64tobyte(String ec) {
 
 		String dc = "";
 
@@ -174,14 +180,15 @@ public class Blowfish {
 			}
 		}
 
-		byte[] Result = new byte[1024];
+		byte[] result = new byte[1024];
 		try {
 			// Force the encoding result string
-			Result = dc.getBytes("8859_1");
+			result = dc.getBytes("8859_1");
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			// Shouldn't be possible as this is a JVM default charset
+			logger.debug("Couldn't use 8859_1 charset",e);
 		}
-		return Result;
+		return result;
 	}
 
 	public static String bytetoB64(byte[] ec) {
@@ -248,12 +255,4 @@ public class Blowfish {
 		}
 		return dc;
 	}
-
-	private static String Begin = "+OK ";
-
-	private static String B64 = "./0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-	private Cipher ecipher;
-
-	private SecretKeySpec skeySpec;
 }
