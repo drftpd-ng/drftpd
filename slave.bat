@@ -23,7 +23,7 @@ rem %~dp0 is location of current script under NT
 set _REALPATH=%~dp0
 
 rem Decide on the wrapper binary.
-set _WRAPPER_BASE=wrapper
+set _WRAPPER_BASE=bin\wrapper
 set _WRAPPER_EXE=%_REALPATH%%_WRAPPER_BASE%-windows-x86-32.exe
 if exist "%_WRAPPER_EXE%" goto conf
 set _WRAPPER_EXE=%_REALPATH%%_WRAPPER_BASE%-windows-x86-64.exe
@@ -38,12 +38,12 @@ pause
 goto :eof
 
 rem
-rem Find the wrapper.conf
+rem Find the wrapper-slave.conf
 rem
 :conf
 set _WRAPPER_CONF="%~f1"
 if not %_WRAPPER_CONF%=="" goto startup
-set _WRAPPER_CONF="%_REALPATH%..\conf\wrapper-slave.conf"
+set _WRAPPER_CONF="%_REALPATH%\conf\wrapper-slave.conf"
 
 rem
 rem Start the Wrapper
