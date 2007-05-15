@@ -366,10 +366,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	SlaveUnavailableException, ProtocolException {
 		commit();
 		processQueue();
-
-		if (SlaveManager.getBasicIssuer() == null) {
-			logger.debug("BasicIssuer == null");
-		}
 		
 		String maxPathIndex = SlaveManager.getBasicIssuer().issueMaxPathToSlave(this);
 		_maxPath = fetchMaxPathFromIndex(maxPathIndex);

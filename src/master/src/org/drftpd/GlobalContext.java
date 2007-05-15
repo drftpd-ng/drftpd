@@ -34,11 +34,8 @@ import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.ThreadSafeEventService;
 import org.drftpd.commandmanager.CommandManagerInterface;
-import org.drftpd.event.Event;
-import org.drftpd.event.FtpListener;
 import org.drftpd.event.MessageEvent;
 import org.drftpd.exceptions.FatalException;
-import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.jobmanager.JobManager;
 import org.drftpd.master.CommitManager;
@@ -493,7 +490,7 @@ public class GlobalContext {
         	
         	while (reader.ready()) {
         		curLine = reader.readLine().trim();
-        		if (curLine.startsWith("#") || curLine.equals("")) {
+        		if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
         			// comment or blank line, ignore
         			continue;
         		}

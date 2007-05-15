@@ -56,7 +56,7 @@ public class PluginsConfig {
 	public void dumpHashMap() {
 		logger.debug("Dumping Map Information.");
 		for (Entry<String, Properties> entry : getPropertiesMap().entrySet()) {
-			logger.debug("Configuration File: "+ entry.getKey());
+			logger.debug("--> Configuration File: "+ entry.getKey());
 			logger.debug("Listing properties.");
 			for (Entry e : entry.getValue().entrySet()) {
 				String key = (String) e.getKey();
@@ -109,7 +109,7 @@ public class PluginsConfig {
 				return; // we were told to skip the file.				
 			}
 			
-			String key = file.getPath().substring("conf/plugins/".length());
+			String key = file.getPath().substring("conf/plugins/".length()).replace("\\", "/");
 			getPropertiesMap().put(key, cfg);
 		} catch (FileNotFoundException e) {
 			logger.error("Weird the file was just there, how come it's gone?", e);

@@ -12,6 +12,10 @@
 #         public: all channels the bot is in
 #         private: private message to the user who initiated the command
 #         source: reply to where the command originated, be it a channel or private message
+
+# Do not let PluginsConfig parse this file.
+skip=true
+
 who {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
