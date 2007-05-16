@@ -17,8 +17,6 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.drftpd.util.Blowfish;
-
 /**
  * @author djb61
  * @version $Id$

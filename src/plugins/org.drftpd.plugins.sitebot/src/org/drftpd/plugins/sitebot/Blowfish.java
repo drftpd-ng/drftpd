@@ -1,4 +1,4 @@
-package org.drftpd.util;
+package org.drftpd.plugins.sitebot;
 
 //Just a drfptd package
 

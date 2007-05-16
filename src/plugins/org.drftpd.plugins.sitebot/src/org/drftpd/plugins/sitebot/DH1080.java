@@ -17,6 +17,7 @@
  */
 package org.drftpd.plugins.sitebot;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -141,8 +142,13 @@ public class DH1080 {
 				break;
 			}
 			k++;
+		} try {
+			return output.getBytes("8859_1");
+		} catch (UnsupportedEncodingException e) {
+			// Shouldn't be possible as this is a JVM default charset
+			logger.warn("Couldn't use 8859_1 charset",e);
+			return output.getBytes();
 		}
-		return output.getBytes();
 	}
 
 	/* This is an alternate base64 encoder, this is required as
@@ -153,15 +159,16 @@ public class DH1080 {
 	 * not be used for anything else.
 	 */
 	public static String encodeB64(byte[] input) {
-		int i;
+		int i,j;
 		char m,t;
 		String output = "";
 
 		m=0x80;
-		for (i=0,t=0; i<(input.length<<3); i++){
+		for (i=0,j=0,t=0; i<(input.length<<3); i++){
 			if ((input[(i>>3)]&m) != 0) {
 				t|=1;
 			}
+			j++;
 			if (((int)(m>>=1)) == 0) {
 				m=0x80;
 			}
@@ -173,7 +180,7 @@ public class DH1080 {
 		}
 		m=(char)(5-(i%6));
 		t<<=m;
-		if (((int)m) != 0) {
+		if (m != 0) {
 			output += B64.charAt(t);
 		}
 		return output;

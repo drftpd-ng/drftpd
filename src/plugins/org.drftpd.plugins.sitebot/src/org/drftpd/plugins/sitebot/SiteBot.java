@@ -46,7 +46,6 @@ import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.config.ServerConfig;
 import org.drftpd.plugins.sitebot.config.SiteBotConfig;
-import org.drftpd.util.Blowfish;
 import org.drftpd.vfs.DirectoryHandle;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
@@ -1266,6 +1265,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 				}
 				try {
 					message = cipher.decrypt(message);
+					logger.debug(message);
 				} catch (UnsupportedEncodingException e) {
 					/* Can't really happen, as the character set hardcoded
 					 * in Blowfish is a default JVM character set and therefore

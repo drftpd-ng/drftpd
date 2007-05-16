@@ -26,7 +26,6 @@ import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.util.Blowfish;
 
 /**
  * @author djb61
@@ -82,8 +81,10 @@ public class UserDetails {
 	}
 
 	protected void setBlowCipher(String blowKey) {
+		logger.debug("blowkey "+blowKey);
 		_cipher = new Blowfish(blowKey);
 		_blowKey = blowKey;
+		logger.debug("_blowKey "+_blowKey);
 		// If we know who the user is then update their userfile with the new key
 		if (_ftpUser != null) {
 			try {
