@@ -17,6 +17,12 @@
  */
 package org.drftpd.plugins.sitebot.config;
 
+import java.util.StringTokenizer;
+
+import org.drftpd.master.config.FtpConfig;
+import org.drftpd.permissions.Permission;
+import org.drftpd.usermanager.User;
+
 /**
  * @author djb61
  * @version $Id$
@@ -29,13 +35,13 @@ public class ChannelConfig {
 
 	private String _chanKey;
 
-	private String _chanModes;
+	private Permission _perms;
 
-	public ChannelConfig(String name, String blowKey, String chanKey, String chanModes) {
+	public ChannelConfig(String name, String blowKey, String chanKey, String perms) {
 		_name = name;
 		_blowKey = blowKey;
 		_chanKey = chanKey;
-		_chanModes = chanModes;
+		_perms = new Permission(FtpConfig.makeUsers(new StringTokenizer(perms)));
 	}
 
 	public String getName() {
@@ -50,7 +56,7 @@ public class ChannelConfig {
 		return _chanKey;
 	}
 
-	public String getChanModes() {
-		return _chanModes;
+	public boolean isPermitted(User user) {
+		return _perms.check(user);
 	}
 }

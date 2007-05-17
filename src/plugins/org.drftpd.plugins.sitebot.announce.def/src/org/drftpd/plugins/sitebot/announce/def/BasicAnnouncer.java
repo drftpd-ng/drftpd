@@ -48,6 +48,8 @@ import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.plugins.sitebot.config.ChannelConfig;
+import org.drftpd.plugins.sitebot.event.InviteEvent;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -80,12 +82,13 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 		_bundle = bundle;
 		_keyPrefix = this.getClass().getName();
 		GlobalContext.getEventService().subscribe(DirectoryFtpEvent.class, this);
+		GlobalContext.getEventService().subscribe(InviteEvent.class, this);
 		GlobalContext.getEventService().subscribe(SlaveEvent.class, this);
 	}
 
 	public String[] getEventTypes() {
 		String[] types = {"mkdir","request","reqfilled","rmdir","wipe","pre","addslave",
-				"delslave","store"};
+				"delslave","store","invite"};
 		return types;
 	}
 
@@ -94,6 +97,8 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 			handleDirectoryFtpEvent((DirectoryFtpEvent) event);
 		} else if (event instanceof SlaveEvent) {
 			handleSlaveEvent((SlaveEvent) event);
+		} else if (event instanceof InviteEvent) {
+			handleInviteEvent((InviteEvent) event);
 		}
 	}
 
@@ -146,6 +151,24 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".addslave", env, _bundle), "addslave");
 		} else if (event.getCommand().equals("DELSLAVE")) {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".delslave", env, _bundle), "delslave");
+		}
+	}
+
+	private void handleInviteEvent(InviteEvent event) {
+		if (event.getTargetBot() == null || _config.getBot().getBotName().equalsIgnoreCase(event.getTargetBot())) {
+			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			env.add("user", event.getUser().getName());
+			env.add("nick", event.getIrcNick());
+			if (event.getCommand().equals("INVITE")) {
+				outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".invite.success", env, _bundle), "invite");
+				for (ChannelConfig chan : _config.getBot().getConfig().getChannels()) {
+					if (chan.isPermitted(event.getUser())) {
+						_config.getBot().sendInvite(event.getIrcNick(), chan.getName());
+					}
+				}
+			} else if (event.getCommand().equals("BINVITE")) {
+				outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".invite.failed", env, _bundle), "invite");
+			}
 		}
 	}
 

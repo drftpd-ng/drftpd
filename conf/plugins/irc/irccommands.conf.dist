@@ -294,3 +294,14 @@ filtered_sections REQUESTS
 input all
 output source
 }
+
+invite {
+plugin org.drftpd.plugins.sitebot
+class commands.UserHandler
+method doInvite
+perms *
+help Invite yourself into irc channels using the sitebot
+help.specific ${command} <username> <password>
+input private
+output source
+}

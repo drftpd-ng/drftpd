@@ -15,8 +15,9 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.event;
+package org.drftpd.plugins.sitebot.event;
 
+import org.drftpd.event.Event;
 import org.drftpd.usermanager.User;
 
 /**
@@ -29,10 +30,13 @@ public class InviteEvent extends Event {
 
 	private User _user;
 
-	public InviteEvent(String command, String ircUser, User user) {
+	private String _targetBot;
+
+	public InviteEvent(String command, String ircUser, User user, String targetBot) {
 		super(command, System.currentTimeMillis());
 		_ircNick = ircUser;
 		_user = user;
+		_targetBot = targetBot;
 	}
 
 	public String getIrcNick() {
@@ -41,5 +45,9 @@ public class InviteEvent extends Event {
 
 	public User getUser() {
 		return _user;
+	}
+
+	public String getTargetBot() {
+		return _targetBot;
 	}
 }

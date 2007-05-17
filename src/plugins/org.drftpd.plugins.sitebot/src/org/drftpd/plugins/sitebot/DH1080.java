@@ -159,16 +159,15 @@ public class DH1080 {
 	 * not be used for anything else.
 	 */
 	public static String encodeB64(byte[] input) {
-		int i,j;
+		int i;
 		char m,t;
 		String output = "";
 
 		m=0x80;
-		for (i=0,j=0,t=0; i<(input.length<<3); i++){
+		for (i=0,t=0; i<(input.length<<3); i++){
 			if ((input[(i>>3)]&m) != 0) {
 				t|=1;
 			}
-			j++;
 			if (((int)(m>>=1)) == 0) {
 				m=0x80;
 			}
@@ -180,7 +179,7 @@ public class DH1080 {
 		}
 		m=(char)(5-(i%6));
 		t<<=m;
-		if (m != 0) {
+		if (((int)m) != 0) {
 			output += B64.charAt(t);
 		}
 		return output;

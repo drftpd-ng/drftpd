@@ -35,16 +35,17 @@ public class ServiceCommand extends Session {
 	public static final Key IDENT = new Key(ServiceCommand.class, "ident",
 			String.class);
 
+	public static final Key IRCUSER = new Key(ServiceCommand.class,"ircuser",
+			UserDetails.class);
+
 	private SiteBot _bot;
 
 	private ArrayList<OutputWriter> _outputs;
 
-	private UserDetails _runningUser;
-
 	public ServiceCommand(SiteBot bot, ArrayList<OutputWriter> outputs, UserDetails runningUser, String ident) {
 		_bot = bot;
 		_outputs = outputs;
-		_runningUser = runningUser;
+		setObject(IRCUSER,runningUser);
 		setObject(IDENT,ident);
 	}
 
@@ -60,6 +61,14 @@ public class ServiceCommand extends Session {
 
 	public String getIdent() {
 		return (String) getObject(IDENT, null);
+	}
+
+	public UserDetails getIrcUser() {
+		return (UserDetails) getObject(IRCUSER, null);
+	}
+
+	public SiteBot getBot() {
+		return _bot;
 	}
 
 	public boolean isSecure() {

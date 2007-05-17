@@ -208,4 +208,8 @@ public class AnnounceConfig {
 		loadConfig(GlobalContext.getGlobalContext().getPluginsConfig()
 				.getPropertiesForPlugin(_confDir+"/ircannounce.conf"));
 	}
+
+	public SiteBot getBot() {
+		return _bot;
+	}
 }

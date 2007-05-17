@@ -157,4 +157,8 @@ public class UserDetails {
 	protected void removeCommandSession(ServiceCommand session) {
 		_commandSessions.remove(session);
 	}
+
+	public String getNick() {
+		return _nick;
+	}
 }

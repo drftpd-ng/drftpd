@@ -87,5 +87,5 @@
 # The above example will result in all invite events being announced in #siteopchannel,
 # any other event type, such as shutdown or slave events will be announced in #mainchannel
 default.section.1=*
-default.section.1.destination=#drftpd
-default.destination=#drftpd
+default.section.1.destination=public
+default.destination=public

@@ -1318,19 +1318,19 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	 */
 	protected void onNotice(String sourceNick, String sourceLogin, String sourceHostname, String target, String notice) {
 		DH1080 exchange = null;
-		if (notice.startsWith("DH1080_INIT") && _config.getDH1080Enabled()) {
+		if (notice.startsWith("DH1080_INIT") && _config.getDH1080Enabled() && _config.getBlowfishEnabled()) {
 			notice = notice.trim().substring(12);
 			exchange = new DH1080();
 
 			// Send our public key back to the sender
 			sendNotice(sourceNick, "DH1080_FINISH "+exchange.getPublicKey());
-		} else if (notice.startsWith("DH1080_FINISH") && _config.getDH1080Enabled()) {
+		} else if (notice.startsWith("DH1080_FINISH") && _config.getDH1080Enabled() && _config.getBlowfishEnabled()) {
 			notice = notice.trim().substring(14);
 			exchange = _dh1080.get(sourceNick);
 			// For security reasons remove the DH1080 object from the map as we no longer need it
 			_dh1080.remove(sourceNick);
 		}
-		if (_config.getDH1080Enabled()) {
+		if (_config.getDH1080Enabled() && _config.getBlowfishEnabled()) {
 			if (exchange == null) {
 				// Somehow we got a response to a DH1080 session we didn't initiate, ignore it
 			} else {

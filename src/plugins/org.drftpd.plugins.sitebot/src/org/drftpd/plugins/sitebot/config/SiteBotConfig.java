@@ -160,9 +160,9 @@ public class SiteBotConfig {
 				break;
 			}
 			String chanKey = cfg.getProperty("channel."+i+".chankey");
-			String chanModes = cfg.getProperty("channel."+i+".chanmodes");
+			String chanPerms = cfg.getProperty("channel."+i+".perms");
 			String blowKey = cfg.getProperty("channel."+i+".blowkey");
-			_channels.add(new ChannelConfig(chanName,blowKey,chanKey,chanModes));
+			_channels.add(new ChannelConfig(chanName,blowKey,chanKey,chanPerms));
 		}
 		_commandTrigger = cfg.getProperty("command.trigger");
 		_channelAutoJoin = cfg.getProperty("channel.autojoin").equalsIgnoreCase("true");

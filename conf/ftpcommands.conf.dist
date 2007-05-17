@@ -1056,3 +1056,13 @@ max 25
 # specify the sections to exclude from output (space separated)
 filtered_sections REQUESTS
 }
+
+SITE INVITE {
+plugin org.drftpd.plugins.sitebot
+class commands.UserHandler
+method doSITE_INVITE
+perms *
+help Invite yourself to irc channels using the sitebot
+help.specific ${command} <ircnick>
+help.specific ${command} <ircnick> <botname>
+}
