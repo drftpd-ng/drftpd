@@ -47,9 +47,9 @@ public class SiteBotWrapper implements PluginInterface {
 		_bots.add(bot);
 	}
 
-	public void stopPlugin() {
+	public void stopPlugin(String reason) {
 		for (SiteBot bot : _bots) {
-			bot.quitServer("Terminated");
+			bot.terminate(reason);
 		}
 	}
 

@@ -32,6 +32,14 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
 
@@ -41,7 +49,10 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponseInterface;
+import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.ReloadEvent;
+import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.exceptions.FatalException;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.config.ServerConfig;
@@ -89,7 +100,8 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 
 	// Outgoing message stuff.
 	private Queue _outQueue = new Queue();
-	private HashMap<String,OutputWriter> _writers = new HashMap<String,OutputWriter>();
+	private ConcurrentHashMap<String,OutputWriter> _writers = new ConcurrentHashMap<String,OutputWriter>();
+	private ThreadPoolExecutor _pool;
 
 	// A HashMap of channels that points to a selfreferential HashMap of
 	// User objects (used to remember which users are in which channels).
@@ -120,13 +132,14 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	// An ArrayList to hold references to announce plugins we have connected
 	private ArrayList<AnnounceInterface> _announcers = new ArrayList<AnnounceInterface>();
 	private AnnounceConfig _announceConfig = null;
+	private ArrayList<String> _eventTypes = new ArrayList<String>();
 
 	// Default settings for the PircBot.
 	private String _version;
-	private boolean _verbose = false;
 	private String _nick = null;
 	private String _ctcpVersion = "DrFTPD SiteBot ";
 	private String _finger = "You ought to be arrested for fingering a bot!";
+	private boolean _isTerminated = false;
 
 	// A HashMap to store the available prefixes and associated mode operator
 	private HashMap<String,String> _userPrefixes = new HashMap<String,String>();
@@ -134,7 +147,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	private String _userPrefixOrder = "@+";
 	private String _channelPrefixes = "#&+!";
 
-	public SiteBot(String confDir) {
+	public SiteBot(String confDir) throws FatalException {
 		_confDir = confDir;
 		_config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
 				.getPropertiesForPlugin(confDir+"/irc.conf"));
@@ -168,8 +181,20 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		_commandManager = GlobalContext.getGlobalContext().getCommandManager();
 		_commandManager.initialize(_cmds, themeDir);
 
+		// Initialise the thread pool for executing commands
+		int maxCommands = _config.getCommandsMax();
+		if (_config.getCommandsQueue()) {
+			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
+	                60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+	                new CommandThreadFactory());
+		} else if (_config.getCommandsBlock()) {
+			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
+	                60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+	                new CommandThreadFactory());
+		} else {
+			throw new FatalException("commands.full has invalid setting in irc.conf");
+		}
 		try {
-			setVerbose(true);
 			setEncoding(_config.getCharset());
 			connect();
 		} catch (Exception e) {
@@ -181,6 +206,8 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		
 		// Subscribe to events
 		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
+		GlobalContext.getEventService().subscribe(LoadPluginEvent.class,this);
+		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class,this);
 	}
 
 
@@ -227,7 +254,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 			else {
 				socket = _factory.createSocket(_server, _port, InetAddress.getByName(bindAddress), 0);
 			}
-			this.log("*** Connected to server.");
+			logger.info("*** Connected to server.");
 		}
 		catch (IOException e) {
 			// Something failed during connecting, call reconnect() to try another server
@@ -294,7 +321,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 				}
 				else if (code.equals("439")) {
 					// seems to be sent from some servers to trick fake clients into disconnecting
-					log("Received response code 439 from server.  Ignoring as this shouldn't mean anything as it is sometimes used to trap bots and spammers.");
+					logger.info("Received response code 439 from server.  Ignoring as this shouldn't mean anything as it is sometimes used to trap bots and spammers.");
 				}
 				else if (code.startsWith("5") || code.startsWith("4")) {
 					socket.close();
@@ -306,7 +333,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 
 		}
 
-		this.log("*** Logged onto server.");
+		logger.info("*** Logged onto server.");
 
 		// This makes the socket timeout on read operations after 5 minutes.
 		// Maybe in some future version I will let the user change this at runtime.
@@ -726,32 +753,6 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 
 
 	/**
-	 * Adds a line to the log.  This log is currently output to the standard
-	 * output and is in the correct format for use by tools such as pisg, the
-	 * Perl IRC Statistics Generator.  You may override this method if you wish
-	 * to do something else with log entries.
-	 * Each line in the log begins with a number which
-	 * represents the logging time (as the number of milliseconds since the
-	 * epoch).  This timestamp and the following log entry are separated by
-	 * a single space character, " ".  Outgoing messages are distinguishable
-	 * by a log entry that has ">>>" immediately following the space character
-	 * after the timestamp.  DCC events use "+++" and warnings about unhandled
-	 * Exceptions and Errors use "###".
-	 *  <p>
-	 * This implementation of the method will only cause log entries to be
-	 * output if the PircBot has had its verbose mode turned on by calling
-	 * setVerbose(true);
-	 * 
-	 * @param line The line to add to the log.
-	 */
-	public void log(String line) {
-		if (_verbose) {
-			logger.debug(line);
-		}
-	}
-
-
-	/**
 	 * This method handles events when any line of text arrives from the server,
 	 * then calling the appropriate method in the PircBot.  This method is
 	 * protected and only called by the InputThread for this instance.
@@ -765,7 +766,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		if (line.length() == 0) {
 			return;
 		}
-		this.log(line);
+		logger.debug(line);
 
 		// Check for server pings.
 		if (line.startsWith("PING ")) {
@@ -975,6 +976,10 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		}
 
 		// Join channels
+		joinChannels();
+	}
+
+	private void joinChannels() {
 		for (ChannelConfig chan : _config.getChannels()) {
 			if (_config.getBlowfishEnabled()) {
 				String chanKey = chan.getBlowKey();
@@ -992,7 +997,10 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 			else {
 				_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),null,false));
 			}
-			joinChannel(chan);
+			// Check whether we are in the channel, if not then join
+			if (!_channels.containsKey(chan.getName())) {
+				joinChannel(chan);
+			}
 		}
 	}
 
@@ -1017,7 +1025,9 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	 */
 	protected void onDisconnect() {
 		try {
-			reconnect();
+			if (!_isTerminated) {
+				reconnect();
+			}
 		} catch (Exception e) {
 			logger.warn("Error connecting to server",e);
 		}
@@ -2214,19 +2224,6 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 
 
 	/**
-	 * Sets the verbose mode. If verbose mode is set to true, then log entries
-	 * will be printed to the standard output. The default value is false and
-	 * will result in no output. For general development, we strongly recommend
-	 * setting the verbose mode to true.
-	 *
-	 * @param verbose true if verbose mode is to be used.  Default is false.
-	 */
-	public final void setVerbose(boolean verbose) {
-		_verbose = verbose;
-	}
-
-
-	/**
 	 * Sets the internal nick of the bot.  This is only to be called by the
 	 * PircBot class in response to notification of nick changes that apply
 	 * to us.
@@ -2811,21 +2808,19 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 			if (!cmdOutputs.isEmpty()) {
 				ServiceCommand service = getUserDetails(sender,ident).getCommandSession(cmdOutputs);
 				service.setCommands(_cmds);
-				executeCommand(request,service,sender,ident);
+				try {
+					_pool.execute(new CommandThread(request,service,sender,ident));
+				} catch (RejectedExecutionException e) {
+					OutputWriter rejectWriter = null;
+					if (isPublic) {
+						rejectWriter = _writers.get(channel);
+					} else {
+						rejectWriter = getUserDetails(sender,ident).getOutputWriter();
+					}
+					rejectWriter.sendMessage("All command threads are busy, please wait and try again later");
+				}
 			}
 		}
-	}
-
-	private void executeCommand(IrcRequest request, ServiceCommand service, String nick, String ident) {
-		UserDetails user = getUserDetails(nick,ident);
-		CommandRequestInterface cmdRequest = _commandManager.newRequest( request.getCommand(),
-				request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), service, _cmds.get(request.getCommand()));
-		CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
-		if (cmdResponse != null) {
-			service.printOutput(new IrcReply(cmdResponse));
-		}
-		// Remove this command session from the user now we have completed executing it
-		user.removeCommandSession(service);
 	}
 
 	private UserDetails getUserDetails(String nick, String ident) {
@@ -2899,7 +2894,6 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	}
 
 	private void loadAnnouncers(String confDir) {
-		ArrayList<String> eventTypes = new ArrayList<String>();
 
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint anExtPoint = 
@@ -2919,7 +2913,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 				AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
 				_announcers.add(announcer);
 				for (String type : announcer.getEventTypes()) {
-					eventTypes.add(type);
+					_eventTypes.add(type);
 				}
 			}
 			catch (Exception e) {
@@ -2927,8 +2921,8 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 			}
 		}
 		// Add the fallback default type to the eventTypes list
-		eventTypes.add("default");
-		_announceConfig = new AnnounceConfig(confDir, eventTypes, this);
+		_eventTypes.add("default");
+		_announceConfig = new AnnounceConfig(confDir, _eventTypes, this);
 
 		// Initialise the announcers with the config
 		for (AnnounceInterface announcer : _announcers) {
@@ -2936,7 +2930,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		}
 	}
 
-	public HashMap<String,OutputWriter> getWriters() {
+	public ConcurrentHashMap<String,OutputWriter> getWriters() {
 		return _writers;
 	}
 
@@ -2945,10 +2939,133 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 			logger.info("Reloading conf/plugins/"+_confDir+"/irccommands.conf, origin"+((ReloadEvent)event).getOrigin());
 			loadCommands();
 			_commandManager.initialize(getCommands(), themeDir);
-			// TODO make bot part/join channels, alter channel keys after a reload of the config
 			_config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
 					.getPropertiesForPlugin(_confDir+"/irc.conf"));
+			// Just call joinChannels() , this will join us to any new channels and update details
+			// held on any existing ones
+			joinChannels();
+			// Check whether each channel we are currently in is still listed in the conf, if not then part
+			ArrayList<ChannelConfig> chanConfig = _config.getChannels();
+			ArrayList<String> partChans = new ArrayList<String>();
+			for (String channel: _channels.keySet()) {
+				boolean isConf = false;
+				for (ChannelConfig confChan : chanConfig) {
+					if (confChan.getName().equalsIgnoreCase(channel)) {
+						isConf = true;
+					}
+				}
+				if (!isConf) {
+					partChans.add(channel);
+				}
+			}
+			for (String channel : partChans) {
+				partChannel(channel,"No longer servicing this channel");
+			}
 			_announceConfig.reload();
+		} else if (event instanceof UnloadPluginEvent) {
+			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String pluginName = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
+					for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
+						AnnounceInterface announcer = iter.next();
+						if (manager.getPluginFor(announcer).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							announcer.stop();
+							logger.debug("Unloading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
+							iter.remove();
+						}
+					}
+				}
+			}
+		} else if (event instanceof LoadPluginEvent) {
+			LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String pluginName = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
+					ExtensionPoint announceExtPoint = 
+						manager.getRegistry().getExtensionPoint( 
+								"org.drftpd.plugins.sitebot", "Announce");
+					for (Extension an : announceExtPoint.getConnectedExtensions()) {
+						if (an.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							try {
+								manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
+								ClassLoader anLoader = manager.getPluginClassLoader( 
+										an.getDeclaringPluginDescriptor());
+								Class<?> anCls = anLoader.loadClass( 
+										an.getParameter("class").valueAsString());
+								AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
+								_announcers.add(announcer);
+								for (String type : announcer.getEventTypes()) {
+									_eventTypes.add(type);
+								}
+								_announceConfig.updateEventTypes(_eventTypes);
+								_announceConfig.reload();
+								announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
+							}
+							catch (Exception e) {
+								logger.warn("Error loading sitebot announcer " + 
+										an.getDeclaringPluginDescriptor().getId(),e);
+							}
+						}
+					}
+				}
+			}
 		}
+	}
+
+	protected void terminate(String reason) {
+		_isTerminated = true;
+		quitServer(reason);
+		dispose();
+	}
+
+	class CommandThread implements Runnable {
+
+		private IrcRequest _request;
+
+		private ServiceCommand _service;
+
+		private String _nick;
+
+		private String _ident;
+
+		private CommandThread(IrcRequest request, ServiceCommand service, String nick, String ident) {
+			_request = request;
+			_service = service;
+			_nick = nick;
+			_ident = ident;
+		}
+
+		public void run() {
+			UserDetails user = getUserDetails(_nick,_ident);
+			CommandRequestInterface cmdRequest = _commandManager.newRequest( _request.getCommand(),
+					_request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), _service, _cmds.get(_request.getCommand()));
+			CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
+			if (cmdResponse != null) {
+				_service.printOutput(new IrcReply(cmdResponse));
+			}
+			// Remove this command session from the user now we have completed executing it
+			user.removeCommandSession(_service);
+		}
+	}
+}
+class CommandThreadFactory implements ThreadFactory {
+
+	public static String getIdleThreadName(long threadId) {
+		return "SiteBot Command Handler-"+ threadId + " - Waiting for commands";
+	}
+
+	public Thread newThread(Runnable r) {
+		Thread t = Executors.defaultThreadFactory().newThread(r);
+		t.setName(getIdleThreadName(t.getId()));
+		return t;
 	}
 }

@@ -23,6 +23,7 @@ import java.io.LineNumberReader;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
@@ -32,9 +33,12 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventService;
+import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
 import org.drftpd.commandmanager.CommandManagerInterface;
+import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.MessageEvent;
+import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.jobmanager.JobManager;
@@ -65,7 +69,8 @@ import org.java.plugin.registry.ExtensionPoint;
  * @author zubov
  * 
  */
-public class GlobalContext {
+public class GlobalContext implements EventSubscriber {
+
 	private static final Logger logger = Logger.getLogger(GlobalContext.class);
 
 	private static GlobalContext _gctx;
@@ -471,6 +476,8 @@ public class GlobalContext {
 		loadSectionManager(getConfig().getProperties());
 		loadPluginsConfig();
 		loadPlugins();
+		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
+		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
 	}
 	
 
@@ -564,14 +571,58 @@ public class GlobalContext {
 		return eventService;
 	}
 
-	/*	*//**
-			 * @return the Bot instance
-			 * @throws ObjectNotFoundException
-			 *             if the Bot isnt loaded.
-			 */
-	/*
-	 * public SiteBot getIRCBot() throws ObjectNotFoundException { return
-	 * (SiteBot) getFtpListener(SiteBot.class); }
-	 */
-	// Can enable functions for major plugins after the VFS is integrated
+	public void onEvent(Object event) {
+		if (event instanceof UnloadPluginEvent) {
+			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String pluginName = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
+					for (Iterator<PluginInterface> iter = _plugins.iterator(); iter.hasNext();) {
+						PluginInterface plugin = iter.next();
+						if (manager.getPluginFor(plugin).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							plugin.stopPlugin("Plugin being unloaded");
+							logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
+							iter.remove();
+						}
+					}
+				}
+			}
+		} else if (event instanceof LoadPluginEvent) {
+			LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String pluginName = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
+					ExtensionPoint pluginExtPoint = 
+						manager.getRegistry().getExtensionPoint( 
+								"master", "Plugin");
+					for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
+						if (plugin.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							try {
+								manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+								ClassLoader pluginLoader = manager.getPluginClassLoader( 
+										plugin.getDeclaringPluginDescriptor());
+								Class<?> pluginCls = pluginLoader.loadClass( 
+										plugin.getParameter("class").valueAsString());
+								PluginInterface newPlugin = (PluginInterface) pluginCls.newInstance();
+								newPlugin.startPlugin();
+								_plugins.add(newPlugin);
+							}
+							catch (Exception e) {
+								logger.warn("Error loading plugin " + 
+										plugin.getDeclaringPluginDescriptor().getId(),e);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }

@@ -148,13 +148,13 @@ public class UserDetails {
 		return _writer;
 	}
 
-	protected ServiceCommand getCommandSession(ArrayList<OutputWriter> outputs) {
+	protected synchronized ServiceCommand getCommandSession(ArrayList<OutputWriter> outputs) {
 		ServiceCommand newSession = new ServiceCommand(_bot, outputs, this, _ident);
 		_commandSessions.add(newSession);
 		return newSession;
 	}
 
-	protected void removeCommandSession(ServiceCommand session) {
+	protected synchronized void removeCommandSession(ServiceCommand session) {
 		_commandSessions.remove(session);
 	}
 

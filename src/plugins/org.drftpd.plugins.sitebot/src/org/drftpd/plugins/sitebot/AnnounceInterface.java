@@ -29,5 +29,7 @@ public interface AnnounceInterface {
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle);
 
+	public void stop();
+
 	public String[] getEventTypes();
 }

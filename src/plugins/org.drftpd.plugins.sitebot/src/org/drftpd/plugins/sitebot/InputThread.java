@@ -25,12 +25,16 @@ import java.io.StringWriter;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Modified from PircBot by Paul James Mutton, http://www.jibble.org/
  * @author djb61
  * @version $Id$
  */
 public class InputThread extends Thread {
+
+	private static final Logger logger = Logger.getLogger(InputThread.class);
 
 	private SiteBot _bot = null;
 	private Socket _socket = null;
@@ -109,16 +113,15 @@ public class InputThread extends Thread {
 							t.printStackTrace(pw);
 							pw.flush();
 							StringTokenizer tokenizer = new StringTokenizer(sw.toString(), "\r\n");
-							synchronized (_bot) {
-								_bot.log("### Your implementation of PircBot is faulty and you have");
-								_bot.log("### allowed an uncaught Exception or Error to propagate in your");
-								_bot.log("### code. It may be possible for PircBot to continue operating");
-								_bot.log("### normally. Here is the stack trace that was produced: -");
-								_bot.log("### ");
-								while (tokenizer.hasMoreTokens()) {
-									_bot.log("### " + tokenizer.nextToken());
-								}
+							logger.warn("### There is a bug in the SiteBot code which");
+							logger.warn("### allowed an uncaught Exception or Error to propagate in the");
+							logger.warn("### code. It may be possible for the SiteBot to continue operating");
+							logger.warn("### normally. Here is the stack trace that was produced: -");
+							logger.warn("### ");
+							while (tokenizer.hasMoreTokens()) {
+								logger.warn("### " + tokenizer.nextToken());
 							}
+
 						}
 					}
 					if (line == null) {
@@ -147,7 +150,7 @@ public class InputThread extends Thread {
 		}
 
 		if (!_disposed) {
-			_bot.log("*** Disconnected.");        
+			logger.info("*** Disconnected.");        
 			_isConnected = false;
 			_bot.onDisconnect();
 		}

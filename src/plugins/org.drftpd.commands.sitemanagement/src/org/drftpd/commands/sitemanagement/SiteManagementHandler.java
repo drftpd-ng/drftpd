@@ -40,12 +40,9 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.event.ConnectionEvent;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.java.plugin.JpfException;
@@ -156,13 +153,6 @@ public class SiteManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_PLUGINS(CommandRequest request) {
-
-		/*CommandResponse response = new CommandResponse(200, "Command ok");
-		response.addComment("Plugins loaded:");
-		for (FtpListener listener : GlobalContext.getGlobalContext().getFtpListeners()) {
-			response.addComment(listener.getClass().getName());
-		}
-		return response;*/
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		response.addComment("Plugins loaded:");
 		ArrayList<String> plugins = new ArrayList<String>();
@@ -193,9 +183,6 @@ public class SiteManagementHandler extends CommandInterface {
 			}
 
 			GlobalContext.getEventService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
-			// can't reload commands for now
-			//conn.getGlobalContext().getConnectionManager()
-				//	.getCommandManagerFactory().reload();
 
 		} catch (IOException e) {
 			logger.log(Level.FATAL, "Error reloading config", e);

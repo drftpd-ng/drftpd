@@ -56,6 +56,12 @@ public class SiteBotConfig {
 
 	private String _charset;
 
+	private boolean _commandsBlock = false;
+
+	private int _commandsMax = 1;
+
+	private boolean _commandsQueue = false;
+
 	private String _commandTrigger;
 
 	private ArrayList<String> _connectCommands = new ArrayList<String>();
@@ -174,6 +180,12 @@ public class SiteBotConfig {
 		_blowfishPunishReason = cfg.getProperty("blowfish.unencrypted.reason");
 		_localBindHost = cfg.getProperty("bind.host");
 		_botName = cfg.getProperty("bot.name");
+		_commandsMax = Integer.parseInt(cfg.getProperty("commands.max"));
+		if (cfg.getProperty("commands.full").equalsIgnoreCase("block")) {
+			_commandsBlock = true;
+		} else if (cfg.getProperty("commands.full").equalsIgnoreCase("queue")) {
+			_commandsQueue = true;
+		}
 	}
 
 	public boolean getAutoNick() {
@@ -297,5 +309,17 @@ public class SiteBotConfig {
 
 	public String getCTCPVersion() {
 		return _ctcpVersion;
+	}
+
+	public int getCommandsMax() {
+		return _commandsMax;
+	}
+
+	public boolean getCommandsBlock() {
+		return _commandsBlock;
+	}
+
+	public boolean getCommandsQueue() {
+		return _commandsQueue;
 	}
 }

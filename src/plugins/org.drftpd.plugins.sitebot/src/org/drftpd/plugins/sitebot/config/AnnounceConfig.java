@@ -212,4 +212,8 @@ public class AnnounceConfig {
 	public SiteBot getBot() {
 		return _bot;
 	}
+
+	public void updateEventTypes(ArrayList<String> eventTypes) {
+		_eventTypes = eventTypes;
+	}
 }

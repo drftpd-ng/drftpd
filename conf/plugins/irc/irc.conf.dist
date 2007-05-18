@@ -127,6 +127,17 @@ channel.autojoin=true
 # do not change anything in this section unless you are sure of what it does
 # and what the consequences may be
 
+# Allow more than one command to be executed at once, this controls the maximum
+# number of commands that can be running at any given time. If you want the aborting
+# of commands to work then this must be greater than 1 and ideally quite a bit more
+commands.max=5
+
+# Behaviour when max commands are running, there are 2 options for this setting,
+# these are "block" and "queue", in queue mode commands will be queued and executed
+# when other commands are finished, in block mode a command will be rejected when
+# the max commands are already running.
+commands.full=queue
+
 # Local bind address to use on machines with multiple IPs. This can be set to
 # either a hostname or an IP address, using a hostname is not advised if the
 # DNS entry for it points to multiple IPs. A blank or undefined entry here

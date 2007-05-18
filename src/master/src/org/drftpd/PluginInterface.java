@@ -25,5 +25,5 @@ public interface PluginInterface {
 
 	public void startPlugin();
 
-	public void stopPlugin();
+	public void stopPlugin(String reason);
 }

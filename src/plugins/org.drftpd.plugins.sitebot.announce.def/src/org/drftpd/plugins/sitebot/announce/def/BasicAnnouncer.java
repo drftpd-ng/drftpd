@@ -86,6 +86,12 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 		GlobalContext.getEventService().subscribe(SlaveEvent.class, this);
 	}
 
+	public void stop() {
+		GlobalContext.getEventService().unsubscribe(DirectoryFtpEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(InviteEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(SlaveEvent.class, this);
+	}
+
 	public String[] getEventTypes() {
 		String[] types = {"mkdir","request","reqfilled","rmdir","wipe","pre","addslave",
 				"delslave","store","invite"};

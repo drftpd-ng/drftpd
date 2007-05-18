@@ -17,13 +17,11 @@
  */
 package org.drftpd.commands.slavemanagement;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
