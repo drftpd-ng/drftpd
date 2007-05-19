@@ -35,10 +35,6 @@ import org.drftpd.vfs.InodeHandle;
  *          zubov $
  */
 public abstract class SlaveSelectionManagerInterface {
-	public SlaveSelectionManagerInterface() throws IOException {
-		reload();
-	}
-	
 	public abstract void reload() throws IOException;
 
 	public abstract RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file)

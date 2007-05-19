@@ -30,6 +30,7 @@ import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
 
@@ -38,9 +39,13 @@ import org.drftpd.vfs.InodeHandleInterface;
  * @version $Id$
  */
 public class FilterChain {
+	private static Class[] SIG = new Class[] { int.class, Properties.class };
+	
 	private String _cfgfileName;
 
 	private ArrayList<Filter> _filters;
+	
+	private CaseInsensitiveHashMap<String, Class> _filtersMap;
 
 	protected FilterChain() {
 	}
@@ -49,9 +54,9 @@ public class FilterChain {
 		return new ArrayList<Filter>(_filters);
 	}
 
-	public FilterChain(String cfgFileName)
-			throws FileNotFoundException, IOException {
+	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class> filtersMap) throws FileNotFoundException, IOException {
 		_cfgfileName = cfgFileName;
+		_filtersMap = filtersMap;
 		reload();
 	}
 
@@ -100,27 +105,23 @@ public class FilterChain {
 		int i = 1;
 
 		for (;; i++) {
-			String type = p.getProperty(i + ".filter");
+			String filterName = p.getProperty(i + ".filter");
 
-			if (type == null) {
+			if (filterName == null) {
 				break;
 			}
 
-			if (type.indexOf('.') == -1) {
-				type = "org.drftpd.slaveselection.filter."
-						+ type.substring(0, 1).toUpperCase()
-						+ type.substring(1) + "Filter";
+			if (!_filtersMap.containsKey(filterName)) {
+				SlaveSelectionManager.logger.error(filterName + " wasn't loaded.");
+				continue;
 			}
 
 			try {
-				Class[] SIG = new Class[] { int.class, Properties.class };
-
-				Filter filter = (Filter) Class.forName(type)
-						.getConstructor(SIG).newInstance(
-								new Object[] { new Integer(i), p });
+				Class clazz = _filtersMap.get(filterName);
+				Filter filter = (Filter) clazz.getConstructor(SIG).newInstance(new Object[] { new Integer(i), p });
 				filters.add(filter);
 			} catch (Exception e) {
-				throw new FatalException(i + ".filter = " + type, e);
+				throw new FatalException(i + ".filter = " + filterName, e);
 			}
 		}
 

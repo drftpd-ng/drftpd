@@ -22,28 +22,80 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.log4j.Logger;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.jobmanager.Job;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.vfs.InodeHandle;
+import org.java.plugin.PluginLifecycleException;
+import org.java.plugin.PluginManager;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @author mog
  * @version $Id$
  */
 public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
+	protected static final Logger logger = Logger.getLogger(SlaveSelectionManager.class);
+			
 	private FilterChain _downChain;
 	private FilterChain _upChain;
 	private FilterChain _jobDownChain;
 	private FilterChain _jobUpChain;
+	
+	private CaseInsensitiveHashMap<String, Class> _filtersMap;
 
 	public SlaveSelectionManager() throws IOException {
-		super();
+		initFilters();
+		reload();
 	}
 	
+	private void initFilters() {
+		CaseInsensitiveHashMap<String, Class> filtersMap = new CaseInsensitiveHashMap<String, Class>();
+		
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("org.drftpd.slaveselection.filter", "Filter");
+		
+		for (Extension ext : exp.getAvailableExtensions()) {
+			ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
+			String pluginId = ext.getDeclaringPluginDescriptor().getId();
+			String filterName = ext.getParameter("FilterName").valueAsString();
+			String className = ext.getParameter("ClassName").valueAsString();
+			
+			try {
+				if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor())) {
+					manager.activatePlugin(pluginId);
+				}
+				
+				Class clazz = classLoader.loadClass(className);
+				if (clazz.getSuperclass() != Filter.class) {
+					logger.error(className + " does not extend Filter.class");
+					continue;
+				}
+				
+				filtersMap.put(filterName, clazz);				
+			} catch (ClassNotFoundException e) {
+				logger.error(className + ": was not found", e);
+				continue;
+			} catch (PluginLifecycleException e) {
+				logger.debug("Error while activating plugin: "+pluginId, e);
+				continue;
+			}
+		}
+		
+		_filtersMap = filtersMap;
+	}
+	
+	public CaseInsensitiveHashMap<String, Class> getFiltersMap() {
+		// we dont want to pass this object around allowing it to be modified, make a copy of it.
+		return (CaseInsensitiveHashMap<String, Class>) _filtersMap.clone();
+	}
+
 	/**
 	 * Checksums call us with null BaseFtpConnection.
 	 */
@@ -101,10 +153,10 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	}
 
 	public void reload() throws FileNotFoundException, IOException {
-		_downChain = new FilterChain("conf/slaveselection-down.conf");
-		_upChain = new FilterChain("conf/slaveselection-up.conf");
-		_jobUpChain = new FilterChain("conf/slaveselection-jobup.conf");
-		_jobDownChain = new FilterChain("conf/slaveselection-jobdown.conf");
+		_downChain = new FilterChain("conf/slaveselection-down.conf", getFiltersMap());
+		_upChain = new FilterChain("conf/slaveselection-up.conf", getFiltersMap());
+		_jobUpChain = new FilterChain("conf/slaveselection-jobup.conf", getFiltersMap());
+		_jobDownChain = new FilterChain("conf/slaveselection-jobdown.conf", getFiltersMap());
 	}
 	
 	public FilterChain getFilterChain(String type) {

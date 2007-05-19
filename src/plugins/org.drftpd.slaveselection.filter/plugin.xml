@@ -13,8 +13,41 @@
 		</library>
 	</runtime>
 	<extension-point id="Filter">
+		<parameter-def id="FilterName" />
+		<parameter-def id="ClassName" />
 	</extension-point>
+	
 	<extension plugin-id="master" point-id="SlaveSelection" id="SlaveSelectionFilter">
 		<parameter id="class" value="org.drftpd.slaveselection.filter.SlaveSelectionManager"/>
+	</extension>
+	
+	<!-- Filters -->
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="BandwidthFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.BandwidthFilter"/>
+		<parameter id="FilterName" value="Bandwidth"/>
+	</extension>	
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="CycleFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.CycleFilter"/>
+		<parameter id="FilterName" value="Cycle"/>
+	</extension>	
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MatchdirFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MatchdirFilter"/>
+		<parameter id="FilterName" value="Matchdir"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MaxbandwidthFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MaxbandwidthFilter"/>
+		<parameter id="FilterName" value="Maxbandwidth"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MaxtransfersFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MaxtransfersFilter"/>
+		<parameter id="FilterName" value="Maxtransfers"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MinfreespaceFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MinfreespaceFilter"/>
+		<parameter id="FilterName" value="Minfreespace"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MintimeonlineFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MintimeonlineFilter"/>
+		<parameter id="FilterName" value="Mintimeonline"/>
 	</extension>
 </plugin>
