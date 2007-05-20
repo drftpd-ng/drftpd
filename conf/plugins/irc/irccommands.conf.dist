@@ -305,3 +305,34 @@ help.specific ${command} <username> <password>
 input private
 output source
 }
+
+master-uptime {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doMasterUptime
+perms =siteop
+help Will show current master uptime
+input all
+output source
+}
+
+slave-uptime {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlaveUptime
+perms =siteop
+help Will show current slave uptime
+help.specific ${command} <slave>
+input all
+output source
+}
+
+slaves-uptime {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlavesUptime
+perms =siteop
+help Will show current slaves uptime
+input all
+output source
+}

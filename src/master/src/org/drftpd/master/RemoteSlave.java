@@ -47,6 +47,7 @@ import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.SlaveEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.FatalException;
@@ -110,6 +111,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private HostMaskCollection _ipMasks;
 
 	private Properties _keysAndValues;
+	
+	private KeyedMap<Key, Object> _transientKeyedMap;
 
 	private LinkedList<QueuedOperation> _renameQueue;
 
@@ -130,6 +133,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public RemoteSlave(String name) {
 		_name = name;
 		_keysAndValues = new Properties();
+		_transientKeyedMap = new KeyedMap<Key, Object>();
 		_ipMasks = new HostMaskCollection();
 		_renameQueue = new LinkedList<QueuedOperation>();
 	}
@@ -214,6 +218,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public Properties getProperties() {
 		synchronized (_keysAndValues) {
 			return (Properties) _keysAndValues.clone();
+		}
+	}
+	
+	public KeyedMap<Key, Object> getTransientKeyedMap() {
+		synchronized (_transientKeyedMap) {
+			return _transientKeyedMap;
 		}
 	}
 

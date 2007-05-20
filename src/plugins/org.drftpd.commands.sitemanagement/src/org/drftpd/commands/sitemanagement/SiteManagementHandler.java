@@ -175,13 +175,8 @@ public class SiteManagementHandler extends CommandInterface {
 			GlobalContext.getGlobalContext().loadPluginsConfig();
 			GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
 
-			try {
-				GlobalContext.getGlobalContext().getJobManager()
-						.reload();
-			} catch (IllegalStateException e1) {
-				// not loaded, don't reload
-			}
-
+			GlobalContext.getGlobalContext().getJobManager().reload();
+	
 			GlobalContext.getEventService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
 
 		} catch (IOException e) {

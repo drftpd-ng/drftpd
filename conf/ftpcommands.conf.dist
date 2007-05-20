@@ -1066,3 +1066,28 @@ help Invite yourself to irc channels using the sitebot
 help.specific ${command} <ircnick>
 help.specific ${command} <ircnick> <botname>
 }
+
+SITE MASTERUPTIME {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doMasterUptime
+perms =siteop
+help Will show current master uptime
+}
+
+SITE SLAVEUPTIME {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlaveUptime
+perms =siteop
+help Will show current slave uptime
+help.specific ${command} <slave>
+}
+
+SITE SLAVESUPTIME {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlavesUptime
+perms =siteop
+help Will show current slaves uptime
+}
