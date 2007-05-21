@@ -29,7 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.drftpd.slave.diskselection.DiskSelection;
+import org.drftpd.slave.diskselection.DiskSelectionInterface;
 
 import se.mog.io.File;
 
@@ -41,12 +41,13 @@ public class RootCollection {
 	private static final Logger logger = Logger.getLogger(RootCollection.class);
 
 	private Collection<Root> _roots = null;
+	private DiskSelectionInterface _diskSelection = null;
 
-	public RootCollection(Collection<Root> roots) throws IOException {
+	public RootCollection(DiskSelectionInterface diskSelection, Collection<Root> roots) throws IOException {
 		/** sanity checks * */
 		validateRoots(roots);
 		_roots = new ArrayList<Root>(roots);
-		DiskSelection.init(this);
+		_diskSelection = diskSelection;
 	}
 	
 	/**
@@ -95,7 +96,7 @@ public class RootCollection {
 	 * @throws IOException
 	 */
 	public File getARootFileDir(String dir) throws IOException {
-		Root bestRoot = DiskSelection.getDiskSelection().getBestRoot(dir);
+		Root bestRoot = _diskSelection.getBestRoot(dir);
 
 		// to avoid this error SlaveSelectionManager MUST work
 		// synchronized with DiskSelection.

@@ -259,33 +259,33 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
     		catch (InvocationTargetException e) {
     			throw e.getCause();
     		}
-    	}
-    	catch (Throwable e2) {
-    		if (e2 instanceof ImproperUsageException) {
-	    		response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-	    		String helpString = request.getProperties().getProperty("help.specific");
-	    		if (helpString == null) {
-	    			response.addComment("Bug your siteop to add help for the \""
-							+ request.getCommand() + "\" command");
-	    		}
-	    		else {
-	    			ReplacerEnvironment env = new ReplacerEnvironment();
-	    			env.add("command", request.getCommand().toUpperCase());
-	    			try {
-	    				response.addComment(SimplePrintf.jprintf(helpString,env));
-	    			}
-	    			catch (FormatterException e) {
-	    				response.addComment(request.getCommand().toUpperCase()
-	    						+ " command has an invalid help.specific definition");
-	    			}
-	    		}
+    	} catch (ImproperUsageException e) {
+    		response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+    		String helpString = request.getProperties().getProperty("help.specific");
+    		if (helpString == null) {
+    			response.addComment("Bug your siteop to add help for the \""
+						+ request.getCommand() + "\" command");
     		}
     		else {
+    			ReplacerEnvironment env = new ReplacerEnvironment();
+    			env.add("command", request.getCommand().toUpperCase());
+    			try {
+    				response.addComment(SimplePrintf.jprintf(helpString,env));
+    			}
+    			catch (FormatterException e1) {
+    				response.addComment(request.getCommand().toUpperCase()
+    						+ " command has an invalid help.specific definition");
+    			}
+    		}
+    	} catch (Throwable t) {
+    		if (!(t instanceof Error)) {
     			CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
-    			logger.error("Command "+request.getCommand()+" failed",e2);
+    			logger.error("Command "+request.getCommand()+" failed", t);
     			return cmdFailed;
     		}
+    		throw (Error) t;
     	}
+
     	commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
 		return response;
 	}

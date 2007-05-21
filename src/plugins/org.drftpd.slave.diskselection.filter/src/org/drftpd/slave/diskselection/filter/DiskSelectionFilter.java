@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.slave.diskselection;
+package org.drftpd.slave.diskselection.filter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,9 +24,15 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.slave.Root;
 import org.drftpd.slave.RootCollection;
 import org.drftpd.slave.Slave;
+import org.drftpd.slave.diskselection.DiskSelectionInterface;
+import org.java.plugin.PluginLifecycleException;
+import org.java.plugin.PluginManager;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * DiskSelection core.<br>
@@ -35,35 +41,18 @@ import org.drftpd.slave.Slave;
  * 
  * @author fr0w
  */
-public class DiskSelection {
-
+public class DiskSelectionFilter extends DiskSelectionInterface{
+	private static final Class[] SIG = new Class[] { DiskSelectionFilter.class, Properties.class, Integer.class };
 	private static final Logger logger = Logger.getLogger(Slave.class);
 
 	private ArrayList<DiskFilter> _filters;
+	private RootCollection _rootCollection;	
+	private CaseInsensitiveHashMap<String, Class> _filtersMap;
 
-	private RootCollection _rootCollection;
-
-	private static DiskSelection _diskSelection;
-
-	private DiskSelection(RootCollection rootCollection) throws IOException {
-		_rootCollection = rootCollection;
-	}
-
-	public static void init(RootCollection rootCollection) throws IOException {
-		if (_diskSelection != null) {
-			throw new RuntimeException(
-					"DiskSelection has already been initialized.");
-		}
-		_diskSelection = new DiskSelection(rootCollection);
-        _diskSelection.readConf();
-	}
-
-	public static DiskSelection getDiskSelection() {
-		if (_diskSelection == null) {
-			throw new NullPointerException(
-					"DiskSelection should already have been initialized.");
-		}
-		return _diskSelection;
+	public DiskSelectionFilter(Slave slave) throws IOException {
+		super(slave);
+		_rootCollection = slave.getRoots();
+		readConf();
 	}
 
 	public RootCollection getRootCollection() {
@@ -87,6 +76,7 @@ public class DiskSelection {
 				fis = null;
 			}
 		}
+		initFilters();
 		loadFilters(p);
 	}
 
@@ -102,29 +92,24 @@ public class DiskSelection {
 
 		logger.info("Loading DiskSelection filters...");
 
-		Class[] constructor = new Class[] { Properties.class, Integer.class };
-
 		for (;; i++) {
-			String type = p.getProperty(i + ".filter");
+			String filterName = p.getProperty(i + ".filter");
 
-			if (type == null) {
+			if (filterName == null) {
 				break;
 			}
 
-			if (type.indexOf('.') == -1) {
-				type = "org.drftpd.slave.diskselection."
-						+ type.substring(0, 1).toUpperCase()
-						+ type.substring(1) + "Filter";
+			if (!_filtersMap.containsKey(filterName)) {
+				// if we can't find one filter that will be enought to brake the whole chain.
+				throw new RuntimeException(filterName + " wasn't loaded.");
 			}
-
+			
 			try {
-				DiskFilter filter = (DiskFilter) Class.forName(type)
-						.getConstructor(constructor).newInstance(
-								new Object[] { p, new Integer(i) });
+				Class clazz = _filtersMap.get(filterName);
+				DiskFilter filter = (DiskFilter) clazz.getConstructor(SIG).newInstance(new Object[] { this, p, new Integer(i) });
 				filters.add(filter);
-				logger.info("Filter loaded: " + filter.getClass().getName());
 			} catch (Exception e) {
-				throw new RuntimeException(i + ".filter = " + type, e);
+				throw new RuntimeException(i + ".filter = " + filterName, e);
 			}
 		}
 
@@ -138,7 +123,7 @@ public class DiskSelection {
 	 * 
 	 * @throws IOException
 	 */
-	public Root getBestRoot(String path) throws IOException {
+	public Root getBestRoot(String path) {
 
 		ScoreChart sc = new ScoreChart(getRootCollection());
 		process(sc, path);
@@ -168,5 +153,41 @@ public class DiskSelection {
 
 	public ArrayList<DiskFilter> getFilters() {
 		return _filters;
+	}
+	
+	private void initFilters() {
+		CaseInsensitiveHashMap<String, Class> filtersMap = new CaseInsensitiveHashMap<String, Class>();
+		
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("org.drftpd.slave.diskselection.filter", "DiskFilter");
+		
+		for (Extension ext : exp.getAvailableExtensions()) {
+			ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
+			String pluginId = ext.getDeclaringPluginDescriptor().getId();
+			String filterName = ext.getParameter("FilterName").valueAsString();
+			String className = ext.getParameter("ClassName").valueAsString();
+			
+			try {
+				if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor())) {
+					manager.activatePlugin(pluginId);
+				}
+				
+				Class clazz = classLoader.loadClass(className);
+				if (clazz.getSuperclass() != DiskFilter.class) {
+					logger.error(className + " does not extend Filter.class");
+					continue;
+				}
+				
+				filtersMap.put(filterName, clazz);				
+			} catch (ClassNotFoundException e) {
+				logger.error(className + ": was not found", e);
+				continue;
+			} catch (PluginLifecycleException e) {
+				logger.debug("Error while activating plugin: "+pluginId, e);
+				continue;
+			}
+		}
+		
+		_filtersMap = filtersMap;
 	}
 }

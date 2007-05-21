@@ -39,6 +39,9 @@ bufferSize=0
 # 60000 = one minute
 slave.timeout=60000
 
+# DiskSelection plugin.
+# If doesn't know what that means, do NOT change this.
+diskselection=org.drftpd.slave.diskselection.filter
 
 # enabled cipher suites
 # if left empty, default set will be used

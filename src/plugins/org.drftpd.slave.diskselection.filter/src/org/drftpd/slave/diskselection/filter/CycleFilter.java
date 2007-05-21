@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.slave.diskselection;
+package org.drftpd.slave.diskselection.filter;
 
 import java.util.Properties;
 
@@ -27,8 +27,8 @@ import java.util.Properties;
  */
 public class CycleFilter extends DiskFilter {
 
-	public CycleFilter(Properties p, Integer i) {
-		super(p, i);
+	public CycleFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+		super(diskSelection, p, i);
 	}
 
 	public void process(ScoreChart sc, String path) {

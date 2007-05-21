@@ -27,4 +27,8 @@
 		<parameter-def id="Class" />
 		<parameter-def id="Method" />
 	</extension-point>
+	
+	<extension-point id="DiskSelection">
+		<parameter-def id="Class" />
+	</extension-point>
 </plugin>

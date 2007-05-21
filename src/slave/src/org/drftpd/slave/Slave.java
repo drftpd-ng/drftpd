@@ -55,7 +55,11 @@ import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.slave.diskselection.DiskSelectionInterface;
 import org.drftpd.util.PortRange;
+import org.java.plugin.PluginManager;
+import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.ExtensionPoint;
 
 import se.mog.io.File;
 import se.mog.io.PermissionDeniedException;
@@ -107,6 +111,8 @@ public class Slave {
 	private boolean _sslMaster;
 	
 	private SlaveProtocolCentral _central;
+	
+	private DiskSelectionInterface _diskSelection = null;
 
 	protected Slave() {
 
@@ -189,7 +195,9 @@ public class Slave {
 		_uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
 		_downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
 		_bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
+	
 		_roots = getDefaultRootBasket(p);
+		loadDiskSelection(p);
 
 		_transfers = new HashMap<TransferIndex, Transfer>();
 
@@ -201,9 +209,38 @@ public class Slave {
 			_portRange = new PortRange(_bufferSize);
 		}
 	}
+	
+	private void loadDiskSelection(Properties cfg) {
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("slave", "DiskSelection");
+		String desiredDiskSelection = PropertyHelper.getProperty(cfg, "diskselection");
+		
+		for (Extension ext : exp.getAvailableExtensions()) {
+			String pluginId = ext.getDeclaringPluginDescriptor().getId();
+			if (pluginId.equals(desiredDiskSelection)) {
+				ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
+				String className = ext.getParameter("Class").valueAsString();
 
-	public static RootCollection getDefaultRootBasket(Properties cfg)
-			throws IOException {
+				try {
+					if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor()))
+						manager.activatePlugin(pluginId);
+
+					Class clazz = classLoader.loadClass(className);
+					
+					_diskSelection = (DiskSelectionInterface) clazz
+											.getConstructor(new Class[] { Slave.class }).newInstance(new Object[] { this });
+				} catch (Exception e) {
+					throw new RuntimeException("Unable to load DiskSelection", e);
+				}
+			}
+		}
+		
+		if (_diskSelection == null) {
+			throw new RuntimeException("Unable to load DiskSelection");
+		}
+	}
+
+	public RootCollection getDefaultRootBasket(Properties cfg) throws IOException {
 		ArrayList<Root> roots = new ArrayList<Root>();
 
 		for (int i = 1; true; i++) {
@@ -217,7 +254,7 @@ public class Slave {
 			roots.add(new Root(rootString));
 		}
 
-		return new RootCollection(roots);
+		return new RootCollection(_diskSelection, roots);
 	}
 
 	public static void boot() throws Exception {

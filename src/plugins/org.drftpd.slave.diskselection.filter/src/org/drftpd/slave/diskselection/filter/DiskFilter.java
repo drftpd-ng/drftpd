@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.slave.diskselection;
+package org.drftpd.slave.diskselection.filter;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -29,9 +29,10 @@ import org.drftpd.slave.Root;
  * @author fr0w
  */
 public abstract class DiskFilter {
+	private DiskSelectionFilter _diskSelection;
 
-	public DiskFilter(Properties p, Integer i) {
-
+	public DiskFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+		_diskSelection = diskSelection;
 	}
 
 	protected ArrayList<AssignParser> _assignList;
@@ -44,12 +45,15 @@ public abstract class DiskFilter {
 	 */
 	public abstract void process(ScoreChart sc, String path);
 
+	public DiskSelectionFilter getDiskSelection() {
+		return _diskSelection;
+	}
+	
 	/**
 	 * @return ArrayList with 'Root' objects
 	 */
-	public static ArrayList<Root> getRootList() {
-		return DiskSelection.getDiskSelection().getRootCollection()
-				.getRootList();
+	public ArrayList<Root> getRootList() {
+		return getDiskSelection().getRootCollection().getRootList();
 	}
 
 	public static float parseMultiplier(String string) {

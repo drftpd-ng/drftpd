@@ -16,51 +16,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.slave.diskselection;
+package org.drftpd.slave.diskselection.filter;
 
 import java.util.Properties;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.PropertyHelper;
 
 /**
- * Sample configuration.
+ * This filter works this way (may look foolish)
  * 
  * <pre>
- *  X.filter=matchdir
- *  X.assign=&lt;rootNumber&gt;+100000
- *  X.match=&lt;path glob match&gt;
+ *  x.filter=priority
+ *  x.assign=1+10 2+5
  * </pre>
+ * 
+ * This means that slave.root.1 will have more chances to receive a file then
+ * slave.root.2
  * 
  * @author fr0w
  */
-public class MatchdirFilter extends DiskFilter {
 
-	private Pattern _p;
+public class PriorityFilter extends DiskFilter {
 
-	private Perl5Matcher _m = new Perl5Matcher();
-
-	private String _pattern;
-
-	public MatchdirFilter(Properties p, Integer i) {
-		super(p, i);
-		_assignList = AssignRoot.parseAssign(PropertyHelper.getProperty(p, i
-				+ ".assign"));
-		_pattern = PropertyHelper.getProperty(p, i + ".match");
-
-		try {
-			_p = new GlobCompiler().compile(_pattern,
-					GlobCompiler.CASE_INSENSITIVE_MASK);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	public PriorityFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+		super(diskSelection, p, i);
+		_assignList = AssignRoot.parseAssign(this, PropertyHelper.getProperty(p, i+ ".assign"));
 	}
 
 	public void process(ScoreChart sc, String path) {
-		if (_m.matches(path, _p)) {
-			AssignRoot.addScoresToChart(_assignList, sc);
-		}
+		AssignRoot.addScoresToChart(this, _assignList, sc);
 	}
+
 }

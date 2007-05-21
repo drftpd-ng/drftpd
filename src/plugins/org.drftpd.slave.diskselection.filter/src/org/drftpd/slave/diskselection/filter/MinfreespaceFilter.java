@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.slave.diskselection;
+package org.drftpd.slave.diskselection.filter;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -46,23 +46,20 @@ public class MinfreespaceFilter extends DiskFilter {
 
 	private float _multiplier;
 
-	public MinfreespaceFilter(Properties p, Integer i) {
-		super(p, i);
-		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i
-				+ ".minfreespace"));
-		_multiplier = DiskFilter.parseMultiplier(p.getProperty(i
-				+ ".multiplier", "0"));
-		_assignList = AssignRoot.parseAssign(p.getProperty(i 
-				+ ".assign", "all"));
+	public MinfreespaceFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+		super(diskSelection, p, i);
+		_minfreespace = Bytes.parseBytes(PropertyHelper.getProperty(p, i+ ".minfreespace"));
+		_multiplier = DiskFilter.parseMultiplier(p.getProperty(i+ ".multiplier", "0"));
+		_assignList = AssignRoot.parseAssign(this, p.getProperty(i+ ".assign", "all"));
 	}
 
 	public void process(ScoreChart sc, String path) {
-		AssignRoot.addScoresToChart(_assignList, sc);
+		AssignRoot.addScoresToChart(this, _assignList, sc);
 
 		for (Iterator iter = getRootList().iterator(); iter.hasNext();) {
 			Root o = (Root) iter.next();
 
-			if (!AssignRoot.isAssignedRoot(o, _assignList))
+			if (!AssignRoot.isAssignedRoot(this, o, _assignList))
 				continue;
 
 			long df = o.getDiskSpaceAvailable();

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.slave.diskselection;
+package org.drftpd.slave.diskselection.filter;
 
 import java.util.Properties;
 import java.util.Random;
@@ -31,8 +31,8 @@ import org.drftpd.slave.Root;
  */
 public class RandomspreadFilter extends DiskFilter {
 
-	public RandomspreadFilter(Properties p, Integer i) {
-		super(p, i);
+	public RandomspreadFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
+		super(diskSelection, p, i);
 	}
 
 	private Random _rand = new Random();

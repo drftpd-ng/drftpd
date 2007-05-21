@@ -112,8 +112,8 @@ public class FilterChain {
 			}
 
 			if (!_filtersMap.containsKey(filterName)) {
-				SlaveSelectionManager.logger.error(filterName + " wasn't loaded.");
-				continue;
+				// if we can't find one filter that will be enought to brake the whole chain.
+				throw new FatalException(filterName + " wasn't loaded.");
 			}
 
 			try {
