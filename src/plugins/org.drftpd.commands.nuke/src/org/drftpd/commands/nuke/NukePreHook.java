@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands.nuke;
 
-import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
@@ -32,17 +31,19 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class NukePreHook implements PreHookInterface {
-	private static final Logger logger = Logger.getLogger(NukePreHook.class);
-	
 	public void initialize(StandardCommandManager cManager) {
 	}
 	
 	public CommandRequestInterface doNukeCheck(CommandRequest request) {
-		logger.debug("doNukeCheck  called.");
 		String targetDir = request.getArgument();
 		DirectoryHandle currentDir = request.getCurrentDirectory();
-		String fullPath = currentDir.getPath()+"/"+targetDir;
-		logger.debug("FullPath = "+ fullPath); 
+		
+		String fullPath = "";
+		if (currentDir.getPath().equals("/")) // no need append the '/'
+			fullPath = currentDir.getPath()+targetDir;
+		else
+			fullPath = currentDir.getPath()+"/"+targetDir;
+
 		try {
 			NukeData nd = NukeBeans.getNukeBeans().get(fullPath);
 			// nuke found.

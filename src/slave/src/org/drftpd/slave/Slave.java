@@ -240,6 +240,10 @@ public class Slave {
 		}
 	}
 
+	public DiskSelectionInterface getDiskSelection() {
+		return _diskSelection;
+	}
+	
 	public RootCollection getDefaultRootBasket(Properties cfg) throws IOException {
 		ArrayList<Root> roots = new ArrayList<Root>();
 
@@ -254,7 +258,7 @@ public class Slave {
 			roots.add(new Root(rootString));
 		}
 
-		return new RootCollection(_diskSelection, roots);
+		return new RootCollection(this, roots);
 	}
 
 	public static void boot() throws Exception {
