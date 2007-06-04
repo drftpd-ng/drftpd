@@ -448,7 +448,6 @@ public class GlobalContext implements EventSubscriber {
 		try {
 			reloadFtpConfig();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			logger.debug("", e);
 		}
 		CommitManager.start();

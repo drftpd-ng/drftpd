@@ -138,8 +138,8 @@ public abstract class Session extends KeyedMap {
 		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, null), bundle);
 	}
 
-	public String jprintf(ResourceBundle bundle, String string, ReplacerEnvironment env, String user) {
-		return ReplacerUtils.jprintf(string, getReplacerEnvironment(env, getUserNull(user)), bundle);
+	public String jprintf(ResourceBundle bundle, String key, ReplacerEnvironment env, String user) {
+		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, getUserNull(user)), bundle);
 	}
 
 	/*public String jprintfException(ResourceBundle bundle, String key,

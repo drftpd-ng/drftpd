@@ -17,13 +17,19 @@
  */
 package org.drftpd.tools.ant;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Properties;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -36,7 +42,7 @@ public class ThemeTask extends Task {
 
 	private File _baseDir;
 	private File _pluginDir;
-	private HashMap<String,Properties> _themes = new HashMap<String,Properties>();
+	private HashMap<String,String> _themes = new HashMap<String,String>();
 	private final String themedir = "conf" + File.separator + "themes";
 
 	/**
@@ -58,6 +64,15 @@ public class ThemeTask extends Task {
 	 */
 	@Override
 	public void execute() throws BuildException {
+		// Get the build start time as long
+		SimpleDateFormat simpleBuildDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
+		Date buildDate = null;
+		try {
+			buildDate = simpleBuildDate.parse(getProject().getProperty("build.plugins.start"));
+		} catch (ParseException e) {
+			throw new BuildException("Plugin build timestamp not set correctly");
+		}
+		long longDate = buildDate.getTime();
 		findProperties(_pluginDir);
 		// Check all theme files we touched and write them to disk
 		for (String theme : _themes.keySet()) {
@@ -68,41 +83,44 @@ public class ThemeTask extends Task {
 				File subThemeDir = themeFile.getParentFile();
 				subThemeDir.mkdirs();
 			}
-			FileInputStream fis = null;
-			Properties existingTheme = new Properties();
-			try {
-				fis = new FileInputStream(themeFile);
-				existingTheme.load(fis);
-			} catch (IOException e) {
-				// Not a problem, just means no existing data for this theme
-			} finally {
-				try {
-					if (fis != null) {
-						fis.close();
-					}
-				} catch (IOException e) {
-					// FileInputStream already closed
-				}
+			boolean newFile = false;
+			// Delete stale file if needed
+			if (themeFile.lastModified() == 0L || themeFile.lastModified() < longDate) {
+				// Safe to try a delete even if the file doesn't exist
+				themeFile.delete();
+				newFile = true;
 			}
-			FileOutputStream fos = null;
+			FileWriter output = null;
 			try {
-				fos = new FileOutputStream(themeFile);
-				Properties themeProps = _themes.get(theme);
-				// Merge in to existing theme data if there is any
-				for (Object o : themeProps.keySet()) {
-					String key = (String) o;
-					existingTheme.setProperty(key, themeProps.getProperty(key));
+				output = new FileWriter(themeFile,true);
+				if (newFile) {
+					// Since this is the first entry in the file during this build
+					// session add the comment block at the top of the file
+					ResourceBundle commentBundle = ResourceBundle.getBundle(this.getClass().getName());
+					try {
+						for (int i = 1;; i++) {
+							log(commentBundle.getString("comment."+i));
+							output.write(commentBundle.getString("comment."+i)+"\n");
+						}
+					} catch (MissingResourceException e) {
+						// Means we reached the end of the comment block
+						output.write("\n");
+					}
 				}
-				existingTheme.store(fos,null);
+				// Append new theme data to file
+				output.write(_themes.get(theme));
+				output.flush();
 			} catch (FileNotFoundException e) {
-				log("Cannot write theme file to: "+themeFile.getParent());
+				log("Cannot write theme file to: " + themeFile.getParent());
 			} catch (IOException e) {
 				log("Error writing theme file: " + themeFile.getName());
 			} finally {
-				try {
-					fos.close();
-				} catch (IOException e) {
-					// FileOutputStream already closed
+				if (output != null) {
+					try {
+						output.close();
+					} catch (IOException e) {
+						// Just means it doesn't need closing
+					}
 				}
 			}
 		}
@@ -146,34 +164,46 @@ public class ThemeTask extends Task {
 		} else {
 			String keyPrefix = dirPrefix + "." + parts[0] + ".";
 			FileInputStream fis = null;
+			BufferedReader input = null;
 			try {
-				// Read current file into a properties object
+				// Create a BufferedReader to read the file
 				fis = new FileInputStream(file);
-				Properties input = new Properties();
-				input.load(fis);
+				input = new BufferedReader(new InputStreamReader(fis));
 
-				// Retrieve properties object for the theme this
+				// Retrieve string object for the theme this
 				// this file belongs to, if we don't have one
 				// yet then create one
-				Properties output = _themes.get(parts[1]);
-				if (output == null) {
-					output = new Properties();
-					_themes.put(parts[1], output);
+				String existing = _themes.get(parts[1]);
+				StringBuilder output = null;
+				if (existing == null) {
+					output = new StringBuilder();
+				} else {
+					output = new StringBuilder(existing);
 				}
+
+				// Add a new line to ease readability
+				output.append("\n");
 
 				// Copy all properties from file into theme
 				// adding the correct namespace prefix
-				for (Object o : input.keySet()) {
-					String key = (String) o;
-					String value = input.getProperty(key);
-					output.setProperty(keyPrefix + key, value);
+				while (input.ready()) {
+					String line = input.readLine();
+					if (line.indexOf('=') != -1) {
+						output.append(keyPrefix);
+					}
+					output.append(line);
+					output.append("\n");
 				}
+
+				// Put modified theme back in the map
+				_themes.put(parts[1], output.toString());
 			} catch (FileNotFoundException e) {
 				log("File appears to have been deleted, skipping: " + file.getName());
 			} catch (IOException e) {
 				log("Failed to load properties from: " + file.getName());
 			} finally {
 				try {
+					input.close();
 					fis.close();
 				} catch (IOException e) {
 					// FileInputStream is already closed

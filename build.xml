@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
 <project name="DRFTPD Trunk Plugin Branch" default="build" basedir=".">
 	<property name="app.name" value="drftpd" />
 	<property name="app.version" value="2.1.0" />
@@ -91,6 +92,10 @@ check - checks plug-ins integrity
 		</jar>
 		<!-- declare theme task -->
 		<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/${app.name}-tools.jar"/>
+		<!-- set plugin build timestamp -->
+		<tstamp>
+			<format property="build.plugins.start" pattern="yyyy.MM.dd HH:mm:ss.SSS" />
+		</tstamp>
 		<!-- build plugins -->
 		<antcall target="-build-plugins">
 			<param name="target" value="build" />

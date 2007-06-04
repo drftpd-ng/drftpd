@@ -186,13 +186,13 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		if (_config.getCommandsQueue()) {
 			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
 	                60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
-	                new CommandThreadFactory());
+	                new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		} else if (_config.getCommandsBlock()) {
 			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
 	                60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-	                new CommandThreadFactory());
+	                new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		} else {
-			throw new FatalException("commands.full has invalid setting in irc.conf");
+			throw new FatalException("commands.full has an invalid value in irc.conf");
 		}
 		try {
 			setEncoding(_config.getCharset());
