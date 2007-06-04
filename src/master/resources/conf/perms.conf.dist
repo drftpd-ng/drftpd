@@ -1,0 +1,100 @@
+# is displayed as the site tagline on first connection
+#login_prompt DrFTPD 2.0rc2 http://drftpd.org
+
+#allow 10 conections per slave if you have 10 slaves
+max_users	100	0
+
+# FUNCTION       | PATH     | GROUP
+# * = only wildcard recognized
+# = denotes group, - denotes user
+
+# EXAMPLES
+# upload * =siteop
+# download * -user1
+# makedir /usercanmakedir/* -user1 -user2 =group1
+
+upload			*	*
+download		*	*
+
+makedir			*	*
+
+deleteown		*	*
+delete			*	=siteop
+
+renameown		*	*
+rename			*	=siteop
+
+#allows pre in /pre/* to group siteop
+#pre				/pre/*	=siteop
+privpath /pre/*	=siteop
+
+#allows request in /request/ to group request
+request         /request/       =request
+
+hideinwho /pre/*	*
+
+#Don't update files and bytes on transfers
+#nostatsup 	/pre/*	*
+#nostatsdn	/pre/*	*
+
+#Control credit ratio on uploads (0 = no credits)
+#creditcheck <path> <ratio> <flag/=group/-user>
+
+#Control credit ratio on downloads (0 = no credits)
+#creditloss <path> <ratio> <flag/=group/-user>
+
+#msgpath <path> <filename> <flag/=group/-user>
+#msgpath /incoming/ ftp-data/incoming.txt
+
+dirlog		*	*
+
+
+#dir_names <firstletteruppercase> lower/upper XY XY ..
+#dir_names true lower
+
+#file_names <firstletteruppercase> lower/upper XY XY ..
+#file_names true lower
+
+give =give =siteop
+take =take =siteop
+
+#will allow only users of group siteop to login
+#shutdown =siteop
+shutdown *
+
+#excepts only one range of ports, if you want more...
+# contribute and request :)
+#pasv_ports 50000-60000
+
+#to be used if your master does not report the correct outside ip for
+#PASV commands
+#pasv_addr 1.1.1.1
+
+# TLS enforcements.
+userrejectsecure        !*
+userrejectinsecure      !*
+denydiruncrypted        !*
+denydatauncrypted       !*
+
+#only allow siteop to see and set bans
+ban 	*	=siteop
+unban	*	=siteop
+bans 	*	=siteop
+
+wipe * =siteop =wipe
+link * =siteop
+nuke * =siteop =nuke
+unnuke * =siteop =nuke
+nukes * *
+chown * =siteop
+
+# commands for JobManager don't care about path, extra * is just to conform
+addjob * =siteop
+removejob * =siteop
+listjobs * =siteop
+startjobs * =siteop
+stopjobs * =siteop
+
+list =siteop
+addslave =siteop
+delslave =siteop

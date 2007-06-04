@@ -1,0 +1,27 @@
+LIST {
+plugin org.drftpd.commands.list
+class LIST
+method doLIST
+perms *
+}
+
+STAT {
+plugin org.drftpd.commands.list
+class LIST
+method doSTAT
+perms *
+}
+
+MLST {
+plugin org.drftpd.commands.list
+class MLST
+method doMLST
+perms *
+}
+
+MLSD {
+plugin org.drftpd.commands.list
+class MLST
+method doMLSD
+perms *
+}

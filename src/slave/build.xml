@@ -11,6 +11,9 @@
 		<fileset dir="${basedir}"
 			excludes="classes/,.*,*build*,src/" />
 	</copy>
+	<resourcetask
+		basedir="${basedir}/../.."
+		resourcedir="${basedir}/resources" />
 	<jpf-path
 		basedir="${basedir}/../.."
 		pathid="plugin.classpath"

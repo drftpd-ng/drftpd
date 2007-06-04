@@ -1,0 +1,10 @@
+# $Id$
+# This file controls commands accessible via ftp connections
+# All commands generally have the following properties, some
+# commands may have additional configuration values also:
+# plugin - The plugin that provides this command
+# class - The java class containing this command
+# method - The java method called when executing this command
+# perms - The users allowed to use this command
+# help - A simple description of the commands function
+# help.specific - More detailed information about the commands usage

@@ -80,8 +80,7 @@ public class ThemeTask extends Task {
 					_baseDir+File.separator+themedir+File.separator+theme+File.separator+"core.theme.default");
 			// Check we have a dir for this theme, if not make it
 			if (!themeFile.getParentFile().exists()) {
-				File subThemeDir = themeFile.getParentFile();
-				subThemeDir.mkdirs();
+				themeFile.getParentFile().mkdirs();
 			}
 			boolean newFile = false;
 			// Delete stale file if needed

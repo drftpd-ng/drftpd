@@ -1,0 +1,17 @@
+SITE NEW {
+plugin org.drftpd.commands.newhandler
+class New
+method doNEW
+perms *
+help Will list newly uploaded directories.
+help.specific ${command} - List the newest dirs in all sections.
+help.specific ${command} <number> - List the <number> newest dirs in all sections.
+help.specific ${command} <section> - List the newest dirs in <section>.
+help.specific ${command} <section> <number> - List the <number> newest dirs in <section>.
+# specify the default number of dirs to show
+default 5
+# specify the maximum number of dirs to show (overrides user input)
+max 25
+# specify the sections to exclude from output (space separated)
+filtered_sections REQUESTS
+}

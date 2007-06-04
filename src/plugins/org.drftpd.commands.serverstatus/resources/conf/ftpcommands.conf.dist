@@ -1,0 +1,41 @@
+SITE MASTERUPTIME {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doMasterUptime
+perms =siteop
+help Will show current master uptime
+}
+
+SITE SLAVEUPTIME {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlaveUptime
+perms =siteop
+help Will show current slave uptime
+help.specific ${command} <slave>
+}
+
+SITE SLAVESUPTIME {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlavesUptime
+perms =siteop
+help Will show current slaves uptime
+}
+
+SITE STATUS {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doStatus
+perms =siteop
+help Will show current information about the server.
+help.specific ${command} Usage:
+help.specific ${command} <os, vm, memory, threads, gc, all>
+help.specific ${command} OS - Will show Operational System Info
+help.specific ${command} VM - Will show VM Info.
+help.specific ${command} MEMORY - Will show Memory Info.
+help.specific ${command} THREADS - Will show Threads Info.
+help.specific ${command} GC - Will show Garbage Collector Info.
+help.specific ${command} CLASSES - Will show Classes Info.
+help.specific ${command} ALL - shortcut to display ALL Info.
+}

@@ -1,0 +1,61 @@
+SITE RELOAD {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_RELOAD
+perms =siteop
+help Reload the config files
+help.specific ${command}
+help.specific Reload the config files
+}
+
+SITE SHUTDOWN {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_SHUTDOWN
+perms =siteop
+help Shutdown the ftp server
+help.specific ${command}
+help.specific Shutdown the ftp server
+}
+
+SITE LIST {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_LIST
+perms *
+help This will raw list files in the current directory
+help.specific ${command}
+help.specific This will raw list files in the current directory
+}
+
+SITE LOADPLUGIN {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_LOADPLUGIN
+perms =siteop
+help Load a plugin
+help.specific ${command} <CLASS>
+help.specific Load a plugin
+help.specific <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
+}
+
+SITE UNLOADPLUGIN {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_UNLOADPLUGIN
+perms =siteop
+help Unload a plugin
+help.specific ${command} <CLASS>
+help.specific Unload a plugin
+help.specific <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
+}
+
+SITE PLUGINS {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_PLUGINS
+perms =siteop
+help List the currently active plugins
+help.specific ${command}
+help.specific List the currently active plugins
+}

@@ -1,0 +1,109 @@
+CDUP {
+plugin org.drftpd.commands.dir
+class Dir
+method doCDUP
+perms *
+}
+
+CWD {
+plugin org.drftpd.commands.dir
+class Dir
+method doCWD
+perms *
+}
+
+MKD {
+plugin org.drftpd.commands.dir
+class Dir
+method doMKD
+perms *
+}
+
+PWD {
+plugin org.drftpd.commands.dir
+class Dir
+method doPWD
+perms *
+}
+
+RMD {
+plugin org.drftpd.commands.dir
+class Dir
+method doRMD
+perms *
+}
+
+RNFR {
+plugin org.drftpd.commands.dir
+class Dir
+method doRNFR
+perms *
+}
+
+RNTO {
+plugin org.drftpd.commands.dir
+class Dir
+method doRNTO
+perms *
+}
+
+DELE {
+plugin org.drftpd.commands.dir
+class Dir
+method doDELE
+perms *
+}
+
+SITE WIPE {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_WIPE
+perms =wipe
+help Deletes files without removing credits.
+help.specific ${command} [-r] <file/dir>
+help.specific Deletes files without removing credits. -r means delete recursively.
+}
+
+SITE CHOWN {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_CHOWN
+perms =siteop
+help Changes ownership of a file/directory.
+help.specific ${command} <user>[.<group>] <file>
+help.specific Changes ownership of a file/directory.
+}
+
+#collides with SITE CHGRP defined by UserManagement
+#SITE\ CHGRP=org.drftpd.commands.Dir
+
+SITE LINK  {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_LINK
+perms =siteop
+help Creates a symbolic link.
+help.specific ${command} <target> <linkname>
+help.specific Creates a symbolic link.
+}
+
+XCRC {
+plugin org.drftpd.commands.dir
+class Dir
+method doXCRC
+perms *
+}
+
+MDTM {
+plugin org.drftpd.commands.dir
+class Dir
+method doMDTM
+perms *
+}
+
+SIZE {
+plugin org.drftpd.commands.dir
+class Dir
+method doSIZE
+perms *
+}

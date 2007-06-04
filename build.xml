@@ -90,7 +90,8 @@ check - checks plug-ins integrity
 			</manifest>
 			<fileset dir="src/tools"/>
 		</jar>
-		<!-- declare theme task -->
+		<!-- declare custom tasks -->
+		<taskdef name="resourcetask" classname="org.drftpd.tools.ant.ResourceTask" classpath="lib/${app.name}-tools.jar"/>
 		<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/${app.name}-tools.jar"/>
 		<!-- set plugin build timestamp -->
 		<tstamp>

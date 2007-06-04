@@ -1,0 +1,258 @@
+SITE ADDIP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_ADDIP
+perms *
+help Add a new mask to a user
+help.specific ${command} <username> <ident@ip>
+}
+
+SITE ADDUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_ADDUSER
+perms *
+help Add a new user
+help.specific ${command} <user> <password> [<ident@ip#1> ...]
+}
+
+SITE CHANGE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_CHANGE
+perms *
+help Change parameters for a user
+help.specific ${command} <username> <field> <value>
+help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
+help.specific num_logins # [opt perIP], comment, group_ratio #min #max
+help.specific group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
+}
+
+SITE CHGRP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_CHGRP
+perms *
+help Change secondary groups for a user
+help.specific ${command} <user> <group> [<group> ...]
+}
+
+SITE CHPASS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_CHPASS
+perms *
+help Change password for a user
+help.specific ${command} <user> <password>
+}
+
+SITE DEBUG {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DEBUG
+perms *
+help Allows you to see stacktraces on command errors
+}
+
+SITE DELIP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DELIP
+perms *
+help Remove a mask from a user
+help.specific ${command} <user> <ident@ip> ...
+}
+
+SITE DELUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DELUSER
+perms *
+help Delete a user
+help.specific ${command} <user> [reason]
+}
+
+SITE GADDUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_ADDUSER
+perms *
+help Add a new user to the specified group
+help.specific ${command} <group> <user> <password> [<ident@ip#1 ..]
+}
+
+SITE GINFO {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GINFO
+perms *
+help Show information on a group
+help.specific ${command} <group>
+}
+
+SITE GIVE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GIVE
+perms *
+help Give a user credits
+help.specific ${command} <user> <bytes>
+}
+
+SITE GROUP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GROUP
+perms *
+help Change parameters for a group
+help.specific ${command} <group> <field> <value>
+help.specific Valid fields: ratio, num_logins # [opt perIP], max_sim #dn #up
+}
+
+SITE GROUPS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GROUPS
+perms *
+help Lists the groups on the site
+}
+
+SITE GRPREN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_GRPREN
+perms *
+help Rename a group
+help.specific ${command} <oldgroup> <newgroup>
+}
+
+SITE KICK {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_KICK
+perms *
+help Kick a users current connections to the site
+help.specific ${command} <user>
+}
+
+SITE PASSWD {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_PASSWD
+perms *
+help Change your password
+help.specific ${command} <password>
+}
+
+SITE PURGE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_PURGE
+perms *
+help Permanently remove a user from the site
+help.specific ${command} <username>
+}
+
+SITE READD {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_READD
+perms *
+help Readd a deleted user
+help.specific ${command} <user>
+}
+
+SITE RENUSER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_RENUSER
+perms *
+help Rename a user
+help.specific ${command} <old_username> <new_username>
+}
+
+SITE SEEN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_SEEN
+perms *
+help Show when a user last connected
+help.specific ${command} <user>
+}
+
+SITE TAGLINE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_TAGLINE
+perms *
+help Change your tagline
+help.specific ${command} <tagline>
+}
+
+SITE TAKE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_TAKE
+perms *
+help Remove credits from a user
+help.specific ${command} <user> <bytes>
+}
+
+SITE USER {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_USER
+perms *
+help Show details for a user
+help.specific ${command} <user>
+}
+
+SITE USERS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_USERS
+perms *
+help List all usernames added to the site
+}
+
+SITE WHO {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_WHO
+perms *
+help Show who's online
+}
+
+SITE SWHO {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_SWHO
+perms *
+help Show who's online
+}
+
+SITE BAN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_BAN
+perms *
+help Ban a user from logging onto the site for a specified amount of time.
+help.specific ${command} <user> <minutes> [reason]
+}
+
+SITE UNBAN {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_UNBAN
+perms *
+help Removes a ban for the specified user.
+help.specific ${command} <user>
+}
+
+SITE BANS {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_BANS
+perms *
+help List the current users banned on the site.
+}

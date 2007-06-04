@@ -1,0 +1,9 @@
+SITE SECTIONS {
+plugin org.drftpd.commands.sections
+class Sections
+method doSITE_SECTIONS
+perms *
+help List the currently defined sections on the site.
+help.specific ${command}
+help.specific List the currently defined sections on the site.
+}
