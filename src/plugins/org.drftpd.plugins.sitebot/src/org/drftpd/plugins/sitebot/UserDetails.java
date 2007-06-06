@@ -81,10 +81,8 @@ public class UserDetails {
 	}
 
 	protected void setBlowCipher(String blowKey) {
-		logger.debug("blowkey "+blowKey);
 		_cipher = new Blowfish(blowKey);
 		_blowKey = blowKey;
-		logger.debug("_blowKey "+_blowKey);
 		// If we know who the user is then update their userfile with the new key
 		if (_ftpUser != null) {
 			try {

@@ -61,7 +61,12 @@ public class AnnounceWriter {
 
 	public String getSectionName(DirectoryHandle dir) {
 		if (_sectionName == null || _sectionName.equals("*")) {
-			return GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getName();
+			if (dir.getParent().isRoot()) {
+				return "/";
+			}
+			else {
+				return GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getName();
+			}
 		} else {
 			return _sectionName;
 		}
@@ -74,8 +79,14 @@ public class AnnounceWriter {
 			return dir.getPath().substring(_matcher.getPathSuffix().length()+1);
 		} else {
 			// Return path relative to section
-			return dir.getPath().substring(GlobalContext.getGlobalContext().getSectionManager()
+			// Special case to handle directories in the root
+			if (dir.getParent().isRoot()) {
+				return dir.getPath().substring(1);
+			}
+			else {
+				return dir.getPath().substring(GlobalContext.getGlobalContext().getSectionManager()
 					.lookup(dir).getBaseDirectory().getPath().length()+1);
+			}
 		}
 	}
 }
