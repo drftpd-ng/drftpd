@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
 <project name="org.drftpd.commands.misc plug-in build file"
          default="build"
          basedir=".">
-	<jpf-info manifest="${basedir}/plugin.xml"
-		propertyid="plugin.id"
-		propertyversion="plugin.version" />
-	<property name="plugin.home"
-		value="${basedir}/../../../plugins/${plugin.id}" />
-	<copy todir="${plugin.home}" includeemptydirs="false">
-		<fileset dir="${basedir}"
-			excludes="classes/,.*,*build*,src/" />
-	</copy>
-	<resourcetask
-		basedir="${basedir}/../../.."
-		resourcedir="${basedir}/resources" />
-	<themetask
-		basedir="${basedir}/../../.."
-		plugindir="${basedir}/src" />
-	<jpf-path
-		basedir="${basedir}/../../.."
-		pathid="plugin.classpath"
-		pluginid="${plugin.id}"
-		includes="core/*/plugin.xml,plugins/*/plugin.xml"
-		verbose="true" />
-
 	<target name="build">
+		<jpf-info manifest="${basedir}/plugin.xml"
+			propertyid="plugin.id"
+			propertyversion="plugin.version" />
+		<property name="plugin.home"
+			value="${basedir}/../../../plugins/master/${plugin.id}" />
 		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
+		<copy todir="${plugin.home}" includeemptydirs="false">
+			<fileset dir="${basedir}"
+				excludes="classes/,.*,*build*,src/" />
+		</copy>
+		<resourcetask
+			basedir="${basedir}/../../.."
+			resourcedir="${basedir}/resources" />
+		<themetask
+			basedir="${basedir}/../../.."
+			plugindir="${basedir}/src" />
+		<jpf-path
+			basedir="${basedir}/../../.."
+			pathid="plugin.classpath"
+			pluginid="${plugin.id}"
+			includes="core/*/plugin.xml,plugins/master/*/plugin.xml"
+			verbose="true" />
 		<mkdir dir="${plugin.home}/classes" />
 		<javac destdir="${plugin.home}/classes"
 			srcdir="${basedir}/src"
