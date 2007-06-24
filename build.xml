@@ -4,15 +4,14 @@
 	<property name="app.name" value="drftpd" />
 	<property name="app.version" value="2.1.0" />
 
-	<property name="build.home" value="${basedir}" />
+	<property name="build.debug" value="true" />
+	<property name="build.javac" value="1.5" />
+	<property name="build.optimize" value="false" />
+	<property name="build.verbose" value="true" />
 
 	<path id="classpath">
 		<fileset dir="lib" includes="*.jar" />
 	</path>
-
-	<typedef resource="org/java/plugin/tools/ant/jpf-tasks.properties">
-		<classpath refid="classpath" />
-	</typedef>
 
 	<target name="help">
 		<echo>
@@ -34,49 +33,15 @@ check - checks plug-ins integrity
 		<delete dir="${basedir}/plugins" quiet="true" />
 	</target>
 
-	<target name="-build-plugins">
-		<ant dir="src/common" target="${target}" />
-		<ant dir="src/slave" target="${target}" />
-		<ant dir="src/master" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.protocol.slave.def" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.protocol.master.def" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.usermanager.javabeans" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commandmanager" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.slaveselection.filter" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.slave.diskselection.filter" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.dataconnection" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.login" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.list" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.dir" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.slavemanagement" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.sitemanagement" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.serverstatus" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.misc" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.nuke" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.usermanagement" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.textoutput" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.request" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.sections" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.transferstatistics" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.dummy" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.zipscript" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.protocol.zipscript" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.search" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.newhandler" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.commands.prehook.permissions" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.plugins.sitebot" target="${target}" />
-		<ant dir="src/plugins/org.drftpd.plugins.sitebot.announce.def" target="${target}" />
-	</target>
-
 	<target name="build" description="Builds entire project">
 		<!-- compile tools classes -->
 		<javac
 			srcdir="src/tools"
 			classpathref="classpath"
 			excludes=""
-			target="1.5"
-			debug="true"
-			optimize="false"/>
+			target="${build.javac}"
+			debug="${build.debug}"
+			optimize="${build.optimize}" />
 		<!-- create tools jar -->
 		<jar destfile="lib/${app.name}-tools.jar">
 			<manifest>
@@ -90,17 +55,6 @@ check - checks plug-ins integrity
 			</manifest>
 			<fileset dir="src/tools"/>
 		</jar>
-		<!-- declare custom tasks -->
-		<taskdef name="resourcetask" classname="org.drftpd.tools.ant.ResourceTask" classpath="lib/${app.name}-tools.jar"/>
-		<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/${app.name}-tools.jar"/>
-		<!-- set plugin build timestamp -->
-		<tstamp>
-			<format property="build.plugins.start" pattern="yyyy.MM.dd HH:mm:ss.SSS" />
-		</tstamp>
-		<!-- build plugins -->
-		<antcall target="-build-plugins">
-			<param name="target" value="build" />
-		</antcall>
 	</target>
 
 	<target name="check"
@@ -108,7 +62,7 @@ check - checks plug-ins integrity
 		description="Checks plug-ins integrity">
 		<jpf-check basedir="${basedir}"
 			includes="core/*/plugin.xml,plugins/*/plugin.xml"
-			verbose="true"
+			verbose="${build.verbose}"
 			usepathresolver="true" />
 	</target>
 </project>

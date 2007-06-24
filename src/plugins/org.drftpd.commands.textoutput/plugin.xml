@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.commands.textoutput" version="2.1.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+	</attributes>
 	<requires>
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 	</requires>

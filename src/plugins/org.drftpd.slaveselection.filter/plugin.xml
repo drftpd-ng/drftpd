@@ -3,6 +3,8 @@
 <plugin id="org.drftpd.slaveselection.filter" version="2.1.0">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
 	</attributes>
 	<requires>
 		<import plugin-id="master" exported="true" />

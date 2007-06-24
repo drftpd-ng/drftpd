@@ -3,6 +3,8 @@
 <plugin id="org.drftpd.slave.diskselection.filter" version="2.1.0">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
 	</attributes>
 	<requires>
 		<import plugin-id="slave" exported="true" />

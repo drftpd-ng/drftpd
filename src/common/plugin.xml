@@ -3,6 +3,8 @@
 <plugin id="common" version="2.1.0">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
 	</attributes>
 	<runtime>
 		<library id="common" path="classes/" type="code">

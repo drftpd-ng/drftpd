@@ -1,41 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <project name="org.drftpd.commands.textoutput plug-in build file"
-         default="build"
-         basedir=".">
+         default="build">
 	<target name="build">
-		<jpf-info manifest="${basedir}/plugin.xml"
+		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.commands.textoutput" />
+		<jpf-info manifest="${pluginbase}/plugin.xml"
 			propertyid="plugin.id"
 			propertyversion="plugin.version" />
 		<property name="plugin.home"
-			value="${basedir}/../../../plugins/master/${plugin.id}" />
+			value="${installdir}/plugins/master/${plugin.id}" />
 		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
 		<copy todir="${plugin.home}" includeemptydirs="false">
-			<fileset dir="${basedir}"
-				excludes="classes/,.*,*build*,src/" />
+			<fileset dir="${pluginbase}"
+				includes="plugin.xml" />
 		</copy>
 		<resourcetask
-			basedir="${basedir}/../../.."
-			resourcedir="${basedir}/resources" />
+			basedir="${installdir}"
+			resourcedir="${pluginbase}/resources" />
 		<jpf-path
-			basedir="${basedir}/../../.."
+			basedir="${installdir}"
 			pathid="plugin.classpath"
 			pluginid="${plugin.id}"
 			includes="core/*/plugin.xml,plugins/master/*/plugin.xml"
-			verbose="true" />
+			verbose="${build.verbose}" />
 		<mkdir dir="${plugin.home}/classes" />
 		<javac destdir="${plugin.home}/classes"
-			srcdir="${basedir}/src"
+			srcdir="${pluginbase}/src"
 			classpathref="plugin.classpath"
-			source="1.5"
-			target="1.5"
-			debug="true"
-			optimize="false">
+			source="${build.javac}"
+			target="${build.javac}"
+			debug="${build.debug}"
+			optimize="${build.optimize}">
 		</javac>
 		<copy todir="${plugin.home}/classes">
-			<fileset dir="${basedir}/src"
-				includes="**/*"
-				excludes="**/.*,**/*.java" />
+			<fileset dir="${pluginbase}/src"
+				includes="**/*.class" />
 		</copy>
 	</target>
 </project>

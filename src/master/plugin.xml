@@ -3,6 +3,8 @@
 <plugin id="master" version="2.1.0" class="org.drftpd.master.Boot">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
 	</attributes>
 	<requires>
 		<import plugin-id="slave" exported="true" />

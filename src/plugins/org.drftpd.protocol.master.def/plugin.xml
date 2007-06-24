@@ -3,6 +3,8 @@
 <plugin id="org.drftpd.protocol.master.def" version="2.1.0">
 	<attributes>
 		<attribute id="ProtocolName" value="BasicProtocol"/>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
 	</attributes>
 	
 	<requires>
