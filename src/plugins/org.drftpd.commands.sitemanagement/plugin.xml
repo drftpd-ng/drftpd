@@ -4,8 +4,6 @@
 	<attributes>
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />
-	</attributes>
-	<attributes>
 		<attribute id="DenyUnload" value="true" />
 	</attributes>
 	<requires>
