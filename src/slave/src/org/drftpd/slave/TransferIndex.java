@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @version $Id$
  */
 public final class TransferIndex implements Serializable {
-	static int transfers = 0;
+	static Integer transfers = 0;
 
 	private int _index;
 
@@ -33,7 +33,9 @@ public final class TransferIndex implements Serializable {
 	}
 
 	public TransferIndex() {
-		_index = transfers++;
+		synchronized (transfers) {
+			_index = transfers++;
+		}
 	}
 
 	public boolean equals(Object obj) {
