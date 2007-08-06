@@ -36,8 +36,6 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.commands.dir.Dir;
-import org.drftpd.commands.zipscript.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -48,8 +46,6 @@ import org.drftpd.util.GroupPosition;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.LinkHandle;
-import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -215,118 +211,6 @@ public class ZipscriptPostHook implements PostHookInterface {
 		getPropertiesForPlugin("zipscript.conf");
 		if (cfg.getProperty("stor.racestats.enabled").equals("true")) {
 			addRaceStats(request, response);
-		}
-	}
-
-	public void doZipscriptSTORIncompleteHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// STOR failed, abort link
-			return;
-		}
-		FileHandle transferFile;
-		try {
-			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
-		} catch (KeyNotFoundException e) {
-			// We don't have a file, we shouldn't have ended up here but return anyway
-			return;
-		}
-		String transferFileName = transferFile.getName();
-		if (transferFileName.toLowerCase().endsWith(".sfv")) {
-			LinkUtils.processLink(request, "create", _bundle);
-		}
-		else {
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
-			try {
-				SFVStatus sfvStatus = sfvData.getSFVStatus();
-				if (sfvStatus.isFinished()) {
-					// dir is complete, remove link
-					LinkUtils.processLink(request, "delete", _bundle);
-				}
-			} catch (NoAvailableSlaveException e) {
-				// Slave holding sfv is unavailable
-			} catch (FileNotFoundException e) {
-				// No sfv in dir
-			}
-		}
-		return;
-	}
-
-	public void doZipscriptDELECleanupHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 250) {
-			// DELE failed, abort cleanup
-			return;
-		}
-		FileHandle deleFile;
-		try {
-			deleFile =  (FileHandle) response.getObject(Dir.DELEFILE);
-		} catch (KeyNotFoundException e) {
-			// We don't have a file, we shouldn't have ended up here but return anyway
-			return;
-		}
-		String deleFileName = deleFile.getName();
-		if (deleFileName.endsWith(".sfv")) {
-			LinkUtils.processLink(request, "delete", _bundle);
-			try {
-				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
-				sfvData.removeSFVInfo();
-			} catch(FileNotFoundException e) {
-				// No inode to remove sfvinfo from
-			}
-		}
-		else {
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
-			try {
-				SFVStatus sfvStatus = sfvData.getSFVStatus();
-				if (!sfvStatus.isFinished()) {
-					// dir is now incomplete, add link
-					LinkUtils.processLink(request, "create", _bundle);
-				}
-			} catch (NoAvailableSlaveException e) {
-				// Slave holding sfv is unavailable
-			} catch (FileNotFoundException e) {
-				// No sfv in dir
-			}
-		}
-		return;
-	}
-
-	public void doZipscriptWIPECleanupHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 200) {
-			// WIPE failed, abort cleanup
-			return;
-		}
-		try {
-			for (LinkHandle link : request.getCurrentDirectory().getLinks()) {
-				try {
-					link.getTargetDirectory().getPath();
-				} catch (FileNotFoundException e1) {
-					// Link target no longer exists, remote it
-					link.delete();
-				} catch (ObjectNotValidException e1) {
-					// Link target isn't a directory, delete the link as it is bad
-					link.delete();
-					continue;
-				}
-			}
-		} catch (FileNotFoundException e2) {
-			logger.warn("Invalid link in dir " + request.getCurrentDirectory().getPath(),e2);
-		}
-		// Have to check parent too to allow for the case of wiping a special subdir
-		try {
-			for (LinkHandle link : request.getCurrentDirectory().getParent().getLinks()) {
-				try {
-					link.getTargetDirectory().getPath();
-				} catch (FileNotFoundException e1) {
-					// Link target no longer exists, remote it
-					link.delete();
-				} catch (ObjectNotValidException e1) {
-					// Link target isn't a directory, delete the link as it is bad
-					link.delete();
-					continue;
-				}
-			}
-		} catch (FileNotFoundException e2) {
-			logger.warn("Invalid link in dir " + request.getCurrentDirectory().getParent().getPath(),e2);
 		}
 	}
 

@@ -14,16 +14,25 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.zipscript;
+package org.drftpd.protocol.zipscript.slave;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
+import org.drftpd.SFVInfo;
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
+import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseSFVInfo;
+
+import se.mog.io.File;
 
 /**
  * Handler for SFV requests.
@@ -38,9 +47,27 @@ public class ZipscriptHandler extends AbstractHandler {
 	public AsyncResponse handleSfvFile(AsyncCommandArgument ac) {
 		try {
 			return new AsyncResponseSFVInfo(ac.getIndex(), 
-					getSlaveObject().getSFVFile(getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
+					getSFVFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
 		} catch (IOException e) {
 			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
+
+	private SFVInfo getSFVFile(Slave slave, String path) throws IOException {
+		BufferedReader reader = null;
+		CRC32 checksum = null;
+		try {
+			File file = slave.getRoots().getFile(path);
+			checksum = new CRC32();
+			reader = new BufferedReader(new InputStreamReader(new CheckedInputStream(new FileInputStream(file), checksum)));
+			SFVInfo sfvInfo = SFVInfo.importSFVInfoFromFile(reader);
+			sfvInfo.setSFVFileName(file.getName());
+			sfvInfo.setChecksum(checksum.getValue());
+			return sfvInfo;
+		} finally {
+			if (reader != null) {
+				reader.close();
+			}
 		}
 	}
 }

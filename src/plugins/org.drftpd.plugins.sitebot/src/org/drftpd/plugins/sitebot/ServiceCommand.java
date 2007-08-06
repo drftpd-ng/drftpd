@@ -50,6 +50,14 @@ public class ServiceCommand extends Session {
 	}
 
 	public void printOutput(Object o) {
+		sendOutput(o);
+	}
+
+	public void printOutput(int code, Object o) {
+		sendOutput(o);
+	}
+
+	private void sendOutput(Object o) {
 		StringTokenizer st = new StringTokenizer(o.toString(),"\n");
 		while (st.hasMoreTokens()) {
 			String token = st.nextToken();

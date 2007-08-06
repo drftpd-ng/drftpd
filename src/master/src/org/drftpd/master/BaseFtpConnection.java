@@ -640,6 +640,11 @@ public class BaseFtpConnection extends Session implements Runnable {
 		_out.flush();
 	}
 
+	public synchronized void printOutput(int code, Object o) {
+		_out.print(code+"- "+o.toString()+"\n");
+		_out.flush();
+	}
+
 	public void authDone() {
 		_authDone = true;
 	}
@@ -661,9 +666,10 @@ public class BaseFtpConnection extends Session implements Runnable {
 		}
 
 		public void run() {
-			if (_pool.getActiveCount() > 1 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+			// Remove this for now as it seems to cause lockups due to a race between checking active count and the old thread dying
+			/*if (_pool.getActiveCount() > 1 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
 				return;
-			}
+			}*/
 			CommandRequestInterface cmdRequest = _commandManager.newRequest(
 					_ftpRequest.getCommand(), _ftpRequest.getArgument(),
 					_currentDirectory, _user, _conn, _conn.getCommands().get(_ftpRequest.getCommand()));

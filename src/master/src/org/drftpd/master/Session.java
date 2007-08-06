@@ -38,7 +38,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public abstract class Session extends KeyedMap {
+public abstract class Session extends KeyedMap<Key,Object> {
 
 	public static final Key COMMANDS = new Key(Session.class, "commands",
 			HashMap.class);
@@ -152,4 +152,6 @@ public abstract class Session extends KeyedMap {
 	public abstract boolean isSecure();
 
 	public abstract void printOutput(Object o);
+
+	public abstract void printOutput(int code, Object o);
 }

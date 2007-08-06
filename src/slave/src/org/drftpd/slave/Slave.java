@@ -17,12 +17,10 @@
  */
 package org.drftpd.slave;
 
-import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
@@ -43,7 +41,6 @@ import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
-import org.drftpd.SFVInfo;
 import org.drftpd.SSLGetContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.id3.ID3Tag;
@@ -225,7 +222,7 @@ public class Slave {
 					if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor()))
 						manager.activatePlugin(pluginId);
 
-					Class clazz = classLoader.loadClass(className);
+					Class<?> clazz = classLoader.loadClass(className);
 					
 					_diskSelection = (DiskSelectionInterface) clazz
 											.getConstructor(new Class[] { Slave.class }).newInstance(new Object[] { this });
@@ -330,13 +327,13 @@ public class Slave {
 					} catch (InterruptedException e) {
 					}
 					synchronized (_renameQueue) {
-						for (Iterator iter = _renameQueue.iterator(); iter
+						for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter
 								.hasNext();) {
-							QueuedOperation qo = (QueuedOperation) iter.next();
+							QueuedOperation qo = iter.next();
 							if (qo.getDestination() == null) { // delete
 								try {
 									delete(qo.getSource());
-									// delete successfull
+									// delete successful
 									iter.remove();
 								} catch (PermissionDeniedException e) {
 									// keep it in the queue
@@ -358,7 +355,7 @@ public class Slave {
 														.lastIndexOf("/"));
 								try {
 									rename(qo.getSource(), destDir, fileName);
-									// rename successfull
+									// rename successful
 									iter.remove();
 								} catch (PermissionDeniedException e) {
 									// keep it in the queue
@@ -413,7 +410,7 @@ public class Slave {
 
 	public void delete(String path) throws IOException {
 		// now deletes files as well as directories, recursive!
-		Collection files = null;
+		Collection<Root> files = null;
 		try {
 			files = _roots.getMultipleRootsForFile(path);
 		} catch (FileNotFoundException e) {
@@ -421,8 +418,8 @@ public class Slave {
 			return;
 		}
 
-		for (Iterator iter = files.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
+		for (Iterator<Root> iter = files.iterator(); iter.hasNext();) {
+			Root root = iter.next();
 			File file = root.getFile(path);
 
 			if (!file.exists()) {
@@ -505,24 +502,6 @@ public class Slave {
 
 	public RootCollection getRoots() {
 		return _roots;
-	}
-
-	public SFVInfo getSFVFile(String path) throws IOException {
-		BufferedReader reader = null;
-		CRC32 checksum = null;
-		try {
-			File file = _roots.getFile(path);
-			checksum = new CRC32();
-			reader = new BufferedReader(new InputStreamReader(new CheckedInputStream(new FileInputStream(file), checksum)));
-			SFVInfo sfvInfo = SFVInfo.importSFVInfoFromFile(reader);
-			sfvInfo.setSFVFileName(file.getName());
-			sfvInfo.setChecksum(checksum.getValue());
-			return sfvInfo;
-		} finally {
-			if (reader != null) {
-				reader.close();
-			}
-		}
 	}
 
 	/*private String getDIZFile(String path) throws IOException {
@@ -716,8 +695,7 @@ public class Slave {
 			return path;
 		}
 		synchronized (_renameQueue) {
-			for (Iterator iter = _renameQueue.iterator(); iter.hasNext();) {
-				QueuedOperation qo = (QueuedOperation) iter.next();
+			for (QueuedOperation qo : _renameQueue) {
 				if (qo.getDestination() == null) {
 					continue;
 				}

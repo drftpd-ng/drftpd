@@ -33,10 +33,14 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventSubscriber;
+import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.event.LoadPluginEvent;
+import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.TransferState;
@@ -55,7 +59,7 @@ import org.java.plugin.registry.ExtensionPoint;
  * 
  * @version $Id: LIST.java 1621 2007-02-13 20:41:31Z djb61 $
  */
-public class LIST extends CommandInterface {
+public class LIST extends CommandInterface implements EventSubscriber {
 	private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
 
 	private final static DateFormat BEFORE_SIX = new SimpleDateFormat("HH:mm");
@@ -79,6 +83,8 @@ public class LIST extends CommandInterface {
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_cManager = cManager;
+		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
+		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
 
 		// load extensions just once and save the instances for later use.
 		PluginManager manager = PluginManager.lookup(this);
@@ -90,8 +96,8 @@ public class LIST extends CommandInterface {
 				manager.activatePlugin(listExt.getDeclaringPluginDescriptor().getId());
 				ClassLoader listLoader = manager.getPluginClassLoader( 
 						listExt.getDeclaringPluginDescriptor());
-				Class listCls = listLoader.loadClass( 
-							listExt.getParameter("class").valueAsString());
+				Class<?> listCls = listLoader.loadClass( 
+							listExt.getParameter("Class").valueAsString());
 				AddListElementsInterface listAddon = (AddListElementsInterface) listCls.newInstance();
 				_listAddons.add(listAddon);
 			}
@@ -395,5 +401,58 @@ public class LIST extends CommandInterface {
 	public CommandResponse doNLST(CommandRequest request) {
 		//printNList(listFiles, detailOption, os);
 		return null;
+	}
+
+	public void onEvent(Object event) {
+		if (event instanceof UnloadPluginEvent) {
+			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String pluginName = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (pluginName.equals(currentPlugin) && extension.equals("AddElements")) {
+					for (Iterator<AddListElementsInterface> iter = _listAddons.iterator(); iter.hasNext();) {
+						AddListElementsInterface plugin = iter.next();
+						if (manager.getPluginFor(plugin).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
+							iter.remove();
+						}
+					}
+				}
+			}
+		} else if (event instanceof LoadPluginEvent) {
+			LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
+			PluginManager manager = PluginManager.lookup(this);
+			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+			for (String pluginExtension : pluginEvent.getParentPlugins()) {
+				int pointIndex = pluginExtension.lastIndexOf("@");
+				String pluginName = pluginExtension.substring(0, pointIndex);
+				String extension = pluginExtension.substring(pointIndex+1);
+				if (pluginName.equals(currentPlugin) && extension.equals("AddElements")) {
+					ExtensionPoint pluginExtPoint = 
+						manager.getRegistry().getExtensionPoint( 
+								"org.drftpd.commands.list", "AddElements");
+					for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
+						if (plugin.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
+							try {
+								manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+								ClassLoader pluginLoader = manager.getPluginClassLoader( 
+										plugin.getDeclaringPluginDescriptor());
+								Class<?> pluginCls = pluginLoader.loadClass( 
+										plugin.getParameter("Class").valueAsString());
+								AddListElementsInterface newPlugin = (AddListElementsInterface) pluginCls.newInstance();
+								_listAddons.add(newPlugin);
+							}
+							catch (Exception e) {
+								logger.warn("Error loading plugin " + 
+										plugin.getDeclaringPluginDescriptor().getId(),e);
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }

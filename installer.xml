@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
 <project name="DRFTPD Trunk Plugin Branch" default="build" basedir=".">
 	<property name="app.name" value="drftpd" />
@@ -12,6 +12,10 @@
 	<path id="classpath">
 		<fileset dir="lib" includes="*.jar" />
 	</path>
+
+	<typedef resource="org/java/plugin/tools/ant/jpf-tasks.properties">
+			<classpath refid="classpath" />
+	</typedef>
 
 	<target name="help">
 		<echo>

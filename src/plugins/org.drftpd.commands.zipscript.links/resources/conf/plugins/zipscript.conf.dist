@@ -1,0 +1,5 @@
+#enable incomplete links creation [true/false]
+incomplete.links=true
+
+#directories to add incomplete link in parent of parent rather than just parent
+incomplete.useparent=(vobsubs?|subs?|subtitles?|extras|(cd|dvd|dis[ck])[1-9])$

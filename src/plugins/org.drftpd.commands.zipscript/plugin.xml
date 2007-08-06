@@ -34,6 +34,9 @@
 		<parameter-def id="ParentMethod" />
 		<parameter-def id="Priority" type="number" />
 	</extension-point>
+	<extension-point id="RescanPostProcessDir">
+		<parameter-def id="Class" />
+	</extension-point>
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="ZipscriptSTORPreCheck">
 		<parameter id="ParentMethod" value="doSTOR" />
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPreHook" />
@@ -64,26 +67,8 @@
 		<parameter id="HookMethod" value="doZipscriptSTORStatsHook" />
 		<parameter id="Priority" value="11" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORIncompleteLink">
-		<parameter id="ParentMethod" value="doSTOR" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
-		<parameter id="HookMethod" value="doZipscriptSTORIncompleteHook" />
-		<parameter id="Priority" value="12" />
-	</extension>
-	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptDELEIncompleteLink">
-		<parameter id="ParentMethod" value="doDELE" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
-		<parameter id="HookMethod" value="doZipscriptDELECleanupHook" />
-		<parameter id="Priority" value="10" />
-	</extension>
-	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptWIPEIncompleteLink">
-		<parameter id="ParentMethod" value="doSITE_WIPE" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
-		<parameter id="HookMethod" value="doZipscriptWIPECleanupHook" />
-		<parameter id="Priority" value="10" />
-	</extension>
 	<extension plugin-id="org.drftpd.commands.list" point-id="AddElements" id="ZipscriptListElements">
-		<parameter id="class" value="org.drftpd.commands.zipscript.list.ZipscriptList" />
+		<parameter id="Class" value="org.drftpd.commands.zipscript.list.ZipscriptList" />
 	</extension>
 	
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ZipscriptCommandsHandler" />

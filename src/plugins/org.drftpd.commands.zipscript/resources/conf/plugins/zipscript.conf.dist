@@ -37,9 +37,3 @@ sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
 #who has their restricted by the sfv-first system ?
 #if you wanted siteop group to be exempt, put: !=siteop *
 sfvfirst.users=*
-
-#enable incomplete links creation [true/false]
-incomplete.links=true
-
-#directories to add incomplete link in parent of parent rather than just parent
-incomplete.useparent=(vobsubs?|subs?|subtitles?|extras|(cd|dvd|dis[ck])[1-9])$
