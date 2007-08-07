@@ -21,12 +21,12 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.RescanPostProcessDirInterface;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 
 /**
  * @author djb61

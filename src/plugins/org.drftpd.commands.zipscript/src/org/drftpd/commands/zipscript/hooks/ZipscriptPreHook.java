@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVInfo;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
@@ -35,6 +34,7 @@ import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.GlobPathPermission;
+import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 

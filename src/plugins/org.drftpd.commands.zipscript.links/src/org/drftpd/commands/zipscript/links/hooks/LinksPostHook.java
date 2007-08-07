@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
-import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
@@ -32,6 +31,7 @@ import org.drftpd.commands.zipscript.links.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;

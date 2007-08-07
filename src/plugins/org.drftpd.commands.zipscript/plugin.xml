@@ -6,6 +6,7 @@
 	</attributes>
 	
 	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.common" exported="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />

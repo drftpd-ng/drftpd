@@ -17,19 +17,18 @@
 package org.drftpd.commands.zipscript.list;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVInfo;
-import org.drftpd.SFVStatus;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
+import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
@@ -40,7 +39,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class ZipscriptList implements AddListElementsInterface {
+public class ZipscriptList extends SFVTools implements AddListElementsInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptList.class);
 
@@ -133,39 +132,5 @@ public class ZipscriptList implements AddListElementsInterface {
 			// no sfv file in directory - just skip it
 		}
 		return container;
-	}
-
-	/* TODO The following method would be much better suited elsewhere,
-	 * most likely in SFVInfo, however placing them there at this time
-	 * would create dependency problems with the slave plugin.
-	 * They can be moved once the sfv retrieval code in the slave is
-	 * abstracted out removing the dependency of the slave code on
-	 * the SFVInfo class.
-	 */
-
-	private Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-		throws FileNotFoundException, NoAvailableSlaveException {
-		Collection<FileHandle> files = new ArrayList<FileHandle>();
-		SFVInfo sfvInfo = sfvData.getSFVInfo();
-
-		for (String name : sfvInfo.getEntries().keySet()) {
-			FileHandle file = new FileHandle(dir.getPath()+VirtualFileSystem.separator+name);
-			if (file.exists()) {
-				files.add(file);
-			}
-		}
-		return files;
-	}
-
-	private long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-		throws FileNotFoundException, NoAvailableSlaveException {
-		long totalBytes = 0;
-
-		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1) {
-				totalBytes += file.getSize();
-			}
-		}
-		return totalBytes;
 	}
 }

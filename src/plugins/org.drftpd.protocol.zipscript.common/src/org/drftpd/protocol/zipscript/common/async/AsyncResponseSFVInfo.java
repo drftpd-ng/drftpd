@@ -15,9 +15,10 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slave.async;
+package org.drftpd.protocol.zipscript.common.async;
 
-import org.drftpd.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.slave.async.AsyncResponse;
 
 /**
  * @author zubov

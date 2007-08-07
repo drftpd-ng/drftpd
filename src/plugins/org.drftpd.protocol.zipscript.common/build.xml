@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
-<project name="org.drftpd.protocol.zipscript.slave plug-in build file"
+<project name="org.drftpd.protocol.zipscript.common plug-in build file"
          default="build">
 	<target name="build">
-		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.protocol.zipscript.slave" />
+		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.protocol.zipscript.common" />
 		<jpf-info manifest="${pluginbase}/plugin.xml"
 			propertyid="plugin.id"
 			propertyversion="plugin.version" />
 		<property name="plugin.home"
-			value="${installdir}/plugins/slave/${plugin.id}" />
+			value="${installdir}/plugins/common/${plugin.id}" />
 		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
 		<copy todir="${plugin.home}" includeemptydirs="false">
 			<fileset dir="${pluginbase}"
@@ -18,7 +18,7 @@
 			basedir="${installdir}"
 			pathid="plugin.classpath"
 			pluginid="${plugin.id}"
-			includes="core/*/plugin.xml,plugins/common/*/plugin.xml,plugins/slave/*/plugin.xml"
+			includes="core/*/plugin.xml,plugins/common/*/plugin.xml"
 			verbose="${build.verbose}" />
 		<mkdir dir="${plugin.home}/classes" />
 		<javac destdir="${plugin.home}/classes"

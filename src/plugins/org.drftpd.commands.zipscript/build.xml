@@ -24,7 +24,7 @@
 			basedir="${installdir}"
 			pathid="plugin.classpath"
 			pluginid="${plugin.id}"
-			includes="core/*/plugin.xml,plugins/master/*/plugin.xml"
+			includes="core/*/plugin.xml,plugins/common/*/plugin.xml,plugins/master/*/plugin.xml"
 			verbose="${build.verbose}" />
 		<mkdir dir="${plugin.home}/classes" />
 		<javac destdir="${plugin.home}/classes"

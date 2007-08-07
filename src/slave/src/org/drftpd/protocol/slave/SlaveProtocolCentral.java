@@ -50,8 +50,8 @@ public class SlaveProtocolCentral {
 	
 	private static final Logger logger = Logger.getLogger(SlaveProtocolCentral.class);
 	
-	private static final Class[] CONSTRUCTORPARMS = { SlaveProtocolCentral.class };
-	private static final Class[] METHODPARMS = { AsyncCommandArgument.class };
+	private static final Class<?>[] CONSTRUCTORPARMS = { SlaveProtocolCentral.class };
+	private static final Class<?>[] METHODPARMS = { AsyncCommandArgument.class };
 	
 	private Slave _slave = null;
 	
@@ -131,7 +131,7 @@ public class SlaveProtocolCentral {
 			}
 
 			try {
-				Class clazz = classLoader.loadClass(className);
+				Class<?> clazz = classLoader.loadClass(className);
 				AbstractHandler ah = (AbstractHandler) clazz.getConstructor(CONSTRUCTORPARMS).newInstance(new Object[]{ this });
 				Method m = clazz.getDeclaredMethod(methodName, METHODPARMS);
 

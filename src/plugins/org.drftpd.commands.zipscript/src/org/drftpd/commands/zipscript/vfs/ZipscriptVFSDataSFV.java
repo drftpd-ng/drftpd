@@ -20,15 +20,15 @@ package org.drftpd.commands.zipscript.vfs;
 import java.io.FileNotFoundException;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVInfo;
-import org.drftpd.SFVStatus;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.ZipscriptIssuer;
+import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
+import org.drftpd.protocol.zipscript.common.async.AsyncResponseSFVInfo;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.async.AsyncResponseSFVInfo;
 import org.drftpd.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
@@ -46,6 +46,7 @@ public class ZipscriptVFSDataSFV {
 	public ZipscriptVFSDataSFV(DirectoryHandle dir) {
 		_dir = dir;
 	}
+
 	public SFVInfo getSFVInfo() throws FileNotFoundException, NoAvailableSlaveException {
 		try {
 			SFVInfo sfvInfo = getSFVInfoFromInode(_dir.getInode());

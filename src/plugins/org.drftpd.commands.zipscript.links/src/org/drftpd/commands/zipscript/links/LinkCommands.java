@@ -24,7 +24,6 @@ import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -32,6 +31,7 @@ import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;

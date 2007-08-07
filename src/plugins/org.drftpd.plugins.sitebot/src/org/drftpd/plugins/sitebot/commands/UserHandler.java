@@ -67,7 +67,7 @@ public class UserHandler extends CommandInterface {
 			user.getKeyedMap().setObject(UserManagement.IRCIDENT,ident);
 			user.commit();
 			logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
-			request.getSession().printOutput(0,"Set IRC ident to '"+ident+"' for "+user.getName());
+			request.getSession().printOutput("Set IRC ident to '"+ident+"' for "+user.getName());
 		}
 		return null;
 	}

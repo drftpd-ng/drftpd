@@ -18,7 +18,6 @@
 package org.drftpd.commands.zipscript.hooks;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -29,16 +28,17 @@ import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
-import org.drftpd.SFVInfo;
-import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -46,7 +46,6 @@ import org.drftpd.util.GroupPosition;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -56,7 +55,7 @@ import org.tanesha.replacer.SimplePrintf;
  * @author djb61
  * @version $Id$
  */
-public class ZipscriptPostHook implements PostHookInterface {
+public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptPostHook.class);
 
@@ -342,61 +341,5 @@ public class ZipscriptPostHook implements PostHookInterface {
 		} catch (NoAvailableSlaveException e) {
 			//Error fetching SFV, ignore
 		}
-	}
-
-	/* TODO The following methods would be much better suited elsewhere,
-	 * most likely in SFVInfo, however placing them there at this time
-	 * would create dependency problems with the slave plugin.
-	 * They can be moved once the sfv retrieval code in the slave is
-	 * abstracted out removing the dependency of the slave code on
-	 * the SFVInfo class.
-	 */
-
-	private Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-	throws FileNotFoundException, NoAvailableSlaveException {
-		Collection<FileHandle> files = new ArrayList<FileHandle>();
-		SFVInfo sfvInfo = sfvData.getSFVInfo();
-
-		for (String name : sfvInfo.getEntries().keySet()) {
-			FileHandle file = new FileHandle(dir.getPath()+VirtualFileSystem.separator+name);
-			if (file.exists()) {
-				files.add(file);
-			}
-		}
-		return files;
-	}
-
-	private long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-	throws FileNotFoundException, NoAvailableSlaveException {
-		long totalBytes = 0;
-
-		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1) {
-				totalBytes += file.getSize();
-			}
-		}
-		return totalBytes;
-	}
-
-	private long getSFVTotalXfertime(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-	throws FileNotFoundException, NoAvailableSlaveException {
-		long totalXfertime = 0;
-
-		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1) {
-				totalXfertime += file.getXfertime();
-			}
-		}
-		return totalXfertime;
-	}
-
-	private long getXferspeed(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-	throws FileNotFoundException, NoAvailableSlaveException {
-		long totalXfertime = getSFVTotalXfertime(dir, sfvData);
-		if (totalXfertime / 1000 == 0) {
-			return 0;
-		}
-
-		return getSFVTotalBytes(dir, sfvData) / (totalXfertime / 1000);
 	}
 }

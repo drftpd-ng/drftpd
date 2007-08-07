@@ -18,7 +18,6 @@
 package org.drftpd.plugins.sitebot.announce.def;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -32,11 +31,10 @@ import org.bushe.swing.event.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
-import org.drftpd.SFVInfo;
-import org.drftpd.SFVStatus;
 import org.drftpd.Time;
 import org.drftpd.commands.slavemanagement.SlaveManagement;
 import org.drftpd.commands.transferstatistics.TransferStatistics;
+import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.SlaveEvent;
@@ -50,6 +48,8 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.event.InviteEvent;
+import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -60,14 +60,13 @@ import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author djb61
  * @version $Id$
  */
-public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
+public class BasicAnnouncer extends SFVTools implements AnnounceInterface, EventSubscriber {
 
 	private static final Logger logger = Logger.getLogger(BasicAnnouncer.class);
 
@@ -518,56 +517,5 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 				return 0;
 			}
 		}
-	}
-
-	// TODO Move these to a new home along with the other occurances in the project,
-	// once the location is finalised
-
-	private Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-	throws FileNotFoundException, NoAvailableSlaveException {
-		Collection<FileHandle> files = new ArrayList<FileHandle>();
-		SFVInfo sfvInfo = sfvData.getSFVInfo();
-
-		for (String name : sfvInfo.getEntries().keySet()) {
-			FileHandle file = new FileHandle(dir.getPath()+VirtualFileSystem.separator+name);
-			if (file.exists()) {
-				files.add(file);
-			}
-		}
-		return files;
-	}
-
-	private long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-	throws FileNotFoundException, NoAvailableSlaveException {
-		long totalBytes = 0;
-
-		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1) {
-				totalBytes += file.getSize();
-			}
-		}
-		return totalBytes;
-	}
-
-	private long getSFVTotalXfertime(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-	throws FileNotFoundException, NoAvailableSlaveException {
-		long totalXfertime = 0;
-
-		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1) {
-				totalXfertime += file.getXfertime();
-			}
-		}
-		return totalXfertime;
-	}
-
-	private long getXferspeed(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-	throws FileNotFoundException, NoAvailableSlaveException {
-		long totalXfertime = getSFVTotalXfertime(dir, sfvData);
-		if (totalXfertime / 1000 == 0) {
-			return 0;
-		}
-
-		return getSFVTotalBytes(dir, sfvData) / (totalXfertime / 1000);
 	}
 }
