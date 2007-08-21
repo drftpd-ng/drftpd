@@ -75,11 +75,11 @@ public class CommitManager {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private static void processAll(Map map) {
 		synchronized (map) {
 			long time = System.currentTimeMillis();
-			for (Iterator<Entry<Commitable, Date>> iter = map.entrySet()
-					.iterator(); iter.hasNext();) {
+			for (Iterator<Entry<Commitable, Date>> iter = map.entrySet().iterator(); iter.hasNext();) {
 				Entry<Commitable, Date> entry = iter.next();
 				if (time - entry.getValue().getTime() > 5000) {
 					try {

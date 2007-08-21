@@ -56,10 +56,15 @@ public class MessagePathPermission extends StringPathPermission {
 		_message.trimToSize();
 	}
 
+	@Deprecated
 	public void printMessage(Reply response) {
 		for (Iterator iter = _message.iterator(); iter.hasNext();) {
 			String line = (String) iter.next();
 			response.addComment(line);
 		}
+	}
+	
+	public ArrayList<String> getMessage() {
+		return _message;
 	}
 }

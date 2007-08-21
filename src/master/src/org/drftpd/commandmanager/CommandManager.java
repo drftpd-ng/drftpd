@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -88,7 +89,7 @@ public class CommandManager {
 		try {
 			command = command.substring("SITE ".length()).toLowerCase();
 
-			if (!conn.getGlobalContext().getConfig().checkPathPermission(
+			if (!GlobalContext.getConfig().checkPathPermission(
 					command, conn.getUserNull(), conn.getCurrentDirectory(),
 					true)) {
 				// logger.debug("Blocking access to execute : SITE "+command);

@@ -73,7 +73,7 @@ public class LoginHandler extends CommandInterface {
 
         }
 
-        if (!conn.getGlobalContext().getConfig().getBouncerIps().contains(conn.getClientAddress())) {
+        if (!GlobalContext.getConfig().getBouncerIps().contains(conn.getClientAddress())) {
             logger.warn("IDNT from non-bnc");
 
             return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -197,7 +197,7 @@ public class LoginHandler extends CommandInterface {
         					UserManagement.REASON,
         					StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
-        if(!conn.getGlobalContext().getConfig().isLoginAllowed(newUser)) {
+        if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 

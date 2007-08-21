@@ -35,4 +35,16 @@
 	<extension-point id="ProtocolExtension">
 		<parameter-def id="IssuerClass" />
 	</extension-point>
+	
+	<extension-point id="ConfigHandler">
+		<parameter-def id="Class" />
+		<parameter-def id="Method" />
+		<parameter-def id="Directive" />
+	</extension-point>
+	<extension-point id="VFSPerm">
+	   	<parameter-def id="Class" />
+	   	<parameter-def id="Method" />
+	   	<parameter-def id="Type" />
+	  	<parameter-def id="Directive" />
+	</extension-point>
 </plugin>

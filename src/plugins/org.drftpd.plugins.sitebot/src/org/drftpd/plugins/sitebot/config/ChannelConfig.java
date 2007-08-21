@@ -19,7 +19,6 @@ package org.drftpd.plugins.sitebot.config;
 
 import java.util.StringTokenizer;
 
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 
@@ -41,7 +40,7 @@ public class ChannelConfig {
 		_name = name;
 		_blowKey = blowKey;
 		_chanKey = chanKey;
-		_perms = new Permission(FtpConfig.makeUsers(new StringTokenizer(perms)));
+		_perms = new Permission(Permission.makeUsers(new StringTokenizer(perms)));
 	}
 
 	public String getName() {

@@ -159,7 +159,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 						// The file has checksum = 0 and the size = 0 
 						// then it should be deleted.
 						response.addComment("0Byte File, Deleting...");
-						transferFile.delete();
+						transferFile.deleteUnchecked();
 					} else
 						// The file has checksum = 0, although the size is != 0,
 						// meaning that we are not using checked transfers.
@@ -170,7 +170,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 							Long.toHexString(sfvChecksum));
 					response.addComment(" deleting file");
 					response.setMessage("Checksum mismatch, deleting file");
-					transferFile.delete();
+					transferFile.deleteUnchecked();
 
 					//				getUser().updateCredits(
 					//					- ((long) getUser().getRatio() * transferedBytes));

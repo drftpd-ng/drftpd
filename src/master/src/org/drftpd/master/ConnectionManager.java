@@ -142,7 +142,7 @@ public class ConnectionManager implements EventSubscriber {
 			GlobalContext.getGlobalContext().init();
 
 			getConnectionManager().loadCommands();
-			Properties cfg = getGlobalContext().getConfig().getProperties();
+			Properties cfg = GlobalContext.getConfig().getMainProperties();
 
 			/** listen for connections * */
 			String bindip = null;
@@ -189,17 +189,17 @@ public class ConnectionManager implements EventSubscriber {
 	}
 	
 	public void createThreadPool() {
-		int maxUserConnected = getGlobalContext().getConfig().getMaxUsersTotal();
-		int maxAliveThreads = maxUserConnected + getGlobalContext().getConfig().getMaxUsersExempt();
+		int maxUserConnected = GlobalContext.getConfig().getMaxUsersTotal();
+		int maxAliveThreads = maxUserConnected + GlobalContext.getConfig().getMaxUsersExempt();
 		int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
 		
 		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS, 
-				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.DiscardPolicy ());
+				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
 		
-		// that's java1.6, can't used this for now.
+		// that's java1.6, can't be used for now.
 		// _pool.allowCoreThreadTimeOut(false);
 		
-		_pool.prestartAllCoreThreads();
+		// _pool.prestartAllCoreThreads();
 	}
 	
 	public void dumpThreadPool() {
@@ -209,12 +209,12 @@ public class ConnectionManager implements EventSubscriber {
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
-		int count = getGlobalContext().getConfig().getMaxUsersTotal();
+		int count = GlobalContext.getConfig().getMaxUsersTotal();
 
 		// Math.max if the integer wraps
 		if (user.isExempt()) {
 			count = Math.max(count, count
-					+ getGlobalContext().getConfig().getMaxUsersExempt());
+					+ GlobalContext.getConfig().getMaxUsersExempt());
 		}
 
 		// not >= because baseconn is already included
@@ -276,11 +276,11 @@ public class ConnectionManager implements EventSubscriber {
 		}
 
 		if (!baseconn.isSecure()
-				&& getGlobalContext().getConfig().checkPermission(
+				&& GlobalContext.getConfig().checkPermission(
 						"userrejectinsecure", user)) {
 			return new FtpReply(530, "USE SECURE CONNECTION");
 		} else if (baseconn.isSecure()
-				&& getGlobalContext().getConfig().checkPermission(
+				&& GlobalContext.getConfig().checkPermission(
 						"userrejectsecure", user)) {
 			return new FtpReply(530, "USE INSECURE CONNECTION");
 		}

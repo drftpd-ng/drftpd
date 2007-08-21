@@ -36,6 +36,7 @@ import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
 import org.drftpd.commandmanager.CommandManagerInterface;
+import org.drftpd.config.ConfigManager;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.MessageEvent;
 import org.drftpd.event.UnloadPluginEvent;
@@ -46,7 +47,6 @@ import org.drftpd.master.CommitManager;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.master.config.ConfigInterface;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.master.config.PluginsConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
@@ -76,6 +76,8 @@ public class GlobalContext implements EventSubscriber {
 	private static GlobalContext _gctx;
 	
 	private PluginsConfig _pluginsConfig;
+	
+	private ConfigInterface _config;
 
 	//private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
 
@@ -99,13 +101,12 @@ public class GlobalContext implements EventSubscriber {
 	
 	private TimeManager _timeManager;
 
-	private static DirectoryHandle root = new DirectoryHandle(
-			VirtualFileSystem.separator);
+	private static DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
 
 	private static EventService eventService = new ThreadSafeEventService();
 
 	public void reloadFtpConfig() throws IOException {
-		FtpConfig.reload();
+		_config.reload();
 	}
 	
 	/**
@@ -116,17 +117,10 @@ public class GlobalContext implements EventSubscriber {
 	protected GlobalContext() {
 	}
 
-	public ConfigInterface getConfig() {
-		return FtpConfig.getFtpConfig();
-	}
-
 	private void loadJobManager() {
 		_jm = new JobManager(this);
 	}
 
-	/**
-	 * 
-	 */
 	private void loadSlaveSelectionManager(Properties cfg) {
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint extPoint = manager.getRegistry().getExtensionPoint("master", "SlaveSelection");
@@ -184,6 +178,10 @@ public class GlobalContext implements EventSubscriber {
 
 	public static ConnectionManager getConnectionManager() {
 		return ConnectionManager.getConnectionManager();
+	}
+	
+	public static ConfigInterface getConfig() {
+		return getGlobalContext()._config;
 	}
 
 	/*public List<FtpListener> getFtpListeners() {
@@ -247,7 +245,7 @@ public class GlobalContext implements EventSubscriber {
 		/*	Iterate over all extensions that have been connected to the
 				CommandManager extension point and return the desired one */
 
-		Properties cfg = getGlobalContext().getConfig().getProperties();
+		Properties cfg = GlobalContext.getConfig().getMainProperties();
 
 		Class<?> cmCls = null;
 
@@ -445,14 +443,12 @@ public class GlobalContext implements EventSubscriber {
 	}
 
 	public void init() {
-		try {
-			reloadFtpConfig();
-		} catch (IOException e) {
-			logger.debug("", e);
-		}
+		_config = new ConfigManager();
+		_config.reload();
+		
 		CommitManager.start();
 		_timeManager = new TimeManager();
-		loadUserManager(getConfig().getProperties());
+		loadUserManager(getConfig().getMainProperties());
 		addTimeEvent(getUserManager());
 
 		try {
@@ -464,15 +460,15 @@ public class GlobalContext implements EventSubscriber {
 		}
 
 		try {
-			loadSlaveManager(getConfig().getProperties());
+			loadSlaveManager(getConfig().getMainProperties());
 		} catch (SlaveFileException e) {
 			throw new RuntimeException(e);
 		}
 		listenForSlaves();
 		loadJobManager();
 		getJobManager().startJobs();
-		loadSlaveSelectionManager(getConfig().getProperties());
-		loadSectionManager(getConfig().getProperties());
+		loadSlaveSelectionManager(getConfig().getMainProperties());
+		loadSectionManager(getConfig().getMainProperties());
 		loadPluginsConfig();
 		loadPlugins();
 		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
@@ -509,7 +505,7 @@ public class GlobalContext implements EventSubscriber {
         			Properties p = getPropertiesUntilClosed(reader);
         			logger.debug("Adding command " + cmdName);
         			for (Entry<Object,Object> property : p.entrySet()) {
-        				logger.debug("key=" + property.getKey() + ",value=" + property.getValue());
+        				//logger.debug("key=" + property.getKey() + ",value=" + property.getValue());
         			}
         			commandsConfig.put(cmdName,p);
         		} else {

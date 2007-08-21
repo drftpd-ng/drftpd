@@ -26,7 +26,6 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.Session;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -133,7 +132,7 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 		if (!st.hasMoreTokens()) {
 			return new Permission(Collections.singletonList("=siteop"));
 		}
-		return new Permission(FtpConfig.makeUsers(st));
+		return new Permission(Permission.makeUsers(st));
 	}
 
 	public CommandResponse getDeniedResponse() {

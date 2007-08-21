@@ -52,7 +52,6 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.protocol.master.AbstractBasicIssuer;
 import org.drftpd.protocol.master.AbstractIssuer;
@@ -410,9 +409,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				socket = _serverSocket.accept();
 				socket.setSoTimeout(socketTimeout);
 				if (socket instanceof SSLSocket) {
-					if (FtpConfig.getFtpConfig().getCipherSuites() != null) {
-						((SSLSocket) socket).setEnabledCipherSuites(FtpConfig
-								.getFtpConfig().getCipherSuites());
+					if (GlobalContext.getConfig().getCipherSuites() != null) {
+						((SSLSocket) socket).setEnabledCipherSuites(GlobalContext.getConfig().getCipherSuites());
 					}
 					((SSLSocket) socket).setUseClientMode(false);
 					((SSLSocket) socket).startHandshake();

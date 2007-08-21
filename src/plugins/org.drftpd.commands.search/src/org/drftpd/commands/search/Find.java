@@ -32,8 +32,6 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.SFVInfo;
-import org.drftpd.SFVStatus;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -44,12 +42,16 @@ import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.jobmanager.Job;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+
+import se.mog.io.PermissionDeniedException;
 
 /**
  * SITE FIND <options>-action <action>Options: -user <user>-group
@@ -109,25 +111,19 @@ public class Find extends CommandInterface {
 			String reply = "";
 			try {
 				// check permission
-				User user = request.getUserObject();
+				User user = request.getSession().getUserNull(request.getUser());
 				FileHandle file = (FileHandle) inode;
-				DirectoryHandle parentDir = file.getParent();
 
-				if (file.getUsername().equals(user.getName()) &&
-						!GlobalContext.getGlobalContext().getConfig().checkPathPermission("deleteown", user, parentDir)) {
+				try {
+					file.delete(user);
+				} catch (PermissionDeniedException e) {
 					return "Access denied for " + file.getPath();
 				}
-				else if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("delete", user, parentDir)) {
-					return "Access denied for " + file.getPath();
-				}
-				
+
 				reply = "Deleted " + file.getPath();
-				User uploader;
 
-
-				uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(file.getUsername());
-				uploader.updateCredits((long) -(file.getSize() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));
-				file.delete();
+				User uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(file.getUsername());
+				uploader.updateCredits((long) -(file.getSize() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));				
 			} catch (UserFileException e) {
 				reply += "Error removing credits: " + e.getMessage();
 			} catch (NoSuchUserException e) {
@@ -256,7 +252,7 @@ public class Find extends CommandInterface {
 
 		public String exec(CommandRequest request, InodeHandle inode) {
 			try {
-				inode.delete();
+				inode.deleteUnchecked(); // TODO does wipe needs to be checked against delete perms?
 			} catch (FileNotFoundException e) {
 				logger.error("The file was there and now it's gone, how?", e);
 			}
@@ -440,7 +436,7 @@ public class Find extends CommandInterface {
 			return;
 		}
 		
-		if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true)) {
+		if (!GlobalContext.getConfig().checkPathPermission("privpath", user, dir, true)) {
 			return;
 		}
 

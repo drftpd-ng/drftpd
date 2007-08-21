@@ -134,7 +134,7 @@ public class Request extends CommandInterface {
 	public CommandResponse doSITE_REQUEST(CommandRequest request) throws ImproperUsageException {
 		Session session = request.getSession();
 		DirectoryHandle requestDir = request.getCurrentDirectory();
-		if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("request",
+		if (!GlobalContext.getConfig().checkPathPermission("request",
 				session.getUserNull(request.getUser()), requestDir)) {
 			// if CWD isn't allowed then try falling back to the dir set in command config
 			// if such a dir exists
@@ -145,7 +145,7 @@ public class Request extends CommandInterface {
 			} else {
 				requestDir = new DirectoryHandle(requestDirProp);
 			}
-			if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("request",
+			if (!GlobalContext.getConfig().checkPathPermission("request",
 					session.getUserNull(request.getUser()), requestDir)) {
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
@@ -163,7 +163,7 @@ public class Request extends CommandInterface {
 		try {
 			DirectoryHandle createdDir;
 			try {
-				createdDir = requestDir.createDirectory(createdDirName,
+				createdDir = requestDir.createDirectoryUnchecked(createdDirName,
 						session.getUserNull(request.getUser()).getName(),
 						session.getUserNull(request.getUser()).getGroup());
 				User user;
@@ -270,7 +270,7 @@ public class Request extends CommandInterface {
 				if (dir.getName().endsWith(reqname)) {
 					nodir = false;
 					if (dir.getUsername().equals(request.getUser()) || user.isAdmin()) {
-						dir.delete();
+						dir.deleteUnchecked();
 						deldir = true;
 						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.success", env, request.getUser()));
 						break;

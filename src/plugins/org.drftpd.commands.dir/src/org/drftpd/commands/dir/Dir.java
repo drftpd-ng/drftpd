@@ -23,7 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
@@ -46,6 +45,8 @@ import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
+
+import se.mog.io.PermissionDeniedException;
 
 
 /**
@@ -228,17 +229,6 @@ public class Dir extends CommandInterface {
     		if (requestedFile.isFile()) {
     			response.setObject(DELEFILE, requestedFile);
     		}
-    		/* TODO reimplement with permissions pre hooks
-    		 * 
-    		 */
-    		// check permission
-    		/*if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile.getParent())) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
-            }
-        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile.getParent())) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }*/
 
     		if (requestedFile.isDirectory()) {
     			DirectoryHandle victim = (DirectoryHandle) requestedFile;
@@ -247,23 +237,27 @@ public class Dir extends CommandInterface {
     						+ ": Directory not empty");
     			}
     		}
-
+    		
+    		try {
+        		Session session = request.getSession();
+				requestedFile.delete(session.getUserNull(request.getUser()));
+			} catch (PermissionDeniedException e) {
+				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			}
 
     		User uploader;
 
     		try {
     			uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(
     					requestedFile.getUsername());
-    			uploader.updateCredits((long) -(requestedFile.getSize() * GlobalContext
-    					.getGlobalContext().getConfig().getCreditCheckRatio(
+    			uploader.updateCredits((long) -(requestedFile.getSize() * GlobalContext.getConfig().getCreditCheckRatio(
     							requestedFile.getParent(), uploader)));
-    			if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission(
+    			if (!GlobalContext.getConfig().checkPathPermission(
     					"nostatsup", uploader, request.getCurrentDirectory())) {
     				uploader.updateUploadedBytes(-requestedFile.getSize());
     			}
     		} catch (UserFileException e) {
-    			response.addComment("Error removing credits & stats: "
-    					+ e.getMessage());
+    			response.addComment("Error removing credits & stats: "+ e.getMessage());
     		} catch (NoSuchUserException e) {
     			response.addComment("User " + requestedFile.getUsername()
     					+ " does not exist, cannot remove credits on deletion");
@@ -276,7 +270,6 @@ public class Dir extends CommandInterface {
     			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
     					request.getSession().getUserNull(request.getUser()), "RMD", (DirectoryHandle)requestedFile));
     		}
-    		requestedFile.delete();
     	} catch (FileNotFoundException e) {
     		// good! we're done :)
     		return new CommandResponse(550, e.getMessage());
@@ -340,7 +333,6 @@ public class Dir extends CommandInterface {
      *                   500, 501, 502, 421, 530, 550
      */
     public CommandResponse doMKD(CommandRequest request) {
-
         // argument check
         if (!request.hasArgument()) {
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -351,67 +343,18 @@ public class Dir extends CommandInterface {
         DirectoryHandle fakeDirectory = request.getCurrentDirectory().getNonExistentDirectoryHandle(path);
         String dirName = fakeDirectory.getName();
 
-        //check for NUKED dir
-        /*
-         * save Teflon's for a few weeks?
-        logger.info(conn.getCurrentDirectory().getName());
-        logger.info(request.getArgument());
-        logger.info("[NUKED]-" + ret.getPath());
-        if (conn.getCurrentDirectory().hasFile("[NUKED]-" + ret.getPath())) {
-            return new Reply(550,
-                    "Requested action not taken. " + request.getArgument() +
-                    " is nuked!");
-            
-        }
-        */
-        // *************************************
-		// begin nuke log check
-/*		String toPath;
-		if (request.getArgument().substring(0, 1).equals("/")) {
-			toPath = request.getArgument();
-		} else {
-			StringBuffer toPath2 = new StringBuffer(conn.getCurrentDirectory()
-					.getPath());
-			if (toPath2.length() != 1)
-				toPath2.append("/"); // isn't /
-			toPath2.append(request.getArgument());
-			toPath = toPath2.toString();
-		}
-		// Try Nuke, then if that doesn't work, try TDPSiteNuke.
-		NukeBeans nukeBeans = NukeBeans.getNukeBeans();
-		if (nukeBeans != null && nukeBeans.findPath(toPath)) {
-			try {
-				String reason = nukeBeans.get(toPath).getReason();
-				return new Reply(530,
-						"Access denied - Directory already nuked for '"
-								+ reason + "'");
-			} catch (ObjectNotFoundException e) {
-				return new Reply(530,
-						"Access denied - Directory already nuked, reason unavailable - "
-								+ e.getMessage());
-			}
-		}*/
-		// end nuke log check
-		// *************************************
-
         if (!ListUtils.isLegalFileName(dirName)) {
         	return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
         }
 
-        /* TODO: Reimplement with permissions pre hooks
-         * 
-         */
-        //if (!conn.getGlobalContext().getConfig().checkPathPermission("makedir", conn.getUserNull(), conn.getCurrentDirectory())) {
-        //    return Reply.RESPONSE_530_ACCESS_DENIED;
-        //}
-
         try {
         	DirectoryHandle newDir = null;
             try {
-				newDir = fakeDirectory.getParent().createDirectory(dirName,session.getUserNull(request.getUser()).getName(),
-						session.getUserNull(request.getUser()).getGroup());
+				newDir = fakeDirectory.getParent().createDirectory(session.getUserNull(request.getUser()), dirName);
 			} catch (FileNotFoundException e) {
 				return new CommandResponse(550, "Parent directory does not exist");
+			} catch (PermissionDeniedException e) {
+				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
   
 			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
@@ -782,7 +725,8 @@ public class Dir extends CommandInterface {
 							.getParent()));
 
 			// }
-			wipeFile.delete();
+			// TODO does wipe need to be checked against delete perms?
+			wipeFile.deleteUnchecked();
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}

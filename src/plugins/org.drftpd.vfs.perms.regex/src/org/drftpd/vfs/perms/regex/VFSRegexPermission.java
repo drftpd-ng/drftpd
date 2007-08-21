@@ -15,27 +15,24 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.permissions;
+package org.drftpd.vfs.perms.regex;
 
-import java.util.Collection;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
-import org.drftpd.org.apache.tools.ant.types.selectors.SelectorUtils;
-import org.drftpd.vfs.DirectoryHandle;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.permissions.Permission;
+import org.drftpd.permissions.RegexPathPermission;
+import org.drftpd.vfs.perms.VFSPermHandler;
 
 /**
- * @author mog
+ * Handles Regex Permissions.
+ * @author fr0w
  * @version $Id$
  */
-public class PatternPathPermission extends PathPermission {
-	private String _pat;
-
-	public PatternPathPermission(String pattern, Collection<String> users) {
-		super(users);
-		_pat = pattern;
-	}
-
-	public boolean checkPath(DirectoryHandle path) {
-		return SelectorUtils.matchPath(_pat, path.getPath(), false);
-	}
-
+public class VFSRegexPermission extends VFSPermHandler {	
+	public void handle(String directive, StringTokenizer st) throws MalformedPatternException {
+		Pattern p = Pattern.compile(st.nextToken(), Pattern.CASE_INSENSITIVE);
+		addPermission(directive, new RegexPathPermission(p, Permission.makeUsers(st)));
+	}	
 }

@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
@@ -37,7 +36,6 @@ import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.Event;
 import org.drftpd.event.FtpListener;
 import org.drftpd.event.UserEvent;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.CalendarUtils;
@@ -467,8 +465,7 @@ public class Trial extends FtpListener {
 				perm = "*";
 			}
 
-			limit.setPerm(new Permission(FtpConfig
-					.makeUsers(new StringTokenizer(perm))));
+			limit.setPerm(new Permission(Permission.makeUsers(new StringTokenizer(perm))));
 			limit.setBytes(Bytes.parseBytes(PropertyHelper.getProperty(props, i
 					+ ".quota")));
 			limits.add(limit);

@@ -28,7 +28,7 @@ import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 
 import org.apache.log4j.Logger;
-import org.drftpd.commandmanager.CommandManager;
+import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -54,7 +54,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
 
         _currentDirectory = new DirectoryHandle(null);
         try {
-			_currentDirectory.createFile("testfile", "drftpd", "drftpd", null);
+			_currentDirectory.createFileUnchecked("testfile", "drftpd", "drftpd", null);
 		} catch (FileExistsException e) {
 			logger.error(e);
 		} catch (FileNotFoundException e) {
@@ -72,7 +72,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
         return _clientAddress;
     }
 
-    public CommandManager getCommandManager() {
+    public CommandManagerInterface getCommandManager() {
         throw new UnsupportedOperationException();
     }
 

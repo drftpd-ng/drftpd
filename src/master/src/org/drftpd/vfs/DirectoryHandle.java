@@ -32,6 +32,9 @@ import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
+import org.drftpd.usermanager.User;
+
+import se.mog.io.PermissionDeniedException;
 
 /**
  * @author zubov
@@ -97,6 +100,14 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	/**
+	 * @return all InodeHandles inside this dir.
+	 * @throws FileNotFoundException
+	 */
+	public Set<InodeHandle> getInodeHandles() throws FileNotFoundException {
+		return getInode().getInodes();
+	}	
+
+	/**
 	 * @return a set containing only the files of this dir.
 	 * (no links or directories included.)
 	 * @throws FileNotFoundException
@@ -111,38 +122,6 @@ public class DirectoryHandle extends InodeHandle implements
 			}
 		}
 		return (Set<FileHandle>) set;
-	}
-	
-	/**
-	 * @return true if the dir has offline files.
-	 * @throws FileNotFoundException
-	 */
-	public boolean hasOfflineFiles() throws FileNotFoundException {
-		return getOfflineFiles().size() != 0;
-	}
-	
-	/**
-	 * @return a set containing only the offline files of this dir.
-	 * @throws FileNotFoundException
-	 */
-	public Set<FileHandle> getOfflineFiles() throws FileNotFoundException {
-		Set<FileHandle> allFiles = getFiles();
-		Set<FileHandle> offlineFiles = new HashSet<FileHandle>(allFiles.size());
-		
-		for (FileHandle file : allFiles) {
-			if (!file.isAvailable())
-				offlineFiles.add(file);
-		}
-		
-		return offlineFiles;
-	}
-
-	/**
-	 * @return all InodeHandles inside this dir.
-	 * @throws FileNotFoundException
-	 */
-	public Set<InodeHandle> getInodeHandles() throws FileNotFoundException {
-		return getInode().getInodes();
 	}
 
 	/**
@@ -177,6 +156,30 @@ public class DirectoryHandle extends InodeHandle implements
 			}
 		}
 		return (Set<LinkHandle>) set;
+	}
+	
+	/**
+	 * @return true if the dir has offline files.
+	 * @throws FileNotFoundException
+	 */
+	public boolean hasOfflineFiles() throws FileNotFoundException {
+		return getOfflineFiles().size() != 0;
+	}
+	
+	/**
+	 * @return a set containing only the offline files of this dir.
+	 * @throws FileNotFoundException
+	 */
+	public Set<FileHandle> getOfflineFiles() throws FileNotFoundException {
+		Set<FileHandle> allFiles = getFiles();
+		Set<FileHandle> offlineFiles = new HashSet<FileHandle>(allFiles.size());
+		
+		for (FileHandle file : allFiles) {
+			if (!file.isAvailable())
+				offlineFiles.add(file);
+		}
+		
+		return offlineFiles;
 	}
 
 	/**
@@ -248,7 +251,7 @@ public class DirectoryHandle extends InodeHandle implements
 		if (collision) {
 			name = lrf.getName() + ".collision." + rslave.getName();
 		}
-		FileHandle newFile = createFile(name, "drftpd", "drftpd", rslave);
+		FileHandle newFile = createFileUnchecked(name, "drftpd", "drftpd", rslave);
 		newFile.setLastModified(lrf.lastModified());
 		newFile.setSize(lrf.length());
 		newFile.setCheckSum(rslave.getCheckSumForPath(newFile.getPath()));
@@ -430,8 +433,11 @@ public class DirectoryHandle extends InodeHandle implements
 		}
 	}
 	
+	/**
+	 * Shortcut to create "owner-less" directories.
+	 */
 	public DirectoryHandle createDirectorySystem(String name) throws FileExistsException, FileNotFoundException {
-		return createDirectory(name, "drftpd", "drftpd");
+		return createDirectoryUnchecked(name, "drftpd", "drftpd");
 	}
 
 	/**
@@ -455,51 +461,102 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	/**
-	 * Creates a Directory object in the FileSystem with this directory as its
-	 * parent
-	 * 
+	 * Creates a Directory object in the FileSystem with this directory as its parent.<br>
+	 * This method does not check for permissions, so be careful while using it.<br>
+	 * @see For a checked way of creating dirs {@link #createFile(User, String, RemoteSlave)};
 	 * @param user
 	 * @param group
-	 * @return
+	 * @return the created directory.
 	 * @throws FileNotFoundException
 	 * @throws FileExistsException
 	 */
-	public DirectoryHandle createDirectory(String name, String user,
+	public DirectoryHandle createDirectoryUnchecked(String name, String user,
 			String group) throws FileExistsException, FileNotFoundException {
 		getInode().createDirectory(name, user, group);
 		try {
 			return getDirectory(name);
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException(
-					"somethin really funky happened, we just created it", e);
+			throw new RuntimeException("Something really funky happened, we just created it", e);
 		} catch (ObjectNotValidException e) {
-			throw new RuntimeException(
-					"somethin really funky happened, we just created it", e);
+			throw new RuntimeException("Something really funky happened, we just created it", e);
 		}
+	}
+	
+	/**
+	 * Attempts to create a Directory in the FileSystem with this directory as parent.
+	 * @see For an unchecked way of creating dirs: {@link #createDirectoryUnchecked(String, String, String)}
+	 * @param user
+	 * @param name
+	 * @return the created directory.
+	 * @throws PermissionDeniedException if the given user is not allowed to create dirs.
+	 * @throws FileExistsException
+	 * @throws FileNotFoundException
+	 */
+	public DirectoryHandle createDirectory(User user, String name) 
+			throws PermissionDeniedException, FileExistsException, FileNotFoundException {		
+		if (user == null) {
+			throw new PermissionDeniedException("User cannot be null");
+		}
+		
+		DirectoryHandle newDir = getNonExistentDirectoryHandle(name);
+		
+		if (!getVFSPermissions().checkPathPermission("makedir", user, newDir)) {
+			throw new PermissionDeniedException("You are not allowed to create a directory at "+ newDir.getParent());
+		}
+		
+		return createDirectoryUnchecked(name, user.getName(), user.getGroup());
 	}
 
 	/**
-	 * Creates a File object in the FileSystem with this directory as its parent
-	 * 
+	 * Creates a File object in the FileSystem with this directory as its parent.<br>
+	 * This method does not check for permissions, so be careful while using it.<br>
+	 * @see For unchecked creating of files {@link #createFileUnchecked(String, String, String, RemoteSlave)}
+	 * @param name
+	 * @param user
+	 * @param group
+	 * @param initialSlave
+	 * @return the created file.
+	 * @throws FileExistsException
+	 * @throws FileNotFoundException
 	 */
-	public FileHandle createFile(String name, String user, String group,
+	public FileHandle createFileUnchecked(String name, String user, String group,
 			RemoteSlave initialSlave) throws FileExistsException,
 			FileNotFoundException {
 		getInode().createFile(name, user, group, initialSlave.getName());
 		try {
 			return getFile(name);
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException(
-					"somethin really funky happened, we just created it", e);
+			throw new RuntimeException("Something really funky happened, we just created it", e);
 		} catch (ObjectNotValidException e) {
-			throw new RuntimeException(
-					"somethin really funky happened, we just created it", e);
+			throw new RuntimeException("Something really funky happened, we just created it", e);
 		}
+	}
+	
+	/**
+	 * Attempts to create a File in the FileSystem having this directory as parent.
+	 * @param user
+	 * @param name
+	 * @param initialSlave
+	 * @return
+	 * @throws PermissionDeniedException if the user is not allowed to create a file in this dir.
+	 * @throws FileExistsException
+	 * @throws FileNotFoundException
+	 */
+	public FileHandle createFile(User user, String name, RemoteSlave initialSlave) 
+			throws PermissionDeniedException, FileExistsException, FileNotFoundException {
+		if (user == null) {
+			throw new PermissionDeniedException("User cannot be null");
+		}
+		
+		if (!getVFSPermissions().checkPathPermission("upload", user, this)) {
+			throw new PermissionDeniedException("You are not allowed to upload to "+ getParent());
+		}
+		
+		return createFileUnchecked(name, user.getName(), user.getGroup(), initialSlave);
 	}
 
 	/**
 	 * Creates a Link object in the FileSystem with this directory as its parent
-	 * 
 	 */
 	public LinkHandle createLink(String name, String target, String user,
 			String group) throws FileExistsException, FileNotFoundException {
@@ -507,11 +564,9 @@ public class DirectoryHandle extends InodeHandle implements
 		try {
 			return getLink(name);
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException(
-					"somethin really funky happened, we just created it", e);
+			throw new RuntimeException("Something really funky happened, we just created it", e);
 		} catch (ObjectNotValidException e) {
-			throw new RuntimeException(
-					"somethin really funky happened, we just created it", e);
+			throw new RuntimeException("Something really funky happened, we just created it", e);
 		}
 	}
 
@@ -542,7 +597,7 @@ public class DirectoryHandle extends InodeHandle implements
 			inode.removeSlave(rslave);
 		}
 		if (!empty && isEmpty()) { // if it wasn't empty before, but is now, delete it
-			delete();
+			deleteUnchecked();
 		}
 	}
 
@@ -566,9 +621,9 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 	
 	@Override
-	public void delete() throws FileNotFoundException {
+	public void deleteUnchecked() throws FileNotFoundException {
 		abortAllTransfers("Directory " + getPath() + " is being deleted");
 		GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
-		super.delete();
+		super.deleteUnchecked();
 	}
 }

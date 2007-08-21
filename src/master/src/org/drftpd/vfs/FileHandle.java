@@ -261,11 +261,11 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	}
 
 	@Override
-	public void delete() throws FileNotFoundException {
+	public void deleteUnchecked() throws FileNotFoundException {
 		abortTransfers("File " + getPath() + " is being deleted");
 		for (RemoteSlave rslave : getSlaves()) {
 			rslave.simpleDelete(getPath());
 		}
-		super.delete();
+		super.deleteUnchecked();
 	}
 }

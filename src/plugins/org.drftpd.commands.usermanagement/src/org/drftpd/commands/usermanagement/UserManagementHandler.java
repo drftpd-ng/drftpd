@@ -42,12 +42,12 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.Session;
 import org.drftpd.master.TransferState;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
@@ -71,6 +71,8 @@ public class UserManagementHandler extends CommandInterface {
 	private ResourceBundle _bundle;
 
 	private String _keyPrefix;
+	
+	public static final Key CONNECTIONS = new Key(UserManagement.class, "connections", List.class); 
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -1213,7 +1215,7 @@ public class UserManagementHandler extends CommandInterface {
 			throws ImproperUsageException {
 
 		Session session = request.getSession();
-		if (!GlobalContext.getGlobalContext().getConfig().checkPermission("give",
+		if (!GlobalContext.getConfig().checkPermission("give",
 				session.getUserNull(request.getUser()))) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
@@ -1685,7 +1687,7 @@ public class UserManagementHandler extends CommandInterface {
 			throws ImproperUsageException {
 
 		Session session = request.getSession();
-		if (!GlobalContext.getGlobalContext().getConfig().checkPermission("take",
+		if (!GlobalContext.getConfig().checkPermission("take",
 				session.getUserNull(request.getUser()))) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
@@ -1823,7 +1825,7 @@ public class UserManagementHandler extends CommandInterface {
 		Collection myUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
 		if (request.hasArgument()) {
-			Permission perm = new Permission(FtpConfig
+			Permission perm = new Permission(Permission
 					.makeUsers(new StringTokenizer(request.getArgument())),
 					true);
 
@@ -1849,6 +1851,7 @@ public class UserManagementHandler extends CommandInterface {
 	/**
 	 * Lists currently connected users.
 	 */
+	@SuppressWarnings("unchecked")
 	private CommandResponse doListConnections(CommandRequest request, String type, boolean up, boolean down,
 			boolean idle, boolean command, boolean statusUsers, boolean statusSpeed, boolean restrictUser) {
 		Session session = request.getSession();
@@ -1862,7 +1865,11 @@ public class UserManagementHandler extends CommandInterface {
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		
-		List<BaseFtpConnection> conns = Collections.unmodifiableList(ConnectionManager.getConnectionManager().getConnections());
+		List<BaseFtpConnection> conns = (List<BaseFtpConnection>) request.getSession().getObject(CONNECTIONS, null);		
+		if (conns == null) {
+			conns = Collections.unmodifiableList(ConnectionManager.getConnectionManager().getConnections());
+		}	
+
 		for (BaseFtpConnection conn : conns) {
 			if (!conn.isAuthenticated()) {
 				continue;
@@ -1875,11 +1882,6 @@ public class UserManagementHandler extends CommandInterface {
 			} catch (NoSuchUserException e) {
 				// user was deleted maybe? who knows?
 				// very unlikely to happen.
-				continue;
-			}
-
-			if (GlobalContext.getGlobalContext().getConfig().
-					checkPathPermission("hideinwho", user,	conn.getCurrentDirectory())) {
 				continue;
 			}
 			
@@ -1931,7 +1933,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		env.add("currentusers", conns.size());
-		env.add("maxusers", GlobalContext.getGlobalContext().getConfig().getMaxUsersTotal());
+		env.add("maxusers", GlobalContext.getConfig().getMaxUsersTotal());
 		env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
 		env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
 		env.add("totalspeed", Bytes.formatBytes(speedup+speeddn) +"/s");

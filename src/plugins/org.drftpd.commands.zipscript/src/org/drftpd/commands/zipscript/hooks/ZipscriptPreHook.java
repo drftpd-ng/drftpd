@@ -32,8 +32,8 @@ import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.permissions.GlobPathPermission;
+import org.drftpd.permissions.Permission;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
@@ -66,20 +66,20 @@ public class ZipscriptPreHook implements PreHookInterface {
 				StringTokenizer st = new StringTokenizer(cfg
 						.getProperty("sfvfirst.pathcheck"));
 				while (st.hasMoreTokens()) {
-					GlobalContext.getGlobalContext().getConfig().addPathPermission(
+					GlobalContext.getConfig().addPathPermission(
 							"sfvfirst.pathcheck",
 							new GlobPathPermission(new GlobCompiler()
-									.compile(st.nextToken()), FtpConfig
+									.compile(st.nextToken()), Permission
 									.makeUsers(new StringTokenizer(
 											sfvFirstUsers, " "))));
 				}
 				st = new StringTokenizer(cfg
 						.getProperty("sfvfirst.pathignore"));
 				while (st.hasMoreTokens()) {
-					GlobalContext.getGlobalContext().getConfig().addPathPermission(
+					GlobalContext.getConfig().addPathPermission(
 							"sfvfirst.pathignore",
 							new GlobPathPermission(new GlobCompiler()
-									.compile(st.nextToken()), FtpConfig
+									.compile(st.nextToken()), Permission
 									.makeUsers(new StringTokenizer("*", " "))));
 				}
 			} catch (MalformedPatternException e) {
@@ -163,9 +163,9 @@ public class ZipscriptPreHook implements PreHookInterface {
 
 	private boolean checkSfvFirstEnforcedPath(DirectoryHandle dir, User user) {
 		if (_sfvFirstRequired
-				&& GlobalContext.getGlobalContext().getConfig().checkPathPermission("sfvfirst.pathcheck",
+				&& GlobalContext.getConfig().checkPathPermission("sfvfirst.pathcheck",
 						user, dir)
-				&& !GlobalContext.getGlobalContext().getConfig().checkPathPermission(
+				&& !GlobalContext.getConfig().checkPathPermission(
 						"sfvfirst.pathignore", user, dir)) {
 			return true;
 		}

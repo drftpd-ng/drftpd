@@ -17,7 +17,9 @@
  */
 package org.drftpd.permissions;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 
 import org.drftpd.usermanager.User;
@@ -77,5 +79,15 @@ public class Permission {
 
 		// didn't match..
 		return _invert ? (!allow) : false;
+	}
+	
+	public static ArrayList<String> makeUsers(Enumeration st) {
+		ArrayList<String> users = new ArrayList<String>();
+
+		while (st.hasMoreElements()) {
+			users.add((String) st.nextElement());
+		}
+
+		return users;
 	}
 }

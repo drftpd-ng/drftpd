@@ -44,7 +44,7 @@ public class Search extends CommandInterface {
     private static void findFile(CommandResponse response, DirectoryHandle dir, ArrayList<String> searchStrings, User user, boolean files, boolean dirs) 
     	throws FileNotFoundException {
 
-    	if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", user, dir, true)) {
+    	if (!GlobalContext.getConfig().checkPathPermission("privpath", user, dir, true)) {
             return; // could not search this dir as it is private.
         }
 

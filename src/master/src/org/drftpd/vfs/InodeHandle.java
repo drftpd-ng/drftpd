@@ -19,20 +19,23 @@ package org.drftpd.vfs;
 import java.io.FileNotFoundException;
 import java.util.Set;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.usermanager.User;
+import org.drftpd.vfs.perms.VFSPermissions;
+
+import se.mog.io.PermissionDeniedException;
 
 /**
  * @author zubov
  * @version $Id$
  */
 public abstract class InodeHandle implements InodeHandleInterface, Comparable {
-	String _path = null;
+	protected String _path = null;
 	protected static final Logger logger = Logger.getLogger(InodeHandle.class.getName());
 	
 	/**
@@ -53,26 +56,35 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	
 	/**
 	 * Delete the inode.
-	 * @throws FileNotFoundException
+	 * @throws FileNotFoundException if it doesn't exists.
+	 * @throws PermissionDeniedException if the user is not allowed to delete the file.
 	 */
-	public void delete() throws FileNotFoundException {
-		VirtualFileSystemInode inode = getInode();
-		SlaveManager sm = getGlobalContext().getSlaveManager();
-		if (inode.isFile()) {
-			Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
-			for (String slaveName : slaves) {
-				try {
-					sm.getRemoteSlave(slaveName).simpleDelete(getPath());
-				} catch (ObjectNotFoundException e) {
-					// slave doesn't exist, no reason to tell it to delete this file
-				}
-			}
-		} else if (inode.isDirectory()){
-			getGlobalContext().getSlaveManager().deleteOnAllSlaves((DirectoryHandle) this);
-		} else {
-			// it's a link! who cares! :)
+	public void delete(User user) throws FileNotFoundException, PermissionDeniedException {
+		if (user == null) {
+			throw new PermissionDeniedException("User cannot be null");
 		}
-		inode.delete();
+		
+		DirectoryHandle dir = null;
+		if (this instanceof DirectoryHandle) {
+			dir = (DirectoryHandle) this;
+		} else {
+			dir = this.getParent();
+		}
+		
+		if (user.getName().equals(getUsername()) && 
+				!getVFSPermissions().checkPathPermission("deleteown", user, dir)) {
+			throw new PermissionDeniedException("You are not allowed to delete "+getPath());
+		}
+		
+		if (!getVFSPermissions().checkPathPermission("delete", user, dir)) {
+			throw new PermissionDeniedException("You are not allowed to delete "+getPath());
+		}
+		
+		deleteUnchecked();
+	}
+	
+	public void deleteUnchecked() throws FileNotFoundException {	
+		getInode().delete();
 	}
 
 	/*
@@ -85,9 +97,9 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		if (!(arg0 instanceof InodeHandle)) {
 			return false;
 		}
+		
 		InodeHandle compareMe = (InodeHandle) arg0;
 		return _path.equalsIgnoreCase(compareMe._path);
-
 	}
 
 	/**
@@ -252,5 +264,8 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	public void setLastModified(long l) throws FileNotFoundException {
 		getInode().setLastModified(l);
 	}
-
+	
+	protected VFSPermissions getVFSPermissions() {
+		return GlobalContext.getConfig().getVFSPermissions();
+	}
 }

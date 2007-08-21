@@ -133,10 +133,10 @@ public class LinksPostHook implements PostHookInterface {
 					link.getTargetDirectory();
 				} catch (FileNotFoundException e1) {
 					// Link target no longer exists, remove it
-					link.delete();
+					link.deleteUnchecked();
 				} catch (ObjectNotValidException e1) {
 					// Link target isn't a directory, delete the link as it is bad
-					link.delete();
+					link.deleteUnchecked();
 				}
 			}
 		} catch (FileNotFoundException e2) {
@@ -150,10 +150,10 @@ public class LinksPostHook implements PostHookInterface {
 						link.getTargetDirectory();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remove it
-						link.delete();
+						link.deleteUnchecked();
 					} catch (ObjectNotValidException e1) {
 						// Link target isn't a directory, delete the link as it is bad
-						link.delete();
+						link.deleteUnchecked();
 					}
 				}
 			} catch (FileNotFoundException e2) {

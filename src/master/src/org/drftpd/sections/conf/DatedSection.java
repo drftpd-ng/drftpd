@@ -187,14 +187,14 @@ public class DatedSection extends PlainSection implements SectionInterface, Time
 		} catch (ObjectNotValidException e) {
 			logger.error("There is already a non-Directory object in the place where the new dated directory should go, removing " + dateDirName + " from section " + getName());
 			try {
-				getBaseDirectory().getInodeHandle(dateDirName).delete();
+				getBaseDirectory().getInodeHandle(dateDirName).deleteUnchecked();
 			} catch (FileNotFoundException e1) {
 				// this is good, although a little strange since it was just there a few milliseconds ago...
 			}
 		}
 		if (newDir == null) { // this is good, this is the standard process
 			try {
-				newDir = getBaseDirectory().createDirectory(dateDirName, "drftpd", "drftpd");
+				newDir = getBaseDirectory().createDirectoryUnchecked(dateDirName, "drftpd", "drftpd");
 			} catch (FileExistsException e) {
 				logger.error(dateDirName + " already exists in section " + getName() + ", this should not happen, we just deleted it", e);
 				return;

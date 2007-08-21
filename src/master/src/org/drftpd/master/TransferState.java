@@ -24,13 +24,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.slave.Transfer;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
@@ -168,7 +166,7 @@ public class TransferState {
         if (isPort()) {
             try {
 				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? GlobalContext.getGlobalContext().getSSLContext() : null, _portAddress, getSSLHandshakeClientMode());
-                dataSocket = ac.connect(FtpConfig.getFtpConfig().getCipherSuites(), 0);
+                dataSocket = ac.connect(GlobalContext.getConfig().getCipherSuites(), 0);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);
                 dataSocket = null;
@@ -176,7 +174,7 @@ public class TransferState {
             }
         } else if (isPasv()) {
             try {
-                dataSocket = _localPassiveConnection.connect(FtpConfig.getFtpConfig().getCipherSuites(), 0);
+                dataSocket = _localPassiveConnection.connect(GlobalContext.getConfig().getCipherSuites(), 0);
             } finally {
 				if (_localPassiveConnection != null) {
 					_localPassiveConnection.abort();

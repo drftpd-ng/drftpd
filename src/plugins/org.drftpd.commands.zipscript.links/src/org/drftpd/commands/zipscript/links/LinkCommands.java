@@ -66,10 +66,10 @@ public class LinkCommands extends CommandInterface {
 						link.getTargetDirectory().getPath();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remote it
-						link.delete();
+						link.deleteUnchecked();
 					} catch (ObjectNotValidException e1) {
 						// Link target isn't a directory, delete the link as it is bad
-						link.delete();
+						link.deleteUnchecked();
 						continue;
 					}
 				}

@@ -326,7 +326,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 					return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
 				}
 
-				if (!conn.getGlobalContext().getConfig().checkPathPermission(
+				if (!GlobalContext.getConfig().checkPathPermission(
 						"privpath", conn.getUserNull(),
 						directoryFile.getParent(), true)) {
 					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
@@ -343,7 +343,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 				os = conn.getControlWriter();
 			} else {
 				if (!ts.getSendFilesEncrypted()
-						&& conn.getGlobalContext().getConfig().checkPermission(
+						&& GlobalContext.getConfig().checkPermission(
 								"denydiruncrypted", conn.getUserNull())) {
 					return new CommandResponse(550, "Secure Listing Required");
 				}

@@ -23,7 +23,6 @@ import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandleInterface;
@@ -64,8 +63,8 @@ public class ListUtils {
 			/* TODO redo this with new permssions somehow
 			 * 
 			 */
-			if ((GlobalContext.getGlobalContext().getConfig() != null) &&
-					!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath",
+			if ((GlobalContext.getConfig() != null) &&
+					!GlobalContext.getConfig().checkPathPermission("privpath",
 							container.getSession().getUserNull(container.getUser()), dir, true)) {
 				// don't add it
 				continue;
@@ -111,7 +110,7 @@ public class ListUtils {
 			//				listFiles.add(element);
 			//				continue;
 			//			} else if (
-			boolean offlineFilesEnabled = FtpConfig.getFtpConfig().getProperties().getProperty("files.offline.enabled", "true").equals("true");
+			boolean offlineFilesEnabled = GlobalContext.getConfig().getMainProperties().getProperty("files.offline.enabled", "true").equals("true");
 			
 			if (offlineFilesEnabled && element.isFile()) {
 				if (!((FileHandleInterface) element).isAvailable()) {

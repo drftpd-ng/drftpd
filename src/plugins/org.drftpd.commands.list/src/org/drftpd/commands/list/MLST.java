@@ -83,7 +83,7 @@ public class MLST extends CommandInterface {
 			}
 		}
 
-		if (!GlobalContext.getGlobalContext().getConfig().checkPathPermission("privpath", 
+		if (!GlobalContext.getConfig().checkPathPermission("privpath", 
 				request.getSession().getUserNull(request.getUser()), dir, true)) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}

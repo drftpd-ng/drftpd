@@ -34,7 +34,7 @@ import socks.server.Ident;
  * @author mog
  * @version $Id$
  */
-public class HostMaskCollection extends ArrayList {
+public class HostMaskCollection extends ArrayList<HostMask> {
 
 	public HostMaskCollection() {
 	}

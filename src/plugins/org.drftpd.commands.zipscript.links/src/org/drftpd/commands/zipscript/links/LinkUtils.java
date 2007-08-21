@@ -87,7 +87,7 @@ public class LinkUtils {
 			try {
 				InodeHandle link = targetDir.getInodeHandle(linkName);
 				if (link.isLink()) {
-					link.delete();
+					link.deleteUnchecked();
 				}
 			} catch (FileNotFoundException e) {
 				// Link is already gone

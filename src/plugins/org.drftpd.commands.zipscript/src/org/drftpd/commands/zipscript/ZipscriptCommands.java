@@ -175,7 +175,9 @@ public class ZipscriptCommands extends CommandInterface implements EventSubscrib
 					status = "FAILED - checksum mismatch";
 					if (deleteBad) {
 						try {
-							file.delete();
+							/* TODO if the user is rescanning and cannot delete the file
+							 * what's the real point of rescanning? correct me if i'm wrong (fr0w) */
+							file.deleteUnchecked();
 						} catch (FileNotFoundException e4) {
 							// File already gone, all is good
 						}

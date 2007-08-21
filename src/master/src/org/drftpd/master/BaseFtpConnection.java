@@ -364,7 +364,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		GlobalContext.getConnectionManager().dumpThreadPool();
 		
 		_lastActive = System.currentTimeMillis();
-		if (!GlobalContext.getGlobalContext().getConfig().getHideIps()) {
+		if (!GlobalContext.getConfig().getHideIps()) {
 			logger.info("Handling new request from "
 					+ getClientAddress().getHostAddress());
 			_thread.setName("FtpConn thread " + _thread.getId() + " from "
@@ -385,8 +385,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 			if (GlobalContext.getGlobalContext().isShutdown()) {
 				stop(GlobalContext.getGlobalContext().getShutdownMessage());
 			} else {
-				FtpReply response = new FtpReply(220, GlobalContext
-						.getGlobalContext().getConfig().getLoginPrompt());
+				FtpReply response = new FtpReply(220, GlobalContext.getConfig().getLoginPrompt());
 				_out.print(response);
 			}
 
@@ -506,7 +505,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		if (isAuthenticated()) {
 			try {
 				// If hideips is on, hide ip but not user/group
-				if (GlobalContext.getGlobalContext().getConfig().getHideIps()) {
+				if (GlobalContext.getConfig().getHideIps()) {
 					_thread.setName("FtpConn thread " + _thread.getId()
 							+ " servicing " + _user + "/"
 							+ getUser().getGroup());

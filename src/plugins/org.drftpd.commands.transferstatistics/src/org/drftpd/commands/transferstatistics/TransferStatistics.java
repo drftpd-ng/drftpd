@@ -25,18 +25,16 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commandmanager.UnhandledCommandException;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.UnhandledCommandException;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.master.config.FtpConfig;
 import org.drftpd.master.Session;
 import org.drftpd.permissions.Permission;
 import org.drftpd.plugins.Trial;
@@ -299,7 +297,7 @@ public class TransferStatistics extends CommandInterface  {
             	/* TODO Likely this will need revisiting
             	 * to move to prehooks
             	 */
-                Permission perm = new Permission(FtpConfig.makeUsers(st));
+                Permission perm = new Permission(Permission.makeUsers(st));
 
                 for (Iterator iter = users.iterator(); iter.hasNext();) {
                     User user = (User) iter.next();

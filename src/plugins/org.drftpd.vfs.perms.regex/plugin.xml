@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.vfs.perms.regex" version="2.1.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.vfs.perms.regex" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension plugin-id="master" point-id="VFSPerm" id="MakedirExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="makedir" />
+    	<parameter id="Directive" value="makedirex" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="UploadExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="upload" />
+    	<parameter id="Directive" value="uploadex" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="DownloadExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="download" />
+    	<parameter id="Directive" value="downloadex" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="DeleteExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="delete" />
+    	<parameter id="Directive" value="deleteex" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="DeleteOwnExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="delete" />
+    	<parameter id="Directive" value="deleteownex" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="RenameExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="rename" />
+    	<parameter id="Directive" value="renameex" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="RenameOwnExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="rename" />
+    	<parameter id="Directive" value="renameownex" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="PrivPathExDirective">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.regex.VFSRegexPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="privpath" />
+    	<parameter id="Directive" value="privpathex" />
+	</extension>
+
+</plugin>

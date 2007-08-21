@@ -59,6 +59,8 @@ import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
+import se.mog.io.PermissionDeniedException;
+
 /**
  * @author mog
  * @author zubov
@@ -176,9 +178,7 @@ public class DataConnectionHandler extends CommandInterface {
 				return new CommandResponse(500, e1.getMessage());
 			}
             try {
-				address = new InetSocketAddress(conn.getGlobalContext()
-						.getConfig().getPasvAddress(), pc
-						.getLocalPort());
+				address = new InetSocketAddress(GlobalContext.getConfig().getPasvAddress(), pc.getLocalPort());
 			} catch (NullPointerException e) {
 				address = new InetSocketAddress(conn.getControlSocket()
 						.getLocalAddress(), pc.getLocalPort());
@@ -395,7 +395,7 @@ public class DataConnectionHandler extends CommandInterface {
 				}
 				response.addComment("Using "
 						+ (ts.isLocalPreTransfer() ? "master:"
-								+ GlobalContext.getGlobalContext().getConfig()
+								+ GlobalContext.getConfig()
 										.getPasvAddress() : ts
 								.getTransferSlave().getName()
 								+ ":" + ts.getTransferSlave().getPASVIP())
@@ -432,51 +432,51 @@ public class DataConnectionHandler extends CommandInterface {
         if (ghostRequest == null) {
         	throw new IllegalStateException("PRET was not called before setTransferFileFromPRETRequest()");
         }
-        String cmd = ghostRequest.getCommand();
+		String cmd = ghostRequest.getCommand();
 		if (cmd.equals("RETR")) {
-	        	FileHandle file = null;
-	    		try {
-					file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
-				} catch (FileNotFoundException e) {
-					reset(conn);
-					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-				} catch (ObjectNotValidException e) {
-					reset(conn);
-					return new CommandResponse(550, "Requested target is not a file");
-				}
-				ts.setTransferFile(file);
-				return new CommandResponse(200, "OK, planning for upcoming download");
-	        } else if (cmd.equals("STOR")) {
-	        	FileHandle file = null;
-	    		try {
-					file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
-				} catch (FileNotFoundException e) {
-					// this is good, do nothing
-					// should be null already, but just for my (current) sanity
-					file = null;
-				} catch (ObjectNotValidException e) {
-					// this is not good, file exists
-	            	// until we can upload multiple instances of files
-					reset(conn);
-					return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-				}
-				if (file != null) {
-					// this is not good, file exists
-	            	// until we can upload multiple instances of files
-					reset(conn);
-					return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-				}
-				file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
+			FileHandle file = null;
+			try {
+				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
+			} catch (FileNotFoundException e) {
+				reset(conn);
+				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+			} catch (ObjectNotValidException e) {
+				reset(conn);
+				return new CommandResponse(550, "Requested target is not a file");
+			}
+			ts.setTransferFile(file);
+			return new CommandResponse(200, "OK, planning for upcoming download");
+		} else if (cmd.equals("STOR")) {
+			FileHandle file = null;
+			try {
+				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
+			} catch (FileNotFoundException e) {
+				// this is good, do nothing
+				// should be null already, but just for my (current) sanity
+				file = null;
+			} catch (ObjectNotValidException e) {
+				// this is not good, file exists
+				// until we can upload multiple instances of files
+				reset(conn);
+				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+			}
+			if (file != null) {
+				// this is not good, file exists
+				// until we can upload multiple instances of files
+				reset(conn);
+				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+			}
+			file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
 
-	            if (!ListUtils.isLegalFileName(file.getName())) {
-	            	reset(conn);
-	            	return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
-	            }
-	            ts.setTransferFile(file);
-	            return new CommandResponse(200, "OK, planning for upcoming upload");
-	        } else {
-	        	return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-	        }
+			if (!ListUtils.isLegalFileName(file.getName())) {
+				reset(conn);
+				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
+			}
+			ts.setTransferFile(file);
+			return new CommandResponse(200, "OK, planning for upcoming upload");
+		} else {
+			return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+		}
     }
     
     public CommandResponse doSSCN(CommandRequest request) {
@@ -830,7 +830,7 @@ public class DataConnectionHandler extends CommandInterface {
     	TransferState ts = conn.getTransferState();
         ReplacerEnvironment env = new ReplacerEnvironment();
         if (!ts.getSendFilesEncrypted() &&
-                conn.getGlobalContext().getConfig().checkPermission("denydatauncrypted", conn.getUserNull())) {
+        		GlobalContext.getConfig().checkPermission("denydatauncrypted", conn.getUserNull())) {
         	reset(conn);
         	return new CommandResponse(530, "USE SECURE DATA CONNECTION");
         }
@@ -948,7 +948,9 @@ public class DataConnectionHandler extends CommandInterface {
                     request.getArgument() + ": No such file");
             }
 */
-/*            switch (direction) {
+/*            
+ * TODO upload done, download still needs doing.
+ * 			switch (direction) {
             case Transfer.TRANSFER_SENDING_DOWNLOAD:
                 if (!conn.getGlobalContext().getConfig().checkPathPermission(
 						"download", conn.getUserNull(),
@@ -1045,10 +1047,7 @@ public class DataConnectionHandler extends CommandInterface {
                 // it doesn't exist in the VFS yet!
                 try {
                 	if (ts.isPasv()) {
-                		ts.setTransferFile(fh.getParent().createFile(fh.getName(),
-							conn.getUserNull().getName(),
-							conn.getUserNull().getGroup(),
-							ts.getTransferSlave()));
+                		ts.setTransferFile(fh.getParent().createFile(conn.getUserNull(), fh.getName(), ts.getTransferSlave()));
                 	} else { // ts.isPort()
                 		try {
             				fh = conn.getCurrentDirectory().getFile(conn.getRequest().getArgument());
@@ -1060,35 +1059,32 @@ public class DataConnectionHandler extends CommandInterface {
             				// this is not good, file exists
                         	// until we can upload multiple instances of files
             				return StandardCommandManager.genericResponse(
-        	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+            						"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
             			}
             			if (fh != null) {
             				// this is not good, file exists
                         	// until we can upload multiple instances of files
             				return StandardCommandManager.genericResponse(
-        	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+            						"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
             			}
             			fh = conn.getCurrentDirectory().getNonExistentFileHandle(conn.getRequest().getArgument());
 
                         if (!ListUtils.isLegalFileName(fh.getName())) {
                         	reset(conn);
-                        	return StandardCommandManager.genericResponse(
-        	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
+                        	return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
                         }
-    					ts.setTransferFile(fh.getParent().createFile(
-								fh.getName(), conn.getUserNull().getName(),
-								conn.getUserNull().getGroup(),
-								ts.getTransferSlave()));
+    					ts.setTransferFile(fh.getParent().createFile(conn.getUserNull(), fh.getName(), ts.getTransferSlave()));
                 	}
 				} catch (FileExistsException e) {
 					// reset is handled in finally
 					return StandardCommandManager.genericResponse(
-	    					"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+							"RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 				} catch (FileNotFoundException e) {
 					// reset is handled in finally
 					logger.debug("",e);
-					return StandardCommandManager.genericResponse(
-	    					"RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+				} catch (PermissionDeniedException e) {
+					return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 				}
             }
 
@@ -1181,12 +1177,11 @@ public class DataConnectionHandler extends CommandInterface {
                 CommandResponse response = null;
                 if (isStor) {
                     try {
-						ts.getTransferFile().delete();
+						ts.getTransferFile().deleteUnchecked();
 					} catch (FileNotFoundException e) {
 						// ahh, great! :)
 					}
-                    logger.error("IOException during transfer, deleting file",
-                        ex);
+                    logger.error("IOException during transfer, deleting file", ex);
                     response = new CommandResponse(426, "Transfer failed, deleting file");
                 } else {
                     logger.error("IOException during transfer", ex);
@@ -1202,12 +1197,11 @@ public class DataConnectionHandler extends CommandInterface {
 
                 if (isStor) {
                     try {
-						ts.getTransferFile().delete();
+						ts.getTransferFile().deleteUnchecked();
 					} catch (FileNotFoundException e1) {
 						// ahh, great! :)
 					}
-                    logger.error("Slave went offline during transfer, deleting file",
-                        e);
+                    logger.error("Slave went offline during transfer, deleting file", e);
                     response = new CommandResponse(426,
                             "Slave went offline during transfer, deleting file");
                 } else {
@@ -1267,7 +1261,7 @@ public class DataConnectionHandler extends CommandInterface {
 					// transferstatistics
 					if (isRetr) {
 
-						float ratio = conn.getGlobalContext().getConfig()
+						float ratio = GlobalContext.getConfig()
 								.getCreditLossRatio(ts.getTransferFile().getParent(),
 										conn.getUserNull());
 
@@ -1276,7 +1270,7 @@ public class DataConnectionHandler extends CommandInterface {
 									(long) (-status.getTransfered() * ratio));
 						}
 
-						if (!conn.getGlobalContext().getConfig()
+						if (!GlobalContext.getConfig()
 								.checkPathPermission("nostatsdn",
 										conn.getUserNull(),
 										conn.getCurrentDirectory())) {
@@ -1289,11 +1283,10 @@ public class DataConnectionHandler extends CommandInterface {
 					} else {
 
 						conn.getUserNull().updateCredits(
-								(long) (status.getTransfered() * conn
-										.getGlobalContext().getConfig()
+								(long) (status.getTransfered() * GlobalContext.getConfig()
 										.getCreditCheckRatio(ts.getTransferFile().getParent(),
 												conn.getUserNull())));
-						if (!conn.getGlobalContext().getConfig()
+						if (!GlobalContext.getConfig()
 								.checkPathPermission("nostatsup",
 										conn.getUserNull(),
 										conn.getCurrentDirectory())) {

@@ -219,7 +219,7 @@ public class Nuke extends CommandInterface {
         try {
             nukeDir.renameTo(nukeDir.getNonExistentDirectoryHandle(toFullPath)); // rename.
             nukeDir = currentDir.getDirectory(toFullPath);
-            nukeDir.createDirectory("REASON-" + reason, request.getUser(),
+            nukeDir.createDirectoryUnchecked("REASON-" + reason, request.getUser(),
             		request.getSession().getUserNull(request.getUser()).getGroup());
         } catch (IOException ex) {
             logger.warn(ex, ex);
@@ -380,7 +380,7 @@ public class Nuke extends CommandInterface {
                     nukeData.getReason());
 
             if (reasonDir.isDirectory()) {
-                reasonDir.delete();
+                reasonDir.deleteUnchecked();
             }
         } catch (FileNotFoundException e) {
             logger.debug("Failed to delete 'REASON-" + nukeData.getReason() + "' dir in UNNUKE", e);
