@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.drftpd.commandmanager.Reply;
-import org.drftpd.vfs.DirectoryHandle;
 
 /**
  * @author mog
@@ -35,9 +34,10 @@ import org.drftpd.vfs.DirectoryHandle;
 public class MessagePathPermission extends StringPathPermission {
 	private ArrayList<String> _message;
 
-	public MessagePathPermission(DirectoryHandle path, String messageFile,
+	public MessagePathPermission(String pattern, String messageFile,
 			Collection<String> users) throws IOException {
-		super(path, users);
+		super(pattern, users);
+		
 		_message = new ArrayList<String>();
 
 		BufferedReader in = new BufferedReader(new FileReader(messageFile));

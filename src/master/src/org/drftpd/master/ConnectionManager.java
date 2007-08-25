@@ -25,7 +25,6 @@ import java.net.Socket;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
@@ -35,7 +34,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -43,7 +41,6 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.event.ReloadEvent;
-import org.drftpd.master.FtpReply;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -213,8 +210,7 @@ public class ConnectionManager implements EventSubscriber {
 
 		// Math.max if the integer wraps
 		if (user.isExempt()) {
-			count = Math.max(count, count
-					+ GlobalContext.getConfig().getMaxUsersExempt());
+			count = Math.max(count, count + GlobalContext.getConfig().getMaxUsersExempt());
 		}
 
 		// not >= because baseconn is already included
@@ -226,18 +222,13 @@ public class ConnectionManager implements EventSubscriber {
 		int ipCount = 0;
 
 		synchronized (_conns) {
-			for (Iterator iter = _conns.iterator(); iter.hasNext();) {
-				BaseFtpConnection tempConnection = (BaseFtpConnection) iter
-						.next();
-
+			for (BaseFtpConnection tempConnection : _conns) {
 				try {
 					User tempUser = tempConnection.getUser();
 
 					if (tempUser.getName().equals(user.getName())) {
 						userCount++;
-
-						if (tempConnection.getClientAddress().equals(
-								baseconn.getClientAddress())) {
+						if (tempConnection.getClientAddress().equals(baseconn.getClientAddress())) {
 							ipCount++;
 						}
 					}

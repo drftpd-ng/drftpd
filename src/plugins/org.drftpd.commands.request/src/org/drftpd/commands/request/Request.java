@@ -91,7 +91,7 @@ public class Request extends CommandInterface {
 					String filledname = FILLEDPREFIX + username + "-" + myreqname;
 
 					try {
-						dir.renameTo(currdir.getNonExistentFileHandle(filledname));
+						dir.renameToUnchecked(currdir.getNonExistentFileHandle(filledname));
 					} catch (FileExistsException e) {
 						env.add("fdirname", filledname);
 						CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

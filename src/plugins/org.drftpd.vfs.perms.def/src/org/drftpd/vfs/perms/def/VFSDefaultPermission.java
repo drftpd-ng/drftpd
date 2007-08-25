@@ -19,9 +19,7 @@ package org.drftpd.vfs.perms.def;
 
 import java.util.StringTokenizer;
 
-import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.Permission;
 import org.drftpd.vfs.perms.VFSPermHandler;
@@ -33,7 +31,6 @@ import org.drftpd.vfs.perms.VFSPermHandler;
  */
 public class VFSDefaultPermission extends VFSPermHandler {	
 	public void handle(String directive, StringTokenizer st) throws MalformedPatternException {
-		Pattern p = new GlobCompiler().compile(st.nextToken());
-		addPermission(directive, new GlobPathPermission(p, Permission.makeUsers(st)));
+		addPermission(directive, new GlobPathPermission(st.nextToken(), Permission.makeUsers(st)));
 	}	
 }

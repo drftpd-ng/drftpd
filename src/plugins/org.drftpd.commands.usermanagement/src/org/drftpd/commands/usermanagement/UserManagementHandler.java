@@ -99,7 +99,7 @@ public class UserManagementHandler extends CommandInterface {
 					_keyPrefix+"addip.specify", request.getUser()));
 		}
 
-		CommandResponse response = new CommandResponse(200);
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		User myUser;
 
 		try {
@@ -1925,7 +1925,7 @@ public class UserManagementHandler extends CommandInterface {
 						xfersdn++;
 					}
 				} else if (command) {
-					env.add("command", command);
+					env.add("command", conn.getRequest().getCommand());
 					response.addComment(session.jprintf(_bundle, _keyPrefix+type+".command", env, request.getUser()));
 				}
 			}

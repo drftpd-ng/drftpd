@@ -464,17 +464,6 @@ public class Dir extends CommandInterface {
         //mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
         try {
             request.getSession().setObject(RENAMEFROM, request.getCurrentDirectory().getInodeHandle(request.getArgument()));
-            /* TODO: reimplement using pre hooks permissions
-             * 
-             */
-            //check permission
-			/*if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
-			    if (!conn.getGlobalContext().getConfig().checkPathPermission("renameown", conn.getUserNull(), _renameFrom.getParent())) {
-			        return Reply.RESPONSE_530_ACCESS_DENIED;
-			    }
-			} else if (!conn.getGlobalContext().getConfig().checkPathPermission("rename", conn.getUserNull(), _renameFrom.getParent())) {
-			    return Reply.RESPONSE_530_ACCESS_DENIED;
-			}*/
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
@@ -548,25 +537,14 @@ public class Dir extends CommandInterface {
        	}
 
 		try {
-			/* TODO reimplement using pre hooks permissions
-			 * 
-			 */
-			// check permission
-			/*if (_renameFrom.getUsername().equals(conn.getUserNull().getName())) {
-				if (!conn.getGlobalContext().getConfig().checkPathPermission(
-						"renameown", conn.getUserNull(), toInode.getParent())) {
-					return Reply.RESPONSE_530_ACCESS_DENIED;
-				}
-			} else if (!conn.getGlobalContext().getConfig()
-					.checkPathPermission("rename", conn.getUserNull(),
-							toInode.getParent())) {
-				return Reply.RESPONSE_530_ACCESS_DENIED;
-			}*/
-/*			logger.debug("before rename toInode-" +toInode);
+			/*logger.debug("before rename toInode-" +toInode);
 			logger.debug("before rename toInode.getPath()-" + toInode.getPath());
 			logger.debug("before rename toInode.getParent()-" + toInode.getParent());
 			logger.debug("before rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
-			fromInode.renameTo(toInode);
+			
+			fromInode.renameTo(request.getSession().getUserNull(request.getUser()), toInode);
+		} catch (PermissionDeniedException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		} catch (FileNotFoundException e) {
 			logger.info("FileNotFoundException on renameTo()", e);
 
@@ -576,12 +554,12 @@ public class Dir extends CommandInterface {
 
 			return new CommandResponse(500, "IOException - " + e.getMessage());
 		}
-/*		logger.debug("after rename toInode-" +toInode);
+		
+		/*logger.debug("after rename toInode-" +toInode);
 		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
 		logger.debug("after rename toInode.getParent()-" + toInode.getParent());
 		logger.debug("after rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
-
-		// out.write(FtpResponse.RESPONSE_250_ACTION_OKAY.toString());
+		
 		return new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
     }
 
@@ -725,10 +703,11 @@ public class Dir extends CommandInterface {
 							.getParent()));
 
 			// }
-			// TODO does wipe need to be checked against delete perms?
-			wipeFile.deleteUnchecked();
+			wipeFile.delete(request.getSession().getUserNull(request.getUser()));
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+		} catch (PermissionDeniedException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");

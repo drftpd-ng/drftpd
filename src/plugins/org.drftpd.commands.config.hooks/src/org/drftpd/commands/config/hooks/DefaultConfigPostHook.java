@@ -17,7 +17,7 @@
  */
 package org.drftpd.commands.config.hooks;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 import org.drftpd.GlobalContext;
@@ -33,18 +33,17 @@ import org.drftpd.permissions.MessagePathPermission;
  * @version $Id$
  */
 public class DefaultConfigPostHook implements PostHookInterface {
-
-	public void initialize(StandardCommandManager manager) {
-		
+			
+	public void initialize(StandardCommandManager manager) {		
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void showMessageForPath(CommandRequest request, CommandResponse response) {
-		ArrayList<MessagePathPermission> msgPath = (ArrayList<MessagePathPermission>) 
+		Collection<MessagePathPermission> msgPath = (Collection<MessagePathPermission>) 
 			GlobalContext.getConfig().getKeyedMap().getObject(DefaultConfigHandler.MSGPATH, Collections.EMPTY_LIST);
 		
 		for (MessagePathPermission perm : msgPath) {
-			if (perm.checkPath(request.getCurrentDirectory())) {
+			if (perm.checkPath(response.getCurrentDirectory())) {
 				if (perm.check(request.getSession().getUserNull(request.getUser()))) {
 					for (String line : perm.getMessage()) {
 						response.addComment(line);

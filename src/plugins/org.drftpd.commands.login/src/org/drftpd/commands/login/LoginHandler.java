@@ -183,11 +183,10 @@ public class LoginHandler extends CommandInterface {
         } catch (NoSuchUserException ex) {
         	return new CommandResponse(530, ex.getMessage());
         } catch (UserFileException ex) {
-            logger.warn("", ex);
+            logger.warn(ex, ex);
             return new CommandResponse(530, "IOException: " + ex.getMessage());
         } catch (RuntimeException ex) {
-            logger.error("", ex);
-
+            logger.error(ex, ex);
             return new CommandResponse(530, "RuntimeException: " + ex.getMessage());
         }
 
@@ -197,6 +196,7 @@ public class LoginHandler extends CommandInterface {
         					UserManagement.REASON,
         					StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
+        
         if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
@@ -210,8 +210,7 @@ public class LoginHandler extends CommandInterface {
                         conn.getClientAddress(), conn.getControlSocket())))) {
                 //success
                 // max_users and num_logins restriction
-                FtpReply ftpResponse = GlobalContext.getConnectionManager().canLogin(conn,
-                        newUser);
+                FtpReply ftpResponse = GlobalContext.getConnectionManager().canLogin(conn, newUser);
 
                 if (ftpResponse != null) {
                 	return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());

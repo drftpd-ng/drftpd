@@ -217,7 +217,7 @@ public class Nuke extends CommandInterface {
 
         
         try {
-            nukeDir.renameTo(nukeDir.getNonExistentDirectoryHandle(toFullPath)); // rename.
+            nukeDir.renameToUnchecked(nukeDir.getNonExistentDirectoryHandle(toFullPath)); // rename.
             nukeDir = currentDir.getDirectory(toFullPath);
             nukeDir.createDirectoryUnchecked("REASON-" + reason, request.getUser(),
             		request.getSession().getUserNull(request.getUser()).getGroup());
@@ -326,7 +326,7 @@ public class Nuke extends CommandInterface {
         }
 
         try {
-            nukeDir.renameTo(nukeDir.getNonExistentDirectoryHandle(toDir+"/"+toName));
+            nukeDir.renameToUnchecked(nukeDir.getNonExistentDirectoryHandle(toDir+"/"+toName));
             nukeDir = currentDir.getDirectory(toDir+"/"+toName); //updating reference.
         } catch (FileExistsException e) {
             response.addComment("Error renaming nuke, target dir already exists");

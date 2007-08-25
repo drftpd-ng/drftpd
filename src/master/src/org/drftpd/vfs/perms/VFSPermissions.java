@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.drftpd.permissions.PathPermission;
@@ -91,10 +90,6 @@ public class VFSPermissions {
 			} catch (Exception e) {
 				logger.error(e, e);
 			}
-		}
-		
-		for (Entry<String, PermissionWtapper> entry : _handlersMap.entrySet()) {
-			logger.debug(entry.getKey() + " => "+ entry.getValue().getMethod().toString());
 		}
 	}
 	

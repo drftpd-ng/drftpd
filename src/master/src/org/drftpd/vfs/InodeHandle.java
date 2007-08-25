@@ -71,12 +71,20 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 			dir = this.getParent();
 		}
 		
-		if (user.getName().equals(getUsername()) && 
-				!getVFSPermissions().checkPathPermission("deleteown", user, dir)) {
-			throw new PermissionDeniedException("You are not allowed to delete "+getPath());
+		boolean allowed = false;
+		if (user.getName().equals(getUsername())) {
+			if (!getVFSPermissions().checkPathPermission("deleteown", user, dir)) {
+				// the user owns the file althought it doesnt have enough perms to delete it.
+				throw new PermissionDeniedException("You are not allowed to delete "+getPath());
+			} else {
+				// the user owns the file and has enough perms to delete it.
+				
+				// deleteown > delete
+				allowed = true; 
+			}
 		}
-		
-		if (!getVFSPermissions().checkPathPermission("delete", user, dir)) {
+
+		if (!allowed && !getVFSPermissions().checkPathPermission("delete", user, dir)) {
 			throw new PermissionDeniedException("You are not allowed to delete "+getPath());
 		}
 		
@@ -221,13 +229,46 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		getInode().setGroup(group);
 	}
 
+	public void renameTo(User user, InodeHandle toInode) 
+			throws PermissionDeniedException, FileNotFoundException, FileExistsException {
+		if (user == null) {
+			throw new PermissionDeniedException("User cannot be null");
+		}
+		
+		DirectoryHandle dir = null;
+		if (this instanceof DirectoryHandle) {
+			dir = (DirectoryHandle) this;
+		} else {
+			dir = this.getParent();
+		}
+		
+		boolean allowed = false;
+		if (user.getName().equals(getUsername())) {
+			if (!getVFSPermissions().checkPathPermission("renameown", user, dir)) {
+				// the user owns the file althought it doesnt have enough perms to rename it.
+				throw new PermissionDeniedException("You are not allowed to rename "+getPath());
+			} else {
+				// the user owns the file and has enough perms to rename it.
+				
+				// renameown > rename
+				allowed = true; 
+			}
+		}
+
+		if (!allowed && !getVFSPermissions().checkPathPermission("rename", user, dir)) {
+			throw new PermissionDeniedException("You are not allowed to rename "+getPath());
+		}
+		
+		renameToUnchecked(toInode);
+	}
+	
 	/**
 	 * Renames the Inode.
 	 * @param toInode
 	 * @throws FileExistsException if the destination inode already exists.
 	 * @throws FileNotFoundException if the source inode does not exist.
 	 */
-	public void renameTo(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
+	public void renameToUnchecked(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
 		String fromPath = getPath();
 		VirtualFileSystemInode inode = getInode();
 		SlaveManager sm = getGlobalContext().getSlaveManager();

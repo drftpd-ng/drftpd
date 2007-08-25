@@ -8,6 +8,7 @@
 	<requires>
 		<import plugin-id="org.drftpd.commands.usermanagement" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
@@ -36,13 +37,13 @@
 		<parameter id="Priority" value="2" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook4">
-		<parameter id="ParentMethod" value="doSWHO" />
+		<parameter id="ParentMethod" value="doSITE_SWHO" />
 		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
 		<parameter id="HookMethod" value="hideInWhoHook" />
 		<parameter id="Priority" value="2" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook5">
-		<parameter id="ParentMethod" value="doWHO" />
+		<parameter id="ParentMethod" value="doSITE_WHO" />
 		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
 		<parameter id="HookMethod" value="hideInWhoHook" />
 		<parameter id="Priority" value="2" />
@@ -100,14 +101,14 @@
 	</extension>
 	<!-- End of msgpath directive handler -->
 	
-	<!-- Msgpath PostHooks -->
+	<!-- Msgpath PostHook -->
 	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="CWDMsgPathPostHook">
 		<parameter id="ParentMethod" value="doCWD" />
 		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPostHook" />
 		<parameter id="HookMethod" value="showMessageForPath" />
 		<parameter id="Priority" value="2" />
 	</extension>
-	<!-- End of Msgpath PostHooks -->
+	<!-- End of Msgpath PostHook -->
 	
 	<!-- nostats directive handler -->
 	<extension plugin-id="master" point-id="ConfigHandler" id="NoStatsUpDirective">
@@ -121,5 +122,14 @@
     	<parameter id="Directive" value="nostatsdn" />
 	</extension>
 	<!-- End of nostats directive handler -->
+	
+	<!-- Download Permission PreHook -->
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="DownloadPermPreHook">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="checkDownloadPermsHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<!-- End of Msgpath PostHooks -->
 	
 </plugin>

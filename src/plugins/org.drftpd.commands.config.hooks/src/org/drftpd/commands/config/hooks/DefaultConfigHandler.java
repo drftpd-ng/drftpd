@@ -22,9 +22,7 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
 import org.drftpd.GlobalContext;
 import org.drftpd.config.ConfigHandler;
 import org.drftpd.dynamicdata.Key;
@@ -32,7 +30,6 @@ import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.MessagePathPermission;
 import org.drftpd.permissions.Permission;
-import org.drftpd.vfs.DirectoryHandle;
 
 /**
  * Handles most of the perms.conf directives that aren't releated to the VFS.
@@ -45,8 +42,7 @@ public class DefaultConfigHandler extends ConfigHandler {
 	protected static final Key MSGPATH = new Key(DefaultConfigHandler.class, "msgPath", ArrayList.class);
 	
 	public void handlePathPerm(String directive, StringTokenizer st) throws MalformedPatternException {
-		Pattern p = new GlobCompiler().compile(st.nextToken());
-		addPathPermission(directive, new GlobPathPermission(p, Permission.makeUsers(st)));
+		addPathPermission(directive, new GlobPathPermission(st.nextToken(), Permission.makeUsers(st)));
 	}
 	
 	public void handlePerm(String directive, StringTokenizer st) {
@@ -54,13 +50,13 @@ public class DefaultConfigHandler extends ConfigHandler {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void handleMsgPath(String directive, StringTokenizer st) {
-		DirectoryHandle path = new DirectoryHandle(st.nextToken());
+	public void handleMsgPath(String directive, StringTokenizer st) throws MalformedPatternException {
+		String pattern = st.nextToken();
 		String messageFile = st.nextToken();
 		
 		MessagePathPermission perm = null;
 		try {
-			perm = new MessagePathPermission(path, messageFile, Permission.makeUsers(st));
+			perm = new MessagePathPermission(pattern, messageFile, Permission.makeUsers(st));
 		} catch (IOException e) {
 			logger.error("Unable to read "+messageFile+" directive ignored");
 		}

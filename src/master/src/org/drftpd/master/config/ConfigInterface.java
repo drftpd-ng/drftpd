@@ -35,44 +35,43 @@ import org.drftpd.vfs.perms.VFSPermissions;
  * @version $Id$
  */
 public interface ConfigInterface {
-	public abstract KeyedMap<Key, Object> getKeyedMap();
+	public KeyedMap<Key, Object> getKeyedMap();
 	
-	public abstract Properties getMainProperties();	
+	public Properties getMainProperties();	
 	
-	public abstract VFSPermissions getVFSPermissions();
+	public VFSPermissions getVFSPermissions();
 	
-	public abstract void reload();
+	public void reload();
 	
-	public abstract boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path);
+	public boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path);
 
-	public abstract boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path, boolean defaults);
+	public boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path, boolean defaults);
 
-	public abstract boolean checkPermission(String directive, User user);
+	public boolean checkPermission(String directive, User user);
 
-	public abstract void addPathPermission(String directive, PathPermission permission);
+	public void addPathPermission(String directive, PathPermission permission);
 	
-	public abstract void addPermission(String directive, Permission permission);
+	public void addPermission(String directive, Permission permission);
 	
-	public abstract List getBouncerIps();
+	public List getBouncerIps();
 
-	public abstract boolean getHideIps();
+	public boolean getHideIps();
 
-	public abstract String getLoginPrompt();
+	public String getLoginPrompt();
 
-	public abstract int getMaxUsersExempt();
+	public int getMaxUsersExempt();
 
-	public abstract int getMaxUsersTotal();
+	public int getMaxUsersTotal();
 
-	public abstract boolean isLoginAllowed(User user);
+	public boolean isLoginAllowed(User user);
 
-	public abstract PortRange getPortRange();
+	public PortRange getPortRange();
 
-	public abstract String getPasvAddress() throws NullPointerException;
+	public String getPasvAddress() throws NullPointerException;
 
-	public abstract float getCreditCheckRatio(DirectoryHandle path,	User fromUser);
+	public float getCreditCheckRatio(DirectoryHandle path,	User fromUser);
 	
-	public abstract float getCreditLossRatio(DirectoryHandle path, User fromUser);
+	public float getCreditLossRatio(DirectoryHandle path, User fromUser);
 
-	public abstract String[] getCipherSuites();
-
+	public String[] getCipherSuites();
 }

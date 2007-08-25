@@ -19,6 +19,8 @@ package org.drftpd.permissions;
 
 import java.util.Collection;
 
+import org.apache.oro.text.GlobCompiler;
+import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.vfs.DirectoryHandle;
@@ -33,6 +35,11 @@ public class GlobPathPermission extends PathPermission {
 	public GlobPathPermission(Pattern pat, Collection<String> users) {
 		super(users);
 		_pat = pat;
+	}
+	
+	public GlobPathPermission(String pattern, Collection<String> users) throws MalformedPatternException {
+		super(users);	
+		_pat = new GlobCompiler().compile(pattern);		
 	}
 
 	public boolean checkPath(DirectoryHandle file) {

@@ -29,7 +29,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.drftpd.commands.config.hooks.DefaultConfigHandler;
@@ -157,10 +156,6 @@ public class ConfigManager implements ConfigInterface {
 				logger.error("Impossible to load extension: "+ ext.getId() ,e);
 			}
 		}
-		
-		for (Entry<String, ConfigContainer> entry : _directivesMap.entrySet()) {
-			logger.debug(entry.getKey() + " => "+ entry.getValue().getMethod().toString());
-		}
 	}
 	
 	/**
@@ -222,9 +217,10 @@ public class ConfigManager implements ConfigInterface {
 				
 				String drct = st.nextToken().toLowerCase();
 				
-				// builtin directives => 
-				// login_prompt / pasv_addr / pasv_port / bouncer_ips / hide_ips / cipher_suites / max_users
-
+				/*
+				 * Built-in directives.
+				 */
+		
 				if (drct.equals("login_prompt")) {
 					_loginPrompt = line.substring("login_prompt".length()).trim();
 				} else if (drct.equals("max_users")) {
@@ -237,6 +233,8 @@ public class ConfigManager implements ConfigInterface {
 					_portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
 				} else if (drct.equals("hide_ips")) {
 					_hideIps = st.nextToken().equalsIgnoreCase("true") ? true : false;
+				} else if (drct.equals("allow_connections")) {
+					getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
 				} else if (drct.equals("bouncer_ips")) {
 					ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
 					while (st.hasMoreTokens()) {
@@ -364,8 +362,13 @@ public class ConfigManager implements ConfigInterface {
 	}
 	
 	public boolean isLoginAllowed(User user) {
-		// TODO Auto-generated method stub
-		return true;
+		Permission perm = getPermissionsMap().get("allow_connections");
+		
+		if (perm == null) {
+			return true;
+		} else {
+			return perm.check(user);
+		}
 	}
 
 	public String[] getCipherSuites() {

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
@@ -30,6 +31,8 @@ import org.drftpd.commands.usermanagement.UserManagementHandler;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.config.ConfigInterface;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.perms.VFSPermissions;
 
 /**
  * PreHooks that implements some of the functionalities "required" by the directives in perms.conf
@@ -38,8 +41,9 @@ import org.drftpd.master.config.ConfigInterface;
  */
 public class DefaultConfigPreHook implements PreHookInterface {	
 
+	protected static final Logger logger = Logger.getLogger(DefaultConfigPreHook.class);
+	
 	public void initialize(StandardCommandManager manager) {
-		
 	}
 
 	public CommandRequestInterface hideInWhoHook(CommandRequest request) {
@@ -54,6 +58,18 @@ public class DefaultConfigPreHook implements PreHookInterface {
 		}
 		
 		request.getSession().setObject(UserManagementHandler.CONNECTIONS, conns);
+		
+		return request;
+	}
+	
+	public CommandRequestInterface checkDownloadPermsHook(CommandRequest request) {
+		DirectoryHandle fromDir = request.getCurrentDirectory();		
+		VFSPermissions vfsPerms = GlobalContext.getConfig().getVFSPermissions();
+		
+		if (!vfsPerms.checkPathPermission("download", request.getSession().getUserNull(request.getUser()), fromDir)) {
+			request.setAllowed(false);
+			request.setDeniedResponse(StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED"));
+		}
 		
 		return request;
 	}
