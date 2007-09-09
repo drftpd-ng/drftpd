@@ -18,6 +18,7 @@
 package org.drftpd.config;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -31,8 +32,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.drftpd.commands.config.hooks.DefaultConfigHandler;
-import org.drftpd.commands.config.hooks.DefaultConfigPostHook;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.config.ConfigInterface;
@@ -165,7 +164,13 @@ public class ConfigManager implements ConfigInterface {
 	private void loadMainProperties() {		
 		try {
 			_mainCfg = new Properties();
-			_mainCfg.load(new FileReader(mainFile));
+			FileInputStream mainStream = new FileInputStream(mainFile);
+			_mainCfg.load(mainStream);
+			try {
+				mainStream.close();
+			} catch (IOException e) {
+				// Stream already closed
+			}
 		} catch (IOException e) {
 			logger.error("Unable to read drftpd.conf", e);
 			_mainCfg = new Properties();
