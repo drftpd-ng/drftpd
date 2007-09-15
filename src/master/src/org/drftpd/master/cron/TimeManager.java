@@ -91,7 +91,7 @@ public class TimeManager {
 		synchronized (this) {
 			tempList = new ArrayList<TimeEventInterface>(_timedEvents);
 		}
-		Class[] classArg = new Class[1];
+		Class<?>[] classArg = new Class<?>[1];
 		classArg[0] = Date.class;
 		Date[] dateArg = new Date[1];
 		dateArg[0] = d;
@@ -157,5 +157,9 @@ public class TimeManager {
 	
 	public synchronized void addTimeEvent(TimeEventInterface event) {
 		_timedEvents.add(event);
+	}
+
+	public synchronized void removeTimeEvent(TimeEventInterface event) {
+		_timedEvents.remove(event);
 	}
 }

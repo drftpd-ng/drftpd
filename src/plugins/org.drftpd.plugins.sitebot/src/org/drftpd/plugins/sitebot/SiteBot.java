@@ -2908,7 +2908,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 				manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
 				ClassLoader anLoader = manager.getPluginClassLoader( 
 						an.getDeclaringPluginDescriptor());
-				Class anCls = anLoader.loadClass( 
+				Class<?> anCls = anLoader.loadClass( 
 						an.getParameter("class").valueAsString());
 				AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
 				_announcers.add(announcer);

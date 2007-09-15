@@ -33,7 +33,6 @@ import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
 import org.drftpd.Time;
 import org.drftpd.commands.slavemanagement.SlaveManagement;
-import org.drftpd.commands.transferstatistics.TransferStatistics;
 import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.DirectoryFtpEvent;
@@ -54,6 +53,7 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.util.UserTransferStats;
 import org.drftpd.util.GroupPosition;
 import org.drftpd.util.ReplacerUtils;
 import org.drftpd.util.UploaderPosition;
@@ -293,28 +293,28 @@ public class BasicAnnouncer extends SFVTools implements AnnounceInterface, Event
 								Integer.toString(
 										(stat.getFiles() * 100) / sfvinfo.getSize()) + "%");
 						raceenv.add("alup",
-								new Integer(TransferStatistics.getStatsPlace("ALUP",
+								new Integer(UserTransferStats.getStatsPlace("ALUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("monthup",
-								new Integer(TransferStatistics.getStatsPlace("MONTHUP",
+								new Integer(UserTransferStats.getStatsPlace("MONTHUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("wkup",
-								new Integer(TransferStatistics.getStatsPlace("WKUP",
+								new Integer(UserTransferStats.getStatsPlace("WKUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("dayup",
-								new Integer(TransferStatistics.getStatsPlace("DAYUP",
+								new Integer(UserTransferStats.getStatsPlace("DAYUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("aldn",
-								new Integer(TransferStatistics.getStatsPlace("ALDN",
+								new Integer(UserTransferStats.getStatsPlace("ALDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("monthdn",
-								new Integer(TransferStatistics.getStatsPlace("MONTHDN",
+								new Integer(UserTransferStats.getStatsPlace("MONTHDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("wkdn",
-								new Integer(TransferStatistics.getStatsPlace("WKDN",
+								new Integer(UserTransferStats.getStatsPlace("WKDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("daydn",
-								new Integer(TransferStatistics.getStatsPlace("DAYDN",
+								new Integer(UserTransferStats.getStatsPlace("DAYDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete.racer", raceenv, _bundle), writer);
 					}

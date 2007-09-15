@@ -15,13 +15,11 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.util;
+package org.drftpd.usermanager.util;
 
 import java.util.Comparator;
 
-import org.drftpd.commands.transferstatistics.TransferStatistics;
 import org.drftpd.usermanager.User;
-
 
 /**
  * @author mog
@@ -36,8 +34,8 @@ public class UserComparator implements Comparator<User> {
     }
 
     public int compare(User u1, User u2) {
-        long thisVal = TransferStatistics.getStats(_type, u1);
-        long anotherVal = TransferStatistics.getStats(_type, u2);
+        long thisVal = UserTransferStats.getStats(_type, u1);
+        long anotherVal = UserTransferStats.getStats(_type, u2);
         return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
     }
 }

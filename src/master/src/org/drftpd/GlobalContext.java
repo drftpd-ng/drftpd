@@ -414,6 +414,10 @@ public class GlobalContext implements EventSubscriber {
 		_timeManager.addTimeEvent(timeEvent);
 	}
 
+	public void removeTimeEvent(TimeEventInterface timeEvent) {
+		_timeManager.removeTimeEvent(timeEvent);
+	}
+
 	public PortRange getPortRange() {
 		return getConfig().getPortRange();
 	}
