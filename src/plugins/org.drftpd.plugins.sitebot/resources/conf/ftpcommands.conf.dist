@@ -1,0 +1,9 @@
+SITE INVITE {
+plugin org.drftpd.plugins.sitebot
+class commands.UserHandler
+method doSITE_INVITE
+perms *
+help Invite yourself to irc channels using the sitebot
+help.specific ${command} <ircnick>
+help.specific ${command} <ircnick> <botname>
+}

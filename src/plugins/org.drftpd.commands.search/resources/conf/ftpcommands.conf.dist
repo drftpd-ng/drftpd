@@ -1,0 +1,40 @@
+SITE SEARCH {
+plugin org.drftpd.commands.search
+class Search
+method doSEARCH
+perms *
+help Searches for directories throughout the live filesystem
+}
+
+SITE DUPE {
+plugin org.drftpd.commands.search
+class Search
+method doDUPE
+perms *
+help Searches for files throughout the live filesystem
+}
+
+SITE FIND {
+plugin org.drftpd.commands.search
+class Find
+method doFIND
+perms *
+help Searches for files and diretories in the filesystem w/ some neat filters and actions.
+help.specific ${command} <options> -action <action>
+help.specific Options: -user <user> -group <group> -nogroup -nouser
+help.specific Options: -mtime [-]n -type [f|d] -slave <slave> -size [-]size
+help.specific Options: -name <name>(* for wildcard) -incomplete [min % incomplete] -offline
+help.specific Actions: print, printf[(format)], wipe, delete
+help.specific Action: sendtoslaves <numtransfers[:slave[,slave,..][:priority]]>
+help.specific Action: deletefromslaves <slave[,slave[,...]]>
+help.specific Options for printf format:
+help.specific #f - filename
+help.specific #s - filesize
+help.specific #u - user
+help.specific #g - group
+help.specific #x - slave
+help.specific #t - last modified
+help.specific #h - parent
+help.specific Example: SITE FIND -action printf(filename: #f size: #s)
+help.specific Multipe options and actions are allowed. If multiple options are given a file must match all options for action to be taken
+}

@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="slave" version="2.1.0" class="org.drftpd.slave.Boot">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="common" exported="true" />
+	</requires>
+	<runtime>
+		<library id="slave" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="oro" path="../../lib/oro.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="jpf-boot" path="../../lib/jpf-boot.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="eventbus" path="../../lib/EventBus-1.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension-point id="Handler">
+		<parameter-def id="Name" />
+		<parameter-def id="Class" />
+		<parameter-def id="Method" />
+	</extension-point>
+	
+	<extension-point id="DiskSelection">
+		<parameter-def id="Class" />
+	</extension-point>
+</plugin>

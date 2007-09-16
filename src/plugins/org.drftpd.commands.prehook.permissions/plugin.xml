@@ -1,0 +1,614 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.prehook.permissions" version="2.1.0">
+	<requires>
+		<import plugin-id="org.drftpd.commands.slavemanagement" />
+		<import plugin-id="org.drftpd.commands.sitemanagement" />
+		<import plugin-id="org.drftpd.commands.dataconnection" />
+		<import plugin-id="org.drftpd.commands.textoutput" />
+		<import plugin-id="org.drftpd.commands.dir" />
+		<import plugin-id="org.drftpd.commands.misc" />
+		<import plugin-id="org.drftpd.commands.usermanagement" />
+		<import plugin-id="org.drftpd.commands.nuke" />
+		<import plugin-id="org.drftpd.commands.transferstatistics" />
+		<import plugin-id="org.drftpd.commands.login" />
+		<import plugin-id="org.drftpd.commands.request" />
+		<import plugin-id="org.drftpd.commands.sections" />
+		<import plugin-id="org.drftpd.commands.dummy" />
+		<import plugin-id="org.drftpd.commands.zipscript" />
+		<import plugin-id="org.drftpd.commands.list" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.prehook.permissions" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions1">
+		<parameter id="ParentMethod" value="doPROT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.textoutput" point-id="PreHook" id="Permissions2">
+		<parameter id="ParentMethod" value="doTEXT_OUTPUT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions3">
+		<parameter id="ParentMethod" value="doSITE_WIPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions4">
+		<parameter id="ParentMethod" value="doPRET" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="Permissions5">
+		<parameter id="ParentMethod" value="doABOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions6">
+		<parameter id="ParentMethod" value="doPORT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions7">
+		<parameter id="ParentMethod" value="doSITE_GIVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.nuke" point-id="PreHook" id="Permissions8">
+		<parameter id="ParentMethod" value="doSITE_UNNUKE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions9">
+		<parameter id="ParentMethod" value="doSITE_MONTHDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.nuke" point-id="PreHook" id="Permissions10">
+		<parameter id="ParentMethod" value="doSITE_NUKE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions11">
+		<parameter id="ParentMethod" value="doSITE_LINK" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions12">
+		<parameter id="ParentMethod" value="doREST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions13">
+		<parameter id="ParentMethod" value="doSITE_CHOWN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions14">
+		<parameter id="ParentMethod" value="doSITE_SEEN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="Permissions15">
+		<parameter id="ParentMethod" value="doSITE_STAT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions16">
+		<parameter id="ParentMethod" value="doSITE_READD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="Permissions18">
+		<parameter id="ParentMethod" value="doFEAT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions19">
+		<parameter id="ParentMethod" value="doSITE_GROUPS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions20">
+		<parameter id="ParentMethod" value="doSITE_WHO" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.nuke" point-id="PreHook" id="Permissions21">
+		<parameter id="ParentMethod" value="doSITE_NUKES" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions22">
+		<parameter id="ParentMethod" value="doPASVandCPSV" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions23">
+		<parameter id="ParentMethod" value="doCDUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions24">
+		<parameter id="ParentMethod" value="doSSCN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions25">
+		<parameter id="ParentMethod" value="doSITE_WKDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PreHook" id="Permissions26">
+		<parameter id="ParentMethod" value="doSITE_REQUEST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions27">
+		<parameter id="ParentMethod" value="doSITE_CHANGE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions28">
+		<parameter id="ParentMethod" value="doMKD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions29">
+		<parameter id="ParentMethod" value="doSITE_DELIP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions30">
+		<parameter id="ParentMethod" value="doRNTO" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="Permissions32">
+		<parameter id="ParentMethod" value="doSITE_TIME" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions33">
+		<parameter id="ParentMethod" value="doSITE_DAYDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions34">
+		<parameter id="ParentMethod" value="doSITE_DAYUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions35">
+		<parameter id="ParentMethod" value="doPBSZ" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sections" point-id="PreHook" id="Permissions36">
+		<parameter id="ParentMethod" value="doSITE_SECTIONS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions37">
+		<parameter id="ParentMethod" value="doSITE_PURGE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions38">
+		<parameter id="ParentMethod" value="doSITE_KICK" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions39">
+		<parameter id="ParentMethod" value="doMDTM" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="Permissions40">
+		<parameter id="ParentMethod" value="doSITE_UNLOADPLUGIN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions41">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions42">
+		<parameter id="ParentMethod" value="doRNFR" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions43">
+		<parameter id="ParentMethod" value="doSITE_USERS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions45">
+		<parameter id="ParentMethod" value="doSITE_CHPASS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions46">
+		<parameter id="ParentMethod" value="doMODE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions47">
+		<parameter id="ParentMethod" value="doSITE_TAGLINE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="Permissions48">
+		<parameter id="ParentMethod" value="doSITE_SHUTDOWN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions49">
+		<parameter id="ParentMethod" value="doSITE_ALUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dummy" point-id="PreHook" id="Permissions50">
+		<parameter id="ParentMethod" value="doDUMMY" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions51">
+		<parameter id="ParentMethod" value="doSITE_STATS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PreHook" id="Permissions52">
+		<parameter id="ParentMethod" value="doSITE_REQFILLED" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dummy" point-id="PreHook" id="Permissions53">
+		<parameter id="ParentMethod" value="doDUMMY" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions54">
+		<parameter id="ParentMethod" value="doSITE_GINFO" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="PreHook" id="Permissions55">
+		<parameter id="ParentMethod" value="doSITE_RESCAN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.textoutput" point-id="PreHook" id="Permissions56">
+		<parameter id="ParentMethod" value="doTEXT_OUTPUT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="Permissions57">
+		<parameter id="ParentMethod" value="doSITE_SLAVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="Permissions58">
+		<parameter id="ParentMethod" value="doSITE_KICKSLAVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions59">
+		<parameter id="ParentMethod" value="doRMD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="Permissions60">
+		<parameter id="ParentMethod" value="doSITE_REMERGE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions61">
+		<parameter id="ParentMethod" value="doCWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="Permissions62">
+		<parameter id="ParentMethod" value="doSITE_SLAVESELECT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions63">
+		<parameter id="ParentMethod" value="doSITE_ADDUSER" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions64">
+		<parameter id="ParentMethod" value="doSITE_DELUSER" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions65">
+		<parameter id="ParentMethod" value="doSITE_UNBAN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions66">
+		<parameter id="ParentMethod" value="doSITE_DEBUG" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="Permissions67">
+		<parameter id="ParentMethod" value="doSITE_LOADPLUGIN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="Permissions68">
+		<parameter id="ParentMethod" value="doSITE_LIST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions69">
+		<parameter id="ParentMethod" value="doSITE_GROUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions70">
+		<parameter id="ParentMethod" value="doSITE_RENUSER" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions71">
+		<parameter id="ParentMethod" value="doSITE_XDUPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions72">
+		<parameter id="ParentMethod" value="doSITE_BANS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions73">
+		<parameter id="ParentMethod" value="doSIZE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions74">
+		<parameter id="ParentMethod" value="doSITE_TAKE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions75">
+		<parameter id="ParentMethod" value="doSITE_ADDIP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions76">
+		<parameter id="ParentMethod" value="doSITE_USER" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions77">
+		<parameter id="ParentMethod" value="doSITE_BAN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="Permissions78">
+		<parameter id="ParentMethod" value="doMLSTandMLSD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="Permissions79">
+		<parameter id="ParentMethod" value="doSITE_DELSLAVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="Permissions80">
+		<parameter id="ParentMethod" value="doSITE_SLAVES" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="Permissions82">
+		<parameter id="ParentMethod" value="doSITE_PLUGINS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions84">
+		<parameter id="ParentMethod" value="doSITE_CHGRP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions85">
+		<parameter id="ParentMethod" value="doSYST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions86">
+		<parameter id="ParentMethod" value="doSITE_GRPREN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions87">
+		<parameter id="ParentMethod" value="doSITE_PASSWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions88">
+		<parameter id="ParentMethod" value="doPWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions89">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions90">
+		<parameter id="ParentMethod" value="doSITE_ADDUSER" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions91">
+		<parameter id="ParentMethod" value="doSITE_WKUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="Permissions92">
+		<parameter id="ParentMethod" value="doSITE_SWHO" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="Permissions93">
+		<parameter id="ParentMethod" value="doSITE_HELP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="Permissions94">
+		<parameter id="ParentMethod" value="doLIST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions95">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions96">
+		<parameter id="ParentMethod" value="doTYPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="Permissions97">
+		<parameter id="ParentMethod" value="doSITE_ADDSLAVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="Permissions98">
+		<parameter id="ParentMethod" value="doSITE_VERS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions99">
+		<parameter id="ParentMethod" value="doSITE_ALDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="Permissions100">
+		<parameter id="ParentMethod" value="doPASVandCPSV" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="Permissions101">
+		<parameter id="ParentMethod" value="doXCRC" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="Permissions102">
+		<parameter id="ParentMethod" value="doSITE_MONTHUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.sitemanagement" point-id="PreHook" id="Permissions103">
+		<parameter id="ParentMethod" value="doSITE_RELOAD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+</plugin>

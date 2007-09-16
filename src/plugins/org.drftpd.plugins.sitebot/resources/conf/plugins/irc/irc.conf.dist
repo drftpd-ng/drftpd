@@ -1,0 +1,186 @@
+## $Id$
+# Server(s) to use, you can define multiple servers here, the bot will attempt
+# to connect to the first server, if that fails it'll try the next and so on.
+# If it reaches the end of the list it'll loop back to the first server. If the
+# bot is disconnected from the server for any reason it'll reconnect to the next
+# server in the list.
+# Each server is defined by host (the hostname or IP of the server), the port to
+# connect to, the password for the server (if required) and whether to connect
+# using ssl or not.
+server.1.host=irc.cabnet.se
+server.1.port=6667
+server.1.password=
+server.1.use_ssl=false
+#server.2.host=irc.link-net.org
+#server.2.port=7000
+#server.2.password=
+#server.2.use_ssl=true
+
+# The time to wait (in seconds) before trying another server when connecting or
+# reconnecting
+connect.delay=30
+
+# general format:
+# nick!user@ipaddress.would.be.here name
+# is returned by /who or /whois
+
+# actual nickname on irc server
+nick=drftpd
+name=drftpd
+# username -- user@your.ipaddress.shows.here
+user=drftpd
+
+# Enable autonick setting, in the event the nickname set in the nick value
+# is unavailable the bot will try appending numbers to the nickname until
+# it finds one which is available, ie with nick=drftpd it will try drftpd,
+# drftpd1,drftpd2 etc.
+nick.auto=true
+
+# Sets the time in milliseconds we wait after each message is sent.
+# The best protection you can set to avoid flood disconnects
+message.sendDelay=300
+
+# Set additional user modes for the bot, here you can add any additional
+# modes you would like to be set when joining the server
+#nick.usermodes=+h
+
+
+## This section allows you to override default CTCP response from the bot,
+# if not set then the builtin default response will be used
+#ctcp.version=
+#ctcp.finger=
+
+# Command trigger identifier, lines sent to channels or to the bot via a
+# private message beginning with this are treated as commands
+command.trigger=!
+
+
+## IRC SERVICES Options (ie NICKSERV/CHANSERV) , enable these if the ircd
+# supports these services and you wish the bot to use them
+services.nickserv.enable=false
+services.chanserv.enable=false
+
+# Use NICKSERV to register a nick for the first time, once this has been
+# done once successfully set this to false
+services.nickserv.register.new=false
+# Register this nick as grouped with an existing nick
+services.nickserv.register.joingroup=false
+# Nickname to register as or existing nick to group with
+# if joining a group
+services.nickserv.register.nick=drftpd
+# Password to register for this nickname, or the password
+# of the nick being grouped with when joining a group
+services.nickserv.register.password=somepass
+# Email address to use when registering the nickname
+services.nickserv.register.email=drftpd@drftpd.org
+
+# Use CHANSERV to invite the bot into channels, as many channels as
+# desired can be listed here
+services.chanserv.invite.1=#channel1
+services.chanserv.invite.2=#channel2
+
+
+## Additional commands to send to the server once connected, as many entries
+# as required can be specified here. The value will be sent as a raw command
+# to the server so can be used for any purpose (such as to OPER the bot), as
+# they are raw commands they must follow the irc rfc for sending a command,
+# ie NOT mIRC etc format
+#connected.command.1=OPER drftpd somepass
+
+## Blowfish encryption and related settings
+# Enable blowfish encryption for channels and private messages
+blowfish.enable=false
+# Enable DH1080 key exchange as a method for setting users blowfish keys
+blowfish.dh1080.enable=false
+# Take action against users who send unencrypted text to channels or to the
+# bot in private message when blowfish is enabled
+blowfish.unencrypted.punish=false
+# Action to take against a user if the punish option is enabled, valid options
+# are kick OR ban, a ban will automatically be followed by a kick, this will be
+# done in all channels the user is in. Ban masks are not set using wildcards so
+# are easy to circumvent, this is intended to be used mainly to warn the user
+blowfish.unencrypted.action=kick
+blowfish.unencrypted.reason=Unencrypted text is not permitted
+
+
+## Channels to join once the bot is successfully connected to a server, as
+# many channels as desired can be added here. You can set a blowfish key
+# for each channel, as well as a channel key and any other channel modes
+# you would like the bot to set on joining
+channel.1=#drftpd-test
+channel.1.perms=*
+channel.1.blowkey=drftpd
+#channel.1.chankey=drftpd
+
+#channel.2=#drftpd-test2
+#channel.2.perms=!=iND *
+#channel.2.blowkey=drftpd2
+#channel.2.chankey=drftpd
+
+# Auto join a channel when invited, for security reasons the bot even with this
+# enabled will only join a channel if the channel is listed in the channels
+# section above
+channel.autojoin=true
+
+
+## WARNING: Options following this point are intended for advanced users only,
+# do not change anything in this section unless you are sure of what it does
+# and what the consequences may be
+
+# Allow more than one command to be executed at once, this controls the maximum
+# number of commands that can be running at any given time. If you want the aborting
+# of commands to work then this must be greater than 1 and ideally quite a bit more
+commands.max=5
+
+# Behaviour when max commands are running, there are 2 options for this setting,
+# these are "block" and "queue", in queue mode commands will be queued and executed
+# when other commands are finished, in block mode a command will be rejected when
+# the max commands are already running.
+commands.full=queue
+
+# Local bind address to use on machines with multiple IPs. This can be set to
+# either a hostname or an IP address, using a hostname is not advised if the
+# DNS entry for it points to multiple IPs. A blank or undefined entry here
+# causes the sitebot to bind to the primary IP
+bind.host=
+
+# Character set to use when sending to the irc server
+charset=ISO-8859-1
+
+# Require strict trust when validating the server certificate for SSL connections
+# With this enabled the bot will only connect to servers where the certificate has
+# a valid certificate chain back to a trusted root authority OR if there is a local
+# copy of the certificate available. This allows the use of a self signed certificate
+# for a private ircd without adding the risk of not checking the certificate
+# authenticity.
+# To use this feature with self signed certificates you need to add a copy of the
+# certificate in a conf/plugins/irc/certs directory. The certificates should be
+# in base64 encoded PEM format and contain nothing more than the base64 data block
+# delimited by -----BEGIN CERTIFICATE----- and -----END CERTIFICATE-----
+ssl.strictTrust=false
+
+# The password to be used for loading the java VMs system certificate keystore, this
+# file is located at JAVA_HOME/lib/security/cacerts , there is no need to change
+# this setting unless you have explicitly altered the keystore password for this file
+# after installing the java environment. This setting is only used when strictTrust
+# is enabled.
+ssl.keystore.password=changeit
+
+# Internal bot name, there is no need to change this unless you use the multiple bots
+# option, in that case only this name will be used to identify a bot in things like
+# site irc commands
+bot.name=DrFTPD-Bot
+
+# Enable multiple bots, this option is pretty simplistic if used. Multiple bots will be
+# spawned each using their own set of config files, one bot will be spawned using the
+# main files and then an additional bot for each additional config dir specified. The
+# bots have no awareness of each other and act completely independently. This support
+# is mainly intended for use in situations such as having a sitebot on multiple irc
+# networks at once
+bot.multiple.enable=false
+
+# A space separated list of directories to look for additional bot config files in,
+# these are expected to be subdirectories of conf/plugins/irc and must contain a
+# copy of all config files the sitebot plugin and any of its plugins require, this
+# option is only relevant if the previous option is enabled
+bot.multiple.directories=additional1 additional2

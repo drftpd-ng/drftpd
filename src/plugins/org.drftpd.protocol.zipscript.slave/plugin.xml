@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.zipscript.slave" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptProtocol"/>
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.common" />
+		<import plugin-id="slave" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.zipscript.slave" path="classes/" type="code">
+		</library>
+	</runtime>
+			
+	<extension plugin-id="slave" point-id="Handler" id="SfvfileHandler">
+		<parameter id="Name" value="sfvfile" />
+		<parameter id="Class" value="org.drftpd.protocol.zipscript.slave.ZipscriptHandler" />
+		<parameter id="Method" value="handleSfvFile" />
+	</extension>
+</plugin>

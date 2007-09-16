@@ -1,0 +1,25 @@
+SITE NUKE {
+plugin org.drftpd.commands.nuke
+class Nuke
+method doSITE_NUKE
+perms =nuke
+help Nuke a directory.
+help.specific ${command} <directory> <multiplier> <message>
+}
+
+SITE UNNUKE {
+plugin org.drftpd.commands.nuke
+class Nuke
+method doSITE_UNNUKE
+perms =nuke
+help Unnuke a directory.
+help.specific ${command} <directory>
+}
+
+SITE NUKES {
+plugin org.drftpd.commands.nuke
+class Nuke
+method doSITE_NUKES
+perms *
+help List all nuked directories.
+}

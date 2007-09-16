@@ -1,0 +1,13 @@
+NOOP {
+plugin org.drftpd.commands.dummy
+class Dummy
+method doDUMMY
+perms *
+}
+
+CLNT {
+plugin org.drftpd.commands.dummy
+class Dummy
+method doDUMMY
+perms *
+}

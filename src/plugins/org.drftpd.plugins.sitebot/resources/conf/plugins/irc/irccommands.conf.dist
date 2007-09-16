@@ -1,0 +1,357 @@
+# $Id$
+## Largely follows the same conventions as ftpcommands.conf
+# Additional parameters required for irc are input and output
+# input: A space separated list of places this command can be used
+#        valid options are channel names and any of the special identifiers below
+#        public: all channels the bot is in
+#        private: private message to the bot
+#        all: all channels and private message, ie any source
+#
+# output: A space separated list of places to send the commands output
+#         valid options are channel names and any of the special identifiers below
+#         public: all channels the bot is in
+#         private: private message to the user who initiated the command
+#         source: reply to where the command originated, be it a channel or private message
+
+# Do not let PluginsConfig parse this file.
+skip=true
+
+who {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_WHO
+perms *
+help Show who's online
+input all
+output source
+}
+
+leechers {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doLeechers
+perms *
+help Show who's downloading
+input all
+output source
+}
+
+idlers {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doIdlers
+perms *
+help Show who's idling
+input all
+output source
+}
+
+uploaders {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doUploaders
+perms *
+help Show who's uploading
+input all
+output source
+}
+
+slave {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSlave
+perms *
+help Display a slaves status
+help.specific ${command} <slavename> <more>
+input all
+output source
+}
+
+slaves {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_SLAVES
+perms *
+help List the status of all slaves
+input all
+output source
+}
+
+bw {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doBW
+perms *
+help Show total bandwidth use
+input all
+output source
+}
+
+speed {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSpeed
+perms *
+help Show the state of the specified users connections
+input all
+output source
+}
+
+df {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doDiskfree
+perms *
+help Displays current free space
+input all
+output source
+}
+
+ident {
+plugin org.drftpd.plugins.sitebot
+class commands.UserHandler
+method doIdent
+help Associates an irc nick with a ftp user
+input private
+output source
+}
+
+bnc {
+plugin org.drftpd.commands.textoutput
+class Textoutput
+method doTEXT_OUTPUT
+perms *
+help Displays the site bnc details
+file text/bnc.txt
+input public
+output source
+}
+
+affils {
+plugin org.drftpd.commands.textoutput
+class Textoutput
+method doTEXT_OUTPUT
+perms *
+help Displays the site affils
+file text/affils.txt
+input public
+output source
+}
+
+alup {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_ALUP
+perms *
+help Lists the top uploaders of all time
+input all
+output source
+}
+
+aldn {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_ALDN
+perms *
+help Lists the top downloaders of all time
+input all
+output source
+}
+
+monthup {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_MONTHUP
+perms *
+help Lists the top uploaders this month
+input all
+output source
+}
+
+monthdn {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_MONTHDN
+perms *
+help Lists the top downloaders this month
+input all
+output source
+}
+
+wkup {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_WKUP
+perms *
+help Lists the top uploaders this week
+input all
+output source
+}
+
+wkdn {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_WKDN
+perms *
+help Lists the top downloaders this week
+input all
+output source
+}
+
+dayup {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_DAYUP
+perms *
+help Lists the top uploaders today
+input all
+output source
+}
+
+daydn {
+plugin org.drftpd.commands.transferstatistics
+class TransferStatistics
+method doSITE_DAYDN
+perms *
+help Lists the top downloaders today
+input all
+output source
+}
+
+credits {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doCredits
+perms *
+help Show available credits
+input all
+output source
+}
+
+request {
+plugin org.drftpd.commands.request
+class Request
+method doSITE_REQUEST
+perms *
+help Add a request
+help.specific ${command} <nameofrequest>
+request.dirpath /requests
+input all
+output source
+}
+
+requests {
+plugin org.drftpd.commands.request
+class Request
+method doSITE_REQUESTS
+perms *
+help List current requests
+request.dirpath /requests
+input all
+output source
+}
+
+reqfilled {
+plugin org.drftpd.commands.request
+class Request
+method doSITE_REQFILLED
+perms *
+help Fill a request
+help.specific ${command} <nameofrequest>
+request.dirpath /requests
+input all
+output source
+}
+
+reqdel {
+plugin org.drftpd.commands.request
+class Request
+method doSITE_REQDELETE
+perms *
+help Deletes a request
+help.specific ${command} <nameofrequest>
+request.dirpath /requests
+input all
+output source
+}
+
+new {
+plugin org.drftpd.commands.newhandler
+class New
+method doNEW
+perms *
+help Will list newly uploaded directories.
+help.specific ${command} - List the newest dirs in all sections.
+help.specific ${command} <number> - List the <number> newest dirs in all sections.
+help.specific ${command} <section> - List the newest dirs in <section>.
+help.specific ${command} <section> <number> - List the <number> newest dirs in <section>.
+# specify the default number of dirs to show
+default 5
+# specify the maximum number of dirs to show (overrides user input)
+max 10
+# specify the sections to exclude from output (space separated)
+filtered_sections REQUESTS
+input all
+output source
+}
+
+invite {
+plugin org.drftpd.plugins.sitebot
+class commands.UserHandler
+method doInvite
+perms *
+help Invite yourself into irc channels using the sitebot
+help.specific ${command} <username> <password>
+input private
+output source
+}
+
+master-uptime {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doMasterUptime
+perms =siteop
+help Will show current master uptime
+input all
+output source
+}
+
+slave-uptime {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlaveUptime
+perms =siteop
+help Will show current slave uptime
+help.specific ${command} <slave>
+input all
+output source
+}
+
+slaves-uptime {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doSlavesUptime
+perms =siteop
+help Will show current slaves uptime
+input all
+output source
+}
+
+status {
+plugin org.drftpd.commands.serverstatus
+class ServerStatus
+method doStatus
+perms =siteop
+help Will show current status of the daemon
+help.specific ${command} Usage:
+help.specific ${command} <os,vm,memory,threads,gc,all>
+help.specific ${command} OS - Will show Operational System Info
+help.specific ${command} VM - Will show VM Info.
+help.specific ${command} MEMORY - Will show Memory Info.
+help.specific ${command} THREADS - Will show Threads Info.
+help.specific ${command} GC - Will show Garbage Collector Info.
+help.specific ${command} CLASSES - Will show Classes Info.
+help.specific ${command} ALL - shortcut to display ALL Info.
+input all
+output source
+}

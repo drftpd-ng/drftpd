@@ -1,0 +1,80 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.zipscript" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptProtocol"/>
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.common" exported="true" />
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.list" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.zipscript" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="FrontendHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+	</extension-point>
+	<extension-point id="PostHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension-point id="PreHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension-point id="RescanPostProcessDir">
+		<parameter-def id="Class" />
+	</extension-point>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="ZipscriptSTORPreCheck">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPreHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORPreCheck" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptRETRPostCheck">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptRETRPostCheck" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORPostCheck">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORPostCheck" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDStats">
+		<parameter id="ParentMethod" value="doCWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptCWDStatsHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORStats">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORStatsHook" />
+		<parameter id="Priority" value="11" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.list" point-id="AddElements" id="ZipscriptListElements">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.list.ZipscriptList" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ZipscriptCommandsHandler" />
+	
+	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptProtocol">
+		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.ZipscriptIssuer" />
+	</extension>
+</plugin>

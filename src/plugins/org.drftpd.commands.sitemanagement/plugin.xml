@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.sitemanagement" version="2.1.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.sitemanagement" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="FrontendHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+	</extension-point>
+	<extension-point id="PostHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension-point id="PreHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="SiteManagementHandler">
+	</extension>
+</plugin>

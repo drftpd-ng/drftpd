@@ -1,0 +1,17 @@
+SITE RULES {
+plugin org.drftpd.commands.textoutput
+class Textoutput
+method doTEXT_OUTPUT
+perms *
+help Displays the site rules
+file text/rules.txt
+}
+
+SITE WELCOME {
+plugin org.drftpd.commands.textoutput
+class Textoutput
+method doTEXT_OUTPUT
+perms *
+help Displays site welcome message
+file text/welcome.txt
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.zipscript.links" version="2.1.0">
+	
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.zipscript.links" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="FrontendHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+	</extension-point>
+	<extension-point id="PostHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension-point id="PreHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="LinksSTORIncomplete">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.links.hooks.LinksPostHook" />
+		<parameter id="HookMethod" value="doLinksSTORIncompleteHook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="LinksDELEIncomplete">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.links.hooks.LinksPostHook" />
+		<parameter id="HookMethod" value="doLinksDELECleanupHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="LinksWIPEIncomplete">
+		<parameter id="ParentMethod" value="doSITE_WIPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.links.hooks.LinksPostHook" />
+		<parameter id="HookMethod" value="doLinksWIPECleanupHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="LinkCommandsHandler" />
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="RescanPostProcessDir" id="RescanPostProcessLinks">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.links.RescanPostProcessLinks" />
+	</extension>
+</plugin>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<project name="DRFTPD Installer Project Helper" basedir=".">
+
+	<property name="build.debug" value="true" />
+	<property name="build.javac" value="1.5" />
+	<property name="build.optimize" value="false" />
+	<property name="build.verbose" value="true" />
+
+	<path id="classpath">
+		<fileset dir="lib" includes="*.jar" />
+	</path>
+
+	<typedef resource="org/java/plugin/tools/ant/jpf-tasks.properties">
+		<classpath refid="classpath" />
+	</typedef>
+	<!-- declare custom tasks -->
+	<taskdef name="resourcetask" classname="org.drftpd.tools.ant.ResourceTask" classpath="lib/drftpd-tools.jar"/>
+	<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/drftpd-tools.jar"/>
+	<!-- set plugin build timestamp -->
+	<tstamp>
+		<format property="build.plugins.start" pattern="yyyy.MM.dd HH:mm:ss.SSS" />
+	</tstamp>
+</project>

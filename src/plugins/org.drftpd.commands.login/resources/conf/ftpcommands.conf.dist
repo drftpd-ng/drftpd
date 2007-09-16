@@ -1,0 +1,23 @@
+IDNT {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doIDNT
+}
+
+USER {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doUSER
+}
+
+PASS {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doPASS
+}
+
+QUIT {
+plugin org.drftpd.commands.login
+class LoginHandler
+method doQUIT
+}

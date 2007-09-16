@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<project name="org.drftpd.vfs.perms.def plug-in build file"
+         default="build">
+	<target name="build">
+		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.vfs.perms.def" />
+		<jpf-info manifest="${pluginbase}/plugin.xml"
+			propertyid="plugin.id"
+			propertyversion="plugin.version" />
+		<property name="plugin.home"
+			value="${installdir}/plugins/master/${plugin.id}" />
+		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
+		<copy todir="${plugin.home}" includeemptydirs="false">
+			<fileset dir="${pluginbase}"
+				includes="plugin.xml" />
+		</copy>
+		<jpf-path
+			basedir="${installdir}"
+			pathid="plugin.classpath"
+			pluginid="${plugin.id}"
+			includes="core/*/plugin.xml,plugins/master/*/plugin.xml"
+			verbose="${build.verbose}" />
+		<mkdir dir="${plugin.home}/classes" />
+		<javac destdir="${plugin.home}/classes"
+			srcdir="${pluginbase}/src"
+			classpathref="plugin.classpath"
+			source="${build.javac}"
+			target="${build.javac}"
+			debug="${build.debug}"
+			optimize="${build.optimize}">
+		</javac>
+		<copy todir="${plugin.home}/classes">
+			<fileset dir="${pluginbase}/src"
+				includes="**/*.class" />
+		</copy>
+	</target>
+</project>

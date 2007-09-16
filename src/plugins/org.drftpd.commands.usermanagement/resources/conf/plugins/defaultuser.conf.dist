@@ -1,0 +1,29 @@
+#Starting Ratio Of New User
+ratio=3.0
+
+# min/max ratio that gadmins can set on their group members:
+min_ratio=3.0
+max_ratio=3.0
+
+#Max Number Of Logins And Max Number Of Logins Per IP
+max_logins=2
+max_logins_ip=2
+
+#Max Simultanious Uploads and Downloads
+max_uploads=2
+max_downloads=2
+
+#Default Credits Given To New User
+credits=15mb
+
+#Weekly Allotment Given To New User
+wkly_allotment=0
+
+#Default Idle Time Given To New User
+idle_time=300
+
+#Default Tagline
+tagline=no tagline
+
+#Default group
+group=trial

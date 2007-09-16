@@ -1,0 +1,67 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.vfs.perms.def" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.vfs.perms.def" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension plugin-id="master" point-id="VFSPerm" id="Makedir">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="makedir" />
+    	<parameter id="Directive" value="makedir" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="Upload">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="upload" />
+    	<parameter id="Directive" value="upload" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="Download">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="download" />
+    	<parameter id="Directive" value="download" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="Delete">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="delete" />
+    	<parameter id="Directive" value="delete" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="DeleteOwn">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="delete" />
+    	<parameter id="Directive" value="deleteown" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="Rename">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="rename" />
+    	<parameter id="Directive" value="rename" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="RenameOwn">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="rename" />
+    	<parameter id="Directive" value="renameown" />
+	</extension>
+	<extension plugin-id="master" point-id="VFSPerm" id="PrivPath">
+	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
+    	<parameter id="Method" value="handle" />
+    	<parameter id="Type" value="privpath" />
+    	<parameter id="Directive" value="privpath" />
+	</extension>
+
+</plugin>

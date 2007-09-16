@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<project name="DRFTPD Trunk Plugin Branch" default="build" basedir=".">
+	<property name="app.name" value="drftpd" />
+	<property name="app.version" value="2.1.0" />
+
+	<property name="build.debug" value="true" />
+	<property name="build.javac" value="1.5" />
+	<property name="build.optimize" value="false" />
+	<property name="build.verbose" value="true" />
+
+	<path id="classpath">
+		<fileset dir="lib" includes="*.jar" />
+	</path>
+
+	<typedef resource="org/java/plugin/tools/ant/jpf-tasks.properties">
+			<classpath refid="classpath" />
+	</typedef>
+
+	<target name="help">
+		<echo>
+			<![CDATA[
+${app.name} build file:
+clean - cleans up the project build folder
+build - builds entire project
+check - checks plug-ins integrity
+]]>
+		</echo>
+	</target>
+
+	<target name="clean" description="Cleans up the project build folder">
+		<tstamp>
+			<format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
+			<format property="d-stamp" pattern="yyyy-MM-dd" />
+		</tstamp>
+		<delete dir="${basedir}/core" quiet="true" />
+		<delete dir="${basedir}/plugins" quiet="true" />
+	</target>
+
+	<target name="build" description="Builds entire project">
+		<!-- compile tools classes -->
+		<javac
+			srcdir="src/tools"
+			classpathref="classpath"
+			excludes=""
+			target="${build.javac}"
+			debug="${build.debug}"
+			optimize="${build.optimize}" />
+		<!-- create tools jar -->
+		<jar destfile="lib/${app.name}-tools.jar">
+			<manifest>
+				<attribute name="Class-Path" value="ant.jar"/>
+				<attribute name="Specification-Title" value="DrFTPd - tools library"/>
+				<attribute name="Specification-Version" value="${app.version}"/>
+				<attribute name="Specification-Vendor" value="http://www.drftpd.org"/>
+				<attribute name="Implementation-Title" value="org.drftpd.tools"/>
+				<attribute name="Implementation-Version" value="${app.version}"/>
+				<attribute name="Implementation-Vendor" value="http://www.drftpd.org"/>
+			</manifest>
+			<fileset dir="src/tools"/>
+		</jar>
+	</target>
+
+	<target name="check"
+		depends="build"
+		description="Checks plug-ins integrity">
+		<jpf-check basedir="${basedir}"
+			includes="core/*/plugin.xml,plugins/*/plugin.xml"
+			verbose="${build.verbose}"
+			usepathresolver="true" />
+	</target>
+</project>

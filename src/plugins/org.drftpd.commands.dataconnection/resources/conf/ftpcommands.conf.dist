@@ -1,0 +1,110 @@
+AUTH {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doAUTH
+}
+
+CPSV {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPASVandCPSV
+perms *
+}
+
+PROT {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPROT
+perms *
+}
+
+PBSZ {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPBSZ
+perms *
+}
+
+MODE {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doMODE
+perms *
+}
+
+PASV {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPASVandCPSV
+perms *
+}
+
+PORT {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPORT
+perms *
+}
+
+PRET {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doPRET
+perms *
+}
+
+SSCN {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doSSCN
+perms *
+}
+
+
+#STRU=org.drftpd.commands.dataconnection.DataConnectionHandler.doSTRU
+
+SYST {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doSYST
+perms *
+}
+
+TYPE {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doTYPE
+perms *
+}
+
+RETR {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doRETR
+perms *
+}
+
+REST {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doREST
+perms *
+}
+
+SITE XDUPE {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doSITE_XDUPE
+perms *
+help Command not implemented
+}
+
+STOR {
+plugin org.drftpd.commands.dataconnection
+class DataConnectionHandler
+method doSTOR
+perms *
+}
+
+#EPSV=org.drftpd.commands.DataConnectionHandler
+#EPRT=org.drftpd.commands.DataConnectionHandler

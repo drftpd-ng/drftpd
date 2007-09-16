@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.slave.diskselection.filter" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="slave" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.slave.diskselection.filter" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension-point id="DiskFilter">
+		<parameter-def id="FilterName" />
+		<parameter-def id="ClassName" />
+	</extension-point>
+	
+	<extension plugin-id="slave" point-id="DiskSelection" id="DiskSelectionFilter">
+		<parameter id="Class" value="org.drftpd.slave.diskselection.filter.DiskSelectionFilter"/>
+	</extension>
+	
+	<extension plugin-id="org.drftpd.slave.diskselection.filter" point-id="DiskFilter" id="SlaveCycleFilter">
+		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.CycleFilter"/>
+		<parameter id="FilterName" value="Cycle"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slave.diskselection.filter" point-id="DiskFilter" id="SlaveMatchdirFilter">
+		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.MatchdirFilter"/>
+		<parameter id="FilterName" value="Matchdir"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slave.diskselection.filter" point-id="DiskFilter" id="SlaveMinfreespaceFilter">
+		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.MinfreespaceFilter"/>
+		<parameter id="FilterName" value="Minfreespace"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slave.diskselection.filter" point-id="DiskFilter" id="SlavePriorityFilter">
+		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.PriorityFilter"/>
+		<parameter id="FilterName" value="Priority"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slave.diskselection.filter" point-id="DiskFilter" id="SlaveRandomspreadFilter">
+		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.RandomspreadFilter"/>
+		<parameter id="FilterName" value="Randomspread"/>
+	</extension>
+
+</plugin>

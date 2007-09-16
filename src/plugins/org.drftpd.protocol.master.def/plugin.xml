@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.master.def" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="BasicProtocol"/>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="master" exported="true" reverse-lookup="true"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.master.def" path="classes/" type="code">
+		</library>
+	</runtime>
+
+	<extension plugin-id="master" point-id="ProtocolExtension" id="BasicProtocol">
+		<parameter id="IssuerClass" value="org.drftpd.protocol.master.def.BasicIssuer" />
+	</extension>
+
+</plugin>

@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="common" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<runtime>
+		<library id="common" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="junit" path="../../lib/junit-4.3.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="log4j" path="../../lib/log4j-1.2.14.jar" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+</plugin>

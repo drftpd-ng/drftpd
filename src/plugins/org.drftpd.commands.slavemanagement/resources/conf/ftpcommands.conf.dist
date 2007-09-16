@@ -1,0 +1,80 @@
+SITE SLAVES {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_SLAVES
+perms *
+help List the slave added to the site and the status of each.
+help.specific ${command}
+help.specific List the slave added to the site and the status of each.
+}
+
+SITE REMERGE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_REMERGE
+perms =siteop
+help Rebuilds the file database of the specified slave.
+help.specific ${command} <SLAVENAME>
+help.specific Rebuilds the file database of the specified slave.
+}
+
+SITE KICKSLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_KICKSLAVE
+perms =siteop
+help Kick a slave offline.
+help.specific ${command} <SLAVENAME>
+help.specific Kicks the specified slave offline.
+}
+
+SITE SLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_SLAVE
+perms *
+help Show or modify information about a specific slave.
+help.specific ${command} <SLAVENAME>
+help.specific Show the stored information set on the specified slave.
+help.specific ${command} <SLAVENAME> SET <key> <value>
+help.specific Add any information you want to the slave.
+help.specific ${command} <SLAVENAME> UNSET <key>
+help.specific Remove any information you want from the slave.
+help.specific ${command} <SLAVENAME> ADDMASK <ident@host>
+help.specific Add a host mask that the specified slave is allowed to connect from.
+help.specific ${command} <SLAVENAME> DELMASK <ident@host>
+help.specific Remove a host mask that the specified slave is allowed to connect from.
+}
+
+SITE ADDSLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_ADDSLAVE
+perms =siteop
+help Add a slave to the site.
+help.specific ${command} <SLAVENAME>
+help.specific Add the specified slave to the site.
+help.specific Note: Be sure to use SITE SLAVE <SLAVENAME> ADDMASK <ident@host>
+help.specific to allow the slave to connect
+}
+
+SITE DELSLAVE {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_DELSLAVE
+perms =siteop
+help Remove a slave from the site.
+help.specific ${command} <SLAVENAME>
+help.specific Remove the specified slave from the site.
+}
+
+SITE SLAVESELECT {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doSITE_SLAVESELECT
+perms *
+help Gives the value of each slave for your current SlaveSelection config
+help.specific ${command} <TYPE> </FULLPATH>
+help.specific <TYPE> is one of up,down,jobdown,jobup
+help.specific </FULLPATH> needs to start with "/" should not exist
+}

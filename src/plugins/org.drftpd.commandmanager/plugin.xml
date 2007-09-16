@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commandmanager" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commandmanager" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="Command">
+	</extension-point>
+	<extension plugin-id="master" point-id="CommandManager" id="StandardCommandManager">
+		<parameter id="class" value="org.drftpd.commandmanager.StandardCommandManager"/>
+	</extension>
+</plugin>

@@ -1,0 +1,45 @@
+# @version $Id$
+
+#show status bar in dir listings [true/false]
+statusbar.enabled=true
+
+#showing missing files [true/false]
+files.missing.enabled=true
+
+#set the following line to enable/disable id3tag info
+cwd.id3info.enabled=true
+
+#enable race stats [true/false]
+cwd.racestats.enabled=true
+stor.racestats.enabled=true
+
+#only allow files found in the sfv file [true/false]
+sfv.restrict.files=true
+
+#set the following line to enable/disable file_id.diz info
+cwd.dizinfo.enabled=true
+
+#disallow files before sfv [true/false]
+sfvfirst.required=true
+
+#allow files w/o extensions even if sfvfirst.required=true [true/false]
+sfvfirst.allownoext=true
+
+#allow these file extensions even if not in an sfv file
+allowedexts=nfo txt jpg diz mpg avi zip m3u
+
+#check paths for sfv first enforcement
+sfvfirst.pathcheck=*
+
+#ignore paths for sfv first enforcement
+sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
+
+#who has their restricted by the sfv-first system ?
+#if you wanted siteop group to be exempt, put: !=siteop *
+sfvfirst.users=*
+
+#enable incomplete links creation [true/false]
+incomplete.links=true
+
+#directories to add incomplete link in parent of parent rather than just parent
+incomplete.useparent=(vobsubs?|subs?|subtitles?|extras|(cd|dvd|dis[ck])[1-9])$

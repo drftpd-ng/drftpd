@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="master" version="2.1.0" class="org.drftpd.master.Boot">
+	<doc>
+		<doc-text>This is a text documentation comment</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="slave" exported="true" />
+	</requires>
+	<runtime>
+		<library id="master" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="replacer" path="../../lib/replacer.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="commons-net" path="../../lib/commons-net-1.4.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="UserManager">
+		<parameter-def id="class" />
+	</extension-point>
+	<extension-point id="PreUserResetHook">
+		<parameter-def id="Class" />
+	</extension-point>
+	<extension-point id="PostUserResetHook">
+		<parameter-def id="Class" />
+	</extension-point>
+	<extension-point id="CommandManager">
+		<parameter-def id="class" />
+	</extension-point>
+	<extension-point id="Plugin">
+		<parameter-def id="class" />
+	</extension-point>
+	<extension-point id="SlaveSelection">
+		<parameter-def id="class" />
+	</extension-point>
+	<extension-point id="ProtocolExtension">
+		<parameter-def id="IssuerClass" />
+	</extension-point>
+	
+	<extension-point id="ConfigHandler">
+		<parameter-def id="Class" />
+		<parameter-def id="Method" />
+		<parameter-def id="Directive" />
+	</extension-point>
+	<extension-point id="VFSPerm">
+	   	<parameter-def id="Class" />
+	   	<parameter-def id="Method" />
+	   	<parameter-def id="Type" />
+	  	<parameter-def id="Directive" />
+	</extension-point>
+</plugin>

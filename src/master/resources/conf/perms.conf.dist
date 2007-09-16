@@ -1,0 +1,70 @@
+# is displayed as the site tagline on first connection
+#login_prompt DrFTPD 2.1-dev http://drftpd.org
+
+# Max number of connections
+#max_users <max_unexempted> <max_exempted>
+max_users	100	0
+
+# FUNCTION       | PATH     | GROUP
+# * = only wildcard recognized
+# = denotes group, - denotes user
+
+# EXAMPLES
+# upload 	* 	=siteop
+# download 	* 	-user1
+# makedir 	/usercanmakedir/* -user1 -user2 =group1
+upload			*	*
+download		*	*
+
+makedir			*	*
+
+deleteown		*	*
+delete			*	=siteop
+
+renameown		*	*
+rename			*	=siteop
+
+privpath 		/hidden_path/*	=siteop
+
+# hide the user that's is inside the given dir.
+hideinwho 		/hidden_path/*	*
+
+#Don't update files and bytes on transfers
+#nostatsup 	/pre/*	*
+#nostatsdn	/pre/*	*
+
+#Control credit ratio on uploads (0 = no credits)
+#creditcheck <path> <ratio> <flag/=group/-user>
+
+#Control credit ratio on downloads (0 = no credits)
+#creditloss <path> <ratio> <flag/=group/-user>
+
+# Appends the message contained in the file to the
+# text that is outputed during CWD.
+#msgpath <path> <filename> <flag/=group/-user>
+#msgpath /incoming/ ftp-data/incoming.txt
+
+#dir_names <firstletteruppercase> lower/upper XY XY ..
+#dir_names true lower
+
+#file_names <firstletteruppercase> lower/upper XY XY ..
+#file_names true lower
+
+# Choose who can connect and who can't.
+# Example:
+# allow_connections * => everyone can connect.
+# allow_connections =siteop => only users from the siteop group can connect.
+allow_connections *
+
+# Accepts only one range of ports
+#pasv_ports 50000-60000
+
+# To be used if your master does not report the correct outside ip for
+# PASV commands
+#pasv_addr 1.1.1.1
+
+# SSL/TLS enforcements.
+userrejectsecure        !*
+userrejectinsecure      !*
+denydiruncrypted        !*
+denydatauncrypted       !*

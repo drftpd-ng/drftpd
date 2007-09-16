@@ -1,0 +1,135 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.config.hooks" version="2.1.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commands.usermanagement" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="master" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.config.hooks" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<!-- HideInWho PreHook -->
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook1">
+		<parameter id="ParentMethod" value="doBW" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="hideInWhoHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook2">
+		<parameter id="ParentMethod" value="doIdlers" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="hideInWhoHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook3">
+		<parameter id="ParentMethod" value="doLeechers" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="hideInWhoHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook4">
+		<parameter id="ParentMethod" value="doSITE_SWHO" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="hideInWhoHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook5">
+		<parameter id="ParentMethod" value="doSITE_WHO" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="hideInWhoHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook6">
+		<parameter id="ParentMethod" value="doSpeed" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="hideInWhoHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="HideInWhoHook7">
+		<parameter id="ParentMethod" value="doUploaders" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="hideInWhoHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<!-- End of HideInWho PreHook -->
+	
+	<!-- hideinwho directive handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="HideInWhoDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="hideinwho" />
+	</extension>
+	<!-- End of hideinwho directive handler -->
+	
+	<!-- crypt directives handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="RejectSecureConnDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePerm" />
+    	<parameter id="Directive" value="userrejectsecure" />
+	</extension>
+	<extension plugin-id="master" point-id="ConfigHandler" id="RejectInsecureConnDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePerm" />
+    	<parameter id="Directive" value="userrejectinsecure" />
+	</extension>
+	<extension plugin-id="master" point-id="ConfigHandler" id="DenyUnsecureListingDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePerm" />
+    	<parameter id="Directive" value="denydiruncrypted" />
+	</extension>
+	<extension plugin-id="master" point-id="ConfigHandler" id="DenyUnsecureDataXferDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePerm" />
+    	<parameter id="Directive" value="denydatauncrypted" />
+	</extension>
+	<!-- End of hideinwho directive handler -->
+	
+	<!-- msgpath directive handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="MsgPathDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handleMsgPath" />
+    	<parameter id="Directive" value="msgpath" />
+	</extension>
+	<!-- End of msgpath directive handler -->
+	
+	<!-- Msgpath PostHook -->
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="CWDMsgPathPostHook">
+		<parameter id="ParentMethod" value="doCWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPostHook" />
+		<parameter id="HookMethod" value="showMessageForPath" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<!-- End of Msgpath PostHook -->
+	
+	<!-- nostats directive handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="NoStatsUpDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="nostatsup" />
+	</extension>
+	<extension plugin-id="master" point-id="ConfigHandler" id="NoStatsDnDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="nostatsdn" />
+	</extension>
+	<!-- End of nostats directive handler -->
+	
+	<!-- Download Permission PreHook -->
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="DownloadPermPreHook">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.commands.config.hooks.DefaultConfigPreHook" />
+		<parameter id="HookMethod" value="checkDownloadPermsHook" />
+		<parameter id="Priority" value="2" />
+	</extension>
+	<!-- End of Msgpath PostHooks -->
+	
+</plugin>

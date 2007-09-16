@@ -94,3 +94,7 @@ removejob * =siteop
 listjobs * =siteop
 startjobs * =siteop
 stopjobs * =siteop
+
+list =siteop
+addslave =siteop
+delslave =siteop

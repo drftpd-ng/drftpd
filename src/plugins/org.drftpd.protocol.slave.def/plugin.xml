@@ -1,0 +1,89 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.slave.def" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="BasicProtocol"/>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="slave"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.slave.def" path="classes/" type="code">
+		</library>
+	</runtime>
+
+	<extension plugin-id="slave" point-id="Handler" id="RemergeHandler">
+		<parameter id="Name" value="remerge" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleRemerge" />
+	</extension>
+	
+	<extension plugin-id="slave" point-id="Handler" id="ChecksumHandler">
+		<parameter id="Name" value="checksum" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleChecksum" />
+	</extension>		
+	
+	<extension plugin-id="slave" point-id="Handler" id="ConnectHandler">
+		<parameter id="Name" value="connect" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleConnect" />
+	</extension>
+	
+	<extension plugin-id="slave" point-id="Handler" id="DeleteHandler">
+		<parameter id="Name" value="delete" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleDelete" />
+	</extension>
+
+	<extension plugin-id="slave" point-id="Handler" id="ListenHandler">
+		<parameter id="Name" value="listen" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleListen" />
+	</extension>
+
+	<extension plugin-id="slave" point-id="Handler" id="MaxpathHandler">
+		<parameter id="Name" value="maxpath" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleMaxpath" />
+	</extension>
+	
+	<extension plugin-id="slave" point-id="Handler" id="PingHandler">
+		<parameter id="Name" value="ping" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handlePing" />
+	</extension>
+
+	<extension plugin-id="slave" point-id="Handler" id="ReceiveHandler">
+		<parameter id="Name" value="receive" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleReceive" />
+	</extension>
+
+	<extension plugin-id="slave" point-id="Handler" id="RenameHandler">
+		<parameter id="Name" value="rename" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleRename" />
+	</extension>
+		
+	<extension plugin-id="slave" point-id="Handler" id="SendHandler">
+		<parameter id="Name" value="send" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleSend" />
+	</extension>
+	
+	<extension plugin-id="slave" point-id="Handler" id="AbortHandler">
+		<parameter id="Name" value="abort" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleAbort" />
+	</extension>
+	
+	<extension plugin-id="slave" point-id="Handler" id="ShutdownHandler">
+		<parameter id="Name" value="shutdown" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleShutdown" />
+	</extension>
+</plugin>

@@ -1,0 +1,236 @@
+/*
+ * This file is part of DrFTPD, Distributed FTP Daemon.
+ *
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.drftpd.commands.login;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ResourceBundle;
+
+
+import org.apache.log4j.Logger;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commands.UserManagement;
+import org.drftpd.event.UserEvent;
+import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.FtpReply;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+import org.tanesha.replacer.ReplacerEnvironment;
+
+/**
+ * @author mog
+ * @author djb61
+ * @version $Id: Login.java 1621 2007-02-13 20:41:31Z djb61 $
+ */
+public class LoginHandler extends CommandInterface {
+    private static final Logger logger = Logger.getLogger(LoginHandler.class);
+
+    /**
+     * If _idntAddress == null, IDNT hasn't been used.
+     */
+    protected InetAddress _idntAddress;
+    protected String _idntIdent;
+    private ResourceBundle _bundle;
+    private String _keyPrefix;
+
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
+    }
+
+    /**
+     * Syntax: IDNT ident@ip:dns
+     * Returns nothing on success.
+     */
+    public CommandResponse doIDNT(CommandRequest request) {
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        if (_idntAddress != null) {
+            logger.error("Multiple IDNT commands");
+            return new CommandResponse(530, "Multiple IDNT commands");
+
+        }
+
+        if (!GlobalContext.getConfig().getBouncerIps().contains(conn.getClientAddress())) {
+            logger.warn("IDNT from non-bnc");
+
+            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        }
+
+        String arg = request.getArgument();
+        int pos1 = arg.indexOf('@');
+
+        if (pos1 == -1) {
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        int pos2 = arg.indexOf(':', pos1 + 1);
+
+        if (pos2 == -1) {
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        try {
+            _idntAddress = InetAddress.getByName(arg.substring(pos1 + 1, pos2));
+            _idntIdent = arg.substring(0, pos1);
+        } catch (UnknownHostException e) {
+            logger.info("Invalid hostname passed to IDNT", e);
+
+            //this will most likely cause control connection to become unsynchronized
+            //but give error anyway, this error is unlikely to happen
+            return new CommandResponse(501, "IDNT FAILED: " + e.getMessage());
+        }
+
+        // bnc doesn't expect any reply
+        return null;
+    }
+
+    /**
+     * <code>PASS &lt;SP&gt; <password> &lt;CRLF&gt;</code><br>
+     *
+     * The argument field is a Telnet string specifying the user's
+     * password.  This command must be immediately preceded by the
+     * user name command.
+     */
+    public CommandResponse doPASS(CommandRequest request) {
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        if (conn.getUserNull() == null) {
+        	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
+        }
+
+        // set user password and login
+        String pass = request.hasArgument() ? request.getArgument() : "";
+
+        // login failure - close connection
+        if (conn.getUserNull().checkPassword(pass)) {
+            conn.setAuthenticated(true);
+            GlobalContext.getEventService().publish(new UserEvent(
+                    conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
+
+            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, _keyPrefix+"pass.success", request.getUser()));
+            
+            try {
+                addTextToResponse(response, "text/welcome.txt");
+            } catch (IOException e) {
+                logger.warn("Error reading welcome", e);
+            }
+
+            return response;
+        }
+
+        return new CommandResponse(530, conn.jprintf(_bundle, _keyPrefix+"pass.fail", request.getUser()));
+    }
+
+    /**
+     * <code>QUIT &lt;CRLF&gt;</code><br>
+     *
+     * This command terminates a USER and if file transfer is not
+     * in progress, the server closes the control connection.
+     */
+    public CommandResponse doQUIT(CommandRequest request) {
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+        conn.stop();
+
+        return new CommandResponse(221, conn.jprintf(_bundle, _keyPrefix+"quit.success", request.getUser()));
+    }
+
+    /**
+     * <code>USER &lt;SP&gt; &lt;username&gt; &lt;CRLF&gt;</code><br>
+     *
+     * The argument field is a Telnet string identifying the user.
+     * The user identification is that which is required by the
+     * server for access to its file system.  This command will
+     * normally be the first command transmitted by the user after
+     * the control connections are made.
+     */
+    public CommandResponse doUSER(CommandRequest request) {
+    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+
+        conn.setAuthenticated(false);
+        conn.setUser(null);
+
+        // argument check
+        if (!request.hasArgument()) {
+        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        User newUser;
+
+        try {
+            newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
+        } catch (NoSuchUserException ex) {
+        	return new CommandResponse(530, ex.getMessage());
+        } catch (UserFileException ex) {
+            logger.warn(ex, ex);
+            return new CommandResponse(530, "IOException: " + ex.getMessage());
+        } catch (RuntimeException ex) {
+            logger.error(ex, ex);
+            return new CommandResponse(530, "RuntimeException: " + ex.getMessage());
+        }
+
+        if (newUser.isDeleted()) {
+        	return new CommandResponse(530,
+        			(String)newUser.getKeyedMap().getObject(
+        					UserManagement.REASON,
+        					StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
+        }
+        
+        if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
+        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        }
+
+        try {
+            if (((_idntAddress != null) &&
+                    newUser.getHostMaskCollection().check(_idntIdent,
+                        _idntAddress, null)) ||
+                    ((_idntAddress == null) &&
+                    (newUser.getHostMaskCollection().check(null,
+                        conn.getClientAddress(), conn.getControlSocket())))) {
+                //success
+                // max_users and num_logins restriction
+                FtpReply ftpResponse = GlobalContext.getConnectionManager().canLogin(conn, newUser);
+
+                if (ftpResponse != null) {
+                	return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
+                }
+
+                
+                ReplacerEnvironment env = new ReplacerEnvironment();
+                env.add("user", newUser.getName());
+                
+                return new CommandResponse(331,
+                        conn.jprintf(_bundle, _keyPrefix+"user.success", env, request.getUser()),
+                		request.getCurrentDirectory(), newUser.getName());
+            }
+        } catch (MalformedPatternException e) {
+        	return new CommandResponse(530, e.getMessage());
+        }
+
+        //fail
+        logger.warn("Failed hostmask check");
+
+        return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+    }
+}
