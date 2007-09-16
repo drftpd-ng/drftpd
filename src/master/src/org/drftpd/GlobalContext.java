@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
-import java.util.Map.Entry;
+//import java.util.Map.Entry;
 
 import javax.net.ssl.SSLContext;
 
@@ -132,7 +132,7 @@ public class GlobalContext implements EventSubscriber {
 					manager.activatePlugin(desiredSL);
 					String className = ext.getParameter("class").valueAsString();
 					ClassLoader cl = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
-					Class clazz = cl.loadClass(className);
+					Class<?> clazz = cl.loadClass(className);
 					_slaveSelectionManager = (SlaveSelectionManagerInterface) clazz.newInstance();
 				} catch (Throwable t) {
 					throw new FatalException("Unable to load the slaveselection plugin, check config.", t);
@@ -319,7 +319,7 @@ public class GlobalContext implements EventSubscriber {
 	private void loadSectionManager(Properties cfg) {
 		try {
 			Class<?> cl = Class.forName(cfg.getProperty("sectionmanager", "org.drftpd.sections.def.SectionManager"));
-			Constructor c = cl.getConstructor();
+			Constructor<?> c = cl.getConstructor();
 			_sections = (SectionManagerInterface) c.newInstance();
 		} catch (Exception e) {
 			throw new FatalException(e);
@@ -358,7 +358,7 @@ public class GlobalContext implements EventSubscriber {
 					manager.activatePlugin(desiredUm);
 					ClassLoader umLoader = manager.getPluginClassLoader( 
 							um.getDeclaringPluginDescriptor());
-					Class umCls = umLoader.loadClass( 
+					Class<?> umCls = umLoader.loadClass( 
 							um.getParameter("class").valueAsString());
 					_usermanager = (AbstractUserManager) umCls.newInstance();
 					_usermanager.init();
@@ -452,6 +452,7 @@ public class GlobalContext implements EventSubscriber {
 		
 		CommitManager.start();
 		_timeManager = new TimeManager();
+		loadPluginsConfig();
 		loadUserManager(getConfig().getMainProperties());
 		addTimeEvent(getUserManager());
 
@@ -473,7 +474,6 @@ public class GlobalContext implements EventSubscriber {
 		getJobManager().startJobs();
 		loadSlaveSelectionManager(getConfig().getMainProperties());
 		loadSectionManager(getConfig().getMainProperties());
-		loadPluginsConfig();
 		loadPlugins();
 		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
 		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
@@ -508,9 +508,9 @@ public class GlobalContext implements EventSubscriber {
     				}
         			Properties p = getPropertiesUntilClosed(reader);
         			logger.debug("Adding command " + cmdName);
-        			for (Entry<Object,Object> property : p.entrySet()) {
+        			//for (Entry<Object,Object> property : p.entrySet()) {
         				//logger.debug("key=" + property.getKey() + ",value=" + property.getValue());
-        			}
+        			//}
         			commandsConfig.put(cmdName,p);
         		} else {
         			throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());

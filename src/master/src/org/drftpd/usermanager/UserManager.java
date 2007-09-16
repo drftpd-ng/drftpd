@@ -30,14 +30,14 @@ public interface UserManager extends TimeEventInterface {
 	
 	public abstract User create(String username) throws UserFileException;
 
-	public abstract Collection getAllGroups();
+	public abstract Collection<String> getAllGroups();
 
 	/**
 	 * Get all user names in the system.
 	 */
 	public abstract Collection<User> getAllUsers();
 
-	public abstract Collection getAllUsersByGroup(String group);
+	public abstract Collection<User> getAllUsersByGroup(String group);
 
 	/**
 	 * Get user by name.

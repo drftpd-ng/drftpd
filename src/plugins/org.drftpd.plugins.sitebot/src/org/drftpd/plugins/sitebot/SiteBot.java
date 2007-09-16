@@ -2912,6 +2912,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 						an.getParameter("class").valueAsString());
 				AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
 				_announcers.add(announcer);
+				logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
 				for (String type : announcer.getEventTypes()) {
 					_eventTypes.add(type);
 				}
@@ -3009,6 +3010,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 								_announceConfig.updateEventTypes(_eventTypes);
 								_announceConfig.reload();
 								announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
+								logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
 							}
 							catch (Exception e) {
 								logger.warn("Error loading sitebot announcer " + 

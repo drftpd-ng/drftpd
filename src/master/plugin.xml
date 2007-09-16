@@ -1,6 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="master" version="2.1.0" class="org.drftpd.master.Boot">
+	<doc>
+		<doc-text>This is a text documentation comment</doc-text>
+	</doc>
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />
@@ -22,6 +25,12 @@
 	</runtime>
 	<extension-point id="UserManager">
 		<parameter-def id="class" />
+	</extension-point>
+	<extension-point id="PreUserResetHook">
+		<parameter-def id="Class" />
+	</extension-point>
+	<extension-point id="PostUserResetHook">
+		<parameter-def id="Class" />
 	</extension-point>
 	<extension-point id="CommandManager">
 		<parameter-def id="class" />

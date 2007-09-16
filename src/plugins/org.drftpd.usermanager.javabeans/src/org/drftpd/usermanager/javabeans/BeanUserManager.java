@@ -71,6 +71,7 @@ public class BeanUserManager extends AbstractUserManager {
 	 * @throws UserFileException
 	 */
 	public void init() throws UserFileException {
+		super.init();
 		if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
 			throw new UserFileException(new IOException(
 					"Error creating directories: " + getUserpathFile()));

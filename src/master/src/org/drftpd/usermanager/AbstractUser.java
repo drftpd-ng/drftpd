@@ -19,9 +19,7 @@ package org.drftpd.usermanager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -169,7 +167,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		return _group;
 	}
 
-	public List getGroups() {
+	public List<String> getGroups() {
 		return _groups;
 	}
 
@@ -242,8 +240,8 @@ public abstract class AbstractUser extends User implements Commitable {
 			return true;
 		}
 
-		for (Iterator iter = getGroups().iterator(); iter.hasNext();) {
-			if (group.equals(iter.next())) {
+		for (String myGroup : getGroups()) {
+			if (group.equals(myGroup)) {
 				return true;
 			}
 		}

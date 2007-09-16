@@ -55,7 +55,7 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 
 	public abstract String getGroup();
 
-	public abstract List getGroups();
+	public abstract List<String> getGroups();
 
 	public abstract HostMaskCollection getHostMaskCollection();
 
