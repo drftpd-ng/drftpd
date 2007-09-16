@@ -264,7 +264,7 @@ public class JobManager {
 		}
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
 		_useSSL = p.getProperty("useSSLTransfers", "true").equals("true"); 
-		_sleepSeconds = 1000 * Integer.parseInt(PropertyHelper.getProperty(p,
+		_sleepSeconds = 1000 * Long.parseLong(PropertyHelper.getProperty(p,
 				"sleepSeconds"));
 		if (_runJob != null) {
 			_runJob.cancel();

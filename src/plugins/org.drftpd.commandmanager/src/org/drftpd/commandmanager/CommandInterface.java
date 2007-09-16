@@ -214,9 +214,15 @@ public abstract class CommandInterface implements EventSubscriber {
 
 	public void addTextToResponse(CommandResponse response, String file)
 		throws FileNotFoundException, IOException {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "ISO-8859-1"));
-		response.addComment(reader);
-		reader.close();
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "ISO-8859-1"));
+			response.addComment(reader);
+			reader.close();
+		} finally {
+			if (reader != null)
+				reader.close();
+		}
 	}
 
 	public void onEvent(Object event) {

@@ -38,7 +38,6 @@ public class AssignParser {
 
 		if (assign.equals("remove")) {
 			_score = 0;
-			positive = false;
 		} else {
 			_score = Long.parseLong(assign);
 

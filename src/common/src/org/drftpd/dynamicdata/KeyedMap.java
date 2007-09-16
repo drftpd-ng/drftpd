@@ -28,7 +28,7 @@ import java.util.Map;
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public class KeyedMap<K, V> extends Hashtable {
+public class KeyedMap<K extends Key, V> extends Hashtable {
 	public KeyedMap() {
 		super();
 	}

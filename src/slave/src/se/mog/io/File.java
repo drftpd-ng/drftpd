@@ -26,7 +26,7 @@ import java.net.URI;
  */
 public class File extends java.io.File {
 	private static FileSystem fs = FileSystem.getFileSystem();
-	public static String separator = "/";
+	public static final String separator = "/";
 
 	/**
 	 * @param pathname

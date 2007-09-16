@@ -161,7 +161,7 @@ public class InputThread extends Thread {
 	/**
 	 * Closes the socket without onDisconnect being called subsequently.
 	 */
-	public void dispose () {
+	public void dispose() {
 		try {
 			_disposed = true;
 			_socket.close();

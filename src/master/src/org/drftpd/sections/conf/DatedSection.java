@@ -39,7 +39,7 @@ import org.drftpd.vfs.ObjectNotValidException;
  * @author mog
  * @version $Id$
  */
-public class DatedSection extends PlainSection implements SectionInterface, TimeEventInterface {
+public class DatedSection extends PlainSection implements TimeEventInterface {
 	// The code assumes that the following constants are in a increasing sequence.
 	protected static final int TOP_OF_TROUBLE = -1;
 	protected static final int TOP_OF_MINUTE = 0;

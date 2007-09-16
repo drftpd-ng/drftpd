@@ -27,7 +27,7 @@ import org.drftpd.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 public class ServerStatus extends CommandInterface {
-	protected static Key CONNECTTIME = new Key(ServerStatus.class, "connecttime", Long.class);
+	protected static final Key CONNECTTIME = new Key(ServerStatus.class, "connecttime", Long.class);
 	
 	private ExtendedPropertyResourceBundle _bundle;
 	private String _keyPrefix;

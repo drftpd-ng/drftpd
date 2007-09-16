@@ -19,7 +19,6 @@ package org.drftpd.usermanager.javabeans;
 
 import java.beans.XMLEncoder;
 import java.io.IOException;
-import java.io.Serializable;
 
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
@@ -34,7 +33,7 @@ import org.java.plugin.PluginManager;
  * @author mog
  * @version $Id$
  */
-public class BeanUser extends AbstractUser implements Serializable {
+public class BeanUser extends AbstractUser {
 
 	private BeanUserManager _um;
 

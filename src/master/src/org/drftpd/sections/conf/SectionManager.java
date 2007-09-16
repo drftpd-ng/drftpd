@@ -18,6 +18,7 @@
 package org.drftpd.sections.conf;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,9 +27,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
-import org.drftpd.master.ConnectionManager;
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
@@ -38,18 +40,17 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
+	private static Logger logger = Logger.getLogger(SectionManager.class);
+	
 	private static final Class[] CONSTRUCTOR_SIG = new Class[] { int.class, Properties.class };
-
-	private PlainSection _emptySection = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
+	private static final PlainSection EMPTYSECTION = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
 
 	private HashMap<String, SectionInterface> _sections;
 
+	private boolean _mkdirs = false;
+	
 	public SectionManager() {
 		reload();
-	}
-
-	public ConnectionManager getConnectionManager() {
-		return ConnectionManager.getConnectionManager();
 	}
 
 	public SectionInterface getSection(String string) {
@@ -59,7 +60,7 @@ public class SectionManager implements SectionManagerInterface {
 			return s;
 		}
 
-		return _emptySection;
+		return EMPTYSECTION;
 	}
 
 	public Collection<SectionInterface> getSections() {
@@ -72,7 +73,7 @@ public class SectionManager implements SectionManagerInterface {
 
 	private SectionInterface lookup(String string) {
 		int matchlen = 0;
-		SectionInterface match = _emptySection;
+		SectionInterface match = EMPTYSECTION;
 
 		for (Iterator<SectionInterface> iter = _sections.values().iterator(); iter
 				.hasNext();) {
@@ -104,12 +105,14 @@ public class SectionManager implements SectionManagerInterface {
 				}
 			}
 		}
+		
+		_mkdirs = p.getProperty("make.section.dirs", "false").equals("true");
 
 		for (int i = 1;; i++) {
 				String name = p.getProperty(i + ".name");
 				if (name == null)
 					break;
-				String type = p.getProperty(i + ".type", "plain");
+				String type = p.getProperty(i + ".type", "plain").trim();
 				try {
 					Class<?> clazz = Class.forName("org.drftpd.sections.conf."
 							+ type.substring(0, 1).toUpperCase()
@@ -119,9 +122,11 @@ public class SectionManager implements SectionManagerInterface {
 							.newInstance(
 									new Object[] { new Integer(i), p });
 					sections.put(name, section);
-				} catch (Exception e1) {
+					
+					createSectionDir(section);
+				} catch (Exception e) {
 					throw new FatalException("Unknown section type: " + i
-							+ ".type = " + type, e1);
+						+ ".type = " + type, e);
 				}
 			}
 		_sections = sections;
@@ -129,6 +134,21 @@ public class SectionManager implements SectionManagerInterface {
 
 	public SectionInterface lookup(DirectoryHandle directory) {
 		return lookup(directory.getPath());
+	}
+	
+	private void createSectionDir(SectionInterface section) {
+		if (!_mkdirs) {
+			return;
+		}
+		
+		try {
+			DirectoryHandle root = new DirectoryHandle("/");		
+			root.createDirectoryRecursive(section.getCurrentDirectory().getPath().substring(1));
+		} catch (FileExistsException e) {
+			// good the file exists, no need to create it.
+		} catch (FileNotFoundException e) {
+			logger.warn("How come this happened? Does root exist?", e);
+		}
 	}
 
 }

@@ -74,7 +74,7 @@ public class ConfigManager implements ConfigInterface {
 	private ArrayList<InetAddress> _bouncerIps;
 	private String _loginPrompt = Slave.VERSION + " http://drftpd.org";
 	private String _pasvAddr;
-	private PortRange _portRange;
+	private PortRange _portRange = new PortRange(0); 
 	private boolean _hideIps = true;
 	
 	private int _maxUsersTotal = Integer.MAX_VALUE;
@@ -161,19 +161,19 @@ public class ConfigManager implements ConfigInterface {
 	 * Reads 'drftpd.conf' and save it to a Properties object.
 	 * @see #getMainProperties()
 	 */
-	private void loadMainProperties() {		
+	private void loadMainProperties() {
+		FileInputStream is = null;
 		try {
 			_mainCfg = new Properties();
-			FileInputStream mainStream = new FileInputStream(mainFile);
-			_mainCfg.load(mainStream);
-			try {
-				mainStream.close();
-			} catch (IOException e) {
-				// Stream already closed
-			}
+			is = new FileInputStream(mainFile);
+			_mainCfg.load(is);
 		} catch (IOException e) {
 			logger.error("Unable to read drftpd.conf", e);
-			_mainCfg = new Properties();
+		} finally {
+			if (is != null) {
+				try { is.close(); }
+				catch (IOException e) { }
+			}
 		}
 	}
 	
@@ -209,8 +209,9 @@ public class ConfigManager implements ConfigInterface {
 	 * Reads 'conf/perms.conf' handling what can be handled, ignoring what's does not have an available handler.
 	 */
 	private void readConf() {
+		LineNumberReader in = null;
 		try {
-			LineNumberReader in = new LineNumberReader(new FileReader(permsFile));
+			in = new LineNumberReader(new FileReader(permsFile));
 			String line;
 			
 			while ((line = in.readLine()) != null) {				
@@ -233,7 +234,7 @@ public class ConfigManager implements ConfigInterface {
 					_maxUsersExempt = Integer.parseInt(st.nextToken());
 				} else if (drct.equals("pasv_addr")) {
 					_pasvAddr = st.nextToken();
-				} else if (drct.equals("pasv_port")) {
+				} else if (drct.equals("pasv_ports")) {
 					String[] temp = st.nextToken().split("-");
 					_portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
 				} else if (drct.equals("hide_ips")) {
@@ -253,6 +254,11 @@ public class ConfigManager implements ConfigInterface {
 			}
 		} catch (IOException e) {
 			logger.info("Unable to parse "+permsFile.getName(), e);
+		} finally {
+			if (in != null) {
+				try { in.close(); }
+				catch (IOException e) { }
+			}
 		}
 	}
 	

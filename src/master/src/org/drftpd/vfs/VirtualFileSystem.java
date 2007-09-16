@@ -71,7 +71,7 @@ public class VirtualFileSystem {
 	private static final Logger logger = Logger
 			.getLogger(VirtualFileSystem.class.getName());
 
-	public static String separator = "/";
+	public static final String separator = "/";
 
 	/**
 	 * Takes /path/dir/name and returns name

@@ -508,9 +508,7 @@ public class GlobalContext implements EventSubscriber {
     				}
         			Properties p = getPropertiesUntilClosed(reader);
         			logger.debug("Adding command " + cmdName);
-        			//for (Entry<Object,Object> property : p.entrySet()) {
-        				//logger.debug("key=" + property.getKey() + ",value=" + property.getValue());
-        			//}
+
         			commandsConfig.put(cmdName,p);
         		} else {
         			throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());

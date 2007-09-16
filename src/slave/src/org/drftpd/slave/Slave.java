@@ -77,7 +77,7 @@ public class Slave {
 
 	public static final String VERSION = "DrFTPD 2.1.0-dev";
 
-	public static String separator = "/";
+	public static final String separator = "/";
 
 	private int _bufferSize;
 
