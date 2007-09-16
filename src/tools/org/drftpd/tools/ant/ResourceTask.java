@@ -37,6 +37,8 @@ import org.apache.tools.ant.Task;
  */
 public class ResourceTask extends Task {
 
+	public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
+
 	private File _baseDir;
 	private File _resourceDir;
 	private long _longDate = 0L;
@@ -157,6 +159,23 @@ public class ResourceTask extends Task {
 					outputWriter.close();
 				} catch (IOException e) {
 					// Just means it doesn't need closing
+				}
+			}
+		}
+		// If non windows and a shell script then chmod
+		if (!isWin32) {
+			if (newFile.getName().endsWith(".sh")) {
+				String[] cmdArray = {"chmod","755",newFile.getAbsolutePath()};
+				try {
+					Process p = Runtime.getRuntime().exec(cmdArray);
+					p.waitFor();
+					if (p.exitValue() != 0) {
+						log("Error chmodding file: "+newFile.getAbsolutePath());
+					}
+				} catch (IOException e) {
+					log("Error chmodding file: "+newFile.getAbsolutePath());
+				} catch (InterruptedException e) {
+					log("Chmod process was interrupted on file: "+newFile.getAbsolutePath());
 				}
 			}
 		}
