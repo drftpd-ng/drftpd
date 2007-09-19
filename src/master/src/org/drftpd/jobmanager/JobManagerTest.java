@@ -58,6 +58,7 @@ public class JobManagerTest extends TestCase {
     ConnectionManager _cm;
     JobManager _jm;
     private ArrayList<RemoteSlave> _slaveList;
+    private ArrayList<String> _slaveNames;
 
     public JobManagerTest(String arg0) throws IOException {
         super(arg0);
@@ -71,9 +72,13 @@ public class JobManagerTest extends TestCase {
         DummyRemoteSlave rslave2 = new DummyRemoteSlave("slave2");
         DummyRemoteSlave rslave3 = new DummyRemoteSlave("slave3");
         _slaveList = new ArrayList<RemoteSlave>();
+        _slaveNames = new ArrayList<String>();
         _slaveList.add(rslave1);
         _slaveList.add(rslave2);
         _slaveList.add(rslave3);
+        _slaveNames.add(rslave1.getName());
+        _slaveNames.add(rslave2.getName());
+        _slaveNames.add(rslave3.getName());
         p = new Properties();
         _cm = new CM(p);
 
@@ -112,7 +117,7 @@ public class JobManagerTest extends TestCase {
      * Test for Job getNextJob(List)
      */
     public void testGetNextJobList() {
-        HashSet<RemoteSlave> slaveSet = new HashSet<RemoteSlave>(_slaveList);
+        HashSet<String> slaveSet = new HashSet<String>(_slaveNames);
         Job job = new Job(file, slaveSet, 0, slaveSet.size());
         _jm.addJobToQueue(job);
 

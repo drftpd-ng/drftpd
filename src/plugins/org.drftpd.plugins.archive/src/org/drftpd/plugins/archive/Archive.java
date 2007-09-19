@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins;
+package org.drftpd.plugins.archive;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,9 +32,8 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.event.ReloadEvent;
-import org.drftpd.mirroring.ArchiveHandler;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.mirroring.DuplicateArchiveException;
+import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
+import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 
 /**

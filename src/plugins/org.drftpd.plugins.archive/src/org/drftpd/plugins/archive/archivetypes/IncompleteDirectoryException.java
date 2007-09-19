@@ -15,27 +15,26 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.mirroring.archivetypes;
+package org.drftpd.plugins.archive.archivetypes;
 
-/*
+/**
  * @author zubov
- * 
  * @version $Id$
  */
-public class OfflineSlaveException extends Exception {
-	public OfflineSlaveException() {
+public class IncompleteDirectoryException extends Exception {
+	public IncompleteDirectoryException() {
 		super();
 	}
 
-	public OfflineSlaveException(String arg0) {
+	public IncompleteDirectoryException(String arg0) {
 		super(arg0);
 	}
 
-	public OfflineSlaveException(String arg0, Throwable arg1) {
+	public IncompleteDirectoryException(String arg0, Throwable arg1) {
 		super(arg0, arg1);
 	}
 
-	public OfflineSlaveException(Throwable arg0) {
+	public IncompleteDirectoryException(Throwable arg0) {
 		super(arg0);
 	}
 }

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.mirroring.archivetypes;
+package org.drftpd.plugins.archive.archivetypes;
 
 import java.io.FileNotFoundException;
 import java.util.Collection;
@@ -25,8 +25,7 @@ import java.util.Properties;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.plugins.Archive;
+import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;

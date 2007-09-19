@@ -15,26 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.mirroring;
+package org.drftpd.plugins.archive.archivetypes;
 
-/**
+/*
  * @author zubov
+ * 
  * @version $Id$
  */
-public class DuplicateArchiveException extends Exception {
-	public DuplicateArchiveException() {
+public class OfflineSlaveException extends Exception {
+	public OfflineSlaveException() {
 		super();
 	}
 
-	public DuplicateArchiveException(String message) {
-		super(message);
+	public OfflineSlaveException(String arg0) {
+		super(arg0);
 	}
 
-	public DuplicateArchiveException(Throwable cause) {
-		super(cause);
+	public OfflineSlaveException(String arg0, Throwable arg1) {
+		super(arg0, arg1);
 	}
 
-	public DuplicateArchiveException(String message, Throwable cause) {
-		super(message, cause);
+	public OfflineSlaveException(Throwable arg0) {
+		super(arg0);
 	}
 }

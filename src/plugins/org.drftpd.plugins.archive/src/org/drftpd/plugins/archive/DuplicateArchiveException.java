@@ -15,26 +15,26 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.mirroring.archivetypes;
+package org.drftpd.plugins.archive;
 
 /**
  * @author zubov
  * @version $Id$
  */
-public class IncompleteDirectoryException extends Exception {
-	public IncompleteDirectoryException() {
+public class DuplicateArchiveException extends Exception {
+	public DuplicateArchiveException() {
 		super();
 	}
 
-	public IncompleteDirectoryException(String arg0) {
-		super(arg0);
+	public DuplicateArchiveException(String message) {
+		super(message);
 	}
 
-	public IncompleteDirectoryException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
+	public DuplicateArchiveException(Throwable cause) {
+		super(cause);
 	}
 
-	public IncompleteDirectoryException(Throwable arg0) {
-		super(arg0);
+	public DuplicateArchiveException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

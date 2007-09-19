@@ -15,21 +15,21 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.mirroring;
+package org.drftpd.plugins.archive.archivetypes;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.jobmanager.Job;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.archive.DuplicateArchiveException;
 import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: ArchiveHandler.java 1787 2007-09-19 10:22:58Z zubov $
  */
 public class ArchiveHandler extends Thread {
 	protected final static Logger logger = Logger

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands;
+package org.drftpd.plugins.archive.commands;
 
 import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
@@ -23,25 +23,24 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.Reply;
-import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.mirroring.ArchiveHandler;
-import org.drftpd.mirroring.ArchiveType;
-import org.drftpd.mirroring.DuplicateArchiveException;
-import org.drftpd.plugins.Archive;
+import org.drftpd.plugins.archive.Archive;
+import org.drftpd.plugins.archive.DuplicateArchiveException;
+import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
+import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -52,27 +51,20 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author zubov
  * @version $Id$
  */
-public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFactory {
+public class ArchiveCommandHandler extends CommandInterface {
     private static final Logger logger = Logger.getLogger(ArchiveCommandHandler.class);
 
+	private ResourceBundle _bundle;
+	private String _keyPrefix;
+
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = "archive.";
+    }
+    
     public ArchiveCommandHandler() {
         super();
-    }
-
-    public Reply execute(BaseFtpConnection conn)
-        throws UnhandledCommandException, ImproperUsageException {
-        String cmd = conn.getRequest().getCommand();
-
-        if ("SITE LISTARCHIVETYPES".equals(cmd)) {
-            return doLISTARCHIVETYPES(conn);
-        }
-
-        if ("SITE ARCHIVE".equals(cmd)) {
-            return doARCHIVE(conn);
-        }
-
-        throw UnhandledCommandException.create(ArchiveCommandHandler.class,
-            conn.getRequest());
     }
     
     private Archive getArchive() throws ObjectNotFoundException {
@@ -88,31 +80,31 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
 		throw new ObjectNotFoundException("Archive is not loaded");
 	}
 
-    private Reply doARCHIVE(BaseFtpConnection conn) throws ImproperUsageException {
-        Reply reply = new Reply(200);
+    public CommandResponse doARCHIVE(CommandRequest request) throws ImproperUsageException {
+    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         ReplacerEnvironment env = new ReplacerEnvironment();
-
-        if (!conn.getRequest().hasArgument()) {
+        
+        if (!request.hasArgument()) {
         	throw new ImproperUsageException();
         }
 
-        StringTokenizer st = new StringTokenizer(conn.getRequest().getArgument());
+        StringTokenizer st = new StringTokenizer(request.getArgument());
         String dirname = st.nextToken();
         DirectoryHandle dir;
 
         try {
-			dir = conn.getCurrentDirectory().getDirectory(dirname);
+			dir = request.getCurrentDirectory().getDirectory(dirname);
 		} catch (FileNotFoundException e1) {
-			reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-					"help.archive", env));
+			response.addComment(request.getSession().jprintf(_bundle, env,
+					_keyPrefix + "help.specific"));
 			env.add("dirname", dirname);
-			reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-					"archive.baddir", env));
+			response.addComment(request.getSession().jprintf(_bundle, env,
+					_keyPrefix + "archive.baddir"));
 
-			return reply;
+			return response;
 		} catch (ObjectNotValidException e) {
-			reply.addComment("Archive only works on Directories");
-			return reply;
+			response.addComment("Archive only works on Directories");
+			return response;
 		}
 
         Archive archive;
@@ -120,22 +112,21 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e3) {
-            reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                    "archive.loadarchive", env));
-
-            return reply;
+        	response.addComment(request.getSession().jprintf(_bundle, env,
+					_keyPrefix + "loadarchive"));
+            return response;
         }
 
         String archiveTypeName = null;
         ArchiveType archiveType = null;
-        SectionInterface section = conn.getGlobalContext().getSectionManager()
+        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager()
                                        .getSection(dir.getPath());
 
         if (st.hasMoreTokens()) { // load the specific type
             archiveTypeName = st.nextToken();
 
             Class[] classParams = {
-                    org.drftpd.plugins.Archive.class,
+                    org.drftpd.plugins.archive.Archive.class,
                     SectionInterface.class, Properties.class
                 };
             Constructor constructor = null;
@@ -148,10 +139,10 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
                 logger.debug("Serious error, your ArchiveType for section " +
                     section.getName() +
                     " is incompatible with this version of DrFTPD", e1);
-                reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.incompatible", env));
+                response.addComment(request.getSession().jprintf(_bundle, env,
+    					_keyPrefix + "incompatible"));
 
-                return reply;
+                return response;
             }
 
             Properties props = new Properties();
@@ -168,10 +159,10 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
                 logger.warn("Unable to load ArchiveType for section " +
                     section.getName(), e2);
                 env.add("exception", e2.getMessage());
-                reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.badarchivetype", env));
+                response.addComment(request.getSession().jprintf(_bundle, env,
+    					_keyPrefix + "badarchivetype"));
 
-                return reply;
+                return response;
             }
         }
 
@@ -189,14 +180,14 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
             String slavename = st.nextToken();
 
             try {
-                RemoteSlave rslave = conn.getGlobalContext()
+                RemoteSlave rslave = GlobalContext.getGlobalContext()
                                          .getSlaveManager()
                                          .getRemoteSlave(slavename);
                 slaveSet.add(rslave);
             } catch (ObjectNotFoundException e2) {
                 env.add("slavename", slavename);
-                reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                        "archive.badslave", env));
+                response.addComment(request.getSession().jprintf(_bundle, env,
+    					_keyPrefix + "badslave"));
             }
         }
 
@@ -206,8 +197,8 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
             archive.checkPathForArchiveStatus(dir.getPath());
         } catch (DuplicateArchiveException e) {
             env.add("exception", e.getMessage());
-            reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                    "archive.fail", env));
+            response.addComment(request.getSession().jprintf(_bundle, env,
+					_keyPrefix + "fail"));
         }
 
         if (!slaveSet.isEmpty()) {
@@ -219,10 +210,10 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         archiveHandler.start();
         env.add("dirname", dir.getPath());
         env.add("archivetypename", archiveTypeName);
-        reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                "archive.success", env));
+        response.addComment(request.getSession().jprintf(_bundle, env,
+				_keyPrefix + "help.success"));
 
-        return reply;
+        return response;
     }
 
     private void addConfig(Properties props, String string,
@@ -247,8 +238,8 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         props.put(section.getName() + "." + data[0], data[1]);
     }
 
-    private Reply doLISTARCHIVETYPES(BaseFtpConnection conn) {
-        Reply reply = new Reply(200);
+    public CommandResponse doLISTARCHIVETYPES(CommandRequest request) {
+    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         int x = 0;
         ReplacerEnvironment env = new ReplacerEnvironment();
         Archive archive;
@@ -256,33 +247,23 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e) {
-            reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
-                    "archive.loadarchive", env));
+        	response.addComment(request.getSession().jprintf(_bundle, env,
+					_keyPrefix + "loadarchive"));
 
-            return reply;
+            return response;
         }
 
         for (Iterator iter = archive.getArchiveHandlers().iterator();
                 iter.hasNext(); x++) {
             ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
-            reply.addComment(x + ". " + archiveHandler.getArchiveType());
+            response.addComment(x + ". " + archiveHandler.getArchiveType());
         }
 
-        return reply;
+        return response;
     }
 
     public String[] getFeatReplies() {
         return null;
     }
 
-    public CommandHandler initialize(BaseFtpConnection conn,
-        CommandManager initializer) {
-        return this;
-    }
-
-    public void load(CommandManagerFactory initializer) {
-    }
-
-    public void unload() {
-    }
 }
