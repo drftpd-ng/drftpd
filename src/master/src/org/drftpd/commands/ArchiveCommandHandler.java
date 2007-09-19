@@ -21,11 +21,13 @@ import java.io.FileNotFoundException;
 import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.CommandHandler;
 import org.drftpd.commandmanager.CommandHandlerFactory;
 import org.drftpd.commandmanager.CommandManager;
@@ -72,6 +74,19 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         throw UnhandledCommandException.create(ArchiveCommandHandler.class,
             conn.getRequest());
     }
+    
+    private Archive getArchive() throws ObjectNotFoundException {
+    	Archive archive = null;
+		List<PluginInterface> pluginList = GlobalContext.getGlobalContext()
+				.getPlugins();
+		for (PluginInterface pi : pluginList) {
+			if (pi instanceof Archive) {
+				archive = (Archive) pi;
+				return archive;
+			}
+		}
+		throw new ObjectNotFoundException("Archive is not loaded");
+	}
 
     private Reply doARCHIVE(BaseFtpConnection conn) throws ImproperUsageException {
         Reply reply = new Reply(200);
@@ -103,7 +118,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         Archive archive;
 
         try {
-            archive = (Archive) conn.getGlobalContext().getFtpListener(Archive.class);
+            archive = getArchive();
         } catch (ObjectNotFoundException e3) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));
@@ -239,7 +254,7 @@ public class ArchiveCommandHandler implements CommandHandler, CommandHandlerFact
         Archive archive;
 
         try {
-            archive = (Archive) conn.getGlobalContext().getFtpListener(Archive.class);
+            archive = getArchive();
         } catch (ObjectNotFoundException e) {
             reply.addComment(conn.jprintf(ArchiveCommandHandler.class,
                     "archive.loadarchive", env));

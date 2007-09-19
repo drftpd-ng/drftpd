@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.jobmanager.Job;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
@@ -130,7 +132,12 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException, FileNotFoundException {
 		
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaves());
+		ArrayList<RemoteSlave> slaves;
+		try {
+			slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaveObjects());
+		} catch (ObjectNotFoundException e) {
+			throw new NoAvailableSlaveException("Slave no longer exists");
+		}
 		slaves.removeAll(job.getFile().getAvailableSlaves()); // a slave cannot have the same file twice ;P
 
 		for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {

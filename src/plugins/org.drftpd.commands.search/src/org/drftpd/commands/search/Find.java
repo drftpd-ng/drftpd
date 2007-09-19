@@ -234,7 +234,7 @@ public class Find extends CommandInterface {
 
 		public String exec(CommandRequest request, InodeHandle inode) {
 			FileHandle file = (FileHandle) inode;
-			GlobalContext.getGlobalContext().getJobManager().addJobToQueue(new Job(file, _destSlaves, _priority, _transferNum));
+			GlobalContext.getGlobalContext().getJobManager().addJobToQueue(new Job(file, _priority, _transferNum, _destSlaves));
 			return file.getName() + " added to jobqueue";
 		}
 

@@ -17,6 +17,7 @@
 package org.drftpd.jobmanager;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,8 +25,10 @@ import java.util.Set;
 
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
@@ -42,7 +45,7 @@ public class Job {
 
 	private static final Logger logger = Logger.getLogger(Job.class);
 
-	private Set<RemoteSlave> _destSlaves;
+	private Set<String> _destSlaves;
 
 	private FileHandle _file;
 
@@ -59,22 +62,49 @@ public class Job {
 	private long _index;
 
 	private boolean _onlyCountOnlineSlaves;
+	
+	/**
+	 * 	A flag declaring whether the delete operation at the end of the Job transfer has been done or not
+	 */
+	private boolean _deleteDone;
+	
+	public Job(FileHandle file, int priority, int transferNum, Collection<RemoteSlave> destSlaves) {
+		this(file, priority, transferNum);
+		HashSet<String> slaves = new HashSet<String>();
+		for (RemoteSlave rslave : destSlaves) {
+			slaves.add(rslave.getName());
+		}
+		_destSlaves = slaves;
+	}
 
-	public Job(FileHandle file, Collection<RemoteSlave> destSlaves,
+	public Job(FileHandle file, Collection<String> destSlaves,
 			int priority, int transferNum) {
 		this(file, destSlaves, priority, transferNum, false);
 	}
-
-	public Job(FileHandle file, Collection<RemoteSlave> destSlaves,
-			int priority, int transferNum, boolean onlyCountOnlineSlaves) {
+	
+	/**
+	 * This does NOT create a complete Job, it lacks only the destination Slave list
+	 * @param file
+	 * @param priority
+	 * @param transfernum
+	 */
+	private Job(FileHandle file, int priority, int transferNum) {
 		_index = jobIndexCount++;
-		_destSlaves = new HashSet<RemoteSlave>(destSlaves);
-		_file = file;
-		_priority = priority;
 		_timeCreated = System.currentTimeMillis();
 		_timeSpent = 0;
-		_transferNum = transferNum;
 		_slaveTransfer = null;
+		_deleteDone = false;
+		_file = file;
+		_priority = priority;
+		_transferNum = transferNum;
+		_onlyCountOnlineSlaves = false;
+		_destSlaves = null;
+	}
+
+	public Job(FileHandle file, Collection<String> destSlaves,
+			int priority, int transferNum, boolean onlyCountOnlineSlaves) {
+		this(file, priority, transferNum);
+		_destSlaves = new HashSet<String>(destSlaves);
 		_onlyCountOnlineSlaves = onlyCountOnlineSlaves;
 		if (_transferNum > destSlaves.size()) {
 			throw new IllegalArgumentException(
@@ -90,22 +120,97 @@ public class Job {
 	public void addTimeSpent(long time) {
 		_timeSpent += time;
 	}
+	
+	private Collection<String> getSlavesToTransferTo() {
+		ArrayList<String> toTransferTo = new ArrayList<String>(_destSlaves);
+		toTransferTo.removeAll(getDestinationSlaves());
+		return toTransferTo;
+	}
+	
+	/**
+	 * Once the files have have been sent, this method is called. This
+	 * is where files are possibly deleted from slaves.
+	 */
+	public void cleanup() {
+		try {
+				// remove slaves that aren't in the destination list
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile().getSlaves())) {
+					if (!_destSlaves.contains(rslave.getName())) {
+						rslave.simpleDelete(getFile().getPath());
+						getFile().removeSlave(rslave);
+					}
+				}
+				// remove slaves if they aren't online and we have too many copies
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile()
+					.getSlaves())) {
+				if (getFile().getSlaves().size() <= _transferNum) {
+					return;
+				}
+				if (!rslave.isAvailable()) {
+					rslave.simpleDelete(getFile().getPath());
+					getFile().removeSlave(rslave);
+				}
+			}
+				// remove slaves if they are online and we have too many copies
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile().getSlaves())) {
+					if (getFile().getSlaves().size() <= _transferNum) {
+						return;
+					}
+					rslave.simpleDelete(getFile().getPath());
+					getFile().removeSlave(rslave);
+				}
+			} catch (FileNotFoundException e) {
+				// couldn't find the file that was referenced, unsure of what to
+				// do now
+				// probably can just leave it alone
+			} finally {
+				_deleteDone = true;
+			}
+	}
+
+	
+	public Collection<RemoteSlave> getSlaveObjects(Collection<String> names) throws ObjectNotFoundException {
+		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>();
+		ArrayList<String> stringSlaves = new ArrayList<String>(names);
+		for (String rslave : stringSlaves) {
+			try {
+				slaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(rslave));
+			} catch (ObjectNotFoundException e) {
+				// have to abort, destination slave no longer exists
+				abort();
+				throw new ObjectNotFoundException("Slave " + rslave + " no longer exists");
+			}
+		}
+		return slaves;
+	}
 
 	/**
 	 * Returns an unmodifiable List of slaves that can be used with.
 	 * {@see net.sf.drftpd.master.SlaveManagerImpl#getASlave(Collection, char, FtpConfig)}
 	 */
-	public Set<RemoteSlave> getDestinationSlaves() {
+	public Set<String> getDestinationSlaves() {
 		if (_onlyCountOnlineSlaves) {
-			HashSet<RemoteSlave> onlineDestinationSlaves = new HashSet<RemoteSlave>();
-			for (RemoteSlave rslave : new HashSet<RemoteSlave>(_destSlaves)) {
-				if (rslave.isAvailable()) {
-					onlineDestinationSlaves.add(rslave);
+			HashSet<String> onlineDestinationSlaves = new HashSet<String>();
+			for (String rslave : new HashSet<String>(_destSlaves)) {
+				RemoteSlave remoteSlave;
+				try {
+					remoteSlave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(rslave);
+					if (remoteSlave.isAvailable()) {
+						onlineDestinationSlaves.add(rslave);
+					}
+				} catch (ObjectNotFoundException e) {
+					// Slave doesn't exist anymore in List, I guess we just abort?
+					abort();
 				}
 			}
-			return onlineDestinationSlaves;
+			return Collections.unmodifiableSet(onlineDestinationSlaves);
 		}
 		return Collections.unmodifiableSet(_destSlaves);
+	}
+
+	public void abort() {
+		_deleteDone = true;
+		_transferNum = 0;
 	}
 
 	/**
@@ -161,10 +266,10 @@ public class Job {
 	}
 
 	/**
-	 * returns true if this job has nothing more to send
+	 * returns true if this job has nothing more to send and the delete operation has finished
 	 */
 	public boolean isDone() {
-		return _transferNum < 1;
+		return _transferNum < 1 && _deleteDone;
 	}
 
 	public boolean isTransferring() {
@@ -174,8 +279,8 @@ public class Job {
 	private String outputDestinationSlaves() {
 		String toReturn = "";
 
-		for (RemoteSlave rslave : new HashSet<RemoteSlave>(_destSlaves)) {
-			toReturn = toReturn + rslave.getName() + ",";
+		for (String rslave : new HashSet<String>(_destSlaves)) {
+			toReturn = toReturn + rslave + ",";
 		}
 		if (!toReturn.equals("")) {
 			return toReturn.substring(0, toReturn.length() - 1);
@@ -191,21 +296,17 @@ public class Job {
 	}
 
 	public synchronized void sentToSlave(RemoteSlave slave) {
-		if (_destSlaves.remove(slave)) {
+		if (_destSlaves.contains(slave.getName())) {
 			_transferNum--;
 		} else {
 			throw new IllegalArgumentException("Slave " + slave.getName()
 					+ " does not exist as a destination slave for job " + this);
 		}
 
-		if (_destSlaves.isEmpty() && (_transferNum > 0)) {
+		if (getSlavesToTransferTo().isEmpty() && (_transferNum > 0)) {
 			throw new IllegalStateException(
 					"Job cannot have a destSlaveSet of size 0 with transferNum > 0");
 		}
-	}
-
-	public void setDone() {
-		_transferNum = 0;
 	}
 
 	public String toString() {
@@ -355,5 +456,9 @@ public class Job {
 
 	public long getIndex() {
 		return _index;
+	}
+
+	public Collection<? extends RemoteSlave> getDestinationSlaveObjects() throws ObjectNotFoundException {
+		return getSlaveObjects(getDestinationSlaves());
 	}
 }

@@ -74,7 +74,7 @@ public class JobManager {
 			try {
 				slaves = job.getFile().getSlaves();
 			} catch (FileNotFoundException e) {
-				job.setDone();
+				job.abort();
 				jobiter.remove();
 				continue;
 			}
@@ -129,7 +129,7 @@ public class JobManager {
 			} catch (NoAvailableSlaveException e) {
 				continue; // can't transfer what isn't online
 			} catch (FileNotFoundException e) {
-				tempJob.setDone();
+				tempJob.abort();
 				iter.remove();
 				continue;
 			}
@@ -294,7 +294,7 @@ public class JobManager {
 
 	public void stopJob(Job job) {
 		removeJobFromQueue(job);
-		job.setDone();
+		job.abort();
 	}
 
 	public void stopJobs() {

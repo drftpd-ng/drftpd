@@ -86,7 +86,6 @@ public class ArchiveHandler extends Thread {
 
 			ArrayList<Job> jobs = _archiveType.send();
 			_archiveType.waitForSendOfFiles(new ArrayList<Job>(jobs));
-			_archiveType.cleanup(jobs);
 			logger.info("Done archiving "
 					+ getArchiveType().getDirectory().getPath());
 		} catch (Exception e) {

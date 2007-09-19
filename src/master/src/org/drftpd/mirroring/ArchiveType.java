@@ -77,49 +77,6 @@ public abstract class ArchiveType {
 	}
 
 	/**
-	 * Once the Jobs in the jobList have been sent, this method is called This
-	 * is where files are possibly deleted from slaves
-	 */
-	public void cleanup(ArrayList<Job> jobList) {
-		for (Job job : jobList) {
-			try {
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job
-						.getFile().getSlaves())) {
-					if (!getRSlaves().contains(rslave)) {
-						rslave.simpleDelete(job.getFile().getPath());
-						job.getFile().removeSlave(rslave);
-					}
-				}
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job
-						.getFile().getSlaves())) {
-					if (job.getFile().getSlaves().size() > _numOfSlaves) {
-						if (!rslave.isAvailable()) {
-							rslave.simpleDelete(job.getFile().getPath());
-							job.getFile().removeSlave(rslave);
-						}
-					} else {
-						break;
-					}
-				}
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(job
-						.getFile().getSlaves())) {
-					if (job.getFile().getSlaves().size() > _numOfSlaves) {
-						rslave.simpleDelete(job.getFile().getPath());
-						job.getFile().removeSlave(rslave);
-					} else {
-						break;
-					}
-				}
-			} catch (FileNotFoundException e) {
-				// couldn't find the file that was referenced, unsure of what to
-				// do now
-				// probably can just leave it alone
-				continue;
-			}
-		}
-	}
-
-	/**
 	 * Used to determine a list of slaves dynamically during runtime, only gets
 	 * called if _slaveList == null
 	 * 
@@ -248,7 +205,7 @@ public abstract class ArchiveType {
 				.hasNext();) {
 			FileHandle file = iter.next();
 			logger.info("Adding " + file.getPath() + " to the job queue");
-			Job job = new Job(file, getRSlaves(), 3, _numOfSlaves);
+			Job job = new Job(file, 3, _numOfSlaves, getRSlaves());
 			jobQueue.add(job);
 		}
 

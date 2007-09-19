@@ -26,11 +26,12 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.TimerTask;
 
-
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventSubscriber;
+import org.drftpd.GlobalContext;
+import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
-import org.drftpd.event.Event;
-import org.drftpd.event.FtpListener;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.mirroring.ArchiveHandler;
 import org.drftpd.mirroring.ArchiveType;
 import org.drftpd.mirroring.DuplicateArchiveException;
@@ -41,30 +42,23 @@ import org.drftpd.sections.SectionInterface;
  * @version $Id$ This addon needs
  *          a little reworking, consider it and its related packages unstable
  */
-public class Archive extends FtpListener {
+public class Archive implements EventSubscriber, PluginInterface {
 	private static final Logger logger = Logger.getLogger(Archive.class);
 
 	private Properties _props;
 
 	private long _cycleTime;
 
-	private HashSet<ArchiveHandler> _archiveHandlers = new HashSet<ArchiveHandler>();
+	private HashSet<ArchiveHandler> _archiveHandlers = null;
 
 	private TimerTask _runHandler = null;
 
 	public Archive() {
-		logger.info("Archive plugin loaded successfully");
+
 	}
 
 	public Properties getProperties() {
 		return _props;
-	}
-
-	public void actionPerformed(Event event) {
-		if (event.getCommand().equals("RELOAD")) {
-			reload();
-			return;
-		}
 	}
 
 	/**
@@ -107,10 +101,6 @@ public class Archive extends FtpListener {
 		return _cycleTime;
 	}
 
-	public void init() {
-		reload();
-	}
-
 	public void reload() {
 		_props = new Properties();
 		FileInputStream fis = null;
@@ -141,8 +131,8 @@ public class Archive extends FtpListener {
 		}
 		_runHandler = new TimerTask() {
 			public void run() {
-				Collection<SectionInterface> sectionsToCheck = getGlobalContext()
-						.getSectionManager().getSections();
+				Collection<SectionInterface> sectionsToCheck = GlobalContext
+						.getGlobalContext().getSectionManager().getSections();
 				for (SectionInterface section : sectionsToCheck) {
 					ArchiveType archiveType = getArchiveType(section);
 
@@ -154,13 +144,8 @@ public class Archive extends FtpListener {
 				}
 			}
 		};
-		getGlobalContext().getTimer().schedule(_runHandler, 0, _cycleTime);
-	}
-
-	public void unload() {
-		if (_runHandler != null) {
-			_runHandler.cancel();
-		}
+		GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, 0,
+				_cycleTime);
 	}
 
 	public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
@@ -206,5 +191,26 @@ public class Archive extends FtpListener {
 				}
 			}
 		}
+	}
+
+	public void onEvent(Object event) {
+		if (event instanceof ReloadEvent) {
+			reload();
+		}
+	}
+
+	public void startPlugin() {
+		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
+		logger.info("Archive plugin loaded successfully");
+		_archiveHandlers = new HashSet<ArchiveHandler>();
+		reload();
+	}
+
+	public void stopPlugin(String reason) {
+		if (_runHandler != null) {
+			_runHandler.cancel();
+		}
+		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
+		logger.info("Archive plugin unloaded successfully");
 	}
 }

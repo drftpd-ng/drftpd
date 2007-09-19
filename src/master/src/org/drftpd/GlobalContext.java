@@ -79,8 +79,6 @@ public class GlobalContext implements EventSubscriber {
 	
 	private ConfigInterface _config;
 
-	//private ArrayList<FtpListener> _ftpListeners = new ArrayList<FtpListener>();
-
 	private ArrayList<PluginInterface> _plugins = new ArrayList<PluginInterface>();
 
 	protected JobManager _jm;

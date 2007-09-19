@@ -100,16 +100,15 @@ public class JobManagerCommandHandler implements CommandHandler,
 			throw new ImproperUsageException();
 		}
 
-		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+		HashSet<String> destSlaves = new HashSet<String>();
 		Reply reply = new Reply(200);
 
 		while (st.hasMoreTokens()) {
 			String slaveName = st.nextToken();
-			RemoteSlave rslave;
 
 			try {
-				rslave = conn.getGlobalContext().getSlaveManager()
-						.getRemoteSlave(slaveName);
+				conn.getGlobalContext().getSlaveManager().getRemoteSlave(
+						slaveName);
 			} catch (ObjectNotFoundException e1) {
 				reply
 						.addComment(slaveName
@@ -118,7 +117,7 @@ public class JobManagerCommandHandler implements CommandHandler,
 				continue;
 			}
 
-			destSlaves.add(rslave);
+			destSlaves.add(slaveName);
 		}
 
 		if (destSlaves.size() == 0) {
