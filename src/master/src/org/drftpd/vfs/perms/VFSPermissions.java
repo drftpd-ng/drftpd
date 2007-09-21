@@ -39,7 +39,7 @@ import org.java.plugin.registry.ExtensionPoint;
 public class VFSPermissions {
 	private final static Logger logger = Logger.getLogger(VFSPermissions.class);
 
-	private HashMap<String, PermissionWtapper> _handlersMap;	
+	private HashMap<String, PermissionWrapper> _handlersMap;	
 	private Hashtable<String, ArrayList<PathPermission>> _pathPerms;
 	
 	public VFSPermissions() {
@@ -49,7 +49,7 @@ public class VFSPermissions {
 	}
 
 	public void loadExtensions() {
-		_handlersMap = new HashMap<String, PermissionWtapper>();
+		_handlersMap = new HashMap<String, PermissionWrapper>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("master", "VFSPerm");
@@ -85,7 +85,7 @@ public class VFSPermissions {
 				}
 
 				VFSPermHandler permHnd = (VFSPermHandler) clazz.newInstance();
-				PermissionWtapper pw = new PermissionWtapper(permHnd, m);				
+				PermissionWrapper pw = new PermissionWrapper(permHnd, m);				
 				_handlersMap.put(directive, pw);
 			} catch (Exception e) {
 				logger.error(e, e);
@@ -108,7 +108,7 @@ public class VFSPermissions {
 			throw new UnsupportedOperationException("No VFSPermHandler found for this directive: "+ directive);
 		}
 		
-		PermissionWtapper pw = _handlersMap.get(directive);
+		PermissionWrapper pw = _handlersMap.get(directive);
 		
 		try {
 			pw.getMethod().invoke(pw.getVFSPermHandler(), directive, st);

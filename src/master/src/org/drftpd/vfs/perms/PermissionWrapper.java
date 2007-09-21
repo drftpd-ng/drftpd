@@ -23,12 +23,12 @@ import java.lang.reflect.Method;
  * @author fr0w
  * @version $Id$
  */
-public class PermissionWtapper {
+public class PermissionWrapper {
 
 	private VFSPermHandler _permHandler;
 	private Method _method;
 	
-	public PermissionWtapper(VFSPermHandler permHandler, Method method) {
+	public PermissionWrapper(VFSPermHandler permHandler, Method method) {
 		_permHandler = permHandler;
 		_method = method;
 	}
