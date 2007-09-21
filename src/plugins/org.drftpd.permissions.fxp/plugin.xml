@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.permissions.fxp" version="2.1.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.commands.config.hooks" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.login" exported="true" />
+		<import plugin-id="master" />
+	</requires>
+	
+	<runtime>
+		<library id="org.drftpd.permissions.fxp" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+		
+	<!-- FXP directive handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="DenyDownloadFXPDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="deny_dnfxp" />
+	</extension>
+	
+	<extension plugin-id="master" point-id="ConfigHandler" id="DenyUploadFXPDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="deny_upfxp" />
+	</extension>
+	<!-- End of FXP directive handler -->
+	
+	<!-- FXP Permission PreHook -->
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="UploadPermPreHook">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.permissions.fxp.FXPPermissionPreHook" />
+		<parameter id="HookMethod" value="checkDownloadFXPPerm" />
+		<parameter id="Priority" value="3" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="DownloadPermPreHook">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.permissions.fxp.FXPPermissionPreHook" />
+		<parameter id="HookMethod" value="checkUploadFXPPerm" />
+		<parameter id="Priority" value="3" />
+	</extension>
+	<!-- End of FXP Permission PreHook -->
+	
+</plugin>

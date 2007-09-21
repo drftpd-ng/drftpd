@@ -23,6 +23,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.stats.ExtendedTimedStats;
+import org.drftpd.util.HostMaskCollection;
 
 /**
  * @author mog

@@ -35,10 +35,10 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.AbstractUserManager;
-import org.drftpd.usermanager.HostMask;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.util.HostMask;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
 

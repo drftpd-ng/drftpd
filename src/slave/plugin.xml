@@ -13,9 +13,6 @@
 		<library id="slave" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="oro" path="../../lib/oro.jar" type="code">
-			<export prefix="*" />
-		</library>
 		<library id="jpf-boot" path="../../lib/jpf-boot.jar" type="code">
 			<export prefix="*" />
 		</library>

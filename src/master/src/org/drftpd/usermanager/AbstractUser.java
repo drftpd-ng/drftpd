@@ -29,6 +29,7 @@ import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.UserEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.master.Commitable;
+import org.drftpd.util.HostMaskCollection;
 
 /**
  * Implements basic functionality for the User interface.

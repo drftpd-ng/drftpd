@@ -23,19 +23,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
-
+import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.TransferDeniedException;
 import org.drftpd.io.AddAsciiOutputStream;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.util.HostMask;
 
 import se.mog.io.File;
 
@@ -229,7 +232,7 @@ public class Transfer {
 	}
 
 	public TransferStatus receiveFile(String dirname, char mode,
-			String filename, long offset) throws IOException {
+			String filename, long offset, String inetAddress) throws IOException, TransferDeniedException {
 		_pathForUpload = dirname + File.separator + filename;
 		try {
 			_slave.getRoots().getFile(_pathForUpload);
@@ -248,6 +251,10 @@ public class Transfer {
 				_out = new CheckedOutputStream(_out, _checksum);
 			}
 			accept(_slave.getCipherSuites(), _slave.getBufferSize());
+			
+			if (!checkMasks(inetAddress, _sock.getInetAddress())) {
+				throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
+			}
 
 			_in = _sock.getInputStream();
 			synchronized (this) {
@@ -285,8 +292,8 @@ public class Transfer {
 		}
 	}
 
-	public TransferStatus sendFile(String path, char type, long resumePosition)
-			throws IOException {
+	public TransferStatus sendFile(String path, char type, long resumePosition, String inetAddress)
+			throws IOException, TransferDeniedException {
 		try {
 
 			_in = new FileInputStream(_file = new File(_slave.getRoots()
@@ -300,6 +307,10 @@ public class Transfer {
 			_in.skip(resumePosition);
 			accept(_slave.getCipherSuites(), _slave.getBufferSize());
 
+			if (!checkMasks(inetAddress, _sock.getInetAddress())) {
+				throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
+			}
+			
 			_out = _sock.getOutputStream();
 			synchronized (this) {
 				_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
@@ -423,6 +434,17 @@ public class Transfer {
 			_slave.removeTransfer(this); // transfers are added in setting up
 											// the transfer,
 											// issueListenToSlave()/issueConnectToSlave()
+		}
+	}
+	
+	private boolean checkMasks(String maskString, InetAddress connectedAddress) {
+		HostMask mask = new HostMask(maskString);
+		
+		try {
+			return mask.matchesHost(connectedAddress);
+		} catch (MalformedPatternException e) {
+			// if it's not well formed, no need to worry about it, just ignore it.
+			return false;
 		}
 	}
 }

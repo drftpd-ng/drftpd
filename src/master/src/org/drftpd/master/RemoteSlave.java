@@ -73,8 +73,8 @@ import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
-import org.drftpd.usermanager.HostMask;
-import org.drftpd.usermanager.HostMaskCollection;
+import org.drftpd.util.HostMask;
+import org.drftpd.util.HostMaskCollection;
 
 /**
  * @author mog
@@ -127,8 +127,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private transient ObjectOutputStream _sout;
 
 	private transient HashMap<TransferIndex, RemoteTransfer> _transfers;
-
-	private transient boolean _isHandshaking;
 
 	public RemoteSlave(String name) {
 		_name = name;

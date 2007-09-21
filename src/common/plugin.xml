@@ -16,5 +16,8 @@
 		<library id="log4j" path="../../lib/log4j-1.2.14.jar" type="code">
 			<export prefix="*" />
 		</library>
+		<library id="oro" path="../../lib/oro.jar" type="code">
+			<export prefix="*" />
+		</library>
 	</runtime>
 </plugin>

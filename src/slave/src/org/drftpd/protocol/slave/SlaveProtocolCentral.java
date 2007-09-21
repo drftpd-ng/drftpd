@@ -71,13 +71,21 @@ public class SlaveProtocolCentral {
 	 * @see MasterProtocolCentral
 	 * @see HandshakeWrapper
 	 */
+	@SuppressWarnings("unchecked")
 	public void handshakeWithMaster() {
 		HandshakeWrapper hw = new HandshakeWrapper();
 		hw.setPluginStatus(true);
 		
 		try {
 			// reading the plugin list from the socket
-			List<String> protocols = (List<String>) getSlaveObject().getInputStream().readObject();
+			Object o = getSlaveObject().getInputStream().readObject();
+			
+			if (o instanceof AsyncCommandArgument) {
+				AsyncCommandArgument ac = (AsyncCommandArgument) o;
+				throw new RuntimeException("An error happened: "+ ac.getArgs());
+			}
+			
+			List<String> protocols = (List<String>) o;
 			for (String protocol : protocols) {
 				logger.debug("Checking availability for: " + protocol);
 				

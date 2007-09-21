@@ -43,6 +43,7 @@ import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.exceptions.TransferDeniedException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.RemoteSlave;
@@ -72,6 +73,8 @@ public class DataConnectionHandler extends CommandInterface {
     public static final Key CHECKSUM = new Key(DataConnectionHandler.class, "checksum", Long.class);
 
     public static final Key TRANSFER_FILE = new Key(DataConnectionHandler.class, "transfer_file", FileHandle.class);
+    
+    public static final Key INET_ADDRESS = new Key(DataConnectionHandler.class, "inetAddress", String.class);
 
     private ResourceBundle _bundle;
 
@@ -87,7 +90,7 @@ public class DataConnectionHandler extends CommandInterface {
     public CommandResponse doAUTH(CommandRequest request) {
     	SSLContext ctx = GlobalContext.getGlobalContext().getSSLContext();
         if (ctx == null) {
-            return new CommandResponse(400, "TLS not configured");
+            return new CommandResponse(400, "SSL not configured");
         }
 
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
@@ -1125,9 +1128,11 @@ public class DataConnectionHandler extends CommandInterface {
             //transfer
             try {
                 //TODO ABORtable transfers
+            	String address = (String) request.getSession().getObject(INET_ADDRESS, "*@*");           	
+            	
                 if (isRetr) {
                     ts.getTransfer().sendFile(ts.getTransferFile().getPath(), ts.getType(),
-                        ts.getResumePosition());
+                        ts.getResumePosition(), address);
 
                     while (true) {
                         status = ts.getTransfer().getTransferStatus();
@@ -1143,7 +1148,7 @@ public class DataConnectionHandler extends CommandInterface {
                     }
                 } else if (isStor) {
                     ts.getTransfer().receiveFile(ts.getTransferFile().getPath(), ts.getType(),
-                        ts.getResumePosition());
+                        ts.getResumePosition(), address);
 
                     while (true) {
                         status = ts.getTransfer().getTransferStatus();
@@ -1159,31 +1164,35 @@ public class DataConnectionHandler extends CommandInterface {
                 } else {
                     throw new RuntimeException();
                 }
-            } catch (IOException ex) {
-            	logger.debug("", ex);
+            } catch (IOException ex) {          	                
+                CommandResponse response = null;
+                boolean fxpDenied = false;
+                
                 if (ex instanceof TransferFailedException) {
-                	// the below chunk makes no sense, we don't process it anywhere
-/*                    status = ((TransferFailedException) ex).getStatus();
-                    conn.getGlobalContext()
-                        .dispatchFtpEvent(new TransferEvent(conn, eventType,
-                            _transferFile, conn.getClientAddress(), _rslave,
-                            _transfer.getAddress().getAddress(), _type, false));
-*/
                     if (isRetr) {
                         conn.getUserNull().updateCredits(-status.getTransfered());
                     }
+                    
+                    if (ex.getCause() instanceof TransferDeniedException) {
+                    	fxpDenied = true;
+                   		response = new CommandResponse(426, "You are not allowed to FXP from here.");
+                    }
+                } else {
+                	logger.debug(ex, ex);
                 }
-
-                CommandResponse response = null;
+                
                 if (isStor) {
                     try {
 						ts.getTransferFile().deleteUnchecked();
 					} catch (FileNotFoundException e) {
 						// ahh, great! :)
 					}
-                    logger.error("IOException during transfer, deleting file", ex);
-                    response = new CommandResponse(426, "Transfer failed, deleting file");
-                } else {
+					
+					if (!fxpDenied) {
+						logger.error("IOException during transfer, deleting file", ex);
+						response = new CommandResponse(426, "Transfer failed, deleting file");
+					}
+                } else if (!fxpDenied) {
                     logger.error("IOException during transfer", ex);
                     response = new CommandResponse(426, ex.getMessage());
                 }

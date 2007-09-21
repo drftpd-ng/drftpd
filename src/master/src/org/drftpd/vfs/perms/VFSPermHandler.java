@@ -25,10 +25,6 @@ import org.drftpd.permissions.PathPermission;
  * @version $Id$
  */
 public class VFSPermHandler {	
-	protected static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
-	
 	protected void addPermission(String directive, PathPermission pathPerm) {	
 		GlobalContext.getConfig().getVFSPermissions().addPermissionToMap(directive, pathPerm);
 	}

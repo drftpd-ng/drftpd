@@ -31,6 +31,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.UserEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
@@ -46,12 +47,10 @@ import org.tanesha.replacer.ReplacerEnvironment;
  */
 public class LoginHandler extends CommandInterface {
     private static final Logger logger = Logger.getLogger(LoginHandler.class);
+    
+    public static final Key IDENT = new Key(LoginHandler.class, "ident", String.class);
+    public static final Key ADDRESS = new Key(LoginHandler.class, "address", InetAddress.class);
 
-    /**
-     * If _idntAddress == null, IDNT hasn't been used.
-     */
-    protected InetAddress _idntAddress;
-    protected String _idntIdent;
     private ResourceBundle _bundle;
     private String _keyPrefix;
 
@@ -67,7 +66,7 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doIDNT(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        if (_idntAddress != null) {
+        if (request.getSession().getObject(ADDRESS, null) != null) {
             logger.error("Multiple IDNT commands");
             return new CommandResponse(530, "Multiple IDNT commands");
 
@@ -93,8 +92,8 @@ public class LoginHandler extends CommandInterface {
         }
 
         try {
-            _idntAddress = InetAddress.getByName(arg.substring(pos1 + 1, pos2));
-            _idntIdent = arg.substring(0, pos1);
+            request.getSession().setObject(ADDRESS, InetAddress.getByName(arg.substring(pos1 + 1, pos2)));
+            request.getSession().setObject(IDENT, arg.substring(0, pos1));
         } catch (UnknownHostException e) {
             logger.info("Invalid hostname passed to IDNT", e);
 
@@ -202,12 +201,22 @@ public class LoginHandler extends CommandInterface {
         }
 
         try {
-            if (((_idntAddress != null) &&
-                    newUser.getHostMaskCollection().check(_idntIdent,
-                        _idntAddress, null)) ||
-                    ((_idntAddress == null) &&
-                    (newUser.getHostMaskCollection().check(null,
-                        conn.getClientAddress(), conn.getControlSocket())))) {
+        	InetAddress address = (InetAddress) request.getSession().getObject(ADDRESS, null);
+        	String ident = (String) request.getSession().getObject(IDENT, null);
+        	
+        	boolean hostMaskPassed = false;
+        	if (address != null) {
+        		// this means that the user is connecting from a BNC.
+        		hostMaskPassed = newUser.getHostMaskCollection().check(ident, address, null);
+        	} else {
+        		// this mean that the user is connecting to the ftp directly.
+        		hostMaskPassed = newUser.getHostMaskCollection().check(null, conn.getClientAddress(), conn.getControlSocket());
+        		
+        		// ADDRESS is null, let's set it. 
+        		request.getSession().setObject(ADDRESS, conn.getClientAddress());
+        	}
+        	
+            if (hostMaskPassed) {
                 //success
                 // max_users and num_logins restriction
                 FtpReply ftpResponse = GlobalContext.getConnectionManager().canLogin(conn, newUser);
@@ -215,7 +224,6 @@ public class LoginHandler extends CommandInterface {
                 if (ftpResponse != null) {
                 	return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
                 }
-
                 
                 ReplacerEnvironment env = new ReplacerEnvironment();
                 env.add("user", newUser.getName());
@@ -229,8 +237,7 @@ public class LoginHandler extends CommandInterface {
         }
 
         //fail
-        logger.warn("Failed hostmask check");
-
+        logger.warn(newUser.getName() + " failed hostmask check");
         return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     }
 }

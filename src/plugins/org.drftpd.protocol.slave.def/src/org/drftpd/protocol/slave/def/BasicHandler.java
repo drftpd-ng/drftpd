@@ -29,6 +29,7 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.PassiveConnection;
+import org.drftpd.exceptions.TransferDeniedException;
 import org.drftpd.master.QueuedOperation;
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
@@ -179,6 +180,7 @@ public class BasicHandler extends AbstractHandler {
 		long position = Long.parseLong(st.nextToken());
 		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st
 				.nextToken()));
+		String inetAddress = st.nextToken();
 		String path = mapPathToRenameQueue(st.nextToken());
 		String fileName = path.substring(path.lastIndexOf("/") + 1);
 		String dirName = path.substring(0, path.lastIndexOf("/"));
@@ -187,8 +189,11 @@ public class BasicHandler extends AbstractHandler {
 		// on master
 		try {
 			return new AsyncResponseTransferStatus(t.receiveFile(dirName, type,
-					fileName, position));
+					fileName, position, inetAddress));
 		} catch (IOException e) {
+			return (new AsyncResponseTransferStatus(new TransferStatus(
+					transferIndex, e)));
+		} catch(TransferDeniedException e) {
 			return (new AsyncResponseTransferStatus(new TransferStatus(
 					transferIndex, e)));
 		}
@@ -284,6 +289,7 @@ public class BasicHandler extends AbstractHandler {
 		long position = Long.parseLong(st.nextToken());
 		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st
 				.nextToken()));
+		String inetAddress = st.nextToken();
 		String path = mapPathToRenameQueue(st.nextToken());
 		Transfer t = getSlaveObject().getTransfer(transferIndex);
 		sendResponse(new AsyncResponse(ac.getIndex())); // return
@@ -291,8 +297,11 @@ public class BasicHandler extends AbstractHandler {
 		// calling thread on master
 		try {
 			return new AsyncResponseTransferStatus(t.sendFile(path, type,
-					position));
+					position, inetAddress));
 		} catch (IOException e) {
+			return new AsyncResponseTransferStatus(new TransferStatus(t
+					.getTransferIndex(), e));
+		} catch (TransferDeniedException e) {
 			return new AsyncResponseTransferStatus(new TransferStatus(t
 					.getTransferIndex(), e));
 		}

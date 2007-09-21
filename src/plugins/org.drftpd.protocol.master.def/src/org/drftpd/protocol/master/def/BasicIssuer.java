@@ -87,10 +87,10 @@ public class BasicIssuer extends AbstractBasicIssuer {
 	}
 
 	public String issueReceiveToSlave(RemoteSlave rslave, String name, char c, long position,
-			TransferIndex tindex) throws SlaveUnavailableException {
+			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
 		rslave.sendCommand(new AsyncCommandArgument(index, "receive", c + ","
-				+ position + "," + tindex + "," + name));
+				+ position + "," + tindex + "," + inetAddress + "," + name));
 
 		return index;
 	}
@@ -136,10 +136,10 @@ public class BasicIssuer extends AbstractBasicIssuer {
 
 
 	public String issueSendToSlave(RemoteSlave rslave, String name, char c, long position,
-			TransferIndex tindex) throws SlaveUnavailableException {
+			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
 		rslave.sendCommand(new AsyncCommandArgument(index, "send", c + "," + position
-				+ "," + tindex + "," + name));
+				+ "," + tindex + "," + inetAddress + "," + name));
 
 		return index;
 	}

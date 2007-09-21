@@ -134,8 +134,6 @@ public class VFSPermissions {
 	}
 	
 	public boolean checkPathPermission(String type, User user, DirectoryHandle path, boolean defaults) {
-		logger.debug("type = "+ type);
-		
 		if (!verifyType(type)) {
 			throw new IllegalArgumentException("Invalid VFS perm type.");
 		}

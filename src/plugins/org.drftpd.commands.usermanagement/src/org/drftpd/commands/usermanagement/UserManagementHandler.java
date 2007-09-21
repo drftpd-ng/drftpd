@@ -1893,6 +1893,8 @@ public class UserManagementHandler extends CommandInterface {
 			}
 			// StringBuffer status = new StringBuffer();
 			env.add("targetuser", user.getName());
+			// TODO this does not return the proper address if the user is connected thru a BNC.
+			// Solution: getting the LoginHandler.ADDRESS Key.
 			env.add("ip", conn.getClientAddress().getHostAddress());
 
 			synchronized (conn) {

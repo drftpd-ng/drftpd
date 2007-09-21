@@ -15,30 +15,26 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slave;
-
-import java.io.IOException;
+package org.drftpd.exceptions;
 
 /**
- * 
- * @author mog
+ * @author fr0w
  * @version $Id$
  */
-public class TransferFailedException extends IOException {
-	private TransferStatus _status;
-
-	public TransferFailedException(Exception e, TransferStatus status) {
-		super(e.getMessage());
-		initCause(e);
-		_status = status;
+public class TransferDeniedException extends Exception {
+	public TransferDeniedException() {
+		super();
 	}
 
-	public TransferFailedException(String message, TransferStatus status) {
+	public TransferDeniedException(String message) {
 		super(message);
-		_status = status;
 	}
 
-	public TransferStatus getStatus() {
-		return _status;
+	public TransferDeniedException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public TransferDeniedException(Throwable cause) {
+		super(cause);
 	}
 }

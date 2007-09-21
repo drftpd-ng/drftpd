@@ -9,7 +9,7 @@
 		<import plugin-id="org.drftpd.commands.usermanagement" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
-		<import plugin-id="master" exported="true" />
+		<import plugin-id="master" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.config.hooks" path="classes/" type="code">
@@ -91,7 +91,7 @@
     	<parameter id="Method" value="handlePerm" />
     	<parameter id="Directive" value="denydatauncrypted" />
 	</extension>
-	<!-- End of hideinwho directive handler -->
+	<!-- End of crypt directives handler -->
 	
 	<!-- msgpath directive handler -->
 	<extension plugin-id="master" point-id="ConfigHandler" id="MsgPathDirective">
@@ -130,6 +130,6 @@
 		<parameter id="HookMethod" value="checkDownloadPermsHook" />
 		<parameter id="Priority" value="2" />
 	</extension>
-	<!-- End of Msgpath PostHooks -->
+	<!-- End of Download Permission PreHook -->
 	
 </plugin>
