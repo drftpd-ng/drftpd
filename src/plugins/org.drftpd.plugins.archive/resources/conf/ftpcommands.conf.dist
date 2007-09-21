@@ -1,7 +1,7 @@
 SITE ARCHIVE {
 plugin org.drftpd.plugins.archive
 class commands.ArchiveCommandHandler
-method doSITE_ARCHIVE
+method doARCHIVE
 perms =siteop
 help Create a new ArchiveHandler like defined in archive.conf
 help.specific SITE ARCHIVE Directory [ArchiveType] [property1] [property2] [property...] - an example of a property is slavename.1=myslave just like in archive.conf
@@ -17,7 +17,7 @@ fail ${exception}
 SITE LISTARCHIVETYPES {
 plugin org.drftpd.plugins.archive
 class commands.ArchiveCommandHandler
-method doSITE_LISTARCHIVETYPES
+method doLISTARCHIVETYPES
 perms =siteop
 help List the currently running ArchiveTypes
 help.specific You're not serious, are you?

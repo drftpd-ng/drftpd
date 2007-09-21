@@ -365,6 +365,7 @@ public class ConfigManager implements ConfigInterface {
 	}
 
 	public String getPasvAddress() throws NullPointerException {
+		if (_pasvAddr == null) throw new NullPointerException("pasv_addr not configured");
 		return _pasvAddr;
 	}
 
