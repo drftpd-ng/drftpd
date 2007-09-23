@@ -5,6 +5,7 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.protocol.zipscript.common" reverse-lookup="true" exported="true" />
 		<import plugin-id="org.drftpd.commands.zipscript" reverse-lookup="true" exported="true" />
+		<import plugin-id="org.drftpd.plugins.jobmanager" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.search" path="classes/" type="code">
