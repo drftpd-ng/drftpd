@@ -60,7 +60,7 @@ public class ArchiveCommandHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_bundle = cManager.getResourceBundle();
-    	_keyPrefix = "archive.";
+    	_keyPrefix = getClass().getName() + ".";
     }
     
     public ArchiveCommandHandler() {
@@ -95,11 +95,9 @@ public class ArchiveCommandHandler extends CommandInterface {
         try {
 			dir = request.getCurrentDirectory().getDirectory(dirname);
 		} catch (FileNotFoundException e1) {
-			response.addComment(request.getSession().jprintf(_bundle, env,
-					_keyPrefix + "help.specific"));
 			env.add("dirname", dirname);
 			response.addComment(request.getSession().jprintf(_bundle, env,
-					_keyPrefix + "archive.baddir"));
+					_keyPrefix + "baddir"));
 
 			return response;
 		} catch (ObjectNotValidException e) {
@@ -211,7 +209,7 @@ public class ArchiveCommandHandler extends CommandInterface {
         env.add("dirname", dir.getPath());
         env.add("archivetypename", archiveTypeName);
         response.addComment(request.getSession().jprintf(_bundle, env,
-				_keyPrefix + "help.success"));
+				_keyPrefix + "success"));
 
         return response;
     }

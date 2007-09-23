@@ -14,27 +14,26 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.commandmanager.CommandHandler;
-import org.drftpd.commandmanager.CommandHandlerFactory;
-import org.drftpd.commandmanager.CommandManager;
-import org.drftpd.commandmanager.CommandManagerFactory;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.Reply;
 import org.drftpd.commandmanager.ReplyException;
-import org.drftpd.commandmanager.UnhandledCommandException;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.archive.Archive;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -46,9 +45,17 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id: JobManagerCommandHandler.java,v 1.19 2004/07/09 17:08:38 zubov
  *          Exp $
  */
-public class JobManagerCommandHandler implements CommandHandler,
-		CommandHandlerFactory {
+public class JobManagerCommandHandler extends CommandInterface {
 
+	private ResourceBundle _bundle;
+	private String _keyPrefix;
+
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+    	super.initialize(method, pluginName, cManager);
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = getClass().getName() + ".";
+    }
+    
 	public JobManagerCommandHandler() {
 		super();
 	}
@@ -62,26 +69,27 @@ public class JobManagerCommandHandler implements CommandHandler,
 	 * @throws ReplyException
 	 * @throws FileNotFoundException
 	 */
-	private Reply doADDJOB(BaseFtpConnection conn)
-			throws ImproperUsageException, ReplyException {
+	public CommandResponse doADDJOB(CommandRequest request)
+			throws ImproperUsageException {
 
-		if (!conn.getRequest().hasArgument()) {
+		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
+		
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-		StringTokenizer st = new StringTokenizer(conn.getRequest()
-				.getArgument());
+		StringTokenizer st = new StringTokenizer(request.getArgument());
 		FileHandle lrf;
 
 		try {
 			try {
-				lrf = conn.getCurrentDirectory().getFile(st.nextToken());
+				lrf = request.getCurrentDirectory().getFile(st.nextToken());
 			} catch (ObjectNotValidException e) {
 				throw new ImproperUsageException(
 						"addjob does not handle directories or links");
 			}
 		} catch (FileNotFoundException e) {
-			return new Reply(500, "File does not exist");
+			return new CommandResponse(500, "File does not exist");
 		}
 
 		int priority;
@@ -101,16 +109,15 @@ public class JobManagerCommandHandler implements CommandHandler,
 		}
 
 		HashSet<String> destSlaves = new HashSet<String>();
-		Reply reply = new Reply(200);
 
 		while (st.hasMoreTokens()) {
 			String slaveName = st.nextToken();
 
 			try {
-				conn.getGlobalContext().getSlaveManager().getRemoteSlave(
+				GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(
 						slaveName);
 			} catch (ObjectNotFoundException e1) {
-				reply
+				response
 						.addComment(slaveName
 								+ "was not found, cannot add to destination slave list");
 
@@ -125,22 +132,22 @@ public class JobManagerCommandHandler implements CommandHandler,
 		}
 
 		Job job = new Job(lrf, destSlaves, priority, timesToMirror);
-		conn.getGlobalContext().getJobManager().addJobToQueue(job);
+		GlobalContext.getGlobalContext().getJobManager().addJobToQueue(job);
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("job", job);
-		reply.addComment(conn.jprintf(JobManagerCommandHandler.class,
-				"addjob.success", env));
+		response.addComment(request.getSession().jprintf(_bundle, env,
+				_keyPrefix + "addjob.success"));
 
-		return reply;
+		return response;
 	}
 
-	private Reply doLISTJOBS(BaseFtpConnection conn) {
+	public CommandResponse doLISTJOBS(CommandRequest request) {
 
-		Reply reply = new Reply(200);
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
-		treeSet.addAll(conn.getGlobalContext().getJobManager()
+		treeSet.addAll(GlobalContext.getGlobalContext().getJobManager()
 				.getAllJobsFromQueue());
 
 		for (Job job : treeSet) {
@@ -158,27 +165,25 @@ public class JobManagerCommandHandler implements CommandHandler,
 					}
 					env.add("srcslave", job.getSourceSlave().getName());
 					env.add("destslave", job.getDestinationSlave().getName());
-					reply.addComment(conn.jprintf(
-							JobManagerCommandHandler.class, "listjobrunning",
-							env));
+					response.addComment(request.getSession().jprintf(_bundle, env,
+							_keyPrefix + "listjobrunning"));
 				} else {
-					reply.addComment(conn.jprintf(
-							JobManagerCommandHandler.class, "listjobwaiting",
-							env));
+					response.addComment(request.getSession().jprintf(_bundle, env,
+							_keyPrefix + "listjobwaiting"));
 				}
 			}
 		}
 		env = new ReplacerEnvironment();
 		env.add("total", treeSet.size());
-		reply.addComment(conn.jprintf(JobManagerCommandHandler.class,
-				"sizeofjobs", env));
-		return reply;
+		response.addComment(request.getSession().jprintf(_bundle, env,
+				_keyPrefix + "sizeofjobs"));
+		response.addComment("this is the keyPrefix: " + _keyPrefix);
+		return response;
 	}
 
-	private Reply doREMOVEJOB(BaseFtpConnection conn) throws ReplyException,
-			ImproperUsageException {
+	public CommandResponse doREMOVEJOB(CommandRequest request) throws ImproperUsageException {
 
-		if (!conn.getRequest().hasArgument()) {
+		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 		class Range {
@@ -198,7 +203,7 @@ public class JobManagerCommandHandler implements CommandHandler,
 		}
 
 		ArrayList<Range> rangeList = new ArrayList<Range>();
-		String rangeString = conn.getRequest().getArgument();
+		String rangeString = request.getArgument();
 		String[] ranges = rangeString.split(" ");
 		for (String range : ranges) {
 			if (range.indexOf("-") == -1) {
@@ -211,65 +216,37 @@ public class JobManagerCommandHandler implements CommandHandler,
 			}
 		}
 		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
-		treeSet.addAll(conn.getGlobalContext().getJobManager()
+		treeSet.addAll(GlobalContext.getGlobalContext().getJobManager()
 				.getAllJobsFromQueue());
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
-		Reply r = new Reply(200);
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		for (Job job : treeSet) {
 			for (Range range : rangeList) {
 				if (range.contains(job.getIndex())) {
 					env.add("job", job);
-					conn.getGlobalContext().getJobManager().stopJob(job);
-					r.addComment(conn.jprintf(JobManagerCommandHandler.class,
-							"removejob.success", env));
+					GlobalContext.getGlobalContext().getJobManager().stopJob(job);
+					response.addComment(request.getSession().jprintf(_bundle, env,
+							_keyPrefix + "removejob.success"));
 				}
 			}
 		}
-		return r;
+		return response;
 	}
 
-	private Reply doSTARTJOBS(BaseFtpConnection conn) {
+	public CommandResponse doSTARTJOBS(CommandRequest request) {
 
-		conn.getGlobalContext().getJobManager().startJobs();
+		GlobalContext.getGlobalContext().getJobManager().startJobs();
 
-		return new Reply(200, "JobTransfers will now start");
+		return new CommandResponse(200, "JobTransfers will now start");
 	}
 
-	private Reply doSTOPJOBS(BaseFtpConnection conn) {
+	public CommandResponse doSTOPJOBS(CommandRequest request) {
 
-		conn.getGlobalContext().getJobManager().stopJobs();
+		GlobalContext.getGlobalContext().getJobManager().stopJobs();
 
-		return new Reply(200,
+		return new CommandResponse(200,
 				"All JobTransfers will stop after their current transfer");
-	}
-
-	public Reply execute(BaseFtpConnection conn) throws ReplyException,
-			ImproperUsageException {
-		String cmd = conn.getRequest().getCommand();
-
-		if ("SITE LISTJOBS".equals(cmd)) {
-			return doLISTJOBS(conn);
-		}
-
-		if ("SITE REMOVEJOB".equals(cmd)) {
-			return doREMOVEJOB(conn);
-		}
-
-		if ("SITE ADDJOB".equals(cmd)) {
-			return doADDJOB(conn);
-		}
-
-		if ("SITE STOPJOBS".equals(cmd)) {
-			return doSTOPJOBS(conn);
-		}
-
-		if ("SITE STARTJOBS".equals(cmd)) {
-			return doSTARTJOBS(conn);
-		}
-
-		throw UnhandledCommandException.create(JobManagerCommandHandler.class,
-				conn.getRequest());
 	}
 
 	// public String getHelp(String cmd) {
@@ -288,16 +265,5 @@ public class JobManagerCommandHandler implements CommandHandler,
 
 	public String[] getFeatReplies() {
 		return null;
-	}
-
-	public CommandHandler initialize(BaseFtpConnection conn,
-			CommandManager initializer) {
-		return this;
-	}
-
-	public void load(CommandManagerFactory initializer) {
-	}
-
-	public void unload() {
 	}
 }

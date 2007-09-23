@@ -15,35 +15,41 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
-import org.apache.log4j.Logger;
+import java.util.Comparator;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: JobComparator.java 1621 2007-02-13 20:41:31Z djb61 $
+ * 
  */
-public class JobTransferThread extends Thread {
-	private static final Logger logger = Logger
-			.getLogger(JobTransferThread.class);
-
-	private JobManager _jm;
-
-	private static int count = 1;
-
+public class JobComparator implements Comparator<Job> {
 	/**
-	 * This class sends a JobTransfer if it is available
+	 * Compares Jobs
 	 */
-	public JobTransferThread(JobManager jm) {
-		super("JobTransferThread - " + count++);
-		_jm = jm;
+	public JobComparator() {
 	}
 
-	public void run() {
-		try {
-			_jm.processJob();
-		} catch (Exception e) {
-			logger.debug("", e);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+	 */
+	public int compare(Job job1, Job job2) {
+		if (job1.getPriority() > job2.getPriority()) {
+			return -1;
 		}
+
+		if (job1.getPriority() < job2.getPriority()) {
+			return 1;
+		}
+
+		if (job1.getIndex() < job2.getIndex()) { // older
+			return -1;
+		}
+
+		// if (job1.getIndex() > job2.getIndex()) { //younger
+		return 1;
 	}
 }

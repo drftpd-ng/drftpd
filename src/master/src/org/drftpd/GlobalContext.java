@@ -27,7 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Timer;
-//import java.util.Map.Entry;
 
 import javax.net.ssl.SSLContext;
 
@@ -42,7 +41,6 @@ import org.drftpd.event.MessageEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.SlaveFileException;
-import org.drftpd.jobmanager.JobManager;
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.SlaveManager;
@@ -50,6 +48,7 @@ import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.config.PluginsConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
+import org.drftpd.plugins.jobmanager.JobManager;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
@@ -81,8 +80,6 @@ public class GlobalContext implements EventSubscriber {
 
 	private ArrayList<PluginInterface> _plugins = new ArrayList<PluginInterface>();
 
-	protected JobManager _jm;
-
 	protected SectionManagerInterface _sections;
 
 	private String _shutdownMessage = null;
@@ -113,10 +110,6 @@ public class GlobalContext implements EventSubscriber {
 	 *
 	 */
 	protected GlobalContext() {
-	}
-
-	private void loadJobManager() {
-		_jm = new JobManager(this);
 	}
 
 	private void loadSlaveSelectionManager(Properties cfg) {
@@ -191,11 +184,16 @@ public class GlobalContext implements EventSubscriber {
 	}
 
 	/**
-	 * JobManager is now loaded as an integral part of the daemon If no Jobs are
-	 * sent, it utilizes very little resources
+	 * JobManager is now loaded as an integral part of the daemon. If no Jobs
+	 * are sent, it utilizes very little resources
 	 */
 	public JobManager getJobManager() {
-		return _jm;
+		for (PluginInterface plugin : getPlugins()) {
+			if (plugin instanceof JobManager) {
+				return (JobManager) plugin;
+			}
+		}
+		throw new RuntimeException("JobManager is not loaded");
 	}
 
 	public SectionManagerInterface getSectionManager() {
@@ -224,10 +222,6 @@ public class GlobalContext implements EventSubscriber {
 		}
 
 		return _usermanager;
-	}
-
-	public boolean isJobManagerLoaded() {
-		return (_jm != null);
 	}
 
 	public boolean isShutdown() {
@@ -468,8 +462,6 @@ public class GlobalContext implements EventSubscriber {
 			throw new RuntimeException(e);
 		}
 		listenForSlaves();
-		loadJobManager();
-		getJobManager().startJobs();
 		loadSlaveSelectionManager(getConfig().getMainProperties());
 		loadSectionManager(getConfig().getMainProperties());
 		loadPlugins();

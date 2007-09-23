@@ -15,41 +15,32 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
-import java.util.Comparator;
+import java.util.HashSet;
+
+import junit.framework.TestCase;
+
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.tests.DummyRemoteSlave;
+
 
 /**
  * @author zubov
- * @version $Id$
- * 
+ * @version $Id: JobTest.java 1788 2007-09-19 23:47:41Z zubov $
  */
-public class JobComparator implements Comparator<Job> {
-	/**
-	 * Compares Jobs
-	 */
-	public JobComparator() {
-	}
+public class JobTest extends TestCase {
+    public JobTest(String arg0) {
+        super(arg0);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-	 */
-	public int compare(Job job1, Job job2) {
-		if (job1.getPriority() > job2.getPriority()) {
-			return -1;
-		}
+    public void testRemoveDestinationSlave() {
+        HashSet<String> slaveSet = new HashSet<String>();
+        RemoteSlave rslave = new DummyRemoteSlave("name");
+        slaveSet.add(rslave.getName());
 
-		if (job1.getPriority() < job2.getPriority()) {
-			return 1;
-		}
-
-		if (job1.getIndex() < job2.getIndex()) { // older
-			return -1;
-		}
-
-		// if (job1.getIndex() > job2.getIndex()) { //younger
-		return 1;
-	}
+        Job job = new Job(null, slaveSet, 0, 1);
+        job.sentToSlave(rslave);
+        assertTrue(job.isDone());
+    }
 }

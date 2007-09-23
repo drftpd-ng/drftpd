@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,18 +29,18 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.TreeSet;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: JobManager.java 1787 2007-09-19 10:22:58Z zubov $
  */
-public class JobManager {
+public class JobManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 
 	private boolean _isStopped = false;
@@ -53,17 +53,13 @@ public class JobManager {
 
 	private long _sleepSeconds;
 
-	private GlobalContext _gctx;
-
 	private TimerTask _runJob = null;
 
 	/**
 	 * Keeps track of all jobs and controls them
 	 */
-	public JobManager(GlobalContext gctx) {
-		_gctx = gctx;
-		_queuedJobSet = new TreeSet<Job>(new JobComparator());
-		reload();
+	public JobManager() {
+
 	}
 
 	public synchronized void addJobsToQueue(Collection<Job> jobs) {
@@ -233,41 +229,19 @@ public class JobManager {
 	}
 
 	private GlobalContext getGlobalContext() {
-		return _gctx;
+		return GlobalContext.getGlobalContext();
 	}
 
 	public void reload() {
-		Properties p = new Properties();
-		FileInputStream fis = null;
-
-		try {
-			fis = new FileInputStream("conf/jobmanager.conf");
-			p.load(fis);
-		} catch (IOException e) {
-			logger.warn("conf/jobmanager.conf missing, using default values");
-			// defaults
-			_useCRC = true;
-			_sleepSeconds = 10000; // 10 seconds
-			return;
-		} finally {
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					logger
-							.error(
-									"Could not close the FileInputStream of conf/jobmanager.conf",
-									e);
-				}
-				fis = null;
-			}
-		}
+		Properties p = GlobalContext.getGlobalContext().getPluginsConfig()
+				.getPropertiesForPlugin("jobmanager.conf");
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
 		_useSSL = p.getProperty("useSSLTransfers", "true").equals("true"); 
 		_sleepSeconds = 1000 * Long.parseLong(PropertyHelper.getProperty(p,
 				"sleepSeconds"));
 		if (_runJob != null) {
 			_runJob.cancel();
+			getGlobalContext().getTimer().purge();
 		}
 		_runJob = new TimerTask() {
 			public void run() {
@@ -293,8 +267,8 @@ public class JobManager {
 	}
 
 	public void stopJob(Job job) {
-		removeJobFromQueue(job);
 		job.abort();
+		removeJobFromQueue(job);
 	}
 
 	public void stopJobs() {
@@ -307,5 +281,25 @@ public class JobManager {
 	
 	private boolean useSecureTransfers() {
 		return _useSSL;
+	}
+
+	public void startPlugin() {
+		_queuedJobSet = new TreeSet<Job>(new JobComparator());
+		reload();
+	}
+
+	public void stopPlugin(String reason) {
+		if (_runJob != null) {
+			_runJob.cancel();
+			getGlobalContext().getTimer().purge();
+		}
+		if (_queuedJobSet != null) {
+			synchronized (this) {
+				for (Job job : _queuedJobSet) {
+					job.abort();
+				}
+				_queuedJobSet.clear();
+			}
+		}
 	}
 }

@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -33,7 +33,7 @@ import org.drftpd.vfs.FileHandle;
 /**
  * @author mog
  * @author zubov
- * @version $Id$
+ * @version $Id: SlaveTransfer.java 1790 2007-09-21 03:26:50Z fr0w $
  */
 public class SlaveTransfer {
 	private RemoteSlave _destSlave;

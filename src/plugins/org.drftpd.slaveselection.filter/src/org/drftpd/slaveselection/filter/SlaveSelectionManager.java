@@ -23,13 +23,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.jobmanager.Job;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.misc.CaseInsensitiveHashMap;
+import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.vfs.InodeHandle;

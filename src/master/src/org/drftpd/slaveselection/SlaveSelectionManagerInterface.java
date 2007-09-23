@@ -23,10 +23,10 @@ import java.util.Collection;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.jobmanager.Job;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
+import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.vfs.InodeHandle;
 
 /**

@@ -1,13 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.archive" version="2.1.0">
+<plugin id="org.drftpd.plugins.jobmanager" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
 	<requires>
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
-		<import plugin-id="org.drftpd.plugins.jobmanager" exported="true" />
+		<import plugin-id="org.drftpd.slaveselection.filter" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.archive" path="classes/" type="code">
+		<library id="org.drftpd.plugins.jobmanager" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
@@ -28,9 +33,9 @@
 		<parameter-def id="ParentMethod" />
 		<parameter-def id="Priority" type="number" />
 	</extension-point>
-	<extension plugin-id="master" point-id="Plugin" id="Archive">
-		<parameter id="class" value="org.drftpd.plugins.archive.Archive"/>
+	<extension plugin-id="master" point-id="Plugin" id="JobManager">
+		<parameter id="class" value="org.drftpd.plugins.jobmanager.JobManager"/>
 	</extension>
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ArchiveCommandHandler">
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="JobManagerCommandHandler">
 	</extension>
 </plugin>

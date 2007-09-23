@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.drftpd.jobmanager.Job;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.DuplicateArchiveException;
+import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.sections.SectionInterface;
 
 /**

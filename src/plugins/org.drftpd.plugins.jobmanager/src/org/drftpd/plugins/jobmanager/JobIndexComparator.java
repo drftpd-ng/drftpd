@@ -1,11 +1,11 @@
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
 import java.util.Comparator;
 
 /**
  * 
  * @author zubov
- * @version $Id$
+ * @version $Id: JobIndexComparator.java 1621 2007-02-13 20:41:31Z djb61 $
  */
 public class JobIndexComparator implements Comparator<Job> {
 	public int compare(Job arg0, Job arg1) {

@@ -174,8 +174,6 @@ public class SiteManagementHandler extends CommandInterface {
 			GlobalContext.getGlobalContext().reloadFtpConfig();
 			GlobalContext.getGlobalContext().loadPluginsConfig();
 			GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
-
-			GlobalContext.getGlobalContext().getJobManager().reload();
 	
 			GlobalContext.getEventService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
 

@@ -4,9 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.jobmanager.Job;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 import org.drftpd.vfs.InodeHandle;
 

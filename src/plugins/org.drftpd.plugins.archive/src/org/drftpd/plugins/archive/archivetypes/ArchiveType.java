@@ -26,16 +26,15 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.jobmanager.Job;
-import org.drftpd.jobmanager.JobManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.plugins.archive.DuplicateArchiveException;
+import org.drftpd.plugins.jobmanager.Job;
+import org.drftpd.plugins.jobmanager.JobManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;

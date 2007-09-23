@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: build.xml 1744 2007-06-24 03:55:32Z djb61 $ -->
-<project name="org.drftpd.plugins.archive plug-in build file"
+<!-- $Id$ -->
+<project name="org.drftpd.plugins.jobmanager plug-in build file"
          default="build">
 	<target name="build">
-		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.plugins.archive" />
+		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.plugins.jobmanager" />
 		<jpf-info manifest="${pluginbase}/plugin.xml"
 			propertyid="plugin.id"
 			propertyversion="plugin.version" />

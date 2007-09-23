@@ -16,8 +16,6 @@
  */
 package org.drftpd.plugins.archive;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Collections;
@@ -101,28 +99,8 @@ public class Archive implements EventSubscriber, PluginInterface {
 	}
 
 	public void reload() {
-		_props = new Properties();
-		FileInputStream fis = null;
-
-		try {
-			fis = new FileInputStream("conf/archive.conf");
-			_props.load(fis);
-		} catch (IOException e) {
-			throw new RuntimeException(
-					"conf/archive.conf is missing, cannot continue", e);
-		} finally {
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					logger
-							.error(
-									"Could not close the FileInputStream of conf/archive.conf",
-									e);
-				}
-				fis = null;
-			}
-		}
+		_props = GlobalContext.getGlobalContext().getPluginsConfig()
+				.getPropertiesForPlugin("archive.conf");
 		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,
 				"cycleTime"));
 		if (_runHandler != null) {
@@ -208,6 +186,7 @@ public class Archive implements EventSubscriber, PluginInterface {
 	public void stopPlugin(String reason) {
 		if (_runHandler != null) {
 			_runHandler.cancel();
+			GlobalContext.getGlobalContext().getTimer().purge();
 		}
 		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
 		logger.info("Archive plugin unloaded successfully");

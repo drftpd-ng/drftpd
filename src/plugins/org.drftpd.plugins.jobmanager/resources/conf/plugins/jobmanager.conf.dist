@@ -1,0 +1,10 @@
+# this module is only used by the Archive plugin
+
+# use CRC checks after transfers to make sure files arrived correctly
+useCRC=true
+
+# sleep for this amount of seconds between searching for new transfers
+sleepSeconds=10
+
+# use SSL transfer
+useSSLTransfers=true

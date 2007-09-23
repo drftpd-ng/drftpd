@@ -14,11 +14,11 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: SlaveException.java 1621 2007-02-13 20:41:31Z djb61 $
  */
 public class SlaveException extends Exception {
 	public SlaveException() {

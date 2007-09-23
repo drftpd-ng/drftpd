@@ -1,0 +1,50 @@
+SITE ADDJOB {
+plugin org.drftpd.plugins.jobmanager
+class JobManagerCommandHandler
+method doADDJOB
+perms =siteop
+help Add a job to the JobManager queue.
+help.specific SITE ADDJOB <file> <priority> <timestomirror> <destslave> [destslave ...]
+help.specific <file> : The file to archive
+help.specific <priority> : The priority you want this job to have. Must be an Integer.
+help.specific <timestomirror> : The max number of slaves each file should be on.
+help.specific <destslave> : The name of the slave to transfer the files to.
+}
+
+SITE LISTJOBS {
+plugin org.drftpd.plugins.jobmanager
+class JobManagerCommandHandler
+method doLISTJOBS
+perms =siteop
+help List the current jobs queued by the JobManager.
+help.specific List the current jobs queued by the JobManager by index #
+}
+
+SITE REMOVEJOB {
+plugin org.drftpd.plugins.jobmanager
+class JobManagerCommandHandler
+method doREMOVEJOB
+perms =siteop
+help Removes a Job from the JobManager queue by index # or range.
+help.specific SITE REMOVEJOB <jobindex> <lowrange>-<highrange> will remove the job with
+help.specific jobindex and all jobs including and between lowrange and highrange.
+help.specific You can use as many ranges as your heart desires.
+}
+
+SITE STARTJOBS {
+plugin org.drftpd.plugins.jobmanager
+class JobManagerCommandHandler
+method doSTARTJOBS
+perms =siteop
+help Starts running the jobs in the JobManager queue.
+help.specific SITE STARTJOBS\n\ Starts running the jobs in the JobManager queue.
+}
+
+SITE STOPJOBS {
+plugin org.drftpd.plugins.jobmanager
+class JobManagerCommandHandler
+method doSTOPJOBS
+perms =siteop
+help Stops running the jobs in the JobManager queue.
+help.specific SITE STOPJOBS\n\ Stops running the jobs in the JobManager queue.
+}

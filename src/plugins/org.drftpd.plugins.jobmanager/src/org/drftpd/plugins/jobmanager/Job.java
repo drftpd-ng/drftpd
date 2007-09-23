@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ import org.drftpd.vfs.FileHandle;
 /**
  * @author zubov
  * @author mog
- * @version $Id$
+ * @version $Id: Job.java 1787 2007-09-19 10:22:58Z zubov $
  */
 public class Job {
 	private static long jobIndexCount = 1;

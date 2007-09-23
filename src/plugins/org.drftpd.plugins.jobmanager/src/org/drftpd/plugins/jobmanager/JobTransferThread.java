@@ -15,32 +15,35 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.jobmanager;
+package org.drftpd.plugins.jobmanager;
 
-import java.util.HashSet;
-
-import junit.framework.TestCase;
-
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.tests.DummyRemoteSlave;
-
+import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id$
+ * @version $Id: JobTransferThread.java 1621 2007-02-13 20:41:31Z djb61 $
  */
-public class JobTest extends TestCase {
-    public JobTest(String arg0) {
-        super(arg0);
-    }
+public class JobTransferThread extends Thread {
+	private static final Logger logger = Logger
+			.getLogger(JobTransferThread.class);
 
-    public void testRemoveDestinationSlave() {
-        HashSet<String> slaveSet = new HashSet<String>();
-        RemoteSlave rslave = new DummyRemoteSlave("name");
-        slaveSet.add(rslave.getName());
+	private JobManager _jm;
 
-        Job job = new Job(null, slaveSet, 0, 1);
-        job.sentToSlave(rslave);
-        assertTrue(job.isDone());
-    }
+	private static int count = 1;
+
+	/**
+	 * This class sends a JobTransfer if it is available
+	 */
+	public JobTransferThread(JobManager jm) {
+		super("JobTransferThread - " + count++);
+		_jm = jm;
+	}
+
+	public void run() {
+		try {
+			_jm.processJob();
+		} catch (Exception e) {
+			logger.debug("", e);
+		}
+	}
 }
