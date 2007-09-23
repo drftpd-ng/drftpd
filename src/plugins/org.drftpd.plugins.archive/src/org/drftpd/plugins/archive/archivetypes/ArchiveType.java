@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -173,6 +174,15 @@ public abstract class ArchiveType {
 		return _slaveList == null ? null : Collections
 				.unmodifiableSet(_slaveList);
 	}
+	
+	public JobManager getJobManager() {
+		for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+			if (plugin instanceof JobManager) {
+				return (JobManager) plugin;
+			}
+		}
+		throw new RuntimeException("JobManager is not loaded");
+	}
 
 	/**
 	 * Adds relevant Jobs to the JobManager and returns an ArrayList of those
@@ -182,7 +192,7 @@ public abstract class ArchiveType {
 	 */
 	public ArrayList<Job> send() throws FileNotFoundException {
 		ArrayList<Job> jobs = recursiveSend(getDirectory());
-		JobManager jm = getGlobalContext().getJobManager();
+		JobManager jm = getJobManager();
 		jm.addJobsToQueue(jobs);
 		return jobs;
 	}

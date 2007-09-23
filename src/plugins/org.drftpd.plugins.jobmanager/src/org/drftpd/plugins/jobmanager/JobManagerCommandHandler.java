@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -130,7 +131,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 		}
 
 		Job job = new Job(lrf, destSlaves, priority, timesToMirror);
-		GlobalContext.getGlobalContext().getJobManager().addJobToQueue(job);
+		getJobManager().addJobToQueue(job);
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("job", job);
@@ -139,14 +140,22 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 		return response;
 	}
+	
+	public JobManager getJobManager() {
+		for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+			if (plugin instanceof JobManager) {
+				return (JobManager) plugin;
+			}
+		}
+		throw new RuntimeException("JobManager is not loaded");
+	}
 
 	public CommandResponse doLISTJOBS(CommandRequest request) {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
-		treeSet.addAll(GlobalContext.getGlobalContext().getJobManager()
-				.getAllJobsFromQueue());
+		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 
 		for (Job job : treeSet) {
 			env.add("job", job);
@@ -214,8 +223,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 			}
 		}
 		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
-		treeSet.addAll(GlobalContext.getGlobalContext().getJobManager()
-				.getAllJobsFromQueue());
+		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -223,7 +231,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 			for (Range range : rangeList) {
 				if (range.contains(job.getIndex())) {
 					env.add("job", job);
-					GlobalContext.getGlobalContext().getJobManager().stopJob(job);
+					getJobManager().stopJob(job);
 					response.addComment(request.getSession().jprintf(_bundle, env,
 							_keyPrefix + "removejob.success"));
 				}
@@ -234,14 +242,14 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 	public CommandResponse doSTARTJOBS(CommandRequest request) {
 
-		GlobalContext.getGlobalContext().getJobManager().startJobs();
+		getJobManager().startJobs();
 
 		return new CommandResponse(200, "JobTransfers will now start");
 	}
 
 	public CommandResponse doSTOPJOBS(CommandRequest request) {
 
-		GlobalContext.getGlobalContext().getJobManager().stopJobs();
+		getJobManager().stopJobs();
 
 		return new CommandResponse(200,
 				"All JobTransfers will stop after their current transfer");

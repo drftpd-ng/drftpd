@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -42,6 +43,7 @@ import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.jobmanager.Job;
+import org.drftpd.plugins.jobmanager.JobManager;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -231,10 +233,19 @@ public class Find extends CommandInterface {
 			_destSlaves = destSlaves;
 			_priority = priority;
 		}
+		
+		public JobManager getJobManager() {
+			for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+				if (plugin instanceof JobManager) {
+					return (JobManager) plugin;
+				}
+			}
+			throw new RuntimeException("JobManager is not loaded");
+		}
 
 		public String exec(CommandRequest request, InodeHandle inode) {
 			FileHandle file = (FileHandle) inode;
-			GlobalContext.getGlobalContext().getJobManager().addJobToQueue(new Job(file, _priority, _transferNum, _destSlaves));
+			getJobManager().addJobToQueue(new Job(file, _priority, _transferNum, _destSlaves));
 			return file.getName() + " added to jobqueue";
 		}
 

@@ -48,7 +48,6 @@ import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.master.config.PluginsConfig;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.master.cron.TimeManager;
-import org.drftpd.plugins.jobmanager.JobManager;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
@@ -181,19 +180,6 @@ public class GlobalContext implements EventSubscriber {
 
 	public List<PluginInterface> getPlugins() {
 		return new ArrayList<PluginInterface>(_plugins);
-	}
-
-	/**
-	 * JobManager is now loaded as an integral part of the daemon. If no Jobs
-	 * are sent, it utilizes very little resources
-	 */
-	public JobManager getJobManager() {
-		for (PluginInterface plugin : getPlugins()) {
-			if (plugin instanceof JobManager) {
-				return (JobManager) plugin;
-			}
-		}
-		throw new RuntimeException("JobManager is not loaded");
 	}
 
 	public SectionManagerInterface getSectionManager() {
