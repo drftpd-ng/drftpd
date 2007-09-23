@@ -20,17 +20,17 @@ package org.drftpd.slaveselection.filter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
@@ -115,29 +115,24 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 		return process(status, new ScoreChart(getAvailableSlaves()), conn, direction, file, null);
 	}
 
-	public RemoteSlave getASlaveForJobDownload(Job job)
+	public RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
 			throws NoAvailableSlaveException, FileNotFoundException {		
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(job.getFile().getAvailableSlaves());
+		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(file.getAvailableSlaves());
 		
-		slaves.removeAll(job.getDestinationSlaves()); //remove all target slaves.
+		slaves.removeAll(destinationSlaves); //remove all target slaves.
 
 		if (slaves.isEmpty()) {
 			throw new NoAvailableSlaveException();
 		}
 
-		return process("jobdown", new ScoreChart(slaves), null, Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), null);
+		return process("jobdown", new ScoreChart(slaves), null, Transfer.TRANSFER_SENDING_DOWNLOAD, file, null);
 	}
 
-	public RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
+	public RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException, FileNotFoundException {
 		
-		ArrayList<RemoteSlave> slaves;
-		try {
-			slaves = new ArrayList<RemoteSlave>(job.getDestinationSlaveObjects());
-		} catch (ObjectNotFoundException e) {
-			throw new NoAvailableSlaveException("Slave no longer exists");
-		}
-		slaves.removeAll(job.getFile().getAvailableSlaves()); // a slave cannot have the same file twice ;P
+		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(destinationSlaves);
+		slaves.removeAll(file.getAvailableSlaves()); // a slave cannot have the same file twice ;P
 
 		for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
 			if (!iter.next().isAvailable()) {
@@ -149,7 +144,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 			throw new NoAvailableSlaveException();
 		}
 
-		return process("jobup", new ScoreChart(slaves), null, Transfer.TRANSFER_SENDING_DOWNLOAD, job.getFile(), sourceSlave);
+		return process("jobup", new ScoreChart(slaves), null, Transfer.TRANSFER_SENDING_DOWNLOAD, file, sourceSlave);
 	}
 
 

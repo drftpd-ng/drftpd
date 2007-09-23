@@ -26,7 +26,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.plugins.jobmanager.Job;
+import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 
 /**
@@ -40,10 +40,10 @@ public abstract class SlaveSelectionManagerInterface {
 	public abstract RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file)
 			throws NoAvailableSlaveException;
 
-	public abstract RemoteSlave getASlaveForJobDownload(Job job)
+	public abstract RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
 			throws NoAvailableSlaveException, FileNotFoundException;
 
-	public abstract RemoteSlave getASlaveForJobUpload(Job job, RemoteSlave sourceSlave)
+	public abstract RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException, FileNotFoundException;
 	
 	public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {

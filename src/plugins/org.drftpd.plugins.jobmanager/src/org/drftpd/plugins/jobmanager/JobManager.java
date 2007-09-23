@@ -34,6 +34,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 
 /**
@@ -165,11 +166,20 @@ public class JobManager implements PluginInterface {
 				if (job == null) {
 					return;
 				}
+				Collection<RemoteSlave> destinationSlaveObjects = null;
+				try {
+					destinationSlaveObjects = job.getSlaveObjects(job.getDestinationSlaves());
+				} catch (ObjectNotFoundException e2) {
+					logger.debug("Slave no longer exists!", e2);
+					job.abort();
+					continue;
+				}
 
 				// logger.debug("looking up slave for job " + job);
 				try {
 					sourceSlave = getGlobalContext().getSlaveSelectionManager()
-							.getASlaveForJobDownload(job);
+							.getASlaveForJobDownload(job.getFile(),
+									destinationSlaveObjects);
 				} catch (NoAvailableSlaveException e) {
 					try {
 						busySlavesDown.addAll(job.getFile().getSlaves());
@@ -190,8 +200,9 @@ public class JobManager implements PluginInterface {
 				try {
 					availableSlaves.removeAll(job.getFile().getSlaves());
 					destSlave = getGlobalContext().getSlaveSelectionManager()
-							.getASlaveForJobUpload(job, sourceSlave);
-
+							.getASlaveForJobUpload(job.getFile(),
+									destinationSlaveObjects, sourceSlave);
+					
 					break; // we have a source slave and a destination
 					// slave,
 
