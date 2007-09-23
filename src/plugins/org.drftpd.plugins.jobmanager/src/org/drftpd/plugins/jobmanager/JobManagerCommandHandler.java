@@ -23,7 +23,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -33,7 +32,6 @@ import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.ReplyException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.plugins.archive.Archive;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
