@@ -38,4 +38,10 @@ public class PropertyHelper {
 
 		return result;
 	}
+	
+	public static String getProperty(Properties p, String name,
+			String defaultValue) throws NullPointerException {
+		return p.getProperty(name, defaultValue);
+		// result can't be null
+	}
 }

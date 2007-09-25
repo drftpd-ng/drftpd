@@ -102,7 +102,7 @@ public class Archive implements EventSubscriber, PluginInterface {
 		_props = GlobalContext.getGlobalContext().getPluginsConfig()
 				.getPropertiesForPlugin("archive.conf");
 		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,
-				"cycleTime"));
+				"cycleTime", "30"));
 		if (_runHandler != null) {
 			_runHandler.cancel();
 		}

@@ -130,18 +130,18 @@ public class ArchiveCommandHandler extends CommandInterface {
             Constructor constructor = null;
 
             try {
-                constructor = Class.forName(
-                        "org.drftpd.mirroring.archivetypes." + archiveTypeName)
-                                   .getConstructor(classParams);
-            } catch (Exception e1) {
-                logger.debug("Serious error, your ArchiveType for section " +
-                    section.getName() +
-                    " is incompatible with this version of DrFTPD", e1);
-                response.addComment(request.getSession().jprintf(_bundle, env,
-    					_keyPrefix + "incompatible"));
+				constructor = Class.forName(
+						"org.drftpd.plugins.archive.archivetypes."
+								+ archiveTypeName).getConstructor(classParams);
+			} catch (Exception e1) {
+				logger.debug("Serious error, your ArchiveType for section "
+						+ section.getName()
+						+ " is incompatible with this version of DrFTPD", e1);
+				response.addComment(request.getSession().jprintf(_bundle, env,
+						_keyPrefix + "incompatible"));
 
-                return response;
-            }
+				return response;
+			}
 
             Properties props = new Properties();
 

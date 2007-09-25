@@ -8,7 +8,6 @@
 	</attributes>
 	<requires>
 		<import plugin-id="master" exported="true" />
-		<import plugin-id="org.drftpd.plugins.jobmanager" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.slaveselection.filter" path="classes/" type="code">

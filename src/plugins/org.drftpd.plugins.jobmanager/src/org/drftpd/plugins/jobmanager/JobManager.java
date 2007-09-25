@@ -16,9 +16,7 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,9 +28,11 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -41,7 +41,7 @@ import org.drftpd.master.RemoteSlave;
  * @author zubov
  * @version $Id: JobManager.java 1787 2007-09-19 10:22:58Z zubov $
  */
-public class JobManager implements PluginInterface {
+public class JobManager implements PluginInterface, EventSubscriber {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 
 	private boolean _isStopped = false;
@@ -79,8 +79,15 @@ public class JobManager implements PluginInterface {
 			for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
 				RemoteSlave slave = iter.next();
 
-				if (job.getDestinationSlaves().contains(slave)) {
-					job.sentToSlave(slave);
+				if (job.getDestinationSlaves().contains(slave.getName())) {
+					try {
+						job.sentToSlave(slave);
+					} catch (FileNotFoundException e) {
+						// I'd like to simply remove it, but I'm not sure how to handle that
+						// the job may be isDone() and the code below will throw an error if true
+						// this is going to be a small race condition since above we check if file exists
+						// bug I'm willing to accept --zubov
+					}
 				}
 			}
 			if (job.isDone()) {
@@ -162,7 +169,6 @@ public class JobManager implements PluginInterface {
 		synchronized (this) {
 			while (!busySlavesDown.containsAll(availableSlaves)) {
 				job = getNextJob(busySlavesDown, skipJobs);
-
 				if (job == null) {
 					return;
 				}
@@ -175,11 +181,10 @@ public class JobManager implements PluginInterface {
 					continue;
 				}
 
-				// logger.debug("looking up slave for job " + job);
 				try {
 					sourceSlave = getGlobalContext().getSlaveSelectionManager()
-							.getASlaveForJobDownload(job.getFile(),
-									destinationSlaveObjects);
+							.getASlaveForJobDownload(job.getFile(),job.getSlaveObjects(
+									job.getSlavesToTransferTo()));
 				} catch (NoAvailableSlaveException e) {
 					try {
 						busySlavesDown.addAll(job.getFile().getSlaves());
@@ -189,6 +194,11 @@ public class JobManager implements PluginInterface {
 					}
 					continue;
 				} catch (FileNotFoundException e) {
+					job.abort();
+					// can't transfer
+					return;
+				} catch (ObjectNotFoundException e) {
+					job.abort();
 					// can't transfer
 					return;
 				}
@@ -230,6 +240,7 @@ public class JobManager implements PluginInterface {
 		try {
 			job.transfer(useCRC(), useSecureTransfers(), sourceSlave, destSlave);
 		} catch (FileNotFoundException e) {
+			job.abort();
 			// file is deleted, hah! stupid race conditions
 			return;
 		}
@@ -249,7 +260,7 @@ public class JobManager implements PluginInterface {
 		_useCRC = p.getProperty("useCRC", "true").equals("true");
 		_useSSL = p.getProperty("useSSLTransfers", "true").equals("true"); 
 		_sleepSeconds = 1000 * Long.parseLong(PropertyHelper.getProperty(p,
-				"sleepSeconds"));
+				"sleepSeconds", "30"));
 		if (_runJob != null) {
 			_runJob.cancel();
 			getGlobalContext().getTimer().purge();
@@ -295,6 +306,8 @@ public class JobManager implements PluginInterface {
 	}
 
 	public void startPlugin() {
+		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
+		logger.info("JobManager plugin loaded successfully");
 		_queuedJobSet = new TreeSet<Job>(new JobComparator());
 		reload();
 	}
@@ -311,6 +324,14 @@ public class JobManager implements PluginInterface {
 				}
 				_queuedJobSet.clear();
 			}
+		}
+		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
+		logger.info("JobManager plugin unloaded successfully");
+	}
+
+	public void onEvent(Object event) {
+		if (event instanceof ReloadEvent) {
+			reload();
 		}
 	}
 }

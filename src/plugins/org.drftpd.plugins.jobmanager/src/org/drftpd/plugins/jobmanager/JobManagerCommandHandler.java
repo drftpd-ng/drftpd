@@ -23,6 +23,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -33,6 +34,7 @@ import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.ReplyException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -48,6 +50,8 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
+	
+	private static final Logger logger = Logger.getLogger(JobManagerCommandHandler.class);
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -95,7 +99,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 		try {
 			priority = Integer.parseInt(st.nextToken());
-		} catch (NumberFormatException e) {
+		} catch (Exception e) {
 			throw new ImproperUsageException();
 		}
 
@@ -184,7 +188,6 @@ public class JobManagerCommandHandler extends CommandInterface {
 		env.add("total", treeSet.size());
 		response.addComment(request.getSession().jprintf(_bundle, env,
 				_keyPrefix + "sizeofjobs"));
-		response.addComment("this is the keyPrefix: " + _keyPrefix);
 		return response;
 	}
 

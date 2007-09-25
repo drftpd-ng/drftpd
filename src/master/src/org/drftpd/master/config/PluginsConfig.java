@@ -144,7 +144,7 @@ public class PluginsConfig {
 		if (cfg == null) {
 			cfg = new Properties();
 			logger.debug("'"+pluginName + "' configuration file was not found. " +
-					"Returning an empty Propertie object.", new Throwable());
+					"Returning an empty Properties object.", new Throwable());
 		}
 		
 		return cfg;

@@ -59,6 +59,14 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	public void setXfertime(long x) throws FileNotFoundException {
 		getInode().setXfertime(x);
 	}
+	
+	/**
+	 * @return a Set containing the names of the slaves that contain the File.
+	 * @throws FileNotFoundException
+	 */
+	public Set<String> getSlaveNames() throws FileNotFoundException {
+		return new HashSet<String>(getInode().getSlaves());		
+	}
 
 	/**
 	 * @return a Set containing the slaves that contain the File.

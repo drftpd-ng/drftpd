@@ -17,6 +17,7 @@
  */
 package org.drftpd.plugins.jobmanager;
 
+import java.io.FileNotFoundException;
 import java.util.HashSet;
 
 import junit.framework.TestCase;
@@ -40,7 +41,10 @@ public class JobTest extends TestCase {
         slaveSet.add(rslave.getName());
 
         Job job = new Job(null, slaveSet, 0, 1);
-        job.sentToSlave(rslave);
+        try {
+			job.sentToSlave(rslave);
+		} catch (FileNotFoundException e) {
+		}
         assertTrue(job.isDone());
     }
 }

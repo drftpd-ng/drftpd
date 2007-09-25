@@ -197,10 +197,6 @@ public abstract class ArchiveType {
 		return jobs;
 	}
 
-	private static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
-
 	protected ArrayList<Job> recursiveSend(DirectoryHandle lrf)
 			throws FileNotFoundException {
 		ArrayList<Job> jobQueue = new ArrayList<Job>();

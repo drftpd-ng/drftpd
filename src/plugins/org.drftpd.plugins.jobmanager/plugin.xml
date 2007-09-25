@@ -2,14 +2,13 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.plugins.jobmanager" version="2.1.0">
 	<attributes>
-		<attribute id="DenyUnload" value="true" />
+		<attribute id="DenyUnload" value="false" />
 		<attribute id="DefaultBuild" value="true" />
-		<attribute id="MustBuild" value="true" />
+		<attribute id="MustBuild" value="false" />
 	</attributes>
 	<requires>
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
-		<import plugin-id="org.drftpd.slaveselection.filter" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.plugins.jobmanager" path="classes/" type="code">
