@@ -13,16 +13,18 @@ cycleTime=30
 #firstsectionname.archiveType=ConstantMirroring
 #firstsectionname.numOfSlaves=2
 #firstsectionname.slaveDeadAfter=1440
+#firstsectionname.priority=3
 
 #This configuration will make sure that three copies of every file are on the slaves identified
 #secondsectionname.archiveType=ConstantMirroring
-#secondthsectionname.archiveAfter=0
-#secondthsectionname.numOfSlaves=3
-#secondthsectionname.slavename.1=drftpd1
-#secondthsectionname.slavename.2=drftpd2
-#secondthsectionname.slavename.3=drftpd3
-#secondthsectionname.slavename.4=drftpd4
-#secondthsectionname.slavename.5=drftpd5
+#secondsectionname.archiveAfter=0
+#secondsectionname.numOfSlaves=3
+#secondsectionname.priority=3
+#secondsectionname.slavename.1=drftpd1
+#secondsectionname.slavename.2=drftpd2
+#secondsectionname.slavename.3=drftpd3
+#secondsectionname.slavename.4=drftpd4
+#secondsectionname.slavename.5=drftpd5
 
 # If a section is not defined an archiveType, that section is excluded 
 # from automatic archiving.  You may still manually archive releases 

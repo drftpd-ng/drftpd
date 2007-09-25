@@ -58,6 +58,8 @@ public abstract class ArchiveType {
 	protected Set<RemoteSlave> _slaveList;
 
 	protected int _numOfSlaves;
+	
+	protected int _priority;
 
 	/**
 	 * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter Each
@@ -209,7 +211,7 @@ public abstract class ArchiveType {
 				.hasNext();) {
 			FileHandle file = iter.next();
 			logger.info("Adding " + file.getPath() + " to the job queue");
-			Job job = new Job(file, 3, _numOfSlaves, getRSlaves());
+			Job job = new Job(file, _priority, _numOfSlaves, getRSlaves());
 			jobQueue.add(job);
 		}
 
@@ -334,6 +336,9 @@ public abstract class ArchiveType {
 			}
 		}
 		_slaveList = destSlaves;
+		_priority = Integer.parseInt(properties.getProperty(getSection()
+				.getName()
+				+ ".priority", "3"));
 	}
 
 	public final void setDirectory(DirectoryHandle lrf) {
