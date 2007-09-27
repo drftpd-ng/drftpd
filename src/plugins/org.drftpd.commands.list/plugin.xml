@@ -7,17 +7,13 @@
 	</attributes>
 	<requires>
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.list" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension-point id="FrontendHook">
-		<parameter-def id="HookClass" />
-		<parameter-def id="HookMethod" />
-		<parameter-def id="ParentMethod" />
-	</extension-point>
 	<extension-point id="PostHook">
 		<parameter-def id="HookClass" />
 		<parameter-def id="HookMethod" />
@@ -34,5 +30,17 @@
 		<parameter-def id="Class" />
 	</extension-point>
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ListHandler">
+	</extension>
+	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="doMLSTandMLSDPerm">
+		<parameter id="ParentMethod" value="doMLSTandMLSD" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="doLISTPerm">
+		<parameter id="ParentMethod" value="doLIST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
 	</extension>
 </plugin>

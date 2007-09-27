@@ -11,6 +11,7 @@
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
 		<import plugin-id="org.drftpd.commands.list" exported="true" />
+		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
@@ -18,11 +19,6 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension-point id="FrontendHook">
-		<parameter-def id="HookClass" />
-		<parameter-def id="HookMethod" />
-		<parameter-def id="ParentMethod" />
-	</extension-point>
 	<extension-point id="PostHook">
 		<parameter-def id="HookClass" />
 		<parameter-def id="HookMethod" />
@@ -76,5 +72,12 @@
 	
 	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptProtocol">
 		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.ZipscriptIssuer" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="PreHook" id="doSITE_RESCANPerm">
+		<parameter id="ParentMethod" value="doSITE_RESCAN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
 	</extension>
 </plugin>
