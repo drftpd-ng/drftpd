@@ -38,6 +38,23 @@ check - checks plug-ins integrity
 	</target>
 
 	<target name="build" description="Builds entire project">
+		<!-- beware of dragons -->
+		<echo>WARNING: The trunk branch of DrFTPD is bleeding edge code, which includes</echo>
+		<echo>work in progress, experimental changes, and transitional mechanisms that</echo>
+		<echo>might or might not be present in the next official release of the software.</echo>
+		<echo />
+		<echo>While the developers make an effort to keep the trunk branch in a usable</echo>
+		<echo>state, there are periods of time when the sources are not buildable. These</echo>
+		<echo>problems are resolved as expeditiously as possible, but whether or not trunk</echo>
+		<echo>brings disaster or greatly desired functionality can be a matter of which</echo>
+		<echo>revision you are using.  It is reccomended that you NOT use this branch unless</echo>
+		<echo>you follow development closely, and are prepared to fix any problems you might</echo>
+		<echo>encounter.</echo>
+		<echo />
+		<echo>Users of trunk are expected to have a high degree of technical skill, and should</echo>
+		<echo>be capable of solving difficult system problems on their own.</echo>
+		<echo /> 
+		<echo>If you are new to DrFTPD, think twice before installing this version.</echo>
 		<!-- compile tools classes -->
 		<javac
 			srcdir="src/tools"
