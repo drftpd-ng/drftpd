@@ -314,9 +314,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		return GlobalContext.getConfig().getVFSPermissions();
 	}
 	
-	protected static void checkHiddenPath(InodeHandle inode, User user) throws FileNotFoundException {
-		logger.debug("Checking hidden path for: '"+ inode.getPath() + "' / user: '"+ user.getName()+"@"+user.getGroup()+"'");
-		
+	protected static void checkHiddenPath(InodeHandle inode, User user) throws FileNotFoundException {	
 		if (user == null) {
 			throw new FileNotFoundException("User cannot be null");
 		}
@@ -324,10 +322,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle) inode : inode.getParent();
 		
 		if (getVFSPermissions().checkPathPermission("privpath", user, dir)) {
-			logger.debug("'"+ inode.getPath() + "' is hidden for '"+ user.getName()+"@"+user.getGroup()+"'");
 			throw new FileNotFoundException(dir.getPath() + " does not exist");
 		}
-		
-		logger.debug("'"+ inode.getPath() + "' is not hidden for '"+ user.getName()+"@"+user.getGroup()+"'");
 	}
 }

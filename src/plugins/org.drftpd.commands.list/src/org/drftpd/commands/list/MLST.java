@@ -113,7 +113,13 @@ public class MLST extends CommandInterface {
 		}
 
 		ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser(),_cManager);
-		container = ListUtils.list(dir, container);
+		
+		try {
+			container = ListUtils.list(dir, container);
+		} catch (IOException e) {
+			logger.error(e, e);
+			return new CommandResponse(450, e.getMessage());
+		}
 
 		for (InodeHandleInterface inode : container.getElements()) {
 			os.write(toMLST(inode) + LIST.NEWLINE);
