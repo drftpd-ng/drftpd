@@ -18,12 +18,12 @@ package org.drftpd.commands.prehook.permissions;
 
 import java.io.FileNotFoundException;
 
-import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.LinkHandle;
@@ -41,10 +41,10 @@ public class DenyDownload implements PreHookInterface {
 	}
 
 	public CommandRequestInterface doPermissionCheck(CommandRequest request) {
-
+		User user = request.getSession().getUserNull(request.getUser());
+		
 		try {
-			InodeHandle inode = request.getCurrentDirectory().getInodeHandle(
-					request.getArgument());
+			InodeHandle inode = request.getCurrentDirectory().getInodeHandle(request.getArgument(), user);
 
 			FileHandle file = null;
 			if (inode.isLink()) {

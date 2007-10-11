@@ -65,7 +65,7 @@ public class PlainSection implements SectionInterface {
 	@SuppressWarnings("unchecked")
 	public Set<DirectoryHandle> getDirectories() {
 		try {
-			return getBaseDirectory().getDirectories();
+			return getBaseDirectory().getDirectoriesUnchecked();
 		} catch (FileNotFoundException e) {
 			return Collections.EMPTY_SET;
 		}

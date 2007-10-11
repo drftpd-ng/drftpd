@@ -77,7 +77,7 @@ public class LinkCommands extends CommandInterface {
 				logger.warn("Invalid link in dir " + workingDir.getPath(),e2);
 			}
 			try {
-				dirs.addAll(workingDir.getDirectories());
+				dirs.addAll(workingDir.getDirectoriesUnchecked());
 			}
 			catch (FileNotFoundException e1) {
 				response.addComment("Error recursively listing: "+workingDir.getPath());

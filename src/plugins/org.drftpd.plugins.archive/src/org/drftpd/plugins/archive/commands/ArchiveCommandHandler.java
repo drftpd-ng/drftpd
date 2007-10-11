@@ -33,7 +33,6 @@ import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.Reply;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -42,6 +41,7 @@ import org.drftpd.plugins.archive.DuplicateArchiveException;
 import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
 import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -91,9 +91,10 @@ public class ArchiveCommandHandler extends CommandInterface {
         StringTokenizer st = new StringTokenizer(request.getArgument());
         String dirname = st.nextToken();
         DirectoryHandle dir;
+        User user = request.getSession().getUserNull(request.getUser());
 
         try {
-			dir = request.getCurrentDirectory().getDirectory(dirname);
+			dir = request.getCurrentDirectory().getDirectory(dirname, user);
 		} catch (FileNotFoundException e1) {
 			env.add("dirname", dirname);
 			response.addComment(request.getSession().jprintf(_bundle, env,

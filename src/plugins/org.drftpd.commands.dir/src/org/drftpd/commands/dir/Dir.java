@@ -97,9 +97,10 @@ public class Dir extends CommandInterface {
         }
 
         DirectoryHandle newCurrentDirectory = null;
+        User user = request.getSession().getUserNull(request.getUser());
         
         try {
-        	newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument());
+        	newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument(), user);
         } catch (FileNotFoundException ex) {
         	return new CommandResponse(550, ex.getMessage());
         } catch (ObjectNotValidException e) {
@@ -220,10 +221,11 @@ public class Dir extends CommandInterface {
     	String fileName = request.getArgument();
     	InodeHandle requestedFile;
     	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_250_ACTION_OKAY");
+    	User user = request.getSession().getUserNull(request.getUser());
 
     	try {
 
-    		requestedFile = request.getCurrentDirectory().getInodeHandle(fileName); 
+    		requestedFile = request.getCurrentDirectory().getInodeHandle(fileName, user); 
 
     		// Store the file being deleted in the response keyedmap
     		if (requestedFile.isFile()) {
@@ -232,7 +234,7 @@ public class Dir extends CommandInterface {
 
     		if (requestedFile.isDirectory()) {
     			DirectoryHandle victim = (DirectoryHandle) requestedFile;
-    			if (victim.getInodeHandles().size() != 0) {
+    			if (victim.getInodeHandlesUnchecked().size() != 0) {
     				return new CommandResponse(550, requestedFile.getPath()
     						+ ": Directory not empty");
     			}
@@ -293,9 +295,10 @@ public class Dir extends CommandInterface {
         // get filenames
         String fileName = request.getArgument();
         InodeHandle reqFile;
+        User user = request.getSession().getUserNull(request.getUser());
 
         try {
-            reqFile = request.getCurrentDirectory().getInodeHandle(fileName);
+            reqFile = request.getCurrentDirectory().getInodeHandle(fileName, user);
         } catch (FileNotFoundException ex) {
         	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
@@ -462,8 +465,9 @@ public class Dir extends CommandInterface {
         //String fileName = request.getArgument();
         //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
         //mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
+        User user = request.getSession().getUserNull(request.getUser());
         try {
-            request.getSession().setObject(RENAMEFROM, request.getCurrentDirectory().getInodeHandle(request.getArgument()));
+            request.getSession().setObject(RENAMEFROM, request.getCurrentDirectory().getInodeHandle(request.getArgument(), user));
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
@@ -503,15 +507,17 @@ public class Dir extends CommandInterface {
         }
         DirectoryHandle toDir = null;
         String newName = null;
+        User user = request.getSession().getUserNull(request.getUser());
+        
         try {
-			toDir = request.getCurrentDirectory().getDirectory(argument);
+			toDir = request.getCurrentDirectory().getDirectory(argument, user);
 	        // toDir exists and is a directory, so we're just changing the parent directory and not the name
 			newName = fromInode.getName();
         } catch (FileNotFoundException e) {
         	// Directory does not exist, that means they may have specified _renameFrom's new name
         	// as the last part of the argument
         	try {
-				toDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument));
+				toDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
 	        	newName = VirtualFileSystem.getLast(argument);
 			} catch (FileNotFoundException e1) {
 				// Destination doesn't exist
@@ -585,10 +591,11 @@ public class Dir extends CommandInterface {
         }
 
         CommandResponse response = new CommandResponse(200);
-
+        User user = request.getSession().getUserNull(request.getUser());
+        
         while (st.hasMoreTokens()) {
             try {
-                InodeHandle file = request.getCurrentDirectory().getInodeHandle(st.nextToken());
+                InodeHandle file = request.getCurrentDirectory().getInodeHandle(st.nextToken(), user);
 
                 if (owner != null) {
                     file.setUsername(owner);
@@ -622,7 +629,7 @@ public class Dir extends CommandInterface {
         String linkName = st.nextToken();
 
         try {
-            request.getCurrentDirectory().getInodeHandle(targetName); // checks if the inode exists.
+            request.getCurrentDirectory().getInodeHandleUnchecked(targetName); // checks if the inode exists.
             request.getCurrentDirectory().createLink(linkName,
 					targetName, request.getSession().getUserNull(request.getUser()).getName(),
 					request.getSession().getUserNull(request.getUser()).getGroup()); // create the link
@@ -687,12 +694,13 @@ public class Dir extends CommandInterface {
         }
 
         InodeHandle wipeFile;
+        User user = request.getSession().getUserNull(request.getUser());
 
         try {
-			wipeFile = request.getCurrentDirectory().getInodeHandle(arg);
+			wipeFile = request.getCurrentDirectory().getInodeHandle(arg, user);
 
 			if (wipeFile.isDirectory() && !recursive) {
-				if (((DirectoryHandle) wipeFile).getInodeHandles().size() != 0) {
+				if (((DirectoryHandle) wipeFile).getInodeHandlesUnchecked().size() != 0) {
 					return new CommandResponse(550, "Can't wipe, directory not empty");
 				}
 			}
@@ -725,9 +733,10 @@ public class Dir extends CommandInterface {
         }
 
         InodeHandle file;
+        User user = request.getSession().getUserNull(request.getUser());
 
         try {
-            file = request.getCurrentDirectory().getInodeHandle(request.getArgument());
+            file = request.getCurrentDirectory().getInodeHandle(request.getArgument(), user);
             return new CommandResponse(213, Long.toString(file.getSize()));
         } catch (FileNotFoundException ex) {
         	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
@@ -747,9 +756,10 @@ public class Dir extends CommandInterface {
 
         StringTokenizer st = new StringTokenizer(request.getArgument());
         FileHandle myFile;
+        User user = request.getSession().getUserNull(request.getUser());
 
         try {
-            myFile = request.getCurrentDirectory().getFile(st.nextToken());
+            myFile = request.getCurrentDirectory().getFile(st.nextToken(), user);
         } catch (FileNotFoundException e) {
         	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         } catch (ObjectNotValidException e) {

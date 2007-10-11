@@ -59,7 +59,7 @@ public class NukeUtils {
 
 	public static void nukeRemoveCredits(DirectoryHandle nukeDir,
 			Hashtable<String, Long> nukees) throws FileNotFoundException {
-		for (InodeHandle inode : nukeDir.getInodeHandles()) {
+		for (InodeHandle inode : nukeDir.getInodeHandlesUnchecked()) {
 
 			try {
 				if (inode.isDirectory()) {

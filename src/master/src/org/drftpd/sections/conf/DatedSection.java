@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.cron.TimeEventInterface;
-import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -181,13 +180,13 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		// create the directory
 		DirectoryHandle newDir = null;
 		try {
-			newDir = getBaseDirectory().getDirectory(dateDirName);
+			newDir = getBaseDirectory().getDirectoryUnchecked(dateDirName);
 		} catch (FileNotFoundException e) {
 			// this is good
 		} catch (ObjectNotValidException e) {
 			logger.error("There is already a non-Directory object in the place where the new dated directory should go, removing " + dateDirName + " from section " + getName());
 			try {
-				getBaseDirectory().getInodeHandle(dateDirName).deleteUnchecked();
+				getBaseDirectory().getInodeHandleUnchecked(dateDirName).deleteUnchecked();
 			} catch (FileNotFoundException e1) {
 				// this is good, although a little strange since it was just there a few milliseconds ago...
 			}
@@ -214,7 +213,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		DirectoryHandle root = getGlobalContext().getRoot();
 		LinkHandle link = null;
 		try {
-			link = root.getLink(linkName);
+			link = root.getLinkUnchecked(linkName);
 		} catch (FileNotFoundException e) {
 			// this is okay, the link was deleted, we will recreate it below
 		} catch (ObjectNotValidException e) {

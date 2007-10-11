@@ -44,6 +44,7 @@ import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.TransferState;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandleInterface;
@@ -314,22 +315,16 @@ public class LIST extends CommandInterface implements EventSubscriber {
 			}
 
 			DirectoryHandle directoryFile;
-			CommandResponse response = null;			
+			CommandResponse response = null;	
+			User user = request.getSession().getUserNull(request.getUser());
 
 			if (directoryName != null) {
 				try {
-					directoryFile = conn.getCurrentDirectory().getDirectory(
-							directoryName);
+					directoryFile = conn.getCurrentDirectory().getDirectory(directoryName, user);
 				} catch (FileNotFoundException ex) {
 					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 				} catch (ObjectNotValidException e) {
 					return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-				}
-
-				if (!GlobalContext.getConfig().checkPathPermission(
-						"privpath", conn.getUserNull(),
-						directoryFile.getParent(), true)) {
-					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 				}
 			} else {
 				directoryFile = conn.getCurrentDirectory();
@@ -362,7 +357,13 @@ public class LIST extends CommandInterface implements EventSubscriber {
 			logger.debug("Listing directoryFile - " + directoryFile);
 
 			ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser(), _cManager);
-			container = ListUtils.list(directoryFile, container);
+			
+			try {
+				container = ListUtils.list(directoryFile, container);
+			} catch (IOException e) {
+				logger.error(e , e);
+				return new CommandResponse(450, e.getMessage());
+			}
 
 			// execute list addons.
 			for (AddListElementsInterface listAddon : _listAddons) {

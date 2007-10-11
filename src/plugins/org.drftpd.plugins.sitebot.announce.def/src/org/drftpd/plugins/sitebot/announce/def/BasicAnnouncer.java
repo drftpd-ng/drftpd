@@ -501,7 +501,7 @@ public class BasicAnnouncer extends SFVTools implements AnnounceInterface, Event
 
 	private FileHandle getOldestFile(DirectoryHandle dir) throws FileNotFoundException {
 		TreeSet<FileHandle> files = new TreeSet<FileHandle>(new FileAgeComparator());
-		files.addAll(dir.getFiles());
+		files.addAll(dir.getFilesUnchecked());
 		return files.first();
 	}
 

@@ -451,7 +451,7 @@ public class Find extends CommandInterface {
 			return;
 		}
 
-		for (InodeHandle inode : dir.getInodeHandles()) {
+		for (InodeHandle inode : dir.getInodeHandles(user)) {
 			if (inode.isDirectory()) {
 				logger.debug("findFile("+inode.getPath()+")");
 				findFile(request, response, (DirectoryHandle) inode, options, actions, files, dirs);

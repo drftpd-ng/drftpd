@@ -54,6 +54,7 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferStatus;
+import org.drftpd.usermanager.User;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ListUtils;
@@ -397,11 +398,8 @@ public class DataConnectionHandler extends CommandInterface {
 									ts.getTransferFile()));
 				}
 				response.addComment("Using "
-						+ (ts.isLocalPreTransfer() ? "master:"
-								+ GlobalContext.getConfig()
-										.getPasvAddress() : ts
-								.getTransferSlave().getName()
-								+ ":" + ts.getTransferSlave().getPASVIP())
+						+ (ts.isLocalPreTransfer() ? "master" :
+							ts.getTransferSlave().getName()+ ":" + ts.getTransferSlave().getPASVIP())
 						+ " for upcoming transfer");
 			}
 
@@ -436,10 +434,12 @@ public class DataConnectionHandler extends CommandInterface {
         	throw new IllegalStateException("PRET was not called before setTransferFileFromPRETRequest()");
         }
 		String cmd = ghostRequest.getCommand();
+		User user = request.getSession().getUserNull(request.getUser());
+		
 		if (cmd.equals("RETR")) {
 			FileHandle file = null;
 			try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
+				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
 			} catch (FileNotFoundException e) {
 				reset(conn);
 				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
@@ -452,7 +452,7 @@ public class DataConnectionHandler extends CommandInterface {
 		} else if (cmd.equals("STOR")) {
 			FileHandle file = null;
 			try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument());
+				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
 			} catch (FileNotFoundException e) {
 				// this is good, do nothing
 				// should be null already, but just for my (current) sanity
@@ -837,6 +837,8 @@ public class DataConnectionHandler extends CommandInterface {
         	reset(conn);
         	return new CommandResponse(530, "USE SECURE DATA CONNECTION");
         }
+        
+        User user = request.getSession().getUserNull(request.getUser());
 
         try {
             String cmd = request.getCommand();
@@ -882,7 +884,7 @@ public class DataConnectionHandler extends CommandInterface {
             	if (ts.getTransferFile() == null) {
 					try {
 						ts.setTransferFile(conn.getCurrentDirectory().getFile(
-								request.getArgument()));
+								request.getArgument(), user));
 					} catch (FileNotFoundException e) {
 						return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 					} catch (ObjectNotValidException e) {
@@ -1053,7 +1055,7 @@ public class DataConnectionHandler extends CommandInterface {
                 		ts.setTransferFile(fh.getParent().createFile(conn.getUserNull(), fh.getName(), ts.getTransferSlave()));
                 	} else { // ts.isPort()
                 		try {
-            				fh = conn.getCurrentDirectory().getFile(conn.getRequest().getArgument());
+            				fh = conn.getCurrentDirectory().getFile(conn.getRequest().getArgument(), user);
             			} catch (FileNotFoundException e) {
             				// this is good, do nothing
             				// should be null already, but just for my (current) sanity

@@ -71,6 +71,8 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 			dir = this.getParent();
 		}
 		
+		checkHiddenPath(this, user);
+		
 		boolean allowed = false;
 		if (user.getName().equals(getUsername())) {
 			if (!getVFSPermissions().checkPathPermission("deleteown", user, dir)) {
@@ -159,8 +161,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	 */
 	public DirectoryHandle getParent() {
 		if (_path.equals(VirtualFileSystem.separator)) {
-			throw new IllegalStateException(
-					"Can't get the parent of the root directory");
+			throw new IllegalStateException("Can't get the parent of the root directory");
 		}
 		return new DirectoryHandle(VirtualFileSystem.stripLast(getPath()));
 	}
@@ -242,6 +243,9 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 			dir = this.getParent();
 		}
 		
+		checkHiddenPath(this, user); // checking the current inode.
+		checkHiddenPath(toInode, user); // also check the destination inode.
+		
 		boolean allowed = false;
 		if (user.getName().equals(getUsername())) {
 			if (!getVFSPermissions().checkPathPermission("renameown", user, dir)) {
@@ -306,7 +310,24 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		getInode().setLastModified(l);
 	}
 	
-	protected VFSPermissions getVFSPermissions() {
+	protected static VFSPermissions getVFSPermissions() {
 		return GlobalContext.getConfig().getVFSPermissions();
+	}
+	
+	protected static void checkHiddenPath(InodeHandle inode, User user) throws FileNotFoundException {
+		logger.debug("Checking hidden path for: '"+ inode.getPath() + "' / user: '"+ user.getName()+"@"+user.getGroup()+"'");
+		
+		if (user == null) {
+			throw new FileNotFoundException("User cannot be null");
+		}
+		
+		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle) inode : inode.getParent();
+		
+		if (getVFSPermissions().checkPathPermission("privpath", user, dir)) {
+			logger.debug("'"+ inode.getPath() + "' is hidden for '"+ user.getName()+"@"+user.getGroup()+"'");
+			throw new FileNotFoundException(dir.getPath() + " does not exist");
+		}
+		
+		logger.debug("'"+ inode.getPath() + "' is not hidden for '"+ user.getName()+"@"+user.getGroup()+"'");
 	}
 }

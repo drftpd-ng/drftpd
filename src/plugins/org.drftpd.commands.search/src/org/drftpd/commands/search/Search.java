@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -44,11 +43,7 @@ public class Search extends CommandInterface {
     private static void findFile(CommandResponse response, DirectoryHandle dir, ArrayList<String> searchStrings, User user, boolean files, boolean dirs) 
     	throws FileNotFoundException {
 
-    	if (!GlobalContext.getConfig().checkPathPermission("privpath", user, dir, true)) {
-            return; // could not search this dir as it is private.
-        }
-
-    	for (InodeHandle inode : dir.getInodeHandles()) {    		
+    	for (InodeHandle inode : dir.getInodeHandles(user)) {    		
             if (inode.isDirectory()) { //recursive search.            	
                 findFile(response, (DirectoryHandle) inode, searchStrings, user, files, dirs);
             }

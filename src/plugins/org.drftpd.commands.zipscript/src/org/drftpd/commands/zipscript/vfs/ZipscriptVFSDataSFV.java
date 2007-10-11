@@ -51,7 +51,7 @@ public class ZipscriptVFSDataSFV {
 		try {
 			SFVInfo sfvInfo = getSFVInfoFromInode(_dir.getInode());
 			try {
-				FileHandle sfvFile = _dir.getFile(sfvInfo.getSFVFileName());
+				FileHandle sfvFile = _dir.getFileUnchecked(sfvInfo.getSFVFileName());
 				if (sfvFile.exists()) {
 					if (sfvFile.getCheckSum() == sfvInfo.getChecksum()) {
 						// 	passed all tests
@@ -70,7 +70,7 @@ public class ZipscriptVFSDataSFV {
 			removeSFVInfo();
 		}
 
-		for (FileHandle file : _dir.getFiles()) {
+		for (FileHandle file : _dir.getFilesUnchecked()) {
 			if (file.getName().toLowerCase().endsWith(".sfv")) {
 				while (true) {
 					SFVInfo info = null;
@@ -99,7 +99,7 @@ public class ZipscriptVFSDataSFV {
 		int present = 0;
 		SFVInfo sfvInfo = getSFVInfo();
 		CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
-		for (FileHandle file : _dir.getFiles()) {
+		for (FileHandle file : _dir.getFilesUnchecked()) {
 			if (file.isFile() && sfvEntries.containsKey(file.getName())) {
 				if (!file.isUploading()) {
 					present++;

@@ -137,7 +137,7 @@ public class ZipscriptCommands extends CommandInterface implements EventSubscrib
 			session.printOutput(200,"Rescanning: "+workingDir.getPath());
 			if (recursive) {
 				try {
-					dirs.addAll(workingDir.getDirectories());
+					dirs.addAll(workingDir.getDirectories(request.getSession().getUserNull(request.getUser())));
 				} catch (FileNotFoundException e1) {
 					session.printOutput(200,"Error recursively listing: "+workingDir.getPath());
 				}

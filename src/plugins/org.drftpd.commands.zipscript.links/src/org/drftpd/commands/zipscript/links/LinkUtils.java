@@ -85,7 +85,7 @@ public class LinkUtils {
 		}
 		else if (mode.equals("delete")) {
 			try {
-				InodeHandle link = targetDir.getInodeHandle(linkName);
+				InodeHandle link = targetDir.getInodeHandleUnchecked(linkName);
 				if (link.isLink()) {
 					link.deleteUnchecked();
 				}

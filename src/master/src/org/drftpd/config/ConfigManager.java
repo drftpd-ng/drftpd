@@ -66,14 +66,11 @@ public class ConfigManager implements ConfigInterface {
 	private KeyedMap<Key, Object> _keyedMap;
 	private Properties _mainCfg;
 	
-	// private Hashtable<String, ArrayList<PathPermission>> _pathPerms;
-	// private Hashtable<String, Permission> _permissions;
-	
 	private VFSPermissions _vfsPerms;
 	
 	private ArrayList<InetAddress> _bouncerIps;
 	private String _loginPrompt = Slave.VERSION + " http://drftpd.org";
-	private String _pasvAddr;
+	private String _pasvAddr = null;
 	private PortRange _portRange = new PortRange(0); 
 	private boolean _hideIps = true;
 	
@@ -365,7 +362,8 @@ public class ConfigManager implements ConfigInterface {
 	}
 
 	public String getPasvAddress() throws NullPointerException {
-		if (_pasvAddr == null) throw new NullPointerException("pasv_addr not configured");
+		if (_pasvAddr == null) 
+			throw new NullPointerException("pasv_addr not configured");
 		return _pasvAddr;
 	}
 

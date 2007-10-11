@@ -64,7 +64,7 @@ public class ConstantMirroring extends ArchiveType {
 
     protected boolean isArchivedDir(DirectoryHandle lrf)
     throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-    	for (FileHandle src : lrf.getFiles()) {
+    	for (FileHandle src : lrf.getFilesUnchecked()) {
 
     		Collection<RemoteSlave> slaves;
 
@@ -97,7 +97,7 @@ public class ConstantMirroring extends ArchiveType {
     		}
 
     	}
-    	for (DirectoryHandle dir : lrf.getDirectories()) {
+    	for (DirectoryHandle dir : lrf.getDirectoriesUnchecked()) {
     		if (!isArchivedDir(dir)) {
     			return false;
     		}

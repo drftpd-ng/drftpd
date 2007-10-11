@@ -75,7 +75,7 @@ class DummySection implements SectionInterface {
 
 	public Set<DirectoryHandle> getDirectories() {
 		try {
-			return new DirectoryHandle("/").getDirectories();
+			return new DirectoryHandle("/").getDirectoriesUnchecked();
 		} catch (FileNotFoundException e) {
 			throw new FatalException(e);
 		}

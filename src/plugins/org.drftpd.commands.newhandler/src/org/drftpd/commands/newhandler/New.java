@@ -38,6 +38,7 @@ import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -115,12 +116,14 @@ public class New extends CommandInterface {
 				sections.remove(s);
 			}
 		}
+		
+		User user = request.getSession().getUserNull(request.getUser());
 
 		// Collect all dirs from all sections
 		ArrayList<DirectoryHandle> directories = new ArrayList<DirectoryHandle>();
 		for (SectionInterface section : sections.values()) {
 			try {
-				directories.addAll(section.getBaseDirectory().getDirectories());
+				directories.addAll(section.getBaseDirectory().getDirectories(user));
 			} catch (FileNotFoundException e) {
 				logger.error("The directory was just there! How come it's gone?", e);
 			}
@@ -144,7 +147,7 @@ public class New extends CommandInterface {
 				env.add("pos", "" + pos);
 				env.add("name", allSections ? dir.getPath() : dir.getName());
 				env.add("diruser", dir.getUsername());
-				env.add("files", "" + dir.getInodeHandles().size());
+				env.add("files", "" + dir.getInodeHandles(user).size());
 				env.add("size", Bytes.formatBytes(dir.getSize()));
 				env.add("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
 				response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new", env, request.getUser()));

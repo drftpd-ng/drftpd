@@ -97,10 +97,11 @@ public class Nuke extends CommandInterface {
         DirectoryHandle currentDir = request.getCurrentDirectory();
         DirectoryHandle nukeDir = null;
         String nukeDirName = "";
+        User requestUser = request.getSession().getUserNull(request.getUser());
 
         try {
             nukeDirName = st.nextToken();
-            nukeDir = currentDir.getDirectory(nukeDirName);
+            nukeDir = currentDir.getDirectory(nukeDirName, requestUser);
         } catch (FileNotFoundException e) {
             return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         } catch (ObjectNotValidException e) {
@@ -218,9 +219,8 @@ public class Nuke extends CommandInterface {
         
         try {
             nukeDir.renameToUnchecked(nukeDir.getNonExistentDirectoryHandle(toFullPath)); // rename.
-            nukeDir = currentDir.getDirectory(toFullPath);
-            nukeDir.createDirectoryUnchecked("REASON-" + reason, request.getUser(),
-            		request.getSession().getUserNull(request.getUser()).getGroup());
+            nukeDir = currentDir.getDirectory(toFullPath, requestUser);
+            nukeDir.createDirectoryUnchecked("REASON-" + reason, request.getUser(),requestUser.getGroup());
         } catch (IOException ex) {
             logger.warn(ex, ex);
             CommandResponse r = new CommandResponse(500, "Nuke failed!");
@@ -303,9 +303,10 @@ public class Nuke extends CommandInterface {
         }
 
         DirectoryHandle nukeDir = null;
+        User user = request.getSession().getUserNull(request.getUser());
 
         try {
-            nukeDir = currentDir.getDirectory(nukeName);
+            nukeDir = currentDir.getDirectory(nukeName, user);
         } catch (FileNotFoundException e) {
             return new CommandResponse(200,  nukeName + " doesn't exist: " + e.getMessage());
         } catch (ObjectNotValidException e) {
@@ -327,7 +328,7 @@ public class Nuke extends CommandInterface {
 
         try {
             nukeDir.renameToUnchecked(nukeDir.getNonExistentDirectoryHandle(toDir+"/"+toName));
-            nukeDir = currentDir.getDirectory(toDir+"/"+toName); //updating reference.
+            nukeDir = currentDir.getDirectory(toDir+"/"+toName, user); //updating reference.
         } catch (FileExistsException e) {
             response.addComment("Error renaming nuke, target dir already exists");
             return response;
@@ -374,10 +375,10 @@ public class Nuke extends CommandInterface {
         } catch (ObjectNotFoundException e) {
             response.addComment("Error removing nukelog entry, unnuking anyway.");
         }
-        
+
         try {
             DirectoryHandle reasonDir = nukeDir.getDirectory("REASON-" +
-                    nukeData.getReason());
+                    nukeData.getReason(), user);
 
             if (reasonDir.isDirectory()) {
                 reasonDir.deleteUnchecked();

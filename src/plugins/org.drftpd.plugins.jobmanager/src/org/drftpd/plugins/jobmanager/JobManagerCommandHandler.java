@@ -23,7 +23,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -34,7 +33,7 @@ import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.ReplyException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.tools.installer.PluginBuilder;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -50,8 +49,6 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
-	
-	private static final Logger logger = Logger.getLogger(JobManagerCommandHandler.class);
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -82,11 +79,12 @@ public class JobManagerCommandHandler extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
 		StringTokenizer st = new StringTokenizer(request.getArgument());
+		User user = request.getSession().getUserNull(request.getUser());
 		FileHandle lrf;
 
 		try {
 			try {
-				lrf = request.getCurrentDirectory().getFile(st.nextToken());
+				lrf = request.getCurrentDirectory().getFile(st.nextToken(), user);
 			} catch (ObjectNotValidException e) {
 				throw new ImproperUsageException(
 						"addjob does not handle directories or links");

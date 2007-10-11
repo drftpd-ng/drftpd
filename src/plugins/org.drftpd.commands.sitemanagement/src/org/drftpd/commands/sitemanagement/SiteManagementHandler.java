@@ -43,6 +43,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.java.plugin.JpfException;
@@ -68,9 +69,11 @@ public class SiteManagementHandler extends CommandInterface {
 		
 		DirectoryHandle dir = request.getCurrentDirectory();
 		InodeHandle target;
+		User user = request.getSession().getUserNull(request.getUser());
+		
 		if (request.hasArgument()) {
 			try {
-				target = dir.getInodeHandle(request.getArgument());
+				target = dir.getInodeHandle(request.getArgument(), user);
 			} catch (FileNotFoundException e) {
 				logger.debug("FileNotFound", e);
 				return new CommandResponse(200, e.getMessage());
@@ -84,7 +87,7 @@ public class SiteManagementHandler extends CommandInterface {
 			if (target.isFile()) {
 				inodes = Collections.singletonList((InodeHandle)dir);
 			} else {
-				inodes = new ArrayList<InodeHandle>(dir.getInodeHandles());
+				inodes = new ArrayList<InodeHandle>(dir.getInodeHandles(user));
 			}
 			Collections.sort(inodes);
 

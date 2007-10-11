@@ -36,6 +36,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandleInterface;
@@ -72,10 +73,11 @@ public class MLST extends CommandInterface {
 
 	private CommandResponse doMLSTandMLSD(CommandRequest request, boolean isMlst) {
 		DirectoryHandle dir = request.getCurrentDirectory();
-
+		User user = request.getSession().getUserNull(request.getUser());
+		
 		if (request.hasArgument()) {
 			try {
-				dir = dir.getDirectory((request.getArgument()));
+				dir = dir.getDirectory(request.getArgument(), user);
 			} catch (FileNotFoundException e) {
 				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 			}  catch (ObjectNotValidException e) {

@@ -98,7 +98,7 @@ public abstract class ArchiveType {
 
 		try {
 			for (Iterator<DirectoryHandle> iter = getSection()
-					.getCurrentDirectory().getDirectories().iterator(); iter
+					.getCurrentDirectory().getDirectoriesUnchecked().iterator(); iter
 					.hasNext();) {
 				DirectoryHandle lrf = iter.next();
 				try {
@@ -203,11 +203,11 @@ public abstract class ArchiveType {
 			throws FileNotFoundException {
 		ArrayList<Job> jobQueue = new ArrayList<Job>();
 
-		for (Iterator<DirectoryHandle> iter = lrf.getDirectories().iterator(); iter
+		for (Iterator<DirectoryHandle> iter = lrf.getDirectoriesUnchecked().iterator(); iter
 				.hasNext();) {
 			jobQueue.addAll(recursiveSend(iter.next()));
 		}
-		for (Iterator<FileHandle> iter = lrf.getFiles().iterator(); iter
+		for (Iterator<FileHandle> iter = lrf.getFilesUnchecked().iterator(); iter
 				.hasNext();) {
 			FileHandle file = iter.next();
 			logger.info("Adding " + file.getPath() + " to the job queue");
@@ -224,8 +224,8 @@ public abstract class ArchiveType {
 		Set<DirectoryHandle> directories = null;
 		Set<FileHandle> files = null;
 		try {
-			directories = lrf.getDirectories();
-			files = lrf.getFiles();
+			directories = lrf.getDirectoriesUnchecked();
+			files = lrf.getFilesUnchecked();
 		} catch (FileNotFoundException e1) {
 			// directory doesn't exist, no files to archive
 			return true;

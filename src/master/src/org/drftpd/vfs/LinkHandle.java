@@ -47,11 +47,11 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 
 	public DirectoryHandle getTargetDirectory() throws FileNotFoundException,
 			ObjectNotValidException {
-		return getParent().getDirectory(getInode().getLinkPath());
+		return getParent().getDirectoryUnchecked(getInode().getLinkPath());
 	}
 	
 	public FileHandle getTargetFile() throws FileNotFoundException, ObjectNotValidException {
-		return getParent().getFile(getInode().getLinkPath());
+		return getParent().getFileUnchecked(getInode().getLinkPath());
 	}
 	
 	public String getTargetString() throws FileNotFoundException {

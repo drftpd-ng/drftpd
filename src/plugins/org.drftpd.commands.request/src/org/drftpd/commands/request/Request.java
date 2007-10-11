@@ -77,7 +77,7 @@ public class Request extends CommandInterface {
 		env.add("ftpuser", request.getUser());
 		env.add("fdirname", reqname);
 		try {
-			for (DirectoryHandle dir : currdir.getDirectories()) {
+			for (DirectoryHandle dir : currdir.getDirectoriesUnchecked()) {
 
 				if (!dir.getName().startsWith(REQPREFIX)) {
 					continue;
@@ -216,8 +216,11 @@ public class Request extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.header", env, request.getUser()));
 		int i = 1;
+		
+		User user = request.getSession().getUserNull(request.getUser());
+		
 		try {
-			for (DirectoryHandle dir : new DirectoryHandle(requestDirProp).getDirectories()) {
+			for (DirectoryHandle dir : new DirectoryHandle(requestDirProp).getDirectories(user)) {
 				if (!dir.getName().startsWith(REQPREFIX)) {
 					continue;
 				}
@@ -265,8 +268,9 @@ public class Request extends CommandInterface {
 			logger.warn("Error loading userfile for "+request.getUser(),e);
 			return response;
 		}
+		
 		try {
-			for (DirectoryHandle dir : currdir.getDirectories()) {
+			for (DirectoryHandle dir : currdir.getDirectories(user)) {
 				if (dir.getName().endsWith(reqname)) {
 					nodir = false;
 					if (dir.getUsername().equals(request.getUser()) || user.isAdmin()) {

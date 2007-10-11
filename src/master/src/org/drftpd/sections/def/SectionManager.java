@@ -53,7 +53,7 @@ public class SectionManager implements SectionManagerInterface {
 		try {
 			try {
 				return new Section(getGlobalContext().getRoot()
-						.getDirectory(name));
+						.getDirectoryUnchecked(name));
 			} catch (ObjectNotValidException e) {
 				logger.error("Section defined " + name + " is not a file");
 				return new Section(getGlobalContext().getRoot());
@@ -73,7 +73,7 @@ public class SectionManager implements SectionManagerInterface {
 
 		try {
 			for (Iterator<DirectoryHandle> iter = getGlobalContext().getRoot()
-					.getDirectories().iterator(); iter.hasNext();) {
+					.getDirectoriesUnchecked().iterator(); iter.hasNext();) {
 				sections.add(new Section(iter.next()));
 			}
 		} catch (FileNotFoundException e) {
@@ -115,7 +115,7 @@ public class SectionManager implements SectionManagerInterface {
 		@SuppressWarnings("unchecked")
 		public Set<DirectoryHandle> getDirectories() {
 			try {
-				return _lrf.getDirectories();
+				return _lrf.getDirectoriesUnchecked();
 			} catch (FileNotFoundException e) {
 				return Collections.EMPTY_SET;
 			}
@@ -143,7 +143,7 @@ public class SectionManager implements SectionManagerInterface {
 		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
 		
 		try {
-			for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectories()) {
+			for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectoriesUnchecked()) {
 				sections.put(dir.getName(), new Section(dir));
 			}
 		} catch (FileNotFoundException e) {
