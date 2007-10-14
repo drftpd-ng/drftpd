@@ -183,14 +183,10 @@ public class UserManagementHandler extends CommandInterface {
 	 *
 	 * @throws ImproperUsageException
 	 */
-	public CommandResponse doSITE_ADDUSER(CommandRequest request)
+	public CommandResponse doGenericAddUser(boolean isGAdduser, CommandRequest request)
 			throws ImproperUsageException {
 
 		Session session = request.getSession();
-		/* TODO: This will need to be implemented differently to allow
-		 * for other frontends.
-		 */
-		boolean isGAdduser = request.getCommand().equals("SITE GADDUSER");
 
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
@@ -335,6 +331,14 @@ public class UserManagementHandler extends CommandInterface {
 		newUser.commit();
 
 		return response;
+	}
+	
+	public CommandResponse doSITE_ADDUSER(CommandRequest request) throws ImproperUsageException {
+		return doGenericAddUser(false, request);
+	}
+	
+	public CommandResponse doSITE_GADDUSER(CommandRequest request) throws ImproperUsageException {
+		return doGenericAddUser(true, request);
 	}
 
 	/**
