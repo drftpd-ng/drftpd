@@ -107,99 +107,10 @@ public class Dir extends CommandInterface {
         	return new CommandResponse(550, request.getArgument() + ": is not a directory");
 		}
 
-        /*	TODO this should be reimplemented as part of the port
-         * of permissions to pre hooks.
-         */
-        /*if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), newCurrentDirectory, true)) {
-            return new Reply(550, request.getArgument() + ": Not found");
-
-            // reply identical to FileNotFoundException.getMessage() above
-        }*/
-
         CommandResponse response = new CommandResponse(250,
                 "Directory changed to " + newCurrentDirectory.getPath(),
                 newCurrentDirectory, request.getUser());
 
-        /* TODO Since we aren't using conn for anything else at the moment
-         * it would be preferable to not restrict this to FTP frontend only
-         * , browsing a directory structure may well be a useful feature
-         * for another frontend
-         */
-        //GlobalContext.getGlobalContext().getConfig().directoryMessage(response,
-        //  request.getUser() == null ? null : GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(request.getUser()),
-        //		  newCurrentDirectory);
-
-        // diz,mp3,racestats will all be hooked externally in the new commandhandlers
-        // show cwd_mp3.txt if this is an mp3 release
-/*        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
-        if (conn.getGlobalContext().getZsConfig().id3Enabled()) {
-            try {
-                ID3Tag id3tag = newCurrentDirectory.lookupFile(newCurrentDirectory.lookupMP3File())
-                                                   .getID3v1Tag();
-                String mp3text = bundle.getString("cwd.id3info.text");
-                ReplacerEnvironment env = BaseFtpConnection.getReplacerEnvironment(null,
-                        conn.getUserNull());
-                ReplacerFormat id3format = null;
-
-                try {
-                    id3format = ReplacerFormat.createFormat(mp3text);
-                } catch (FormatterException e1) {
-                    logger.warn(e1);
-                }
-
-                env.add("artist", id3tag.getArtist().trim());
-                env.add("album", id3tag.getAlbum().trim());
-                env.add("genre", id3tag.getGenre());
-                env.add("year", id3tag.getYear());
-
-                try {
-                    if (id3format == null) {
-                        response.addComment("broken 1");
-                    } else {
-                        response.addComment(SimplePrintf.jprintf(id3format, env));
-                    }
-                } catch (FormatterException e) {
-                    response.addComment("broken 2");
-                    logger.warn("", e);
-                }
-            } catch (FileNotFoundException e) {
-                // no mp3 found
-                //logger.warn("",e);
-            } catch (IOException e) {
-                logger.warn("", e);
-            } catch (NoAvailableSlaveException e) {
-                logger.warn("", e);
-            }
-        }
-        // diz files
-		if (conn.getGlobalContext().getZsConfig().dizEnabled()) {
-			if (DIZPlugin.zipFilesOnline(newCurrentDirectory) > 0) {
-				try {
-					DIZFile diz = new DIZFile(DIZPlugin
-							.getZipFile(newCurrentDirectory));
-
-					ReplacerFormat format = null;
-					ReplacerEnvironment env = BaseFtpConnection
-							.getReplacerEnvironment(null, conn.getUserNull());
-
-					if (diz.getDiz() != null) {
-						try {
-							format = ReplacerFormat.createFormat(diz.getDiz());
-							response.addComment(SimplePrintf.jprintf(format,
-									env));
-						} catch (FormatterException e) {
-							logger.warn(e);
-						}
-					}
-				} catch (FileNotFoundException e) {
-					// do nothing, continue on
-				} catch (NoAvailableSlaveException e) {
-					// do nothing, continue on
-				}
-			}
-		}
-
-*/
         return response;
     }
 
@@ -234,13 +145,10 @@ public class Dir extends CommandInterface {
 
     		if (requestedFile.isDirectory()) {
     			DirectoryHandle victim = (DirectoryHandle) requestedFile;
-    			if (victim.isEmpty(user)) {
-    				return new CommandResponse(550, requestedFile.getPath()
-    						+ ": Directory not empty");
+    			if (!victim.isEmpty(user)) {
+    				return new CommandResponse(550, requestedFile.getPath()+ ": Directory not empty");
     			}
     		}
-			
-    		requestedFile.delete(user);
 
     		User uploader;
 
@@ -267,8 +175,10 @@ public class Dir extends CommandInterface {
     			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
     					request.getSession().getUserNull(request.getUser()), "RMD", (DirectoryHandle)requestedFile));
     		}
+    		
+    		requestedFile.delete(user); // the file is only deleted here.
     	} catch (FileNotFoundException e) {
-    		// good! we're done :)
+    		// that's not good, the file vanished before the operation was finished.
     		return new CommandResponse(550, e.getMessage());
     	} catch (PermissionDeniedException e) {
     		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -391,51 +301,7 @@ public class Dir extends CommandInterface {
      */
     public CommandResponse doRMD(CommandRequest request) {
     	return doDELE(request);
-    	// strange, the ftp rfc says it is exactly equal to DELE, we allow DELE to delete files
-    	// that might be wrong, but saves me from writing this method...
-/*        FtpRequest request = conn.getRequest();
-
-        // argument check
-        if (!request.hasArgument()) {
-            return Reply.RESPONSE_501_SYNTAX_ERROR;
-        }
-
-        // get file names
-        String fileName = request.getArgument();
-        LinkedRemoteFile requestedFile;
-
-        try {
-            requestedFile = conn.getCurrentDirectory().lookupFile(fileName);
-        } catch (FileNotFoundException e) {
-            return new Reply(550, fileName + ": " + e.getMessage());
-        }
-
-        if (requestedFile.getUsername().equals(conn.getUserNull().getName())) {
-            if (!conn.getGlobalContext().getConfig().checkPathPermission("deleteown", conn.getUserNull(), requestedFile)) {
-                return Reply.RESPONSE_530_ACCESS_DENIED;
-            }
-        } else if (!conn.getGlobalContext().getConfig().checkPathPermission("delete", conn.getUserNull(), requestedFile)) {
-            return Reply.RESPONSE_530_ACCESS_DENIED;
-        }
-
-        if (!requestedFile.isDirectory()) {
-            return new Reply(550, fileName + ": Not a directory");
-        }
-
-        if (requestedFile.dirSize() != 0) {
-            return new Reply(550, fileName + ": Directory not empty");
-        }
-
-        // now delete
-        //if (conn.getConfig().checkDirLog(conn.getUserNull(), requestedFile)) {
-        conn.getGlobalContext().dispatchFtpEvent(new DirectoryFtpEvent(
-                conn.getUserNull(), "RMD", requestedFile));
-
-        //}
-        requestedFile.delete();
-
-        return Reply.RESPONSE_250_ACTION_OKAY;
-*/    }
+    }
 
     /**
      * <code>RNFR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
