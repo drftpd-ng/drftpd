@@ -82,6 +82,7 @@ public class VirtualFileSystem {
 
 	/**
 	 * Singleton method.
+	 * 
 	 * @return a VirtualFileSystem object, core of the FS.
 	 */
 	public static VirtualFileSystem getVirtualFileSystem() {
@@ -112,9 +113,11 @@ public class VirtualFileSystem {
 
 	/**
 	 * Create a VirtualFileSystem object, creating or not a new directory tree.
-	 * If there's a pre-existing tree, it loads the data, if not, it creates a new one.<br>
+	 * If there's a pre-existing tree, it loads the data, if not, it creates a
+	 * new one.<br>
 	 * 
-	 * <br>This constructor is private due to the Singleton architecture.
+	 * <br>
+	 * This constructor is private due to the Singleton architecture.
 	 */
 	private VirtualFileSystem() {
 		new File(fileSystemPath).mkdirs();
@@ -134,8 +137,9 @@ public class VirtualFileSystem {
 	}
 
 	/**
-	 * Deletes a directory or a file from the dir tree, deleting
-	 * data from the disk also.
+	 * Deletes a directory or a file from the dir tree, deleting data from the
+	 * disk also.
+	 * 
 	 * @param path
 	 */
 	protected void deleteInode(String path) {
@@ -148,7 +152,8 @@ public class VirtualFileSystem {
 	 * 
 	 * @param path
 	 * @return the requested Inode, if it exists.
-	 * @throws FileNotFoundException if the inode doesnt exist.
+	 * @throws FileNotFoundException
+	 *             if the inode doesnt exist.
 	 */
 	protected VirtualFileSystemInode getInodeByPath(String path)
 			throws FileNotFoundException {
@@ -181,7 +186,7 @@ public class VirtualFileSystem {
 	/**
 	 * @param path
 	 * @return the real path of the file on the disk.<br>
-	 * Ex: getRealPath('PICS/me.jpg') would return 'files/PICS/me.jpg'
+	 *         Ex: getRealPath('PICS/me.jpg') would return 'files/PICS/me.jpg'
 	 */
 	private String getRealPath(String path) {
 		return fileSystemPath + path;
@@ -216,7 +221,8 @@ public class VirtualFileSystem {
 			xmlDec.setExceptionListener(new VFSExceptionListener());
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
+			PluginClassLoader loader = manager.getPluginClassLoader((manager
+					.getPluginFor(this)).getDescriptor());
 			Thread.currentThread().setContextClassLoader(loader);
 			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec
 					.readObject();
@@ -243,9 +249,10 @@ public class VirtualFileSystem {
 	}
 
 	/**
-	 * If 'file' is a directory, it recurses through it and deletes,
-	 * everything inside it.<br>
+	 * If 'file' is a directory, it recurses through it and deletes, everything
+	 * inside it.<br>
 	 * If 'file' is an actual file, it simply deletes it.
+	 * 
 	 * @param file
 	 */
 	private void recursiveDelete(File file) {
@@ -263,10 +270,13 @@ public class VirtualFileSystem {
 
 	/**
 	 * Rename the file/directory.
+	 * 
 	 * @param source
 	 * @param destination
-	 * @throws FileNotFoundException if there's no such file/dir.
-	 * @throws PermissionDeniedException if there's no permission to rename.
+	 * @throws FileNotFoundException
+	 *             if there's no such file/dir.
+	 * @throws PermissionDeniedException
+	 *             if there's no permission to rename.
 	 */
 	protected void renameInode(String source, String destination)
 			throws FileNotFoundException, PermissionDeniedException {
@@ -283,17 +293,22 @@ public class VirtualFileSystem {
 
 	/**
 	 * Write the Inode data to the disk.
+	 * 
 	 * @param inode
 	 */
 	protected void writeInode(VirtualFileSystemInode inode) {
 		String fullPath = getRealPath(inode.getPath());
-		if (inode.isDirectory()) {
-			new File(fullPath).mkdirs();
-			fullPath = fullPath + separator + dirName;
-		}
 		XMLEncoder enc = null;
-		new File(fileSystemPath).mkdirs();
 		try {
+			if (inode instanceof VirtualFileSystemRoot) {
+				new File(fileSystemPath).mkdirs();
+				fullPath = fullPath + separator + dirName;
+			} else if (inode.isDirectory()) {
+				new File(fullPath).mkdirs();
+				fullPath = fullPath + separator + dirName;
+			} else {
+				new File(getRealPath(inode.getParent().getPath())).mkdirs();
+			}
 			enc = new XMLEncoder(new BufferedOutputStream(
 					new SafeFileOutputStream(fullPath)));
 			inode.setupXML(enc);

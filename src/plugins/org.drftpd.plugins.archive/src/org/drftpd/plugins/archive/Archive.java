@@ -98,7 +98,7 @@ public class Archive implements EventSubscriber, PluginInterface {
 		return _cycleTime;
 	}
 
-	public void reload() {
+	private void reload() {
 		_props = GlobalContext.getGlobalContext().getPluginsConfig()
 				.getPropertiesForPlugin("archive.conf");
 		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,

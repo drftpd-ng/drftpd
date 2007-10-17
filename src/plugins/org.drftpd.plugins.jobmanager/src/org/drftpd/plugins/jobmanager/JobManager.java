@@ -254,7 +254,7 @@ public class JobManager implements PluginInterface, EventSubscriber {
 		return GlobalContext.getGlobalContext();
 	}
 
-	public void reload() {
+	private void reload() {
 		Properties p = GlobalContext.getGlobalContext().getPluginsConfig()
 				.getPropertiesForPlugin("jobmanager.conf");
 		_useCRC = p.getProperty("useCRC", "true").equals("true");

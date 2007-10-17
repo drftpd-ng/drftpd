@@ -63,7 +63,7 @@ public class BeanUser extends AbstractUser {
 	}
 
 	public void commit() {
-		CommitManager.add(this);
+		CommitManager.getCommitManager().add(this);
 	}
 
 	public void purge() {

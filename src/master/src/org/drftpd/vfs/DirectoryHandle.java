@@ -216,7 +216,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @return a set containing only the offline files of this dir.
 	 * @throws FileNotFoundException
 	 */
-	public Set<FileHandle> getOfflineFiles() throws FileNotFoundException {
+	private Set<FileHandle> getOfflineFiles() throws FileNotFoundException {
 		Set<FileHandle> allFiles = getFilesUnchecked();
 		Set<FileHandle> offlineFiles = new HashSet<FileHandle>(allFiles.size());
 		

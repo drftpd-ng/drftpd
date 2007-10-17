@@ -38,83 +38,74 @@ import org.java.plugin.PluginManager;
 public class CommitManager {
 
 	private static final Logger logger = Logger.getLogger(CommitManager.class);
-	
-	private static Map<User, Date> _commitUser = null;
-	private static Map<VirtualFileSystemInode, Date> _commitInode = null;
-	private static Map<RemoteSlave, Date> _commitSlave = null;
-	
+
+	Map<Commitable, Date> _commitMap = null;
+
 	private CommitManager() {
-		
+
 	}
-	
-	public static void start() {
-		_commitUser = new HashMap<User, Date>();
-		_commitInode = new HashMap<VirtualFileSystemInode, Date>();
-		_commitSlave = new HashMap<RemoteSlave, Date>();
+
+	private static CommitManager manager = new CommitManager();
+
+	public static CommitManager getCommitManager() {
+		return manager;
+	}
+
+	public void start() {
+		_commitMap = new HashMap<Commitable, Date>();
 		new Thread(new CommitHandler()).start();
 	}
-	
-	public static void add(User user) {
-		synchronized(_commitUser) {
-			// overwrites previous value if it exists
-			_commitUser.put(user, new Date());
+
+	public synchronized void add(Commitable object) {
+		if (_commitMap.containsKey(object)) {
+			return;
+			// object already queued to write
 		}
+		_commitMap.put(object, new Date());
+		notifyAll();
 	}
-	
-	public static void add(RemoteSlave slave) {
-		synchronized(_commitSlave) {
-			// overwrites previous value if it exists
-			_commitSlave.put(slave, new Date());
-		}
-	}
-	
-	public static void add(VirtualFileSystemInode inode) {
-		synchronized(_commitInode) {
-			// overwrites previous value if it exists
-			_commitInode.put(inode, new Date());
-		}
-	}
-	
+
 	@SuppressWarnings("unchecked")
-	private static void processAll(Map map) {
-		synchronized (map) {
-			long time = System.currentTimeMillis();
-			for (Iterator<Entry<Commitable, Date>> iter = map.entrySet().iterator(); iter.hasNext();) {
-				Entry<Commitable, Date> entry = iter.next();
-				if (time - entry.getValue().getTime() > 5000) {
-					try {
-						entry.getKey().writeToDisk();
-					} catch (IOException e) {
-						logger.error("Error writing object to disk - " + entry.getKey().descriptiveName(), e);
-					}
-					iter.remove();
+	private synchronized void processAll(Map<Commitable, Date> map) {
+		long time = System.currentTimeMillis();
+		for (Iterator<Entry<Commitable, Date>> iter = map.entrySet().iterator(); iter
+				.hasNext();) {
+			Entry<Commitable, Date> entry = iter.next();
+			if (time - entry.getValue().getTime() > 10000) {
+				try {
+					entry.getKey().writeToDisk();
+				} catch (IOException e) {
+					logger.error("Error writing object to disk - "
+							+ entry.getKey().descriptiveName(), e);
 				}
+				iter.remove();
 			}
 		}
-
 	}
-	
-	static class CommitHandler implements Runnable {
+
+	private class CommitHandler implements Runnable {
 
 		private CommitHandler() {
-
 		}
 
 		public void run() {
 			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
+			PluginClassLoader loader = manager.getPluginClassLoader((manager
+					.getPluginFor(this)).getDescriptor());
 			Thread.currentThread().setContextClassLoader(loader);
 			Thread.currentThread().setName("CommitHandler");
-			while(true) {
-				processAll(_commitInode);
-				processAll(_commitSlave);
-				processAll(_commitUser);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
+			while (true) {
+				synchronized (CommitManager.getCommitManager()) {
+					processAll(_commitMap);
+					try {
+						CommitManager.getCommitManager().wait(10500);
+						// this will wake up when add() is called or a maximum
+						// of 10500
+					} catch (InterruptedException e) {
+					}
 				}
 			}
 		}
 	}
-	
+
 }

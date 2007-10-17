@@ -233,7 +233,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void commit() {
-		CommitManager.add(this);
+		CommitManager.getCommitManager().add(this);
 	}
 
 	public final int compareTo(RemoteSlave o) {
@@ -1109,7 +1109,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				throw new RuntimeException(e1);
 			}
 			out.writeObject(this);
-			Logger.getLogger(RemoteSlave.class).debug("wrote " + getName());
 		} catch (IOException ex) {
 			throw new RuntimeException("Error writing slavefile for "
 					+ this.getName() + ": " + ex.getMessage(), ex);

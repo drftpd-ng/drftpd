@@ -428,7 +428,7 @@ public class GlobalContext implements EventSubscriber {
 		_config = new ConfigManager();
 		_config.reload();
 		
-		CommitManager.start();
+		CommitManager.getCommitManager().start();
 		_timeManager = new TimeManager();
 		loadPluginsConfig();
 		loadUserManager(getConfig().getMainProperties());
