@@ -128,9 +128,9 @@ public class LinksPostHook implements PostHookInterface {
 			return;
 		}
 		try {
-			for (LinkHandle link : request.getCurrentDirectory().getLinks()) {
+			for (LinkHandle link : request.getCurrentDirectory().getLinksUnchecked()) {
 				try {
-					link.getTargetDirectory();
+					link.getTargetDirectoryUnchecked();
 				} catch (FileNotFoundException e1) {
 					// Link target no longer exists, remove it
 					link.deleteUnchecked();
@@ -145,9 +145,9 @@ public class LinksPostHook implements PostHookInterface {
 		// Have to check parent too to allow for the case of wiping a special subdir
 		if (!request.getCurrentDirectory().isRoot()) {
 			try {
-				for (LinkHandle link : request.getCurrentDirectory().getParent().getLinks()) {
+				for (LinkHandle link : request.getCurrentDirectory().getParent().getLinksUnchecked()) {
 					try {
-						link.getTargetDirectory();
+						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remove it
 						link.deleteUnchecked();

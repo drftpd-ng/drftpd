@@ -234,18 +234,13 @@ public class Dir extends CommandInterface {
 
     		if (requestedFile.isDirectory()) {
     			DirectoryHandle victim = (DirectoryHandle) requestedFile;
-    			if (victim.getInodeHandlesUnchecked().size() != 0) {
+    			if (victim.isEmpty(user)) {
     				return new CommandResponse(550, requestedFile.getPath()
     						+ ": Directory not empty");
     			}
     		}
-    		
-    		try {
-        		Session session = request.getSession();
-				requestedFile.delete(session.getUserNull(request.getUser()));
-			} catch (PermissionDeniedException e) {
-				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-			}
+			
+    		requestedFile.delete(user);
 
     		User uploader;
 
@@ -275,6 +270,8 @@ public class Dir extends CommandInterface {
     	} catch (FileNotFoundException e) {
     		// good! we're done :)
     		return new CommandResponse(550, e.getMessage());
+    	} catch (PermissionDeniedException e) {
+    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     	}
 
     	return response;
@@ -627,16 +624,17 @@ public class Dir extends CommandInterface {
 
         String targetName = st.nextToken();
         String linkName = st.nextToken();
-
+        User user = request.getSession().getUserNull(request.getUser());
+        
         try {
             request.getCurrentDirectory().getInodeHandleUnchecked(targetName); // checks if the inode exists.
-            request.getCurrentDirectory().createLink(linkName,
-					targetName, request.getSession().getUserNull(request.getUser()).getName(),
-					request.getSession().getUserNull(request.getUser()).getGroup()); // create the link
+            request.getCurrentDirectory().createLink(user, linkName, targetName); // create the link
 		} catch (FileExistsException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+		} catch (PermissionDeniedException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -700,7 +698,7 @@ public class Dir extends CommandInterface {
 			wipeFile = request.getCurrentDirectory().getInodeHandle(arg, user);
 
 			if (wipeFile.isDirectory() && !recursive) {
-				if (((DirectoryHandle) wipeFile).getInodeHandlesUnchecked().size() != 0) {
+				if (((DirectoryHandle) wipeFile).isEmpty(user)) {
 					return new CommandResponse(550, "Can't wipe, directory not empty");
 				}
 			}

@@ -192,9 +192,18 @@ public class DirectoryHandle extends InodeHandle implements
 	 * (no directories or files included.)
 	 * @throws FileNotFoundException
 	 */
-	public Set<LinkHandle> getLinks() throws FileNotFoundException {
+	
+	public Set<LinkHandle> getLinks(User user) throws FileNotFoundException {
+		return getLinksUnchecked(getInodeHandles(user));
+	}
+	
+	public Set<LinkHandle> getLinksUnchecked() throws FileNotFoundException {
+		return getLinksUnchecked(getInodeHandlesUnchecked());
+	}
+	
+	private Set<LinkHandle> getLinksUnchecked(Set<InodeHandle> inodes) throws FileNotFoundException {
 		Set<LinkHandle> set = new HashSet<LinkHandle>();
-		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter
+		for (Iterator<InodeHandle> iter = inodes.iterator(); iter
 				.hasNext();) {
 			InodeHandle handle = iter.next();
 			if (handle instanceof LinkHandle) {
@@ -284,7 +293,7 @@ public class DirectoryHandle extends InodeHandle implements
 			return (DirectoryHandle) handle;
 		}
 		if (handle.isLink()) {
-			return ((LinkHandle) handle).getTargetDirectory();
+			return ((LinkHandle) handle).getTargetDirectoryUnchecked();
 		}
 		throw new ObjectNotValidException(name + " is not a directory");
 	}
@@ -311,7 +320,7 @@ public class DirectoryHandle extends InodeHandle implements
 			ObjectNotValidException {
 		LinkHandle link = getLinkUnchecked(name);
 		
-		checkHiddenPath(link.getTargetDirectory(), user);
+		checkHiddenPath(link.getTargetDirectory(user), user);
 		
 		return link;
 	}
@@ -346,7 +355,12 @@ public class DirectoryHandle extends InodeHandle implements
 			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
 		} catch (FileNotFoundException e) {
 			// create directory for merging
-			getParent().createDirectoryRecursive(getName());
+			try {
+				getParent().createDirectoryRecursive(getName());
+			} catch (ObjectNotValidException e1) {
+				logger.error(e, e);
+				throw new RuntimeException("The VFS is inconsistent", e);
+			}
 			// lets try this again, this time, if it doesn't work, we throw an
 			// IOException up the chain
 			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
@@ -525,19 +539,22 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @param name
 	 * @throws FileExistsException
 	 * @throws FileNotFoundException
+	 * @throws ObjectNotValidException 
 	 */
 	public void createDirectoryRecursive(String name)
-			throws FileExistsException, FileNotFoundException {
-		DirectoryHandle dir = null;
-		try {
-			dir = createDirectorySystem(name);
-		} catch (FileNotFoundException e) {
-			getParent().createDirectoryRecursive(getName());
+			throws FileExistsException, FileNotFoundException, ObjectNotValidException {	
+		String[] dirs = name.split("/");
+		DirectoryHandle walker = this;
+		
+		for (String dirName : dirs) {
+			try {
+				walker = walker.getDirectoryUnchecked(dirName);
+			} catch (FileNotFoundException e) {
+				// current dir does not exist create it.
+				walker = walker.createDirectorySystem(dirName);
+			}
 		}
-		if (dir == null) {
-			dir = createDirectorySystem(name);
-		}
-		logger.debug("Created directory " + dir);
+		logger.debug("Created directory " + walker);
 	}
 
 	/**
@@ -642,7 +659,7 @@ public class DirectoryHandle extends InodeHandle implements
 	/**
 	 * Creates a Link object in the FileSystem with this directory as its parent
 	 */
-	public LinkHandle createLink(String name, String target, String user,
+	public LinkHandle createLinkUnchecked(String name, String target, String user,
 			String group) throws FileExistsException, FileNotFoundException {
 		getInode().createLink(name, target, user, group);
 		try {
@@ -652,6 +669,29 @@ public class DirectoryHandle extends InodeHandle implements
 		} catch (ObjectNotValidException e) {
 			throw new RuntimeException("Something really funky happened, we just created it", e);
 		}
+	}
+	
+	public LinkHandle createLink(User user, String name, String target)
+		throws FileExistsException, FileNotFoundException, PermissionDeniedException {
+		if (user == null) {
+			throw new PermissionDeniedException("User cannot be null");
+		}
+		
+		// check if this dir is hidden.
+		checkHiddenPath(this, user);
+
+		DirectoryHandle dir = null;
+		if (isDirectory(target)) {
+			dir = new DirectoryHandle(target);
+		} else if (isFile(target)) {
+			dir = new FileHandle(target).getParent();
+		} else if (isLink(target)) {
+			throw new PermissionDeniedException("Impossible to point a link to a link");
+		}
+		// check if the target is hidden
+		checkHiddenPath(dir, user);
+		
+		return createLinkUnchecked(name, target, user.getName(), user.getGroup());		
 	}
 
 	public boolean isRoot() {
@@ -676,17 +716,34 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	public void removeSlave(RemoteSlave rslave) throws FileNotFoundException {
-		boolean empty = isEmpty();
+		boolean empty = isEmptyUnchecked();
 		for (InodeHandle inode : getInodeHandlesUnchecked()) {
 			inode.removeSlave(rslave);
 		}
-		if (!empty && isEmpty()) { // if it wasn't empty before, but is now, delete it
+		if (!empty && isEmptyUnchecked()) { // if it wasn't empty before, but is now, delete it
 			deleteUnchecked();
 		}
 	}
 
-	private boolean isEmpty() throws FileNotFoundException {
+	public boolean isEmptyUnchecked() throws FileNotFoundException {
 		return getInodeHandlesUnchecked().size() == 0;
+	}
+	
+	public boolean isEmpty(User user) throws FileNotFoundException, PermissionDeniedException {
+		// let's fetch the list of existent files inside this dir
+		// if the dir does not exist, FileNotFoundException is thrown
+		// if the dir exists the operation continues smoothly.
+		getInode();
+		
+		try {
+			checkHiddenPath(this, user);
+		} catch (FileNotFoundException e) {
+			// either a race condition happened or the dir is hidden
+			// cuz we just checked and the dir was here.
+			throw new PermissionDeniedException("Unable to check if the directory is empty.");
+		}
+		
+		return isEmptyUnchecked();
 	}
 
 	@Override

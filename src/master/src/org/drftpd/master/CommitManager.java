@@ -65,7 +65,6 @@ public class CommitManager {
 		notifyAll();
 	}
 
-	@SuppressWarnings("unchecked")
 	private synchronized void processAll(Map<Commitable, Date> map) {
 		long time = System.currentTimeMillis();
 		for (Iterator<Entry<Commitable, Date>> iter = map.entrySet().iterator(); iter

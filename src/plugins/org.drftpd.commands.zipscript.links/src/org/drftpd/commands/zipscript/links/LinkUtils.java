@@ -75,7 +75,7 @@ public class LinkUtils {
 		}
 		if (mode.equals("create")) {
 			try {
-				targetDir.createLink(linkName,dir.getPath(),request.getSession().getUserNull(request.getUser())
+				targetDir.createLinkUnchecked(linkName,dir.getPath(),request.getSession().getUserNull(request.getUser())
 						.getName(),request.getSession().getUserNull(request.getUser()).getGroup());
 			} catch (FileExistsException e) {
 				// An inode with the links path already exists

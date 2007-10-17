@@ -32,6 +32,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -57,13 +58,14 @@ public class LinkCommands extends CommandInterface {
 		}
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+		User user = request.getSession().getUserNull(request.getUser());
 		dirs.add(request.getCurrentDirectory());
 		while (dirs.size() > 0) {
 			DirectoryHandle workingDir = dirs.poll();
 			try {
-				for (LinkHandle link : workingDir.getLinks()) {
+				for (LinkHandle link : workingDir.getLinks(user)) {
 					try {
-						link.getTargetDirectory().getPath();
+						link.getTargetDirectory(user).getPath();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remote it
 						link.deleteUnchecked();

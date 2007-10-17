@@ -291,7 +291,6 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 			// it's a link! who cares! :)
 		}
 		inode.rename(toInode.getPath());
-
 	}
 
 	/**
@@ -316,13 +315,46 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 	
 	protected static void checkHiddenPath(InodeHandle inode, User user) throws FileNotFoundException {	
 		if (user == null) {
-			throw new FileNotFoundException("User cannot be null");
+			throw new FileNotFoundException("Denied, unable to check perms against 'null' user");
 		}
 		
 		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle) inode : inode.getParent();
 		
 		if (getVFSPermissions().checkPathPermission("privpath", user, dir)) {
 			throw new FileNotFoundException(dir.getPath() + " does not exist");
+		}
+	}
+	
+	public static boolean isFile(String path) throws FileNotFoundException {
+		FileHandle file = new FileHandle(path);
+		
+		try {
+			file.getInode();
+			return true;
+		} catch (ClassCastException e) {
+			return false;
+		}
+	}
+	
+	public static boolean isDirectory(String path) throws FileNotFoundException {
+		DirectoryHandle dir = new DirectoryHandle(path);
+		
+		try {
+			dir.getInode();
+			return true;
+		} catch (ClassCastException e) {
+			return false;
+		}
+	}
+	
+	public static boolean isLink(String path) throws FileNotFoundException {		
+		LinkHandle link = new LinkHandle(path);
+		
+		try {
+			link.getInode();
+			return true;
+		} catch (ClassCastException e) {
+			return false;
 		}
 	}
 }

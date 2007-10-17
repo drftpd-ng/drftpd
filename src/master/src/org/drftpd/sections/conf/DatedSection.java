@@ -173,6 +173,9 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			} catch (FileNotFoundException e) {
 				logger.error("Unable to create base directory for section " + getName(), e);
 				return;
+			} catch (ObjectNotValidException e) {
+				logger.error(e, e);
+				throw new RuntimeException("The VFS is inconsistent", e);
 			}
 
 		}
@@ -229,7 +232,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			}
 		}
 		try {
-			root.createLink(linkName, newDir.getPath(), "drftpd", "drftpd");
+			root.createLinkUnchecked(linkName, newDir.getPath(), "drftpd", "drftpd");
 		} catch (FileExistsException e) {
 			logger.error(linkName + " already exists in / for section " + getName() + ", this should not happen, we just deleted it", e);
 		} catch (FileNotFoundException e) {

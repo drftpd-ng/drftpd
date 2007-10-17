@@ -20,6 +20,7 @@ package org.drftpd.vfs;
 import java.io.FileNotFoundException;
 
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.usermanager.User;
 
 /**
  * @author zubov
@@ -45,13 +46,26 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 		getInode().setLinkPath(path);
 	}
 
-	public DirectoryHandle getTargetDirectory() throws FileNotFoundException,
+	public DirectoryHandle getTargetDirectory(User user) throws FileNotFoundException,
+			ObjectNotValidException {
+		DirectoryHandle dir = getParent().getDirectoryUnchecked(getInode().getLinkPath());
+		checkHiddenPath(dir, user);		
+		return dir;
+	}
+	
+	public DirectoryHandle getTargetDirectoryUnchecked() throws FileNotFoundException,
 			ObjectNotValidException {
 		return getParent().getDirectoryUnchecked(getInode().getLinkPath());
 	}
 	
-	public FileHandle getTargetFile() throws FileNotFoundException, ObjectNotValidException {
+	public FileHandle getTargetFileUnchecked() throws FileNotFoundException, ObjectNotValidException {
 		return getParent().getFileUnchecked(getInode().getLinkPath());
+	}
+	
+	public FileHandle getTargetFile(User user) throws FileNotFoundException, ObjectNotValidException {
+		FileHandle file = getParent().getFileUnchecked(getInode().getLinkPath());
+		checkHiddenPath(file.getParent(), user);		
+		return file;
 	}
 	
 	public String getTargetString() throws FileNotFoundException {

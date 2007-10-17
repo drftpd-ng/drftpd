@@ -34,6 +34,7 @@ import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.ObjectNotValidException;
 
 /**
  * @author mog
@@ -148,6 +149,9 @@ public class SectionManager implements SectionManagerInterface {
 			// good the file exists, no need to create it.
 		} catch (FileNotFoundException e) {
 			logger.warn("How come this happened? Does root exist?", e);
+		} catch (ObjectNotValidException e) {
+			logger.error(e, e);
+			throw new RuntimeException("The VFS is inconsistent", e);
 		}
 	}
 

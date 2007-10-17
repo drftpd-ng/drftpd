@@ -48,7 +48,7 @@ public class DenyDownload implements PreHookInterface {
 
 			FileHandle file = null;
 			if (inode.isLink()) {
-				file = ((LinkHandle) inode).getTargetFile();
+				file = ((LinkHandle) inode).getTargetFileUnchecked();
 			} else if (inode.isDirectory()) {
 				return request;
 				// RETR will figure out they're requesting to download a
