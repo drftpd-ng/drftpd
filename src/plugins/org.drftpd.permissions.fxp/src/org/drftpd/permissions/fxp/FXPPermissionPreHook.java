@@ -18,7 +18,6 @@ package org.drftpd.permissions.fxp;
 
 import java.net.InetAddress;
 
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
@@ -35,8 +34,6 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class FXPPermissionPreHook implements PreHookInterface {
-	private static Logger logger = Logger.getLogger(FXPPermissionPreHook.class);
-
 	public void initialize(StandardCommandManager manager) {
 	}
 
@@ -48,24 +45,19 @@ public class FXPPermissionPreHook implements PreHookInterface {
 		return checkFXPPerm(request, Transfer.TRANSFER_RECEIVING_UPLOAD);
 	}
 
-	public CommandRequestInterface checkFXPPerm(CommandRequest request, char direction) {
-		logger.debug("checkFXPPerm called: " + direction);
-		
+	public CommandRequestInterface checkFXPPerm(CommandRequest request, char direction) {	
 		DirectoryHandle fromDir = request.getCurrentDirectory();		
 		ConfigInterface config = GlobalContext.getConfig();
 		String directive = direction == Transfer.TRANSFER_RECEIVING_UPLOAD ? "deny_upfxp" : "deny_dnfxp";
 		String mask = "*@*"; // default initialization
-		
-		logger.debug("Entering check");
+
 		if (config.checkPathPermission(directive, request.getSession().getUserNull(request.getUser()), fromDir)) {
 			// denied to make fxp.
 			// let's set the ip that is going to be sent to the slave.
-			logger.debug("Denied!");
 			InetAddress inetAdd = (InetAddress) request.getSession().getObject(LoginHandler.ADDRESS, null);
 			mask = "*@"+inetAdd.getHostAddress();						
 		}
 		
-		logger.debug("Setting INET_ADDRESS: " + mask);
 		request.getSession().setObject(DataConnectionHandler.INET_ADDRESS, mask);
 		
 		return request;

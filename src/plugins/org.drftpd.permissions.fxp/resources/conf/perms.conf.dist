@@ -1,0 +1,4 @@
+# The below directives allow you to manage
+# who can FXP *from* and *to* this FTP.
+#deny_upfxp /PATH* =group -user
+#deny_dnfxp /PATH* *

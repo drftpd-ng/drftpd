@@ -76,6 +76,8 @@ public class DataConnectionHandler extends CommandInterface {
     public static final Key TRANSFER_FILE = new Key(DataConnectionHandler.class, "transfer_file", FileHandle.class);
     
     public static final Key INET_ADDRESS = new Key(DataConnectionHandler.class, "inetAddress", String.class);
+    
+    public static final Key XFER_STATUS = new Key(DataConnectionHandler.class, "transferStatus", TransferStatus.class);
 
     private ResourceBundle _bundle;
 
@@ -892,98 +894,8 @@ public class DataConnectionHandler extends CommandInterface {
 					}
 				} // else { ts.getTransferFile() is set, this is a PRET action
             }
-            /*            if (isRetr) {
-            	ts.getTransferFile().isFile()
-                try {
-                    _transferFile = conn.getCurrentDirectory().lookupFile(request.getArgument());
 
-                    if (!_transferFile.isFile()) {
-                    	// reset(); already done in finally block
-                        return new Reply(550, "Not a plain file");
-                    }
-
-                    targetDir = _transferFile.getParentFileNull();
-                    targetFileName = _transferFile.getName();
-                } catch (FileNotFoundException ex) {
-                	// reset(); already done in finally block
-                    return new Reply(550, ex.getMessage());
-                }
-            } else if (isStor) {
-                LinkedRemoteFile.NonExistingFile ret = conn.getCurrentDirectory()
-                                                           .lookupNonExistingFile(conn.getGlobalContext()
-                                                                                      .getConfig()
-                                                                                      .getFileName(request.getArgument()));
-                targetDir = ret.getFile();
-                targetFileName = ret.getPath();
-
-                if (ret.exists()) {
-                    // target exists, this could be overwrite or resume
-                    //TODO overwrite & resume files.
-                	// reset(); already done in finally block
-                    return Reply.RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS;
-
-                    //_transferFile = targetDir;
-                    //targetDir = _transferFile.getParent();
-                    //if(_transfereFile.getOwner().equals(getUser().getUsername()))
-                    // {
-                    //	// allow overwrite/resume
-                    //}
-                    //if(directory.isDirectory()) {
-                    //	return FtpReply.RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN;
-                    //}
-                }
-
-                if (!ListUtils.isLegalFileName(targetFileName) ||
-                        !conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), targetDir, true)) {
-                	// reset(); already done in finally block
-                    return new Reply(553,
-                        "Requested action not taken. File name not allowed.");
-                }
-
-            } else {
-            	// reset(); already done in finally block
-            	throw UnhandledCommandException.create(
-            			DataConnectionHandler.class, request);
-            }
-
-            // check access
-            if (!conn.getGlobalContext().getConfig().checkPathPermission("privpath", conn.getUserNull(), targetDir, true)) {
-            	// reset(); already done in finally block
-                return new Reply(550,
-                    request.getArgument() + ": No such file");
-            }
-*/
-/*            
- * TODO upload done, download still needs doing.
- * 			switch (direction) {
-            case Transfer.TRANSFER_SENDING_DOWNLOAD:
-                if (!conn.getGlobalContext().getConfig().checkPathPermission(
-						"download", conn.getUserNull(),
-						ts.getTransferFile().getParent())) {
-					// reset(); already done in finally block
-					return Reply.RESPONSE_530_ACCESS_DENIED;
-				}
-
-                break;
-
-            case Transfer.TRANSFER_RECEIVING_UPLOAD:
-
-                if (!conn.getGlobalContext().getConfig().checkPathPermission(
-						"upload", conn.getUserNull(),
-						ts.getTransferFile().getParent())) {
-					// reset(); already done in finally block
-					return Reply.RESPONSE_530_ACCESS_DENIED;
-				}
-
-                break;
-
-            default:
-            	// reset(); already done in finally block
-                throw UnhandledCommandException.create(DataConnectionHandler.class,
-                    request);
-            }*/
-
-/*            //check credits
+            /* check credits
             if (isRetr) {
                 if ((conn.getUserNull().getKeyedMap().getObjectFloat(
                         UserManagement.RATIO) != 0)
@@ -1129,7 +1041,6 @@ public class DataConnectionHandler extends CommandInterface {
 
             //transfer
             try {
-                //TODO ABORtable transfers
             	String address = (String) request.getSession().getObject(INET_ADDRESS, "*@*");           	
             	
                 if (isRetr) {
@@ -1226,15 +1137,6 @@ public class DataConnectionHandler extends CommandInterface {
                 return response;
             }
 
-            //		TransferThread transferThread = new TransferThread(rslave,
-            // transfer);
-            //		System.err.println("Calling interruptibleSleepUntilFinished");
-            //		try {
-            //			transferThread.interruptibleSleepUntilFinished();
-            //		} catch (Throwable e1) {
-            //			e1.printStackTrace();
-            //		}
-            //		System.err.println("Finished");
             env = new ReplacerEnvironment();
             env.add("bytes", Bytes.formatBytes(status.getTransfered()));
             env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
@@ -1243,74 +1145,28 @@ public class DataConnectionHandler extends CommandInterface {
 
             CommandResponse response = new CommandResponse(226, conn.jprintf(_bundle,
                     _keyPrefix+"transfer.complete", env, request.getUser()));
+            
             response.setObject(CHECKSUM,status.getChecksum());
             response.setObject(TRANSFER_FILE,ts.getTransferFile());
+            response.setObject(XFER_STATUS, status);
+            
+			if (isStor) {
+				try {
+					if (ts.getResumePosition() == 0) {
+						ts.getTransferFile().setCheckSum(status.getChecksum());
+					} // else, fetch checksum from slave when resumable
+						// uploads are implemented.
 
-            synchronized (conn.getGlobalContext()) { // need to synchronize
-														// here so only one
-				// TransferEvent can be sent at a time
-            	if (isStor) {
-            		try {
-            			if (ts.getResumePosition() == 0) {
-            				ts.getTransferFile().setCheckSum(status.getChecksum());
-            			} // else, fetch checksum from slave when resumable uploads are implemented.
-            			
-            			ts.getTransferFile().setSize(status.getTransfered());
-            			ts.getTransferFile().setLastModified(System.currentTimeMillis());
-            			ts.getTransferFile().setXfertime(ts.getTransfer().getElapsed());
-            		} catch (FileNotFoundException e) {
-            			// this is kindof odd
-            			// it was a successful transfer, yet the file is gone
-            			// lets just return the response
-                        return response;					
-            		}
-            	}
-
-/*				boolean zipscript = zipscript(isRetr, isStor, status
-						.getChecksum(), response, targetFileName, targetDir);*/
-
-					// transferstatistics
-					if (isRetr) {
-
-						float ratio = GlobalContext.getConfig()
-								.getCreditLossRatio(ts.getTransferFile().getParent(),
-										conn.getUserNull());
-
-						if (ratio != 0) {
-							conn.getUserNull().updateCredits(
-									(long) (-status.getTransfered() * ratio));
-						}
-
-						if (!GlobalContext.getConfig()
-								.checkPathPermission("nostatsdn",
-										conn.getUserNull(),
-										conn.getCurrentDirectory())) {
-							conn.getUserNull().updateDownloadedBytes(
-									status.getTransfered());
-							conn.getUserNull().updateDownloadedTime(
-									status.getElapsed());
-							conn.getUserNull().updateDownloadedFiles(1);
-						}
-					} else {
-
-						conn.getUserNull().updateCredits(
-								(long) (status.getTransfered() * GlobalContext.getConfig()
-										.getCreditCheckRatio(ts.getTransferFile().getParent(),
-												conn.getUserNull())));
-						if (!GlobalContext.getConfig()
-								.checkPathPermission("nostatsup",
-										conn.getUserNull(),
-										conn.getCurrentDirectory())) {
-							conn.getUserNull().updateUploadedBytes(
-									status.getTransfered());
-							conn.getUserNull().updateUploadedTime(
-									status.getElapsed());
-							conn.getUserNull().updateUploadedFiles(1);
-						}
-					}
-
-					conn.getUserNull().commit();
+					ts.getTransferFile().setSize(status.getTransfered());
+					ts.getTransferFile().setLastModified(System.currentTimeMillis());
+					ts.getTransferFile().setXfertime(ts.getTransfer().getElapsed());
+				} catch (FileNotFoundException e) {
+					// this is kindof odd
+					// it was a successful transfer, yet the file is gone
+					// lets just return the response
+					return response;
 				}
+			}
 
             // Dispatch for both STOR and RETR
             GlobalContext.getEventService().publish(

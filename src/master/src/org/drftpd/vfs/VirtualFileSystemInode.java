@@ -275,4 +275,12 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		ret.append("[size=" + getSize() + "]");
 		return ret.toString();
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof VirtualFileSystemInode))
+			return false;
+		
+		return ((VirtualFileSystemInode) obj).getPath().equalsIgnoreCase(getPath());
+	}
 }

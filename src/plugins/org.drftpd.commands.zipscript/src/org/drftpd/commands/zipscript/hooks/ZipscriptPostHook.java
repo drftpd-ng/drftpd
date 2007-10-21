@@ -197,7 +197,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
 		if (cfg.getProperty("cwd.racestats.enabled").equals("true")) {
-			addRaceStats(request, response);
+			addRaceStats(request, response, response.getCurrentDirectory());
 		}
 	}
 
@@ -209,14 +209,13 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
 		if (cfg.getProperty("stor.racestats.enabled").equals("true")) {
-			addRaceStats(request, response);
+			addRaceStats(request, response, request.getCurrentDirectory());
 		}
 	}
 
-	private void addRaceStats(CommandRequest request, CommandResponse response) {
+	private void addRaceStats(CommandRequest request, CommandResponse response, DirectoryHandle dir) {
 		// show race stats
 		try {
-			DirectoryHandle dir = request.getCurrentDirectory();
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
 			SFVInfo sfvInfo = sfvData.getSFVInfo();
 			SFVStatus sfvStatus = sfvData.getSFVStatus();

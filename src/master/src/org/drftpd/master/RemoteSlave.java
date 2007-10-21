@@ -241,11 +241,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public final boolean equals(Object obj) {
-		try {
-			return ((RemoteSlave) obj).getName().equals(getName());
-		} catch (NullPointerException e) {
+		if (!(obj instanceof RemoteSlave))
 			return false;
-		}
+		
+		return ((RemoteSlave) obj).getName().equals(getName());
 	}
 
 	public GlobalContext getGlobalContext() {

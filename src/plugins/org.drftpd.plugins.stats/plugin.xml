@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.stats" version="2.1.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.commands.config.hooks" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+	
+	<runtime>
+		<library id="org.drftpd.plugins.stats" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+		
+	<!-- directives handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="NoStatsUpDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="nostatsup" />
+	</extension>
+	
+	<extension plugin-id="master" point-id="ConfigHandler" id="NoStatsDnDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="nostatsdn" />
+	</extension>
+	
+	<extension plugin-id="master" point-id="ConfigHandler" id="CreditCheckDirective">
+	    <parameter id="Class" value="org.drftpd.plugins.stats.StatsHandler" />
+    	<parameter id="Method" value="handleCreditCheck" />
+    	<parameter id="Directive" value="creditcheck" />
+	</extension>
+	
+	<extension plugin-id="master" point-id="ConfigHandler" id="CreditLossDirective">
+	    <parameter id="Class" value="org.drftpd.plugins.stats.StatsHandler" />
+    	<parameter id="Method" value="handleCreditLoss" />
+    	<parameter id="Directive" value="creditloss" />
+	</extension>
+	<!-- End of directives handler -->
+	
+	<!-- Hooks -->
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="StatsRETRPreHook">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.stats.StatsPreHook" />
+		<parameter id="HookMethod" value="doRETRPreHook" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="StatsRETRPostHook">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.stats.StatsPostHook" />
+		<parameter id="HookMethod" value="doRETRPostHook" />
+		<parameter id="Priority" value="100" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="StatsSTORPostHook">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.stats.StatsPostHook" />
+		<parameter id="HookMethod" value="doSTORPostHook" />
+		<parameter id="Priority" value="100" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="StatsDELEPostHook">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.plugins.stats.StatsPostHook" />
+		<parameter id="HookMethod" value="doDELEPostHook" />
+		<parameter id="Priority" value="100" />
+	</extension>
+	<!-- End of Hooks -->
+	
+	
+	<extension plugin-id="master" point-id="Plugin" id="StatsManager">
+		<parameter id="class" value="org.drftpd.plugins.stats.StatsManager"/>
+	</extension>
+</plugin>

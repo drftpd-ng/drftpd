@@ -335,16 +335,6 @@ public class ConfigManager implements ConfigInterface {
 		return _bouncerIps;
 	}
 
-	public float getCreditCheckRatio(DirectoryHandle path, User fromUser) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	public float getCreditLossRatio(DirectoryHandle path, User fromUser) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
 	public boolean getHideIps() {	
 		return _hideIps;
 	}

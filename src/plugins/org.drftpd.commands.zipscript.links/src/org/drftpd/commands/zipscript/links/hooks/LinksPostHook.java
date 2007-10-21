@@ -88,14 +88,14 @@ public class LinksPostHook implements PostHookInterface {
 			// DELE failed, abort cleanup
 			return;
 		}
-		FileHandle deleFile;
+		String deleFileName;
 		try {
-			deleFile =  (FileHandle) response.getObject(Dir.DELEFILE);
+			deleFileName =  (String) response.getObject(Dir.FILENAME);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
 		}
-		String deleFileName = deleFile.getName();
+
 		if (deleFileName.endsWith(".sfv")) {
 			LinkUtils.processLink(request, "delete", _bundle);
 			try {

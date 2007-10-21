@@ -109,20 +109,7 @@
 		<parameter id="Priority" value="2" />
 	</extension>
 	<!-- End of Msgpath PostHook -->
-	
-	<!-- nostats directive handler -->
-	<extension plugin-id="master" point-id="ConfigHandler" id="NoStatsUpDirective">
-	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
-    	<parameter id="Method" value="handlePathPerm" />
-    	<parameter id="Directive" value="nostatsup" />
-	</extension>
-	<extension plugin-id="master" point-id="ConfigHandler" id="NoStatsDnDirective">
-	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
-    	<parameter id="Method" value="handlePathPerm" />
-    	<parameter id="Directive" value="nostatsdn" />
-	</extension>
-	<!-- End of nostats directive handler -->
-	
+		
 	<!-- Download Permission PreHook -->
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="DownloadPermPreHook">
 		<parameter id="ParentMethod" value="doRETR" />

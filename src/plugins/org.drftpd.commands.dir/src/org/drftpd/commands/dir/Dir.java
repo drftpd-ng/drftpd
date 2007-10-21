@@ -35,9 +35,7 @@ import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.Session;
-import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
@@ -61,8 +59,11 @@ public class Dir extends CommandInterface {
 
     private static final Key RENAMEFROM = new Key(Dir.class, "renamefrom", InodeHandle.class);
 
-    public static final Key DELEFILE = new Key(Dir.class, "delefile", FileHandle.class);
-
+    // This Keys are place holders for usefull information that gets removed during
+    // deletion operations but are need to process hooks.
+    public static final Key USERNAME = new Key(Dir.class, "username", String.class);
+    public static final Key FILESIZE = new Key(Dir.class, "fileSize", Long.class);
+    public static final Key FILENAME = new Key(Dir.class, "fileName", String.class);
 
     /**
      * <code>CDUP &lt;CRLF&gt;</code><br>
@@ -138,34 +139,15 @@ public class Dir extends CommandInterface {
 
     		requestedFile = request.getCurrentDirectory().getInodeHandle(fileName, user); 
 
-    		// Store the file being deleted in the response keyedmap
-    		if (requestedFile.isFile()) {
-    			response.setObject(DELEFILE, requestedFile);
-    		}
+    		response.setObject(FILENAME, requestedFile.getName());
+    		response.setObject(FILESIZE, requestedFile.getSize());
+    		response.setObject(USERNAME, requestedFile.getUsername());
 
     		if (requestedFile.isDirectory()) {
     			DirectoryHandle victim = (DirectoryHandle) requestedFile;
     			if (!victim.isEmpty(user)) {
     				return new CommandResponse(550, requestedFile.getPath()+ ": Directory not empty");
     			}
-    		}
-
-    		User uploader;
-
-    		try {
-    			uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(
-    					requestedFile.getUsername());
-    			uploader.updateCredits((long) -(requestedFile.getSize() * GlobalContext.getConfig().getCreditCheckRatio(
-    							requestedFile.getParent(), uploader)));
-    			if (!GlobalContext.getConfig().checkPathPermission(
-    					"nostatsup", uploader, request.getCurrentDirectory())) {
-    				uploader.updateUploadedBytes(-requestedFile.getSize());
-    			}
-    		} catch (UserFileException e) {
-    			response.addComment("Error removing credits & stats: "+ e.getMessage());
-    		} catch (NoSuchUserException e) {
-    			response.addComment("User " + requestedFile.getUsername()
-    					+ " does not exist, cannot remove credits on deletion");
     		}
 
     		if (requestedFile.isFile()) {
@@ -210,12 +192,6 @@ public class Dir extends CommandInterface {
         	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
         }
 
-        //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
-        //String physicalName =
-        //	user.getVirtualDirectory().getPhysicalName(fileName);
-        //File reqFile = new File(physicalName);
-        // now print date
-        //if (reqFile.exists()) {
         try {
         	return new CommandResponse(213,
     			    DATE_FMT.format(new Date(reqFile.lastModified())));
@@ -569,12 +545,10 @@ public class Dir extends CommandInterface {
 				}
 			}
 
-			// if (conn.getConfig().checkDirLog(conn.getUserNull(), wipeFile)) {
 			GlobalContext.getEventService().publish(
 					new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "WIPE", wipeFile
 							.getParent()));
 
-			// }
 			wipeFile.delete(request.getSession().getUserNull(request.getUser()));
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
@@ -650,14 +624,4 @@ public class Dir extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
     }
-
-//    public String getHelp(String cmd) {
-//        ResourceBundle bundle = ResourceBundle.getBundle(Dir.class.getName());
-//        if ("".equals(cmd))
-//            return bundle.getString("help.general")+"\n";
-//        else if("link".equals(cmd) || "link".equals(cmd) || "wipe".equals(cmd))
-//            return bundle.getString("help."+cmd)+"\n";
-//        else
-//            return "";
-//    }
 }

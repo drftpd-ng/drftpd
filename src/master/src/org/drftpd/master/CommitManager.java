@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.VirtualFileSystemInode;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
 
@@ -39,7 +37,7 @@ public class CommitManager {
 
 	private static final Logger logger = Logger.getLogger(CommitManager.class);
 
-	Map<Commitable, Date> _commitMap = null;
+	private Map<Commitable, Date> _commitMap = null;
 
 	private CommitManager() {
 

@@ -1,0 +1,15 @@
+# these settings are only used if you use the
+# org.drftpd.sections.conf.SectionManager in drftpd.conf
+
+# If this directive's value is true DrFTPd will automatically
+# create the section dirs, if needed of cource.
+make.section.dirs=true
+
+1.path=/apps
+1.name=APPS
+
+2.type=dated
+2.path=/mp3
+2.name=MP3
+2.dated=MMdd
+2.now=-today

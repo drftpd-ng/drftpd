@@ -446,10 +446,6 @@ public class Find extends CommandInterface {
 			logger.error("Error reading userfile", e);
 			return;
 		}
-		
-		if (!GlobalContext.getConfig().checkPathPermission("privpath", user, dir, true)) {
-			return;
-		}
 
 		for (InodeHandle inode : dir.getInodeHandles(user)) {
 			if (inode.isDirectory()) {

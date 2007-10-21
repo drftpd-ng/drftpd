@@ -15,27 +15,31 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins;
+package org.drftpd.permissions;
 
+import java.util.Collection;
 
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.event.Event;
-import org.drftpd.event.FtpListener;
-import org.drftpd.event.UserEvent;
-
+import org.apache.oro.text.regex.MalformedPatternException;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class Statistics extends FtpListener {
-    public static final Key LOGINS = new Key(Statistics.class, "logins",
-            Integer.class);
+public class RatioPathPermission extends GlobPathPermission {
+	private float _ratio;
 
-    public void actionPerformed(Event event) {
-        if (event.getCommand().equals("LOGIN")) {
-            UserEvent uevent = (UserEvent) event;
-            uevent.getUser().getKeyedMap().incrementObjectInt(LOGINS, 1);
-        }
-    }
+	/**
+	 * @param path
+	 * @param users
+	 * @throws MalformedPatternException 
+	 */
+	public RatioPathPermission(String pattern, float ratio, Collection<String> users)
+			throws MalformedPatternException {
+		super(pattern, users);
+		_ratio = ratio;
+	}
+
+	public float getRatio() {
+		return _ratio;
+	}
 }

@@ -1,0 +1,111 @@
+/*
+ * This file is part of DrFTPD, Distributed FTP Daemon.
+ *
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.drftpd.plugins.stats;
+
+import java.util.ArrayList;
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventSubscriber;
+import org.drftpd.GlobalContext;
+import org.drftpd.PluginInterface;
+import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.event.UserEvent;
+import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.usermanager.User;
+import org.drftpd.vfs.DirectoryHandle;
+
+/**
+ * StatsManager is a class that centralizes the update of users stats. 
+ * @author fr0w
+ * @version $Id$
+ */
+public class StatsManager implements PluginInterface, EventSubscriber {
+	private static final Logger logger = Logger.getLogger(StatsManager.class);
+	
+    public static final Key LOGINS = new Key(StatsManager.class, "logins", Integer.class);
+    
+    public static final Key CREDITCHECK = new Key(StatsManager.class, "creditcheck", ArrayList.class);
+    public static final Key CREDITLOSS = new Key(StatsManager.class, "creditloss", ArrayList.class);
+
+    public static StatsManager getStatsManager() {
+    	for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
+    		if (plugin instanceof StatsManager) {
+    			return (StatsManager) plugin;
+    		}
+    	}
+    	
+    	throw new RuntimeException("Stats plugin is not loaded.");
+    }
+    
+	public void startPlugin() {
+		GlobalContext.getEventService().subscribe(UserEvent.class, this);
+		logger.debug("Loaded the Stats plugin successfully");
+	}
+
+	public void stopPlugin(String reason) {
+		GlobalContext.getEventService().unsubscribe(UserEvent.class, this);
+		logger.debug("Unloaded the Stats plugin successfully");
+	}
+
+	public void onEvent(Object event) {
+		if (event instanceof UserEvent) {
+			handleUserEvent((UserEvent) event);
+		}		
+	}
+
+	private void handleUserEvent(UserEvent event) {
+		if (event.getCommand().equalsIgnoreCase("LOGIN")) {
+			User u = event.getUser();
+			u.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
+			u.getKeyedMap().incrementObjectInt(LOGINS, 1);
+		}		
+	}
+	
+	public float getCreditLossRatio(DirectoryHandle dir, User user) {
+		float defaultRatio = (user.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) ? 0 : 1;
+		
+		return getRatioPathPerm(CREDITLOSS, dir, user, defaultRatio);
+	}
+	
+	public float getCreditCheckRatio(DirectoryHandle dir, User user) {
+		float defaultRatio = user.getKeyedMap().getObjectFloat(UserManagement.RATIO);
+		
+		return getRatioPathPerm(CREDITCHECK, dir, user, defaultRatio);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private float getRatioPathPerm(Key key, DirectoryHandle dir, User user, float defaultRatio) {
+				
+		ArrayList<RatioPathPermission> list = 
+			(ArrayList<RatioPathPermission>) GlobalContext.getConfig().getKeyedMap().getObject(key, null);
+		
+		if (list == null) {
+			return defaultRatio;
+		}
+		
+		for (RatioPathPermission perm : list) {
+			if (perm.checkPath(dir) && perm.check(user)) {
+				return perm.getRatio();
+			}
+		}
+		
+		return defaultRatio;
+	}
+}

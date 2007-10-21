@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
-<project name="org.drftpd.permissions.fxp plug-in build file"
+<project name="org.drftpd.plugins.stats plug-in build file"
          default="build">
 	<target name="build">
-		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.permissions.fxp" />
+		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.plugins.stats" />
 		<jpf-info manifest="${pluginbase}/plugin.xml"
 			propertyid="plugin.id"
 			propertyversion="plugin.version" />

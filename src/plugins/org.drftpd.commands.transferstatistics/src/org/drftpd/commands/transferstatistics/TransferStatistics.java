@@ -246,7 +246,7 @@ public class TransferStatistics extends CommandInterface  {
 			}
 		}
 
-		CommandResponse response = new CommandResponse(200);
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ArrayList<User> users2 = new ArrayList<User>(users);
 		Collections.sort(users2, new UserComparator(type));
 

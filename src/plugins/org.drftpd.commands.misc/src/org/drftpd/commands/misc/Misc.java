@@ -82,7 +82,7 @@ public class Misc extends CommandInterface {
     		transfer.abort("Transfer aborted.");
     		conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED")));
     	}
-    	return new CommandResponse(226, request.getCommand() + " command successful");
+    	return new CommandResponse(226, request.getCommand().toUpperCase() + " command successful");
     }
 
     // LIST;NLST;RETR;STOR

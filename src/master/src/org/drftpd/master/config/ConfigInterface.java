@@ -69,9 +69,5 @@ public interface ConfigInterface {
 
 	public String getPasvAddress() throws NullPointerException;
 
-	public float getCreditCheckRatio(DirectoryHandle path,	User fromUser);
-	
-	public float getCreditLossRatio(DirectoryHandle path, User fromUser);
-
 	public String[] getCipherSuites();
 }

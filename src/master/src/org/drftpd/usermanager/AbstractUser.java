@@ -147,8 +147,10 @@ public abstract class AbstractUser extends User implements Commitable {
 	 * return false; }
 	 */
 	public boolean equals(Object obj) {
-		return (obj instanceof User) ? ((User) obj).getName().equals(getName())
-				: false;
+		if (!(obj instanceof User))
+			return false;
+		
+		return ((User) obj).getName().equals(getName());
 	}
 
 	/**

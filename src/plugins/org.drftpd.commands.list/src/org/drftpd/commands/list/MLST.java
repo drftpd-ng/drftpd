@@ -27,7 +27,6 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Checksum;
-import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -83,11 +82,6 @@ public class MLST extends CommandInterface {
 			}  catch (ObjectNotValidException e) {
 				return new CommandResponse(500, "Target is not a directory, MLST only works on Directories");
 			}
-		}
-
-		if (!GlobalContext.getConfig().checkPathPermission("privpath", 
-				request.getSession().getUserNull(request.getUser()), dir, true)) {
-			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
 
 		BaseFtpConnection conn = (BaseFtpConnection) request.getSession();

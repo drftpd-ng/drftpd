@@ -49,7 +49,6 @@ import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.Session;
 import org.drftpd.master.TransferState;
 import org.drftpd.permissions.Permission;
-import org.drftpd.plugins.Statistics;
 import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -275,8 +274,10 @@ public class UserManagementHandler extends CommandInterface {
 			newUser.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
 			newUser.getKeyedMap().setObject(UserManagement.MINRATIO, minratioVal);
 			newUser.getKeyedMap().setObject(UserManagement.MAXRATIO, maxratioVal);
-
-			newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
+			
+			// TODO fix this.
+			//newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
+			
 			newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
 
 			newUser.getKeyedMap().setObject(UserManagement.TAGLINE, tagline);
