@@ -235,6 +235,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 */
 	@Override
 	protected void setupXML(XMLEncoder enc) {
+		super.setupXML(enc);
+		
 		PropertyDescriptor[] pdArr;
 		try {
 			pdArr = Introspector.getBeanInfo(VirtualFileSystemDirectory.class)

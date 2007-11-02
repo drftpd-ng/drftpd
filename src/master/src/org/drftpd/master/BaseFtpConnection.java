@@ -649,8 +649,8 @@ public class BaseFtpConnection extends Session implements Runnable {
 	}
 
 	public void poolStatus() {
-		logger.debug("pool size: "+_pool.getPoolSize());
-		logger.debug("active threads: "+_pool.getActiveCount());
+		//logger.debug("pool size: "+_pool.getPoolSize());
+		//logger.debug("active threads: "+_pool.getActiveCount());
 	}
 
 	class CommandThread implements Runnable {

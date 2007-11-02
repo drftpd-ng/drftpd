@@ -154,6 +154,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 */
 	@Override
 	protected void setupXML(XMLEncoder enc) {
+		super.setupXML(enc);
+		
 		PropertyDescriptor[] pdArr;
 		try {
 			pdArr = Introspector.getBeanInfo(VirtualFileSystemFile.class)

@@ -17,6 +17,7 @@
  */
 package org.drftpd.vfs;
 
+import java.beans.DefaultPersistenceDelegate;
 import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -60,7 +61,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	protected long _size = 0;
 
 	protected String _username;
-
+	
 	public String descriptiveName() {
 		return getPath();
 	}
@@ -91,6 +92,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	public void delete() {
 		logger.info("delete(" + this + ")");
+		
 		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
 		_parent.removeChild(this);
 	}
@@ -251,7 +253,11 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		_parent = directory;
 	}
 
-	protected abstract void setupXML(XMLEncoder enc);
+	protected void setupXML(XMLEncoder enc) {
+		enc.setPersistenceDelegate(Key.class,
+				new DefaultPersistenceDelegate(new String[] { "owner",
+						"key", "type" }));
+	}
 
 	/**
 	 * @param user
