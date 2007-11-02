@@ -22,7 +22,6 @@ import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
@@ -95,6 +94,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		
 		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
 		_parent.removeChild(this);
+		CommitManager.getCommitManager().remove(this);
 	}
 
 	/**

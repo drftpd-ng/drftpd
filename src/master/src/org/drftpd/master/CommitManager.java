@@ -104,5 +104,14 @@ public class CommitManager {
 			}
 		}
 	}
+	
+	/**
+	 * Returns true if the object was removed from the CommitQueue
+	 * @param object
+	 * @return
+	 */
+	public synchronized boolean remove(Commitable object) {
+		return _commitMap.remove(object) != null;
+	}
 
 }

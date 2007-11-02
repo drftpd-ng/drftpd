@@ -262,7 +262,7 @@ public class VirtualFileSystem {
 				recursiveDelete(files[x]);
 			}
 		}
-		if (!file.delete()) {
+		if (file.exists() && !file.delete()) {
 			logger.error("Could not delete local entry "
 					+ file.getAbsolutePath() + ", check permissions");
 		}
