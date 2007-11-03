@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.SlaveUnavailableException;
@@ -355,12 +354,8 @@ public class DirectoryHandle extends InodeHandle implements
 			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
 		} catch (FileNotFoundException e) {
 			// create directory for merging
-			try {
-				getParent().createDirectoryRecursive(getName());
-			} catch (ObjectNotValidException e1) {
-				logger.error(e, e);
-				throw new RuntimeException("The VFS is inconsistent", e);
-			}
+			getParent().createDirectoryRecursive(getName());
+			
 			// lets try this again, this time, if it doesn't work, we throw an
 			// IOException up the chain
 			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
@@ -539,22 +534,19 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @param name
 	 * @throws FileExistsException
 	 * @throws FileNotFoundException
-	 * @throws ObjectNotValidException 
 	 */
 	public void createDirectoryRecursive(String name)
-			throws FileExistsException, FileNotFoundException, ObjectNotValidException {	
-		String[] dirs = name.split("/");
-		DirectoryHandle walker = this;
-		
-		for (String dirName : dirs) {
-			try {
-				walker = walker.getDirectoryUnchecked(dirName);
-			} catch (FileNotFoundException e) {
-				// current dir does not exist create it.
-				walker = walker.createDirectorySystem(dirName);
-			}
+			throws FileExistsException, FileNotFoundException {
+		DirectoryHandle dir = null;
+		try {
+			dir = createDirectorySystem(name);
+		} catch (FileNotFoundException e) {
+			getParent().createDirectoryRecursive(getName());
 		}
-		logger.debug("Created directory " + walker);
+		if (dir == null) {
+			dir = createDirectorySystem(name);
+		}
+		logger.debug("Created directory " + dir);
 	}
 
 	/**

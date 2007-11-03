@@ -29,7 +29,7 @@ import org.drftpd.usermanager.User;
  * @version $Id$
  */
 public class Permission {
-	private Collection<String> _users;
+	protected Collection<String> _users;
 
 	private boolean _invert = false;
 

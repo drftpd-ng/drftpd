@@ -20,48 +20,56 @@
     	<parameter id="Method" value="handle" />
     	<parameter id="Type" value="makedir" />
     	<parameter id="Directive" value="makedir" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 	<extension plugin-id="master" point-id="VFSPerm" id="Upload">
 	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
     	<parameter id="Method" value="handle" />
     	<parameter id="Type" value="upload" />
     	<parameter id="Directive" value="upload" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 	<extension plugin-id="master" point-id="VFSPerm" id="Download">
 	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
     	<parameter id="Method" value="handle" />
     	<parameter id="Type" value="download" />
     	<parameter id="Directive" value="download" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 	<extension plugin-id="master" point-id="VFSPerm" id="Delete">
 	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
     	<parameter id="Method" value="handle" />
     	<parameter id="Type" value="delete" />
     	<parameter id="Directive" value="delete" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 	<extension plugin-id="master" point-id="VFSPerm" id="DeleteOwn">
 	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
     	<parameter id="Method" value="handle" />
-    	<parameter id="Type" value="delete" />
+    	<parameter id="Type" value="deleteown" />
     	<parameter id="Directive" value="deleteown" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 	<extension plugin-id="master" point-id="VFSPerm" id="Rename">
 	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
     	<parameter id="Method" value="handle" />
     	<parameter id="Type" value="rename" />
     	<parameter id="Directive" value="rename" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 	<extension plugin-id="master" point-id="VFSPerm" id="RenameOwn">
 	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
     	<parameter id="Method" value="handle" />
-    	<parameter id="Type" value="rename" />
+    	<parameter id="Type" value="renameown" />
     	<parameter id="Directive" value="renameown" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 	<extension plugin-id="master" point-id="VFSPerm" id="PrivPath">
 	    <parameter id="Class" value="org.drftpd.vfs.perms.def.VFSDefaultPermission" />
     	<parameter id="Method" value="handle" />
     	<parameter id="Type" value="privpath" />
     	<parameter id="Directive" value="privpath" />
+    	<parameter id="Priority" value="100" />
 	</extension>
 
 </plugin>

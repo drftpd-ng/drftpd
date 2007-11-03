@@ -55,5 +55,6 @@
 	   	<parameter-def id="Method" />
 	   	<parameter-def id="Type" />
 	  	<parameter-def id="Directive" />
+	  	<parameter-def id="Priority" type="number"/>
 	</extension-point>
 </plugin>

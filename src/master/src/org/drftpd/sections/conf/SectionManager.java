@@ -34,7 +34,7 @@ import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author mog
@@ -143,15 +143,13 @@ public class SectionManager implements SectionManagerInterface {
 		}
 		
 		try {
-			DirectoryHandle root = new DirectoryHandle("/");		
-			root.createDirectoryRecursive(section.getCurrentDirectory().getPath().substring(1));
+			String path = section.getCurrentDirectory().getPath();
+			DirectoryHandle dir = new DirectoryHandle(VirtualFileSystem.stripLast(path));		
+			dir.createDirectoryRecursive(VirtualFileSystem.getLast(path));
 		} catch (FileExistsException e) {
 			// good the file exists, no need to create it.
 		} catch (FileNotFoundException e) {
-			logger.warn("How come this happened? Does root exist?", e);
-		} catch (ObjectNotValidException e) {
-			logger.error(e, e);
-			throw new RuntimeException("The VFS is inconsistent", e);
+			logger.error("What happened? I don't know how to handle this", e);
 		}
 	}
 

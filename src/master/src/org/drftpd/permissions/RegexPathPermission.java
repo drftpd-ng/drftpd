@@ -17,6 +17,10 @@ public class RegexPathPermission extends PathPermission {
 	public boolean checkPath(DirectoryHandle path) {
 		Matcher m = _pat.matcher(path.getPath());
 		
-		return m.find();
+		return m.matches();
+	}
+	
+	public String toString() {
+		return getClass().getCanonicalName()+",pat="+_pat.toString()+",users="+_users.toString();
 	}
 }

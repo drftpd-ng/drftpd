@@ -173,11 +173,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			} catch (FileNotFoundException e) {
 				logger.error("Unable to create base directory for section " + getName(), e);
 				return;
-			} catch (ObjectNotValidException e) {
-				logger.error(e, e);
-				throw new RuntimeException("The VFS is inconsistent", e);
 			}
-
 		}
 		
 		// create the directory

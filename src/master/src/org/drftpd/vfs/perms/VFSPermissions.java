@@ -18,10 +18,12 @@
 package org.drftpd.vfs.perms;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.drftpd.permissions.PathPermission;
@@ -40,16 +42,22 @@ public class VFSPermissions {
 	private final static Logger logger = Logger.getLogger(VFSPermissions.class);
 
 	private HashMap<String, PermissionWrapper> _handlersMap;	
-	private Hashtable<String, ArrayList<PathPermission>> _pathPerms;
+	
+	// HashMap<Type, HashMap<Directive, List<PathPermission>>> 
+	private HashMap<String, HashMap<String, LinkedList<PathPermission>>> _pathPerms;	
+	private HashMap<String, String> _directiveToType;
+	private HashMap<String, TreeMap<Integer, String>> _priorities;
 	
 	public VFSPermissions() {
 		loadExtensions();
 		
-		_pathPerms = new Hashtable<String, ArrayList<PathPermission>>();
+		_pathPerms = new HashMap<String, HashMap<String, LinkedList<PathPermission>>>();
 	}
 
 	public void loadExtensions() {
 		_handlersMap = new HashMap<String, PermissionWrapper>();
+		_directiveToType = new HashMap<String, String>();
+		_priorities = new HashMap<String, TreeMap<Integer, String>>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("master", "VFSPerm");
@@ -60,6 +68,7 @@ public class VFSPermissions {
 	    	<parameter-def id="Method" />
 	    	<parameter-def id="Type" />
 	     	<parameter-def id="Directive" />
+	     	<parameter-def id="Priority" />
 	   	</extension-point>
 		*/
 		
@@ -87,6 +96,26 @@ public class VFSPermissions {
 				VFSPermHandler permHnd = (VFSPermHandler) clazz.newInstance();
 				PermissionWrapper pw = new PermissionWrapper(permHnd, m);				
 				_handlersMap.put(directive, pw);
+				_directiveToType.put(directive, type);
+				
+				// building execution order.
+				int priority = ext.getParameter("Priority").valueAsNumber().intValue();
+				TreeMap<Integer, String> order = _priorities.get(type);
+				if (order == null) {
+					order = new TreeMap<Integer, String>();
+					_priorities.put(type, order);
+				}
+				while (true) {
+					if (order.containsKey(priority)) {
+						logger.debug("The slot that " + directive + " is trying to use is already allocated, " +
+								"check you xmls, allocting the next available");
+						priority++;
+					} else {
+						order.put(priority, directive);
+						break;
+					}
+				}
+				
 			} catch (Exception e) {
 				logger.error(e, e);
 			}
@@ -95,8 +124,9 @@ public class VFSPermissions {
 	
 	private boolean verifyType(String type) {
 		type = type.toLowerCase();
-		if (type.equals("upload") || type.equals("makedir") || type.startsWith("delete")
-				|| type.startsWith("rename") || type.equals("privpath") || type.equals("download")) {
+		if (type.equals("upload") || type.equals("makedir") || type.equals("delete") 
+				|| type.equals("deleteown")	|| type.startsWith("rename") || type.equals("renameown")
+				|| type.equals("privpath") || type.equals("download")) {
 			return true;
 		}
 		
@@ -118,12 +148,21 @@ public class VFSPermissions {
 	}
 	
 	protected void addPermissionToMap(String directive, PathPermission pathPerm) {
-		ArrayList<PathPermission> list;
-		if (!_pathPerms.containsKey(directive)) {
-			list = new ArrayList<PathPermission>();
-			_pathPerms.put(directive, list);
+		String type = _directiveToType.get(directive);
+		
+		HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get(type);
+		
+		if (map == null) {
+			map = new HashMap<String, LinkedList<PathPermission>>();
+			_pathPerms.put(type, map);
+		}
+		
+		LinkedList<PathPermission> list;
+		if (!map.containsKey(directive)) {
+			list = new LinkedList<PathPermission>();
+			map.put(directive, list);
 		} else {
-			list = _pathPerms.get(directive);
+			list = map.get(directive);
 		}
 		
 		list.add(pathPerm);
@@ -138,16 +177,54 @@ public class VFSPermissions {
 			throw new IllegalArgumentException("Invalid VFS perm type.");
 		}
 		
-		ArrayList<PathPermission> perms = _pathPerms.get(type);
+		HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get(type);
+		TreeMap<Integer, String> order = _priorities.get(type);
 		
-		if (perms != null && !perms.isEmpty()) {
-			for (PathPermission perm : perms) {
-				if (perm.checkPath(path)) {
-					return perm.check(user);
+		if (map == null) {
+			return defaults;
+		}
+		
+		for (Iterator<Entry<Integer, String>> iter = order.entrySet().iterator(); iter.hasNext();) {
+			Entry<Integer, String> entry = iter.next();
+			String directive = entry.getValue();
+			
+			LinkedList<PathPermission> perms = map.get(directive);
+			
+			if (perms == null) {
+				// 'directive' was not found in perms.conf
+				continue;
+			}
+			
+			if (perms != null && !perms.isEmpty()) {
+				for (PathPermission perm : perms) {
+					if (perm.checkPath(path)) {
+						return perm.check(user);
+					}
 				}
 			}
 		}
 		
 		return defaults;
+	}
+	
+	// if you want to debug this class, call this method.
+	public void dumpMap() {
+		for (Entry<String, HashMap<String, LinkedList<PathPermission>>> e1 : _pathPerms.entrySet()) {
+			String type = e1.getKey();
+			HashMap<String, LinkedList<PathPermission>> map = e1.getValue();
+			
+			logger.debug(type + " is handling:");
+			TreeMap<Integer, String> order = _priorities.get(type);
+			for (Iterator<Entry<Integer, String>> iter = order.entrySet().iterator(); iter.hasNext();) {
+				Entry<Integer, String> e2 = iter.next();
+				String directive = e2.getValue();
+				logger.debug(e2.getKey()+". "+ directive);
+				if (map.get(directive) == null) {
+					// 'directive' was not found in perms.conf
+					continue;
+				}
+				logger.debug(map.get(directive).toString());
+			}
+		}
 	}
 }
