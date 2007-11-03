@@ -1,7 +1,3 @@
-set ANT_HOME=D:\Java\Ant
-set JAVA_HOME=C:\Arquivos de programas\Java\jdk1.6.0_03
-set PATH=%PATH%;%ANT_HOME%\bin
-
 @echo off
 rem $Id$
 call "%ANT_HOME%\bin\ant" -buildfile installer.xml
