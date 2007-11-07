@@ -323,7 +323,7 @@ public class Slave {
 			while (true) {
 				synchronized (_transfers) {
 					try {
-						_transfers.wait(300000);
+						_transfers.wait(5000);
 					} catch (InterruptedException e) {
 					}
 					synchronized (_renameQueue) {
