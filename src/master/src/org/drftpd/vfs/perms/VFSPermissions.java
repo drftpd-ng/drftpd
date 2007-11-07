@@ -173,6 +173,7 @@ public class VFSPermissions {
 	}
 	
 	public boolean checkPathPermission(String type, User user, DirectoryHandle path, boolean defaults) {
+		
 		if (!verifyType(type)) {
 			throw new IllegalArgumentException("Invalid VFS perm type.");
 		}
@@ -184,6 +185,11 @@ public class VFSPermissions {
 			return defaults;
 		}
 		
+		if (order == null) {
+			logger.debug("You've got some screwy plugin.xml files!  Blame fr0w!", new Throwable());
+			// we'll throw a null pointer at this point, but at least someone will notice :)
+		}
+				
 		for (Iterator<Entry<Integer, String>> iter = order.entrySet().iterator(); iter.hasNext();) {
 			Entry<Integer, String> entry = iter.next();
 			String directive = entry.getValue();

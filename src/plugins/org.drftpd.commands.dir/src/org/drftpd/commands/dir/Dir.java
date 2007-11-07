@@ -115,59 +115,73 @@ public class Dir extends CommandInterface {
         return response;
     }
 
+	private void addVictimInformationToResponse(InodeHandle victim,
+			CommandResponse response) throws FileNotFoundException {
+		response.setObject(FILENAME, victim.getName());
+		response.setObject(FILESIZE, victim.getSize());
+		response.setObject(USERNAME, victim.getUsername());
+	}
+	
     /**
      * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
      *
      * This command causes the file specified in the pathname to be
      * deleted at the server site.
      */
-    public CommandResponse doDELE(CommandRequest request) {
+	public CommandResponse doDELE(CommandRequest request) {
 
-    	// argument check
-    	if (!request.hasArgument()) {
-    		//out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-    		return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-    	}
+		// argument check
+		if (!request.hasArgument()) {
+			// out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
+			return StandardCommandManager
+					.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
 
-    	// get filenames
-    	String fileName = request.getArgument();
-    	InodeHandle requestedFile;
-    	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_250_ACTION_OKAY");
-    	User user = request.getSession().getUserNull(request.getUser());
+		// get filenames
+		String fileName = request.getArgument();
+		CommandResponse response = StandardCommandManager
+				.genericResponse("RESPONSE_250_ACTION_OKAY");
+		User user = request.getSession().getUserNull(request.getUser());
+		InodeHandle victim = null;
+		try {
+			victim = request.getCurrentDirectory().getInodeHandle(fileName,
+					user);
 
-    	try {
+			addVictimInformationToResponse(victim, response);
 
-    		requestedFile = request.getCurrentDirectory().getInodeHandle(fileName, user); 
+			if (victim.isDirectory()) {
+				DirectoryHandle victimDir = (DirectoryHandle) victim;
+				if (!victimDir.isEmpty(user)) {
+					return new CommandResponse(550, victim.getPath()
+							+ ": Directory not empty");
+				}
+			}
 
-    		response.setObject(FILENAME, requestedFile.getName());
-    		response.setObject(FILESIZE, requestedFile.getSize());
-    		response.setObject(USERNAME, requestedFile.getUsername());
+			victim.delete(user); // the file is only deleted here.
+		} catch (FileNotFoundException e) {
+			// this isn't good or bad, there could have easily been a race in
+			// another thread to delete this file
+			return new CommandResponse(550, e.getMessage());
+		} catch (PermissionDeniedException e) {
+			return StandardCommandManager
+					.genericResponse("RESPONSE_530_ACCESS_DENIED");
+		}
+		if (victim.isFile() || victim.isLink()) { // link or file
+			GlobalContext.getEventService().publish(
+					new DirectoryFtpEvent(request.getSession().getUserNull(
+							request.getUser()), "DELE", victim.getParent()));
+			// strange that we're sending the parent directory of the file being
+			// deleted without mentioning the file that was deleted...
+		} else { // if (requestedFile.isDirectory()) {
+			GlobalContext.getEventService()
+					.publish(
+							new DirectoryFtpEvent(request.getSession()
+									.getUserNull(request.getUser()), "RMD",
+									(DirectoryHandle) victim));
+		}
+		return response;
+	}
 
-    		if (requestedFile.isDirectory()) {
-    			DirectoryHandle victim = (DirectoryHandle) requestedFile;
-    			if (!victim.isEmpty(user)) {
-    				return new CommandResponse(550, requestedFile.getPath()+ ": Directory not empty");
-    			}
-    		}
-
-    		if (requestedFile.isFile()) {
-    			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
-    					request.getSession().getUserNull(request.getUser()), "DELE", requestedFile.getParent()));
-    		} else if (requestedFile.isDirectory()) {
-    			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
-    					request.getSession().getUserNull(request.getUser()), "RMD", (DirectoryHandle)requestedFile));
-    		}
-    		
-    		requestedFile.delete(user); // the file is only deleted here.
-    	} catch (FileNotFoundException e) {
-    		// that's not good, the file vanished before the operation was finished.
-    		return new CommandResponse(550, e.getMessage());
-    	} catch (PermissionDeniedException e) {
-    		return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    	}
-
-    	return response;
-    }
 
     /**
      * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
