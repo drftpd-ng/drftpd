@@ -189,8 +189,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(name);
 		}
 		if (!_files.containsKey(name)) {
-			throw new FileNotFoundException(name + " does not exist in "
-					+ getPath());
+			throw new FileNotFoundException("FileNotFound: " + name + " does not exist");
 		}
 		SoftReference<VirtualFileSystemInode> sf = _files.get(name);
 		VirtualFileSystemInode inode = null;
