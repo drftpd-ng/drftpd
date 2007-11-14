@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -638,5 +639,17 @@ public class Dir extends CommandInterface {
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
+    }
+    
+    public CommandResponse doSITE_FIXSIZE(CommandRequest request) {
+    	long difference = 0;
+    	try {
+			difference = request.getCurrentDirectory().validateSizeRecursive();
+		} catch (FileNotFoundException e) {
+			return new CommandResponse(500, e.getMessage());
+		}
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		response.addComment("Difference was of " + Bytes.formatBytes(difference));
+		return response;
     }
 }

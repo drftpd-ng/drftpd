@@ -87,6 +87,15 @@ help.specific ${command} <target> <linkname>
 help.specific Creates a symbolic link.
 }
 
+SITE FIXSIZE {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_FIXSIZE
+perms =siteop
+help Recursively walks through and validates the size information of the current working directory
+help.specific ${command}
+}
+
 XCRC {
 plugin org.drftpd.commands.dir
 class Dir

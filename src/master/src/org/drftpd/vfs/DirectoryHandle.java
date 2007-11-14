@@ -759,4 +759,18 @@ public class DirectoryHandle extends InodeHandle implements
 		GlobalContext.getGlobalContext().getSlaveManager().deleteOnAllSlaves(this);
 		super.deleteUnchecked();
 	}
+
+	public long validateSizeRecursive() throws FileNotFoundException {
+		Set<InodeHandle> inodes = getInodeHandlesUnchecked();
+		long newSize = 0;
+		long oldSize = getSize();
+		for (InodeHandle inode : inodes) {
+			if (inode.isDirectory()) {
+				((DirectoryHandle) inode).validateSizeRecursive();
+			}
+			newSize += inode.getSize();
+		}
+		getInode().setSize(newSize);
+		return oldSize - newSize;
+	}
 }
