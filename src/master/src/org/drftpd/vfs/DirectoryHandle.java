@@ -297,8 +297,7 @@ public class DirectoryHandle extends InodeHandle implements
 		throw new ObjectNotValidException(name + " is not a directory");
 	}
 	
-	public FileHandle getFile(String name, User user) throws FileNotFoundException,
-			ObjectNotValidException {
+	public FileHandle getFile(String name, User user) throws FileNotFoundException, ObjectNotValidException {
 		FileHandle file = getFileUnchecked(name);
 		
 		checkHiddenPath(file.getParent(), user);
@@ -311,6 +310,9 @@ public class DirectoryHandle extends InodeHandle implements
 		InodeHandle handle = getInodeHandleUnchecked(name);
 		if (handle.isFile()) {
 			return (FileHandle) handle;
+		} else if (handle.isLink()) {
+			LinkHandle link = (LinkHandle) handle;
+			return link.getTargetFileUnchecked();
 		}
 		throw new ObjectNotValidException(name + " is not a file");
 	}
@@ -319,7 +321,7 @@ public class DirectoryHandle extends InodeHandle implements
 			ObjectNotValidException {
 		LinkHandle link = getLinkUnchecked(name);
 		
-		checkHiddenPath(link.getTargetDirectory(user), user);
+		checkHiddenPath(link.getTargetInode(user), user);
 		
 		return link;
 	}
@@ -672,18 +674,16 @@ public class DirectoryHandle extends InodeHandle implements
 		// check if this dir is hidden.
 		checkHiddenPath(this, user);
 
-		DirectoryHandle dir = null;
-		if (isDirectory(target)) {
-			dir = new DirectoryHandle(target);
-		} else if (isFile(target)) {
-			dir = new FileHandle(target).getParent();
-		} else if (isLink(target)) {
+		InodeHandle inode = getInodeHandle(target, user);
+		
+		// check if the target is hidden
+		checkHiddenPath(inode, user);
+		
+		if (inode.isLink()) {
 			throw new PermissionDeniedException("Impossible to point a link to a link");
 		}
-		// check if the target is hidden
-		checkHiddenPath(dir, user);
 		
-		return createLinkUnchecked(name, target, user.getName(), user.getGroup());		
+		return createLinkUnchecked(name, target, user.getName(), user.getGroup());	
 	}
 
 	public boolean isRoot() {

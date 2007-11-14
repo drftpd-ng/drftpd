@@ -77,7 +77,7 @@ help.specific Changes ownership of a file/directory.
 #collides with SITE CHGRP defined by UserManagement
 #SITE\ CHGRP=org.drftpd.commands.Dir
 
-SITE LINK  {
+SITE LINK {
 plugin org.drftpd.commands.dir
 class Dir
 method doSITE_LINK

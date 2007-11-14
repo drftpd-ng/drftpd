@@ -29,14 +29,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.exceptions.ObjectNotFoundException;
-
-import org.drftpd.stats.StatsInterface;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.TransferFailedException;
+import org.drftpd.stats.StatsInterface;
 
 /**
  * Lowest representation of a File object.
@@ -44,9 +42,14 @@ import org.drftpd.slave.TransferFailedException;
 public class VirtualFileSystemFile extends VirtualFileSystemInode implements StatsInterface  {
 
 	protected static final Collection<String> transientListFile = Arrays
-			.asList(new String[] { "name", "parent", "xfertime", "checksum", "size",
+			.asList(new String[] { "name", "parent", "xfertime", "checksum",
 					"downloadedBytes", "downloadedFiles", "downloadedTime",
 					"uploadedBytes", "uploadedFiles", "uploadedTime"});
+	// the following fields AREN'T transient, they're simply stored in the
+	// KeyedMap instead of as their own independent javabeans element
+	//
+	// xfertime, checksum, downloadedBytes, downloadedFiles, downloadedTime,
+	// uploadedBytes, uploadedFiles, uploadedTime
 
 	public static final Key CRC = new Key(VirtualFileSystemFile.class,
 			"checksum", Long.class);
@@ -69,6 +72,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	private transient ArrayList<RemoteTransfer> _uploads = new ArrayList<RemoteTransfer>(1);
 	
 	private transient ArrayList<RemoteTransfer> _downloads = new ArrayList<RemoteTransfer>(1);
+
+	private long _size;
 
 	/**
 	 * @return a set of which slaves have this file.
@@ -101,7 +106,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 
 	public VirtualFileSystemFile(String username, String group, long size,
 			Set<String> slaves) {
-		super(username, group, size);
+		super(username, group);
+		setSize(size);
 		_slaves = slaves;
 	}
 
@@ -171,6 +177,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 				pdArr[x].setValue("transient", Boolean.TRUE);
 			}
 		}
+		// needed to create a VFSFile object during unserialization
 		enc.setPersistenceDelegate(VirtualFileSystemFile.class,
 				new DefaultPersistenceDelegate(new String[] { "username",
 						"group", "size", "slaves" }));
@@ -190,14 +197,18 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * @param size
 	 */
 	@Override
-	public void setSize(long size) {
+	public synchronized void setSize(long size) {
 		if (size < 0) {
 			throw new IllegalArgumentException("File size cannot be < 0");
 		}
-		getParent().addSize(-_size); // removing old size from parent.
-		_size = size;
-		getParent().addSize(_size);
-		commit();
+		if (getParent() == null) {
+			// we haven't been assigned a parent yet
+			_size = size;
+		} else {
+			getParent().addSize(-_size); // removing old size from parent.
+			_size = size;
+			getParent().addSize(_size);
+		}
 	}
 
 	public boolean isUploading() {
@@ -338,7 +349,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * Equals to file size.
 	 */
 	public void setUploadedBytes(long bytes) {
-		return;		
+		return;
 	}
 
 	/*
@@ -347,7 +358,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * Useless since a file cannot be uploaded more than once.
 	 */
 	public void setUploadedFiles(int files) {
-		return;		
+		return;
 	}
 
 	/*
@@ -356,7 +367,12 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * Equals to setXfertime().
 	 */
 	public void setUploadedTime(long millis) {
-		return;		
+		return;
+	}
+
+	@Override
+	public long getSize() {
+		return _size;
 	}
 
 }

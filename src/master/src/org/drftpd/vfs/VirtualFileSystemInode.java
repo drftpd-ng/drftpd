@@ -57,8 +57,6 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
 	protected transient VirtualFileSystemDirectory _parent;
 
-	protected long _size = 0;
-
 	protected String _username;
 	
 	public String descriptiveName() {
@@ -69,10 +67,9 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		VirtualFileSystem.getVirtualFileSystem().writeInode(this);
 	}
 
-	public VirtualFileSystemInode(String user, String group, long size) {
+	public VirtualFileSystemInode(String user, String group) {
 		_username = user;
 		_group = group;
-		_size = size;
 		_lastModified = System.currentTimeMillis();
 	}
 
@@ -149,16 +146,12 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	/**
 	 * @return Returns the size of the dir/file/link.
 	 */
-	public long getSize() {
-		return _size;
-	}
+	public abstract long getSize();
 	
 	/**
 	 * Set the size of the dir/file/link.
 	 */
-	public void setSize(long l) {
-		_size = l;
-	}
+	public abstract void setSize(long l);
 
 	/**
 	 * @return the owner username.

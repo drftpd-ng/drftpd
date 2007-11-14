@@ -29,6 +29,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
@@ -466,9 +467,9 @@ public class Dir extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_LINK(CommandRequest request) {
+    public CommandResponse doSITE_LINK(CommandRequest request) throws ImproperUsageException {
         if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        	throw new ImproperUsageException();
         }
 
         StringTokenizer st = new StringTokenizer(request.getArgument(),

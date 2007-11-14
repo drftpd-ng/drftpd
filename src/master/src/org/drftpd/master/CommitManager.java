@@ -49,7 +49,7 @@ public class CommitManager {
 		return manager;
 	}
 
-	public void start() {
+	public synchronized void start() {
 		_commitMap = new HashMap<Commitable, Date>();
 		new Thread(new CommitHandler()).start();
 	}
@@ -63,19 +63,25 @@ public class CommitManager {
 		notifyAll();
 	}
 
-	private synchronized void processAll(Map<Commitable, Date> map) {
-		long time = System.currentTimeMillis();
-		for (Iterator<Entry<Commitable, Date>> iter = map.entrySet().iterator(); iter
-				.hasNext();) {
-			Entry<Commitable, Date> entry = iter.next();
-			if (time - entry.getValue().getTime() > 10000) {
-				try {
-					entry.getKey().writeToDisk();
-				} catch (IOException e) {
-					logger.error("Error writing object to disk - "
-							+ entry.getKey().descriptiveName(), e);
+	private synchronized void processAllLoop() {
+		while (true) {
+		long time = System.currentTimeMillis() - 10000;
+			for (Iterator<Entry<Commitable, Date>> iter = _commitMap.entrySet()
+					.iterator(); iter.hasNext();) {
+				Entry<Commitable, Date> entry = iter.next();
+				if (entry.getValue().getTime() < time) {
+					try {
+						entry.getKey().writeToDisk();
+					} catch (IOException e) {
+						logger.error("Error writing object to disk - "
+								+ entry.getKey().descriptiveName(), e);
+					}
+					iter.remove();
 				}
-				iter.remove();
+			}
+			try {
+				wait(10050);
+			} catch (InterruptedException e) {
 			}
 		}
 	}
@@ -91,20 +97,10 @@ public class CommitManager {
 					.getPluginFor(this)).getDescriptor());
 			Thread.currentThread().setContextClassLoader(loader);
 			Thread.currentThread().setName("CommitHandler");
-			while (true) {
-				synchronized (CommitManager.getCommitManager()) {
-					processAll(_commitMap);
-					try {
-						CommitManager.getCommitManager().wait(10500);
-						// this will wake up when add() is called or a maximum
-						// of 10500
-					} catch (InterruptedException e) {
-					}
-				}
-			}
+			processAllLoop();
 		}
 	}
-	
+
 	/**
 	 * Returns true if the object was removed from the CommitQueue
 	 * @param object

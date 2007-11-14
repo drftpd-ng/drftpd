@@ -36,7 +36,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 			.asList(new String[] { "name", "parent", "size" });
 
 	public VirtualFileSystemLink(String user, String group, String link) {
-		super(user, group, 0);
+		super(user, group);
 		_link = link;
 	}
 
@@ -47,6 +47,23 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 	public void setLinkPath(String link) {
 		_link = link;
 		commit();
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.drftpd.vfs.VirtualFileSystemInode#getSize()
+	 */
+	@Override
+	public long getSize() {
+		return getLinkPath().length();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.drftpd.vfs.VirtualFileSystemInode#setSize(long)
+	 */
+	@Override
+	public void setSize(long l) {
+		return;
+		// size of links are the length of the path/name that it's pointing at
 	}
 
 	@Override

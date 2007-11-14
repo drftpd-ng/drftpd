@@ -42,12 +42,14 @@ import org.drftpd.exceptions.FileExistsException;
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected static final Collection<String> transientListDirectory = Arrays
-			.asList(new String[] { "name", "parent", "files", "SFVInfo" });
+			.asList(new String[] { "name", "parent", "files"});
 
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = null;
 
+	protected long _size = 0;
+
 	public VirtualFileSystemDirectory(String user, String group) {
-		super(user, group, 0);
+		super(user, group);
 		_files = new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
 	}
 	
@@ -65,7 +67,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		commit();
 	}
 
-	protected void addSize(long l) {
+	protected synchronized void addSize(long l) {
 		_size = getSize() + l;
 		getParent().addSize(l);
 		commit();
@@ -183,10 +185,19 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 */
 	protected synchronized VirtualFileSystemInode getInodeByName(String name)
 			throws FileNotFoundException {
-		//logger.debug("getInodeByName(" + name + ")");
 		name = VirtualFileSystem.fixPath(name);
 		if (name.startsWith(VirtualFileSystem.separator)) {
 			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(name);
+		}
+		if (name.indexOf(VirtualFileSystem.separator) != -1) {
+			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(
+					getPath() + VirtualFileSystem.separator + name);
+		}
+		if (name.equals("..")) {
+			return getParent();
+		}
+		if (name.equals(".")) {
+			return this;
 		}
 		if (!_files.containsKey(name)) {
 			throw new FileNotFoundException("FileNotFound: " + name + " does not exist");
@@ -258,5 +269,15 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	@Override
 	public String toString() {
 		return "Directory" + super.toString();
+	}
+
+	@Override
+	public long getSize() {
+		return _size;
+	}
+
+	@Override
+	public void setSize(long l) {
+		_size = l;
 	}
 }

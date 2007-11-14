@@ -49,7 +49,7 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 	public DirectoryHandle getTargetDirectory(User user) throws FileNotFoundException,
 			ObjectNotValidException {
 		DirectoryHandle dir = getParent().getDirectoryUnchecked(getInode().getLinkPath());
-		checkHiddenPath(dir, user);		
+		checkHiddenPath(dir, user);
 		return dir;
 	}
 	
@@ -90,6 +90,18 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 	@Override
 	public boolean isLink() {
 		return true;
+	}
+
+	public InodeHandle getTargetInode(User user) throws FileNotFoundException,
+			ObjectNotValidException {
+		InodeHandle inode = getTargetInodeUnchecked();
+		checkHiddenPath(inode, user);
+		return inode;
+	}
+
+	public InodeHandle getTargetInodeUnchecked() throws FileNotFoundException,
+			ObjectNotValidException {
+		return getParent().getInodeHandleUnchecked(getInode().getLinkPath());
 	}
 
 }

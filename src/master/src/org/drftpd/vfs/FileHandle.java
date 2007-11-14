@@ -244,6 +244,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 */
 	public void setSize(long size) throws FileNotFoundException {
 		getInode().setSize(size);
+		getInode().commit();
 	}
 
 	/**
