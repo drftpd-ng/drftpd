@@ -83,8 +83,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	public synchronized void createDirectory(String name, String user,
 			String group) throws FileExistsException {
 		if (_files.containsKey(name)) {
-			throw new FileExistsException(name + " already exists in "
-					+ getPath());
+			throw new FileExistsException("An object named " + name
+					+ " already exists in " + getPath());
 		}
 		VirtualFileSystemInode inode = new VirtualFileSystemDirectory(user,
 				group);

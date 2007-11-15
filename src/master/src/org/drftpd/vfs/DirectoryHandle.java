@@ -355,6 +355,7 @@ public class DirectoryHandle extends InodeHandle implements
 		try {
 			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
 		} catch (FileNotFoundException e) {
+			logger.debug("FileNotFoundException during remerge", e);
 			// create directory for merging
 			getParent().createDirectoryRecursive(getName());
 			
@@ -544,6 +545,11 @@ public class DirectoryHandle extends InodeHandle implements
 			dir = createDirectorySystem(name);
 		} catch (FileNotFoundException e) {
 			getParent().createDirectoryRecursive(getName());
+		} catch (FileExistsException e) {
+			logger.debug("Object already exists -- " + getPath()
+					+ VirtualFileSystem.separator + name, e);
+			throw new FileExistsException("Object already exists -- "
+					+ getPath() + VirtualFileSystem.separator + name);
 		}
 		if (dir == null) {
 			dir = createDirectorySystem(name);
