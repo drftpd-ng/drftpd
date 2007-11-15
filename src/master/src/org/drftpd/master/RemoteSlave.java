@@ -264,7 +264,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			return getLastUploadReceiving();
 		} else if (dir == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 			return getLastDownloadSending();
-		} else if (dir == Transfer.TRANSFER_THROUGHPUT) {
+		} else if (dir == Transfer.TRANSFER_UNKNOWN) {
 			return getLastTransfer();
 		} else {
 			throw new IllegalArgumentException();
@@ -312,7 +312,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 			for (Iterator i = _transfers.values().iterator(); i.hasNext();) {
 				RemoteTransfer transfer = (RemoteTransfer) i.next();
-				switch (transfer.getState()) {
+				switch (transfer.getTransferDirection()) {
 				case Transfer.TRANSFER_RECEIVING_UPLOAD:
 					throughputUp += transfer.getXferSpeed();
 					bytesReceived += transfer.getTransfered();
@@ -326,12 +326,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					break;
 
 				case Transfer.TRANSFER_UNKNOWN:
-				case Transfer.TRANSFER_THROUGHPUT:
 					break;
 
 				default:
 					throw new FatalException("unrecognized direction - "
-							+ transfer.getState() + " for " + transfer);
+							+ transfer.getTransferDirection() + " for " + transfer);
 				}
 			}
 		}
@@ -851,9 +850,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		if (transfer == null) {
 			throw new IllegalStateException("there is a bug in code");
 		}
-		if (transfer.getState() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+		if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 			updateDownloadedBytes(transfer.getTransfered());
-		} else if (transfer.getState() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+		} else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 			updateUploadedBytes(transfer.getTransfered());
 		} // else, we don't care
 		commit();

@@ -78,8 +78,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	/**
 	 * @return a set of which slaves have this file.
 	 */
-	public synchronized Set<String> getSlaves() {
-		return new HashSet<String>(_slaves);
+	public Set<String> getSlaves() {
+		synchronized (_slaves) {
+			return new HashSet<String>(_slaves);
+		}
 	}
 	
 	@Override
@@ -94,7 +96,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		return ret.toString();
 	}
 
-	public synchronized void setSlaves(Set<String> slaves) {
+	public void setSlaves(Set<String> slaves) {
 		_slaves = slaves;
 	}
 
@@ -115,8 +117,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * Add a slave to the list of slaves that contain this file.
 	 * @param rslave
 	 */
-	public synchronized void addSlave(String rslave) {
-		_slaves.add(rslave);
+	public void addSlave(String rslave) {
+		synchronized (_slaves) {
+			_slaves.add(rslave);
+		}
 		commit();
 	}
 
@@ -138,9 +142,13 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * Remove the slave from slave list.
 	 * @param rslave
 	 */
-	public synchronized void removeSlave(String rslave) {
-		_slaves.remove(rslave);
-		if (_slaves.isEmpty()) {
+	public void removeSlave(String rslave) {
+		boolean isEmpty;
+		synchronized (_slaves) {
+			_slaves.remove(rslave);
+			isEmpty = _slaves.isEmpty();
+		}		
+		if (isEmpty) {
 			delete();
 		} else {
 			commit();
@@ -278,17 +286,19 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		return isTransferring(_downloads);
 	}
 
-	public synchronized boolean isAvailable() {
-		for (String slave : _slaves) {
-			try {
-				if (GlobalContext.getGlobalContext().getSlaveManager()
-						.getRemoteSlave(slave).isAvailable()) {
-					return true;
+	public boolean isAvailable() {
+		synchronized (_slaves) {
+			for (String slave : _slaves) {
+				try {
+					if (GlobalContext.getGlobalContext().getSlaveManager()
+							.getRemoteSlave(slave).isAvailable()) {
+						return true;
+					}
+				} catch (ObjectNotFoundException e) {
+					removeSlave(slave);
 				}
-			} catch (ObjectNotFoundException e) {
-				removeSlave(slave);
 			}
-		}
+		}		
 		return false;
 	}
 

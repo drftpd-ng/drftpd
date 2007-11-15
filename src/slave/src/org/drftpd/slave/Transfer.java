@@ -77,8 +77,6 @@ public class Transfer {
 
 	public static final char TRANSFER_SENDING_DOWNLOAD = 'S';
 
-	public static final char TRANSFER_THROUGHPUT = 'A';
-
 	public static final char TRANSFER_UNKNOWN = 'U';
 
 	private File _file = null;

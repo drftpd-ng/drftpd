@@ -77,9 +77,7 @@ public class Misc extends CommandInterface {
      */
 	public CommandResponse doABOR(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-    	RemoteTransfer transfer = conn.getTransferState().getTransfer();
-    	if (transfer != null) {
-    		transfer.abort("Transfer aborted.");
+    	if (conn.getTransferState().abort("Transfer aborted.")) {
     		conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED")));
     	}
     	return new CommandResponse(226, request.getCommand().toUpperCase() + " command successful");

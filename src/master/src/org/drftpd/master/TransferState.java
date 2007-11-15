@@ -29,7 +29,10 @@ import org.drftpd.ActiveConnection;
 import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.slave.Transfer;
+import org.drftpd.slave.TransferFailedException;
+import org.drftpd.slave.TransferStatus;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
 
@@ -108,21 +111,14 @@ public class TransferState {
 
 	}
 	
-	public char getDirection(FtpRequest request) {
-		if (getPretRequest() != null) {
-			request = getPretRequest();
+	public synchronized char getDirection() {
+		RemoteTransfer transfer = getTransfer();
+		if (transfer == null) {
+			return Transfer.TRANSFER_UNKNOWN;
 		}
-		String cmd = request.getCommand();
-
-		if ("RETR".equals(cmd)) {
-			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		synchronized (transfer) {
+			return transfer.getTransferDirection();
 		}
-
-		if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
-			return Transfer.TRANSFER_RECEIVING_UPLOAD;
-		}
-
-		return Transfer.TRANSFER_UNKNOWN;
 	}
 	
 	public void reset() {
@@ -184,15 +180,6 @@ public class TransferState {
         } else {
             throw new IllegalStateException("Neither PASV nor PORT");
         }
-        
-		// Already done since we are using ActiveConnection and PasvConnection
-        //dataSocket.setSoTimeout(Connection.TIMEOUT); // 15 seconds timeout
-
-        //if (dataSocket instanceof SSLSocket) {
-        //    SSLSocket ssldatasocket = (SSLSocket) dataSocket;
-        //    ssldatasocket.setUseClientMode(false);
-        //    ssldatasocket.startHandshake();
-        //}
 
         return dataSocket;
 	}
@@ -255,10 +242,10 @@ public class TransferState {
 	}
 	
 	public boolean isTransfering() {
-		return getTransfer() != null;
+		return getDirection() != Transfer.TRANSFER_UNKNOWN;
 	}
 	
-	public RemoteTransfer getTransfer() {
+	private RemoteTransfer getTransfer() {
 		return _transfer;
 	}
 
@@ -305,5 +292,62 @@ public class TransferState {
 
 	public long getResumePosition() {
 		return _resumePosition;
+	}
+
+	/**
+	 * Returns true if the transfer was aborted
+	 * 
+	 * @param reason
+	 * @return
+	 */
+	public synchronized boolean abort(String reason) {
+		RemoteTransfer rt = getTransfer();
+		_transfer = null;
+		if (rt != null) {
+			rt.abort(reason);
+			return true;
+		}
+		return false;
+	}
+
+	public static char getDirectionFromRequest(FtpRequest request) {
+		String cmd = request.getCommand();
+
+		if ("RETR".equals(cmd)) {
+			return Transfer.TRANSFER_SENDING_DOWNLOAD;
+		}
+
+		if ("STOR".equals(cmd) || "APPE".equals(cmd)) {
+			return Transfer.TRANSFER_RECEIVING_UPLOAD;
+		}
+		throw new IllegalStateException("Not transfering");
+	}
+
+	public synchronized InetSocketAddress getAddress() {
+		return getTransfer().getAddress();
+	}
+
+	public synchronized TransferStatus getTransferStatus() throws TransferFailedException {
+		return getTransfer().getTransferStatus();
+	}
+
+	public synchronized void sendFile(String path, char type, long resumePosition, String address) throws IOException, SlaveUnavailableException {
+		getTransfer().sendFile(path, type, resumePosition, address);
+	}
+
+	public synchronized void receiveFile(String path, char type, long resumePosition, String address) throws IOException, SlaveUnavailableException {
+		getTransfer().receiveFile(path, type, resumePosition, address);
+	}
+
+	public synchronized long getElapsed() {
+		return getTransfer().getElapsed();
+	}
+
+	public synchronized long getXferSpeed() {
+		return getTransfer().getXferSpeed();
+	}
+
+	public synchronized long getTransfered() {
+		return getTransfer().getTransfered();
 	}
 }

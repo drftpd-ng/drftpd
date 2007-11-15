@@ -1905,35 +1905,49 @@ public class UserManagementHandler extends CommandInterface {
 			synchronized (conn) {
 				TransferState ts = conn.getTransferState();
 				String userCommand = request.getCommand();
-				
-				env.add("idle", Time.formatTime(System.currentTimeMillis() - conn.getLastActive()));
-				
+
+				env.add("idle", Time.formatTime(System.currentTimeMillis()
+						- conn.getLastActive()));
+
 				if (!conn.isExecuting() && idle) {
-					response.addComment(session.jprintf(_bundle, _keyPrefix+type+".idle", env, request.getUser()));
-				} else if (ts.isTransfering()) {
-					speed = ts.getTransfer().getXferSpeed();
-					env.add("speed", Bytes.formatBytes(speed)+"/s");
-					env.add("slave", ts.getTransferSlave().getName());
-					env.add("file", ts.getTransferFile().getPath());
-					char direction = ts.getDirection(new FtpRequest(userCommand));
-					if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-						if (up) {
-							response.addComment(session.jprintf(_bundle, _keyPrefix+type+".up", env, request.getUser()));
+					response.addComment(session.jprintf(_bundle, _keyPrefix
+							+ type + ".idle", env, request.getUser()));
+				} else {
+					synchronized (ts) {
+						if (ts.isTransfering()) {
+							speed = ts.getXferSpeed();
+							env.add("speed", Bytes.formatBytes(speed) + "/s");
+							env.add("slave", ts.getTransferSlave().getName());
+							env.add("file", ts.getTransferFile().getPath());
+							char direction = ts.getDirection();
+							if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+								if (up) {
+									response.addComment(session.jprintf(
+											_bundle, _keyPrefix + type + ".up",
+											env, request.getUser()));
+								}
+								speedup += speed;
+								xfersup++;
+							} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+								if (down) {
+									env.add("percentcomplete",
+											calculateProgress(ts));
+									response.addComment(session.jprintf(
+											_bundle, _keyPrefix + type
+													+ ".down", env, request
+													.getUser()));
+								}
+								speeddn += speed;
+								xfersdn++;
+							}
+						} else if (command) {
+							env.add("command", conn.getRequest()
+									.getCommand());
+							response.addComment(session.jprintf(_bundle,
+									_keyPrefix + type + ".command", env,
+									request.getUser()));
 						}
-						speedup += speed;
-						xfersup++;
 					}
-					else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-						if (down) {
-							env.add("percentcomplete", calculateProgress(ts));
-							response.addComment(session.jprintf(_bundle, _keyPrefix+type+".down", env, request.getUser()));
-						}
-						speeddn += speed;
-						xfersdn++;
-					}
-				} else if (command) {
-					env.add("command", conn.getRequest().getCommand());
-					response.addComment(session.jprintf(_bundle, _keyPrefix+type+".command", env, request.getUser()));
 				}
 			}
 
@@ -1966,7 +1980,7 @@ public class UserManagementHandler extends CommandInterface {
 			// Not sure about this yet, just log the exception
 			logger.warn("Bug?",e);
 		}
-		return (ts.getTransfer().getTransfered() * 100) / size;
+		return (ts.getTransfered() * 100) / size;
 	}
 
 	public CommandResponse doSITE_SWHO(CommandRequest request) {

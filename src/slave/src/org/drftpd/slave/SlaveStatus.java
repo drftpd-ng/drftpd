@@ -132,7 +132,7 @@ public class SlaveStatus {
 		case Transfer.TRANSFER_SENDING_DOWNLOAD:
 			return getThroughputSending();
 
-		case Transfer.TRANSFER_THROUGHPUT:
+		case Transfer.TRANSFER_UNKNOWN:
 			return getThroughput();
 
 		default:

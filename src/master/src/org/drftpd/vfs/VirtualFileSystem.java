@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.io.SafeFileOutputStream;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
+import org.xml.sax.SAXParseException;
 
 import se.mog.io.PermissionDeniedException;
 
@@ -241,6 +242,9 @@ public class VirtualFileSystem {
 				dir.setFiles(files);
 			}
 			return inode;
+		} catch (Exception e) {
+			logger.debug("Error loading " + fullPath, e);
+			throw new FileNotFoundException(fullPath);
 		} finally {
 			if (xmlDec != null) {
 				xmlDec.close();

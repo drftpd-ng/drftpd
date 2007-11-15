@@ -33,6 +33,7 @@ import org.drftpd.vfs.TransferPointer;
  * @author zubov
  * @author mog
  * @version $Id$
+ * All calls to this class should be made through the TransferState object
  */
 public class RemoteTransfer {
 	private InetSocketAddress _address;
@@ -43,7 +44,7 @@ public class RemoteTransfer {
 
 	private TransferStatus _status;
 
-	private char _state = Transfer.TRANSFER_UNKNOWN;
+	private char _transferDirection = Transfer.TRANSFER_UNKNOWN;
 
 	private String _path;
 	
@@ -66,8 +67,8 @@ public class RemoteTransfer {
 		}
 	}
 
-	public char getState() {
-		return _state;
+	public char getTransferDirection() {
+		return _transferDirection;
 	}
 
 	public long getChecksum() {
@@ -148,7 +149,7 @@ public class RemoteTransfer {
 		
 		String index = SlaveManager.getBasicIssuer().issueReceiveToSlave(_rslave, path, type, position,	inetAddress, getTransferIndex());
 		
-		_state = Transfer.TRANSFER_RECEIVING_UPLOAD;
+		_transferDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
 		try {
 			_rslave.fetchResponse(index);
 		} catch (RemoteIOException e) {
@@ -161,7 +162,7 @@ public class RemoteTransfer {
 			throws IOException, SlaveUnavailableException {
 		_path = path;
 		String index = SlaveManager.getBasicIssuer().issueSendToSlave(_rslave, path, type, position, inetAddress, getTransferIndex());
-		_state = Transfer.TRANSFER_SENDING_DOWNLOAD;
+		_transferDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
 		try {
 			_rslave.fetchResponse(index);
 		} catch (RemoteIOException e) {

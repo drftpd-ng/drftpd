@@ -37,9 +37,9 @@ public class TransferPointer {
 		VirtualFileSystemInode vfsInode = VirtualFileSystem.getVirtualFileSystem().getInodeByPath(path);
 		if (vfsInode instanceof VirtualFileSystemFile) {
 			_vfsObject = (VirtualFileSystemFile) vfsInode;
-			if (transfer.getState() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 				_vfsObject.addUpload(transfer);
-			} else if (transfer.getState() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			} else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 				_vfsObject.addDownload(transfer);
 			} else {
 				throw new IllegalArgumentException("Transfer has to have a direction");

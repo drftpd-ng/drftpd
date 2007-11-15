@@ -205,7 +205,7 @@ public class DataConnectionHandler extends CommandInterface {
 										.getSSLHandshakeClientMode());
 						ci = slave.fetchTransferResponseFromIndex(index);
 			            ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
-			            address = new InetSocketAddress(slave.getPASVIP(),ts.getTransfer().getAddress().getPort());
+			            address = new InetSocketAddress(slave.getPASVIP(),ts.getAddress().getPort());
 					} catch (NoAvailableSlaveException e) {
 						reset(conn);
 						return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
@@ -234,7 +234,7 @@ public class DataConnectionHandler extends CommandInterface {
 										.getSSLHandshakeClientMode());
 						ci = slave.fetchTransferResponseFromIndex(index);
 			            ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
-			            address = new InetSocketAddress(slave.getPASVIP(),ts.getTransfer().getAddress().getPort());
+			            address = new InetSocketAddress(slave.getPASVIP(),ts.getAddress().getPort());
 					} catch (NoAvailableSlaveException e) {
 						reset(conn);
 						return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
@@ -385,7 +385,7 @@ public class DataConnectionHandler extends CommandInterface {
     	try {
         if (ts.isPreTransfer()) {
 				// do SlaveSelection now since we're using PRET Active transfers
-				char direction = ts.getDirection(ts.getPretRequest());
+				char direction = TransferState.getDirectionFromRequest(ts.getPretRequest());
 				if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 					ts.setTransferSlave(conn.getGlobalContext()
 							.getSlaveSelectionManager().getASlave(
@@ -844,7 +844,7 @@ public class DataConnectionHandler extends CommandInterface {
 
         try {
             String cmd = request.getCommand();
-            char direction = ts.getDirection(new FtpRequest(cmd));
+            char direction = TransferState.getDirectionFromRequest(new FtpRequest(cmd));
             boolean isStor = cmd.equalsIgnoreCase("STOR");
             boolean isRetr = cmd.equalsIgnoreCase("RETR");
             boolean isAppe = cmd.equalsIgnoreCase("APPE");
@@ -1044,11 +1044,11 @@ public class DataConnectionHandler extends CommandInterface {
             	String address = (String) request.getSession().getObject(INET_ADDRESS, "*@*");           	
             	
                 if (isRetr) {
-                    ts.getTransfer().sendFile(ts.getTransferFile().getPath(), ts.getType(),
+                    ts.sendFile(ts.getTransferFile().getPath(), ts.getType(),
                         ts.getResumePosition(), address);
 
                     while (true) {
-                        status = ts.getTransfer().getTransferStatus();
+                        status = ts.getTransferStatus();
 
                         if (status.isFinished()) {
                             break;
@@ -1060,11 +1060,11 @@ public class DataConnectionHandler extends CommandInterface {
                         }
                     }
                 } else if (isStor) {
-                    ts.getTransfer().receiveFile(ts.getTransferFile().getPath(), ts.getType(),
+                    ts.receiveFile(ts.getTransferFile().getPath(), ts.getType(),
                         ts.getResumePosition(), address);
 
                     while (true) {
-                        status = ts.getTransfer().getTransferStatus();
+                        status = ts.getTransferStatus();
                         ts.getTransferFile().setSize(status.getTransfered());
                         if (status.isFinished()) {
                             break;
@@ -1159,7 +1159,7 @@ public class DataConnectionHandler extends CommandInterface {
 
 					ts.getTransferFile().setSize(status.getTransfered());
 					ts.getTransferFile().setLastModified(System.currentTimeMillis());
-					ts.getTransferFile().setXfertime(ts.getTransfer().getElapsed());
+					ts.getTransferFile().setXfertime(ts.getElapsed());
 				} catch (FileNotFoundException e) {
 					// this is kindof odd
 					// it was a successful transfer, yet the file is gone
@@ -1170,10 +1170,10 @@ public class DataConnectionHandler extends CommandInterface {
 
             // Dispatch for both STOR and RETR
             GlobalContext.getEventService().publish(
-						new TransferEvent(conn, eventType, ts.getTransferFile(), conn
-								.getClientAddress(), ts.getTransferSlave(), ts.getTransfer()
-								.getAddress().getAddress(), ts.getType()));
-                return response;
+					new TransferEvent(conn, eventType, ts.getTransferFile(),
+							conn.getClientAddress(), ts.getTransferSlave(), ts
+									.getAddress().getAddress(), ts.getType()));
+			return response;
         } finally {
             reset(conn);
         }

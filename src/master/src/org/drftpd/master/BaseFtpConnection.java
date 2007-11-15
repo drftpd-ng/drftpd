@@ -255,26 +255,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 	}
 
 	/**
-	 * Returns Transfer.TRANSFER_SENDING_DOWNLOAD if this connection is
-	 * processing a RETR command or Transfer.TRANSFER_RECEIVING_UPLOAD if this
-	 * connection is processing a STOR command.
-	 * 
-	 * @throws IllegalStateException
-	 *             if the connection isn't processing a STOR or RETR command.
-	 */
-	public char getTransferDirection() {
-		String cmd = getRequest().getCommand();
-
-		if (cmd.equals("RETR")) {
-			return Transfer.TRANSFER_SENDING_DOWNLOAD;
-		} else if (cmd.equals("STOR")) {
-			return Transfer.TRANSFER_RECEIVING_UPLOAD;
-		} else {
-			throw new IllegalStateException("Not transfering");
-		}
-	}
-
-	/**
 	 * Get user object
 	 */
 	public User getUser() throws NoSuchUserException {
@@ -561,10 +541,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * User logout and stop this thread.
 	 */
 	public void stop() {
-		RemoteTransfer transfer = getTransferState().getTransfer();
-		if (transfer != null) {
-			transfer.abort("Your connection is being shutdown");
-		}
+		getTransferState().abort("Your connection is being shutdown");
 		_stopRequest = true;
 	}
 
@@ -607,8 +584,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		int count = 0;
 		for (BaseFtpConnection conn : conns) {
 			if (conn.getUserNull() == user) {
-				if (conn.getTransferState().isTransfering() &&
-						conn.getTransferDirection() == transferDirection) {
+				if (conn.getTransferState().isTransfering()) {
 					count++;
 				} // else we dont need to process it.
 			}
