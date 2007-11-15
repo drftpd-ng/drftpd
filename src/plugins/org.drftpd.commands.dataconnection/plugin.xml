@@ -28,12 +28,6 @@
 	</extension-point>
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="DataConnectionHandler">
 	</extension>
-	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="doPROTPerm">
-		<parameter id="ParentMethod" value="doPROT" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
-		<parameter id="HookMethod" value="doPermissionCheck" />
-		<parameter id="Priority" value="1" />
-	</extension>
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="doPRETPerm">
 		<parameter id="ParentMethod" value="doPRET" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
@@ -100,11 +94,5 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-        <extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="doPBSZPerm">
-                <parameter id="ParentMethod" value="doPBSZ" />
-                <parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
-                <parameter id="HookMethod" value="doPermissionCheck" />
-                <parameter id="Priority" value="1" />
-        </extension>
 
 </plugin>

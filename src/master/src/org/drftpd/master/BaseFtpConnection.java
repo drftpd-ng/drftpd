@@ -290,22 +290,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 		return _user;
 	}
 
-	protected boolean hasPermission(FtpRequest request) {
-		if (isAuthenticated()) {
-			return true;
-		}
-
-		String cmd = request.getCommand();
-
-		if ("USER".equals(cmd) || "PASS".equals(cmd) || "QUIT".equals(cmd)
-				|| "HELP".equals(cmd) || "AUTH".equals(cmd)
-				|| "PBSZ".equals(cmd) || "IDNT".equals(cmd)) {
-			return true;
-		}
-
-		return false;
-	}
-
 	public boolean isAuthenticated() {
 		return _authenticated;
 	}
@@ -424,12 +408,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 					debuglogger.debug("<< " + _request.getCommandLine());
 				}
 
-				if (!hasPermission(_request)) {
-					_out.print(new FtpReply(530,"Not logged in."));
-
-					continue;
-				}
-
 				// execute command
 				_pool.execute(new CommandThread(_request, this));
 				if (_request.getCommand().equalsIgnoreCase("AUTH")) {
@@ -455,8 +433,12 @@ public class BaseFtpConnection extends Session implements Runnable {
 			logger.log(Level.INFO, "Exception, closing", ex);
 		} finally {
 			try {
-				_in.close();
-				_out.close();
+				if (_in != null) {
+					_in.close();
+				}
+				if (_out != null) {
+					_out.close();
+				}
 			} catch (Exception ex2) {
 				logger.log(Level.WARN, "Exception closing stream", ex2);
 			}

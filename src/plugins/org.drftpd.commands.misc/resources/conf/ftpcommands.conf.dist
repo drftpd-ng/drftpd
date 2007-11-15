@@ -9,7 +9,6 @@ FEAT {
 plugin org.drftpd.commands.misc
 class Misc
 method doFEAT
-perms *
 }
 
 SITE STAT {

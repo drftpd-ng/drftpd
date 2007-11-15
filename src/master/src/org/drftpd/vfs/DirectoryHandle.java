@@ -375,10 +375,10 @@ public class DirectoryHandle extends InodeHandle implements
 			destination = destinationIter.next();
 		}
 		while (true) {
-			logger.debug("Starting remerge() loop, [destination="
+/*			logger.debug("Starting remerge() loop, [destination="
 					+ (destination == null ? "null" : destination.getName())
 					+ "][source="
-					+ (source == null ? "null" : source.getName()) + "]");
+					+ (source == null ? "null" : source.getName()) + "]");*/
 			// source & destination are set at the "next to process" one OR are
 			// null and at the end of that list
 

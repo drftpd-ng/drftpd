@@ -15,14 +15,12 @@ PROT {
 plugin org.drftpd.commands.dataconnection
 class DataConnectionHandler
 method doPROT
-perms *
 }
 
 PBSZ {
 plugin org.drftpd.commands.dataconnection
 class DataConnectionHandler
 method doPBSZ
-perms *
 }
 
 MODE {

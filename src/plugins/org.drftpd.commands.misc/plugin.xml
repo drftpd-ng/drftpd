@@ -33,12 +33,6 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="doFEATPerm">
-		<parameter id="ParentMethod" value="doFEAT" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
-		<parameter id="HookMethod" value="doPermissionCheck" />
-		<parameter id="Priority" value="1" />
-	</extension>
 	<extension plugin-id="org.drftpd.commands.misc" point-id="PreHook" id="doSITE_TIMEPerm">
 		<parameter id="ParentMethod" value="doSITE_TIME" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
