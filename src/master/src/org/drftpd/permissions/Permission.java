@@ -42,22 +42,35 @@ public class Permission {
 		_invert = invert;
 	}
 
+	/**
+	 * Accepts 5 kinds of modifiers Authenticated users = * Non-authenticated
+	 * users = % Group = =<groupname> User = -<username> NOT = !<nextmodifier>
+	 * Accepts a null User for purposes of evaluating permission for
+	 * Non-authenticated users
+	 * If no Permission line is given, this assumes !% is the last one
+	 * @param user
+	 * @return
+	 */
 	public boolean check(User user) {
 		boolean allow = false;
 
 		for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
 			String aclUser = iter.next();
 			allow = true;
-
+			System.out.println("Evaluating permissions = " + aclUser);
 			if (aclUser.charAt(0) == '!') {
 				allow = false;
 				aclUser = aclUser.substring(1);
 			}
-
-			if (aclUser.equals("*")) {
+			if (aclUser.equals("%")) {
+				return allow;
+			} else if (aclUser.equals("*") && user != null) {
 				return allow;
 			} else if (aclUser.charAt(0) == '-') {
 				// USER
+				if (user == null) {
+					continue;
+				}
 				if (aclUser.substring(1).equals(user.getName())) {
 					return allow;
 				}
@@ -65,12 +78,19 @@ public class Permission {
 				continue;
 			} else if (aclUser.charAt(0) == '=') {
 				// GROUP
+				if (user == null) {
+					continue;
+				}
 				if (user.isMemberOf(aclUser.substring(1))) {
 					return allow;
 				}
 			} else {
 				// FLAG, we don't have flags, we have groups and that's the same
 				// but multiple letters
+				// Does anyone use these?  Do we want to get rid of the = modifier?
+				if (user == null) {
+					continue;
+				}
 				if (user.isMemberOf(aclUser)) {
 					return allow;
 				}

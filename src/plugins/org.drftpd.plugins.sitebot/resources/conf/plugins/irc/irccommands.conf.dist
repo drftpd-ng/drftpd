@@ -71,7 +71,7 @@ slaves {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVES
-perms *
+perms %
 help List the status of all slaves
 input all
 output source
@@ -81,7 +81,7 @@ bw {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doBW
-perms *
+perms %
 help Show total bandwidth use
 input all
 output source

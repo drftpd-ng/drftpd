@@ -2,12 +2,12 @@ NOOP {
 plugin org.drftpd.commands.dummy
 class Dummy
 method doDUMMY
-perms *
+perms %
 }
 
 CLNT {
 plugin org.drftpd.commands.dummy
 class Dummy
 method doDUMMY
-perms *
+perms %
 }

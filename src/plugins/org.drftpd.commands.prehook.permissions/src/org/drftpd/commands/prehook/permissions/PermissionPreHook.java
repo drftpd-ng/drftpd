@@ -24,6 +24,7 @@ import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 /**
  * @author zubov
@@ -42,14 +43,20 @@ public class PermissionPreHook implements PreHookInterface {
 		try {
 			Permission perm = request.getPermission();
 			if (perm == null) {
-				logger.warn("Permissions are not configured for command " + request.getCommand());
-			} else if (perm.check(request.getUserObject())) {
+				request.setDeniedResponse(new CommandResponse(500, "Permissions are not configured for command " + request.getCommand()));
+				request.setAllowed(false);
+				return request;
+			}
+			User user = null;
+			try {
+				user = request.getUserObject();
+			} catch (NoSuchUserException e) {
+				request.setDeniedResponse(new CommandResponse(500, "You are not authenticated"));
+			}
+			if (perm.check(user)) {
 				// it worked, you passed the test
 				return request;
 			}
-			request.setDeniedResponse(new CommandResponse(500, "You do not have the proper permissions for command " + request.getCommand()));
-		} catch (NoSuchUserException e) {
-			request.setDeniedResponse(new CommandResponse(500, "You do not exist"));
 		} catch (UserFileException e) {
 			request.setDeniedResponse(new CommandResponse(500, "Your userfile is corrupted"));
 		}
