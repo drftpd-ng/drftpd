@@ -301,7 +301,9 @@ public class Slave {
 		}
 		
 		Properties p = new Properties();
-		p.load(new FileInputStream("slave.conf"));
+		FileInputStream fis = new FileInputStream("slave.conf");
+		p.load(fis);
+		fis.close();
 
 		Slave s = new Slave(p);
 		s.getProtocolCentral().handshakeWithMaster();

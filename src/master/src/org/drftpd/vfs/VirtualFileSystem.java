@@ -213,7 +213,6 @@ public class VirtualFileSystem {
 		if (file.isDirectory()) {
 			fullPath = fullPath + separator + dirName;
 			dirFile = file;
-			file = new File(fullPath);
 		}
 		XMLDecoder xmlDec = null;
 		try {

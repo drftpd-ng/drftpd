@@ -129,7 +129,6 @@ public class PassiveConnection extends Connection {
 					+ _serverSocket.getLocalPort()
 					+ ", accept() was never called on the ServerSocket");
 			_serverSocket.close();
-			_serverSocket = null;
 		}
 	}
 
