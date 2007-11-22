@@ -111,10 +111,10 @@ public class BasicAnnouncer extends SFVTools implements AnnounceInterface, Event
 		// TODO We should decide if we are going to check path permissions when
 		// receiving an event or before sending it, including it here for now until
 		// that decision is made
-		if (!GlobalContext.getConfig().
-				checkPathPermission("dirlog", direvent.getUser(), direvent.getDirectory())) {
-			return;
-		}
+//		if (!GlobalContext.getConfig().
+//				checkPathPermission("dirlog", direvent.getUser(), direvent.getDirectory())) {
+//			return;
+//		}
 
 		if ("MKD".equals(direvent.getCommand())) {
 			outputDirectoryEvent(direvent, "mkdir");
