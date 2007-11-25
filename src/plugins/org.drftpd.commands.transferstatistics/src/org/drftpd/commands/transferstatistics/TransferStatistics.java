@@ -33,7 +33,6 @@ import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commandmanager.UnhandledCommandException;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.Session;
 import org.drftpd.permissions.Permission;
@@ -107,8 +106,7 @@ public class TransferStatistics extends CommandInterface  {
 			}
 		}
 
-		throw new RuntimeException(UnhandledCommandException.create(
-				TransferStatistics.class, command));
+		throw new IllegalArgumentException("unhandled command = " + command);
 	}
 
 	/**

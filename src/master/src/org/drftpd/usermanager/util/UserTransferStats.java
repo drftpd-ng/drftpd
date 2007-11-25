@@ -19,7 +19,6 @@ package org.drftpd.usermanager.util;
 
 import java.util.Collection;
 
-import org.drftpd.commandmanager.UnhandledCommandException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserManager;
 
@@ -88,7 +87,6 @@ public class UserTransferStats {
 			}
 		}
 
-		throw new RuntimeException(UnhandledCommandException.create(
-				UserTransferStats.class, command));
+		throw new IllegalArgumentException("unhandled command = " + command);
 	}
 }

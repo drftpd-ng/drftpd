@@ -17,7 +17,6 @@
  */
 package org.drftpd.exceptions;
 
-import org.drftpd.commandmanager.Reply;
 
 /**
  * @author mog
@@ -34,6 +33,5 @@ public class NoAvailableSlaveException extends Exception {
 	}
 
 	public NoAvailableSlaveException() {
-		super(Reply.RESPONSE_530_SLAVE_UNAVAILABLE.getMessage());
 	}
 }
