@@ -40,7 +40,7 @@ public class ServerStatus extends CommandInterface {
 	}
 	
 	public CommandResponse doMasterUptime(CommandRequest request) {
-		CommandResponse response = new CommandResponse(200);		
+		CommandResponse response = new CommandResponse(200);	
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		
 		long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
@@ -50,9 +50,13 @@ public class ServerStatus extends CommandInterface {
 		return response;		
 	}
 	
-	public CommandResponse doSlaveUptime(CommandRequest request) {
+	public CommandResponse doSlaveUptime(CommandRequest request) throws ImproperUsageException {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	    ReplacerEnvironment env = new ReplacerEnvironment();
+	    
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
 	    
 	    String slaveName = request.getArgument();
 	    Session session = request.getSession();

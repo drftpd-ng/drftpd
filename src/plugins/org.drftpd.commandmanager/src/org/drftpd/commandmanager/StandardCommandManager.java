@@ -133,6 +133,14 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 				logger.error("Base ftp default theme not found: "+_defaultThemeDir+File.separator+"core.theme.default",e);
 			} catch (IOException e) {
 				logger.error("Error loading base ftp default theme: "+_defaultThemeDir+File.separator+"core.theme.default",e);
+			} finally {
+				if (fallbackIs != null) {
+					try {
+						fallbackIs.close();
+					} catch (IOException e) {
+						logger.debug("could not close fallbackIs",e);
+					}
+				}
 			}
 			_defaultTheme.setParent(_fallbackTheme);
 		}
