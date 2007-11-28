@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.log4j.Logger;
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
@@ -242,7 +243,20 @@ public class VirtualFileSystem {
 			}
 			return inode;
 		} catch (Exception e) {
-			logger.debug("Error loading " + fullPath, e);
+			logger.debug("Error loading " + fullPath + ", deleting file", e);
+			file.delete();
+			if (dirFile != null) { // file was actually .dirProperties
+				VirtualFileSystemDirectory dir = new VirtualFileSystemDirectory("drftpd", "drftpd");
+				if (path.endsWith("/")) { // root .dirProperties
+					throw new RuntimeException(
+							"This can't happen except at ftpd startup with a broken files/.dirProperties file", e);
+				}
+				try {
+					new DirectoryHandle(stripLast(path)).createDirectoryUnchecked(getLast(path), "drftpd", "drftpd");
+				} catch (FileExistsException e1) {
+					throw new RuntimeException("I give up, I can't handle this", e);
+				}
+			}
 			throw new FileNotFoundException(fullPath);
 		} finally {
 			if (xmlDec != null) {

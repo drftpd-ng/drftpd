@@ -90,7 +90,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				group);
 		inode.setName(name);
 		inode.setParent(this);
-		inode.setLastModified(System.currentTimeMillis());
+		//inode.setLastModified(System.currentTimeMillis());
+		// call above is superfluous, it's done in the Inode constructor
 		inode.commit();
 		addChild(inode);
 		logger.info("createDirectory(" + inode + ")");

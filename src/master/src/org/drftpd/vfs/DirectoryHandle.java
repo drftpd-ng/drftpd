@@ -344,7 +344,9 @@ public class DirectoryHandle extends InodeHandle implements
 		FileHandle newFile = createFileUnchecked(name, "drftpd", "drftpd", rslave);
 		newFile.setLastModified(lrf.lastModified());
 		newFile.setSize(lrf.length());
-		newFile.setCheckSum(rslave.getCheckSumForPath(newFile.getPath()));
+		//newFile.setCheckSum(rslave.getCheckSumForPath(newFile.getPath()));
+		// TODO Implement a Checksum queue on remerge
+		newFile.setCheckSum(0);
 	}
 
 	public void remerge(List<LightRemoteInode> files, RemoteSlave rslave)

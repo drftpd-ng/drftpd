@@ -111,7 +111,9 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 * @throws FileNotFoundException
 	 */
 	public void setCheckSum(long checksum) throws FileNotFoundException {
-		getInode().setChecksum(checksum);
+		VirtualFileSystemFile file = getInode();
+		file.setChecksum(checksum);
+		file.commit();
 	}
 
 	/**
