@@ -79,7 +79,11 @@ public class VirtualFileSystem {
 	 * Takes /path/dir/name and returns name
 	 */
 	public static String getLast(String path) {
-		return path.substring(path.lastIndexOf(separator) + 1);
+		String toReturn = path.substring(path.lastIndexOf(separator) + 1);
+		if (toReturn.equals("")) {
+			return separator;
+		}
+		return toReturn;
 	}
 
 	/**
@@ -215,7 +219,7 @@ public class VirtualFileSystem {
 	protected VirtualFileSystemInode loadInode(String path)
 			throws FileNotFoundException {
 		String fullPath = fileSystemPath + path;
-		logger.debug("Loading inode - " + fullPath);
+		//logger.debug("Loading inode - " + fullPath);
 		File xmlFile = new File(fullPath);
 		File realDirectory = null;
 		if (xmlFile.isDirectory()) {
@@ -263,7 +267,6 @@ public class VirtualFileSystem {
 			}
 
 			VirtualFileSystemDirectory parentInode = null;
-			logger.debug("stripLast(path)) = " + stripLast(path));
 			{
 				VirtualFileSystemInode inode = getInodeByPath(stripLast(path));
 				if (inode.isDirectory()) {
@@ -278,7 +281,6 @@ public class VirtualFileSystem {
 			if (realDirectory != null && realDirectory.exists()) {
 				// let's create the .dirProperties file from what we know since
 				// it should be there
-				logger.debug("getLast(path) = " + getLast(path));
 				parentInode.createDirectoryRaw(getLast(path), "drftpd",
 						"drftpd");
 				return parentInode.getInodeByName(getLast(path));
