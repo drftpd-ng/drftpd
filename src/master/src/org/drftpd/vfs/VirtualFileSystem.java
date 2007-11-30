@@ -126,16 +126,23 @@ public class VirtualFileSystem {
 		try {
 			_root = (VirtualFileSystemRoot) loadInode(separator);
 		} catch (FileNotFoundException e) {
-			logger.info("Creating new root filesystem");
-			logger
-					.info("If you have already created your filesystem, then stop removing your "
-							+ dirName + " file!");
-			_root = new VirtualFileSystemRoot("drftpd", "drftpd");
-			File rootFile = new File(fileSystemPath);
-			Collection<String> files = new ArrayList<String>();
-			Collections.addAll(files, rootFile.list());
-			_root.setFiles(files);
+			createRootDirectory();
 		}
+	}
+
+	private VirtualFileSystemRoot createRootDirectory() {
+			logger.info("Creating new root filesystem");
+		logger
+				.info("If you have already created your filesystem, then stop removing or corrupting your "
+						+ dirName + " file!");
+		new File(fileSystemPath).mkdirs();
+		_root = new VirtualFileSystemRoot("drftpd", "drftpd");
+		File rootFile = new File(fileSystemPath);
+		Collection<String> files = new ArrayList<String>();
+		Collections.addAll(files, rootFile.list());
+		_root.setFiles(files);
+		_root.commit();
+		return _root;
 	}
 
 	/**
@@ -208,12 +215,13 @@ public class VirtualFileSystem {
 	protected VirtualFileSystemInode loadInode(String path)
 			throws FileNotFoundException {
 		String fullPath = fileSystemPath + path;
-		// logger.debug("Loading inode - " + fullPath);
-		File file = new File(fullPath);
-		File dirFile = null;
-		if (file.isDirectory()) {
+		logger.debug("Loading inode - " + fullPath);
+		File xmlFile = new File(fullPath);
+		File realDirectory = null;
+		if (xmlFile.isDirectory()) {
+			realDirectory = xmlFile;
 			fullPath = fullPath + separator + dirName;
-			dirFile = file;
+			xmlFile = new File(fullPath);
 		}
 		XMLDecoder xmlDec = null;
 		try {
@@ -232,7 +240,7 @@ public class VirtualFileSystem {
 			if (inode.isDirectory()) {
 				VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
 				Collection<String> files = new ArrayList<String>();
-				String[] list = dirFile.list();
+				String[] list = realDirectory.list();
 				for (String item : list) {
 					if (item.equals(dirName)) {
 						continue;
@@ -243,21 +251,47 @@ public class VirtualFileSystem {
 			}
 			return inode;
 		} catch (Exception e) {
-			logger.debug("Error loading " + fullPath + ", deleting file", e);
-			file.delete();
-			if (dirFile != null) { // file was actually .dirProperties
-				VirtualFileSystemDirectory dir = new VirtualFileSystemDirectory("drftpd", "drftpd");
-				if (path.endsWith("/")) { // root .dirProperties
-					throw new RuntimeException(
-							"This can't happen except at ftpd startup with a broken files/.dirProperties file", e);
-				}
-				try {
-					new DirectoryHandle(stripLast(path)).createDirectoryUnchecked(getLast(path), "drftpd", "drftpd");
-				} catch (FileExistsException e1) {
-					throw new RuntimeException("I give up, I can't handle this", e);
+			boolean corruptedXMLFile = xmlFile.exists();
+			if (corruptedXMLFile) {
+				// parsing error! Let's get rid of the offending bugger
+				xmlFile.delete();
+			}
+			// if this object is the Root object, let's create it and get outta
+			// here
+			if (getLast(path).equals(separator)) {
+				return createRootDirectory();
+			}
+
+			VirtualFileSystemDirectory parentInode = null;
+			logger.debug("stripLast(path)) = " + stripLast(path));
+			{
+				VirtualFileSystemInode inode = getInodeByPath(stripLast(path));
+				if (inode.isDirectory()) {
+					parentInode = (VirtualFileSystemDirectory) inode;
+				} else {
+					// the parent is a Directory on the REAL filesystem and
+					// a something else on our virtual one...
+					throw new FileNotFoundException(
+							"You're filesystem is really messed up");
 				}
 			}
-			throw new FileNotFoundException(fullPath);
+			if (realDirectory != null && realDirectory.exists()) {
+				// let's create the .dirProperties file from what we know since
+				// it should be there
+				logger.debug("getLast(path) = " + getLast(path));
+				parentInode.createDirectoryRaw(getLast(path), "drftpd",
+						"drftpd");
+				return parentInode.getInodeByName(getLast(path));
+			}
+			if (corruptedXMLFile) {
+				// we already deleted the file, but we need to tell the parent
+				// directory that it doesn't exist anymore
+				logger
+						.debug("Error loading " + fullPath + ", deleting file",
+								e);
+				parentInode.removeMissingChild(getLast(path));
+			}
+			throw new FileNotFoundException();
 		} finally {
 			if (xmlDec != null) {
 				xmlDec.close();
@@ -338,6 +372,7 @@ public class VirtualFileSystem {
 				enc.close();
 			}
 		}
+		logger.debug("Wrote fullPath " + fullPath);
 	}
 
 	/**

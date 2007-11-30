@@ -27,6 +27,7 @@ import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -86,6 +87,21 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			throw new FileExistsException("An object named " + name
 					+ " already exists in " + getPath());
 		}
+		createDirectoryRaw(name, user, group);
+	}
+	
+	
+
+	/**
+	 * Do not use this method unless you REALLY know what you're doing. This
+	 * method should only be used in two cases, in the createDirectory(string,
+	 * string, string) method of this class and in VirtualFileSystem.loadInode()
+	 * 
+	 * @param name
+	 * @param user
+	 * @param group
+	 */
+	protected void createDirectoryRaw(String name, String user, String group) {
 		VirtualFileSystemInode inode = new VirtualFileSystemDirectory(user,
 				group);
 		inode.setName(name);
@@ -160,12 +176,13 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		String path = getPath() + VirtualFileSystem.separator;
 		// not dynamically called for efficiency
 		for (String inodeName : new HashSet<String>(_files.keySet())) {
-			VirtualFileSystemInode inode;
+			VirtualFileSystemInode inode = null;
 			try {
 				inode = getInodeByName(inodeName);
 			} catch (FileNotFoundException e) {
-				throw new RuntimeException(
-						"Stop deleting files outside of drftpd", e);
+				logger.debug(path + inodeName + " is missing or was corrupted, stop deleting files outside of drftpd!", e);
+				// This entry is already removed from the REAL _files Set, but we're iterating over a copy
+				continue;
 			}
 			if (inode.isDirectory()) {
 				set.add(new DirectoryHandle(path + inodeName));
@@ -225,9 +242,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @param child
 	 */
 	protected synchronized void removeChild(VirtualFileSystemInode child) {
-		_files.remove(child.getName());
 		addSize(-child.getSize());
-		setLastModified(System.currentTimeMillis());
+		removeMissingChild(child.getName());
 		commit();
 	}
 
@@ -280,5 +296,12 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	@Override
 	public void setSize(long l) {
 		_size = l;
+	}
+
+	public synchronized void removeMissingChild(String name) {
+		if (_files.remove(name) != null) {
+			setLastModified(System.currentTimeMillis());
+			commit();
+		}
 	}
 }

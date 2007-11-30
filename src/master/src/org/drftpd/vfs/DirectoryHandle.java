@@ -141,9 +141,7 @@ public class DirectoryHandle extends InodeHandle implements
 	
 	private Set<FileHandle> getFilesUnchecked(Set<InodeHandle> inodes) throws FileNotFoundException {
 		Set<FileHandle> set = new HashSet<FileHandle>();
-		for (Iterator<InodeHandle> iter = getInode().getInodes().iterator(); iter
-				.hasNext();) {
-			InodeHandle handle = iter.next();
+		for (InodeHandle handle : getInode().getInodes()) {
 			if (handle instanceof FileHandle) {
 				set.add((FileHandle) handle);
 			}
