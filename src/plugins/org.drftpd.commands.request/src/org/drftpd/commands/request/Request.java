@@ -23,15 +23,16 @@ import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.Session;
+import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -247,6 +248,7 @@ public class Request extends CommandInterface {
 		DirectoryHandle currdir = request.getCurrentDirectory();
 		Properties props = request.getProperties();
 		String requestDirProp = props.getProperty("request.dirpath");
+		String deleteOthers = props.getProperty("deleteOthers","=siteop");
 		String reqname = request.getArgument().trim();
 		if (requestDirProp != null) {
 			currdir = new DirectoryHandle(requestDirProp);
@@ -273,7 +275,8 @@ public class Request extends CommandInterface {
 			for (DirectoryHandle dir : currdir.getDirectories(user)) {
 				if (dir.getName().endsWith(reqname)) {
 					nodir = false;
-					if (dir.getUsername().equals(request.getUser()) || user.isAdmin()) {
+					if (dir.getUsername().equals(request.getUser())
+							|| new Permission(deleteOthers).check(user)) {
 						dir.deleteUnchecked();
 						deldir = true;
 						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.success", env, request.getUser()));

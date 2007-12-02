@@ -68,7 +68,7 @@ import se.mog.io.PermissionDeniedException;
  * @version $Id$
  */
 public class Find extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(Find.class);
+	public static final Logger logger = Logger.getLogger(Find.class);
 	
 	private static interface Action {
 		public String exec(CommandRequest request, InodeHandle inode);		
@@ -603,7 +603,6 @@ public class Find extends CommandInterface {
 			} else if (arg.equalsIgnoreCase("-nogroup")) {
 				options.add(new OptionGroup("drftpd"));
 			} else if (arg.equalsIgnoreCase("-action")) {
-				//TODO remove hard coded perms?
 				User user = null;
 				try {
 					user = request.getUserObject();
@@ -636,8 +635,8 @@ public class Find extends CommandInterface {
 						}
 					}
 				} else if (action.equals("sendtoslaves")) {
-					if (!user.isAdmin()) {
-						return new CommandResponse(500, "You do not have the proper permissions for command " + request.getCommand());
+					if (!checkCustomPermission(request, "sendToSlaves", "=siteop")) {
+						return new CommandResponse(500, "You do not have the proper permissions for sendToSlaves");
 					}
 					// -action sendtoslaves
 					// <numtransfers[:slave[,slave,..][:priority]]>
@@ -650,8 +649,8 @@ public class Find extends CommandInterface {
 					}
 					actions.add(new ActionSendToSlaves(numOfSlaves, parseSlaves(iter.next()), priority));
 				} else if (action.equals("deletefromslaves")) {
-					if (!user.isAdmin()) {
-						return new CommandResponse(500, "You do not have the proper permissions for command " + request.getCommand());
+					if (!checkCustomPermission(request, "deleteFromSlaves", "=siteop")) {
+						return new CommandResponse(500, "You do not have the proper permissions for deleteFromSlaves");
 					}
 					// -action deletefromslaves <slave[,slave[,...]]>
 					actions.add(new ActionDeleteFromSlaves(parseSlaves(iter.next())));
@@ -663,10 +662,9 @@ public class Find extends CommandInterface {
 					}
 
 					if (findAction instanceof ActionWipe) {
-						if (!user.isAdmin()) {
-							return new CommandResponse(500, "You do not have the proper permissions for command " + request.getCommand());
-						}
-					}
+						if (!checkCustomPermission(request, "wipe", "=siteop")) {
+							return new CommandResponse(500, "You do not have the proper permissions for wipe");
+						}					}
 
 					actions.add(findAction);
 				}

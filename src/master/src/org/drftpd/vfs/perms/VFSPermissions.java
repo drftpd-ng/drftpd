@@ -60,9 +60,10 @@ public class VFSPermissions {
 		_priorities = new HashMap<String, TreeMap<Integer, String>>();
 		
 		PluginManager manager = PluginManager.lookup(this);
+		logger.debug("manager = " + manager);
 		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("master", "VFSPerm");
 		
-		/*   
+		/*
 		<extension-point id="VFSPerm">
 	      	<parameter-def id="Class" />
 	    	<parameter-def id="Method" />

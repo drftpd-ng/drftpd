@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 
 import org.drftpd.usermanager.User;
 
@@ -41,6 +42,10 @@ public class Permission {
 		this(users);
 		_invert = invert;
 	}
+	
+	public Permission(String permissionString) {
+		this(makeUsers(new StringTokenizer(permissionString)));
+	}
 
 	/**
 	 * Accepts 5 kinds of modifiers Authenticated users = * Non-authenticated
@@ -48,6 +53,7 @@ public class Permission {
 	 * Accepts a null User for purposes of evaluating permission for
 	 * Non-authenticated users
 	 * If no Permission line is given, this assumes !% is the last one
+	 * returns true if the User has permission
 	 * @param user
 	 * @return
 	 */

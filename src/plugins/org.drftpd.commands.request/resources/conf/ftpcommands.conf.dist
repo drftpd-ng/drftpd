@@ -31,6 +31,8 @@ plugin org.drftpd.commands.request
 class Request
 method doSITE_REQDELETE
 perms *
+deleteOthers =siteop
+#you can only delete your own without deleteOthers
 help Deletes a request
 help.specific ${command} <nameofrequest>
 }

@@ -4,6 +4,7 @@
 # Max number of connections
 #max_users <max_unexempted> <max_exempted>
 max_users	100	0
+exempt =exempt
 
 # FUNCTION       | PATH     | GROUP
 # * = only wildcard recognized

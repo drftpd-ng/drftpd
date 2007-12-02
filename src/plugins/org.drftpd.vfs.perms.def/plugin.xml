@@ -4,7 +4,7 @@
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />
-		<attribute id="MustBuild" value="true" />
+		<attribute id="MustBuild" value="false" />
 	</attributes>
 	<requires>
 		<import plugin-id="master" exported="true" />

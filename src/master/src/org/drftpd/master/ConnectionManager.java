@@ -209,7 +209,7 @@ public class ConnectionManager implements EventSubscriber {
 		int count = GlobalContext.getConfig().getMaxUsersTotal();
 
 		// Math.max if the integer wraps
-		if (user.isExempt()) {
+		if (GlobalContext.getConfig().checkPermission("exempt", user)) {
 			count = Math.max(count, count + GlobalContext.getConfig().getMaxUsersExempt());
 		}
 

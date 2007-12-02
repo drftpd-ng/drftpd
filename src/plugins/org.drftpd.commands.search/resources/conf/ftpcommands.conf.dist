@@ -19,6 +19,9 @@ plugin org.drftpd.commands.search
 class Find
 method doFIND
 perms *
+sendToSlaves =siteop
+deleteFromSlaves =siteop
+wipe =siteop
 help Searches for files and diretories in the filesystem w/ some neat filters and actions.
 help.specific ${command} <options> -action <action>
 help.specific Options: -user <user> -group <group> -nogroup -nouser

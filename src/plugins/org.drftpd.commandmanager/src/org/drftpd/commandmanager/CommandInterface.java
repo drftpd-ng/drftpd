@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -255,4 +256,35 @@ public abstract class CommandInterface implements EventSubscriber {
 			}
 		}
 	}
+	
+	protected boolean checkCustomPermissionWithPrimaryGroup(User targetUser, CommandRequest request, String permissionName, String defaultPermission) {
+		if (checkCustomPermission(request, permissionName, defaultPermission)) {
+			return false;
+		}
+		try {
+			return targetUser.getGroup().equals(request.getUserObject().getGroup());
+		} catch (NoSuchUserException e) {
+			logger.warn("",e);
+			return false;
+		} catch (UserFileException e) {
+			logger.warn("",e);
+			return false;
+		}		
+	}
+
+	protected boolean checkCustomPermission(CommandRequest request, String permissionName,
+			String defaultPermission) {
+				String permissionString = request.getProperties().getProperty(permissionName,defaultPermission);
+				User user;
+				try {
+					user = request.getUserObject();
+				} catch (NoSuchUserException e) {
+					logger.warn("",e);
+					return false;
+				} catch (UserFileException e) {
+					logger.warn("",e);
+					return false;
+				}
+				return new Permission(permissionString).check(user);
+			}
 }
