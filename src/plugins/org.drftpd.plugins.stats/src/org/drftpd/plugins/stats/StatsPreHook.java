@@ -24,6 +24,7 @@ import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -41,6 +42,10 @@ public class StatsPreHook implements PreHookInterface {
 		User user = request.getSession().getUserNull(request.getUser());
 		
 		float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
+		
+		if (ratio == 0L) {
+			return request;
+		}
 				
 		try {
 			long fileSize = dir.getFileUnchecked(request.getArgument()).getSize();			
@@ -48,6 +53,8 @@ public class StatsPreHook implements PreHookInterface {
 			long userCredits = user.getCredits();
 			
 			if (userCredits < creditsLoss) {
+				// this comparison doesn't allow a user with negative credits,
+				// but a 0 ratio to download files :)
 				request.setAllowed(false);
 				request.setDeniedResponse(new CommandResponse(550, "Not enough credits"));
 			}

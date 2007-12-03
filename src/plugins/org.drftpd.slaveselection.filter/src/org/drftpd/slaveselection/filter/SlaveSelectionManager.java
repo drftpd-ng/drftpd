@@ -103,16 +103,22 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	public RemoteSlave getASlave(BaseFtpConnection conn, char direction, InodeHandle file)
 			throws NoAvailableSlaveException {
 		String status;
-
+		Collection<RemoteSlave> availableSlaves = null;
 		if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 			status = "up";
+			availableSlaves = getAvailableSlaves();
 		} else if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 			status = "down";
+			try {
+				availableSlaves = ((FileHandle) file).getAvailableSlaves();
+			} catch (FileNotFoundException e) {
+				throw new NoAvailableSlaveException("FileNotFound");
+			}
 		} else {
 			throw new IllegalArgumentException();
 		}
 
-		return process(status, new ScoreChart(getAvailableSlaves()), conn, direction, file, null);
+		return process(status, new ScoreChart(availableSlaves), conn, direction, file, null);
 	}
 
 	public RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
