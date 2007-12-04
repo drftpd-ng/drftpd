@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
@@ -338,6 +339,7 @@ public class DirectoryHandle extends InodeHandle implements
 		String name = lrf.getName();
 		if (collision) {
 			name = lrf.getName() + ".collision." + rslave.getName();
+			rslave.simpleRename(getPath() + lrf.getPath(), getPath(), name);
 		}
 		FileHandle newFile = createFileUnchecked(name, "drftpd", "drftpd", rslave);
 		newFile.setLastModified(lrf.lastModified());
