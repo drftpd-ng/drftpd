@@ -1,0 +1,9 @@
+# Gives <assign> points for each JobTransfer where it is a destination slave
+#       in the directory being Archive'd
+#.filter=jobpoints
+#.assign=50000
+
+# Takes <assign> points if the slave does not have enough space for the directory
+#       being Archive'd
+#.filter=directoryspace
+#.assign=1000000
