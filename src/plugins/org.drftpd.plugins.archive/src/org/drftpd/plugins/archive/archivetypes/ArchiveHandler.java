@@ -36,6 +36,8 @@ public class ArchiveHandler extends Thread {
 			.getLogger(ArchiveHandler.class);
 
 	private ArchiveType _archiveType;
+	
+	private ArrayList<Job> _jobs = null;
 
 	public ArchiveHandler(ArchiveType archiveType) {
 		super(archiveType.getClass().getName() + " archiving "
@@ -49,6 +51,13 @@ public class ArchiveHandler extends Thread {
 
 	public SectionInterface getSection() {
 		return _archiveType.getSection();
+	}
+	
+	public ArrayList<Job> getJobs() {
+		if (_jobs == null) {
+			return (ArrayList<Job>) Collections.EMPTY_LIST;
+		}
+		return new ArrayList<Job>(_jobs);
 	}
 
 	public void run() {
@@ -84,8 +93,8 @@ public class ArchiveHandler extends Thread {
 						.setRSlaves(Collections.unmodifiableSet(destSlaves));
 			}
 
-			ArrayList<Job> jobs = _archiveType.send();
-			_archiveType.waitForSendOfFiles(new ArrayList<Job>(jobs));
+			_jobs = _archiveType.send();
+			_archiveType.waitForSendOfFiles(_jobs);
 			logger.info("Done archiving "
 					+ getArchiveType().getDirectory().getPath());
 		} catch (Exception e) {

@@ -83,7 +83,7 @@ public class SlavetopFilter extends Filter {
 					slaveScore.getRSlave()));
         }
         
-        ArrayList<FileHandle> files = getAllFiles(dir);
+        ArrayList<FileHandle> files = dir.getAllFilesRecursiveUnchecked();
 
         for (FileHandle file : files) {
         	try {
@@ -121,22 +121,6 @@ public class SlavetopFilter extends Filter {
             }
         }
     }
-
-	private ArrayList<FileHandle> getAllFiles(DirectoryHandle dir) {
-		ArrayList<FileHandle> files = new ArrayList<FileHandle>();
-		try {
-			for (InodeHandle inode : dir.getInodeHandlesUnchecked()) {
-				if (inode.isFile()) {
-					files.add((FileHandle) inode);
-				} else if (inode.isDirectory()) {
-					files.addAll(getAllFiles((DirectoryHandle) inode));
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// oh well, we just won't have any files to add
-		}
-		return files;
-	}
 
 	@Override
 	public void process(ScoreChart scorechart, User user, InetAddress peer, char direction, InodeHandleInterface inode, RemoteSlave sourceSlave) throws NoAvailableSlaveException {

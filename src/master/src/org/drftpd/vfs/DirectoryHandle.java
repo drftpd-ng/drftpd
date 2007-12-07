@@ -126,6 +126,22 @@ public class DirectoryHandle extends InodeHandle implements
 	public Set<InodeHandle> getInodeHandlesUnchecked() throws FileNotFoundException {
 		return getInode().getInodes();
 	}
+	
+	public ArrayList<FileHandle> getAllFilesRecursiveUnchecked() {
+		ArrayList<FileHandle> files = new ArrayList<FileHandle>();
+		try {
+			for (InodeHandle inode : getInodeHandlesUnchecked()) {
+				if (inode.isFile()) {
+					files.add((FileHandle) inode);
+				} else if (inode.isDirectory()) {
+					files.addAll(getAllFilesRecursiveUnchecked());
+				}
+			}
+		} catch (FileNotFoundException e) {
+			// oh well, we just won't have any files to add
+		}
+		return files;
+	}
 
 	/**
 	 * @return a set containing only the files of this dir.
@@ -548,8 +564,6 @@ public class DirectoryHandle extends InodeHandle implements
 		} catch (FileNotFoundException e) {
 			getParent().createDirectoryRecursive(getName());
 		} catch (FileExistsException e) {
-			logger.debug("Object already exists -- " + getPath()
-					+ VirtualFileSystem.separator + name, e);
 			throw new FileExistsException("Object already exists -- "
 					+ getPath() + VirtualFileSystem.separator + name);
 		}

@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.slaveselection.filter.archive" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="false" />
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+		<import plugin-id="org.drftpd.slaveselection.filter" exported="true" />
+		<import plugin-id="org.drftpd.plugins.jobmanager" exported="true" />
+		<import plugin-id="org.drftpd.plugins.archive" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.slaveselection.filter.archive" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<!-- Filters -->
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="DirectoryspaceFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.archive.DirectoryspaceFilter"/>
+		<parameter id="FilterName" value="Directoryspace"/>
+	</extension>
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="JobpointsFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.archive.JobpointsFilter"/>
+		<parameter id="FilterName" value="Jobpoints"/>
+	</extension>
+</plugin>
