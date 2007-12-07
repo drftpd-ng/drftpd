@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 
@@ -54,14 +55,13 @@ public class RootCollection {
 	 * @param path
 	 * @return
 	 */
-	public ArrayList<String> getLocalInodes(String path) {
-		ArrayList<String> files = new ArrayList<String>();
+	public TreeSet<String> getLocalInodes(String path) {
+		TreeSet<String> files = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 		for (Root root : _roots) {
 			String[] fileArray = root.getFile(path).list();
 			if (fileArray == null) continue;
 			files.addAll(Arrays.asList(fileArray));
 		}
-		Collections.sort(files);
 		return files;
 	}
 

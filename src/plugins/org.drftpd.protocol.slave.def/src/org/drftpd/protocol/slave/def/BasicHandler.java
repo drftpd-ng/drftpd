@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
@@ -213,9 +214,8 @@ public class BasicHandler extends AbstractHandler {
 
 	private void handleRemergeRecursive2(RootCollection rootCollection,
 			String path) {
-		ArrayList<String> inodes = rootCollection.getLocalInodes(path);
+		TreeSet<String> inodes = rootCollection.getLocalInodes(path);
 		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
-		Collections.sort(inodes, String.CASE_INSENSITIVE_ORDER);
 
 		for (String inode : inodes) {
 			String fullPath = path + "/" + inode;
