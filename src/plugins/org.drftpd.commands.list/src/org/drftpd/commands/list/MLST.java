@@ -35,6 +35,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.TransferState;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
@@ -71,59 +72,67 @@ public class MLST extends CommandInterface {
 	}
 
 	private CommandResponse doMLSTandMLSD(CommandRequest request, boolean isMlst) {
-		DirectoryHandle dir = request.getCurrentDirectory();
-		User user = request.getSession().getUserNull(request.getUser());
-		
-		if (request.hasArgument()) {
-			try {
-				dir = dir.getDirectory(request.getArgument(), user);
-			} catch (FileNotFoundException e) {
-				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-			}  catch (ObjectNotValidException e) {
-				return new CommandResponse(500, "Target is not a directory, MLST only works on Directories");
-			}
-		}
+		try {
+			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+			TransferState ts = conn.getTransferState();
 
-		BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-		PrintWriter out = conn.getControlWriter();
-		PrintWriter os = null; // listing writer.
+			PrintWriter out = conn.getControlWriter();
+			PrintWriter os = null; // listing writer.
 
-		if (isMlst) {
-			conn.printOutput("250-MLST"+LIST.NEWLINE);
-			os = out;
-		} else {
-			if (!conn.getTransferState().isPasv() && !conn.getTransferState().isPort()) {
+			if (!ts.isPasv() && !ts.isPort() && !isMlst) {
+				// ts.reset(); issued on the finally block.
 				return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
 			}
 
-			try {
-				os = new PrintWriter(new OutputStreamWriter(conn.getTransferState().getDataSocketForLIST().getOutputStream()));
-			} catch (IOException ex) {
-				logger.warn(ex);
-				return new CommandResponse(425, ex.getMessage());
+			DirectoryHandle dir = request.getCurrentDirectory();
+			User user = request.getSession().getUserNull(request.getUser());
+
+			if (request.hasArgument()) {
+				try {
+					dir = dir.getDirectory(request.getArgument(), user);
+				} catch (FileNotFoundException e) {
+					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+				} catch (ObjectNotValidException e) {
+					return new CommandResponse(500, "Target is not a directory, MLST only works on Directories");
+				}
 			}
 
-			conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
-		}
+			if (isMlst) {
+				conn.printOutput("250-MLST" + LIST.NEWLINE);
+				os = out;
+			} else {
+				try {
+					os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST().getOutputStream()));
+				} catch (IOException ex) {
+					logger.warn(ex);
+					return new CommandResponse(425, ex.getMessage());
+				}
 
-		ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser(),_cManager);
-		
-		try {
-			container = ListUtils.list(dir, container);
-		} catch (IOException e) {
-			logger.error(e, e);
-			return new CommandResponse(450, e.getMessage());
-		}
+				conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
+			}
 
-		for (InodeHandleInterface inode : container.getElements()) {
-			os.write(toMLST(inode) + LIST.NEWLINE);
-		}
+			ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser(), _cManager);
 
-		if (isMlst) 
-			return new CommandResponse(250, "End of MLST");
-		else {
-			os.close();
-			return StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+			try {
+				container = ListUtils.list(dir, container);
+			} catch (IOException e) {
+				logger.error(e, e);
+				return new CommandResponse(450, e.getMessage());
+			}
+
+			for (InodeHandleInterface inode : container.getElements()) {
+				os.write(toMLST(inode) + LIST.NEWLINE);
+			}
+
+			if (isMlst)
+				return new CommandResponse(250, "End of MLST");
+			else {
+				os.close();
+				return StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+			}
+		} finally {
+			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+			conn.getTransferState().reset();
 		}
 	}
 
