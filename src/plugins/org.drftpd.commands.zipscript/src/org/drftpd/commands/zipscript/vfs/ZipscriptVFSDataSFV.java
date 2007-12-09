@@ -18,6 +18,7 @@
 package org.drftpd.commands.zipscript.vfs;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -33,7 +34,6 @@ import org.drftpd.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.VirtualFileSystemDirectory;
 
 /**
  * @author djb61
@@ -47,9 +47,9 @@ public class ZipscriptVFSDataSFV {
 		_dir = dir;
 	}
 
-	public SFVInfo getSFVInfo() throws FileNotFoundException, NoAvailableSlaveException {
+	public SFVInfo getSFVInfo() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		try {
-			SFVInfo sfvInfo = getSFVInfoFromInode(_dir.getInode());
+			SFVInfo sfvInfo = getSFVInfoFromInode(_dir);
 			try {
 				FileHandle sfvFile = _dir.getFileUnchecked(sfvInfo.getSFVFileName());
 				if (sfvFile.exists()) {
@@ -62,17 +62,17 @@ public class ZipscriptVFSDataSFV {
 				// just continue, it couldn't find the previous sfv file, the line below here will remove it
 				// we will then continue to try to find a new one right afterward
 			}
-			removeSFVInfo();
+			_dir.removeKey(SFVInfo.SFV);
 		} catch (KeyNotFoundException e1) {
 			// bah, let's load it
 		} catch (ObjectNotValidException e) {
 			// the previous sfv file is not longer of type VirtualFileSystemFile
-			removeSFVInfo();
+			_dir.removeKey(SFVInfo.SFV);
 		}
 
 		for (FileHandle file : _dir.getFilesUnchecked()) {
 			if (file.getName().toLowerCase().endsWith(".sfv")) {
-				while (true) {
+				for (int i = 0; i < 5; i++) {
 					SFVInfo info = null;
 					RemoteSlave rslave = file.getASlaveForFunction();
 					String index;
@@ -83,18 +83,18 @@ public class ZipscriptVFSDataSFV {
 						// okay, it went offline while trying, continue
 						continue;
 					} catch (RemoteIOException e) {
-						// okay, it had an error while trying, let's try again
-						continue;
+						throw new IOException(e.getMessage());
 					}
-					setSFVInfo(info);
+					_dir.addKey(SFVInfo.SFV, info);
 					return info;
 				}
+				throw new SlaveUnavailableException("No slave for SFV file available");
 			}
 		}
 		throw new FileNotFoundException("No SFV file in directory");
 	}
 	
-	public SFVStatus getSFVStatus() throws FileNotFoundException, NoAvailableSlaveException {
+	public SFVStatus getSFVStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		int offline = 0;
 		int present = 0;
 		SFVInfo sfvInfo = getSFVInfo();
@@ -111,19 +111,9 @@ public class ZipscriptVFSDataSFV {
 		}
 		return new SFVStatus(sfvEntries.size(), offline, present);
 	}
-
-	private void setSFVInfo(SFVInfo sfvFile) throws FileNotFoundException {
-		_dir.getInode().getKeyedMap().setObject(SFVInfo.SFV, sfvFile);
-		_dir.getInode().commit();
-	}
 	
-	private SFVInfo getSFVInfoFromInode(VirtualFileSystemDirectory vfsDir) throws KeyNotFoundException {
-		return (SFVInfo) vfsDir.getKeyedMap().getObject(SFVInfo.SFV);
-	}
-
-	public void removeSFVInfo() throws FileNotFoundException {
-		_dir.getInode().getKeyedMap().remove(SFVInfo.SFV);
-		_dir.getInode().commit();
+	private SFVInfo getSFVInfoFromInode(DirectoryHandle vfsDirHandle) throws FileNotFoundException, KeyNotFoundException {
+		return (SFVInfo) vfsDirHandle.getKey(SFVInfo.SFV);
 	}
 	
 	public static SFVInfo fetchSFVInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {

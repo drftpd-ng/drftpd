@@ -18,6 +18,7 @@
 package org.drftpd.commands.zipscript.links.hooks;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
@@ -31,6 +32,7 @@ import org.drftpd.commands.zipscript.links.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.LinkHandle;
@@ -78,6 +80,10 @@ public class LinksPostHook implements PostHookInterface {
 				// Slave holding sfv is unavailable
 			} catch (FileNotFoundException e) {
 				// No sfv in dir
+			} catch (IOException e) {
+				// sfv not readable
+			} catch (SlaveUnavailableException e) {
+				// Slave holding sfv is unavailable
 			}
 		}
 		return;
@@ -98,12 +104,6 @@ public class LinksPostHook implements PostHookInterface {
 
 		if (deleFileName.endsWith(".sfv")) {
 			LinkUtils.processLink(request, "delete", _bundle);
-			try {
-				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
-				sfvData.removeSFVInfo();
-			} catch(FileNotFoundException e) {
-				// No inode to remove sfvinfo from
-			}
 		}
 		else {
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
@@ -117,6 +117,10 @@ public class LinksPostHook implements PostHookInterface {
 				// Slave holding sfv is unavailable
 			} catch (FileNotFoundException e) {
 				// No sfv in dir
+			} catch (IOException e) {
+				// sfv not readable
+			} catch (SlaveUnavailableException e) {
+				// Slave holding sfv is unavailable
 			}
 		}
 		return;

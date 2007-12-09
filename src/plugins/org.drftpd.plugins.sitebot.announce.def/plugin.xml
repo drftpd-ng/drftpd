@@ -3,7 +3,6 @@
 <plugin id="org.drftpd.plugins.sitebot.announce.def" version="2.1.0">
 	<requires>
 		<import plugin-id="org.drftpd.commands.slavemanagement" />
-		<import plugin-id="org.drftpd.commands.zipscript" />
 		<import plugin-id="org.drftpd.plugins.sitebot" />
 	</requires>
 	<runtime>

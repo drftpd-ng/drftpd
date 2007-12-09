@@ -17,11 +17,13 @@
 package org.drftpd.commands.zipscript;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
@@ -34,7 +36,7 @@ import org.drftpd.vfs.VirtualFileSystem;
 public class SFVTools {
 
 	protected Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-	throws FileNotFoundException, NoAvailableSlaveException {
+	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		Collection<FileHandle> files = new ArrayList<FileHandle>();
 		SFVInfo sfvInfo = sfvData.getSFVInfo();
 
@@ -48,7 +50,7 @@ public class SFVTools {
 	}
 
 	protected long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
-	throws FileNotFoundException, NoAvailableSlaveException {
+	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long totalBytes = 0;
 
 		for (FileHandle file : getSFVFiles(dir, sfvData)) {
@@ -58,9 +60,21 @@ public class SFVTools {
 		}
 		return totalBytes;
 	}
+	
+	protected long getSFVLargestFileBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
+	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+		long largestFileBytes = 0;
+
+		for (FileHandle file : getSFVFiles(dir, sfvData)) {
+			if (file.getXfertime() != -1 && file.getSize() > largestFileBytes) {
+				largestFileBytes = file.getSize();
+			}
+		}
+		return largestFileBytes;
+	}
 
 	protected long getSFVTotalXfertime(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-	throws FileNotFoundException, NoAvailableSlaveException {
+	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long totalXfertime = 0;
 
 		for (FileHandle file : getSFVFiles(dir, sfvData)) {
@@ -72,7 +86,7 @@ public class SFVTools {
 	}
 
 	protected long getXferspeed(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
-	throws FileNotFoundException, NoAvailableSlaveException {
+	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long totalXfertime = getSFVTotalXfertime(dir, sfvData);
 		if (totalXfertime / 1000 == 0) {
 			return 0;

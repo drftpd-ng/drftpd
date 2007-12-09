@@ -91,6 +91,8 @@ services.chanserv.invite.2=#channel2
 # Enable blowfish encryption for channels and private messages
 blowfish.enable=false
 # Enable DH1080 key exchange as a method for setting users blowfish keys
+# This requires that you have installed the export strength crypto pack
+# in your Java VM.
 blowfish.dh1080.enable=false
 # Take action against users who send unencrypted text to channels or to the
 # bot in private message when blowfish is enabled

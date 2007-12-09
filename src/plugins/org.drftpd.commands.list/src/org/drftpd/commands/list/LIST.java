@@ -100,6 +100,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 				Class<?> listCls = listLoader.loadClass( 
 							listExt.getParameter("Class").valueAsString());
 				AddListElementsInterface listAddon = (AddListElementsInterface) listCls.newInstance();
+				listAddon.initialize();
 				_listAddons.add(listAddon);
 			}
 			catch (PluginLifecycleException e) {

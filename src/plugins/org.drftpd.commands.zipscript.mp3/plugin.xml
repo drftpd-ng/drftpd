@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.zipscript.mp3" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptMP3Protocol"/>
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.mp3.common" exported="true" />
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.list" exported="true" />
+		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.zipscript.mp3" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDMP3Stats">
+		<parameter id="ParentMethod" value="doCWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
+		<parameter id="HookMethod" value="doZipscriptCWDMP3Hook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptDELEMP3Hook">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
+		<parameter id="HookMethod" value="doZipscriptDELEMP3Hook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORMP3Stats">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORMP3Hook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	
+	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptMP3Protocol">
+		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.mp3.ZipscriptMP3Issuer" />
+	</extension>
+
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="ListStatusBarProvider" id="ListMP3StatusBarProvider">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.mp3.list.ZipscriptMP3StatusBar" />
+	</extension>
+</plugin>

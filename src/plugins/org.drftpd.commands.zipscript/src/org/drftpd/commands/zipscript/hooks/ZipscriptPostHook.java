@@ -18,6 +18,7 @@
 package org.drftpd.commands.zipscript.hooks;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -33,10 +34,12 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -110,6 +113,11 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 				"slave with .sfv offline, checksum not verified");
 			} catch (FileNotFoundException e1) {
 				//continue without verification
+			} catch (IOException e1) {
+				//continue without verification
+			} catch (SlaveUnavailableException e1) {
+				response.addComment(
+				"slave with .sfv offline, checksum not verified");
 			}
 		} else { // slave has disabled download crc
 
@@ -184,6 +192,13 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 				response.addComment(
 						"zipscript - SFV unavailable, IO error: " +
 						e.getMessage());
+			} catch (IOException e) {
+				response.addComment(
+						"zipscript - SFV unavailable, IO error: " +
+						e.getMessage());
+			} catch (SlaveUnavailableException e) {
+				response.addComment(
+				"zipscript - SFV unavailable, slave(s) with .sfv file is offline");
 			}
 		}
 		return;
@@ -210,6 +225,27 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		getPropertiesForPlugin("zipscript.conf");
 		if (cfg.getProperty("stor.racestats.enabled").equals("true")) {
 			addRaceStats(request, response, request.getCurrentDirectory());
+		}
+	}
+
+	public void doZipscriptDELECleanupHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 250) {
+			// DELE failed, abort cleanup
+			return;
+		}
+		String deleFileName;
+		try {
+			deleFileName =  (String) response.getObject(Dir.FILENAME);
+		} catch (KeyNotFoundException e) {
+			// We don't have a file, we shouldn't have ended up here but return anyway
+			return;
+		}
+		if (deleFileName.endsWith(".sfv")) {
+			try {
+				request.getCurrentDirectory().removeKey(SFVInfo.SFV);
+			} catch(FileNotFoundException e) {
+				// No inode to remove sfvinfo from
+			}
 		}
 	}
 
@@ -304,8 +340,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
 			racetext += _bundle.getString(_keyPrefix+"cwd.groups.footer") + "\n";
 
-			env.add("completefiles", Integer.toString(sfvStatus.getPresent()));
-			env.add("totalfiles", Integer.toString(sfvInfo.getSize()));
+			env.add("completefiles", Integer.toString(sfvStatus.getPresent()) + "/" + Integer.toString(sfvInfo.getSize()));
 			env.add("totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
 			env.add("totalspeed",
 					Bytes.formatBytes(getXferspeed(dir, sfvData)) + "/s");
@@ -337,7 +372,11 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 			logger.error("", ex);
 		} catch (FileNotFoundException e) {
 			//Error fetching SFV, ignore
+		} catch (IOException e) {
+			//Error fetching SFV, ignore
 		} catch (NoAvailableSlaveException e) {
+			//Error fetching SFV, ignore
+		} catch (SlaveUnavailableException e) {
 			//Error fetching SFV, ignore
 		}
 	}

@@ -20,7 +20,6 @@ package org.drftpd.master;
 import java.util.Iterator;
 import java.util.Vector;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandResponseInterface;
 
@@ -88,8 +87,7 @@ public class FtpReply {
 		if (pos != -1) {
 			addComment(response.substring(pos + 1));
 			response = response.substring(0, pos);
-			logger.log(Level.DEBUG,
-					"Truncated response message with multiple lines: "
+			logger.debug("Truncated response message with multiple lines: "
 							+ response);
 		}
 
@@ -108,7 +106,7 @@ public class FtpReply {
 			setMessage("No text specified");
 		}
 
-		for (Iterator iter = _lines.iterator(); iter.hasNext();) {
+		for (Iterator<String> iter = _lines.iterator(); iter.hasNext();) {
 			String comment = (String) iter.next();
 
 			if (!iter.hasNext() && (_message == null)) {

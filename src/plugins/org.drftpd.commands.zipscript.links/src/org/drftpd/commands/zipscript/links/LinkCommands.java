@@ -18,6 +18,7 @@
 package org.drftpd.commands.zipscript.links;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -31,6 +32,7 @@ import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
@@ -106,6 +108,10 @@ public class LinkCommands extends CommandInterface {
 					// Slave holding sfv is unavailable
 				} catch (FileNotFoundException e) {
 					// No sfv in dir
+				} catch (IOException e) {
+					// sfv not readable
+				} catch (SlaveUnavailableException e) {
+					// Slave holding sfv is unavailable
 				}
 			}
 		}

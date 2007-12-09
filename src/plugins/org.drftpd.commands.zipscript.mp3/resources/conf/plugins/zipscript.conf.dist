@@ -1,0 +1,5 @@
+# $Id$
+
+#enable MP3 info [true/false]
+cwd.mp3info.enabled=true
+stor.mp3info.enabled=true

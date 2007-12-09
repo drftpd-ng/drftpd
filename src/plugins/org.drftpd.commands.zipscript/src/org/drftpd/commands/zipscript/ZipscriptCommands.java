@@ -18,6 +18,7 @@
 package org.drftpd.commands.zipscript;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.Session;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.vfs.DirectoryHandle;
@@ -130,7 +132,15 @@ public class ZipscriptCommands extends CommandInterface implements EventSubscrib
 				 * useless output in recursive mode
 				 */
 				continue;
+			} catch (IOException e2) {
+				/* Unable to read sfv in this dir, silently ignore so not to add 
+				 * useless output in recursive mode
+				 */
+				continue;
 			} catch (NoAvailableSlaveException e2) {
+				session.printOutput(200,"No available slave with sfv for: "+workingDir.getPath());
+				continue;
+			} catch (SlaveUnavailableException e2) {
 				session.printOutput(200,"No available slave with sfv for: "+workingDir.getPath());
 				continue;
 			}

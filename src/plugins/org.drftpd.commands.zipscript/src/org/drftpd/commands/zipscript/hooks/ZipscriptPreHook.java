@@ -18,6 +18,7 @@
 package org.drftpd.commands.zipscript.hooks;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -32,6 +33,7 @@ import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.Permission;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
@@ -139,7 +141,11 @@ public class ZipscriptPreHook implements PreHookInterface {
 				request.setDeniedResponse(new CommandResponse(533,
 				"Requested action not taken. You must upload sfv first."));
 			}
+		} catch (IOException e1) {
+			// sfv not readable, do nothing
 		} catch (NoAvailableSlaveException e1) {
+			//sfv not online, do nothing
+		} catch (SlaveUnavailableException e1) {
 			//sfv not online, do nothing
 		}
 		return request;

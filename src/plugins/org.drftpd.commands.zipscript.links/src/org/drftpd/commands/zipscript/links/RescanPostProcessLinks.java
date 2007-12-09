@@ -17,6 +17,7 @@
 package org.drftpd.commands.zipscript.links;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -26,6 +27,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.RescanPostProcessDirInterface;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 
 /**
@@ -61,6 +63,10 @@ public class RescanPostProcessLinks implements RescanPostProcessDirInterface {
 				// Slave holding sfv is unavailable
 			} catch (FileNotFoundException e) {
 				// No sfv in dir
+			} catch (IOException e) {
+				// sfv not readable
+			} catch (SlaveUnavailableException e) {
+				// Slave holding sfv is unavailable
 			}
 		}
 	}

@@ -34,6 +34,9 @@
 	<extension-point id="RescanPostProcessDir">
 		<parameter-def id="Class" />
 	</extension-point>
+	<extension-point id="ListStatusBarProvider">
+		<parameter-def id="Class" />
+	</extension-point>
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="ZipscriptSTORPreCheck">
 		<parameter id="ParentMethod" value="doSTOR" />
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPreHook" />
@@ -56,6 +59,12 @@
 		<parameter id="ParentMethod" value="doCWD" />
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
 		<parameter id="HookMethod" value="doZipscriptCWDStatsHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptDELECleanup">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.hooks.ZipscriptPostHook" />
+		<parameter id="HookMethod" value="doZipscriptDELECleanupHook" />
 		<parameter id="Priority" value="10" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORStats">

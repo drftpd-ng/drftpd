@@ -21,6 +21,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyedMap;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -359,5 +362,20 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		} catch (ClassCastException e) {
 			return false;
 		}
+	}
+
+	public void addKey(Key key, Object object) throws FileNotFoundException {
+		getInode().getKeyedMap().setObject(key,object);
+		getInode().commit();
+	}
+
+	public Object removeKey(Key key) throws FileNotFoundException {
+		Object value = getInode().getKeyedMap().remove(key);
+		getInode().commit();
+		return value;
+	}
+
+	public Object getKey(Key key) throws FileNotFoundException, KeyNotFoundException {
+		return getInode().getKeyedMap().getObject(key);
 	}
 }

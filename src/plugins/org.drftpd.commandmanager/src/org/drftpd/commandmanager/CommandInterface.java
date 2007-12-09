@@ -88,7 +88,7 @@ public abstract class CommandInterface implements EventSubscriber {
 				ClassLoader postHookLoader = manager.getPluginClassLoader( 
 						postHook.getDeclaringPluginDescriptor());
 				try {
-					Class postHookCls = postHookLoader.loadClass(
+					Class<?> postHookCls = postHookLoader.loadClass(
 							postHook.getParameter("HookClass").valueAsString());
 					PostHookInterface postHookInstance = (PostHookInterface) postHookCls.newInstance();
 					
@@ -141,7 +141,7 @@ public abstract class CommandInterface implements EventSubscriber {
 				ClassLoader preHookLoader = manager.getPluginClassLoader( 
 						preHook.getDeclaringPluginDescriptor());
 				try {
-					Class preHookCls = preHookLoader.loadClass(
+					Class<?> preHookCls = preHookLoader.loadClass(
 							preHook.getParameter("HookClass").valueAsString());
 					PreHookInterface preHookInstance = (PreHookInterface) preHookCls.newInstance();
 					

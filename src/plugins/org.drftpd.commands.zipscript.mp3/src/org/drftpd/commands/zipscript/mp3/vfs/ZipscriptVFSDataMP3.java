@@ -1,0 +1,139 @@
+/*
+ * This file is part of DrFTPD, Distributed FTP Daemon.
+ *
+ * DrFTPD is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * DrFTPD is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with DrFTPD; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.drftpd.commands.zipscript.mp3.vfs;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import org.drftpd.GlobalContext;
+import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.protocol.zipscript.mp3.ZipscriptMP3Issuer;
+import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
+import org.drftpd.protocol.zipscript.mp3.common.async.AsyncResponseMP3Info;
+import org.drftpd.slave.RemoteIOException;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.InodeHandle;
+
+/**
+ * @author djb61
+ * @version $Id$
+ */
+public class ZipscriptVFSDataMP3 {
+
+	private InodeHandle _inode;
+
+	private boolean _setDir;
+
+	public ZipscriptVFSDataMP3(InodeHandle inode) {
+		_inode = inode;
+		_setDir = false;
+	}
+
+	public MP3Info getMP3Info() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+		try {
+			MP3Info mp3info = getMP3InfoFromInode(_inode);
+			return mp3info;
+		} catch (KeyNotFoundException e1) {
+			// bah, let's load it
+		}
+		// There is no existing mp3info so we need to retrieve it and set it
+		if (_inode instanceof DirectoryHandle) {
+			// Find the info for the first mp3 file we come across and use that
+			DirectoryHandle dir = (DirectoryHandle) _inode;
+			for (FileHandle file : dir.getFilesUnchecked()) {
+				if (file.getName().toLowerCase().endsWith(".mp3")) {
+					MP3Info mp3info = null;
+					for (int i = 0; i < 5; i++) {
+						RemoteSlave rslave = file.getASlaveForFunction();
+						String index;
+						try {
+							index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
+							mp3info = fetchMP3InfoFromIndex(rslave, index);
+						} catch (SlaveUnavailableException e) {
+							// okay, it went offline while trying, continue
+							continue;
+						} catch (RemoteIOException e) {
+							throw new IOException(e.getMessage());
+						}
+						break;
+					}
+					if (mp3info != null) {
+						_inode.addKey(MP3Info.MP3INFO, mp3info);
+						return mp3info;
+					}
+				}
+			}
+			throw new FileNotFoundException("No usable mp3 files found in directory");
+		} else if (_inode instanceof FileHandle) {
+			FileHandle file = (FileHandle) _inode;
+			MP3Info mp3info = null;
+			for (int i = 0; i < 5; i++) {
+				RemoteSlave rslave = file.getASlaveForFunction();
+				String index;
+				try {
+					index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
+					mp3info = fetchMP3InfoFromIndex(rslave, index);
+				} catch (SlaveUnavailableException e) {
+					// okay, it went offline while trying, continue
+					continue;
+				} catch (RemoteIOException e) {
+					throw new IOException(e.getMessage());
+				}
+				break;
+			}
+			if (mp3info == null) {
+				throw new FileNotFoundException("Unable to obtain info for MP3 file");
+			} else {
+				_inode.addKey(MP3Info.MP3INFO, mp3info);
+			}
+			// Update mp3info on parent directory inode
+			DirectoryHandle dir = file.getParent();
+			synchronized(dir) {
+				try {
+					getMP3InfoFromInode(dir);
+				} catch (KeyNotFoundException e1) {
+					_setDir = true;
+				}
+				dir.addKey(MP3Info.MP3INFO, mp3info);
+			}
+			return mp3info;
+		} else {
+			throw new IllegalArgumentException("Inode type other than directory or file passed in");
+		}
+	}
+
+	public boolean isFirst() {
+		return _setDir;
+	}
+	
+	private MP3Info getMP3InfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
+		return (MP3Info) vfsInodeHandle.getKey(MP3Info.MP3INFO);
+	}
+
+	public static MP3Info fetchMP3InfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+		return ((AsyncResponseMP3Info) rslave.fetchResponse(index)).getMP3Info();
+	}
+	
+	public ZipscriptMP3Issuer getMP3Issuer() {
+		return (ZipscriptMP3Issuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(ZipscriptMP3Issuer.class);
+	}
+}

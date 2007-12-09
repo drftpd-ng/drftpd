@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.zipscript.mp3.common" version="2.1.0">
+	<requires>
+		<import plugin-id="common" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.zipscript.mp3.common" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+</plugin>

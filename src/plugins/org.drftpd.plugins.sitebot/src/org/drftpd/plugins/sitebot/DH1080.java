@@ -89,7 +89,7 @@ public class DH1080 {
 		}
 	}
 
-	/* This is an alternate base64 decoder, this is required as
+	/** This is an alternate base64 decoder, this is required as
 	 * the DH1080 implementation used by everyone relies on a non
 	 * RFC compliant base64 implementation, therefore the other
 	 * base64 methods in the blowfish class cannot be used. This method
@@ -151,7 +151,7 @@ public class DH1080 {
 		}
 	}
 
-	/* This is an alternate base64 encoder, this is required as
+	/** This is an alternate base64 encoder, this is required as
 	 * the DH1080 implementation used by everyone relies on a non
 	 * RFC compliant base64 implementation, therefore the other
 	 * base64 methods in the blowfish class cannot be used. This method
