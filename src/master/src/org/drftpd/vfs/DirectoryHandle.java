@@ -393,10 +393,11 @@ public class DirectoryHandle extends InodeHandle implements
 			destination = destinationIter.next();
 		}
 		while (true) {
-/*			logger.debug("Starting remerge() loop, [destination="
+			/*logger.debug("loop, [destination="
 					+ (destination == null ? "null" : destination.getName())
 					+ "][source="
-					+ (source == null ? "null" : source.getName()) + "]");*/
+					+ (source == null ? "null" : source.getName()) + "]");
+			*/
 			// source & destination are set at the "next to process" one OR are
 			// null and at the end of that list
 
@@ -498,18 +499,28 @@ public class DirectoryHandle extends InodeHandle implements
 */					if (source.length() != destinationFile.getSize()) {
 //							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
 						// handle collision
-						createRemergedFile(source, rslave, true);
-						logger.warn("In remerging " + rslave.getName()
-								+ ", a file on the slave (" + getPath()
-								+ VirtualFileSystem.separator
-								+ source.getName()
-								+ ") collided with a file on the master");
-						// set crc now?
+						Set<RemoteSlave> rslaves = destinationFile.getSlaves();
+						if (rslaves.contains(rslave) && rslaves.size() == 1) {
+							// size of the file has changed, but since this is the only slave with the file, just change the size
+							destinationFile.setSize(source.length());
+						} else {
+							if (rslaves.contains(rslave)) {
+								// the master thought the slave had the file, it's not the same size anymore, remove it
+								destinationFile.removeSlave(rslave);
+							}
+							createRemergedFile(source, rslave, true);
+							logger.warn("In remerging " + rslave.getName()
+									+ ", a file on the slave (" + getPath()
+									+ VirtualFileSystem.separator
+									+ source.getName()
+									+ ") collided with a file on the master");
+						}
 					} else {
 						destinationFile.addSlave(rslave);
 					}
 				} else if (source.isDirectory() && destination.isDirectory()) {
 					// this is good, do nothing other than take up this case
+					logger.debug("In remerge, directories were equal!");
 				} else {
 					// we have a directory/name collission, let's find which one
 					// :)
