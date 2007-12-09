@@ -89,14 +89,6 @@ method doREST
 perms *
 }
 
-SITE XDUPE {
-plugin org.drftpd.commands.dataconnection
-class DataConnectionHandler
-method doSITE_XDUPE
-perms *
-help Command not implemented
-}
-
 STOR {
 plugin org.drftpd.commands.dataconnection
 class DataConnectionHandler

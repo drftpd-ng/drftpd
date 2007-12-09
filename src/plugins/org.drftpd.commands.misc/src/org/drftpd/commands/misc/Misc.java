@@ -35,7 +35,6 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
-import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.Slave;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;

@@ -589,38 +589,6 @@ public class DataConnectionHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_350_PENDING_FURTHER_INFORMATION");
     }
 
-    public CommandResponse doSITE_XDUPE(CommandRequest request) {
-    	return StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
-
-        //		resetState();
-        //
-        //		if (!request.hasArgument()) {
-        //			if (this.xdupe == 0) {
-        //				out.println("200 Extended dupe mode is disabled.");
-        //			} else {
-        //				out.println(
-        //					"200 Extended dupe mode " + this.xdupe + " is enabled.");
-        //			}
-        //			return;
-        //		}
-        //
-        //		short myXdupe;
-        //		try {
-        //			myXdupe = Short.parseShort(request.getArgument());
-        //		} catch (NumberFormatException ex) {
-        //			out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
-        //			return;
-        //		}
-        //
-        //		if (myXdupe > 0 || myXdupe < 4) {
-        //			out.print(
-        //				FtpResponse.RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM);
-        //			return;
-        //		}
-        //		this.xdupe = myXdupe;
-        //		out.println("200 Activated extended dupe mode " + myXdupe + ".");
-    }
-
     /**
      * <code>STRU &lt;SP&gt; &lt;structure-code&gt; &lt;CRLF&gt;</code><br>
      *
@@ -679,48 +647,6 @@ public class DataConnectionHandler extends CommandInterface {
 
         return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
     }
-
-/*    *//**
-     * Get the data socket.
-     *
-     * Used by LIST and NLST and MLST.
-     *//*
-    public Socket getDataSocket() throws IOException {
-        Socket dataSocket;
-
-        // get socket depending on the selection
-        if (isPort()) {
-            try {
-				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? _ctx : null, _portAddress, _SSLHandshakeClientMode);
-                dataSocket = ac.connect();
-            } catch (IOException ex) {
-                logger.warn("Error opening data socket", ex);
-                dataSocket = null;
-                throw ex;
-            }
-        } else if (isPasv()) {
-            try {
-                dataSocket = _passiveConnection.connect();
-            } finally {
-				if (_passiveConnection != null) {
-					_passiveConnection.abort();
-	                _passiveConnection = null;
-				}
-            }
-        } else {
-            throw new IllegalStateException("Neither PASV nor PORT");
-        }
-		// Already done since we are using ActiveConnection and PasvConnection
-        dataSocket.setSoTimeout(Connection.TIMEOUT); // 15 seconds timeout
-
-        if (dataSocket instanceof SSLSocket) {
-            SSLSocket ssldatasocket = (SSLSocket) dataSocket;
-            ssldatasocket.setUseClientMode(false);
-            ssldatasocket.startHandshake();
-        }
-
-        return dataSocket;
-    }*/
 
     private String[] populateFeat(String method) {
     	boolean sslContext = GlobalContext.getGlobalContext().getSSLContext() != null;

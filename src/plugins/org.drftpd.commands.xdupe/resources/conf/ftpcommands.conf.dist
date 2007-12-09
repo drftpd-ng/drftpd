@@ -1,0 +1,12 @@
+SITE XDUPE {
+plugin org.drftpd.commands.xdupe
+class XDupe
+method doSITE_XDUPE
+perms *
+help The X-DUPE mechanism helps you saving time when uploading files by avoiding "dupes".
+help.specific ${command} <mode>
+help.specific Mode 1: Up to a maximum of 80 chars total line length. Filenames longer than 66 chars will be truncated.
+help.specific Mode 2: The server sends only one filename per X-DUPE line, and the maximum line length is 80 chars. Filenames are also truncated.
+help.specific Mode 3: Only one filename is sent per X-DUPE line, and the filename will not be truncated.
+help.specific Mode 4: All files are listed on one long line, up to a maximum of 1024 characters. Files which are too long to fit will be skipped.
+}

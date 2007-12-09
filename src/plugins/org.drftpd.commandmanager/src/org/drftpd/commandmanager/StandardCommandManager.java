@@ -394,7 +394,7 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		 * file not found, no access).
 		 */
 		genericResponses.put("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN",
-				new CommandResponse(550, "Requested action not taken. File unavailable (e.g., file not found, no access"));
+				new CommandResponse(550, "Requested action not taken. File unavailable (e.g., file not found, no access)"));
 
 		/**
 		 * 553 Requested action not taken. File name not allowed.
@@ -406,7 +406,7 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		 * 550 Requested action not taken. File exists.
 		 */
 		genericResponses.put("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS",
-				new CommandResponse(550, "Requested action not taken. File exists."));
+				new CommandResponse(553, "Requested action not taken. File exists."));
 
 		_genericResponses = genericResponses;
 	}
