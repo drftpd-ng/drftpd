@@ -69,6 +69,7 @@ import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
 import org.drftpd.slave.async.AsyncResponseRemerge;
+import org.drftpd.slave.async.AsyncResponseSSLCheck;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.stats.ExtendedTimedStats;
@@ -135,6 +136,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_ipMasks = new HostMaskCollection();
 		_renameQueue = new LinkedList<QueuedOperation>();
 	}
+	
+	public static final Key SSL = new Key(RemoteSlave.class, "ssl", Boolean.class);
 
 	public final static Hashtable rslavesToHashtable(Collection rslaves) {
 		Hashtable<String, RemoteSlave> map = new Hashtable<String, RemoteSlave>(
@@ -372,10 +375,14 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	SlaveUnavailableException, ProtocolException {
 		commit();
 		processQueue();
-		
+
+		// checking 'maxpath'
 		String maxPathIndex = SlaveManager.getBasicIssuer().issueMaxPathToSlave(this);
 		_maxPath = fetchMaxPathFromIndex(maxPathIndex);
-		logger.debug("maxpath was received");
+		
+		// checking ssl availability
+		String checkSSLIndex = SlaveManager.getBasicIssuer().issueCheckSSL(this);
+		getTransientKeyedMap().setObject(SSL, fetchCheckSSLFromIndex(checkSSLIndex));
 
 		String remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/");
 
@@ -611,15 +618,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return ((AsyncResponseChecksum) fetchResponse(index)).getChecksum();
 	}
 
-	/*
-	  	TODO move this to another place
-	  	
-		public ID3Tag fetchID3TagFromIndex(String index) throws RemoteIOException,
-			SlaveUnavailableException {
-		return ((AsyncResponseID3Tag) fetchResponse(index)).getTag();
-	}
-	*/
-
 	public synchronized String fetchIndex() throws SlaveUnavailableException {
 		while (isOnline()) {
 			try {
@@ -644,6 +642,14 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			return ((AsyncResponseMaxPath) fetchResponse(maxPathIndex)).getMaxPath();
 		} catch (RemoteIOException e) {
 			throw new FatalException("Slave had an error processing maxpath");
+		}
+	}
+	
+	public boolean fetchCheckSSLFromIndex(String sslIndex) throws SlaveUnavailableException {
+		try {
+			return ((AsyncResponseSSLCheck) fetchResponse(sslIndex)).isSSLReady();
+		} catch (RemoteIOException e) {
+			throw new FatalException("Slave had an error processing the ssl check");
 		}
 	}
 
@@ -703,15 +709,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 		return rar;
 	}
-
-	/*
-		TODO move this out of here.
-		
-	public String fetchDIZFileFromIndex(String index) throws RemoteIOException,
-			SlaveUnavailableException {
-		return ((AsyncResponseDIZFile) fetchResponse(index)).getDIZ();
-	}
-	*/
 
 	public synchronized String getPASVIP() throws SlaveUnavailableException {
 		if (!isOnline())

@@ -73,7 +73,7 @@ public class DailyStats implements UserResetHookInterface, EventSubscriber {
 		_wkdn = cfg.getProperty("wkdn","false").equalsIgnoreCase("true");
 		_showzero = cfg.getProperty("showzero","false").equalsIgnoreCase("true");
 		_outputnum = Integer.parseInt(cfg.getProperty("outputnum","5"));
-		_exempt = cfg.getProperty("exempt").toLowerCase().split(" ");
+		_exempt = cfg.getProperty("exempt", "").toLowerCase().split(" ");
 	}
 
 	private Collection<UserStats> getStats(String type) {

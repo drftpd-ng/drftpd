@@ -20,6 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
+import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
@@ -100,6 +101,8 @@ public class SlaveTransfer {
 			throw new DestinationSlaveException(e);
 		} catch (RemoteIOException e) {
 			throw new DestinationSlaveException(e);
+		} catch (SSLUnavailableException e) {
+			throw new DestinationSlaveException(e);
 		}
 
 		try {
@@ -111,6 +114,8 @@ public class SlaveTransfer {
 		} catch (SlaveUnavailableException e) {
 			throw new SourceSlaveException(e);
 		} catch (RemoteIOException e) {
+			throw new SourceSlaveException(e);
+		} catch (SSLUnavailableException e) {
 			throw new SourceSlaveException(e);
 		}
 

@@ -16,6 +16,7 @@
  */
 package org.drftpd.protocol.master;
 
+import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.TransferIndex;
@@ -31,12 +32,12 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
 	public abstract String issueChecksumToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException;
 
 	public abstract String issueConnectToSlave(RemoteSlave rslave, String ip, int port,
-			boolean encryptedDataChannel, boolean useSSLClientHandshake) throws SlaveUnavailableException;
+			boolean encryptedDataChannel, boolean useSSLClientHandshake) throws SlaveUnavailableException, SSLUnavailableException;
 
 	public abstract String issueDeleteToSlave(RemoteSlave rslave, String sourceFile) throws SlaveUnavailableException;
 
 	public abstract String issueListenToSlave(RemoteSlave rslave, boolean isSecureTransfer,
-			boolean useSSLClientMode) throws SlaveUnavailableException;
+			boolean useSSLClientMode) throws SlaveUnavailableException, SSLUnavailableException;
 
 	public abstract String issueMaxPathToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
 
@@ -58,4 +59,6 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
 			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException;
 
 	public abstract String issueRemergeToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException;
+	
+	public abstract String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException;
 }

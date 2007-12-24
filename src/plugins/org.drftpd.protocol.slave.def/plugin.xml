@@ -86,4 +86,10 @@
 		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
 		<parameter id="Method" value="handleShutdown" />
 	</extension>
+	
+	<extension plugin-id="slave" point-id="Handler" id="CheckSSLHandler">
+		<parameter id="Name" value="checkSSL" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleSSLCheck" />
+	</extension>
 </plugin>

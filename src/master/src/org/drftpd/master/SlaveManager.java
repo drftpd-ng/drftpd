@@ -50,6 +50,7 @@ import org.drftpd.SSLGetContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.cron.TimeEventInterface;
@@ -100,9 +101,16 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	}
 	
 	public SlaveManager(Properties p) throws SlaveFileException {
-		this();
-		_port = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
 		_sslSlaves = p.getProperty("master.slaveSSL", "false").equalsIgnoreCase("true");
+		try {
+			if (_sslSlaves && GlobalContext.getGlobalContext().getSSLContext() == null) {
+				throw new SSLUnavailableException("Secure connections to slave required but SSL isn't available");
+			}
+		} catch (Exception e) {
+			throw new FatalException(e);
+		}
+		
+		_port = Integer.parseInt(PropertyHelper.getProperty(p, "master.bindport"));
 		_central = new MasterProtocolCentral();
 		loadSlaves();
 	}

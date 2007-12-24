@@ -42,6 +42,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.exceptions.TransferDeniedException;
 import org.drftpd.master.BaseFtpConnection;
@@ -219,6 +220,8 @@ public class DataConnectionHandler extends CommandInterface {
 		                logger.error("Slave could not listen for a connection", e);
 		                // make it loop until it finds a good one
 		                slave = null;
+					} catch (SSLUnavailableException e) {
+						return new CommandResponse(421, e.getMessage());
 					}
 				}
         	} else if (ts.isPASVUpload()) {
@@ -250,6 +253,8 @@ public class DataConnectionHandler extends CommandInterface {
 								e);
 						// make it loop until it finds a good one
 						slave = null;
+					} catch (SSLUnavailableException e) {
+						return new CommandResponse(421, e.getMessage());
 					}
 				}
         	} else {
@@ -947,6 +952,8 @@ public class DataConnectionHandler extends CommandInterface {
 						// couldn't talk to the slave, this is bad
 						ts.getTransferSlave().setOffline(e);
 						return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
+					} catch (SSLUnavailableException e) {
+						return new CommandResponse(421, e.getMessage());
 					}
             } else if (ts.isPASVDownload() || ts.isPASVUpload()) {
                 //_transfer is already set up by doPASV()

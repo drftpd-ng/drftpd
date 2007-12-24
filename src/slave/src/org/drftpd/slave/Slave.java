@@ -37,12 +37,14 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.id3.ID3Tag;
 import org.drftpd.id3.MP3File;
 import org.drftpd.master.QueuedOperation;
@@ -112,20 +114,16 @@ public class Slave {
 	private DiskSelectionInterface _diskSelection = null;
 
 	protected Slave() {
-
 	}
 
-	public Slave(Properties p) throws IOException {
+	public Slave(Properties p) throws IOException, SSLUnavailableException {
 		InetSocketAddress addr = new InetSocketAddress(PropertyHelper
 				.getProperty(p, "master.host"), Integer.parseInt(PropertyHelper
 				.getProperty(p, "master.bindport")));
-		_sslMaster = p.getProperty("slave.masterSSL", "false")
-				.equalsIgnoreCase("true");
-
+		
 		// Whatever interface the slave uses to connect to the master, is the
 		// interface that the master will report to clients requesting PASV
-		// transfers
-		// from this slave, unless pasv_addr is set on the master for this slave
+		// transfers from this slave, unless pasv_addr is set on the master for this slave
 		logger.info("Connecting to master at " + addr);
 
 		String slavename = PropertyHelper.getProperty(p, "slave.name");
@@ -159,6 +157,11 @@ public class Slave {
 			}
 		}
 
+		_sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
+		if (_sslMaster && _ctx == null) {
+			throw new SSLUnavailableException("Secure connection to master enabled but SSL isn't ready");
+		}
+
 		if (_sslMaster) {
 			_s = _ctx.getSocketFactory().createSocket();
 		} else {
@@ -166,8 +169,7 @@ public class Slave {
 		}
 
 		try {
-			_timeout = Integer.parseInt(PropertyHelper.getProperty(p,
-					"slave.timeout"));
+			_timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
 		} catch (NullPointerException e) {
 			_timeout = actualTimeout;
 		}
@@ -178,7 +180,12 @@ public class Slave {
 				((SSLSocket) _s).setEnabledCipherSuites(getCipherSuites());
 			}
 			((SSLSocket) _s).setUseClientMode(true);
-			((SSLSocket) _s).startHandshake();
+			
+			try {
+				((SSLSocket) _s).startHandshake();
+			} catch (SSLHandshakeException e) {
+				throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.", e);
+			}
 		}
 		_sout = new ObjectOutputStream(_s.getOutputStream());
 		_sin = new ObjectInputStream(_s.getInputStream());

@@ -22,7 +22,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -48,6 +47,7 @@ import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseMaxPath;
 import org.drftpd.slave.async.AsyncResponseRemerge;
+import org.drftpd.slave.async.AsyncResponseSSLCheck;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 
@@ -89,7 +89,7 @@ public class BasicHandler extends AbstractHandler {
 
 		Transfer t = transfers.get(ti);
 		t.abort(args[1]);
-		return null;
+		return new AsyncResponse(aca.getIndex());
 	}
 
 	public AsyncResponse handleConnect(AsyncCommandArgument ac) {
@@ -136,15 +136,6 @@ public class BasicHandler extends AbstractHandler {
 			return new AsyncResponseException(ac.getIndex(), e);
 		}
 	}
-
-	/*private AsyncResponse handleID3Tag(AsyncCommandArgument ac) {
-		try {
-			return new AsyncResponseID3Tag(ac.getIndex(),
-					getID3v1Tag(mapPathToRenameQueue(ac.getArgs())));
-		} catch (IOException e) {
-			return new AsyncResponseException(ac.getIndex(), e);
-		}
-	}*/
 
 	public AsyncResponse handleListen(AsyncCommandArgument ac) {
 		String[] data = ac.getArgs().split(":");
@@ -327,12 +318,7 @@ public class BasicHandler extends AbstractHandler {
 		return null;
 	}
 
-	/*private AsyncResponse handleDIZFile(AsyncCommandArgument ac) {
-		try {
-			return new AsyncResponseDIZFile(ac.getIndex(), getDIZFile(ac
-					.getArgs()));
-		} catch (IOException e) {
-			return new AsyncResponseException(ac.getIndex(), e);
-		}
-	}*/
+	public AsyncResponse handleSSLCheck(AsyncCommandArgument ac) {
+		return new AsyncResponseSSLCheck(ac.getIndex(), getSlaveObject().getSSLContext() != null);
+	}
 }
