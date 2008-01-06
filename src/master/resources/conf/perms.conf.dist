@@ -53,3 +53,6 @@ userrejectsecure        !*
 userrejectinsecure      !*
 denydiruncrypted        !*
 denydatauncrypted       !*
+
+#hide ips in logs?
+hide_ips false
