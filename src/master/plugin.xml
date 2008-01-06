@@ -35,6 +35,9 @@
 	<extension-point id="CommandManager">
 		<parameter-def id="class" />
 	</extension-point>
+	<extension-point id="SectionManager">
+		<parameter-def id="class" />
+	</extension-point>
 	<extension-point id="Plugin">
 		<parameter-def id="class" />
 	</extension-point>

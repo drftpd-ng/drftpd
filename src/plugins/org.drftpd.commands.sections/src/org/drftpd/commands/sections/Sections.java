@@ -20,7 +20,6 @@ package org.drftpd.commands.sections;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.ResourceBundle;
 
 import org.drftpd.GlobalContext;
@@ -29,9 +28,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.conf.DatedSection;
 import org.tanesha.replacer.ReplacerEnvironment;
-
 
 /**
  * @author mog
@@ -56,15 +53,11 @@ public class Sections extends CommandInterface {
         ArrayList<SectionInterface> sections = 
         	new ArrayList<SectionInterface>(GlobalContext.getGlobalContext().getSectionManager().getSections());
         
-        Collections.sort(sections, new SectionComparator());
+       Collections.sort(sections, new SectionComparator());
         
         for (SectionInterface section : sections) {
             env.add("section", section.getName());
             env.add("path", section.getCurrentDirectory().getPath());
-            if (section instanceof DatedSection) {
-            	DatedSection ds = (DatedSection) section;
-            	ds.processNewDate(new Date());
-            }
             response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"section", env, request.getUser()));
         }
 

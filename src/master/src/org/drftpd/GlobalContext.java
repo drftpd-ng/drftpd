@@ -20,7 +20,6 @@ package org.drftpd;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -79,7 +78,7 @@ public class GlobalContext implements EventSubscriber {
 
 	private ArrayList<PluginInterface> _plugins = new ArrayList<PluginInterface>();
 
-	protected SectionManagerInterface _sections;
+	protected SectionManagerInterface _sectionManager;
 
 	private String _shutdownMessage = null;
 
@@ -131,32 +130,8 @@ public class GlobalContext implements EventSubscriber {
 		}
 		
 		if (_slaveSelectionManager == null)
-			throw new FatalException("Unable to find the slaveselection plugin, check config.");
+			throw new FatalException("Unable to find the SlaveSelection plugin, check the configuration file");
 	}
-
-	/**
-	 * Calls init(this) on the argument
-	 */
-	/*public synchronized void addFtpListener(FtpListener listener) {
-		listener.init();
-		_ftpListeners.add(listener);
-	}
-
-	public synchronized void delFtpListener(FtpListener listener) {
-		_ftpListeners.remove(listener);
-	}
-
-	public void dispatchFtpEvent(Event event) {
-		logger.debug("Dispatching " + event + " to " + getFtpListeners());
-
-		for (FtpListener handler : getFtpListeners()) {
-			try {
-				handler.actionPerformed(event);
-			} catch (RuntimeException e) {
-				logger.warn("RuntimeException dispatching event", e);
-			}
-		}
-	}*/
 
 	public PluginsConfig getPluginsConfig() {
 		return _pluginsConfig;
@@ -174,20 +149,16 @@ public class GlobalContext implements EventSubscriber {
 		return getGlobalContext()._config;
 	}
 
-	/*public List<FtpListener> getFtpListeners() {
-		return new ArrayList<FtpListener>(_ftpListeners);
-	}*/
-
 	public List<PluginInterface> getPlugins() {
 		return new ArrayList<PluginInterface>(_plugins);
 	}
 
 	public SectionManagerInterface getSectionManager() {
-		if (_sections == null) {
+		if (_sectionManager == null) {
 			throw new NullPointerException();
 		}
 
-		return _sections;
+		return _sectionManager;
 	}
 
 	public String getShutdownMessage() {
@@ -227,7 +198,7 @@ public class GlobalContext implements EventSubscriber {
 
 		Class<?> cmCls = null;
 
-		String desiredCm = PropertyHelper.getProperty(cfg, "master.commandmanager");
+		String desiredCm = PropertyHelper.getProperty(cfg, "commandmanager");
 
 		for (Extension cm : cmExtPoint.getConnectedExtensions()) {
 			try {
@@ -246,7 +217,7 @@ public class GlobalContext implements EventSubscriber {
 			}
 			catch (Exception e) {
 				throw new FatalException(
-						"Cannot create instance of commandmanager, check master.commandmanager in config file",
+						"Cannot create instance of commandmanager, check 'commandmanager' in the configuration file",
 						e);
 			}
 		}
@@ -276,31 +247,28 @@ public class GlobalContext implements EventSubscriber {
 			}
 		}
 	}
-	/*protected void loadPlugins(Properties cfg) {
-		for (int i = 1;; i++) {
-			String classname = cfg.getProperty("plugins." + i);
+	
+	private void loadSectionManager(Properties cfg) {
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint smExtPoint = manager.getRegistry().getExtensionPoint("master", "SectionManager");
 
-			if (classname == null) {
-				break;
-			}
+		String desiredSm = PropertyHelper.getProperty(cfg, "sectionmanager");
 
+		for (Extension sm : smExtPoint.getConnectedExtensions()) {
 			try {
-				FtpListener ftpListener = (FtpListener) Class
-						.forName(classname.trim()).newInstance();
-				addFtpListener(ftpListener);
+				if (sm.getDeclaringPluginDescriptor().getId().equals(desiredSm)) {
+					manager.activatePlugin(desiredSm);
+					ClassLoader smLoader = manager.getPluginClassLoader(sm.getDeclaringPluginDescriptor());
+					Class<?> smCls = smLoader.loadClass(sm.getParameter("class").valueAsString());
+					_sectionManager = (SectionManagerInterface) smCls.newInstance();
+				}
 			} catch (Exception e) {
-				throw new FatalException("Error loading plugins", e);
+				throw new FatalException("Cannot create instance of SectionManager, check master.usermanager in config file", e);
 			}
 		}
-	}*/
-
-	private void loadSectionManager(Properties cfg) {
-		try {
-			Class<?> cl = Class.forName(cfg.getProperty("sectionmanager", "org.drftpd.sections.def.SectionManager"));
-			Constructor<?> c = cl.getConstructor();
-			_sections = (SectionManagerInterface) c.newInstance();
-		} catch (Exception e) {
-			throw new FatalException(e);
+		
+		if (_sectionManager == null) {
+			logger.fatal("SectionManager plugin not found, check 'sectionmanager' in the configuration file");
 		}
 	}
 
@@ -328,7 +296,7 @@ public class GlobalContext implements EventSubscriber {
 		/*	Iterate over all extensions that have been connected to the
 			UserManager extension point and init the desired one */
 
-		String desiredUm = PropertyHelper.getProperty(cfg, "master.usermanager");
+		String desiredUm = PropertyHelper.getProperty(cfg, "usermanager");
 		
 		for (Extension um : umExtPoint.getConnectedExtensions()) {
 			try {
@@ -344,7 +312,7 @@ public class GlobalContext implements EventSubscriber {
 			}
 			catch (Exception e) {
 				throw new FatalException(
-						"Cannot create instance of usermanager, check master.usermanager in config file",
+						"Cannot create instance of usermanager, check 'usermanager' in the configuration file",
 						e);
 			}
 		}
@@ -399,19 +367,6 @@ public class GlobalContext implements EventSubscriber {
 	public PortRange getPortRange() {
 		return getConfig().getPortRange();
 	}
-
-	/*public FtpListener getFtpListener(Class clazz)
-			throws ObjectNotFoundException {
-		for (FtpListener listener : new ArrayList<FtpListener>(
-				getFtpListeners())) {
-
-			if (clazz.isInstance(listener)) {
-				return listener;
-			}
-		}
-
-		throw new ObjectNotFoundException();
-	}*/
 
 	public static GlobalContext getGlobalContext() {
 		if (_gctx == null) {

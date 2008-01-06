@@ -28,7 +28,6 @@ import java.util.Set;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;

@@ -30,11 +30,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.log4j.Logger;
-import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
-import org.xml.sax.SAXParseException;
 
 import se.mog.io.PermissionDeniedException;
 

@@ -30,7 +30,7 @@ import org.drftpd.usermanager.AbstractUserManager;
  */
 public class DummyGlobalContext extends GlobalContext {
     public void setSectionManager(SectionManagerInterface manager) {
-        _sections = manager;
+        _sectionManager = manager;
     }
 
     public void setSlaveManager(SlaveManager slavem) {

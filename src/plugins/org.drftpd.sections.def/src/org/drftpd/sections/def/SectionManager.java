@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -70,15 +69,16 @@ public class SectionManager implements SectionManagerInterface {
 	@SuppressWarnings("unchecked")
 	public Collection<SectionInterface> getSections() {
 		ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
-
+		
+		Set<DirectoryHandle> dirs;
 		try {
-			for (Iterator<DirectoryHandle> iter = getGlobalContext().getRoot()
-					.getDirectoriesUnchecked().iterator(); iter.hasNext();) {
-				sections.add(new Section(iter.next()));
-			}
+			dirs = GlobalContext.getGlobalContext().getRoot().getDirectoriesUnchecked();
 		} catch (FileNotFoundException e) {
-			// no sections, return the empty set
 			return Collections.EMPTY_SET;
+		}
+		
+		for (DirectoryHandle dir : dirs) {
+			sections.add(new Section(dir));
 		}
 
 		return sections;
@@ -102,35 +102,35 @@ public class SectionManager implements SectionManagerInterface {
 	}
 
 	public class Section implements SectionInterface {
-		private DirectoryHandle _lrf;
+		private DirectoryHandle _dir;
 
 		public Section(DirectoryHandle lrf) {
-			_lrf = lrf;
+			_dir = lrf;
 		}
 
 		public DirectoryHandle getCurrentDirectory() {
-			return _lrf;
+			return _dir;
 		}
 
 		@SuppressWarnings("unchecked")
 		public Set<DirectoryHandle> getDirectories() {
 			try {
-				return _lrf.getDirectoriesUnchecked();
+				return _dir.getDirectoriesUnchecked();
 			} catch (FileNotFoundException e) {
 				return Collections.EMPTY_SET;
 			}
 		}
 
 		public String getName() {
-			return _lrf.getName();
+			return _dir.getName();
 		}
 
 		public String getPath() {
-			return _lrf.getPath();
+			return _dir.getPath();
 		}
 
 		public DirectoryHandle getBaseDirectory() {
-			return _lrf;
+			return _dir;
 		}
 
 		public String getBasePath() {

@@ -27,7 +27,6 @@ import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -173,7 +172,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 */
 	public Set<InodeHandle> getInodes() {
 		HashSet<InodeHandle> set = new HashSet<InodeHandle>();
-		String path = getPath() + VirtualFileSystem.separator;
+		String path = getPath() + (getPath().equals("/") ? "" : VirtualFileSystem.separator);
 		// not dynamically called for efficiency
 		for (String inodeName : new HashSet<String>(_files.keySet())) {
 			VirtualFileSystemInode inode = null;

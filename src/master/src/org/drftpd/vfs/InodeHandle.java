@@ -22,7 +22,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;

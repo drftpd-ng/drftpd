@@ -47,7 +47,7 @@ import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 
 /**
- * Handles the loading of 'drftpd.conf' and 'conf/perms.conf'<br>
+ * Handles the loading of 'master.conf' and 'conf/perms.conf'<br>
  * The directives that are going to be handled by this class are loaded during
  * the startup process and *MUST* be an extension of the master extension-point "ConfigHandler".<br>
  * No hard coding is needed to handle new directives, simply create a new extension.
@@ -57,7 +57,7 @@ import org.java.plugin.registry.ExtensionPoint;
 public class ConfigManager implements ConfigInterface {
 	private static final Logger logger = Logger.getLogger(ConfigManager.class);
 	private static final File permsFile = new File("conf/perms.conf");
-	private static final File mainFile = new File("drftpd.conf");
+	private static final File mainFile = new File("master.conf");
 	
 	private static final Key PATHPERMS = new Key(ConfigManager.class, "pathPerms", Hashtable.class);
 	private static final Key PERMS = new Key(ConfigManager.class, "perms", Hashtable.class);
@@ -155,7 +155,7 @@ public class ConfigManager implements ConfigInterface {
 	}
 	
 	/**
-	 * Reads 'drftpd.conf' and save it to a Properties object.
+	 * Reads 'master.conf' and save it in a Properties object.
 	 * @see #getMainProperties()
 	 */
 	private void loadMainProperties() {
@@ -165,7 +165,7 @@ public class ConfigManager implements ConfigInterface {
 			is = new FileInputStream(mainFile);
 			_mainCfg.load(is);
 		} catch (IOException e) {
-			logger.error("Unable to read drftpd.conf", e);
+			logger.error("Unable to read "+mainFile.getPath(), e);
 		} finally {
 			if (is != null) {
 				try { is.close(); }
@@ -196,7 +196,7 @@ public class ConfigManager implements ConfigInterface {
 	}
 	
 	/**
-	 * @return a Properties object containing all data loaded from 'drftpd.conf'.
+	 * @return a Properties object containing all data loaded from 'master.conf'.
 	 */
 	public Properties getMainProperties() {
 		return _mainCfg;

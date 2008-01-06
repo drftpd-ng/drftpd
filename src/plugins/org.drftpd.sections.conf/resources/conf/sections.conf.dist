@@ -1,5 +1,6 @@
-# these settings are only used if you use the
-# org.drftpd.sections.conf.SectionManager in drftpd.conf
+# WARNING! #
+# These settings are only used if you are using this SectionManager:
+# org.drftpd.sections.conf
 
 # If this directive's value is true DrFTPd will automatically
 # create the section dirs, if needed of cource.
