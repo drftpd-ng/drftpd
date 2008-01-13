@@ -5,6 +5,9 @@
 		<attribute id="ProtocolName" value="BasicProtocol"/>
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.protocol.slave.def" />
+		</attribute>
 	</attributes>
 	
 	<requires>

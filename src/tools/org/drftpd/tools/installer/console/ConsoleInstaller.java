@@ -47,6 +47,7 @@ import org.java.plugin.registry.PluginRegistry;
 public class ConsoleInstaller extends JFrame implements ActionListener {
 
 	private JButton _buildButton;
+	private JButton _selectAllButton;
 	private ConfigPanel _configPanel;
 	private PluginPanel _pluginPanel;
 	private PluginRegistry _registry;
@@ -89,13 +90,26 @@ public class ConsoleInstaller extends JFrame implements ActionListener {
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
 		_buildButton.addActionListener(this);
+		_selectAllButton = new JButton();
+		_selectAllButton.setText("Select All");
+		_selectAllButton.addActionListener(this);
 
 		JPanel southPanel = new JPanel();
-		FlowLayout southLayout = new FlowLayout();
-		southLayout.setAlignment(FlowLayout.RIGHT);
+		BorderLayout southLayout = new BorderLayout();
 		southPanel.setLayout(southLayout);
-		southPanel.add(_buildButton);
-		southPanel.add(cancelButton);
+		JPanel southEastPanel = new JPanel();
+		FlowLayout southEastLayout = new FlowLayout();
+		southEastLayout.setAlignment(FlowLayout.RIGHT);
+		southEastPanel.setLayout(southEastLayout);
+		southEastPanel.add(_buildButton);
+		southEastPanel.add(cancelButton);
+		JPanel southWestPanel = new JPanel();
+		FlowLayout southWestLayout = new FlowLayout();
+		southWestLayout.setAlignment(FlowLayout.LEFT);
+		southWestPanel.setLayout(southWestLayout);
+		southWestPanel.add(_selectAllButton);
+		southPanel.add(southWestPanel, BorderLayout.WEST);
+		southPanel.add(southEastPanel, BorderLayout.EAST);
 
 		contentPane.add(centerPanel, BorderLayout.CENTER);
 		contentPane.add(southPanel, BorderLayout.SOUTH);
@@ -126,9 +140,15 @@ public class ConsoleInstaller extends JFrame implements ActionListener {
 			this.setVisible(false);
 			builder.buildPlugins();
 		}
+		if (actionSource.equals(_selectAllButton)) {
+			_pluginPanel.selectAllPlugins();
+		}
 	}
 
 	private static void terminate() {
+		// Print a couple of blank lines so that the shell prompt returns on a new line when we exit
+		System.out.println("");
+		System.out.println("");
 		System.exit(0);
 	}
 }

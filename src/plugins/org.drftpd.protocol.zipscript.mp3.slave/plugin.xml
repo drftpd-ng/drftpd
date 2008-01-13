@@ -2,7 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.protocol.zipscript.mp3.slave" version="2.1.0">
 	<attributes>
-		<attribute id="ProtocolName" value="ZipscriptMP3Protocol"/>
+		<attribute id="ProtocolName" value="ZipscriptMP3Protocol" />
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.commands.zipscript.mp3" />
+		</attribute>
 	</attributes>
 	
 	<requires>

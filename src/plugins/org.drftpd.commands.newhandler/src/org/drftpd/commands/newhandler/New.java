@@ -134,7 +134,7 @@ public class New extends CommandInterface {
 		try {
 			addTextToResponse(response, "text/new_header.txt");
 		} catch (IOException ioe) {
-			logger.warn("Error reading text/new_header.tx");
+			logger.warn("Error reading text/new_header.txt");
 		}
 
 		// Print the reply! 

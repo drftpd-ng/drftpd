@@ -20,6 +20,7 @@ package org.drftpd.tools.installer.swing;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -46,6 +47,7 @@ import org.java.plugin.registry.PluginRegistry;
 public class SwingInstaller extends JFrame implements ActionListener {
 
 	private JButton _buildButton;
+	private JButton _selectAllButton;
 	private ConfigPanel _configPanel;
 	private PluginPanel _pluginPanel;
 	private PluginRegistry _registry;
@@ -70,7 +72,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		JTabbedPane tabbedPane = new JTabbedPane();
 		_configPanel = new ConfigPanel();
 		tabbedPane.add(_configPanel, "Config");
-		_pluginPanel = new PluginPanel(registry);
+		_pluginPanel = new PluginPanel(registry,tabbedPane);
 		tabbedPane.add(_pluginPanel, "Plugins");
 
 		JPanel centerPanel = new JPanel();
@@ -88,18 +90,31 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
 		_buildButton.addActionListener(this);
+		_selectAllButton = new JButton();
+		_selectAllButton.setText("Select All");
+		_selectAllButton.addActionListener(this);
 
 		JPanel southPanel = new JPanel();
-		FlowLayout southLayout = new FlowLayout();
-		southLayout.setAlignment(FlowLayout.RIGHT);
+		GridLayout southLayout = new GridLayout(1,2);
 		southPanel.setLayout(southLayout);
-		southPanel.add(_buildButton);
-		southPanel.add(cancelButton);
+		JPanel southWestPanel = new JPanel();
+		FlowLayout southWestLayout = new FlowLayout();
+		southWestLayout.setAlignment(FlowLayout.LEFT);
+		southWestPanel.setLayout(southWestLayout);
+		southWestPanel.add(_selectAllButton);
+		JPanel southEastPanel = new JPanel();
+		FlowLayout southEastLayout = new FlowLayout();
+		southEastLayout.setAlignment(FlowLayout.RIGHT);
+		southEastPanel.setLayout(southEastLayout);
+		southEastPanel.add(_buildButton);
+		southEastPanel.add(cancelButton);
+		southPanel.add(southWestPanel);
+		southPanel.add(southEastPanel);
 
 		contentPane.add(centerPanel, BorderLayout.CENTER);
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 
-		setSize(600, 400);
+		setSize(600, 500);
 		validate();
 	}
 
@@ -123,6 +138,9 @@ public class SwingInstaller extends JFrame implements ActionListener {
 			PluginBuilder builder = new PluginBuilder(toBuild,_registry,_configPanel.getInstallLocation().getText());
 			this.dispose();
 			builder.buildPlugins();
+		}
+		if (actionSource.equals(_selectAllButton)) {
+			_pluginPanel.selectAllPlugins();
 		}
 	}
 

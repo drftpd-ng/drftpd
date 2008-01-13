@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.java.plugin.registry.PluginAttribute;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.registry.PluginRegistry;
@@ -56,6 +57,12 @@ public class PluginTools {
 		return pre1.contains(plugin2.getDescriptor()) && !pre2.contains(plugin1.getDescriptor());
 	}
 
+	public static boolean isDependsInclImpl(PluginData plugin1, PluginData plugin2, PluginRegistry registry) {
+		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
+		collectImplPrerequisites(plugin1.getDescriptor(), pre1, registry);
+		return pre1.contains(plugin2.getDescriptor());
+	}
+
 	private static void collectPrerequisites(PluginDescriptor descr, Set<PluginDescriptor> result, PluginRegistry registry) {
 		for (PluginPrerequisite pre : descr.getPrerequisites()) {
 			if (!pre.matches()) {
@@ -64,6 +71,29 @@ public class PluginTools {
 			PluginDescriptor descriptor = registry.getPluginDescriptor(pre.getPluginId());
 			if (result.add(descriptor)) {
 				collectPrerequisites(descriptor, result, registry);
+			}
+		}
+	}
+
+	private static void collectImplPrerequisites(PluginDescriptor descr, Set<PluginDescriptor> result, PluginRegistry registry) {
+		for (PluginPrerequisite pre : descr.getPrerequisites()) {
+			if (!pre.matches()) {
+				continue;
+			}
+			PluginDescriptor descriptor = registry.getPluginDescriptor(pre.getPluginId());
+			if (result.add(descriptor)) {
+				collectImplPrerequisites(descriptor, result, registry);
+			}
+		}
+		PluginAttribute deps = descr.getAttribute("ImplicitDependencies");
+		if (deps != null) {
+			for (PluginAttribute impDep : deps.getSubAttributes()) {
+				PluginDescriptor descriptor = registry.getPluginDescriptor(impDep.getValue());
+				if (descriptor != null) {
+					if (result.add(descriptor)) {
+						collectImplPrerequisites(descriptor, result, registry);
+					}
+				}
 			}
 		}
 	}

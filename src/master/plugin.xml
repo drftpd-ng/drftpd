@@ -2,7 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="master" version="2.1.0" class="org.drftpd.master.Boot">
 	<doc>
-		<doc-text>This is a text documentation comment</doc-text>
+		<doc-text>This is the main MASTER process to which FTP clients connect.</doc-text>
 	</doc>
 	<attributes>
 		<attribute id="DenyUnload" value="true" />

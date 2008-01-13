@@ -3,6 +3,9 @@
 <plugin id="org.drftpd.commands.zipscript" version="2.1.0">
 	<attributes>
 		<attribute id="ProtocolName" value="ZipscriptProtocol"/>
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.protocol.zipscript.slave" />
+		</attribute>
 	</attributes>
 	
 	<requires>

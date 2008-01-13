@@ -19,11 +19,15 @@ package org.drftpd.tools.installer.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
+import javax.swing.JTabbedPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -35,6 +39,8 @@ import javax.swing.table.TableCellRenderer;
 
 import org.drftpd.tools.installer.PluginData;
 import org.drftpd.tools.installer.PluginTools;
+import org.java.plugin.registry.Documentation;
+import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginRegistry;
 
 /**
@@ -45,17 +51,27 @@ public class PluginPanel extends JPanel {
 
 	private ArrayList<PluginData> _plugins;
 
-	public PluginPanel(PluginRegistry registry) {
+	public PluginPanel(PluginRegistry registry, JTabbedPane parent) {
 		BorderLayout pluginLayout = new BorderLayout();
 		setLayout(pluginLayout);
 
-		JTable table = createTable(registry);
-		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setBorder(new TitledBorder(new EtchedBorder(),"Select plugins"));
-		add(scrollPane, BorderLayout.CENTER);
+
+		JTextArea desc = new JTextArea();
+		desc.setLineWrap(true);
+		desc.setEditable(false);
+		desc.setWrapStyleWord(true);
+		desc.setOpaque(false);
+		desc.setText("No plugin selected");
+		JScrollPane descPane = new JScrollPane(desc);
+		descPane.setBorder(new TitledBorder(new EtchedBorder(),"Plugin Description"));
+		JTable table = createTable(registry, desc, parent);
+		JScrollPane tablePane = new JScrollPane(table);
+		tablePane.setBorder(new TitledBorder(new EtchedBorder(),"Select plugins"));
+		add(tablePane, BorderLayout.CENTER);
+		add(descPane, BorderLayout.SOUTH);
 	}
 
-	private JTable createTable(PluginRegistry registry) {
+	private JTable createTable(PluginRegistry registry, JTextArea desc, JTabbedPane parent) {
 		_plugins = PluginTools.getPluginData(registry);
 		String columnNames[] = {"Build","Plugin Name","Version"};
 		JTable table = new JTable(new SwingTableModel(columnNames,_plugins,registry));
@@ -66,11 +82,21 @@ public class PluginPanel extends JPanel {
 		table.getColumnModel().getColumn(0).setResizable(false);
 		table.getColumnModel().getColumn(2).setMaxWidth(100);
 		table.getColumnModel().getColumn(2).setResizable(false);
+		table.addMouseListener(new TableMouseListener(_plugins,table,desc,parent));
 		return table;
 	}
 
 	protected ArrayList<PluginData> getPlugins() {
 		return _plugins;
+	}
+
+	protected void selectAllPlugins() {
+		for (PluginData plugin : _plugins) {
+			if (!plugin.isSelected()) {
+				plugin.invertSelected();
+			}
+		}
+		this.repaint();
 	}
 }
 
@@ -166,7 +192,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 				if (selPlugin.isSelected()) {
 					// Check for any entries the current entry depends on, if they aren't
 					// selected then select them
-					if (PluginTools.isDepends(selPlugin, dep, _registry)) {
+					if (PluginTools.isDependsInclImpl(selPlugin, dep, _registry)) {
 						if (!dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
@@ -177,7 +203,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 				} else {
 					// Check for any entries that depend on the current entry, if they
 					// are selected then deselect them
-					if (PluginTools.isDepends(dep, selPlugin, _registry)) {
+					if (PluginTools.isDependsInclImpl(dep, selPlugin, _registry)) {
 						if (dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
@@ -190,5 +216,50 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 			// Notify the table that data has changed to make it redraw
 			fireTableDataChanged();
 		}
+	}
+}
+
+class TableMouseListener implements MouseListener {
+
+	private ArrayList<PluginData> _plugins;
+	private JTabbedPane _parentPane;
+	private JTable _table;
+	private JTextArea _desc;
+
+	public TableMouseListener(ArrayList<PluginData> plugins, JTable table, JTextArea desc, JTabbedPane parentPane) {
+		_plugins = plugins;
+		_table = table;
+		_desc = desc;
+		_parentPane = parentPane;
+	}
+
+	public void mousePressed(MouseEvent me) {
+		// No interest in this event
+	}
+
+	public void mouseReleased(MouseEvent me) {
+		// No interest in this event
+	}
+
+	public void mouseClicked(MouseEvent me) {
+		if (_table.getSelectedRow() != -1) {
+			Documentation<PluginDescriptor> doc = _plugins.get(_table.getSelectedRow()).getDescriptor().getDocumentation();
+			if (doc != null) {
+				_desc.setText(doc.getText().replaceAll("\r\n|\n|\r"," "));
+			} else {
+				// The current selection has no docs, so clear the text for the previous one
+				_desc.setText("This plugin has no description set, please contact the author.");
+			}
+			_desc.repaint();
+			_parentPane.repaint();
+		}
+	}
+
+	public void mouseEntered(MouseEvent me) {
+		// No interest in this event
+	}
+
+	public void mouseExited(MouseEvent me) {
+		// No interest in this event
 	}
 }

@@ -78,7 +78,7 @@ public class PluginParser {
 					continue;
 				}
 				manifestUrls.add(manifestUrl);
-				logger.debug("Added URL: " + manifestUrl); //$NON-NLS-1$
+				logger.debug("Added URL: " + manifestUrl);
 				if (usePathResolver) {
 					if ("jar".equals(manifestUrl.getProtocol())) {
 						foldersMap.put(manifestUrl.toExternalForm(),
