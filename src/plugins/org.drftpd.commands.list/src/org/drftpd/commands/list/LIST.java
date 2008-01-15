@@ -72,14 +72,14 @@ public class LIST extends CommandInterface implements EventSubscriber {
 	private static final Logger logger = Logger.getLogger(LIST.class);
 
 	private final static String[] MONTHS = { "Jan", "Feb", "Mar", "Apr", "May",
-			"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+		"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 	protected final static String NEWLINE = "\r\n";
 
 	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<AddListElementsInterface>();
 
 	private StandardCommandManager _cManager;
-	
+
 	@Override
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
@@ -98,7 +98,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 				ClassLoader listLoader = manager.getPluginClassLoader( 
 						listExt.getDeclaringPluginDescriptor());
 				Class<?> listCls = listLoader.loadClass( 
-							listExt.getParameter("Class").valueAsString());
+						listExt.getParameter("Class").valueAsString());
 				AddListElementsInterface listAddon = (AddListElementsInterface) listCls.newInstance();
 				listAddon.initialize();
 				_listAddons.add(listAddon);
@@ -116,12 +116,12 @@ public class LIST extends CommandInterface implements EventSubscriber {
 			}
 		}		
 	}
-	
+
 	/**
 	 * Get permission string.
 	 */
 	private static String getPermission(InodeHandleInterface fl)
-			throws FileNotFoundException {
+	throws FileNotFoundException {
 		StringBuffer sb = new StringBuffer(13);
 
 		if (fl.isLink()) {
@@ -167,11 +167,17 @@ public class LIST extends CommandInterface implements EventSubscriber {
 		long nowTime = System.currentTimeMillis();
 
 		if (fulldate) {
-			return firstPart + FULL.format(date1);
+			synchronized(FULL) {
+				return firstPart + FULL.format(date1);
+			}
 		} else if (Math.abs(nowTime - dateTime) > (183L * 24L * 60L * 60L * 1000L)) {
-			return firstPart + AFTER_SIX.format(date1);
+			synchronized(AFTER_SIX) {
+				return firstPart + AFTER_SIX.format(date1);
+			}
 		} else {
-			return firstPart + BEFORE_SIX.format(date1);
+			synchronized(BEFORE_SIX) {
+				return firstPart + BEFORE_SIX.format(date1);
+			}
 		}
 	}
 
@@ -218,7 +224,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 	 * @return true if success
 	 */
 	private static void printList(Collection<InodeHandleInterface> files, Writer os, boolean fulldate)
-			throws IOException {
+	throws IOException {
 		//os.write("total 0" + NEWLINE); - do we need this?
 
 		// print file list
@@ -285,7 +291,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 				// argument = argument.trim();
 				StringBuffer optionsSb = new StringBuffer(4);
 				StringTokenizer st = new StringTokenizer(request.getArgument(),
-						" ");
+				" ");
 
 				while (st.hasMoreTokens()) {
 					String token = st.nextToken();
@@ -306,13 +312,13 @@ public class LIST extends CommandInterface implements EventSubscriber {
 			// boolean allOption = options.indexOf('a') != -1;
 			boolean fulldate = options.indexOf('T') != -1;
 			boolean detailOption = request.getCommand().equalsIgnoreCase("LIST")
-					|| (options.indexOf('l') != -1);
+			|| (options.indexOf('l') != -1);
 
 			// boolean directoryOption = options.indexOf("d") != -1;
 
 			if (!ts.isPasv() && !ts.isPort() && !isStat) {
-					//ts.reset(); issued on the finally block.
-					return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
+				//ts.reset(); issued on the finally block.
+				return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
 			}
 
 			DirectoryHandle directoryFile;
@@ -358,7 +364,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 			logger.debug("Listing directoryFile - " + directoryFile);
 
 			ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser(), _cManager);
-			
+
 			try {
 				container = ListUtils.list(directoryFile, container);
 			} catch (IOException e) {
@@ -373,7 +379,7 @@ public class LIST extends CommandInterface implements EventSubscriber {
 
 			try {
 				printList(container.getElements(), os, fulldate);
-				
+
 				if (isStat)
 					return response;
 				else {
@@ -391,15 +397,15 @@ public class LIST extends CommandInterface implements EventSubscriber {
 			conn.getTransferState().reset();
 		}
 	}
-	
+
 	public CommandResponse doSTAT(CommandRequest request) {
 		return list(request, true);
 	}
-	
+
 	public CommandResponse doLIST(CommandRequest request) {
 		return list(request, false);
 	}
-		
+
 	public CommandResponse doNLST(CommandRequest request) {
 		//printNList(listFiles, detailOption, os);
 		return null;
