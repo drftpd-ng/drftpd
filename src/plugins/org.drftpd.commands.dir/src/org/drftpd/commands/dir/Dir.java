@@ -55,67 +55,67 @@ import se.mog.io.PermissionDeniedException;
  * @version $Id$
  */
 public class Dir extends CommandInterface {
-    private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
-            "yyyyMMddHHmmss.SSS");
-    private static final Logger logger = Logger.getLogger(Dir.class);
+	private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
+	"yyyyMMddHHmmss.SSS");
+	private static final Logger logger = Logger.getLogger(Dir.class);
 
-    private static final Key RENAMEFROM = new Key(Dir.class, "renamefrom", InodeHandle.class);
+	private static final Key RENAMEFROM = new Key(Dir.class, "renamefrom", InodeHandle.class);
 
-    // This Keys are place holders for usefull information that gets removed during
-    // deletion operations but are need to process hooks.
-    public static final Key USERNAME = new Key(Dir.class, "username", String.class);
-    public static final Key FILESIZE = new Key(Dir.class, "fileSize", Long.class);
-    public static final Key FILENAME = new Key(Dir.class, "fileName", String.class);
+	// This Keys are place holders for usefull information that gets removed during
+	// deletion operations but are need to process hooks.
+	public static final Key USERNAME = new Key(Dir.class, "username", String.class);
+	public static final Key FILESIZE = new Key(Dir.class, "fileSize", Long.class);
+	public static final Key FILENAME = new Key(Dir.class, "fileName", String.class);
 
-    /**
-     * <code>CDUP &lt;CRLF&gt;</code><br>
-     *
-     * This command is a special case of CWD, and is included to
-     * simplify the implementation of programs for transferring
-     * directory trees between operating systems having different
-     * syntaxes for naming the parent directory.  The reply codes
-     * shall be identical to the reply codes of CWD.
-     */
-    public CommandResponse doCDUP(CommandRequest request) {
-    	// change directory
-    	DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
-    	return new CommandResponse(200,
-                "Directory changed to " + newCurrentDirectory.getPath(),
-    			newCurrentDirectory, request.getUser());
-    }
+	/**
+	 * <code>CDUP &lt;CRLF&gt;</code><br>
+	 *
+	 * This command is a special case of CWD, and is included to
+	 * simplify the implementation of programs for transferring
+	 * directory trees between operating systems having different
+	 * syntaxes for naming the parent directory.  The reply codes
+	 * shall be identical to the reply codes of CWD.
+	 */
+	public CommandResponse doCDUP(CommandRequest request) {
+		// change directory
+		DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
+		return new CommandResponse(200,
+				"Directory changed to " + newCurrentDirectory.getPath(),
+				newCurrentDirectory, request.getUser());
+	}
 
-    /**
-     * <code>CWD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * This command allows the user to work with a different
-     * directory for file storage or retrieval without
-     * altering his login or accounting information.  Transfer
-     * parameters are similarly unchanged.  The argument is a
-     * pathname specifying a directory.
-     */
-    public CommandResponse doCWD(CommandRequest request) {
+	/**
+	 * <code>CWD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command allows the user to work with a different
+	 * directory for file storage or retrieval without
+	 * altering his login or accounting information.  Transfer
+	 * parameters are similarly unchanged.  The argument is a
+	 * pathname specifying a directory.
+	 */
+	public CommandResponse doCWD(CommandRequest request) {
 
-        if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-
-        DirectoryHandle newCurrentDirectory = null;
-        User user = request.getSession().getUserNull(request.getUser());
-        
-        try {
-        	newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument(), user);
-        } catch (FileNotFoundException ex) {
-        	return new CommandResponse(550, ex.getMessage());
-        } catch (ObjectNotValidException e) {
-        	return new CommandResponse(550, request.getArgument() + ": is not a directory");
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
-        CommandResponse response = new CommandResponse(250,
-                "Directory changed to " + newCurrentDirectory.getPath(),
-                newCurrentDirectory, request.getUser());
+		DirectoryHandle newCurrentDirectory = null;
+		User user = request.getSession().getUserNull(request.getUser());
 
-        return response;
-    }
+		try {
+			newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument(), user);
+		} catch (FileNotFoundException ex) {
+			return new CommandResponse(550, ex.getMessage());
+		} catch (ObjectNotValidException e) {
+			return new CommandResponse(550, request.getArgument() + ": is not a directory");
+		}
+
+		CommandResponse response = new CommandResponse(250,
+				"Directory changed to " + newCurrentDirectory.getPath(),
+				newCurrentDirectory, request.getUser());
+
+		return response;
+	}
 
 	private void addVictimInformationToResponse(InodeHandle victim,
 			CommandResponse response) throws FileNotFoundException {
@@ -123,26 +123,26 @@ public class Dir extends CommandInterface {
 		response.setObject(FILESIZE, victim.getSize());
 		response.setObject(USERNAME, victim.getUsername());
 	}
-	
-    /**
-     * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * This command causes the file specified in the pathname to be
-     * deleted at the server site.
-     */
+
+	/**
+	 * <code>DELE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command causes the file specified in the pathname to be
+	 * deleted at the server site.
+	 */
 	public CommandResponse doDELE(CommandRequest request) {
 
 		// argument check
 		if (!request.hasArgument()) {
 			// out.print(FtpResponse.RESPONSE_501_SYNTAX_ERROR);
 			return StandardCommandManager
-					.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+			.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
 		// get filenames
 		String fileName = request.getArgument();
 		CommandResponse response = StandardCommandManager
-				.genericResponse("RESPONSE_250_ACTION_OKAY");
+		.genericResponse("RESPONSE_250_ACTION_OKAY");
 		User user = request.getSession().getUserNull(request.getUser());
 		InodeHandle victim = null;
 		try {
@@ -166,7 +166,7 @@ public class Dir extends CommandInterface {
 			return new CommandResponse(550, e.getMessage());
 		} catch (PermissionDeniedException e) {
 			return StandardCommandManager
-					.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 		if (victim.isFile() || victim.isLink()) { // link or file
 			GlobalContext.getEventService().publish(
@@ -176,204 +176,206 @@ public class Dir extends CommandInterface {
 			// deleted without mentioning the file that was deleted...
 		} else { // if (requestedFile.isDirectory()) {
 			GlobalContext.getEventService()
-					.publish(
-							new DirectoryFtpEvent(request.getSession()
-									.getUserNull(request.getUser()), "RMD",
-									(DirectoryHandle) victim));
+			.publish(
+					new DirectoryFtpEvent(request.getSession()
+							.getUserNull(request.getUser()), "RMD",
+							(DirectoryHandle) victim));
 		}
 		return response;
 	}
 
 
-    /**
-     * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * Returns the date and time of when a file was modified.
-     */
-    public CommandResponse doMDTM(CommandRequest request) {
+	/**
+	 * <code>MDTM &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * Returns the date and time of when a file was modified.
+	 */
+	public CommandResponse doMDTM(CommandRequest request) {
 
-        // argument check
-        if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
+		// argument check
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
 
-        // get filenames
-        String fileName = request.getArgument();
-        InodeHandle reqFile;
-        User user = request.getSession().getUserNull(request.getUser());
+		// get filenames
+		String fileName = request.getArgument();
+		InodeHandle reqFile;
+		User user = request.getSession().getUserNull(request.getUser());
 
-        try {
-            reqFile = request.getCurrentDirectory().getInodeHandle(fileName, user);
-        } catch (FileNotFoundException ex) {
-        	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        }
+		try {
+			reqFile = request.getCurrentDirectory().getInodeHandle(fileName, user);
+		} catch (FileNotFoundException ex) {
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+		}
 
-        try {
-        	return new CommandResponse(213,
-    			    DATE_FMT.format(new Date(reqFile.lastModified())));
+		try {
+			synchronized(DATE_FMT) {
+				return new CommandResponse(213,
+						DATE_FMT.format(new Date(reqFile.lastModified())));
+			}
 		} catch (FileNotFoundException e) {
 			return new CommandResponse(550, e.getMessage());
 		}
 
-        //out.print(ftpStatus.getResponse(213, request, user, args));
-        //} else {
-        //	out.write(ftpStatus.getResponse(550, request, user, null));
-        //}
-    }
+		//out.print(ftpStatus.getResponse(213, request, user, args));
+		//} else {
+		//	out.write(ftpStatus.getResponse(550, request, user, null));
+		//}
+	}
 
-    /**
-     * <code>MKD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * This command causes the directory specified in the pathname
-     * to be created as a directory (if the pathname is absolute)
-     * or as a subdirectory of the current working directory (if
-     * the pathname is relative).
-     *
-     *
-     *                MKD
-     *                   257
-     *                   500, 501, 502, 421, 530, 550
-     */
-    public CommandResponse doMKD(CommandRequest request) {
-        // argument check
-        if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-        
-        Session session = request.getSession();
-        String path = request.getArgument();
-        DirectoryHandle fakeDirectory = request.getCurrentDirectory().getNonExistentDirectoryHandle(path);
-        String dirName = fakeDirectory.getName();
+	/**
+	 * <code>MKD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command causes the directory specified in the pathname
+	 * to be created as a directory (if the pathname is absolute)
+	 * or as a subdirectory of the current working directory (if
+	 * the pathname is relative).
+	 *
+	 *
+	 *                MKD
+	 *                   257
+	 *                   500, 501, 502, 421, 530, 550
+	 */
+	public CommandResponse doMKD(CommandRequest request) {
+		// argument check
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
 
-        if (!ListUtils.isLegalFileName(dirName)) {
-        	return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
-        }
+		Session session = request.getSession();
+		String path = request.getArgument();
+		DirectoryHandle fakeDirectory = request.getCurrentDirectory().getNonExistentDirectoryHandle(path);
+		String dirName = fakeDirectory.getName();
 
-        try {
-        	DirectoryHandle newDir = null;
-            try {
+		if (!ListUtils.isLegalFileName(dirName)) {
+			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
+		}
+
+		try {
+			DirectoryHandle newDir = null;
+			try {
 				newDir = fakeDirectory.getParent().createDirectory(session.getUserNull(request.getUser()), dirName);
 			} catch (FileNotFoundException e) {
 				return new CommandResponse(550, "Parent directory does not exist");
 			} catch (PermissionDeniedException e) {
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
-  
+
 			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
-                    session.getUserNull(request.getUser()), "MKD", newDir));
+					session.getUserNull(request.getUser()), "MKD", newDir));
 
-            return new CommandResponse(257, "\"" + newDir.getPath() +
-            	"\" created.");
+			return new CommandResponse(257, "\"" + newDir.getPath() +
+			"\" created.");
 
-        } catch (FileExistsException ex) {
-	        return new CommandResponse(550,
-	                "directory " + dirName + " already exists");
-        }
-    }
+		} catch (FileExistsException ex) {
+			return new CommandResponse(550,
+					"directory " + dirName + " already exists");
+		}
+	}
 
-    /**
-     * <code>PWD  &lt;CRLF&gt;</code><br>
-     *
-     * This command causes the name of the current working
-     * directory to be returned in the reply.
-     */
-    public CommandResponse doPWD(CommandRequest request) {
-    	return new CommandResponse(257,
-                "\"" + request.getCurrentDirectory().getPath() +
-        "\" is current directory");
-    }
+	/**
+	 * <code>PWD  &lt;CRLF&gt;</code><br>
+	 *
+	 * This command causes the name of the current working
+	 * directory to be returned in the reply.
+	 */
+	public CommandResponse doPWD(CommandRequest request) {
+		return new CommandResponse(257,
+				"\"" + request.getCurrentDirectory().getPath() +
+		"\" is current directory");
+	}
 
-    /**
-     * <code>RMD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * This command causes the directory specified in the pathname
-     * to be removed as a directory (if the pathname is absolute)
-     * or as a subdirectory of the current working directory (if
-     * the pathname is relative).
-     */
-    public CommandResponse doRMD(CommandRequest request) {
-    	return doDELE(request);
-    }
+	/**
+	 * <code>RMD  &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command causes the directory specified in the pathname
+	 * to be removed as a directory (if the pathname is absolute)
+	 * or as a subdirectory of the current working directory (if
+	 * the pathname is relative).
+	 */
+	public CommandResponse doRMD(CommandRequest request) {
+		return doDELE(request);
+	}
 
-    /**
-     * <code>RNFR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * This command specifies the old pathname of the file which is
-     * to be renamed.  This command must be immediately followed by
-     * a "rename to" command specifying the new file pathname.
-     *
-     *                RNFR
+	/**
+	 * <code>RNFR &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command specifies the old pathname of the file which is
+	 * to be renamed.  This command must be immediately followed by
+	 * a "rename to" command specifying the new file pathname.
+	 *
+	 *                RNFR
                               450, 550
                               500, 501, 502, 421, 530
                               350
 
-     */
-    public CommandResponse doRNFR(CommandRequest request) {
+	 */
+	public CommandResponse doRNFR(CommandRequest request) {
 
-        // argument check
-        if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
+		// argument check
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
 
-        // set state variable
-        // get filenames
-        //String fileName = request.getArgument();
-        //fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
-        //mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
-        User user = request.getSession().getUserNull(request.getUser());
-        try {
-            request.getSession().setObject(RENAMEFROM, request.getCurrentDirectory().getInodeHandle(request.getArgument(), user));
+		// set state variable
+		// get filenames
+		//String fileName = request.getArgument();
+		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
+		//mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
+		User user = request.getSession().getUserNull(request.getUser());
+		try {
+			request.getSession().setObject(RENAMEFROM, request.getCurrentDirectory().getInodeHandle(request.getArgument(), user));
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
 
 		return new CommandResponse(350, "File exists, ready for destination name");
-    }
+	}
 
-    /**
-     * <code>RNTO &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
-     *
-     * This command specifies the new pathname of the file
-     * specified in the immediately preceding "rename from"
-     * command.  Together the two commands cause a file to be
-     * renamed.
-     */
-    public CommandResponse doRNTO(CommandRequest request) {
+	/**
+	 * <code>RNTO &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
+	 *
+	 * This command specifies the new pathname of the file
+	 * specified in the immediately preceding "rename from"
+	 * command.  Together the two commands cause a file to be
+	 * renamed.
+	 */
+	public CommandResponse doRNTO(CommandRequest request) {
 
-        // argument check
-        if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
+		// argument check
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
 
-        // set state variables
-        InodeHandle fromInode = (InodeHandle) request.getSession().getObject(RENAMEFROM, null);
-        if (fromInode == null) {
-        	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
-        }
-        
-        String argument = VirtualFileSystem.fixPath(request.getArgument());
-        if (!(argument.startsWith(VirtualFileSystem.separator))) {
-        	// Not a full path, let's make it one
-        	if (request.getCurrentDirectory().isRoot()) {
-        		argument = VirtualFileSystem.separator + argument;
-        	} else {
-        		argument = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + argument;
-        	}
-        }
-        DirectoryHandle toDir = null;
-        String newName = null;
-        User user = request.getSession().getUserNull(request.getUser());
-        
-        try {
+		// set state variables
+		InodeHandle fromInode = (InodeHandle) request.getSession().getObject(RENAMEFROM, null);
+		if (fromInode == null) {
+			return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
+		}
+
+		String argument = VirtualFileSystem.fixPath(request.getArgument());
+		if (!(argument.startsWith(VirtualFileSystem.separator))) {
+			// Not a full path, let's make it one
+			if (request.getCurrentDirectory().isRoot()) {
+				argument = VirtualFileSystem.separator + argument;
+			} else {
+				argument = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + argument;
+			}
+		}
+		DirectoryHandle toDir = null;
+		String newName = null;
+		User user = request.getSession().getUserNull(request.getUser());
+
+		try {
 			toDir = request.getCurrentDirectory().getDirectory(argument, user);
-	        // toDir exists and is a directory, so we're just changing the parent directory and not the name
+			// toDir exists and is a directory, so we're just changing the parent directory and not the name
 			newName = fromInode.getName();
-        } catch (FileNotFoundException e) {
-        	// Directory does not exist, that means they may have specified _renameFrom's new name
-        	// as the last part of the argument
-        	try {
+		} catch (FileNotFoundException e) {
+			// Directory does not exist, that means they may have specified _renameFrom's new name
+			// as the last part of the argument
+			try {
 				toDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
-	        	newName = VirtualFileSystem.getLast(argument);
+				newName = VirtualFileSystem.getLast(argument);
 			} catch (FileNotFoundException e1) {
 				// Destination doesn't exist
 				logger.debug("Destination doesn't exist", e1);
@@ -383,26 +385,26 @@ public class Dir extends CommandInterface {
 				logger.debug("Destination isn't a Directory", e1);
 				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 			}
-        } catch (ObjectNotValidException e) {
-        	return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+		} catch (ObjectNotValidException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		}
-        InodeHandle toInode = null;
-       	if (fromInode.isDirectory()) {
-       		toInode = new DirectoryHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
-       	} else if (fromInode.isFile()) {
-       		toInode = new FileHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
-       	} else if (fromInode.isLink()) {
-       		toInode = new LinkHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
-       	} else {
-       		return new CommandResponse(500, "Someone has extended the VFS beyond File/Directory/Link");
-       	}
+		InodeHandle toInode = null;
+		if (fromInode.isDirectory()) {
+			toInode = new DirectoryHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+		} else if (fromInode.isFile()) {
+			toInode = new FileHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+		} else if (fromInode.isLink()) {
+			toInode = new LinkHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
+		} else {
+			return new CommandResponse(500, "Someone has extended the VFS beyond File/Directory/Link");
+		}
 
 		try {
 			/*logger.debug("before rename toInode-" +toInode);
 			logger.debug("before rename toInode.getPath()-" + toInode.getPath());
 			logger.debug("before rename toInode.getParent()-" + toInode.getParent());
 			logger.debug("before rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
-			
+
 			fromInode.renameTo(request.getSession().getUserNull(request.getUser()), toInode);
 		} catch (PermissionDeniedException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -415,78 +417,78 @@ public class Dir extends CommandInterface {
 
 			return new CommandResponse(500, "IOException - " + e.getMessage());
 		}
-		
+
 		/*logger.debug("after rename toInode-" +toInode);
 		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
 		logger.debug("after rename toInode.getParent()-" + toInode.getParent());
 		logger.debug("after rename toInode.getParent().getPath()-" + toInode.getParent().getPath());*/
-		
+
 		return new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
-    }
+	}
 
-    public CommandResponse doSITE_CHOWN(CommandRequest request) {
+	public CommandResponse doSITE_CHOWN(CommandRequest request) {
 
-        StringTokenizer st = new StringTokenizer(request.getArgument());
-        String owner = st.nextToken();
-        String group = null;
-        int pos = owner.indexOf('.');
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+		String owner = st.nextToken();
+		String group = null;
+		int pos = owner.indexOf('.');
 
-        /* TODO this chgrp isn't actually accessible by site chgrp
-         * so we should either remove this (and in doing so remove the need
-         * for this to use getOriginalCommand) or map it to some other command
-         */
-        if (pos != -1) {
-            group = owner.substring(pos + 1);
-            owner = owner.substring(0, pos);
-        } else if ("SITE CHGRP".equals(request.getCommand())) {
-            group = owner;
-            owner = null;
-        } else if (!"SITE CHOWN".equals(request.getCommand())) {
-        	return StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
-        }
+		/* TODO this chgrp isn't actually accessible by site chgrp
+		 * so we should either remove this (and in doing so remove the need
+		 * for this to use getOriginalCommand) or map it to some other command
+		 */
+		if (pos != -1) {
+			group = owner.substring(pos + 1);
+			owner = owner.substring(0, pos);
+		} else if ("SITE CHGRP".equals(request.getCommand())) {
+			group = owner;
+			owner = null;
+		} else if (!"SITE CHOWN".equals(request.getCommand())) {
+			return StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
+		}
 
-        CommandResponse response = new CommandResponse(200);
-        User user = request.getSession().getUserNull(request.getUser());
-        
-        while (st.hasMoreTokens()) {
-            try {
-                InodeHandle file = request.getCurrentDirectory().getInodeHandle(st.nextToken(), user);
+		CommandResponse response = new CommandResponse(200);
+		User user = request.getSession().getUserNull(request.getUser());
 
-                if (owner != null) {
-                    file.setUsername(owner);
-                }
+		while (st.hasMoreTokens()) {
+			try {
+				InodeHandle file = request.getCurrentDirectory().getInodeHandle(st.nextToken(), user);
 
-                if (group != null) {
-                    file.setGroup(group);
-                }
-            } catch (FileNotFoundException e) {
-                response.addComment(e.getMessage());
-            }
-        }
+				if (owner != null) {
+					file.setUsername(owner);
+				}
 
-        response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        return response;
-    }
+				if (group != null) {
+					file.setGroup(group);
+				}
+			} catch (FileNotFoundException e) {
+				response.addComment(e.getMessage());
+			}
+		}
 
-    public CommandResponse doSITE_LINK(CommandRequest request) throws ImproperUsageException {
-        if (!request.hasArgument()) {
-        	throw new ImproperUsageException();
-        }
+		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		return response;
+	}
 
-        StringTokenizer st = new StringTokenizer(request.getArgument(),
-                " ");
+	public CommandResponse doSITE_LINK(CommandRequest request) throws ImproperUsageException {
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
 
-        if (st.countTokens() != 2) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
+		StringTokenizer st = new StringTokenizer(request.getArgument(),
+				" ");
 
-        String targetName = st.nextToken();
-        String linkName = st.nextToken();
-        User user = request.getSession().getUserNull(request.getUser());
-        
-        try {
-            request.getCurrentDirectory().getInodeHandleUnchecked(targetName); // checks if the inode exists.
-            request.getCurrentDirectory().createLink(user, linkName, targetName); // create the link
+		if (st.countTokens() != 2) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
+
+		String targetName = st.nextToken();
+		String linkName = st.nextToken();
+		User user = request.getSession().getUserNull(request.getUser());
+
+		try {
+			request.getCurrentDirectory().getInodeHandleUnchecked(targetName); // checks if the inode exists.
+			request.getCurrentDirectory().createLink(user, linkName, targetName); // create the link
 		} catch (FileExistsException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		} catch (FileNotFoundException e) {
@@ -496,63 +498,63 @@ public class Dir extends CommandInterface {
 		}
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    }
+	}
 
-    /**
-     * USAGE: site wipe [-r] <file/directory>
-     *
-     *         This is similar to the UNIX rm command.
-     *         In glftpd, if you just delete a file, the uploader loses credits and
-     *         upload stats for it.  There are many people who didn't like that and
-     *         were unable/too lazy to write a shell script to do it for them, so I
-     *         wrote this command to get them off my back.
-     *
-     *         If the argument is a file, it will simply be deleted. If it's a
-     *         directory, it and the files it contains will be deleted.  If the
-     *         directory contains other directories, the deletion will be aborted.
-     *
-     *         To remove a directory containing subdirectories, you need to use
-     *         "site wipe -r dirname". BE CAREFUL WHO YOU GIVE ACCESS TO THIS COMMAND.
-     *         Glftpd will check if the parent directory of the file/directory you're
-     *         trying to delete is writable by its owner. If not, wipe will not
-     *         execute, so to protect directories from being wiped, make their parent
-     *         555.
-     *
-     *         Also, wipe will only work where you have the right to delete (in
-     *         glftpd.conf). Delete right and parent directory's mode of 755/777/etc
-     *         will cause glftpd to SWITCH TO ROOT UID and wipe the file/directory.
-     *         "site wipe -r /" will not work, but "site wipe -r /incoming" WILL, SO
-     *         BE CAREFUL.
-     *
-     *         This command will remove the deleted files/directories from the dirlog
-     *         and dupefile databases.
-     *
-     *         To give access to this command, add "-wipe -user flag =group" to the
-     *         config file (similar to other site commands).
-     *
-     * @param request
-     * @param out
-     */
-    public CommandResponse doSITE_WIPE(CommandRequest request) {
-        if (!request.hasArgument()) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
+	/**
+	 * USAGE: site wipe [-r] <file/directory>
+	 *
+	 *         This is similar to the UNIX rm command.
+	 *         In glftpd, if you just delete a file, the uploader loses credits and
+	 *         upload stats for it.  There are many people who didn't like that and
+	 *         were unable/too lazy to write a shell script to do it for them, so I
+	 *         wrote this command to get them off my back.
+	 *
+	 *         If the argument is a file, it will simply be deleted. If it's a
+	 *         directory, it and the files it contains will be deleted.  If the
+	 *         directory contains other directories, the deletion will be aborted.
+	 *
+	 *         To remove a directory containing subdirectories, you need to use
+	 *         "site wipe -r dirname". BE CAREFUL WHO YOU GIVE ACCESS TO THIS COMMAND.
+	 *         Glftpd will check if the parent directory of the file/directory you're
+	 *         trying to delete is writable by its owner. If not, wipe will not
+	 *         execute, so to protect directories from being wiped, make their parent
+	 *         555.
+	 *
+	 *         Also, wipe will only work where you have the right to delete (in
+	 *         glftpd.conf). Delete right and parent directory's mode of 755/777/etc
+	 *         will cause glftpd to SWITCH TO ROOT UID and wipe the file/directory.
+	 *         "site wipe -r /" will not work, but "site wipe -r /incoming" WILL, SO
+	 *         BE CAREFUL.
+	 *
+	 *         This command will remove the deleted files/directories from the dirlog
+	 *         and dupefile databases.
+	 *
+	 *         To give access to this command, add "-wipe -user flag =group" to the
+	 *         config file (similar to other site commands).
+	 *
+	 * @param request
+	 * @param out
+	 */
+	public CommandResponse doSITE_WIPE(CommandRequest request) {
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
 
-        String arg = request.getArgument();
+		String arg = request.getArgument();
 
-        boolean recursive;
+		boolean recursive;
 
-        if (arg.startsWith("-r ")) {
-            arg = arg.substring(3);
-            recursive = true;
-        } else {
-            recursive = false;
-        }
+		if (arg.startsWith("-r ")) {
+			arg = arg.substring(3);
+			recursive = true;
+		} else {
+			recursive = false;
+		}
 
-        InodeHandle wipeFile;
-        User user = request.getSession().getUserNull(request.getUser());
+		InodeHandle wipeFile;
+		User user = request.getSession().getUserNull(request.getUser());
 
-        try {
+		try {
 			wipeFile = request.getCurrentDirectory().getInodeHandle(arg, user);
 
 			if (wipeFile.isDirectory() && !recursive) {
@@ -573,54 +575,54 @@ public class Dir extends CommandInterface {
 		}
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    }
+	}
 
-    /**
+	/**
 	 * <code>SIZE &lt;SP&gt; &lt;pathname&gt; &lt;CRLF&gt;</code><br>
 	 * 
 	 * Returns the size of the file in bytes.
 	 */
-    public CommandResponse doSIZE(CommandRequest request) {
+	public CommandResponse doSIZE(CommandRequest request) {
 
-        if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-
-        InodeHandle file;
-        User user = request.getSession().getUserNull(request.getUser());
-
-        try {
-            file = request.getCurrentDirectory().getInodeHandle(request.getArgument(), user);
-            return new CommandResponse(213, Long.toString(file.getSize()));
-        } catch (FileNotFoundException ex) {
-        	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        }
-    }
-
-    /**
-     * http://www.southrivertech.com/support/titanftp/webhelp/xcrc.htm
-     *
-     * Originally implemented by CuteFTP Pro and Globalscape FTP Server
-     */
-    public CommandResponse doXCRC(CommandRequest request) {
-
-        if (!request.hasArgument()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-
-        StringTokenizer st = new StringTokenizer(request.getArgument());
-        FileHandle myFile;
-        User user = request.getSession().getUserNull(request.getUser());
-
-        try {
-            myFile = request.getCurrentDirectory().getFile(st.nextToken(), user);
-        } catch (FileNotFoundException e) {
-        	return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        } catch (ObjectNotValidException e) {
-        	return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
-        try {
+		InodeHandle file;
+		User user = request.getSession().getUserNull(request.getUser());
+
+		try {
+			file = request.getCurrentDirectory().getInodeHandle(request.getArgument(), user);
+			return new CommandResponse(213, Long.toString(file.getSize()));
+		} catch (FileNotFoundException ex) {
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+		}
+	}
+
+	/**
+	 * http://www.southrivertech.com/support/titanftp/webhelp/xcrc.htm
+	 *
+	 * Originally implemented by CuteFTP Pro and Globalscape FTP Server
+	 */
+	public CommandResponse doXCRC(CommandRequest request) {
+
+		if (!request.hasArgument()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
+
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+		FileHandle myFile;
+		User user = request.getSession().getUserNull(request.getUser());
+
+		try {
+			myFile = request.getCurrentDirectory().getFile(st.nextToken(), user);
+		} catch (FileNotFoundException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+		} catch (ObjectNotValidException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+		}
+
+		try {
 			if (st.hasMoreTokens()) {
 				if (!st.nextToken().equals("0")
 						|| !st.nextToken().equals(
@@ -639,11 +641,11 @@ public class Dir extends CommandInterface {
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
-    }
-    
-    public CommandResponse doSITE_FIXSIZE(CommandRequest request) {
-    	long difference = 0;
-    	try {
+	}
+
+	public CommandResponse doSITE_FIXSIZE(CommandRequest request) {
+		long difference = 0;
+		try {
 			difference = request.getCurrentDirectory().validateSizeRecursive();
 		} catch (FileNotFoundException e) {
 			return new CommandResponse(500, e.getMessage());
@@ -651,5 +653,5 @@ public class Dir extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		response.addComment("Difference was of " + Bytes.formatBytes(difference));
 		return response;
-    }
+	}
 }
