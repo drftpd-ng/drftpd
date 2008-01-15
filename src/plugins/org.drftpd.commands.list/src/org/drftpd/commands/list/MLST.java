@@ -166,7 +166,9 @@ public class MLST extends CommandInterface {
 			}
 
 			ret.append("size=" + inode.getSize() + ";");
-			ret.append("modify=" + timeval.format(new Date(inode.lastModified())) +";");
+			synchronized(timeval) {
+				ret.append("modify=" + timeval.format(new Date(inode.lastModified())) +";");
+			}
 
 			ret.append("unix.owner=" + inode.getUsername() + ";");
 			ret.append("unix.group=" + inode.getGroup() + ";");
