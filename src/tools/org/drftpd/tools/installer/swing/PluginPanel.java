@@ -37,6 +37,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
+import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginData;
 import org.drftpd.tools.installer.PluginTools;
 import org.java.plugin.registry.Documentation;
@@ -51,10 +52,16 @@ public class PluginPanel extends JPanel {
 
 	private ArrayList<PluginData> _plugins;
 
-	public PluginPanel(PluginRegistry registry, JTabbedPane parent) {
+	public PluginPanel(PluginRegistry registry, JTabbedPane parent, InstallerConfig config) {
+		_plugins = PluginTools.getPluginData(registry);
+		for (PluginData plugin : _plugins) {
+			Boolean sel = config.getPluginSelections().get(plugin.getName());
+			if (sel != null) {
+				plugin.setSelected(sel);
+			}
+		}
 		BorderLayout pluginLayout = new BorderLayout();
 		setLayout(pluginLayout);
-
 
 		JTextArea desc = new JTextArea();
 		desc.setLineWrap(true);
@@ -72,7 +79,6 @@ public class PluginPanel extends JPanel {
 	}
 
 	private JTable createTable(PluginRegistry registry, JTextArea desc, JTabbedPane parent) {
-		_plugins = PluginTools.getPluginData(registry);
 		String columnNames[] = {"Build","Plugin Name","Version"};
 		JTable table = new JTable(new SwingTableModel(columnNames,_plugins,registry));
 		table.setDefaultRenderer(Boolean.class, new PluginCellRenderer(_plugins,table.getDefaultRenderer(Boolean.class)));

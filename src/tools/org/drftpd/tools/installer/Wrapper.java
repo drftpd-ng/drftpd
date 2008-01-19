@@ -44,6 +44,8 @@ public class Wrapper {
 		String input = new String("");
 		InputStreamReader isr = new InputStreamReader(System.in);
 		BufferedReader br = new BufferedReader(isr);
+		ConfigReader cr = new ConfigReader();
+		InstallerConfig config = cr.getConfig();
 
 		do {
 			System.out.print("Launch installer in GUI mode (y/n): ");
@@ -54,10 +56,10 @@ public class Wrapper {
 			}
 		} while (!input.equalsIgnoreCase("y") && !input.equalsIgnoreCase("n"));
 		if (input.equalsIgnoreCase("y")) {
-			SwingInstaller installer = new SwingInstaller(parser.getRegistry());
+			SwingInstaller installer = new SwingInstaller(parser.getRegistry(),config);
 			installer.setVisible(true);
 		} else if (input.equalsIgnoreCase("n")) {
-			ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry());
+			ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry(),config);
 			installer.show();
 		}
 	}

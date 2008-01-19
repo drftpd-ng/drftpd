@@ -18,32 +18,41 @@
 package org.drftpd.tools.installer.swing;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.apache.log4j.Logger;
+import org.drftpd.tools.installer.InstallerConfig;
 
 /**
  * @author djb61
  * @version $Id$
  */
-public class ConfigPanel extends JPanel implements ItemListener {
+public class ConfigPanel extends JPanel implements ActionListener, ItemListener {
 
 	private JTextField _installLocation;
+	private JButton _dirBrowse;
 	private JComboBox _logLevel;
 	private JCheckBox _consoleLog;
+	private InstallerConfig _config;
 
-	public ConfigPanel() {
+	public ConfigPanel(InstallerConfig config) {
+		_config = config;
 		setLayout(new BorderLayout());
 		JPanel centerPanel = new JPanel();
 		centerPanel.setLayout(new GridBagLayout());
@@ -53,7 +62,12 @@ public class ConfigPanel extends JPanel implements ItemListener {
 		JLabel installLabel = new JLabel();
 		installLabel.setText("Install location: ");
 		_installLocation = new JTextField(30);
-		_installLocation.setText(System.getProperty("user.dir"));
+		_installLocation.setText(_config.getInstallDir());
+
+		_dirBrowse = new JButton();
+		_dirBrowse.setText("..");
+		_dirBrowse.addActionListener(this);
+		_dirBrowse.setPreferredSize(new Dimension(20,20));
 
 		JLabel logLevelLabel = new JLabel();
 		logLevelLabel.setText("Build log level: ");
@@ -68,26 +82,29 @@ public class ConfigPanel extends JPanel implements ItemListener {
 		_logLevel.addItem(new String("OFF"));
 		_logLevel.setMaximumRowCount(8);
 		_logLevel.addItemListener(this);
-		_logLevel.setSelectedItem(Logger.getRootLogger().getLevel().toString());
+		_logLevel.setSelectedItem(_config.getLogLevel());
 
 		JLabel consoleLogLabel = new JLabel();
 		consoleLogLabel.setText("Enable console logging: ");
 		_consoleLog = new JCheckBox();
+		_consoleLog.setSelected(_config.getConsoleLogging());
 
 		JLabel logNotice = new JLabel();
 		logNotice.setText("Build log will be saved to build.log in distribution directory");
 
 		centerPanel.add(installLabel, new GridBagConstraints(0,0,1,1,100.0,0.0
 				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
-		centerPanel.add(_installLocation, new GridBagConstraints(1,0,1,1,100.0,0.0
+		centerPanel.add(_installLocation, new GridBagConstraints(1,0,1,1,0.0,0.0
 				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(_dirBrowse, new GridBagConstraints(2,0,1,1,100.0,0.0
+				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 10, 0, 0), 0, 0));
 		centerPanel.add(logLevelLabel, new GridBagConstraints(0,1,1,1,100.0,0.0
 				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
-		centerPanel.add(_logLevel, new GridBagConstraints(1,1,1,1,100.0,0.0
+		centerPanel.add(_logLevel, new GridBagConstraints(1,1,1,1,0.0,0.0
 				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
 		centerPanel.add(consoleLogLabel, new GridBagConstraints(0,2,1,1,100.0,0.0
 				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
-		centerPanel.add(_consoleLog, new GridBagConstraints(1,2,1,1,100.0,0.0
+		centerPanel.add(_consoleLog, new GridBagConstraints(1,2,1,1,0.0,0.0
 				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
 		southPanel.add(logNotice);
 
@@ -97,6 +114,17 @@ public class ConfigPanel extends JPanel implements ItemListener {
 
 	public void itemStateChanged(ItemEvent ie) {
 		repaint();
+	}
+
+	public void actionPerformed(ActionEvent ie) {
+		if (ie.getSource().equals(_dirBrowse)) {
+			JFileChooser installChooser = new JFileChooser(new File(_installLocation.getText()));
+			installChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			int result = installChooser.showOpenDialog(this);
+			if (result == JFileChooser.APPROVE_OPTION) {
+				_installLocation.setText(installChooser.getSelectedFile().getPath());
+			}
+		}
 	}
 
 	protected JTextField getInstallLocation() {

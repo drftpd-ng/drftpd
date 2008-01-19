@@ -19,11 +19,14 @@ package org.drftpd.tools.installer.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -36,6 +39,7 @@ import javax.swing.JTabbedPane;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginData;
 import org.java.plugin.registry.PluginRegistry;
@@ -46,15 +50,19 @@ import org.java.plugin.registry.PluginRegistry;
  */
 public class SwingInstaller extends JFrame implements ActionListener {
 
+	private static final Logger logger = Logger.getLogger(SwingInstaller.class);
+
 	private JButton _buildButton;
 	private JButton _selectAllButton;
 	private ConfigPanel _configPanel;
 	private PluginPanel _pluginPanel;
 	private PluginRegistry _registry;
+	private InstallerConfig _config;
 
-	public SwingInstaller(PluginRegistry registry) {
+	public SwingInstaller(PluginRegistry registry, InstallerConfig config) {
 		super("DrFTPD Installer");
 		_registry = registry;
+		_config = config;
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout());
 
@@ -70,9 +78,9 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		setJMenuBar(menubar);
 
 		JTabbedPane tabbedPane = new JTabbedPane();
-		_configPanel = new ConfigPanel();
+		_configPanel = new ConfigPanel(_config);
 		tabbedPane.add(_configPanel, "Config");
-		_pluginPanel = new PluginPanel(registry,tabbedPane);
+		_pluginPanel = new PluginPanel(registry,tabbedPane,_config);
 		tabbedPane.add(_pluginPanel, "Plugins");
 
 		JPanel centerPanel = new JPanel();
@@ -82,6 +90,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 
 		JButton cancelButton = new JButton();
 		cancelButton.setText("Cancel");
+		cancelButton.setPreferredSize(new Dimension(100,25));
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				terminate();
@@ -89,9 +98,11 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		});
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
+		_buildButton.setPreferredSize(new Dimension(100,25));
 		_buildButton.addActionListener(this);
 		_selectAllButton = new JButton();
 		_selectAllButton.setText("Select All");
+		_selectAllButton.setPreferredSize(new Dimension(100,25));
 		_selectAllButton.addActionListener(this);
 
 		JPanel southPanel = new JPanel();
@@ -125,15 +136,26 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		}
 		Object actionSource = ae.getSource();
 		if (actionSource.equals(_buildButton)) {
+			_config.setInstallDir(_configPanel.getInstallLocation().getText());
+			_config.setLogLevel(_configPanel.getLogLevel().getSelectedItem().toString());
+			_config.setConsoleLogging(_configPanel.getConsoleLog().isSelected());
+			HashMap<String,Boolean> selPlugins = new HashMap<String,Boolean>();
 			ArrayList<PluginData> toBuild = new ArrayList<PluginData>();
 			for (PluginData plugin : _pluginPanel.getPlugins()) {
+				selPlugins.put(plugin.getName(), plugin.isSelected());
 				if (plugin.isSelected()) {
 					toBuild.add(plugin);
 				}
 			}
+			_config.setPluginSelections(selPlugins);
 			Logger.getRootLogger().setLevel(Level.toLevel(_configPanel.getLogLevel().getSelectedItem().toString()));
 			if (_configPanel.getConsoleLog().isSelected()) {
 				Logger.getRootLogger().addAppender(new ConsoleAppender(Logger.getRootLogger().getAppender("root").getLayout()));
+			}
+			try {
+				_config.writeToDisk();
+			} catch (IOException e) {
+				logger.warn("Unable to write current config to build.conf",e);
 			}
 			PluginBuilder builder = new PluginBuilder(toBuild,_registry,_configPanel.getInstallLocation().getText());
 			this.dispose();

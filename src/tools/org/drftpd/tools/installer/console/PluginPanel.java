@@ -32,6 +32,7 @@ import charvax.swing.border.TitledBorder;
 
 import java.util.ArrayList;
 
+import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginData;
 import org.drftpd.tools.installer.PluginTools;
 import org.java.plugin.registry.Documentation;
@@ -45,8 +46,16 @@ import org.java.plugin.registry.PluginRegistry;
 public class PluginPanel extends JPanel {
 
 	private ConsoleTable _table;
+	private ArrayList<PluginData> _plugins;
 
-	public PluginPanel(PluginRegistry registry) {
+	public PluginPanel(PluginRegistry registry, InstallerConfig config) {
+		_plugins = PluginTools.getPluginData(registry);
+		for (PluginData plugin : _plugins) {
+			Boolean sel = config.getPluginSelections().get(plugin.getName());
+			if (sel != null) {
+				plugin.setSelected(sel);
+			}
+		}
 		BorderLayout pluginLayout = new BorderLayout();
 		setLayout(pluginLayout);
 
@@ -68,17 +77,16 @@ public class PluginPanel extends JPanel {
 	}
 
 	private ConsoleTable createTable(PluginRegistry registry, JTextArea desc) {
-		ArrayList<PluginData> plugins = PluginTools.getPluginData(registry);
 		String columnNames[] = {"Build","Plugin Name","Version"};
-		String tableData[][] = new String[plugins.size()][3];
+		String tableData[][] = new String[_plugins.size()][3];
 		int count = 0;
-		for (PluginData plugin : plugins) {
+		for (PluginData plugin : _plugins) {
 			tableData[count][0] = plugin.isSelected() ? "yes" : "no";
 			tableData[count][1] = plugin.getName();
 			tableData[count][2] = plugin.getDescriptor().getVersion().toString();
 			count++;
 		}
-		ConsoleTable table = new ConsoleTable(tableData,columnNames,plugins,registry,desc);
+		ConsoleTable table = new ConsoleTable(tableData,columnNames,_plugins,registry,desc);
 		table.setColumnSelectionAllowed(false);
 		table.setRowSelectionAllowed(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -90,10 +98,14 @@ public class PluginPanel extends JPanel {
 		return _table;
 	}
 
+	protected ArrayList<PluginData> getPlugins() {
+		return _plugins;
+	}
+
 	protected void selectAllPlugins() {
 		ConsoleTable table = getTable();
 		int i = 0;
-		for (PluginData plugin : table.getPlugins()) {
+		for (PluginData plugin : getPlugins()) {
 			if (!plugin.isSelected()) {
 				plugin.invertSelected();
 				table.setValueAt(plugin.isSelected() ? "yes" : "no",i,0);
@@ -174,9 +186,5 @@ class ConsoleTable extends JTable {
 			_desc.setText("This plugin has no description set, please contact the author.");
 		}
 		_desc.repaint();
-	}
-
-	protected ArrayList<PluginData> getPlugins() {
-		return _plugins;
 	}
 }

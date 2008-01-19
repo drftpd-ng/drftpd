@@ -66,16 +66,19 @@ check - checks plug-ins integrity
 		<!-- create tools jar -->
 		<jar destfile="lib/${app.name}-tools.jar">
 			<manifest>
-				<attribute name="Class-Path" value="ant.jar"/>
-				<attribute name="Specification-Title" value="DrFTPd - tools library"/>
-				<attribute name="Specification-Version" value="${app.version}"/>
-				<attribute name="Specification-Vendor" value="http://www.drftpd.org"/>
-				<attribute name="Implementation-Title" value="org.drftpd.tools"/>
-				<attribute name="Implementation-Version" value="${app.version}"/>
-				<attribute name="Implementation-Vendor" value="http://www.drftpd.org"/>
+				<attribute name="Class-Path" value="ant.jar" />
+				<attribute name="Specification-Title" value="DrFTPd - tools library" />
+				<attribute name="Specification-Version" value="${app.version}" />
+				<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
+				<attribute name="Implementation-Title" value="org.drftpd.tools" />
+				<attribute name="Implementation-Version" value="${app.version}" />
+				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
 			</manifest>
 			<fileset dir="src/tools"/>
 		</jar>
+		<delete>
+			<fileset dir="src/tools" includes="**/*.class" />
+		</delete>
 	</target>
 
 	<target name="check"
