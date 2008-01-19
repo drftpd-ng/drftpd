@@ -19,8 +19,6 @@ package org.drftpd.tools.installer.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.swing.JTabbedPane;
@@ -31,6 +29,8 @@ import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -51,9 +51,12 @@ import org.java.plugin.registry.PluginRegistry;
 public class PluginPanel extends JPanel {
 
 	private ArrayList<PluginData> _plugins;
+	private JTextArea _desc;
+	private JTabbedPane _parentPane;
 
 	public PluginPanel(PluginRegistry registry, JTabbedPane parent, InstallerConfig config) {
 		_plugins = PluginTools.getPluginData(registry);
+		_parentPane = parent;
 		for (PluginData plugin : _plugins) {
 			Boolean sel = config.getPluginSelections().get(plugin.getName());
 			if (sel != null) {
@@ -63,22 +66,22 @@ public class PluginPanel extends JPanel {
 		BorderLayout pluginLayout = new BorderLayout();
 		setLayout(pluginLayout);
 
-		JTextArea desc = new JTextArea();
-		desc.setLineWrap(true);
-		desc.setEditable(false);
-		desc.setWrapStyleWord(true);
-		desc.setOpaque(false);
-		desc.setText("No plugin selected");
-		JScrollPane descPane = new JScrollPane(desc);
+		_desc = new JTextArea();
+		_desc.setLineWrap(true);
+		_desc.setEditable(false);
+		_desc.setWrapStyleWord(true);
+		_desc.setOpaque(false);
+		_desc.setText("No plugin selected");
+		JScrollPane descPane = new JScrollPane(_desc);
 		descPane.setBorder(new TitledBorder(new EtchedBorder(),"Plugin Description"));
-		JTable table = createTable(registry, desc, parent);
+		JTable table = createTable(registry);
 		JScrollPane tablePane = new JScrollPane(table);
 		tablePane.setBorder(new TitledBorder(new EtchedBorder(),"Select plugins"));
 		add(tablePane, BorderLayout.CENTER);
 		add(descPane, BorderLayout.SOUTH);
 	}
 
-	private JTable createTable(PluginRegistry registry, JTextArea desc, JTabbedPane parent) {
+	private JTable createTable(PluginRegistry registry) {
 		String columnNames[] = {"Build","Plugin Name","Version"};
 		JTable table = new JTable(new SwingTableModel(columnNames,_plugins,registry));
 		table.setDefaultRenderer(Boolean.class, new PluginCellRenderer(_plugins,table.getDefaultRenderer(Boolean.class)));
@@ -88,7 +91,9 @@ public class PluginPanel extends JPanel {
 		table.getColumnModel().getColumn(0).setResizable(false);
 		table.getColumnModel().getColumn(2).setMaxWidth(100);
 		table.getColumnModel().getColumn(2).setResizable(false);
-		table.addMouseListener(new TableMouseListener(_plugins,table,desc,parent));
+		ListSelectionModel tableLSM = table.getSelectionModel();
+		tableLSM.addListSelectionListener(new TableListSelectionListener(this));
+		//table.addMouseListener(new TableMouseListener(table,this));
 		return table;
 	}
 
@@ -103,6 +108,18 @@ public class PluginPanel extends JPanel {
 			}
 		}
 		this.repaint();
+	}
+
+	protected void updateDescription(int pluginID) {
+		Documentation<PluginDescriptor> doc = _plugins.get(pluginID).getDescriptor().getDocumentation();
+		if (doc != null) {
+			_desc.setText(doc.getText().replaceAll("\r\n|\n|\r"," "));
+		} else {
+			// The current selection has no docs, so clear the text for the previous one
+			_desc.setText("This plugin has no description set, please contact the author.");
+		}
+		_desc.repaint();
+		_parentPane.repaint();
 	}
 }
 
@@ -225,47 +242,19 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 	}
 }
 
-class TableMouseListener implements MouseListener {
+class TableListSelectionListener implements ListSelectionListener {
 
-	private ArrayList<PluginData> _plugins;
-	private JTabbedPane _parentPane;
-	private JTable _table;
-	private JTextArea _desc;
+	private PluginPanel _panel;
 
-	public TableMouseListener(ArrayList<PluginData> plugins, JTable table, JTextArea desc, JTabbedPane parentPane) {
-		_plugins = plugins;
-		_table = table;
-		_desc = desc;
-		_parentPane = parentPane;
+	public TableListSelectionListener(PluginPanel panel) {
+		_panel = panel;
 	}
 
-	public void mousePressed(MouseEvent me) {
-		// No interest in this event
-	}
+	public void valueChanged(ListSelectionEvent lse) {
+		 ListSelectionModel lsm = (ListSelectionModel)lse.getSource();
 
-	public void mouseReleased(MouseEvent me) {
-		// No interest in this event
-	}
-
-	public void mouseClicked(MouseEvent me) {
-		if (_table.getSelectedRow() != -1) {
-			Documentation<PluginDescriptor> doc = _plugins.get(_table.getSelectedRow()).getDescriptor().getDocumentation();
-			if (doc != null) {
-				_desc.setText(doc.getText().replaceAll("\r\n|\n|\r"," "));
-			} else {
-				// The current selection has no docs, so clear the text for the previous one
-				_desc.setText("This plugin has no description set, please contact the author.");
-			}
-			_desc.repaint();
-			_parentPane.repaint();
-		}
-	}
-
-	public void mouseEntered(MouseEvent me) {
-		// No interest in this event
-	}
-
-	public void mouseExited(MouseEvent me) {
-		// No interest in this event
+		 if (lsm.getMinSelectionIndex() != -1) {
+			 _panel.updateDescription(lsm.getMinSelectionIndex());
+		 }
 	}
 }
