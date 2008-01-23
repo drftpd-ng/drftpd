@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.indexmanager" version="2.1.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.indexmanager" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="PostHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	<extension-point id="PreHook">
+		<parameter-def id="HookClass" />
+		<parameter-def id="HookMethod" />
+		<parameter-def id="ParentMethod" />
+		<parameter-def id="Priority" type="number" />
+	</extension-point>
+	
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="IndexManagerHandler">
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doRebuildIndexPerm">
+		<parameter id="ParentMethod" value="doRebuildIndex" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doSearchFilePerm">
+		<parameter id="ParentMethod" value="doSearchFile" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doSearchDIrPerm">
+		<parameter id="ParentMethod" value="doSearchDir" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+</plugin>

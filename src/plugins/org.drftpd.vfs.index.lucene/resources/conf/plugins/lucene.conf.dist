@@ -1,0 +1,59 @@
+# Iterating over all the returned hits of the search is very expensive.
+# This parameter limits the number of hits a search can return.
+# The bigger this number is the more cpu/io/memory Lucene will use.
+# Default (50) seems reasonable enough, change it on your own risk.
+#
+# More info: http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
+max_hits=50
+
+# *ADVANCED SETTING* The larger this setting is the least Lucene will try to flush your index
+# due to the amount of buffered documents. Flushing is time consuming due to IO operations.
+# As DrFTPd adds very small Documents to the index, this objects shouldn't use too much memory,
+# so keeping some buffered documents is fine, although it's not good to keep many.
+# If you are not sure on what to put here, keep the default.
+# If you are experiencing too much IO due to this operation, you may want to increase this setting,
+# but beware that increasing it will also increase memory usage.
+#
+# More info: http://wiki.apache.org/lucene-java/ImproveIndexingSpeed 
+maxdocs_buffer=60
+
+# Optimizing is good, but it is also expensive.
+# When you optimize you merge your index making later operations faster.
+# Highly updated sites should keep this number reasonable high, otherwise
+# optimization will take a long time.
+# Either you choose for optimizing often (resulting super fast search/indexing) but
+# in the other hand you will use lots of resources while optimizing OR you live with
+# slower searches and indexing and do not use so many resources often.
+# 
+# Default: 15 minutes (good for medium usage/updated sites)
+# 30 minutes should be good enough for highly updated sites (maybe even higher).
+# This value represents an amount in minutes.
+optimize_interval=15
+
+# Changes to the Index do not reflect in the search engine until it is updated
+# but updating the search engine might be expensive so you must choose
+# if you want a very up-to-date engine that eats lots of resources or you choose
+# to have a not-so-up-to-date engine that is lighter.
+# 
+# More info: http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
+# This value represents an amount in minutes.
+searchupdate_interval=15
+
+# *ADVANCED SETTING* Use native file locking.
+# Networked FileSystems usually doesn't deal very well if this, so disable it, if you are using one of them.
+#
+# More info: 
+# - http://java.sun.com/j2se/1.5.0/docs/api/java/nio/channels/FileLock.html
+# - http://lucene.apache.org/java/2_2_0/api/org/apache/lucene/store/NativeFSLockFactory.html
+# - http://lucene.apache.org/java/2_2_0/api/org/apache/lucene/store/FSDirectory.html
+native_locking=true
+
+# Backup configuration
+# Interval before creating a new backup of the index, in minutes.
+# Do not set this too low, it's advisable to set this +60 minutes.
+backup_interval=120
+
+# Number of backups to be kept.
+# DrFTPd will delete the older backups automagically in order to keep your backup smaller.
+# Keeping, at least, two copies is always a good approach.
+max_backups=2

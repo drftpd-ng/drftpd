@@ -54,18 +54,17 @@ import org.drftpd.usermanager.UserManager;
 import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.vfs.index.IndexEngineInterface;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @author mog
+ * @author zubov
  * @version $Id$
  */
-/**
- * @author zubov
- * 
- */
+
 public class GlobalContext implements EventSubscriber {
 
 	private static final Logger logger = Logger.getLogger(GlobalContext.class);
@@ -93,6 +92,8 @@ public class GlobalContext implements EventSubscriber {
 	private SSLContext _sslContext;
 	
 	private TimeManager _timeManager;
+	
+	private IndexEngineInterface _indexEngine;
 
 	private static DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
 
@@ -171,6 +172,10 @@ public class GlobalContext implements EventSubscriber {
 		}
 
 		return _slaveManager;
+	}
+	
+	public IndexEngineInterface getIndexingEngine() {
+		return _indexEngine;
 	}
 
 	public UserManager getUserManager() {
@@ -263,12 +268,37 @@ public class GlobalContext implements EventSubscriber {
 					_sectionManager = (SectionManagerInterface) smCls.newInstance();
 				}
 			} catch (Exception e) {
-				throw new FatalException("Cannot create instance of SectionManager, check master.usermanager in config file", e);
+				throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
 			}
 		}
 		
 		if (_sectionManager == null) {
 			logger.fatal("SectionManager plugin not found, check 'sectionmanager' in the configuration file");
+		}
+	}
+	
+	private void loadIndexingEngine(Properties cfg) {
+		PluginManager manager = PluginManager.lookup(this);
+		ExtensionPoint iExtPoint = manager.getRegistry().getExtensionPoint("master", "IndexingEngine");
+
+		String desiredIe = PropertyHelper.getProperty(cfg, "indexingengine");
+
+		for (Extension ie : iExtPoint.getConnectedExtensions()) {
+			try {
+				if (ie.getDeclaringPluginDescriptor().getId().equals(desiredIe)) {
+					manager.activatePlugin(desiredIe);
+					ClassLoader iLoader = manager.getPluginClassLoader(ie.getDeclaringPluginDescriptor());
+					Class<?> iCls = iLoader.loadClass(ie.getParameter("class").valueAsString());
+					_indexEngine = (IndexEngineInterface) iCls.newInstance();
+					_indexEngine.init();
+				}
+			} catch (Exception e) {
+				throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
+			}
+		}
+		
+		if (_indexEngine == null) {
+			logger.fatal("IndexingEngine plugin not found, check 'indexingengine' in the configuration file");
 		}
 	}
 
@@ -405,6 +435,7 @@ public class GlobalContext implements EventSubscriber {
 		listenForSlaves();
 		loadSlaveSelectionManager(getConfig().getMainProperties());
 		loadSectionManager(getConfig().getMainProperties());
+		loadIndexingEngine(getConfig().getMainProperties());
 		loadPlugins();
 		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
 		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);

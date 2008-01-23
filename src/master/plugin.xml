@@ -44,6 +44,9 @@
 	<extension-point id="SlaveSelection">
 		<parameter-def id="class" />
 	</extension-point>
+	<extension-point id="IndexingEngine">
+		<parameter-def id="class" />
+	</extension-point>
 	<extension-point id="ProtocolExtension">
 		<parameter-def id="IssuerClass" />
 	</extension-point>

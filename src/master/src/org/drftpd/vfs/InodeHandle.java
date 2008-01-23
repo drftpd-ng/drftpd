@@ -311,6 +311,20 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		getInode().setLastModified(l);
 	}
 	
+	public boolean isHidden(User user) throws FileNotFoundException {
+		// if getInode() fails the file really does not exist.
+		getInode();
+		
+		try {			
+			checkHiddenPath(this, user);
+			
+			//exception not thrown here means that the file is hidden.
+			return false;
+		} catch (FileNotFoundException e) {
+			return true;
+		}
+	}
+	
 	protected static VFSPermissions getVFSPermissions() {
 		return GlobalContext.getConfig().getVFSPermissions();
 	}

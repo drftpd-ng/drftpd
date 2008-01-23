@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.vfs.index.lucene" version="2.1.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="master"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.vfs.index.lucene" path="classes/" type="code">
+		</library>
+		<library id="lucene" path="../../../lib/lucene-core-2.2.0.jar" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension plugin-id="master" point-id="IndexingEngine" id="LuceneEngine">
+		<parameter id="class" value="org.drftpd.vfs.index.lucene.LuceneEngine"/>
+	</extension>
+</plugin>

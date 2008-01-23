@@ -1,0 +1,27 @@
+SITE REBUILDINDEX {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doRebuildIndex
+perms =siteop
+}
+
+SITE SEARCHFILE {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doSearchFile
+perms =siteop
+}
+
+SITE SEARCHDIR {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doSearchDir
+perms =siteop
+}
+
+SITE INDEXSTATUS {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doSearchDir
+perms =doIndexStatus
+}
