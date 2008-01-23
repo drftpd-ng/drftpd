@@ -45,6 +45,9 @@ slaveselection=org.drftpd.slaveselection.filter
 # Default: org.drftpd.sections.def
 sectionmanager=org.drftpd.sections.def
 
+# Index engine
+indexingengine=org.drftpd.vfs.index.lucene
+
 # enabled cipher suites
 # if left empty, default set will be used
 #cipher.1=TLS_RSA_WITH_AES_128_CBC_SHA
