@@ -7,7 +7,7 @@
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.request" path="classes/" type="code">
+		<library id="org.drftpd.commands.request" path="org.drftpd.commands.request.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

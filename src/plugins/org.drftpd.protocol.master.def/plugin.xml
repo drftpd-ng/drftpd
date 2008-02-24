@@ -14,12 +14,11 @@
 		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.master.def" path="classes/" type="code">
+		<library id="org.drftpd.protocol.master.def" path="org.drftpd.protocol.master.def.jar" type="code">
 		</library>
 	</runtime>
 
 	<extension plugin-id="master" point-id="ProtocolExtension" id="BasicProtocol">
 		<parameter id="IssuerClass" value="org.drftpd.protocol.master.def.BasicIssuer" />
 	</extension>
-
 </plugin>

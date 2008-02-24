@@ -9,7 +9,7 @@
 		<import plugin-id="org.drftpd.slaveselection.filter" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.serverstatus" path="classes/" type="code">
+		<library id="org.drftpd.commands.serverstatus" path="org.drftpd.commands.serverstatus.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

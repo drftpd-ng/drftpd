@@ -5,18 +5,20 @@
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />
+		<attribute id="Native">
+			<attribute id="Native1" value="lib/FileSystem.dll">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native2" value="lib/libFileSystem.so">
+				<attribute id="Executable" value="false" />
+			</attribute>
+		</attribute>
 	</attributes>
 	<requires>
 		<import plugin-id="common" exported="true" />
 	</requires>
 	<runtime>
-		<library id="slave" path="classes/" type="code">
-			<export prefix="*" />
-		</library>
-		<library id="jpf-boot" path="../../lib/jpf-boot.jar" type="code">
-			<export prefix="*" />
-		</library>
-		<library id="eventbus" path="../../lib/EventBus-1.1.jar" type="code">
+		<library id="slave" path="slave.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

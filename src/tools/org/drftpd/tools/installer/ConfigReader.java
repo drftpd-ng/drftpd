@@ -42,8 +42,12 @@ public class ConfigReader {
 			// Error loading config, let's use some defaults
 			config = new InstallerConfig();
 			config.setInstallDir(System.getProperty("user.dir"));
-			config.setLogLevel("WARN");
-			config.setConsoleLogging(false);
+			config.setLogLevel(1);
+			config.setFileLogging(false);
+			config.setClean(false);
+			config.setConvertUsers(false);
+			config.setPrintTrace(false);
+			config.setSuppressLog(false);
 			config.setPluginSelections(new HashMap<String,Boolean>());
 			return config;
 		} finally {

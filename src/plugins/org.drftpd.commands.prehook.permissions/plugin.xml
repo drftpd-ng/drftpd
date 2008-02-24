@@ -9,7 +9,7 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.prehook.permissions" path="classes/" type="code">
+		<library id="org.drftpd.commands.prehook.permissions" path="org.drftpd.commands.prehook.permissions.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

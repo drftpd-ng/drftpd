@@ -13,7 +13,7 @@
 		<import plugin-id="org.drftpd.plugins.archive" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.slaveselection.filter.archive" path="classes/" type="code">
+		<library id="org.drftpd.slaveselection.filter.archive" path="org.drftpd.slaveselection.filter.archive.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

@@ -9,7 +9,7 @@
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.textoutput" path="classes/" type="code">
+		<library id="org.drftpd.commands.textoutput" path="org.drftpd.commands.textoutput.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

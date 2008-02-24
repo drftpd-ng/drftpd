@@ -13,7 +13,7 @@
 		<import plugin-id="slave" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.slave" path="classes/" type="code">
+		<library id="org.drftpd.protocol.zipscript.slave" path="org.drftpd.protocol.zipscript.slave.jar" type="code">
 		</library>
 	</runtime>
 			

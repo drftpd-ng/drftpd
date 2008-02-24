@@ -93,7 +93,7 @@ public class PluginPanel extends JPanel {
 		table.getColumnModel().getColumn(2).setResizable(false);
 		ListSelectionModel tableLSM = table.getSelectionModel();
 		tableLSM.addListSelectionListener(new TableListSelectionListener(this));
-		//table.addMouseListener(new TableMouseListener(table,this));
+
 		return table;
 	}
 

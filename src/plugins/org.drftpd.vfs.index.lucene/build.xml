@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
-<project name="org.drftpd.vfs.index.lucene plug-in build file"
+<project name="org.drftpd.vfs.index.lucene"
          default="build">
+	<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.vfs.index.lucene" />
 	<target name="build">
-		<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.vfs.index.lucene" />
 		<jpf-info manifest="${pluginbase}/plugin.xml"
 			propertyid="plugin.id"
 			propertyversion="plugin.version" />
 		<property name="plugin.home"
 			value="${installdir}/plugins/master/${plugin.id}" />
 		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
-		<copy todir="${plugin.home}" includeemptydirs="false">
-			<fileset dir="${pluginbase}"
-				includes="plugin.xml" />
-		</copy>
+		<loggingcopytask file="${pluginbase}/plugin.xml" todir="${plugin.home}" />
 		<resourcetask
 			basedir="${installdir}"
 			resourcedir="${pluginbase}/resources" />
@@ -23,8 +20,8 @@
 			pluginid="${plugin.id}"
 			includes="core/*/plugin.xml,plugins/master/*/plugin.xml"
 			verbose="${build.verbose}" />
-		<mkdir dir="${plugin.home}/classes" />
-		<javac destdir="${plugin.home}/classes"
+		<mkdir dir="${pluginbase}/classes" />
+		<javac destdir="${pluginbase}/classes"
 			srcdir="${pluginbase}/src"
 			classpathref="plugin.classpath"
 			source="${build.javac}"
@@ -32,9 +29,24 @@
 			debug="${build.debug}"
 			optimize="${build.optimize}">
 		</javac>
-		<copy todir="${plugin.home}/classes">
-			<fileset dir="${pluginbase}/src"
-				includes="**/*.class" />
-		</copy>
+		<libcopytask />
+		<loggingjartask destfile="${plugin.home}/${plugin.id}.jar">
+			<manifest>
+				<attribute name="Specification-Title" value="DrFTPd - ${plugin.id}" />
+				<attribute name="Specification-Version" value="${plugin.version}" />
+				<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
+				<attribute name="Implementation-Title" value="${plugin.id}" />
+				<attribute name="Implementation-Version" value="${plugin.version}" />
+				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
+			</manifest>
+			<fileset dir="${pluginbase}/classes" includes="**/*.class" />
+		</loggingjartask>
+	</target>
+	<target name="clean">
+		<jpf-info manifest="${pluginbase}/plugin.xml"
+			propertyid="plugin.id"
+			propertyversion="plugin.version" />
+		<echo>Cleaning ${plugin.id} plug-in</echo>
+		<delete dir="${pluginbase}/classes" />
 	</target>
 </project>

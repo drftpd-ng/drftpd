@@ -48,7 +48,12 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 	private JTextField _installLocation;
 	private JButton _dirBrowse;
 	private JComboBox _logLevel;
-	private JCheckBox _consoleLog;
+	private JCheckBox _fileLog;
+	private JCheckBox _clean;
+	private JCheckBox _convertUsers;
+	private JCheckBox _suppressLog;
+	private JCheckBox _printTrace;
+	private JLabel _logNotice;
 	private InstallerConfig _config;
 
 	public ConfigPanel(InstallerConfig config) {
@@ -72,25 +77,43 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		JLabel logLevelLabel = new JLabel();
 		logLevelLabel.setText("Build log level: ");
 		_logLevel = new JComboBox();
-		_logLevel.addItem(new String("ALL"));
-		_logLevel.addItem(new String("TRACE"));
-		_logLevel.addItem(new String("DEBUG"));
-		_logLevel.addItem(new String("INFO"));
-		_logLevel.addItem(new String("WARN"));
 		_logLevel.addItem(new String("ERROR"));
-		_logLevel.addItem(new String("FATAL"));
-		_logLevel.addItem(new String("OFF"));
-		_logLevel.setMaximumRowCount(8);
+		_logLevel.addItem(new String("WARN"));
+		_logLevel.addItem(new String("INFO"));
+		_logLevel.addItem(new String("VERBOSE"));
+		_logLevel.addItem(new String("DEBUG"));
+		_logLevel.setMaximumRowCount(5);
 		_logLevel.addItemListener(this);
-		_logLevel.setSelectedItem(_config.getLogLevel());
+		_logLevel.setSelectedIndex(_config.getLogLevel());
 
-		JLabel consoleLogLabel = new JLabel();
-		consoleLogLabel.setText("Enable console logging: ");
-		_consoleLog = new JCheckBox();
-		_consoleLog.setSelected(_config.getConsoleLogging());
-
-		JLabel logNotice = new JLabel();
-		logNotice.setText("Build log will be saved to build.log in distribution directory");
+		JLabel fileLogLabel = new JLabel();
+		fileLogLabel.setText("Enable file logging: ");
+		_fileLog = new JCheckBox();
+		_fileLog.setSelected(_config.getFileLogging());
+		_fileLog.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				updateLogLabel();
+			}
+		});
+		JLabel cleanLabel = new JLabel();
+		cleanLabel.setText("Clean before build: ");
+		_clean = new JCheckBox();
+		_clean.setSelected(_config.getClean());
+		JLabel convertLabel = new JLabel();
+		convertLabel.setText("Convert 2.0 user files: ");
+		_convertUsers = new JCheckBox();
+		_convertUsers.setSelected(_config.getConvertUsers());
+		JLabel suppressLabel = new JLabel();
+		suppressLabel.setText("Suppress UI logging: ");
+		_suppressLog = new JCheckBox();
+		_suppressLog.setSelected(_config.getSuppressLog());
+		JLabel printTraceLabel = new JLabel();
+		printTraceLabel.setText("Print Stack Trace: ");
+		_printTrace = new JCheckBox();
+		_printTrace.setSelected(_config.getPrintTrace());
+		
+		_logNotice = new JLabel();
+		updateLogLabel();
 
 		centerPanel.add(installLabel, new GridBagConstraints(0,0,1,1,100.0,0.0
 				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
@@ -102,11 +125,27 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
 		centerPanel.add(_logLevel, new GridBagConstraints(1,1,1,1,0.0,0.0
 				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
-		centerPanel.add(consoleLogLabel, new GridBagConstraints(0,2,1,1,100.0,0.0
+		centerPanel.add(fileLogLabel, new GridBagConstraints(0,2,1,1,100.0,0.0
 				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
-		centerPanel.add(_consoleLog, new GridBagConstraints(1,2,1,1,0.0,0.0
+		centerPanel.add(_fileLog, new GridBagConstraints(1,2,1,1,0.0,0.0
 				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
-		southPanel.add(logNotice);
+		centerPanel.add(cleanLabel, new GridBagConstraints(0,3,1,1,100.0,0.0
+				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(_clean, new GridBagConstraints(1,3,1,1,0.0,0.0
+				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(convertLabel, new GridBagConstraints(0,4,1,1,100.0,0.0
+				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(_convertUsers, new GridBagConstraints(1,4,1,1,0.0,0.0
+				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(suppressLabel, new GridBagConstraints(0,5,1,1,100.0,0.0
+				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(_suppressLog, new GridBagConstraints(1,5,1,1,0.0,0.0
+				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(printTraceLabel, new GridBagConstraints(0,6,1,1,100.0,0.0
+				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		centerPanel.add(_printTrace, new GridBagConstraints(1,6,1,1,0.0,0.0
+				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(10, 0, 0, 0), 0, 0));
+		southPanel.add(_logNotice);
 
 		add(centerPanel, BorderLayout.NORTH);
 		add(southPanel, BorderLayout.SOUTH);
@@ -114,6 +153,14 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 
 	public void itemStateChanged(ItemEvent ie) {
 		repaint();
+	}
+
+	private void updateLogLabel() {
+		if (_fileLog.isSelected()) {
+			_logNotice.setText("Build log will be saved to build.log in distribution directory");
+		} else {
+			_logNotice.setText("");
+		}
 	}
 
 	public void actionPerformed(ActionEvent ie) {
@@ -135,7 +182,23 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		return _logLevel;
 	}
 
-	public JCheckBox getConsoleLog() {
-		return _consoleLog;
+	protected boolean getFileLog() {
+		return _fileLog.isSelected();
+	}
+
+	protected boolean getClean() {
+		return _clean.isSelected();
+	}
+
+	protected boolean getConvertUsers() {
+		return _convertUsers.isSelected();
+	}
+
+	protected boolean getSuppressLog() {
+		return _suppressLog.isSelected();
+	}
+
+	protected boolean getPrintTrace() {
+		return _printTrace.isSelected();
 	}
 }

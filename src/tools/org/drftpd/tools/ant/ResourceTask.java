@@ -26,10 +26,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.FileSet;
 
 /**
  * @author djb61
@@ -42,6 +44,8 @@ public class ResourceTask extends Task {
 	private File _baseDir;
 	private File _resourceDir;
 	private long _longDate = 0L;
+	private boolean _slavePlugin;
+	private ArrayList<String> _filePatterns;
 
 	/**
 	 * @param aBaseDir base directory for project
@@ -62,6 +66,10 @@ public class ResourceTask extends Task {
 	 */
 	@Override
 	public void execute() throws BuildException {
+		// See if this is a slave plugin
+		_slavePlugin = getProject().getProperty("slave.plugin").equalsIgnoreCase("true");
+		FileSet slaveFiles = (FileSet)getProject().getReference("slave.fileset");
+		_filePatterns = new ArrayList<String>();
 		// Get the build start time as long
 		SimpleDateFormat simpleBuildDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
 		Date buildDate = null;
@@ -72,6 +80,10 @@ public class ResourceTask extends Task {
 		}
 		_longDate = buildDate.getTime();
 		findResources(_resourceDir);
+		if (_slavePlugin) {
+			String[] patterns = (String[])_filePatterns.toArray(new String[_filePatterns.size()]);
+			slaveFiles.appendIncludes(patterns);
+		}
 	}
 
 	/**
@@ -132,12 +144,16 @@ public class ResourceTask extends Task {
 				output.append("\n");
 			}
 		} catch (FileNotFoundException e) {
-			log("File appears to have been deleted, skipping: " + file.getName());
+			log("Resource file appears to have been deleted, skipping: " + file.getName(),0);
 		} catch (IOException e) {
-			log("Failed to load resources from: " + file.getName());
+			log("Failed to load resources from: " + file.getName(),0);
 		} finally {
 			try {
 				input.close();
+			} catch (IOException e) {
+				// BufferedReader is already closed
+			}
+			try {
 				fis.close();
 			} catch (IOException e) {
 				// FileInputStream is already closed
@@ -149,17 +165,18 @@ public class ResourceTask extends Task {
 			outputWriter = new FileWriter(newFile,true);
 			outputWriter.write(output.toString()+"\n");
 			outputWriter.flush();
+			if (_slavePlugin) {
+				_filePatterns.add(relativePath);
+			}
 		} catch (FileNotFoundException e) {
-			log("Cannot write resource file to: " + newFile.getParent());
+			log("Cannot write resource file to: " + newFile.getParent(),0);
 		} catch (IOException e) {
-			log("Error writing resource file: " + newFile.getName());
+			log("Error writing resource file: " + newFile.getName(),0);
 		} finally {
-			if (outputWriter != null) {
-				try {
-					outputWriter.close();
-				} catch (IOException e) {
-					// Just means it doesn't need closing
-				}
+			try {
+				outputWriter.close();
+			} catch (IOException e) {
+				// FileWriter is already closed
 			}
 		}
 		// If non windows and a shell script then chmod
@@ -170,12 +187,12 @@ public class ResourceTask extends Task {
 					Process p = Runtime.getRuntime().exec(cmdArray);
 					p.waitFor();
 					if (p.exitValue() != 0) {
-						log("Error chmodding file: "+newFile.getAbsolutePath());
+						log("Error chmodding file: "+newFile.getAbsolutePath(),0);
 					}
 				} catch (IOException e) {
-					log("Error chmodding file: "+newFile.getAbsolutePath());
+					log("Error chmodding file: "+newFile.getAbsolutePath(),0);
 				} catch (InterruptedException e) {
-					log("Chmod process was interrupted on file: "+newFile.getAbsolutePath());
+					log("Chmod process was interrupted on file: "+newFile.getAbsolutePath(),0);
 				}
 			}
 		}

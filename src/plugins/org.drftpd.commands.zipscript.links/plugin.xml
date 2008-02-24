@@ -9,7 +9,7 @@
 		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.zipscript.links" path="classes/" type="code">
+		<library id="org.drftpd.commands.zipscript.links" path="org.drftpd.commands.zipscript.links.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

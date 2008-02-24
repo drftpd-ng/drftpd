@@ -10,7 +10,7 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.vfs.index.lucene" path="classes/" type="code">
+		<library id="org.drftpd.vfs.index.lucene" path="org.drftpd.vfs.index.lucene.jar" type="code">
 		</library>
 		<library id="lucene" path="../../../lib/lucene-core-2.2.0.jar" type="code">
 			<export prefix="*" />

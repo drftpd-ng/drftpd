@@ -98,7 +98,6 @@ public class ThemeTask extends Task {
 					ResourceBundle commentBundle = ResourceBundle.getBundle(this.getClass().getName());
 					try {
 						for (int i = 1;; i++) {
-							log(commentBundle.getString("comment."+i));
 							output.write(commentBundle.getString("comment."+i)+"\n");
 						}
 					} catch (MissingResourceException e) {
@@ -110,9 +109,9 @@ public class ThemeTask extends Task {
 				output.write(_themes.get(theme));
 				output.flush();
 			} catch (FileNotFoundException e) {
-				log("Cannot write theme file to: " + themeFile.getParent());
+				log("Cannot write theme file to: " + themeFile.getParent(),0);
 			} catch (IOException e) {
-				log("Error writing theme file: " + themeFile.getName());
+				log("Error writing theme file: " + themeFile.getName(),0);
 			} finally {
 				if (output != null) {
 					try {
@@ -159,7 +158,7 @@ public class ThemeTask extends Task {
 		dirPrefix = dirPrefix.replace(File.separatorChar,'.');
 		String[] parts = file.getName().split("\\.");
 		if (parts.length != 3) {
-			log("Skipping invalid filename: " + file.getName());
+			log("Skipping invalid filename: " + file.getName(),0);
 		} else {
 			String keyPrefix = dirPrefix + "." + parts[0] + ".";
 			FileInputStream fis = null;
@@ -197,9 +196,9 @@ public class ThemeTask extends Task {
 				// Put modified theme back in the map
 				_themes.put(parts[1], output.toString());
 			} catch (FileNotFoundException e) {
-				log("File appears to have been deleted, skipping: " + file.getName());
+				log("File appears to have been deleted, skipping: " + file.getName(),0);
 			} catch (IOException e) {
-				log("Failed to load properties from: " + file.getName());
+				log("Failed to load properties from: " + file.getName(),0);
 			} finally {
 				try {
 					input.close();

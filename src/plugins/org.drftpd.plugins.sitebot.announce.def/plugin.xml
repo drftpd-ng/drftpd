@@ -6,7 +6,7 @@
 		<import plugin-id="org.drftpd.plugins.sitebot" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot.announce.def" path="classes/" type="code">
+		<library id="org.drftpd.plugins.sitebot.announce.def" path="org.drftpd.plugins.sitebot.announce.def.jar" type="code">
 		</library>
 	</runtime>
 	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="BasicAnnounce">

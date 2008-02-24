@@ -12,7 +12,7 @@
 		<import plugin-id="master" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.config.hooks" path="classes/" type="code">
+		<library id="org.drftpd.commands.config.hooks" path="org.drftpd.commands.config.hooks.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

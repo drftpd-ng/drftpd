@@ -6,7 +6,7 @@
 		<import plugin-id="org.drftpd.plugins.sitebot" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot.plugins.dailystats" path="classes/" type="code">
+		<library id="org.drftpd.plugins.sitebot.plugins.dailystats" path="org.drftpd.plugins.sitebot.plugins.dailystats.jar" type="code">
 		</library>
 	</runtime>
 	<extension plugin-id="master" point-id="PreUserResetHook" id="StatsTimer">

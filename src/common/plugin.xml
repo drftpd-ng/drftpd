@@ -5,9 +5,32 @@
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />
+		<attribute id="Native">
+			<attribute id="Native1" value="lib/libopenSSL4Java.so">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native2" value="lib/openSSL4Java.dll">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native3" value="lib/libwrapper.so">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native4" value="lib/wrapper.dll">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native5" value="lib/wrapper.jar">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native6" value="bin/wrapper">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native7" value="bin/wrapper.exe">
+				<attribute id="Executable" value="false" />
+			</attribute>
+		</attribute>
 	</attributes>
 	<runtime>
-		<library id="common" path="classes/" type="code">
+		<library id="common" path="common.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="junit" path="../../lib/junit-4.3.1.jar" type="code">
@@ -17,6 +40,21 @@
 			<export prefix="*" />
 		</library>
 		<library id="oro" path="../../lib/oro.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="bcprov" path="../../lib/bcprov-jdk15-132.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="commons-logging" path="../../lib/commons-logging-1.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="jpf" path="../../lib/jpf-1.5.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="jpf-boot" path="../../lib/jpf-boot-1.5.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="juice" path="../../lib/juice-java5-0.9.0.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

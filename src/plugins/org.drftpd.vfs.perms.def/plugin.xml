@@ -10,7 +10,7 @@
 		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.vfs.perms.def" path="classes/" type="code">
+		<library id="org.drftpd.vfs.perms.def" path="org.drftpd.vfs.perms.def.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

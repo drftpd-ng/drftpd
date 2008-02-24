@@ -6,7 +6,7 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot" path="classes/" type="code">
+		<library id="org.drftpd.plugins.sitebot" path="org.drftpd.plugins.sitebot.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

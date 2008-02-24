@@ -11,7 +11,7 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.jobmanager" path="classes/" type="code">
+		<library id="org.drftpd.plugins.jobmanager" path="org.drftpd.plugins.jobmanager.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

@@ -25,6 +25,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.PipedInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -36,11 +37,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
+import org.drftpd.tools.installer.PluginBuilderThread;
 import org.drftpd.tools.installer.PluginData;
 import org.java.plugin.registry.PluginRegistry;
 
@@ -53,6 +54,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 	private static final Logger logger = Logger.getLogger(SwingInstaller.class);
 
 	private JButton _buildButton;
+	private JButton _exitButton;
 	private JButton _selectAllButton;
 	private ConfigPanel _configPanel;
 	private PluginPanel _pluginPanel;
@@ -88,10 +90,10 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		centerPanel.setLayout(centerLayout);
 		centerPanel.add(tabbedPane, BorderLayout.CENTER);
 
-		JButton cancelButton = new JButton();
-		cancelButton.setText("Cancel");
-		cancelButton.setPreferredSize(new Dimension(100,25));
-		cancelButton.addActionListener(new ActionListener() {
+		_exitButton = new JButton();
+		_exitButton.setText("Exit");
+		_exitButton.setPreferredSize(new Dimension(100,25));
+		_exitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				terminate();
 			}
@@ -118,7 +120,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		southEastLayout.setAlignment(FlowLayout.RIGHT);
 		southEastPanel.setLayout(southEastLayout);
 		southEastPanel.add(_buildButton);
-		southEastPanel.add(cancelButton);
+		southEastPanel.add(_exitButton);
 		southPanel.add(southWestPanel);
 		southPanel.add(southEastPanel);
 
@@ -137,8 +139,12 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		Object actionSource = ae.getSource();
 		if (actionSource.equals(_buildButton)) {
 			_config.setInstallDir(_configPanel.getInstallLocation().getText());
-			_config.setLogLevel(_configPanel.getLogLevel().getSelectedItem().toString());
-			_config.setConsoleLogging(_configPanel.getConsoleLog().isSelected());
+			_config.setLogLevel(_configPanel.getLogLevel().getSelectedIndex());
+			_config.setFileLogging(_configPanel.getFileLog());
+			_config.setClean(_configPanel.getClean());
+			_config.setConvertUsers(_configPanel.getConvertUsers());
+			_config.setSuppressLog(_configPanel.getSuppressLog());
+			_config.setPrintTrace(_configPanel.getPrintTrace());
 			HashMap<String,Boolean> selPlugins = new HashMap<String,Boolean>();
 			ArrayList<PluginData> toBuild = new ArrayList<PluginData>();
 			for (PluginData plugin : _pluginPanel.getPlugins()) {
@@ -149,17 +155,20 @@ public class SwingInstaller extends JFrame implements ActionListener {
 			}
 			_config.setPluginSelections(selPlugins);
 			Logger.getRootLogger().setLevel(Level.toLevel(_configPanel.getLogLevel().getSelectedItem().toString()));
-			if (_configPanel.getConsoleLog().isSelected()) {
-				Logger.getRootLogger().addAppender(new ConsoleAppender(Logger.getRootLogger().getAppender("root").getLayout()));
-			}
 			try {
 				_config.writeToDisk();
 			} catch (IOException e) {
 				logger.warn("Unable to write current config to build.conf",e);
 			}
-			PluginBuilder builder = new PluginBuilder(toBuild,_registry,_configPanel.getInstallLocation().getText());
-			this.dispose();
-			builder.buildPlugins();
+			PipedInputStream logInput = new PipedInputStream();
+			LogWindow logWindow = new LogWindow(logInput,_buildButton,_selectAllButton,_exitButton,_config);
+			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow);
+			try {
+				logWindow.init();
+				new Thread(new PluginBuilderThread(builder)).start();
+			} catch (IOException e) {
+				System.out.println(e);
+			}
 		}
 		if (actionSource.equals(_selectAllButton)) {
 			_pluginPanel.selectAllPlugins();

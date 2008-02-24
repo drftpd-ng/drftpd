@@ -57,6 +57,12 @@ public class PluginTools {
 		return pre1.contains(plugin2.getDescriptor()) && !pre2.contains(plugin1.getDescriptor());
 	}
 
+	public static boolean isSlaveDepends(PluginDescriptor plugin1, PluginDescriptor plugin2, PluginDescriptor master, PluginRegistry registry) {
+		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
+		collectPrerequisites(plugin1, pre1, registry);
+		return pre1.contains(plugin2) && ! pre1.contains(master);
+	}
+
 	public static boolean isDependsInclImpl(PluginData plugin1, PluginData plugin2, PluginRegistry registry) {
 		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
 		collectImplPrerequisites(plugin1.getDescriptor(), pre1, registry);

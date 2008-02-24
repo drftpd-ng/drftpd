@@ -14,7 +14,7 @@
 		<import plugin-id="slave"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.slave.def" path="classes/" type="code">
+		<library id="org.drftpd.protocol.slave.def" path="org.drftpd.protocol.slave.def.jar" type="code">
 		</library>
 	</runtime>
 

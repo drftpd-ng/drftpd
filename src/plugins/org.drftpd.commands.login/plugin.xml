@@ -9,7 +9,7 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.login" path="classes/" type="code">
+		<library id="org.drftpd.commands.login" path="org.drftpd.commands.login.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

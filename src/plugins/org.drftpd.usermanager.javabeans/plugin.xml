@@ -9,7 +9,7 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.usermanager.javabeans" path="classes/" type="code">
+		<library id="org.drftpd.usermanager.javabeans" path="org.drftpd.usermanager.javabeans.jar" type="code">
 		</library>
 	</runtime>
 	<extension plugin-id="master" point-id="UserManager" id="BeanUserManager">

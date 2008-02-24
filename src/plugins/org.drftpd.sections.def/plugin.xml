@@ -10,7 +10,7 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.sections.def" path="classes/" type="code">
+		<library id="org.drftpd.sections.def" path="org.drftpd.sections.def.jar" type="code">
 		</library>
 	</runtime>
 	<extension plugin-id="master" point-id="SectionManager" id="DefaultSectionManager">

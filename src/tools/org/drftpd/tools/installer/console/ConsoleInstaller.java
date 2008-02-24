@@ -34,11 +34,10 @@ import charvax.swing.JPanel;
 import charvax.swing.JTabbedPane;
 
 import java.io.IOException;
+import java.io.PipedInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
@@ -54,6 +53,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 	private static final Logger logger = Logger.getLogger(ConsoleInstaller.class);
 
 	private JButton _buildButton;
+	private JButton _exitButton;
 	private JButton _selectAllButton;
 	private JTabbedPane _tabbedPane;
 	private ConfigPanel _configPanel;
@@ -90,9 +90,9 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 		centerPanel.setLayout(centerLayout);
 		centerPanel.add(_tabbedPane, BorderLayout.CENTER);
 
-		JButton cancelButton = new JButton();
-		cancelButton.setText("Cancel");
-		cancelButton.addActionListener(new ActionListener() {
+		_exitButton = new JButton();
+		_exitButton.setText("Exit");
+		_exitButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				terminate();
 			}
@@ -112,7 +112,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 		southEastLayout.setAlignment(FlowLayout.RIGHT);
 		southEastPanel.setLayout(southEastLayout);
 		southEastPanel.add(_buildButton);
-		southEastPanel.add(cancelButton);
+		southEastPanel.add(_exitButton);
 		JPanel southWestPanel = new JPanel();
 		FlowLayout southWestLayout = new FlowLayout();
 		southWestLayout.setAlignment(FlowLayout.LEFT);
@@ -139,8 +139,12 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 		Object actionSource = ae.getSource();
 		if (actionSource.equals(_buildButton)) {
 			_config.setInstallDir(_configPanel.getInstallLocation().getText());
-			_config.setLogLevel(_configPanel.getLogLevel().getSelectedItem().toString());
-			_config.setConsoleLogging(_configPanel.getConsoleLog().isSelected());
+			_config.setLogLevel(_configPanel.getLogIndex());
+			_config.setFileLogging(_configPanel.getFileLog());
+			_config.setClean(_configPanel.getClean());
+			_config.setConvertUsers(_configPanel.getConvertUsers());
+			_config.setSuppressLog(_configPanel.getSuppressLog());
+			_config.setPrintTrace(_configPanel.getPrintTrace());
 			HashMap<String,Boolean> selPlugins = new HashMap<String,Boolean>();
 			ArrayList<PluginData> toBuild = new ArrayList<PluginData>();
 			for (PluginData plugin : _pluginPanel.getPlugins()) {
@@ -155,18 +159,20 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 					toBuild.add(plugin);
 				}
 			}
-			Logger.getRootLogger().setLevel(Level.toLevel(_configPanel.getLogLevel().getSelectedItem().toString()));
-			if (_configPanel.getConsoleLog().isSelected()) {
-				Logger.getRootLogger().addAppender(new ConsoleAppender(Logger.getRootLogger().getAppender("root").getLayout()));
-			}
 			try {
 				_config.writeToDisk();
 			} catch (IOException e) {
 				logger.warn("Unable to write current config to build.conf",e);
 			}
-			PluginBuilder builder = new PluginBuilder(toBuild,_registry,_configPanel.getInstallLocation().getText());
-			this.setVisible(false);
-			builder.buildPlugins();
+			PipedInputStream logInput = new PipedInputStream();
+			LogWindow logWindow = new LogWindow(logInput,_config);
+			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow);
+			logWindow.setBuilder(builder);
+			try {
+				logWindow.init();
+			} catch (IOException e) {
+				System.out.println(e);
+			}
 		}
 		if (actionSource.equals(_selectAllButton)) {
 			_pluginPanel.selectAllPlugins();

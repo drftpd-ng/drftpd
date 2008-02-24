@@ -17,26 +17,6 @@
 			<classpath refid="classpath" />
 	</typedef>
 
-	<target name="help">
-		<echo>
-			<![CDATA[
-${app.name} build file:
-clean - cleans up the project build folder
-build - builds entire project
-check - checks plug-ins integrity
-]]>
-		</echo>
-	</target>
-
-	<target name="clean" description="Cleans up the project build folder">
-		<tstamp>
-			<format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
-			<format property="d-stamp" pattern="yyyy-MM-dd" />
-		</tstamp>
-		<delete dir="${basedir}/core" quiet="true" />
-		<delete dir="${basedir}/plugins" quiet="true" />
-	</target>
-
 	<target name="build" description="Builds entire project">
 		<!-- beware of dragons -->
 		<echo>WARNING: The trunk branch of DrFTPD is bleeding edge code, which includes</echo>

@@ -5,7 +5,7 @@
 		<import plugin-id="common" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.mp3.common" path="classes/" type="code">
+		<library id="org.drftpd.protocol.zipscript.mp3.common" path="org.drftpd.protocol.zipscript.mp3.common.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

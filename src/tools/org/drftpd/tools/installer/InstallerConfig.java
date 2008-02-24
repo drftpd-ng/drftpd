@@ -30,8 +30,12 @@ import java.util.HashMap;
 public class InstallerConfig implements Serializable {
 
 	private String _installDir;
-	private String _logLevel;
-	private boolean _consoleLogging;
+	private int _logLevel;
+	private boolean _fileLogging;
+	private boolean _clean;
+	private boolean _convertUsers;
+	private boolean _suppressLog;
+	private boolean _printTrace;
 	private HashMap<String,Boolean> _pluginSelections;
 	
 	public InstallerConfig() {
@@ -42,12 +46,28 @@ public class InstallerConfig implements Serializable {
 		_installDir = installDir;
 	}
 
-	public void setLogLevel(String logLevel) {
+	public void setLogLevel(int logLevel) {
 		_logLevel = logLevel;
 	}
 
-	public void setConsoleLogging(boolean consoleLogging) {
-		_consoleLogging = consoleLogging;
+	public void setFileLogging(boolean fileLogging) {
+		_fileLogging = fileLogging;
+	}
+
+	public void setClean(boolean clean) {
+		_clean = clean;
+	}
+
+	public void setConvertUsers(boolean convertUsers) {
+		_convertUsers = convertUsers;
+	}
+
+	public void setSuppressLog(boolean suppressLog) {
+		_suppressLog = suppressLog;
+	}
+
+	public void setPrintTrace(boolean printTrace) {
+		_printTrace = printTrace;
 	}
 
 	public void setPluginSelections(HashMap<String,Boolean> pluginSelections) {
@@ -58,12 +78,28 @@ public class InstallerConfig implements Serializable {
 		return _installDir;
 	}
 
-	public String getLogLevel() {
+	public int getLogLevel() {
 		return _logLevel;
 	}
 
-	public boolean getConsoleLogging() {
-		return _consoleLogging;
+	public boolean getFileLogging() {
+		return _fileLogging;
+	}
+
+	public boolean getClean() {
+		return _clean;
+	}
+
+	public boolean getConvertUsers() {
+		return _convertUsers;
+	}
+
+	public boolean getSuppressLog() {
+		return _suppressLog;
+	}
+
+	public boolean getPrintTrace() {
+		return _printTrace;
 	}
 
 	public HashMap<String,Boolean> getPluginSelections() {

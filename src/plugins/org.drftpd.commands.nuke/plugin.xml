@@ -7,7 +7,7 @@
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.nuke" path="classes/" type="code">
+		<library id="org.drftpd.commands.nuke" path="org.drftpd.commands.nuke.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

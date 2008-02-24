@@ -13,13 +13,16 @@
 		<import plugin-id="slave" exported="true" />
 	</requires>
 	<runtime>
-		<library id="master" path="classes/" type="code">
+		<library id="master" path="master.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="replacer" path="../../lib/replacer.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="commons-net" path="../../lib/commons-net-1.4.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="eventbus" path="../../lib/EventBus-1.1.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

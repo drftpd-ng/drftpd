@@ -10,7 +10,7 @@
 		<import plugin-id="slave" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.slave.diskselection.filter" path="classes/" type="code">
+		<library id="org.drftpd.slave.diskselection.filter" path="org.drftpd.slave.diskselection.filter.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

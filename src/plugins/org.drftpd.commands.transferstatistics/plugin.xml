@@ -9,7 +9,7 @@
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.transferstatistics" path="classes/" type="code">
+		<library id="org.drftpd.commands.transferstatistics" path="org.drftpd.commands.transferstatistics.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

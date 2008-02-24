@@ -18,7 +18,7 @@
 		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.zipscript.mp3" path="classes/" type="code">
+		<library id="org.drftpd.commands.zipscript.mp3" path="org.drftpd.commands.zipscript.mp3.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

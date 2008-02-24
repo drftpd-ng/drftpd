@@ -11,7 +11,7 @@
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.slavemanagement" path="classes/" type="code">
+		<library id="org.drftpd.commands.slavemanagement" path="org.drftpd.commands.slavemanagement.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

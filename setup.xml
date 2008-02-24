@@ -15,8 +15,11 @@
 		<classpath refid="classpath" />
 	</typedef>
 	<!-- declare custom tasks -->
-	<taskdef name="resourcetask" classname="org.drftpd.tools.ant.ResourceTask" classpath="lib/drftpd-tools.jar"/>
-	<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/drftpd-tools.jar"/>
+	<taskdef name="libcopytask" classname="org.drftpd.tools.ant.LibCopyTask" classpath="lib/drftpd-tools.jar" />
+	<taskdef name="loggingcopytask" classname="org.drftpd.tools.ant.LoggingCopyTask" classpath="lib/drftpd-tools.jar" />
+	<taskdef name="loggingjartask" classname="org.drftpd.tools.ant.LoggingJarTask" classpath="lib/drftpd-tools.jar" />
+	<taskdef name="resourcetask" classname="org.drftpd.tools.ant.ResourceTask" classpath="lib/drftpd-tools.jar" />
+	<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/drftpd-tools.jar" />
 	<!-- set plugin build timestamp -->
 	<tstamp>
 		<format property="build.plugins.start" pattern="yyyy.MM.dd HH:mm:ss.SSS" />

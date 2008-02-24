@@ -18,14 +18,18 @@
 package org.drftpd.tools.installer;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.PipedInputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.BuildEvent;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
-import org.apache.tools.ant.listener.Log4jListener;
+import org.apache.tools.ant.taskdefs.Ant.TargetElement;
 import org.apache.tools.ant.taskdefs.SubAnt;
 import org.apache.tools.ant.types.FileList;
 import org.java.plugin.registry.PluginRegistry;
@@ -38,8 +42,10 @@ public class PluginBuilder {
 
 	private static final Logger logger = Logger.getLogger(PluginBuilder.class);
 	private SubAnt _antBuilder = new SubAnt();
+	private PluginBuildListener _pbListener;
+	private Project _builderProject;
 
-	public PluginBuilder(ArrayList<PluginData> toBuild, PluginRegistry registry, String installDir) {
+	public PluginBuilder(ArrayList<PluginData> toBuild, PluginRegistry registry, PipedInputStream logInput, InstallerConfig config, UserFileLocator locator) {
 		// Sort selected plugins into correct order for building
 		PluginTools.reorder(toBuild,registry);
 		// Create a list of build files for the selected plugins
@@ -64,31 +70,61 @@ public class PluginBuilder {
 		_antBuilder.addFilelist(fileList);
 
 		// Create an ant Project and initialize default tasks/types
-		Project builderProject = new Project();
-		builderProject.init();
+		_builderProject = new Project();
+		_builderProject.init();
 
 		// Read custom project wide config data and configure ant Project to use it
 		File setupFile = new File(System.getProperty("user.dir")+File.separator+"setup.xml");
-		ProjectHelper.configureProject(builderProject,setupFile);
+		ProjectHelper.configureProject(_builderProject,setupFile);
 
-		// Add a log4j listener to the builder to allow logging of output
-		Log4jListener buildListener = new Log4jListener();
-		builderProject.addBuildListener(buildListener);
+		// Add a custom build listener for logging and handling our additional needs
+		_pbListener = new PluginBuildListener(logInput,config,toBuild,registry,locator);
+		try {
+			_pbListener.init();
+		} catch (IOException e) {
+			System.out.println(e);
+		}
+		_builderProject.addBuildListener(_pbListener);
 
 		// Set installation dir if required
-		if (!installDir.equals("")) {
-			builderProject.setProperty("installdir", installDir);
+		if (!config.getInstallDir().equals("")) {
+			_builderProject.setProperty("installdir", config.getInstallDir());
 		} else {
-			builderProject.setProperty("installdir", System.getProperty("user.dir"));
+			_builderProject.setProperty("installdir", System.getProperty("user.dir"));
 		}
 
+		// Set target(s)
+		if (config.getClean()) {
+			TargetElement cleanTarget = new TargetElement();
+			cleanTarget.setName("clean");
+			_antBuilder.addConfiguredTarget(cleanTarget);
+		}
+		TargetElement buildTarget = new TargetElement();
+		buildTarget.setName("build");
+		_antBuilder.addConfiguredTarget(buildTarget);
+
 		// Final setup of ant builder
-		_antBuilder.setProject(builderProject);
+		_antBuilder.setProject(_builderProject);
 		_antBuilder.setInheritall(true);
 		_antBuilder.setFailonerror(true);
 	}
 
 	public void buildPlugins() {
-		_antBuilder.execute();
+		BuildException be = null;
+		try {
+			BuildEvent startEvent = new BuildEvent(_builderProject);
+			startEvent.setMessage("BUILD STARTED",0);
+			_pbListener.buildStarted(startEvent);
+			_antBuilder.execute();
+		} catch (BuildException e) {
+			be = e;
+		} finally {
+			BuildEvent endEvent = new BuildEvent(_builderProject);
+			if (be != null) {
+				endEvent.setException(be);
+			}
+			_pbListener.buildFinished(endEvent);
+			_pbListener.cleanup();
+		}
 	}
 }

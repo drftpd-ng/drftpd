@@ -10,7 +10,7 @@
 		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commandmanager" path="classes/" type="code">
+		<library id="org.drftpd.commandmanager" path="org.drftpd.commandmanager.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
