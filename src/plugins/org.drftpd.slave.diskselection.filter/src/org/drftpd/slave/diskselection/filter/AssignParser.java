@@ -37,7 +37,7 @@ public class AssignParser {
 		_root = Integer.parseInt(root);
 
 		if (assign.equals("remove")) {
-			_score = 0;
+			_score = Integer.MIN_VALUE;
 		} else {
 			_score = Long.parseLong(assign);
 

@@ -46,5 +46,4 @@ public class PriorityFilter extends DiskFilter {
 	public void process(ScoreChart sc, String path) {
 		AssignRoot.addScoresToChart(this, _assignList, sc);
 	}
-
 }

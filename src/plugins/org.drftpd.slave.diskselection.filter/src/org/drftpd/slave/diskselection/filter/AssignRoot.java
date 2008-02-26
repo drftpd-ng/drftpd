@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import org.drftpd.slave.Root;
 
 public class AssignRoot {
-
 	/**
 	 * Parser for lines like this:<br>
 	 * 
@@ -90,9 +89,15 @@ public class AssignRoot {
 			if (ap.allAssigned())
 				return;
 			
-			int i = (int) ap.getRoot();
-			Root o = filter.getRootList().get(i-1);
-			sc.addScore(o, ap.getScore());
+			int i = ap.getRoot();
+			
+			Root r = filter.getRootList().get(i-1);			
+
+			if (ap.getScore() == Integer.MIN_VALUE) {
+				sc.removeFromChart(r);
+			} else {
+				sc.addScore(r, ap.getScore());		
+			}
 		}
 	}
 }

@@ -100,4 +100,17 @@ public abstract class DiskFilter {
 
 		return multiplier;
 	}
+	
+	public String getAssignList() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < _assignList.size(); i++) {
+			AssignParser ap = _assignList.get(i);
+			sb.append(ap.getRoot());
+			
+			if (i+1 != _assignList.size()) {
+				sb.append(',');
+			}
+		}
+		return sb.toString();
+	}
 }

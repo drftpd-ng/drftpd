@@ -55,5 +55,4 @@ public class CycleFilter extends DiskFilter {
 			bestRoot.addScore(1);
 		}
 	}
-
 }

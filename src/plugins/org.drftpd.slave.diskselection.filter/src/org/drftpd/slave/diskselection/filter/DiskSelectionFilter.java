@@ -29,6 +29,7 @@ import org.drftpd.slave.Root;
 import org.drftpd.slave.RootCollection;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.diskselection.DiskSelectionInterface;
+import org.drftpd.slave.diskselection.filter.ScoreChart.RootScore;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
@@ -37,7 +38,7 @@ import org.java.plugin.registry.ExtensionPoint;
 /**
  * DiskSelection core.<br>
  * This class takes care of processing each ScoreChart,<br>
- * loading filters and also contains the getBestRoot() method.
+ * loading filters and also contains the {@link #getBestRoot(String)} method.
  * 
  * @author fr0w
  */
@@ -47,7 +48,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 
 	private ArrayList<DiskFilter> _filters;
 	private RootCollection _rootCollection;	
-	private CaseInsensitiveHashMap<String, Class> _filtersMap;
+	private CaseInsensitiveHashMap<String, Class<DiskFilter>> _filtersMap;
 
 	public DiskSelectionFilter(Slave slave) throws IOException {
 		super(slave);
@@ -61,7 +62,6 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 
 	/**
 	 * Load conf/diskselection.conf
-	 * 
 	 * @throws IOException
 	 */
 	private void readConf() throws IOException {
@@ -105,8 +105,8 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 			}
 			
 			try {
-				Class clazz = _filtersMap.get(filterName);
-				DiskFilter filter = (DiskFilter) clazz.getConstructor(SIG).newInstance(new Object[] { this, p, new Integer(i) });
+				Class<DiskFilter> clazz = _filtersMap.get(filterName);
+				DiskFilter filter = clazz.getConstructor(SIG).newInstance(new Object[] { this, p, new Integer(i) });
 				filters.add(filter);
 			} catch (Exception e) {
 				throw new RuntimeException(i + ".filter = " + filterName, e);
@@ -128,18 +128,18 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 		ScoreChart sc = new ScoreChart(getRootCollection());
 		process(sc, path);
 
-		long bestScore = 0L;
-		Root bestRoot = null;
-
-		for (Root root : getRootCollection().getRootList()) {
-			long score = sc.getRootScore(root);
-			if (score > bestScore) {
-				bestRoot = root;
-				bestScore = score;
+		RootScore bestRoot = null;
+		
+		for (RootScore rs : sc.getScoreList()) {
+			long score = rs.getScore();
+			if (bestRoot != null && score > bestRoot.getScore()) {
+				bestRoot = rs;
+			} else {
+				bestRoot = rs;
 			}
 		}
 
-		return bestRoot;
+		return bestRoot.getRoot();
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 	}
 	
 	private void initFilters() {
-		CaseInsensitiveHashMap<String, Class> filtersMap = new CaseInsensitiveHashMap<String, Class>();
+		CaseInsensitiveHashMap<String, Class<DiskFilter>> filtersMap = new CaseInsensitiveHashMap<String, Class<DiskFilter>>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("org.drftpd.slave.diskselection.filter", "DiskFilter");
@@ -172,12 +172,8 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 					manager.activatePlugin(pluginId);
 				}
 				
-				Class clazz = classLoader.loadClass(className);
-				if (clazz.getSuperclass() != DiskFilter.class) {
-					logger.error(className + " does not extend Filter.class");
-					continue;
-				}
-				
+				Class<DiskFilter> clazz = (Class<DiskFilter>) classLoader.loadClass(className);
+			
 				filtersMap.put(filterName, clazz);				
 			} catch (ClassNotFoundException e) {
 				logger.error(className + ": was not found", e);

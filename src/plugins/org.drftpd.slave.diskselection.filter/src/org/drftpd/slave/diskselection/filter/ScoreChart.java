@@ -77,7 +77,7 @@ public class ScoreChart {
 	 * 
 	 * @param root
 	 */
-	public void removeRootScore(Root root) {
+	public void removeFromChart(Root root) {
 		_scoreList.remove(getRootScoreObject(root));
 	}
 
@@ -99,8 +99,26 @@ public class ScoreChart {
 		// should never happen;
 		return null;
 	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getName()+'[');
+		
+		for (int i = 0; i < _scoreList.size(); i++) {
+			RootScore rs = _scoreList.get(i);
+			sb.append(rs.getRoot().toString()+'='+rs.getScore());
+			
+			if (i+1 != _scoreList.size()) {
+				sb.append(',');
+			}
+		}
+		
+		sb.append(']');
+		
+		return sb.toString();
+	}
 
-	public class RootScore {
+	public static class RootScore {
 
 		private Root _root;
 

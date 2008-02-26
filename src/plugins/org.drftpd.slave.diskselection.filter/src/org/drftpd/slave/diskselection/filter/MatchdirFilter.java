@@ -62,4 +62,8 @@ public class MatchdirFilter extends DiskFilter {
 			AssignRoot.addScoresToChart(this, _assignList, sc);
 		}
 	}
+	
+	public String toString() {
+		return getClass().getName()+"[pattern="+_p.getPattern()+",roots="+getAssignList()+"]";
+	}
 }

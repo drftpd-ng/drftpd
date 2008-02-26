@@ -35,8 +35,9 @@ import org.drftpd.slave.Root;
  *  X.assign=1, 2
  * </pre>
  * 
- * Works like this: if(diskfree < minfreespace) { addScore(-((minfreespace -
- * diskfree) * multiplier)) }
+ * Works like this: if(diskfree < minfreespace) { 
+ * addScore( -1 * ( (minfreespace - diskfree) * multiplier) )
+ * }
  * 
  * @author fr0w
  */
@@ -56,8 +57,8 @@ public class MinfreespaceFilter extends DiskFilter {
 	public void process(ScoreChart sc, String path) {
 		AssignRoot.addScoresToChart(this, _assignList, sc);
 
-		for (Iterator iter = getRootList().iterator(); iter.hasNext();) {
-			Root o = (Root) iter.next();
+		for (Iterator<Root> iter = getRootList().iterator(); iter.hasNext();) {
+			Root o = iter.next();
 
 			if (!AssignRoot.isAssignedRoot(this, o, _assignList))
 				continue;
@@ -65,11 +66,15 @@ public class MinfreespaceFilter extends DiskFilter {
 			long df = o.getDiskSpaceAvailable();
 			if (df < _minfreespace) {
 				if (_multiplier == 0) {
-					sc.removeRootScore(o);
+					sc.removeFromChart(o);
 				} else {
 					sc.addScore(o, -(long) ((_minfreespace - df) * _multiplier));
 				}
 			}
 		}
+	}
+	
+	public String toString() {
+		return getClass().getName()+"[minfreespace="+_minfreespace+",roots="+getAssignList()+"]";
 	}
 }
