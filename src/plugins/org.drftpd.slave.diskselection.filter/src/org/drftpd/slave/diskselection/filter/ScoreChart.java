@@ -27,6 +27,7 @@ import org.drftpd.slave.RootCollection;
  * Keep RootScore organized
  * 
  * @author fr0w
+ * @version $Id$
  */
 public class ScoreChart {
 

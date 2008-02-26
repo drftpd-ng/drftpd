@@ -34,6 +34,7 @@ import org.drftpd.PropertyHelper;
  * slave.root.2
  * 
  * @author fr0w
+ * @version $Id$
  */
 
 public class PriorityFilter extends DiskFilter {

@@ -40,6 +40,7 @@ import org.drftpd.slave.Root;
  * }
  * 
  * @author fr0w
+ * @version $Id$
  */
 public class MinfreespaceFilter extends DiskFilter {
 

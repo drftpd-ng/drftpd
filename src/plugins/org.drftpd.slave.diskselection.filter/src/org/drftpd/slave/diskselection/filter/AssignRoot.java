@@ -22,6 +22,10 @@ import java.util.ArrayList;
 
 import org.drftpd.slave.Root;
 
+/**
+ * @author fr0w
+ * @version $Id$
+ */
 public class AssignRoot {
 	/**
 	 * Parser for lines like this:<br>

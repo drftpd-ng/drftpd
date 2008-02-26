@@ -25,7 +25,7 @@ import org.drftpd.slave.Root;
 
 /**
  * Generic interface.
- * 
+ * @version $Id$
  * @author fr0w
  */
 public abstract class DiskFilter {

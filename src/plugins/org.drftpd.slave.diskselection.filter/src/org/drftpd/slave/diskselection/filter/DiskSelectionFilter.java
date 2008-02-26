@@ -41,6 +41,7 @@ import org.java.plugin.registry.ExtensionPoint;
  * loading filters and also contains the {@link #getBestRoot(String)} method.
  * 
  * @author fr0w
+ * @version $Id$
  */
 public class DiskSelectionFilter extends DiskSelectionInterface{
 	private static final Class[] SIG = new Class[] { DiskSelectionFilter.class, Properties.class, Integer.class };

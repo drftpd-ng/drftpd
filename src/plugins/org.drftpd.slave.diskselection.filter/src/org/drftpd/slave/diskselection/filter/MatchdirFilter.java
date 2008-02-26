@@ -35,6 +35,7 @@ import org.drftpd.PropertyHelper;
  * </pre>
  * 
  * @author fr0w
+ * @version $Id$
  */
 public class MatchdirFilter extends DiskFilter {
 

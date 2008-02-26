@@ -28,6 +28,7 @@ import org.drftpd.slave.Root;
  * ScoreChart making files spread throught all roots.
  * 
  * @author fr0w
+ * @version $Id$
  */
 public class RandomspreadFilter extends DiskFilter {
 

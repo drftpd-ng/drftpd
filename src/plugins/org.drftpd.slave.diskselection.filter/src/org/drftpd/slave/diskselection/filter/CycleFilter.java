@@ -23,7 +23,9 @@ import java.util.Properties;
 /**
  * If there's a tie in the ScoreChart, the CycleFilter removes it.
  * 
- * @author fr0w, zubov
+ * @author fr0w
+ * @author zubov
+ * @version $Id$
  */
 public class CycleFilter extends DiskFilter {
 
