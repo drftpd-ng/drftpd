@@ -20,6 +20,7 @@ package org.drftpd.tools.installer.console;
 import charva.awt.BorderLayout;
 import charva.awt.Container;
 import charva.awt.FlowLayout;
+import charva.awt.Toolkit;
 import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
 import charva.awt.event.KeyEvent;
@@ -51,6 +52,7 @@ import org.java.plugin.registry.PluginRegistry;
 public class ConsoleInstaller extends JFrame implements ActionListener, KeyListener {
 
 	private static final Logger logger = Logger.getLogger(ConsoleInstaller.class);
+	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 	private JButton _buildButton;
 	private JButton _exitButton;
@@ -127,7 +129,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 		addKeyListener(this);
 
 		setLocation(0, 0);
-		setSize(80, 24);
+		setSize(toolkit.getScreenColumns(),toolkit.getScreenRows());
 		validate();
 	}
 

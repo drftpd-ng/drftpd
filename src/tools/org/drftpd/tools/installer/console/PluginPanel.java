@@ -20,6 +20,7 @@ package org.drftpd.tools.installer.console;
 import charva.awt.BorderLayout;
 import charva.awt.Color;
 import charva.awt.Dimension;
+import charva.awt.Toolkit;
 import charva.awt.event.KeyEvent;
 
 import charvax.swing.JPanel;
@@ -45,6 +46,8 @@ import org.java.plugin.registry.PluginRegistry;
  */
 public class PluginPanel extends JPanel {
 
+	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
+
 	private ConsoleTable _table;
 	private ArrayList<PluginData> _plugins;
 
@@ -58,8 +61,14 @@ public class PluginPanel extends JPanel {
 		}
 		BorderLayout pluginLayout = new BorderLayout();
 		setLayout(pluginLayout);
+		int availHeight = toolkit.getScreenRows() - 11;
+		int descHeight = availHeight / 4;
+		if (descHeight < 3) {
+			descHeight = 3;
+		}
+		int tableHeight = availHeight - descHeight;
 
-		JTextArea desc = new JTextArea("No plugin selected",3,74);
+		JTextArea desc = new JTextArea("No plugin selected",descHeight,toolkit.getScreenColumns() - 6);
 		desc.setLineWrap(true);
 		desc.setEditable(false);
 		desc.setWrapStyleWord(true);
@@ -67,7 +76,7 @@ public class PluginPanel extends JPanel {
 		TitledBorder descBorder = new TitledBorder(new LineBorder(Color.white));
 		descBorder.setTitle("Plugin Description");
 		descPane.setViewportBorder(descBorder);
-		_table = createTable(registry,desc);
+		_table = createTable(registry,desc,tableHeight);
 		JScrollPane scrollPane = new JScrollPane(_table);
 		TitledBorder pluginBorder = new TitledBorder(new LineBorder(Color.white));
 		pluginBorder.setTitle("Select plugins");
@@ -76,7 +85,7 @@ public class PluginPanel extends JPanel {
 		add(descPane, BorderLayout.SOUTH);
 	}
 
-	private ConsoleTable createTable(PluginRegistry registry, JTextArea desc) {
+	private ConsoleTable createTable(PluginRegistry registry, JTextArea desc, int height) {
 		String columnNames[] = {"Build","Plugin Name","Version"};
 		String tableData[][] = new String[_plugins.size()][3];
 		int count = 0;
@@ -90,7 +99,7 @@ public class PluginPanel extends JPanel {
 		table.setColumnSelectionAllowed(false);
 		table.setRowSelectionAllowed(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		table.setPreferredScrollableViewportSize(new Dimension(74, 10));
+		table.setPreferredScrollableViewportSize(new Dimension(toolkit.getScreenColumns() - 6, height));
 		return table;
 	}
 

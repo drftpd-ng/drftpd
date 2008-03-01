@@ -25,6 +25,7 @@ import charva.awt.FlowLayout;
 import charva.awt.GridBagConstraints;
 import charva.awt.GridBagLayout;
 import charva.awt.Insets;
+import charva.awt.Toolkit;
 import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
 import charva.awt.event.ItemEvent;
@@ -45,6 +46,8 @@ import org.drftpd.tools.installer.InstallerConfig;
  * @version $Id$
  */
 public class ConfigPanel extends JPanel implements ActionListener, ItemListener {
+
+	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 	private ArrayList<String> _logList;
 	private JButton _dirBrowse;
@@ -70,7 +73,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		JLabel installLabel = new JLabel();
 		installLabel.setText("Install location: ");
 		_installLocation = new JTextField();
-		_installLocation.setColumns(46);
+		_installLocation.setColumns(toolkit.getScreenColumns() - 34);
 		_installLocation.setText(_config.getInstallDir());
 
 		_dirBrowse = new JButton();
@@ -163,6 +166,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 
 		add(centerPanel, BorderLayout.NORTH);
 		add(southPanel, BorderLayout.SOUTH);
+		setSize(toolkit.getScreenColumns() - 4,toolkit.getScreenRows() - 7);
 	}
 
 	public void itemStateChanged(ItemEvent ie) {

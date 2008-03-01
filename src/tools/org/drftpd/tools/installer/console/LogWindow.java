@@ -21,6 +21,7 @@ import charva.awt.BorderLayout;
 import charva.awt.Color;
 import charva.awt.Container;
 import charva.awt.FlowLayout;
+import charva.awt.Toolkit;
 import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
 
@@ -50,6 +51,8 @@ import org.drftpd.tools.installer.UserFileLocator;
  * @version $Id$
  */
 public class LogWindow extends JFrame implements UserFileLocator {
+
+	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 	private boolean _fileLogEnabled;
 	private boolean _suppressLog;
@@ -82,8 +85,8 @@ public class LogWindow extends JFrame implements UserFileLocator {
 		TitledBorder pluginBorder = new TitledBorder(new LineBorder(Color.white));
 		pluginBorder.setTitle("Plugin Build Log");
 		logPane.setViewportBorder(pluginBorder);
-		_logArea.setColumns(76);
-		_logArea.setRows(13);
+		_logArea.setColumns(toolkit.getScreenColumns() - 4);
+		_logArea.setRows(toolkit.getScreenRows() - 11);
 		centerPanel.add(logPane, BorderLayout.CENTER);
 		contentPane.add(centerPanel, BorderLayout.CENTER);
 		JPanel southPanel = new JPanel();
@@ -100,7 +103,7 @@ public class LogWindow extends JFrame implements UserFileLocator {
 		});
 		southPanel.add(_okButton);
 		contentPane.add(southPanel, BorderLayout.SOUTH);
-		setSize(80,18);
+		setSize(toolkit.getScreenColumns(),toolkit.getScreenRows() - 6);
 		setLocation(0,2);
 		validate();
 	}
