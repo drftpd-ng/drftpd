@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 
@@ -144,9 +145,9 @@ public class ResourceTask extends Task {
 				output.append("\n");
 			}
 		} catch (FileNotFoundException e) {
-			log("Resource file appears to have been deleted, skipping: " + file.getName(),0);
+			log("Resource file appears to have been deleted, skipping: " + file.getName(),Project.MSG_ERR);
 		} catch (IOException e) {
-			log("Failed to load resources from: " + file.getName(),0);
+			log("Failed to load resources from: " + file.getName(),Project.MSG_ERR);
 		} finally {
 			try {
 				input.close();
@@ -169,9 +170,9 @@ public class ResourceTask extends Task {
 				_filePatterns.add(relativePath);
 			}
 		} catch (FileNotFoundException e) {
-			log("Cannot write resource file to: " + newFile.getParent(),0);
+			log("Cannot write resource file to: " + newFile.getParent(),Project.MSG_ERR);
 		} catch (IOException e) {
-			log("Error writing resource file: " + newFile.getName(),0);
+			log("Error writing resource file: " + newFile.getName(),Project.MSG_ERR);
 		} finally {
 			try {
 				outputWriter.close();
@@ -187,12 +188,12 @@ public class ResourceTask extends Task {
 					Process p = Runtime.getRuntime().exec(cmdArray);
 					p.waitFor();
 					if (p.exitValue() != 0) {
-						log("Error chmodding file: "+newFile.getAbsolutePath(),0);
+						log("Error chmodding file: "+newFile.getAbsolutePath(),Project.MSG_ERR);
 					}
 				} catch (IOException e) {
-					log("Error chmodding file: "+newFile.getAbsolutePath(),0);
+					log("Error chmodding file: "+newFile.getAbsolutePath(),Project.MSG_ERR);
 				} catch (InterruptedException e) {
-					log("Chmod process was interrupted on file: "+newFile.getAbsolutePath(),0);
+					log("Chmod process was interrupted on file: "+newFile.getAbsolutePath(),Project.MSG_ERR);
 				}
 			}
 		}

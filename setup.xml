@@ -11,15 +11,11 @@
 		<fileset dir="lib" includes="*.jar" />
 	</path>
 
-	<typedef resource="org/java/plugin/tools/ant/jpf-tasks.properties">
-		<classpath refid="classpath" />
-	</typedef>
+	<!-- declare third party tasks -->
+	<taskdef resource="org/java/plugin/tools/ant/jpf-tasks.properties" />
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 	<!-- declare custom tasks -->
-	<taskdef name="libcopytask" classname="org.drftpd.tools.ant.LibCopyTask" classpath="lib/drftpd-tools.jar" />
-	<taskdef name="loggingcopytask" classname="org.drftpd.tools.ant.LoggingCopyTask" classpath="lib/drftpd-tools.jar" />
-	<taskdef name="loggingjartask" classname="org.drftpd.tools.ant.LoggingJarTask" classpath="lib/drftpd-tools.jar" />
-	<taskdef name="resourcetask" classname="org.drftpd.tools.ant.ResourceTask" classpath="lib/drftpd-tools.jar" />
-	<taskdef name="themetask" classname="org.drftpd.tools.ant.ThemeTask" classpath="lib/drftpd-tools.jar" />
+	<taskdef resource="org/drftpd/tools/ant/drftpdtasks.properties" />
 	<!-- set plugin build timestamp -->
 	<tstamp>
 		<format property="build.plugins.start" pattern="yyyy.MM.dd HH:mm:ss.SSS" />

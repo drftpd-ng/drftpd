@@ -126,7 +126,7 @@ public class PluginBuildListener implements SubBuildListener {
 	public void buildFinished(BuildEvent be) {
 		// Create slave.zip
 		Project pluginProject = be.getProject();
-		if (pluginProject != null && be.getException() == null) {
+		if (pluginProject != null && be.getException() == null && !_config.getDevMode()) {
 			Zip slaveZip = new Zip();
 			slaveZip.setProject(pluginProject);
 			File slaveFile = new File(pluginProject.getProperty("installdir")+File.separator+"slave.zip");
@@ -150,7 +150,7 @@ public class PluginBuildListener implements SubBuildListener {
 		// Check for missing libs
 		if (_missingLibs.size() > 0) {
 			writeLog("");
-			writeLog("The following libs/bins could not be found in dist dir:");
+			writeLog("The following files could not be found in the distribution directory:");
 			for (String missLib : _missingLibs) {
 				writeLog(missLib);
 			}

@@ -147,6 +147,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 			_config.setConvertUsers(_configPanel.getConvertUsers());
 			_config.setSuppressLog(_configPanel.getSuppressLog());
 			_config.setPrintTrace(_configPanel.getPrintTrace());
+			_config.setDevMode(_configPanel.getDevMode());
 			HashMap<String,Boolean> selPlugins = new HashMap<String,Boolean>();
 			ArrayList<PluginData> toBuild = new ArrayList<PluginData>();
 			for (PluginData plugin : _pluginPanel.getPlugins()) {

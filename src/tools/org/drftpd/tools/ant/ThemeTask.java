@@ -32,6 +32,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 /**
@@ -109,9 +110,9 @@ public class ThemeTask extends Task {
 				output.write(_themes.get(theme));
 				output.flush();
 			} catch (FileNotFoundException e) {
-				log("Cannot write theme file to: " + themeFile.getParent(),0);
+				log("Cannot write theme file to: " + themeFile.getParent(),Project.MSG_ERR);
 			} catch (IOException e) {
-				log("Error writing theme file: " + themeFile.getName(),0);
+				log("Error writing theme file: " + themeFile.getName(),Project.MSG_ERR);
 			} finally {
 				if (output != null) {
 					try {
@@ -158,7 +159,7 @@ public class ThemeTask extends Task {
 		dirPrefix = dirPrefix.replace(File.separatorChar,'.');
 		String[] parts = file.getName().split("\\.");
 		if (parts.length != 3) {
-			log("Skipping invalid filename: " + file.getName(),0);
+			log("Skipping invalid filename: " + file.getName(),Project.MSG_ERR);
 		} else {
 			String keyPrefix = dirPrefix + "." + parts[0] + ".";
 			FileInputStream fis = null;
@@ -196,9 +197,9 @@ public class ThemeTask extends Task {
 				// Put modified theme back in the map
 				_themes.put(parts[1], output.toString());
 			} catch (FileNotFoundException e) {
-				log("File appears to have been deleted, skipping: " + file.getName(),0);
+				log("File appears to have been deleted, skipping: " + file.getName(),Project.MSG_ERR);
 			} catch (IOException e) {
-				log("Failed to load properties from: " + file.getName(),0);
+				log("Failed to load properties from: " + file.getName(),Project.MSG_ERR);
 			} finally {
 				try {
 					input.close();

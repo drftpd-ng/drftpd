@@ -27,7 +27,7 @@
 		<echo>state, there are periods of time when the sources are not buildable. These</echo>
 		<echo>problems are resolved as expeditiously as possible, but whether or not trunk</echo>
 		<echo>brings disaster or greatly desired functionality can be a matter of which</echo>
-		<echo>revision you are using.  It is reccomended that you NOT use this branch unless</echo>
+		<echo>revision you are using.  It is recommended that you NOT use this branch unless</echo>
 		<echo>you follow development closely, and are prepared to fix any problems you might</echo>
 		<echo>encounter.</echo>
 		<echo />
@@ -54,7 +54,7 @@
 				<attribute name="Implementation-Version" value="${app.version}" />
 				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
 			</manifest>
-			<fileset dir="src/tools"/>
+			<fileset dir="src/tools" includes="**/*.class,**/*.properties"/>
 		</jar>
 		<delete>
 			<fileset dir="src/tools" includes="**/*.class" />

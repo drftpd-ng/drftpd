@@ -57,6 +57,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 	private JCheckBox _convertUsers;
 	private JCheckBox _suppressLog;
 	private JCheckBox _printTrace;
+	private JCheckBox _devMode;
 	private JLabel _logNotice;
 	private JTextField _installLocation;
 	private InstallerConfig _config;
@@ -128,6 +129,10 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		printTraceLabel.setText("Print Stack Trace: ");
 		_printTrace = new JCheckBox();
 		_printTrace.setSelected(_config.getPrintTrace());
+		JLabel devModeLabel = new JLabel();
+		devModeLabel.setText("Developer Mode: ");
+		_devMode = new JCheckBox();
+		_devMode.setSelected(_config.getDevMode());
 
 		_logNotice = new JLabel();
 		updateLogLabel();
@@ -161,6 +166,10 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		centerPanel.add(printTraceLabel, new GridBagConstraints(0,6,1,1,100.0,0.0
 				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(1, 0, 0, 0), 0, 0));
 		centerPanel.add(_printTrace, new GridBagConstraints(1,6,1,1,0.0,0.0
+				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(1, 0, 0, 0), 0, 0));
+		centerPanel.add(devModeLabel, new GridBagConstraints(0,7,1,1,100.0,0.0
+				,GridBagConstraints.NORTHEAST, GridBagConstraints.NONE, new Insets(1, 0, 0, 0), 0, 0));
+		centerPanel.add(_devMode, new GridBagConstraints(1,7,1,1,0.0,0.0
 				,GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(1, 0, 0, 0), 0, 0));
 		southPanel.add(_logNotice);
 
@@ -218,5 +227,9 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 
 	protected boolean getPrintTrace() {
 		return _printTrace.isSelected();
+	}
+
+	protected boolean getDevMode() {
+		return _devMode.isSelected();
 	}
 }

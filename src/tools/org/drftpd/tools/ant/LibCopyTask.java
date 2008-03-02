@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.TreeSet;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.java.plugin.registry.Library;
@@ -51,6 +52,7 @@ public class LibCopyTask extends Task {
 	 * @see org.apache.tools.ant.Task#execute()
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public void execute() throws BuildException {
 		_distDir = getProject().getProperty("basedir");
 		_installDir = getProject().getProperty("installdir");
@@ -81,7 +83,7 @@ public class LibCopyTask extends Task {
 					missingLibs.add(relativePath);
 				}
 			} catch (IOException e) {
-				log("Error resolving path for library from plugin manifest: "+lib.getPath(),0);
+				log("Error resolving path for library from plugin manifest: "+lib.getPath(),Project.MSG_ERR);
 			}
 		}
 		// Now handle any remaining libraries (eg native)
@@ -105,12 +107,12 @@ public class LibCopyTask extends Task {
 											Process p = Runtime.getRuntime().exec(cmdArray);
 											p.waitFor();
 											if (p.exitValue() != 0) {
-												log("Error chmodding file: "+dest.getAbsolutePath(),0);
+												log("Error chmodding file: "+dest.getAbsolutePath(),Project.MSG_ERR);
 											}
 										} catch (IOException e) {
-											log("Error chmodding file: "+dest.getAbsolutePath(),0);
+											log("Error chmodding file: "+dest.getAbsolutePath(),Project.MSG_ERR);
 										} catch (InterruptedException e) {
-											log("Chmod process was interrupted on file: "+dest.getAbsolutePath(),0);
+											log("Chmod process was interrupted on file: "+dest.getAbsolutePath(),Project.MSG_ERR);
 										}
 									}
 								}
@@ -131,13 +133,13 @@ public class LibCopyTask extends Task {
 		String relativePath = currFile.getPath().substring(_distDir.length()+1);
 		File targetFile = new File(_installDir,relativePath);
 		if (targetFile.exists()) {
-			log(targetFile.getPath()+" already exists, skipping libcopy",2);
+			log(targetFile.getPath()+" already exists, skipping libcopy",Project.MSG_INFO);
 			return targetFile;
 		} else {
 			// make sure target dir exists
 			if (!targetFile.getParentFile().exists()) {
 				if (!targetFile.getParentFile().mkdirs()) {
-					log("Unable to create target dir tree for "+targetFile.getPath(),0);
+					log("Unable to create target dir tree for "+targetFile.getPath(),Project.MSG_ERR);
 					throw new IOException();
 				}
 			}
@@ -147,13 +149,13 @@ public class LibCopyTask extends Task {
 		try {
 			fis = new FileInputStream(currFile);
 		} catch (FileNotFoundException e) {
-			log("Library from plugin manifest appears to have been deleted: "+currFile.getPath(),0);
+			log("Library from plugin manifest appears to have been deleted: "+currFile.getPath(),Project.MSG_ERR);
 			throw new IOException();
 		}
 		try {
 			fos = new FileOutputStream(targetFile);
 		} catch (FileNotFoundException e) {
-			log("Unable to create target file to write to: "+targetFile.getPath(),0);
+			log("Unable to create target file to write to: "+targetFile.getPath(),Project.MSG_ERR);
 			throw new IOException();
 		}
 		BufferedInputStream bis = new BufferedInputStream(fis);
@@ -165,14 +167,14 @@ public class LibCopyTask extends Task {
 			try {
 				read = bis.read(buff,0,65536);
 			} catch (IOException e) {
-				log("Read error whilst reading from: "+currFile.getPath(),0);
+				log("Read error whilst reading from: "+currFile.getPath(),Project.MSG_ERR);
 				success = false;
 			}
 			if (read != -1 && success) {
 				try {
 					bos.write(buff,0,read);
 				} catch (IOException e) {
-					log("Write error whilst writing to: "+targetFile.getPath(),0);
+					log("Write error whilst writing to: "+targetFile.getPath(),Project.MSG_ERR);
 					success = false;
 				}
 			}

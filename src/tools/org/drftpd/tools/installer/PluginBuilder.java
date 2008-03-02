@@ -93,6 +93,13 @@ public class PluginBuilder {
 			_builderProject.setProperty("installdir", System.getProperty("user.dir"));
 		}
 
+		// Set dev mode
+		if (config.getDevMode()) {
+			_builderProject.setProperty("devmode","true");
+		} else {
+			_builderProject.setProperty("devmode","false");
+		}
+
 		// Set target(s)
 		if (config.getClean()) {
 			TargetElement cleanTarget = new TargetElement();

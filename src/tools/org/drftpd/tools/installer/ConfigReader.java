@@ -48,6 +48,7 @@ public class ConfigReader {
 			config.setConvertUsers(false);
 			config.setPrintTrace(false);
 			config.setSuppressLog(false);
+			config.setDevMode(false);
 			config.setPluginSelections(new HashMap<String,Boolean>());
 			return config;
 		} finally {

@@ -36,6 +36,7 @@ public class InstallerConfig implements Serializable {
 	private boolean _convertUsers;
 	private boolean _suppressLog;
 	private boolean _printTrace;
+	private boolean _devMode;
 	private HashMap<String,Boolean> _pluginSelections;
 	
 	public InstallerConfig() {
@@ -70,6 +71,10 @@ public class InstallerConfig implements Serializable {
 		_printTrace = printTrace;
 	}
 
+	public void setDevMode(boolean devMode) {
+		_devMode = devMode;
+	}
+
 	public void setPluginSelections(HashMap<String,Boolean> pluginSelections) {
 		_pluginSelections = pluginSelections;
 	}
@@ -100,6 +105,10 @@ public class InstallerConfig implements Serializable {
 
 	public boolean getPrintTrace() {
 		return _printTrace;
+	}
+
+	public boolean getDevMode() {
+		return _devMode;
 	}
 
 	public HashMap<String,Boolean> getPluginSelections() {
