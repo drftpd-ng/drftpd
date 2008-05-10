@@ -21,9 +21,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -90,9 +91,11 @@ public class ThemeTask extends Task {
 				themeFile.delete();
 				newFile = true;
 			}
-			FileWriter output = null;
+			FileOutputStream fos = null;
+			OutputStreamWriter output = null;
 			try {
-				output = new FileWriter(themeFile,true);
+				fos = new FileOutputStream(themeFile,true);
+				output = new OutputStreamWriter(fos,"8859_1");
 				if (newFile) {
 					// Since this is the first entry in the file during this build
 					// session add the comment block at the top of the file
@@ -117,6 +120,13 @@ public class ThemeTask extends Task {
 				if (output != null) {
 					try {
 						output.close();
+					} catch (IOException e) {
+						// Just means it doesn't need closing
+					}
+				}
+				if (fos != null) {
+					try {
+						fos.close();
 					} catch (IOException e) {
 						// Just means it doesn't need closing
 					}
@@ -167,7 +177,7 @@ public class ThemeTask extends Task {
 			try {
 				// Create a BufferedReader to read the file
 				fis = new FileInputStream(file);
-				input = new BufferedReader(new InputStreamReader(fis));
+				input = new BufferedReader(new InputStreamReader(fis,"8859_1"));
 
 				// Retrieve string object for the theme this
 				// this file belongs to, if we don't have one
@@ -203,9 +213,13 @@ public class ThemeTask extends Task {
 			} finally {
 				try {
 					input.close();
+				} catch (IOException e) {
+					// already closed
+				}
+				try {
 					fis.close();
 				} catch (IOException e) {
-					// FileInputStream is already closed
+					// already closed
 				}
 			}
 		}
