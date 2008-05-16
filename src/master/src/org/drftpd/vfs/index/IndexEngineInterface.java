@@ -78,6 +78,14 @@ public interface IndexEngineInterface {
 	public void updateInode(InodeHandle inode) throws IndexException;
 	
 	/**
+	 * Renames the inode in the index
+	 * @param fromInode
+	 * @param toInode
+	 * @throws IndexException
+	 */
+	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException;
+	
+	/**
 	 * Force the engine to save its current data.<br>
 	 * Not all databases need this operation, if that's your case,
 	 * do not enter any code while implenting this method.

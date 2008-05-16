@@ -22,8 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,36 +77,26 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Logger logger = Logger.getLogger(LuceneEngine.class);
 
 	private static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
-	private static final String INDEX_DIR = "index";
-	private static final String BACKUP_DIR = "index.bkp";
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
+	protected static final String INDEX_DIR = "index";
 
 	private Directory _storage;
 	private IndexWriter _iWriter;
 	private IndexReader _iReader;
 	private IndexSearcher _iSeacher;
 
-	private TermQuery _dirQuery;
-	private TermQuery _fileQuery;
+	private final TermQuery _dirQuery = new TermQuery(new Term("type", "d"));
+	private final TermQuery _fileQuery = new TermQuery(new Term("type", "f"));;
+	
+	private final Term _pathTerm = new Term("path", "/");
 
 	private int _maxHitsNumber;
 	private int _maxDocsBuffer;
+	private int _maxRAMBufferSize;
 
 	private boolean _nativeLocking;
 
-	private int _optimizeInterval;
-	private int _updateSearcherInterval;
-	private long _lastOptimization;
-	private long _lastSearcherCreation;
-
-	private boolean _stopFlag = false;
-	private IndexMaintenanceThread _maintenanceThread;
-
-	private boolean _backupRunning = false;
-	private int _backupInterval;
-	private int _maxNumberBackup;
-	private long _lastBackup;
-	private IndexBackupThread _backupThread;
+	private LuceneMaintenanceThread _maintenanceThread;
+	private LuceneBackupThread _backupThread;
 
 	/**
 	 * Creates all the needed resources for the Index to work.
@@ -124,20 +112,21 @@ public class LuceneEngine implements IndexEngineInterface {
 	public void init() throws IndexException {
 		logger.debug("Initializing Index");
 
+		createThreads();
 		reload();
-
+		
 		openStreams();
-		initializeQueries();
 
 		Runtime.getRuntime().addShutdownHook(new Thread(new IndexShutdownHookRunnable(), "IndexSaverThread"));
-
-		_maintenanceThread = new IndexMaintenanceThread();
 		_maintenanceThread.start();
-
-		_backupThread = new IndexBackupThread();
 		_backupThread.start();
 	}
 
+	private void createThreads() {
+		_maintenanceThread = new LuceneMaintenanceThread();
+		_backupThread = new LuceneBackupThread();
+	}
+	
 	/**
 	 * Opens all the needed streams that the engine needs to work properly.
 	 * 
@@ -156,6 +145,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			_iReader = IndexReader.open(_storage);
 
 			_iWriter.setMaxBufferedDocs(_maxDocsBuffer);
+			_iWriter.setRAMBufferSizeMB(_maxRAMBufferSize);
 		} catch (IOException e) {
 			closeAll();
 
@@ -170,27 +160,21 @@ public class LuceneEngine implements IndexEngineInterface {
 	private void reload() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("lucene");
 		_maxHitsNumber = Integer.parseInt(cfg.getProperty("max_hits", "50"));
-		_maxDocsBuffer = Integer.parseInt(cfg.getProperty("maxdocs_buffer", "60"));
-
-		// in minutes, convert'em!
-		_optimizeInterval = Integer.parseInt(cfg.getProperty("optimize_interval", "15")) * 60 * 1000;
-		_updateSearcherInterval = Integer.parseInt(cfg.getProperty("searchupdate_interval", "15")) * 60 * 1000;
-
+		_maxDocsBuffer = Integer.parseInt(cfg.getProperty("maxdocs_buffer", "-1"));
+		_maxRAMBufferSize = Integer.parseInt(cfg.getProperty("max_rambuffer", "16"));
 		_nativeLocking = cfg.getProperty("native_locking", "true").equals("true");
 
+		// in minutes, convert'em!
+		int optimizeInterval = Integer.parseInt(cfg.getProperty("optimize_interval", "15")) * 60 * 1000;
+		int updateSearcherInterval = Integer.parseInt(cfg.getProperty("searchupdate_interval", "15")) * 60 * 1000;
+		_maintenanceThread.setOptimizationInterval(optimizeInterval);
+		_maintenanceThread.setSearcherCreationInterval(updateSearcherInterval);
+		
 		// in minutes, convert it!
-		_backupInterval = Integer.parseInt(cfg.getProperty("backup_interval", "120")) * 60 * 1000;
-		_maxNumberBackup = Integer.parseInt(cfg.getProperty("max_backups", "2"));
-	}
-
-	/**
-	 * Saves some resources.<br>
-	 * Since this queries are used all the time creating them only once is a
-	 * good practice.
-	 */
-	private void initializeQueries() {
-		_dirQuery = new TermQuery(new Term("type", "d"));
-		_fileQuery = new TermQuery(new Term("type", "f"));
+		int interval = Integer.parseInt(cfg.getProperty("backup_interval", "120")) * 60 * 1000;
+		int maxNumber = Integer.parseInt(cfg.getProperty("max_backups", "2"));
+		_backupThread.setBackupInterval(interval);
+		_backupThread.setMaximumNumberBackup(maxNumber);
 	}
 
 	/**
@@ -242,7 +226,11 @@ public class LuceneEngine implements IndexEngineInterface {
 		doc.add(new Field("size", String.valueOf(inode.getSize()), Field.Store.YES, Field.Index.UN_TOKENIZED));
 
 		if (inodeType == InodeType.FILE) {
-			doc.add(new Field("slaves", ((FileHandle) inode).getSlaveNames().toString(), Field.Store.YES, Field.Index.TOKENIZED));
+			StringBuffer sb = new StringBuffer();
+			for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
+				sb.append(slaveName+",");				
+			}
+			doc.add(new Field("slaves", sb.toString(), Field.Store.YES, Field.Index.TOKENIZED));
 		}
 
 		return doc;
@@ -254,11 +242,11 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @param inode
 	 */
 	private Term makeTermFromInode(InodeHandle inode) {
-		return new Term("path", inode.getPath());
+		return _pathTerm.createTerm(inode.getPath());
 	}
 
 	/**
-	 * Adds an inode to the Index.
+	 * Queues an inode for addition in the Index.
 	 */
 	public void addInode(InodeHandle inode) throws IndexException {
 		try {
@@ -274,7 +262,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/**
-	 * Deletes an Inode from the Index.
+	 * Queues an inode for deletion from Index.
 	 */
 	public void deleteInode(InodeHandle inode) throws IndexException {
 		Term term = makeTermFromInode(inode);
@@ -288,7 +276,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/**
-	 * Updates an Inode information. (Renaming, etc...)
+	 * Queues an update for Inode.
 	 */
 	public void updateInode(InodeHandle inode) throws IndexException {
 		try {
@@ -300,6 +288,10 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (IOException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " to the index", e);
 		}
+	}
+	
+	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException {
+		//TODO
 	}
 
 	/**
@@ -415,7 +407,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/**
-	 * Parses the path removing unwanted stuff from it.
+	 * Parses the path removing unwanted chars from it.
 	 * 
 	 * @param path
 	 */
@@ -439,34 +431,49 @@ public class LuceneEngine implements IndexEngineInterface {
 				break; // EOS
 			}
 
-			set.add(t.termText());
+			set.add(new String(t.termBuffer(), 0, t.termLength()));
 		}
 
 		Iterator<String> iter = set.iterator();
 		while (iter.hasNext()) {
-			wQuery = new WildcardQuery(new Term("path", iter.next()));
+			wQuery = new WildcardQuery(_pathTerm.createTerm(iter.next()));
 			bQuery.add(wQuery, Occur.MUST);
 		}
 
 		return bQuery;
 	}
 
+	/**
+	 * This method returns a Map containing information about the index engine.<br>
+	 * Right now this Map contains the info bellow:
+	 * <ul>
+	 * <li>Number of inodes (ley => "inodes")</li>
+	 * <li>Storage backend (key => "backend")</li>
+	 * <li>Maximum search hits (key => "max hits")</li>
+	 * <li>The date of the last optimization (key => "last optimization")</li>
+	 * <li>The date of the last backup (key => "last backup")</li>
+	 * <li>The date of the last uptade of the search engine (key => "last search engine update")</li>
+	 * <li>Amount of cached documents (key => "cached inodes")</li>
+	 * <li>Amount of used memory (key => "ram usage")</li>
+	 * <li>The size in disk of the index (key => "disk usage")</li>
+	 * </ul>
+	 */
 	public Map<String, String> getStatus() {
 		Map<String, String> status = new HashMap<String, String>();
 
 		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
-		String lastOp = df.format(new Date(_lastOptimization));
-		String lastSearch = df.format(new Date(_lastSearcherCreation));
-		String lastBackup = df.format(new Date(_lastBackup));
+		String lastOp = df.format(new Date(_maintenanceThread.getLastOptimizationTime()));
+		String lastSearch = df.format(new Date(_maintenanceThread.getSearcherCreationTime()));
+		String lastBackup = df.format(new Date(_backupThread.getLastBackup()));
 
-		status.put("backend", "Apache Lucene (http://lucene.apache.org)");
 		status.put("inodes", String.valueOf(_iWriter.docCount()));
+		status.put("backend", "Apache Lucene (http://lucene.apache.org)");
+		status.put("max hits", String.valueOf(_maxHitsNumber));
 		status.put("last optimization", lastOp);
 		status.put("last backup", lastBackup);
-		status.put("search engine last update", lastSearch);
-		status.put("max hits", String.valueOf(_maxHitsNumber));
+		status.put("last search engine update", lastSearch);
 		status.put("cached inodes", String.valueOf(_iWriter.numRamDocs()));
-		status.put("cached memory", Bytes.formatBytes(_iWriter.ramSizeInBytes()));
+		status.put("ram usage", Bytes.formatBytes(_iWriter.ramSizeInBytes()));
 
 		long size = 0L;
 		String[] paths = null;
@@ -483,17 +490,33 @@ public class LuceneEngine implements IndexEngineInterface {
 		return status;
 	}
 
+	protected Directory getStorage() {
+		return _storage;
+	}
+	
+	protected IndexWriter getWriter() {
+		return _iWriter;
+	}
+	
+	protected IndexSearcher getSearcher() {
+		return _iSeacher;
+	}
+	
+	protected void setSearcher(IndexSearcher searcher) {
+		_iSeacher = searcher;
+	}
+	
 	/**
 	 * Hook ran by the JVM before shutting down itself completely. This hook
 	 * saves the index state to keep it usable the next time you start DrFTPd.
 	 */
 	private final class IndexShutdownHookRunnable implements Runnable {
 		public void run() {
-			_stopFlag = true; // make maintenance thread stop.
+			_backupThread.stopBackup();
+			_maintenanceThread.stopMaintenance();
 
 			// obtaining the objects' lock.
-			// doing that we ensure that no operations are running while closing
-			// the streams.
+			// doing that we ensure that nothing operations is running while closing the streams.
 			synchronized (_maintenanceThread) {
 				_maintenanceThread.notify();
 			}
@@ -503,6 +526,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			while (_maintenanceThread.isAlive() || _backupThread.isAlive()) {
 				try {
+					logger.debug("Waiting for the index maintenance threads to die...");
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
 				}
@@ -510,143 +534,6 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			logger.debug("Saving index...");
 			closeAll();
-		}
-	}
-
-	/**
-	 * Optimizes and update the search engine.
-	 * 
-	 * @throws RuntimeException
-	 *             If a problem occurs while executing the maintenance.
-	 */
-	private final class IndexMaintenanceThread extends Thread {
-		private long _currentTime;
-		private int _minDelay;
-
-		public IndexMaintenanceThread() {
-			setName("IndexMaintenanceThread");
-
-			_lastOptimization = System.currentTimeMillis();
-			_lastSearcherCreation = System.currentTimeMillis();
-		}
-
-		public void run() {
-			while (true) {
-				_currentTime = System.currentTimeMillis();
-
-				try {
-					if (_stopFlag) {
-						break;
-					}
-
-					_minDelay = Math.min(_optimizeInterval, _updateSearcherInterval);
-
-					if (_currentTime >= _lastOptimization + _optimizeInterval) {
-						_iWriter.optimize();
-						_iWriter.flush();
-						_lastOptimization = _currentTime;
-
-						logger.debug("Index was optimized successfully.");
-					}
-
-					if (_currentTime >= _lastSearcherCreation + _updateSearcherInterval) {
-						logger.debug("Creating a new IndexSearcher.");
-
-						IndexSearcher oldSearcher = _iSeacher;
-						IndexSearcher newSeacher = new IndexSearcher(_storage);
-
-						// locking here so nobody can touch it for now.
-						synchronized (oldSearcher) {
-							// replacing old instance
-							_iSeacher = newSeacher;
-
-							// closing old instance.
-							oldSearcher.close();
-						}
-
-						_lastSearcherCreation = _currentTime;
-
-						logger.debug("Search engine updated successfully.");
-					}
-
-					// obtaining the object monitor's.
-					synchronized (this) {
-						wait(_minDelay);
-					}
-				} catch (InterruptedException e) {
-					continue;
-				} catch (CorruptIndexException e) {
-					throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
-				} catch (IOException e) {
-					throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Executes backup operations on the index.
-	 */
-	private final class IndexBackupThread extends Thread {
-		private final File _bkpHome;
-
-		public IndexBackupThread() {
-			setName("IndexBackupThread");
-			_bkpHome = new File(BACKUP_DIR);
-		}
-
-		public void run() {
-			String[] backups;
-			int x = 0;
-
-			while (true) {
-				if (_stopFlag) {
-					break;
-				}
-
-				// store a limited amount of backups.
-				// the code bellow remove older backups.
-				backups = _bkpHome.list();
-				Arrays.sort(backups, String.CASE_INSENSITIVE_ORDER);
-				for (x = 0; x < backups.length; x++) {
-					if (_bkpHome.list().length < _maxNumberBackup) {
-						break;
-					}
-					new File(BACKUP_DIR + "/" + backups[x]).deleteRecursive();
-				}
-
-				// locking the writer object so that noone can use it.
-				// this might be useful.
-				synchronized (_iWriter) {
-					_backupRunning = true;
-
-					String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
-					File f = new File(BACKUP_DIR + "/" + dateTxt);
-
-					try {
-						if (!f.mkdirs()) {
-							throw new IOException("Impossible to create backup directory, not enough permissions.");
-						}
-
-						// creating the destination directory.
-						FSDirectory bkpDirectory = FSDirectory.getDirectory(f);
-						
-						Directory.copy(_storage, bkpDirectory, false);
-						logger.debug("A backup of the index was created successfully.");
-						_lastBackup = System.currentTimeMillis();
-					} catch (IOException e) {
-						logger.error(e, e);
-					}
-				}
-
-				try {
-					synchronized (this) {
-						_backupRunning = false;
-						wait(_backupInterval);
-					}
-				} catch (InterruptedException e) {
-				}
-			}
 		}
 	}
 }
