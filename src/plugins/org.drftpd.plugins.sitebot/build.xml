@@ -14,6 +14,9 @@
 		<resourcetask
 			basedir="${installdir}"
 			resourcedir="${pluginbase}/resources" />
+		<themetask
+			basedir="${installdir}"
+			plugindir="${pluginbase}/src" />
 		<jpf-path
 			basedir="${installdir}"
 			pathid="plugin.classpath"

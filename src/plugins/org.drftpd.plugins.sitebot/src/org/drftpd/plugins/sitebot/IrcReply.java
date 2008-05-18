@@ -92,7 +92,7 @@ public class IrcReply {
 			sb.append(line + "\n");
 		}
 
-		if (_message != null && _code != 200) {
+		if (_lines.size() == 0) {
 			sb.append(_message + "\n");
 		}
 

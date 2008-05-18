@@ -5,5 +5,69 @@ method doSITE_INVITE
 perms *
 help Invite yourself to irc channels using the sitebot
 help.specific ${command} <ircnick>
-help.specific ${command} <ircnick> <botname>
+help.specific ${command} <botname> <ircnick>
+help.specific <botname> is required to use a secondary sitebot
+}
+
+SITE BLOWFISH {
+plugin org.drftpd.plugins.sitebot
+class commands.SiteBotManagement
+method doSITE_BLOWFISH
+perms *
+help List blowfish keys for irc channels
+help.specific ${command}
+help.specific ${command} <botname>
+help.specific <botname> is required to use a secondary sitebot
+}
+
+SITE GETKEY {
+plugin org.drftpd.plugins.sitebot
+class commands.SiteBotManagement
+method doSITE_BLOWFISH
+perms *
+help List blowfish keys for irc channels
+help.specific ${command}
+help.specific ${command} <botname>
+help.specific <botname> is required to use a secondary sitebot
+}
+
+SITE SETBLOWFISH {
+plugin org.drftpd.plugins.sitebot
+class commands.SiteBotManagement
+method doSITE_SETBLOWFISH
+perms *
+help Set your personal blowfish key on the sitebot
+help.specific ${command} <blowkey>
+help.specific ${command} <botname> <blowkey>
+help.specific <botname> is required to use a secondary sitebot
+}
+
+SITE SETKEY {
+plugin org.drftpd.plugins.sitebot
+class commands.SiteBotManagement
+method doSITE_SETBLOWFISH
+perms *
+help Set your personal blowfish key on the sitebot
+help.specific ${command} <blowkey>
+help.specific ${command} <botname> <blowkey>
+help.specific <botname> is required to use a secondary sitebot
+}
+
+SITE IRC {
+plugin org.drftpd.plugins.sitebot
+class commands.SiteBotManagement
+method doSITE_IRC
+perms *
+help Control the IRC sitebot
+help.specific ${command} connect
+help.specific ${command} <botname> connect
+help.specific ${command} disconnect
+help.specific ${command} <botname> disconnect
+help.specific ${command} reconnect
+help.specific ${command} <botname> reconnect
+help.specific ${command} raw <commmand>
+help.specific ${command} <botname> raw <command>
+help.specific ${command} say <message>
+help.specific ${command} <botname> say <message>
+help.specific <botname> is manadatory if more than one sitebot running
 }

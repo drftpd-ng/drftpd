@@ -21,12 +21,10 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Properties;
 
-import javax.net.SocketFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.drftpd.BlindTrustManager;
 import org.drftpd.plugins.sitebot.PartialTrustManager;
-import org.drftpd.plugins.sitebot.SiteBotSSLSocketFactory;
 
 /**
  * @author djb61
@@ -74,8 +72,6 @@ public class SiteBotConfig {
 
 	private boolean _dh1080Enabled;
 
-	private SocketFactory _factory;
-
 	private String _localBindHost;
 
 	private long _messageDelay;
@@ -116,7 +112,6 @@ public class SiteBotConfig {
 		else {
 			_trustManager = new BlindTrustManager();
 		}
-		_factory = new SiteBotSSLSocketFactory(_trustManager);
 		for (int i = 1;; i++) {
 			String hostName = cfg.getProperty("server."+i+".host");
 			if (hostName == null) {
@@ -124,11 +119,8 @@ public class SiteBotConfig {
 			}
 			int port = new Integer(cfg.getProperty("server."+i+".port"));
 			String password = cfg.getProperty("server."+i+".password");
-			SocketFactory factory = null;
-			if (cfg.getProperty("server."+i+".use_ssl").equalsIgnoreCase("true")) {
-				factory = _factory;
-			}
-			_servers.add(new ServerConfig(hostName,port,password,factory));
+			boolean ssl = cfg.getProperty("server."+i+".use_ssl").equalsIgnoreCase("true");
+			_servers.add(new ServerConfig(hostName,port,password,ssl,_trustManager));
 		}
 		_connectDelay = new Long(cfg.getProperty("connect.delay")) * 1000;
 		_messageDelay = new Long(cfg.getProperty("message.sendDelay"));

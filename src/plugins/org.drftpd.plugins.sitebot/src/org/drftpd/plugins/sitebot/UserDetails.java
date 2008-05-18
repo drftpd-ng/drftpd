@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -71,6 +72,10 @@ public class UserDetails {
 		return _ftpUser;
 	}
 
+	protected void setFtpUser(String ftpUser) {
+		_ftpUser = ftpUser;
+	}
+
 	protected Blowfish getBlowCipher() {
 		// If we don't have a cipher for this user then check again as they may have set
 		// one on site since we last checked.
@@ -83,6 +88,10 @@ public class UserDetails {
 	protected void setBlowCipher(String blowKey) {
 		_cipher = new Blowfish(blowKey);
 		_blowKey = blowKey;
+		// If we don't know who the user is then try to find them first
+		if (_ftpUser == null) {
+			getDetailsFromDB();
+		}
 		// If we know who the user is then update their userfile with the new key
 		if (_ftpUser != null) {
 			try {
@@ -103,8 +112,12 @@ public class UserDetails {
 			User user;
 			// Check if we need to identify the user by ident or if we know their username
 			if (_ftpUser == null) {
-				user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(_ident);
+				user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(_ident,_bot.getBotName());
 				_ftpUser = user.getName();
+				// Force any known blowkey to be flushed into user database
+				if (_blowKey != null) {
+					setUserBlowKey(user);
+				}
 			} else {
 				user = GlobalContext.getGlobalContext().getUserManager().getUserByName(_ftpUser);
 			}
@@ -116,7 +129,18 @@ public class UserDetails {
 				setUserBlowKey(user);
 			} else {
 				try {
-					String userKey = (String)user.getKeyedMap().getObject(BLOWKEY);
+					String userKeysString = (String)user.getKeyedMap().getObject(BLOWKEY);
+					String[] userKeys = userKeysString.split(",");
+					String userKey = "";
+					for (int i = 0; i < userKeys.length;i++) {
+						if (userKeys[i].startsWith(_bot.getBotName())) {
+							String[] botKey = userKeys[i].split("\\|");
+							if (botKey.length > 1) {
+								userKey = botKey[1];
+								break;
+							}
+						}
+					}
 					if (!userKey.equals("")) {
 						setBlowCipher(userKey);
 					} else {
@@ -134,12 +158,96 @@ public class UserDetails {
 	}
 
 	private void setUserBlowKey(User user) {
-		user.getKeyedMap().setObject(BLOWKEY, _blowKey);
+		String userKeysString = "";
+		try {
+			userKeysString = (String)user.getKeyedMap().getObject(BLOWKEY);
+		}
+		catch (KeyNotFoundException e1) {
+			// Means this user has never set a blowfish key, is safe to proceed
+		}
+		String[] userKeys = userKeysString.split(",");
+		boolean foundOld = false;
+		StringBuilder userKey = new StringBuilder();
+		for (int i = 0; i < userKeys.length;i++) {
+			if (userKeys[i].startsWith(_bot.getBotName())) {
+				userKey.append(_bot.getBotName());
+				userKey.append("|");
+				userKey.append(_blowKey);
+				foundOld = true;
+			} else {
+				userKey.append(userKeys[i]);
+			}
+			if (i < userKeys.length - 1) {
+				userKey.append(",");
+			}
+		}
+		if (!foundOld) {
+			if (userKey.length() > 0) {
+				userKey.append(",");
+			}
+			userKey.append(_bot.getBotName());
+			userKey.append("|");
+			userKey.append(_blowKey);
+		}
+		user.getKeyedMap().setObject(BLOWKEY, userKey.toString());
 		user.commit();
+	}
+
+	public String getNick() {
+		return _nick;
 	}
 
 	protected void setNick(String nick) {
 		_nick = nick;
+	}
+
+	protected void setIdent(String ident) {
+		String existIdentString = "";
+		User user;
+		
+		try {
+			user = GlobalContext.getGlobalContext().getUserManager().getUserByName(_ftpUser);
+		} catch (NoSuchUserException e) {
+			// can't set ident, just return
+			return;
+		} catch (UserFileException e) {
+			logger.warn("Error loading userfile for "+_ftpUser,e);
+			// can't set ident, just return
+			return;
+		}
+		try {
+			existIdentString = (String)user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+		} catch (KeyNotFoundException e) {
+			// Means no existing idents at all, safe to proceed
+		}
+		boolean foundOld = false;
+		String[] existIdents = existIdentString.split(",");
+		StringBuilder newIdents = new StringBuilder();
+		String sourceBot = _bot.getBotName();
+		for (int i = 0; i < existIdents.length;i++) {
+			if (existIdents[i].startsWith(sourceBot)) {
+				newIdents.append(sourceBot);
+				newIdents.append("|");
+				newIdents.append(ident);
+				foundOld = true;
+			} else {
+				newIdents.append(existIdents[i]);
+			}
+			if (i < existIdents.length - 1) {
+				newIdents.append(",");
+			}
+		}
+		if (!foundOld) {
+			if (newIdents.length() > 0) {
+				newIdents.append(",");
+			}
+			newIdents.append(sourceBot);
+			newIdents.append("|");
+			newIdents.append(ident);
+		}
+		user.getKeyedMap().setObject(UserManagement.IRCIDENT,newIdents.toString());
+		user.commit();
+		logger.info("Set IRC ident to '"+ident+"' for "+user.getName()+" on bot "+sourceBot);
 	}
 
 	protected OutputWriter getOutputWriter() {
@@ -154,9 +262,5 @@ public class UserDetails {
 
 	protected synchronized void removeCommandSession(ServiceCommand session) {
 		_commandSessions.remove(session);
-	}
-
-	public String getNick() {
-		return _nick;
 	}
 }

@@ -53,10 +53,13 @@ import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.FatalException;
+import org.drftpd.misc.CaseInsensitiveHashMap;
+import org.drftpd.misc.CaseInsensitiveConcurrentHashMap;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.config.ServerConfig;
 import org.drftpd.plugins.sitebot.config.SiteBotConfig;
+import org.drftpd.plugins.sitebot.event.InviteEvent;
 import org.drftpd.vfs.DirectoryHandle;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
@@ -68,7 +71,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class SiteBot implements ReplyConstants, EventSubscriber {
+public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 
 	private static final Logger logger = Logger.getLogger(SiteBot.class);
 
@@ -100,12 +103,12 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 
 	// Outgoing message stuff.
 	private Queue _outQueue = new Queue();
-	private ConcurrentHashMap<String,OutputWriter> _writers = new ConcurrentHashMap<String,OutputWriter>();
+	private CaseInsensitiveConcurrentHashMap<String,OutputWriter> _writers = new CaseInsensitiveConcurrentHashMap<String,OutputWriter>();
 	private ThreadPoolExecutor _pool;
 
 	// A HashMap of channels that points to a selfreferential HashMap of
 	// User objects (used to remember which users are in which channels).
-	private HashMap<String,HashMap<IrcUser,IrcUser>> _channels = new HashMap<String,HashMap<IrcUser,IrcUser>>();
+	private CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>> _channels = new CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>>();
 
 	// A HashMap to temporarily store channel topics when we join them
 	// until we find out who set that topic.
@@ -113,16 +116,16 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 
 	// A HashMap of nicknames of which we know details about, such as the
 	// corresponding ftp user.
-	private HashMap<String,UserDetails> _users = new HashMap<String,UserDetails>();
+	private CaseInsensitiveHashMap<String,UserDetails> _users = new CaseInsensitiveHashMap<String,UserDetails>();
 
 	// A HashMap of blowfish objects for channels we are aware of
-	private HashMap<String,Blowfish> _ciphers = new HashMap<String,Blowfish>();
+	private CaseInsensitiveHashMap<String,Blowfish> _ciphers = new CaseInsensitiveHashMap<String,Blowfish>();
 
 	/* A HashMap of DH1080 objects for users, this is used to store a
 	 * temporary object when initiating a DH1080 request whilst we wait
 	 * for the response
 	 */
-	private HashMap<String,DH1080> _dh1080 = new HashMap<String,DH1080>();
+	private CaseInsensitiveHashMap<String,DH1080> _dh1080 = new CaseInsensitiveHashMap<String,DH1080>();
 
 	// Command Manager to use for executing commands
 	private HashMap<String,Properties> _cmds;
@@ -140,6 +143,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	private String _ctcpVersion = "DrFTPD SiteBot ";
 	private String _finger = "You ought to be arrested for fingering a bot!";
 	private boolean _isTerminated = false;
+	private boolean _userDisconnected = false;
 
 	// A HashMap to store the available prefixes and associated mode operator
 	private HashMap<String,String> _userPrefixes = new HashMap<String,String>();
@@ -149,14 +153,17 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 
 	public SiteBot(String confDir) throws FatalException {
 		_confDir = confDir;
+	}
+
+	public void run() {
 		_config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
-				.getPropertiesForPlugin(confDir+"/irc.conf"));
+				.getPropertiesForPlugin(_confDir+"/irc.conf"));
 
 		// set a default mode/prefix for the users in case the server doesn't have it defined properly
 		// default to PREFIX=(ov)@+
 		_userPrefixes.put("o", "@");
 		_userPrefixes.put("v", "+");
-		
+
 		// Set version to current plugin version
 		_version = PluginManager.lookup(this).getPluginFor(this).getDescriptor().getVersion().toString();
 
@@ -185,12 +192,12 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		int maxCommands = _config.getCommandsMax();
 		if (_config.getCommandsQueue()) {
 			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
-	                60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
-	                new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+					60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+					new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		} else if (_config.getCommandsBlock()) {
 			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
-	                60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
-	                new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+					60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+					new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		} else {
 			throw new FatalException("commands.full has an invalid value in irc.conf");
 		}
@@ -202,14 +209,14 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		}
 
 		// Find and start announcers
-		loadAnnouncers(confDir);
-		
+		loadAnnouncers(_confDir);
+
 		// Subscribe to events
+		GlobalContext.getEventService().subscribe(InviteEvent.class,this);
 		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
 		GlobalContext.getEventService().subscribe(LoadPluginEvent.class,this);
 		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class,this);
 	}
-
 
 	/**
 	 * Attempt to connect to the specified IRC server using the supplied
@@ -231,12 +238,12 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		_port = serverConfig.getPort();
 		_password = serverConfig.getPassword();
 		_factory = serverConfig.getSocketFactory();
+		_inputThread = null;
+		_outputThread = null;
 
 		if (isConnected()) {
 			throw new IOException("The Bot is already connected to an IRC server.  Disconnect first.");
 		}
-
-		// Don't clear the outqueue - there might be something important in it!
 
 		// Clear everything we may have know about channels.
 		this.removeAllChannels();
@@ -369,11 +376,13 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		if (getServer() == null) {
 			throw new IrcException("Cannot reconnect to an IRC server because we were never connected to one previously!");
 		}
-		try {
-			Thread.sleep(_config.getConnectDelay());
-		}
-		catch (InterruptedException e) {
-			// do nothing
+		if (!_userDisconnected) {
+			try {
+				Thread.sleep(_config.getConnectDelay());
+			}
+			catch (InterruptedException e) {
+				// do nothing
+			}
 		}
 		connect();
 	}
@@ -1025,7 +1034,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	 */
 	protected void onDisconnect() {
 		try {
-			if (!_isTerminated) {
+			if (!_isTerminated && !_userDisconnected) {
 				reconnect();
 			}
 		} catch (Exception e) {
@@ -1182,7 +1191,17 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	 * 
 	 * @see ReplyConstants
 	 */
-	protected void onServerResponse(int code, String response) {}
+	protected void onServerResponse(int code, String response) {
+		if(code == RPL_WHOISUSER) {
+			//parse the whois for registering user
+			String[] reply = response.split(" ");
+			String nick = reply[1];
+			String ident = nick + "!" + reply[2] + "@" + reply[3];
+			if(_users.containsKey(nick)) {
+				_users.get(nick).setIdent(ident);
+			}
+		}
+	}
 
 
 	/**
@@ -1275,7 +1294,6 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 				}
 				try {
 					message = cipher.decrypt(message);
-					logger.debug(message);
 				} catch (UnsupportedEncodingException e) {
 					/* Can't really happen, as the character set hardcoded
 					 * in Blowfish is a default JVM character set and therefore
@@ -2120,6 +2138,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 					else {
 						_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),null,false));
 					}
+					break;
 				}
 			}
 		}
@@ -2682,7 +2701,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 	 */
 	private final void removeAllChannels() {
 		synchronized (_channels) {
-			_channels = new HashMap<String,HashMap<IrcUser,IrcUser>>();
+			_channels = new CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>>();
 		}
 	}
 
@@ -2953,6 +2972,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 				for (ChannelConfig confChan : chanConfig) {
 					if (confChan.getName().equalsIgnoreCase(channel)) {
 						isConf = true;
+						break;
 					}
 				}
 				if (!isConf) {
@@ -2963,59 +2983,73 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 				partChannel(channel,"No longer servicing this channel");
 			}
 			_announceConfig.reload();
-		} else if (event instanceof UnloadPluginEvent) {
-			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
-					for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
-						AnnounceInterface announcer = iter.next();
-						if (manager.getPluginFor(announcer).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							announcer.stop();
-							logger.debug("Unloading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
-							iter.remove();
+		} else {
+			if (event instanceof UnloadPluginEvent) {
+				UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
+				PluginManager manager = PluginManager.lookup(this);
+				String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+				for (String pluginExtension : pluginEvent.getParentPlugins()) {
+					int pointIndex = pluginExtension.lastIndexOf("@");
+					String pluginName = pluginExtension.substring(0, pointIndex);
+					String extension = pluginExtension.substring(pointIndex+1);
+					if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
+						for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
+							AnnounceInterface announcer = iter.next();
+							if (manager.getPluginFor(announcer).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
+								announcer.stop();
+								logger.debug("Unloading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
+								iter.remove();
+							}
 						}
 					}
 				}
-			}
-		} else if (event instanceof LoadPluginEvent) {
-			LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
-					ExtensionPoint announceExtPoint = 
-						manager.getRegistry().getExtensionPoint( 
-								"org.drftpd.plugins.sitebot", "Announce");
-					for (Extension an : announceExtPoint.getConnectedExtensions()) {
-						if (an.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							try {
-								manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
-								ClassLoader anLoader = manager.getPluginClassLoader( 
-										an.getDeclaringPluginDescriptor());
-								Class<?> anCls = anLoader.loadClass( 
-										an.getParameter("class").valueAsString());
-								AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
-								_announcers.add(announcer);
-								for (String type : announcer.getEventTypes()) {
-									_eventTypes.add(type);
+			} else {
+				if (event instanceof LoadPluginEvent) {
+					LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
+					PluginManager manager = PluginManager.lookup(this);
+					String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+					for (String pluginExtension : pluginEvent.getParentPlugins()) {
+						int pointIndex = pluginExtension.lastIndexOf("@");
+						String pluginName = pluginExtension.substring(0, pointIndex);
+						String extension = pluginExtension.substring(pointIndex+1);
+						if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
+							ExtensionPoint announceExtPoint = 
+								manager.getRegistry().getExtensionPoint( 
+										"org.drftpd.plugins.sitebot", "Announce");
+							for (Extension an : announceExtPoint.getConnectedExtensions()) {
+								if (an.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
+									try {
+										manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
+										ClassLoader anLoader = manager.getPluginClassLoader( 
+												an.getDeclaringPluginDescriptor());
+										Class<?> anCls = anLoader.loadClass( 
+												an.getParameter("class").valueAsString());
+										AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
+										_announcers.add(announcer);
+										for (String type : announcer.getEventTypes()) {
+											_eventTypes.add(type);
+										}
+										_announceConfig.updateEventTypes(_eventTypes);
+										_announceConfig.reload();
+										announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
+										logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
+									}
+									catch (Exception e) {
+										logger.warn("Error loading sitebot announcer " + 
+												an.getDeclaringPluginDescriptor().getId(),e);
+									}
 								}
-								_announceConfig.updateEventTypes(_eventTypes);
-								_announceConfig.reload();
-								announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
-								logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
 							}
-							catch (Exception e) {
-								logger.warn("Error loading sitebot announcer " + 
-										an.getDeclaringPluginDescriptor().getId(),e);
-							}
+						}
+					}
+				} else {
+					if (event instanceof InviteEvent) {
+						InviteEvent inviteEvent = (InviteEvent) event;
+						if (inviteEvent.getTargetBot().equalsIgnoreCase(_name)) {
+							UserDetails userDetails = new UserDetails(inviteEvent.getIrcNick(), "", this);
+							userDetails.setFtpUser(inviteEvent.getUser().getName());
+							_users.put(inviteEvent.getIrcNick(), userDetails);
+							sendRawLineViaQueue("WHOIS " + inviteEvent.getIrcNick());
 						}
 					}
 				}
@@ -3027,6 +3061,10 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		_isTerminated = true;
 		quitServer(reason);
 		dispose();
+	}
+
+	public void setDisconnected(boolean state) {
+		_userDisconnected = state;
 	}
 
 	class CommandThread implements Runnable {
@@ -3059,6 +3097,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber {
 		}
 	}
 }
+
 class CommandThreadFactory implements ThreadFactory {
 
 	public static String getIdleThreadName(long threadId) {

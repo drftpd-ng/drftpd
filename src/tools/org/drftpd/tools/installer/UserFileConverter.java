@@ -126,9 +126,6 @@ public class UserFileConverter {
 			} catch (MissingResourceException e) {
 				break;
 			}
-			if (replacement.equals("")) {
-				break;
-			}
 			userData = userData.replaceAll(pattern, replacement);
 		}
 		FileWriter userWriter = null;

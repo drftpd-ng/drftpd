@@ -31,6 +31,10 @@ public class OutputWriter {
 
 	private String _output;
 
+	protected OutputWriter() {
+		// Empty constructor for extending classes
+	}
+
 	public OutputWriter(SiteBot bot, String output, Blowfish cipher, boolean blowfishEnabled) {
 		_bot = bot;
 		_output = output;

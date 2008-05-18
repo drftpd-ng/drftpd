@@ -35,16 +35,18 @@ public class SiteBotWrapper implements PluginInterface {
 	public void startPlugin() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()
 			.getPropertiesForPlugin("irc/irc.conf");
+		SiteBot bot = new SiteBot("irc");
+		new Thread(bot).start();
+		_bots.add(bot);
 		if (cfg.getProperty("bot.multiple.enable").equalsIgnoreCase("true")) {
 			StringTokenizer st = new StringTokenizer(cfg.getProperty(
 					"bot.multiple.directories"));
 			while (st.hasMoreTokens()) {
-				SiteBot bot = new SiteBot("irc/"+st.nextToken());
+				bot = new SiteBot("irc/"+st.nextToken());
+				new Thread(bot).start();
 				_bots.add(bot);
 			}
 		}
-		SiteBot bot = new SiteBot("irc");
-		_bots.add(bot);
 	}
 
 	public void stopPlugin(String reason) {

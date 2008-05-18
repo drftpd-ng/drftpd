@@ -17,16 +17,16 @@
  */
 package org.drftpd.misc;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author zubov
- * @version $Id$ Must be CaseInsensitiveHashMap <String,V>
+ * @author djb61
+ * @version $Id$ Must be CaseInsensitiveConcurrentHashMap <String,V>
  */
 @SuppressWarnings("serial")
-public class CaseInsensitiveHashMap<K, V> extends HashMap<K, V> {
+public class CaseInsensitiveConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 
-	public CaseInsensitiveHashMap() {
+	public CaseInsensitiveConcurrentHashMap() {
 		super();
 	}
 

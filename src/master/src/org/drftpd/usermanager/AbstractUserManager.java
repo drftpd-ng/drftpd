@@ -81,7 +81,7 @@ public abstract class AbstractUserManager implements UserManager, EventSubscribe
 		user.getKeyedMap()
 		.setObject(UserManagement.WKLY_ALLOTMENT, new Long(0));
 		user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
-		user.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
+		user.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
 		user.getKeyedMap().setObject(UserManagement.TAGLINE, "drftpd");
 		user.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
 		// user.getKeyedMap().setObject(Nuke.NUKED,0);
@@ -193,13 +193,21 @@ public abstract class AbstractUserManager implements UserManager, EventSubscribe
 		return GlobalContext.getGlobalContext();
 	}
 
-	public User getUserByIdent(String ident) throws NoSuchUserException {
+	public User getUserByIdent(String ident, String botName) throws NoSuchUserException {
 		for (User user : getAllUsers()) {
 			try {
-				String uident = (String) user.getKeyedMap().getObject(
+				String uidentList = (String) user.getKeyedMap().getObject(
 						UserManagement.IRCIDENT);
-				if (uident.equals(ident)) {
-					return user;
+				String[] identArray = uidentList.split(",");
+				for (int i = 0; i < identArray.length;i++) {
+					if (identArray[i].startsWith(botName)) {
+						String[] botIdent = identArray[i].split("\\|");
+						if (botIdent.length == 2) {
+							if (botIdent[1].equals(ident)) {
+								return user;
+							}
+						}
+					}
 				}
 			} catch (KeyNotFoundException e1) {
 			}

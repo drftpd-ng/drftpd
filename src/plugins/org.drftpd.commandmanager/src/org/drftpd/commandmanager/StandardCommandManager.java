@@ -200,7 +200,7 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 			ClassLoader cmdLoader = manager.getPluginClassLoader( 
 					cmd.getDeclaringPluginDescriptor());
 			try {
-				Class cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
+				Class<?> cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
 				CommandInterface cmdInstance = (CommandInterface) cmdCls.newInstance();
 				cmdInstance.initialize(methodString, pluginString, this);
 				Method m = cmdInstance.getClass().getMethod(methodString,

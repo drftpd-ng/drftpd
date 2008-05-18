@@ -278,7 +278,7 @@ public class UserManagementHandler extends CommandInterface {
 			// TODO fix this.
 			//newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
 			
-			newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "N/A");
+			newUser.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
 
 			newUser.getKeyedMap().setObject(UserManagement.TAGLINE, tagline);
 			newUser.getKeyedMap().setObject(UserManagement.RATIO, ratioVal);

@@ -104,7 +104,6 @@ public class Blowfish {
 
 		if(encrypt.startsWith("+OK ")) {encrypt = encrypt.substring(4,encrypt.length());}
 		if(encrypt.startsWith("mcps "))	{encrypt = encrypt.substring(5,encrypt.length());}
-
 		// B64 DECRYPTION (mircryption needed)
 		byte[] again = b64tobyte(encrypt); 
 
@@ -127,8 +126,10 @@ public class Blowfish {
 			}			
 			//Force again the encoding result string
 			return new String(finalArray,"8859_1");
+		} catch (InvalidKeyException e) {
+			logger.error("Invalid key error when decrypting blowfish string, possibly means export crypto isn't installed",e);
+			return "";
 		} catch (Exception e) {
-			//return e.getMessage();
 			// Exception, not necessary padding, return directly
 			// The decypted string
 			logger.warn("Exception whilst decrypting blowfish string",e);

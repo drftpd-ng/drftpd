@@ -17,7 +17,10 @@
  */
 package org.drftpd.plugins.sitebot.config;
 
+import org.drftpd.plugins.sitebot.SiteBotSSLSocketFactory;
+
 import javax.net.SocketFactory;
+import javax.net.ssl.X509TrustManager;
 
 /**
  * @author djb61
@@ -31,13 +34,16 @@ public class ServerConfig {
 
 	private String _password;
 
-	private SocketFactory _factory;
+	private boolean _ssl;
 
-	public ServerConfig(String hostName, int port, String password, SocketFactory factory) {
+	private X509TrustManager _trustManager;
+
+	public ServerConfig(String hostName, int port, String password, boolean ssl, X509TrustManager trustManager) {
 		_hostName = hostName;
 		_port = port;
 		_password = password;
-		_factory = factory;
+		_ssl = ssl;
+		_trustManager = trustManager;
 	}
 
 	public String getHostName() {
@@ -53,6 +59,10 @@ public class ServerConfig {
 	}
 
 	public SocketFactory getSocketFactory() {
-		return _factory;
+		if (_ssl) {
+			return new SiteBotSSLSocketFactory(_trustManager);
+		} else {
+			return null;
+		}
 	}
 }

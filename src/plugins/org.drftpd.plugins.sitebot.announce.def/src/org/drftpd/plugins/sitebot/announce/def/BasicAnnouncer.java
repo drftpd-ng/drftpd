@@ -85,14 +85,6 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 	}
 
 	private void handleDirectoryFtpEvent(DirectoryFtpEvent direvent) {
-		// TODO We should decide if we are going to check path permissions when
-		// receiving an event or before sending it, including it here for now until
-		// that decision is made
-		//if (!GlobalContext.getConfig().
-		//		checkPathPermission("dirlog", direvent.getUser(), direvent.getDirectory())) {
-		//	return;
-		//}
-
 		if ("MKD".equals(direvent.getCommand())) {
 			outputDirectoryEvent(direvent, "mkdir");
 		} else if ("REQUEST".equals(direvent.getCommand())) {
@@ -133,7 +125,7 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 	}
 
 	private void handleInviteEvent(InviteEvent event) {
-		if (event.getTargetBot() == null || _config.getBot().getBotName().equalsIgnoreCase(event.getTargetBot())) {
+		if (_config.getBot().getBotName().equalsIgnoreCase(event.getTargetBot())) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("user", event.getUser().getName());
 			env.add("nick", event.getIrcNick());

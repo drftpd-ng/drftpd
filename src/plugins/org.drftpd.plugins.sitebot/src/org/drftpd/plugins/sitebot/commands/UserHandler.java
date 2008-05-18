@@ -27,6 +27,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.plugins.sitebot.ServiceCommand;
 import org.drftpd.plugins.sitebot.SiteBotWrapper;
 import org.drftpd.plugins.sitebot.event.InviteEvent;
@@ -63,11 +64,43 @@ public class UserHandler extends CommandInterface {
 		}
 
 		if (user.checkPassword(password)) {
-			String ident = ((ServiceCommand) request.getSession()).getIdent();
-			user.getKeyedMap().setObject(UserManagement.IRCIDENT,ident);
+			ServiceCommand commSession = (ServiceCommand) request.getSession();
+			String ident = commSession.getIdent();
+			String existIdentString = "";
+			try {
+				existIdentString = (String)user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+			} catch (KeyNotFoundException e) {
+				// Means no existing idents at all, safe to proceed
+			}
+			String[] existIdents = existIdentString.split(",");
+			boolean foundOld = false;
+			StringBuilder newIdents = new StringBuilder();
+			String sourceBot = commSession.getBot().getBotName();
+			for (int i = 0; i < existIdents.length;i++) {
+				if (existIdents[i].startsWith(sourceBot)) {
+					newIdents.append(sourceBot);
+					newIdents.append("|");
+					newIdents.append(ident);
+					foundOld = true;
+				} else {
+					newIdents.append(existIdents[i]);
+				}
+				if (i < existIdents.length - 1) {
+					newIdents.append(",");
+				}
+			}
+			if (!foundOld) {
+				if (newIdents.length() > 0) {
+					newIdents.append(",");
+				}
+				newIdents.append(sourceBot);
+				newIdents.append("|");
+				newIdents.append(ident);
+			}
+			user.getKeyedMap().setObject(UserManagement.IRCIDENT,newIdents.toString());
 			user.commit();
-			logger.info("Set IRC ident to '"+ident+"' for "+user.getName());
-			request.getSession().printOutput("Set IRC ident to '"+ident+"' for "+user.getName());
+			logger.info("Set IRC ident to '"+ident+"' for "+user.getName()+" on bot "+sourceBot);
+			request.getSession().printOutput("Set IRC ident to '"+ident+"' for "+user.getName()+" on bot "+sourceBot);
 		}
 		return null;
 	}
@@ -98,8 +131,40 @@ public class UserHandler extends CommandInterface {
 						session.getBot().getBotName()));
 
 		if (success) {
+			String ident = session.getIdent();
+			String existIdentString = "";
+			try {
+				existIdentString = (String)user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+			} catch (KeyNotFoundException e) {
+				// Means no existing idents at all, safe to proceed
+			}
+			boolean foundOld = false;
+			String[] existIdents = existIdentString.split(",");
+			StringBuilder newIdents = new StringBuilder();
+			String sourceBot = session.getBot().getBotName();
+			for (int i = 0; i < existIdents.length;i++) {
+				if (existIdents[i].startsWith(sourceBot)) {
+					newIdents.append(sourceBot);
+					newIdents.append("|");
+					newIdents.append(ident);
+					foundOld = true;
+				} else {
+					newIdents.append(existIdents[i]);
+				}
+				if (i < existIdents.length - 1) {
+					newIdents.append(",");
+				}
+			}
+			if (!foundOld) {
+				if (newIdents.length() > 0) {
+					newIdents.append(",");
+				}
+				newIdents.append(sourceBot);
+				newIdents.append("|");
+				newIdents.append(ident);
+			}
 			logger.info("Invited \"" + session.getIdent() + "\" as user " + user.getName());
-			user.getKeyedMap().setObject(UserManagement.IRCIDENT,session.getIdent());
+			user.getKeyedMap().setObject(UserManagement.IRCIDENT,newIdents.toString());
 			user.commit();
 		} else {
 			logger.warn(session.getIrcUser().getNick() +
@@ -125,15 +190,14 @@ public class UserHandler extends CommandInterface {
 		}
 		boolean multipleBots = wrapper.getBots().size() > 1;
 		StringTokenizer st = new StringTokenizer(request.getArgument());
-		if (st.countTokens() < 2 && multipleBots) {
-			return new CommandResponse(500, "Multiple SiteBots loaded, you must specify bot name");
-		}
-
-		String nickname = st.nextToken();
+		
 		String botname = null;
-		if (multipleBots) {
+		if (st.countTokens() >= 2) {
 			botname = st.nextToken();
+		} else {
+			botname = wrapper.getBots().get(0).getBotName();
 		}
+		String nickname = st.nextToken();
 		if (multipleBots) {
 			logger.info("Inviting "+request.getUser()+ " with nickname "+nickname+ " using bot "+botname);
 			GlobalContext.getEventService().publish(
@@ -142,7 +206,7 @@ public class UserHandler extends CommandInterface {
 		} else {
 			logger.info("Inviting "+request.getUser()+ " with nickname "+nickname);
 			GlobalContext.getEventService().publish(
-					new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),null));
+					new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
 			return new CommandResponse(200, "Inviting "+nickname);
 		}
 	}

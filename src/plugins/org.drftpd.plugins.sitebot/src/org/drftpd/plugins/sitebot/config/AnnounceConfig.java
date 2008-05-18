@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
+import org.drftpd.plugins.sitebot.NullOutputWriter;
 import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.vfs.DirectoryHandle;
@@ -58,7 +59,7 @@ public class AnnounceConfig {
 		_eventTypes = eventTypes;
 		_bot = bot;
 		loadConfig(GlobalContext.getGlobalContext().getPluginsConfig()
-			.getPropertiesForPlugin(confDir+"/ircannounce.conf"));
+				.getPropertiesForPlugin(confDir+"/ircannounce.conf"));
 	}
 
 	private void loadConfig(Properties cfg) {
@@ -118,7 +119,7 @@ public class AnnounceConfig {
 				// In case this setting has been removed and conf reloaded
 				_sectionWriters.remove(type);
 			}
-			
+
 			// Finally check for any pathless settings for this type
 			String destination = cfg.getProperty(type+".destination");
 			if (destination == null || destination.equals("")) {
@@ -139,13 +140,18 @@ public class AnnounceConfig {
 		StringTokenizer channels = new StringTokenizer(destination);
 		while (channels.hasMoreTokens()) {
 			String token = channels.nextToken();
-			if (token.equalsIgnoreCase("public")) {
-				writers.addAll(0,_bot.getWriters().values());
+			if (token.equalsIgnoreCase("null")) {
+				writers.add(new NullOutputWriter());
 				break;
 			} else {
-				OutputWriter writer = _bot.getWriters().get(token);
-				if (writer != null) {
-					writers.add(writer);
+				if (token.equalsIgnoreCase("public")) {
+					writers.addAll(0,_bot.getWriters().values());
+					break;
+				} else {
+					OutputWriter writer = _bot.getWriters().get(token);
+					if (writer != null) {
+						writers.add(writer);
+					}
 				}
 			}
 		}
