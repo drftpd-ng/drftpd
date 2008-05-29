@@ -1,0 +1,10 @@
+# $Id$
+#check integrity of .zip files on upload [true/false]
+stor.zip.integrity.check.enabled=true
+
+#show diz text on CWD [true/false]
+cwd.diz.info.enabled=true
+
+#enable race stats [true/false]
+cwd.zip.racestats.enabled=true
+stor.zip.racestats.enabled=true

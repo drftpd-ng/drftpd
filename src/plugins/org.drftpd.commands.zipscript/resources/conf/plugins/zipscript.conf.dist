@@ -3,6 +3,9 @@
 #show status bar in dir listings [true/false]
 statusbar.enabled=true
 
+#type of status bar, if true then status bar will appear as a directory, if false it will appear as a file
+statusbar.directory=true
+
 #showing missing files [true/false]
 files.missing.enabled=true
 

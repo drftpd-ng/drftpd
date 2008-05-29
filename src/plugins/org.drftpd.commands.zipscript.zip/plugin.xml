@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.zipscript.zip" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptZipProtocol" />
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.protocol.zipscript.zip.slave" />
+		</attribute>
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.zip.common" exported="true" />
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.list" exported="true" />
+		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.zipscript.zip" path="org.drftpd.commands.zipscript.zip.jar" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORZipCheckHook">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORZipPostCheck" />
+		<parameter id="Priority" value="13" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDZipDiz">
+		<parameter id="ParentMethod" value="doCWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
+		<parameter id="HookMethod" value="doZipscriptCWDDizInfoHook" />
+		<parameter id="Priority" value="13" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptDELEZipCleanup">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
+		<parameter id="HookMethod" value="doZipscriptDELEDizCleanupHook" />
+		<parameter id="Priority" value="13" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDDizStats">
+		<parameter id="ParentMethod" value="doCWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
+		<parameter id="HookMethod" value="doZipscriptCWDDizStatsHook" />
+		<parameter id="Priority" value="14" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORDizStats">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORDizStatsHook" />
+		<parameter id="Priority" value="14" />
+	</extension>
+	
+	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptZipProtocol">
+		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.zip.ZipscriptZipIssuer" />
+	</extension>
+
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="ListStatusBarProvider" id="ListDizStatusBarProvider">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.zip.list.ZipscriptDizStatusBar" />
+	</extension>
+</plugin>

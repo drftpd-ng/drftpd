@@ -42,7 +42,7 @@ public class SFVTools {
 
 		for (String name : sfvInfo.getEntries().keySet()) {
 			FileHandle file = new FileHandle(dir.getPath()+VirtualFileSystem.separator+name);
-			if (file.exists()) {
+			if (file.exists() && file.getXfertime() != -1) {
 				files.add(file);
 			}
 		}
@@ -54,19 +54,17 @@ public class SFVTools {
 		long totalBytes = 0;
 
 		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1) {
-				totalBytes += file.getSize();
-			}
+			totalBytes += file.getSize();
 		}
 		return totalBytes;
 	}
-	
+
 	protected long getSFVLargestFileBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long largestFileBytes = 0;
 
 		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1 && file.getSize() > largestFileBytes) {
+			if (file.getSize() > largestFileBytes) {
 				largestFileBytes = file.getSize();
 			}
 		}
@@ -78,9 +76,7 @@ public class SFVTools {
 		long totalXfertime = 0;
 
 		for (FileHandle file : getSFVFiles(dir, sfvData)) {
-			if (file.getXfertime() != -1) {
-				totalXfertime += file.getXfertime();
-			}
+			totalXfertime += file.getXfertime();
 		}
 		return totalXfertime;
 	}

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.announce.zipscript;
+package org.drftpd.plugins.sitebot.announce.zipscript.zip;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,9 +31,9 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
 import org.drftpd.Time;
-import org.drftpd.commands.zipscript.SFVStatus;
-import org.drftpd.commands.zipscript.SFVTools;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.commands.zipscript.zip.DizStatus;
+import org.drftpd.commands.zipscript.zip.ZipTools;
+import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -43,7 +43,7 @@ import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.zip.common.DizInfo;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -61,9 +61,9 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSubscriber {
+public class ZipAnnouncer extends ZipTools implements AnnounceInterface, EventSubscriber {
 
-	private static final Logger logger = Logger.getLogger(SFVAnnouncer.class);
+	private static final Logger logger = Logger.getLogger(ZipAnnouncer.class);
 
 	private AnnounceConfig _config;
 
@@ -83,7 +83,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 	}
 
 	public String[] getEventTypes() {
-		String[] types = {"pre","store.complete","store.first","store.halfway","store.nfo","store.race"};
+		String[] types = {"pre","store.complete","store.first","store.halfway","store.race"};
 		return types;
 	}
 
@@ -106,67 +106,62 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 
 		DirectoryHandle dir = fileevent.getDirectory();
 
-		// ANNOUNCE NFO FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".nfo")) {
-			AnnounceWriter writer = _config.getPathWriter("store.nfo", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.nfo", env, _bundle), writer);
-			}
-			return;
-		} 
-
-		SFVInfo sfvinfo;
-		ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
+		DizInfo dizInfo;
+		ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
 
 		try {
-			sfvinfo = sfvData.getSFVInfo();
+			dizInfo = zipData.getDizInfo();
 		} catch (FileNotFoundException ex) {
-			logger.info("No sfv file in " + dir.getPath() +
+			logger.info("No diz file in " + dir.getPath() +
 			", can't publish race info");
 			return;
 		} catch (IOException ex) {
-			logger.info("Unable to read sfv file in " + dir.getPath() +
+			logger.info("Unable to read diz file in " + dir.getPath() +
 			", can't publish race info");
 			return;
 		} catch (NoAvailableSlaveException e) {
-			logger.info("No available slave with .sfv");
+			logger.info("No available slave for .diz");
 			return;
 		} catch (SlaveUnavailableException e) {
-			logger.info("No available slave with .sfv");
+			logger.info("No available slave for .diz");
 			return;
 		}
 
-		if (sfvinfo.getEntries().get(fileevent.getTransferFile().getName()) == null) {
+		if (!fileevent.getTransferFile().getName().toLowerCase().endsWith(".zip")) {
 			return;
 		}
 
-		int halfway = (int) Math.floor((double) sfvinfo.getSize() / 2);
+		int halfway = (int) Math.floor((double) dizInfo.getTotal() / 2);
 
 		try {
 			String username = fileevent.getUser().getName();
-			SFVStatus sfvstatus = sfvData.getSFVStatus();
+			DizStatus dizStatus = zipData.getDizStatus();
+			
+			// sanity check for when we have more zips than the .diz stated
+			if (dizStatus.getMissing() < 0) {
+				return;
+			}
 
-			if (sfvstatus.getAvailable() == 1 && sfvinfo.getSize() > 1) {
+			if (dizStatus.getAvailable() == 1 && dizInfo.getTotal() > 1) {
 				AnnounceWriter writer = _config.getPathWriter("store.first", fileevent.getDirectory());
 				if (writer != null) {
 					fillEnvSection(env, fileevent, writer, true);
-					env.add("files", Integer.toString(sfvinfo.getSize()));
-					env.add("expectedsize", (Bytes.formatBytes(getSFVLargestFileBytes(dir,sfvData) * sfvinfo.getSize())));
+					env.add("files", Integer.toString(dizInfo.getTotal()));
+					env.add("expectedsize", (Bytes.formatBytes(getZipLargestFileBytes(dir) * dizInfo.getTotal())));
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.first", env, _bundle), writer);
 				}
 				return;
 			}
 			//check if new racer
-			if ((sfvinfo.getSize() - sfvstatus.getMissing()) != 1) {
-				for (Iterator<FileHandle> iter = getSFVFiles(dir, sfvData).iterator(); iter.hasNext();) {
-					FileHandle sfvFileEntry = iter.next();
+			if ((dizInfo.getTotal() - dizStatus.getMissing()) != 1) {
+				for (Iterator<FileHandle> iter = getZipFiles(dir).iterator(); iter.hasNext();) {
+					FileHandle zipFileEntry = iter.next();
 
-					if (sfvFileEntry == fileevent.getTransferFile())
+					if (zipFileEntry == fileevent.getTransferFile())
 						continue;
 
-					if (sfvFileEntry.getUsername().equals(username)
-							&& sfvFileEntry.getXfertime() >= 0) {
+					if (zipFileEntry.getUsername().equals(username)
+							&& zipFileEntry.getXfertime() != -1) {
 						break;
 					}
 
@@ -175,7 +170,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 						if (writer != null) {
 							fillEnvSection(env, fileevent, writer, true);
 							env.add("filesleft",
-									Integer.toString(sfvstatus.getMissing()));
+									Integer.toString(dizStatus.getMissing()));
 							sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.race", env, _bundle), writer);
 						}
 					}
@@ -183,20 +178,20 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 			}
 
 			//COMPLETE
-			if (sfvstatus.isFinished()) {
+			if (dizStatus.isFinished()) {
 				AnnounceWriter writer = _config.getPathWriter("store.complete", fileevent.getDirectory());
 				if (writer != null) {
-					Collection<UploaderPosition> racers = RankUtils.userSort(getSFVFiles(dir, sfvData),
+					Collection<UploaderPosition> racers = RankUtils.userSort(getZipFiles(dir),
 							"bytes", "high");
-					Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
+					Collection<GroupPosition> groups = RankUtils.topFileGroup(getZipFiles(dir));
 
 					fillEnvSection(env, fileevent, writer, false);
 
 					env.add("racers", Integer.toString(racers.size()));
 					env.add("groups", Integer.toString(groups.size()));
-					env.add("files", Integer.toString(sfvinfo.getSize()));
-					env.add("size", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
-					env.add("speed", Bytes.formatBytes(getXferspeed(dir, sfvData)) + "/s");
+					env.add("files", Integer.toString(dizInfo.getTotal()));
+					env.add("size", Bytes.formatBytes(getZipTotalBytes(dir)));
+					env.add("speed", Bytes.formatBytes(getXferspeed(dir)) + "/s");
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete", env, _bundle), writer);
 
 					// Add racer stats
@@ -226,7 +221,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 						raceenv.add("position", String.valueOf(position));
 						raceenv.add("percent",
 								Integer.toString(
-										(stat.getFiles() * 100) / sfvinfo.getSize()) + "%");
+										(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
 						raceenv.add("alup",
 								new Integer(UserTransferStats.getStatsPlace("ALUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
@@ -267,7 +262,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 						raceenv.add("files", Integer.toString(stat.getFiles()));
 						raceenv.add("percent",
 								Integer.toString(
-										(stat.getFiles() * 100) / sfvinfo.getSize()) + "%");
+										(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
 						raceenv.add("speed",
 								Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
@@ -276,11 +271,11 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 				}
 
 				//HALFWAY
-			} else if ((sfvinfo.getSize() >= 4) &&
-					(sfvstatus.getMissing() == halfway)) {
+			} else if ((dizInfo.getTotal() >= 4) &&
+					(dizStatus.getMissing() == halfway)) {
 				AnnounceWriter writer = _config.getPathWriter("store.halfway", fileevent.getDirectory());
 				if (writer != null) {
-					Collection<UploaderPosition> uploaders = RankUtils.userSort(getSFVFiles(dir, sfvData),
+					Collection<UploaderPosition> uploaders = RankUtils.userSort(getZipFiles(dir),
 							"bytes", "high");
 
 					UploaderPosition stat = uploaders.iterator().next();
@@ -289,9 +284,9 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 					env.add("leadfiles", Integer.toString(stat.getFiles()));
 					env.add("leadsize", Bytes.formatBytes(stat.getBytes()));
 					env.add("leadpercent",
-							Integer.toString((stat.getFiles() * 100) / sfvinfo.getSize()) +
+							Integer.toString((stat.getFiles() * 100) / dizInfo.getTotal()) +
 					"%");
-					env.add("filesleft", Integer.toString(sfvstatus.getMissing()));
+					env.add("filesleft", Integer.toString(dizStatus.getMissing()));
 
 					User leaduser = null;
 					try {
@@ -385,40 +380,40 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 					(elapsedSeconds == 0) ? "n/a"
 							: (Bytes.formatBytes(
 									inode.getSize() / elapsedSeconds) + "/s"));
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
+			ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
 
-			SFVInfo sfvinfo;
-			int totalsfv = 0;
+			DizInfo dizInfo;
+			int totaldiz = 0;
 			int totalfiles = 0;
 			long totalbytes = 0;
 			long totalxfertime = 0;
 
 			try {
-				sfvinfo = sfvData.getSFVInfo();
-				totalsfv += 1;
-				totalfiles += sfvinfo.getSize();
-				totalbytes += getSFVTotalBytes(dir,sfvData);
-				totalxfertime += getSFVTotalXfertime(dir,sfvData);
+				dizInfo = zipData.getDizInfo();
+				totaldiz += 1;
+				totalfiles += dizInfo.getTotal();
+				totalbytes += getZipTotalBytes(dir);
+				totalxfertime += getZipTotalXfertime(dir);
 			} catch (Exception e1) {
-				// Failed to get sfv data, safe to continue, that data
+				// Failed to get diz data, safe to continue, that data
 				// will just not be available
 			}
 			if (event.getCommand().equals("PRE")) {
 				for (DirectoryHandle subdir : dir.getDirectoriesUnchecked()) {
 					try {
-						sfvData = new ZipscriptVFSDataSFV(subdir);
-						sfvinfo = sfvData.getSFVInfo();
-						totalsfv += 1;
-						totalfiles += sfvinfo.getSize();
-						totalbytes += getSFVTotalBytes(subdir,sfvData);
-						totalxfertime += getSFVTotalXfertime(subdir,sfvData);
+						zipData = new ZipscriptVFSDataZip(subdir);
+						dizInfo = zipData.getDizInfo();
+						totaldiz += 1;
+						totalfiles += dizInfo.getTotal();
+						totalbytes += getZipTotalBytes(subdir);
+						totalxfertime += getZipTotalXfertime(subdir);
 					} catch (Exception e1) {
-						// Failed to get sfv data, safe to continue, that data
+						// Failed to get diz data, safe to continue, that data
 						// will just not be available
 					}
 				}
 			}
-			if (totalsfv > 0) {
+			if (totaldiz > 0) {
 				env.add("totalfiles", "" + totalfiles);
 				env.add("totalsize",  Bytes.formatBytes(totalbytes));
 
@@ -432,7 +427,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface, EventSu
 				env.add("totalsize",  Bytes.formatBytes(0));
 				env.add("totalspeed", Bytes.formatBytes(0));
 
-				logger.warn("Couldn't get SFV file in announce");
+				logger.warn("Couldn't get diz file in announce");
 			}
 		} catch (FileNotFoundException e1) {
 			// The directory or file no longer exists, just fail out of the method

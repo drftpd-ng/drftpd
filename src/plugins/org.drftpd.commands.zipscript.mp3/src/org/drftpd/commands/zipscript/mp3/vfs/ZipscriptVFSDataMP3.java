@@ -59,28 +59,24 @@ public class ZipscriptVFSDataMP3 {
 		if (_inode instanceof DirectoryHandle) {
 			// Find the info for the first mp3 file we come across and use that
 			DirectoryHandle dir = (DirectoryHandle) _inode;
+			MP3Info mp3info = null;
 			for (FileHandle file : dir.getFilesUnchecked()) {
-				if (file.getName().toLowerCase().endsWith(".mp3")) {
-					MP3Info mp3info = null;
-					for (int i = 0; i < 5; i++) {
-						RemoteSlave rslave = file.getASlaveForFunction();
-						String index;
-						try {
-							index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
-							mp3info = fetchMP3InfoFromIndex(rslave, index);
-						} catch (SlaveUnavailableException e) {
-							// okay, it went offline while trying, continue
-							continue;
-						} catch (RemoteIOException e) {
-							throw new IOException(e.getMessage());
-						}
-						break;
-					}
-					if (mp3info != null) {
-						_inode.addKey(MP3Info.MP3INFO, mp3info);
-						return mp3info;
+				if (file.getName().toLowerCase().endsWith(".mp3") && file.getSize() > 0 && file.getXfertime() != -1) {
+					RemoteSlave rslave = file.getASlaveForFunction();
+					String index;
+					try {
+						index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
+						mp3info = fetchMP3InfoFromIndex(rslave, index);
+					} catch (SlaveUnavailableException e) {
+						// okay, it went offline while trying, try next file
+					} catch (RemoteIOException e) {
+						// continue, the next mp3 might work
 					}
 				}
+			}
+			if (mp3info != null) {
+				_inode.addKey(MP3Info.MP3INFO, mp3info);
+				return mp3info;
 			}
 			throw new FileNotFoundException("No usable mp3 files found in directory");
 		} else if (_inode instanceof FileHandle) {
@@ -124,16 +120,16 @@ public class ZipscriptVFSDataMP3 {
 	public boolean isFirst() {
 		return _setDir;
 	}
-	
+
 	private MP3Info getMP3InfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
 		return (MP3Info) vfsInodeHandle.getKey(MP3Info.MP3INFO);
 	}
 
-	public static MP3Info fetchMP3InfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+	private MP3Info fetchMP3InfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
 		return ((AsyncResponseMP3Info) rslave.fetchResponse(index)).getMP3Info();
 	}
-	
-	public ZipscriptMP3Issuer getMP3Issuer() {
+
+	private ZipscriptMP3Issuer getMP3Issuer() {
 		return (ZipscriptMP3Issuer) GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().getIssuerForClass(ZipscriptMP3Issuer.class);
 	}
 }

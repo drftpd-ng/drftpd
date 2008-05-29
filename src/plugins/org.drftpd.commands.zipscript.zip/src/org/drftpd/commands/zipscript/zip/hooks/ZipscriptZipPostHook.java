@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.zipscript.hooks;
+package org.drftpd.commands.zipscript.zip.hooks;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,7 +25,6 @@ import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
 import org.drftpd.commandmanager.CommandRequest;
@@ -34,16 +33,20 @@ import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
-import org.drftpd.commands.zipscript.SFVStatus;
-import org.drftpd.commands.zipscript.SFVTools;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.commands.zipscript.zip.DizStatus;
+import org.drftpd.commands.zipscript.zip.ZipTools;
+import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.util.Base64;
 import org.drftpd.util.GroupPosition;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
@@ -53,13 +56,16 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
+import sun.misc.BASE64Decoder;
+
 /**
  * @author djb61
  * @version $Id$
  */
-public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptPostHook.class);
+public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface {
+
+	private static final Logger logger = Logger.getLogger(ZipscriptZipPostHook.class);
 
 	private ResourceBundle _bundle;
 
@@ -67,164 +73,109 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
 	public void initialize(StandardCommandManager cManager) {
 		_bundle = cManager.getResourceBundle();
-    	_keyPrefix = this.getClass().getName()+".";
+		_keyPrefix = this.getClass().getName()+".";
 	}
 
-	public void doZipscriptRETRPostCheck(CommandRequest request, CommandResponse response) {
-
+	public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 226) {
 			// Transfer failed, abort checks
 			return;
 		}
-		FileHandle transferFile;
-		try {
-			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
-		} catch (KeyNotFoundException e) {
-			// We don't have a file, we shouldn't have ended up here but return anyway
-			return;
-		}
-		String transferFileName = transferFile.getName();
-		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
-		logger.debug("Running zipscript on retrieved file " + transferFileName +
-				" with CRC of " + checksum);
-
-		if (checksum != 0) {
-			response.addComment("Checksum from transfer: " +
-					Checksum.formatChecksum(checksum));
-
-			//compare checksum from transfer to checksum from sfv
+		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
+		getPropertiesForPlugin("zipscript.conf");
+		if (cfg.getProperty("stor.zip.integrity.check.enabled").equalsIgnoreCase("true")) {
+			FileHandle transferFile;
 			try {
-				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(transferFile.getParent());
-				SFVInfo sfv = sfvData.getSFVInfo();
-				Long sfvChecksum = sfv.getEntries().get(transferFile.getName());
-
-				if (sfvChecksum == null) {
-					// No entry in sfv for this file so nothing to check against
-				} else if (checksum == sfvChecksum) {
-					response.addComment(
-					"checksum from transfer matched checksum in .sfv");
-				} else {
-					response.addComment(
-					"WARNING: checksum from transfer didn't match checksum in .sfv");
-				}
-			} catch (NoAvailableSlaveException e1) {
-				response.addComment(
-				"slave with .sfv offline, checksum not verified");
-			} catch (FileNotFoundException e1) {
-				//continue without verification
-			} catch (IOException e1) {
-				//continue without verification
-			} catch (SlaveUnavailableException e1) {
-				response.addComment(
-				"slave with .sfv offline, checksum not verified");
+				transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
+			} catch (KeyNotFoundException e) {
+				// We don't have a file, we shouldn't have ended up here but return anyway
+				return;
 			}
-		} else { // slave has disabled download crc
-
-			//response.addComment("Slave has disabled download checksum");
+			String transferFileName = transferFile.getName();
+			if (transferFileName.toLowerCase().endsWith(".zip")) {
+				logger.debug("Running zipscript integrity check on stored file " + transferFileName);
+				try {
+					RemoteSlave rslave = transferFile.getASlaveForFunction();
+					String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
+					boolean ok = getZipIntegrityFromIndex(rslave, index);
+					if (ok) {
+						response.addComment("Zip integrity check OK");
+					} else {
+						response.addComment("Zip integrity check failed, deleting file");
+						try {
+							transferFile.deleteUnchecked();
+						} catch (FileNotFoundException e) {
+							// file disappeared, not a problem as we wanted it gone anyway
+						}
+					}
+				} catch (SlaveUnavailableException e) {
+					// okay, it went offline while trying
+					response.addComment("Slave went offline whilst checking zip integrity");
+				} catch (RemoteIOException e) {
+					response.addComment("Slave encountered an error whilst checking zip integrity");
+					logger.warn("Error encountered whilst checking zip integrity",e);
+				} catch (NoAvailableSlaveException e) {
+					response.addComment("No available slave found to perform zip integrity check");
+				} catch (FileNotFoundException e) {
+					response.addComment("File has already been deleted, skipping zip integrity check");
+				}
+			}
 		}
 		return;
 	}
 
-	public void doZipscriptSTORPostCheck(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// Transfer failed, abort checks
+	public void doZipscriptCWDDizInfoHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 250) {
+			// CWD failed, abort diz info
 			return;
 		}
-		FileHandle transferFile;
-		try {
-			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
-		} catch (KeyNotFoundException e) {
-			// We don't have a file, we shouldn't have ended up here but return anyway
-			return;
-		}
-		String transferFileName = transferFile.getName();
-		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
-		logger.debug("Running zipscript on stored file " + transferFileName +
-				" with CRC of " + checksum);
-		if (!transferFileName.toLowerCase().endsWith(".sfv")) {
+		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
+		getPropertiesForPlugin("zipscript.conf");
+		if (cfg.getProperty("cwd.diz.info.enabled").equalsIgnoreCase("true")) {
 			try {
-				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(transferFile.getParent());
-				SFVInfo sfv = sfvData.getSFVInfo();
-				Long sfvChecksum = sfv.getEntries().get(transferFile.getName());
-
-				/*If no exceptions are thrown means that the sfv is avaible and has a entry
-				 * for that file.
-				 * With this certain, we can assume that files that have CRC32 = 0 either is a
-				 * 0byte file (bug!) or checksummed transfers are disabled(size is different
-				 * from 0bytes though).                 
-				 */
-				if (sfvChecksum == null) {
-					// No entry in the sfv for this file, just return and allow
-					response.addComment("zipscript - no entry in sfv for file");
-				} else if (checksum == sfvChecksum) {
-					// Good! transfer checksum matches sfv checksum
-					response.addComment("checksum match: SLAVE/SFV:" +
-							Long.toHexString(checksum));
-				} else if (checksum == 0) {
-					// Here we have two conditions:
-					if (transferFile.getSize() == 0) {
-						// The file has checksum = 0 and the size = 0 
-						// then it should be deleted.
-						response.addComment("0Byte File, Deleting...");
-						transferFile.deleteUnchecked();
-					} else
-						// The file has checksum = 0, although the size is != 0,
-						// meaning that we are not using checked transfers.
-						response.addComment("checksum match: SLAVE/SFV: DISABLED");
-				} else {
-					response.addComment("checksum mismatch: SLAVE: " +
-							Long.toHexString(checksum) + " SFV: " +
-							Long.toHexString(sfvChecksum));
-					response.addComment(" deleting file");
-					response.setMessage("Checksum mismatch, deleting file");
-					transferFile.deleteUnchecked();
-				}
-			} catch (NoAvailableSlaveException e) {
-				response.addComment(
-				"zipscript - SFV unavailable, slave(s) with .sfv file is offline");
+				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
+				DizInfo dizInfo = zipData.getDizInfo();
+				response.addComment(new String(new BASE64Decoder().decodeBuffer(dizInfo.getString()),"8859_1"));
+				//response.addComment(new String(Base64.b64tobyte(dizInfo.getString()),"8859_1"));
 			} catch (FileNotFoundException e) {
-				response.addComment(
-						"zipscript - SFV unavailable, IO error: " +
-						e.getMessage());
+				//Error fetching .diz, ignore
 			} catch (IOException e) {
-				response.addComment(
-						"zipscript - SFV unavailable, IO error: " +
-						e.getMessage());
+				//Error fetching .diz, ignore
+			} catch (NoAvailableSlaveException e) {
+				//Error fetching .diz, ignore
 			} catch (SlaveUnavailableException e) {
-				response.addComment(
-				"zipscript - SFV unavailable, slave(s) with .sfv file is offline");
+				//Error fetching .diz, ignore
 			}
 		}
-		return;
 	}
 
-	public void doZipscriptCWDStatsHook(CommandRequest request, CommandResponse response) {
+	public void doZipscriptCWDDizStatsHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
 			// CWD failed, abort stats
 			return;
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("cwd.racestats.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("cwd.zip.racestats.enabled").equalsIgnoreCase("true")) {
 			addRaceStats(request, response, response.getCurrentDirectory());
 		}
 	}
 
-	public void doZipscriptSTORStatsHook(CommandRequest request, CommandResponse response) {
+	public void doZipscriptSTORDizStatsHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 226) {
 			// STOR failed, abort stats
 			return;
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("stor.racestats.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("stor.zip.racestats.enabled").equalsIgnoreCase("true")) {
 			addRaceStats(request, response, request.getCurrentDirectory());
 		}
 	}
 
-	public void doZipscriptDELECleanupHook(CommandRequest request, CommandResponse response) {
+	public void doZipscriptDELEDizCleanupHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
-			// DELE failed, abort cleanup
+			// DELE failed, abort info
 			return;
 		}
 		String deleFileName;
@@ -234,11 +185,20 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
 		}
-		if (deleFileName.toLowerCase().endsWith(".sfv")) {
+		if (deleFileName.toLowerCase().endsWith(".zip")) {
 			try {
-				request.getCurrentDirectory().removeKey(SFVInfo.SFV);
+				boolean noZip = true;
+				// Check if there are any other zips left
+				for(FileHandle file : request.getCurrentDirectory().getFilesUnchecked()) {
+					if (file.getName().toLowerCase().endsWith(".zip")) {
+						noZip = false;
+					}
+				}
+				if (noZip) {
+					request.getCurrentDirectory().removeKey(DizInfo.DIZ);
+				}
 			} catch(FileNotFoundException e) {
-				// No inode to remove sfvinfo from
+				// No inode to remove dizinfo from or dir has been deleted
 			}
 		}
 	}
@@ -246,12 +206,13 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 	private void addRaceStats(CommandRequest request, CommandResponse response, DirectoryHandle dir) {
 		// show race stats
 		try {
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
-			SFVInfo sfvInfo = sfvData.getSFVInfo();
-			SFVStatus sfvStatus = sfvData.getSFVStatus();
-			Collection<UploaderPosition> racers = RankUtils.userSort(getSFVFiles(dir, sfvData),
+			ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
+			DizInfo dizInfo = zipData.getDizInfo();
+			DizStatus dizStatus = zipData.getDizStatus();
+
+			Collection<UploaderPosition> racers = RankUtils.userSort(getZipFiles(dir),
 					"bytes", "high");
-			Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
+			Collection<GroupPosition> groups = RankUtils.topFileGroup(getZipFiles(dir));
 
 			String racerline = _bundle.getString(_keyPrefix+"cwd.racers.body");
 			String groupline = _bundle.getString(_keyPrefix+"cwd.groups.body");
@@ -293,7 +254,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 				raceenv.add("position", String.valueOf(position));
 				raceenv.add("percent",
 						Integer.toString(
-								(stat.getFiles() * 100) / sfvInfo.getSize()) + "%");
+								(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
 
 				try {
 					racetext += (SimplePrintf.jprintf(racerline,
@@ -319,7 +280,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 				raceenv.add("files", Integer.toString(stat.getFiles()));
 				raceenv.add("percent",
 						Integer.toString(
-								(stat.getFiles() * 100) / sfvInfo.getSize()) + "%");
+								(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
 				raceenv.add("speed",
 						Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
@@ -334,13 +295,13 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
 			racetext += _bundle.getString(_keyPrefix+"cwd.groups.footer") + "\n";
 
-			env.add("completefiles", Integer.toString(sfvStatus.getPresent()) + "/" + Integer.toString(sfvInfo.getSize()));
-			env.add("totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
+			env.add("completefiles", Integer.toString(dizStatus.getPresent()) + "/" + Integer.toString(dizInfo.getTotal()));
+			env.add("totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
 			env.add("totalspeed",
-					Bytes.formatBytes(getXferspeed(dir, sfvData)) + "/s");
+					Bytes.formatBytes(getXferspeed(dir)) + "/s");
 			env.add("totalpercent",
 					Integer.toString(
-							(sfvStatus.getPresent() * 100) / sfvInfo.getSize()) +
+							(getZipFiles(dir).size() * 100) / dizInfo.getTotal()) +
 			"%");
 
 			racetext += _bundle.getString(_keyPrefix+"cwd.totals.body") + "\n";
@@ -371,5 +332,9 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		} catch (SlaveUnavailableException e) {
 			//Error fetching SFV, ignore
 		}
+	}
+
+	private boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+		return ((AsyncResponseZipCRCInfo) rslave.fetchResponse(index)).isOk();
 	}
 }

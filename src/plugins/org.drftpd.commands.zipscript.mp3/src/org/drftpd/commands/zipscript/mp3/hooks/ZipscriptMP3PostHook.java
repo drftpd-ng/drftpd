@@ -98,12 +98,12 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
 		}
-		if (deleFileName.endsWith(".mp3")) {
+		if (deleFileName.toLowerCase().endsWith(".mp3")) {
 			try {
 				boolean noMP3 = true;
 				// Check if there are any other mp3s left
 				for(FileHandle file : request.getCurrentDirectory().getFilesUnchecked()) {
-					if (file.getName().endsWith(".mp3")) {
+					if (file.getName().toLowerCase().endsWith(".mp3")) {
 						noMP3 = false;
 					}
 				}
@@ -168,9 +168,6 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 			} else {
 				response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix+"cwd.mp3info.text"));
 			}
-
-		} catch (RuntimeException ex) {
-			logger.error("", ex);
 		} catch (FileNotFoundException e) {
 			logger.debug("Exception: ",e);
 			// Error fetching mp3 info, ignore

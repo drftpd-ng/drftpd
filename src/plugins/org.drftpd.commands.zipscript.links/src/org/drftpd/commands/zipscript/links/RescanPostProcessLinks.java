@@ -25,10 +25,10 @@ import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.RescanPostProcessDirInterface;
+import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.protocol.zipscript.common.SFVStatus;
 
 /**
  * @author djb61

@@ -36,14 +36,13 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
+import org.drftpd.util.Base64;
 
 public class Blowfish {
 
 	private static final Logger logger = Logger.getLogger(Blowfish.class);
 
 	private static final String BEGIN = "+OK ";
-
-	private static final String B64 = "./0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 	private Cipher _ecipher;
 
@@ -90,7 +89,7 @@ public class Blowfish {
 			// Encrypt the padding string
 			byte[] encrypted = _ecipher.doFinal(buff); 
 			// B64 ENCRYPTION (mircryption needed)
-			rEncrypt = bytetoB64(encrypted);
+			rEncrypt = Base64.bytetoB64(encrypted);
 		} catch (Exception e) {
 			logger.warn("Exception whilst encrypting blowfish string",e);
 		}
@@ -105,7 +104,7 @@ public class Blowfish {
 		if(encrypt.startsWith("+OK ")) {encrypt = encrypt.substring(4,encrypt.length());}
 		if(encrypt.startsWith("mcps "))	{encrypt = encrypt.substring(5,encrypt.length());}
 		// B64 DECRYPTION (mircryption needed)
-		byte[] again = b64tobyte(encrypt); 
+		byte[] again = Base64.b64tobyte(encrypt); 
 
 		byte[] decrypted = null;
 
@@ -137,123 +136,5 @@ public class Blowfish {
 		}
 	}
 
-	public static byte[] b64tobyte(String ec) {
-
-		String dc = "";
-
-		int k = -1;
-		while (k < (ec.length() - 1)) {
-
-			int right = 0;
-			int left = 0;
-			int v = 0;
-			int w = 0;
-			int z = 0;
-
-			for (int i = 0; i < 6; i++) {
-				k++;
-				v = B64.indexOf(ec.charAt(k));
-				right |= v << (i * 6);
-			}
-
-			for (int i = 0; i < 6; i++) {
-				k++;
-				v = B64.indexOf(ec.charAt(k));
-				left |= v << (i * 6);
-			}
-
-			for (int i = 0; i < 4; i++) {
-				w = ((left & (0xFF << ((3 - i) * 8))));
-				z = w >> ((3 - i) * 8);
-				if (z < 0) {
-					z = z + 256;
-				}
-				dc += (char) z;
-			}
-
-			for (int i = 0; i < 4; i++) {
-				w = ((right & (0xFF << ((3 - i) * 8))));
-				z = w >> ((3 - i) * 8);
-				if (z < 0) {
-					z = z + 256;
-				}
-				dc += (char) z;
-			}
-		}
-
-		byte[] result = new byte[1024];
-		try {
-			// Force the encoding result string
-			result = dc.getBytes("8859_1");
-		} catch (UnsupportedEncodingException e) {
-			// Shouldn't be possible as this is a JVM default charset
-			logger.debug("Couldn't use 8859_1 charset",e);
-		}
-		return result;
-	}
-
-	public static String bytetoB64(byte[] ec) {
-
-		String dc = "";
-
-		int left = 0;
-		int right = 0;
-		int k = -1;
-		int v;
-
-		while (k < (ec.length - 1)) {
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			left = v << 24;
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			left += v << 16;
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			left += v << 8;
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			left += v;
-
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			right = v << 24;
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			right += v << 16;
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			right += v << 8;
-			k++;
-			v = ec[k];
-			if (v < 0)
-				v += 256;
-			right += v;
-
-			for (int i = 0; i < 6; i++) {
-				dc += B64.charAt(right & 0x3F);
-				right = right >> 6;
-			}
-
-			for (int i = 0; i < 6; i++) {
-				dc += B64.charAt(left & 0x3F);
-				left = left >> 6;
-			}
-		}
-		return dc;
-	}
+	
 }

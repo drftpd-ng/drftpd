@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.zipscript.mp3.list;
+package org.drftpd.commands.zipscript.zip.list;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,15 +22,17 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.list.ListElementsContainer;
 import org.drftpd.commands.zipscript.list.NoEntryAvailableException;
 import org.drftpd.commands.zipscript.list.ZipscriptListStatusBarInterface;
-import org.drftpd.commands.zipscript.mp3.vfs.ZipscriptVFSDataMP3;
+import org.drftpd.commands.zipscript.zip.DizStatus;
+import org.drftpd.commands.zipscript.zip.ZipTools;
+import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
-import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
+import org.drftpd.protocol.zipscript.zip.common.DizInfo;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -38,9 +40,9 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
+public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStatusBarInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptMP3StatusBar.class);
+	private static final Logger logger = Logger.getLogger(ZipscriptDizStatusBar.class);
 
 	public ArrayList<String> getStatusBarEntry(DirectoryHandle dir,ListElementsContainer container) throws NoEntryAvailableException {
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
@@ -50,34 +52,43 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
 		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled").equalsIgnoreCase("true");
 		if (statusBarEnabled) {
 			try {
-				ArrayList<String> statusBarEntries = new ArrayList<String>();
-				ZipscriptVFSDataMP3 mp3Data = new ZipscriptVFSDataMP3(dir);
-				MP3Info mp3Info = mp3Data.getMP3Info();
+				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
+				DizInfo dizInfo = zipData.getDizInfo();
+				DizStatus dizStatus = zipData.getDizStatus();
 				ReplacerEnvironment env = new ReplacerEnvironment();
-				ID3Tag id3 = mp3Info.getID3Tag();
-				if (id3 != null) {
-					env.add("artist", id3.getArtist());
-					env.add("genre", id3.getGenre());
-					env.add("album", id3.getAlbum());
-					env.add("year", id3.getYear());
-				} else {
-					throw new NoEntryAvailableException();
+
+				ArrayList<String> statusBarEntries = new ArrayList<String>();
+				if (dizInfo.getTotal() != 0) {
+					env.add("complete.total", "" + dizInfo.getTotal());
+					env.add("complete.number", "" + dizStatus.getPresent());
+					env.add("complete.percent", "" + (dizStatus.getPresent() * 100)
+							/ dizInfo.getTotal());
+					env.add("complete.totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
+					statusBarEntries.add(container.getSession().jprintf(bundle,
+							keyPrefix+"statusbar.complete", env, container.getUser()));
+
+					if (dizStatus.getOffline() != 0) {
+						env.add("offline.number","" + dizStatus.getOffline());
+						env.add("offline.percent",""+ (dizStatus.getOffline() * 100) / dizStatus.getPresent());
+						env.add("online.number","" + dizStatus.getPresent());
+						env.add("online.percent","" + (dizStatus.getAvailable() * 100) / dizStatus.getPresent());
+						statusBarEntries.add(container.getSession().jprintf(bundle,
+								keyPrefix+"statusbar.offline",env,container.getUser()));
+					}
+					return statusBarEntries;
 				}
-				statusBarEntries.add(container.getSession().jprintf(bundle,
-						keyPrefix+"statusbar.id3tag",env,container.getUser()));
-				return statusBarEntries;
 			} catch (FileNotFoundException e) {
 				logger.debug("Exception: ",e);
-				// Error fetching mp3 info, ignore
+				// Error fetching diz info, ignore
 			} catch (IOException e) {
 				logger.debug("Exception: ",e);
-				// Error fetching mp3 info, ignore
+				// Error fetching diz info, ignore
 			} catch (NoAvailableSlaveException e) {
 				logger.debug("Exception: ",e);
-				// Error fetching mp3 info, ignore
+				// Error fetching diz info, ignore
 			} catch (SlaveUnavailableException e) {
 				logger.debug("Exception: ",e);
-				// Error fetching mp3 info, ignore
+				// Error fetching diz info, ignore
 			}
 		}
 		throw new NoEntryAvailableException();

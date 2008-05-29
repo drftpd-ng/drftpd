@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.zipscript.zip.slave" version="2.1.0">
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptZipProtocol"/>
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.commands.zipscript.zip" />
+		</attribute>
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.zip.common" />
+		<import plugin-id="slave" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.zipscript.zip.slave" path="org.drftpd.protocol.zipscript.zip.slave.jar" type="code">
+		</library>
+		<library id="truezip" path="../../../lib/truezip-6.6.jar" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+			
+	<extension plugin-id="slave" point-id="Handler" id="ZipCRCHandler">
+		<parameter id="Name" value="zipcrc" />
+		<parameter id="Class" value="org.drftpd.protocol.zipscript.zip.slave.ZipscriptZipHandler" />
+		<parameter id="Method" value="handleZipCRC" />
+	</extension>
+	<extension plugin-id="slave" point-id="Handler" id="ZipDizInfoHandler">
+		<parameter id="Name" value="zipdiz" />
+		<parameter id="Class" value="org.drftpd.protocol.zipscript.zip.slave.ZipscriptZipHandler" />
+		<parameter id="Method" value="handleZipDizInfo" />
+	</extension>
+</plugin>

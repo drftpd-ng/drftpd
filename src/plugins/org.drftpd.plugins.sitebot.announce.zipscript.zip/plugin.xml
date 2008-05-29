@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.sitebot.announce.zipscript.zip" version="2.1.0">
+	<requires>
+		<import plugin-id="org.drftpd.commands.zipscript.zip" />
+		<import plugin-id="org.drftpd.plugins.sitebot" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.sitebot.announce.zipscript.zip" path="org.drftpd.plugins.sitebot.announce.zipscript.zip.jar" type="code">
+		</library>
+	</runtime>
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="ZipAnnounce">
+		<parameter id="class" value="org.drftpd.plugins.sitebot.announce.zipscript.zip.ZipAnnouncer" />
+	</extension>
+</plugin>
