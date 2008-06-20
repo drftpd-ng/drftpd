@@ -115,13 +115,11 @@ public class Blowfish {
 
 			// Recup exact length
 			int leng = 0;
-			while(decrypted[leng] != 0x0) {leng++;}
+			while(decrypted[leng] != 0x0 && leng < (decrypted.length - 1)) {leng++;}
 			byte[] finalArray = new byte[leng];
 			// Format & Limit the Result String
-			int i = 0;
-			while(decrypted[i] != 0x0) {
+			for(int i = 0; i < leng; i++) {
 				finalArray[i] = decrypted[i];
-				i++;
 			}			
 			//Force again the encoding result string
 			return new String(finalArray,"8859_1");
