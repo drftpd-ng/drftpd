@@ -66,11 +66,11 @@ public class SiteManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_LIST(CommandRequest request) {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		
+
 		DirectoryHandle dir = request.getCurrentDirectory();
 		InodeHandle target;
 		User user = request.getSession().getUserNull(request.getUser());
-		
+
 		if (request.hasArgument()) {
 			try {
 				target = dir.getInodeHandle(request.getArgument(), user);
@@ -81,7 +81,7 @@ public class SiteManagementHandler extends CommandInterface {
 		} else {
 			target = dir;
 		}
-		
+
 		List<InodeHandle> inodes;
 		try {
 			if (target.isFile()) {
@@ -172,7 +172,7 @@ public class SiteManagementHandler extends CommandInterface {
 			GlobalContext.getGlobalContext().reloadFtpConfig();
 			GlobalContext.getGlobalContext().loadPluginsConfig();
 			GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
-	
+
 			GlobalContext.getEventService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
 
 		} catch (IOException e) {
@@ -186,7 +186,7 @@ public class SiteManagementHandler extends CommandInterface {
 		// http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
 		try {
 			Field cacheList = ResourceBundle.class
-					.getDeclaredField("cacheList");
+			.getDeclaredField("cacheList");
 			cacheList.setAccessible(true);
 			((Map<?,?>) cacheList.get(ResourceBundle.class)).clear();
 			cacheList.setAccessible(false);
@@ -197,8 +197,8 @@ public class SiteManagementHandler extends CommandInterface {
 		try {
 			OptionConverter.selectAndConfigure(
 					new URL(PropertyHelper.getProperty(System.getProperties(),
-							"log4j.configuration")), null, LogManager
-							.getLoggerRepository());
+					"log4j.configuration")), null, LogManager
+					.getLoggerRepository());
 		} catch (MalformedURLException e) {
 			logger.error(e);
 			return new CommandResponse(500, e.getMessage());
@@ -213,7 +213,7 @@ public class SiteManagementHandler extends CommandInterface {
 
 		if (!request.hasArgument()) {
 			message = "Service shutdown issued by "
-					+ request.getUser();
+				+ request.getUser();
 		} else {
 			message = request.getArgument();
 		}
@@ -267,23 +267,22 @@ public class SiteManagementHandler extends CommandInterface {
 		 * just its presence, making future incompatibilities more likely.
 		 */
 		try {
-			Class<?> jarFileFactory = Class.forName ("sun.net.www.protocol.jar.JarFileFactory");
+			Class<?> jarFileFactory = Class.forName("sun.net.www.protocol.jar.JarFileFactory");
 
 			Field fileCache = jarFileFactory.getDeclaredField("fileCache");
 			Field urlCache = jarFileFactory.getDeclaredField("urlCache");
 
 			fileCache.setAccessible(true);
-			((Map<?,?>) fileCache.get(ResourceBundle.class)).clear();
+			((Map<?,?>) fileCache.get(jarFileFactory)).clear();
 			fileCache.setAccessible(false);
 
 			urlCache.setAccessible(true);
-			((Map<?,?>) urlCache.get(ResourceBundle.class)).clear();
+			((Map<?,?>) urlCache.get(jarFileFactory)).clear();
 			urlCache.setAccessible(false);
 
-			} catch (Exception e) {
-			// Eat the exception since there's nothing the caller can do
+		} catch (Exception e) {
 			logger.error("Exception while clearing jar URL cache: " + e.getMessage (), e);
-			}
+		}
 
 		return new CommandResponse(200, "Successfully unloaded your plugin");
 	}
