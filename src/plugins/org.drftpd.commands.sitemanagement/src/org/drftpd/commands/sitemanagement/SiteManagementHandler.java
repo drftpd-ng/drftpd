@@ -110,8 +110,7 @@ public class SiteManagementHandler extends CommandInterface {
 		try {
 			fis = new FileInputStream(jpfConf);
 			jpfProps.load(fis);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			logger.debug("Exception loading JPF properties",e);
 			return new CommandResponse(500,e.getMessage());
 		}
@@ -119,9 +118,8 @@ public class SiteManagementHandler extends CommandInterface {
 			if (fis != null) {
 				try {
 					fis.close();
-				}
-				catch (IOException e) {
-					logger.debug("Exception closing input stream",e);
+				} catch (IOException e) {
+					// Stream is already closed
 				}
 			}
 		}
@@ -129,23 +127,20 @@ public class SiteManagementHandler extends CommandInterface {
 		DefaultPluginsCollector collector = new DefaultPluginsCollector();
 		try {
 			collector.configure(jpfProps);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			logger.debug("Exception configuring plugins collector",e);
 			return new CommandResponse(500,e.getMessage());
 		}
 		try {
 			manager.publishPlugins(collector.collectPluginLocations().toArray(new PluginManager.PluginLocation[0]));
-		}
-		catch (JpfException e) {
+		} catch (JpfException e) {
 			logger.debug("Exception publishing plugins", e);
 			return new CommandResponse(500,e.getMessage());
 		}
 		PluginDescriptor newPlugin;
 		try {
 			newPlugin = manager.getRegistry().getPluginDescriptor(request.getArgument());
-		}
-		catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException e) {
 			return new CommandResponse(500, "No such plugin could be found");
 		}
 		if (manager.isPluginActivated(newPlugin)) {
@@ -193,7 +188,7 @@ public class SiteManagementHandler extends CommandInterface {
 			Field cacheList = ResourceBundle.class
 					.getDeclaredField("cacheList");
 			cacheList.setAccessible(true);
-			((Map) cacheList.get(ResourceBundle.class)).clear();
+			((Map<?,?>) cacheList.get(ResourceBundle.class)).clear();
 			cacheList.setAccessible(false);
 		} catch (Exception e) {
 			logger.error("", e);
@@ -256,6 +251,40 @@ public class SiteManagementHandler extends CommandInterface {
 			return new CommandResponse(500, "Unable to unload plugin");
 		}
 		manager.getRegistry().unregister(new String[] {request.getArgument()});
+		/* The following is a rather nasty hack but unfortunately appears to be the only way
+		 * to do this. When plugins are loaded from .jar archives doing an unloadplugin, recompile
+		 * with altered code, loadplugin will not work. This is because internally the JVM caches
+		 * certain characteristics of the jar, such as length. Even though JPF will use a completely
+		 * new classloader instance this caching remains, this leads to failure with issues like
+		 * truncated class errors.
+		 * Sun do not provide a way to clear this cache so we use reflection on an internal sun class
+		 * to invalidate the cache on reload. This is far from ideal and limits us to Sun JVMs (though
+		 * I'm pretty sure we were anyway) and is of course liable to change in future JDK versions, if 
+		 * that happens we will have to revisit this.
+		 * I did ponder trying to just invalidate the required entries rather than the entire cache but
+		 * firstly as the jars are local and unloadplugin not a frequent operation I thought this was
+		 * unnecessary, secondly this would tie us to the exact format of the private map rather than
+		 * just its presence, making future incompatibilities more likely.
+		 */
+		try {
+			Class<?> jarFileFactory = Class.forName ("sun.net.www.protocol.jar.JarFileFactory");
+
+			Field fileCache = jarFileFactory.getDeclaredField("fileCache");
+			Field urlCache = jarFileFactory.getDeclaredField("urlCache");
+
+			fileCache.setAccessible(true);
+			((Map<?,?>) fileCache.get(ResourceBundle.class)).clear();
+			fileCache.setAccessible(false);
+
+			urlCache.setAccessible(true);
+			((Map<?,?>) urlCache.get(ResourceBundle.class)).clear();
+			urlCache.setAccessible(false);
+
+			} catch (Exception e) {
+			// Eat the exception since there's nothing the caller can do
+			logger.error("Exception while clearing jar URL cache: " + e.getMessage (), e);
+			}
+
 		return new CommandResponse(200, "Successfully unloaded your plugin");
 	}
 }
