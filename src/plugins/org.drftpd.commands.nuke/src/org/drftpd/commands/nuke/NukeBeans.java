@@ -143,9 +143,9 @@ public class NukeBeans {
 	 */
 	public static List<NukedUser> getNukeeList(NukeData nd) {
 		ArrayList<NukedUser> list = new ArrayList<NukedUser>();
-		for (Map.Entry entry : nd.getNukees().entrySet()) {
-			String user = (String) entry.getKey();
-			Long l = (Long) entry.getValue();
+		for (Map.Entry<String,Long> entry : nd.getNukees().entrySet()) {
+			String user = entry.getKey();
+			Long l = entry.getValue();
 			list.add(new NukedUser(user, l.longValue()));
 		}
 		return list;

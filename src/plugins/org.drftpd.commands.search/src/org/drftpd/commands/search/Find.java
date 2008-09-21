@@ -603,16 +603,6 @@ public class Find extends CommandInterface {
 			} else if (arg.equalsIgnoreCase("-nogroup")) {
 				options.add(new OptionGroup("drftpd"));
 			} else if (arg.equalsIgnoreCase("-action")) {
-				User user = null;
-				try {
-					user = request.getUserObject();
-				} catch (NoSuchUserException e) {
-					logger.error("The user just issued the command, how doesnt it exist?", e);
-					return new CommandResponse(530, "No such user");
-				} catch (UserFileException e) {
-					logger.error("Error reading userfile", e);
-					return new CommandResponse(530, "IOException: " + e.getMessage());
-				}
 				
 				String action = iter.next();
 

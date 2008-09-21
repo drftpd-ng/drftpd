@@ -43,7 +43,7 @@ class UnixFileSystem extends FileSystem {
 					continue;
 				}
 
-				Enumeration st = new StringTokenizer(line, " \t");
+				Enumeration<Object> st = new StringTokenizer(line, " \t");
 
 				if (!st.hasMoreElements()) {
 					continue;

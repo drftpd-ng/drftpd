@@ -21,7 +21,7 @@ package org.drftpd.util;
  * @author mog
  * @version $Id$
  */
-public class UploaderPosition implements Comparable {
+public class UploaderPosition implements Comparable<UploaderPosition> {
 	long _bytes;
 
 	int _files;
@@ -36,10 +36,6 @@ public class UploaderPosition implements Comparable {
 		_bytes = bytes;
 		_files = files;
 		_xfertime = xfertime;
-	}
-
-	public int compareTo(Object o) {
-		return compareTo((UploaderPosition) o);
 	}
 
 	/**

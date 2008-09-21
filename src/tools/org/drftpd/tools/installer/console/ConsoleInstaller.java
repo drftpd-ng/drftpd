@@ -157,18 +157,13 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 				}
 			}
 			_config.setPluginSelections(selPlugins);
-			for (PluginData plugin : _pluginPanel.getPlugins()) {
-				if (plugin.isSelected()) {
-					toBuild.add(plugin);
-				}
-			}
 			try {
 				_config.writeToDisk();
 			} catch (IOException e) {
 				logger.warn("Unable to write current config to build.conf",e);
 			}
 			PipedInputStream logInput = new PipedInputStream();
-			LogWindow logWindow = new LogWindow(logInput,_config);
+			LogWindow logWindow = new LogWindow(logInput,_config,toBuild.size());
 			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow);
 			logWindow.setBuilder(builder);
 			try {

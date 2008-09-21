@@ -69,8 +69,7 @@ public class RootCollection {
 		long mostFree = 0;
 		Root mostFreeRoot = null;
 
-		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
+		for (Root root : _roots) {
 			long diskSpaceAvailable = root.getDiskSpaceAvailable();
 
 			if (diskSpaceAvailable > mostFree) {
@@ -139,8 +138,7 @@ public class RootCollection {
 				roots.add(r);
 			}
 		}
-		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
+		for (Root root : _roots) {
 
 			if (root.getFile(path).exists()) {
 				roots.add(root);
@@ -156,8 +154,7 @@ public class RootCollection {
 	}
 
 	public Root getRootForFile(String path) throws FileNotFoundException {
-		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
+		for (Root root : _roots) {
 			File file = new File(root.getPath() + File.separatorChar + path);
 			if (file.exists()) {
 				return root;
@@ -169,8 +166,7 @@ public class RootCollection {
 	public long getTotalDiskSpaceAvailable() {
 		long totalDiskSpaceAvailable = 0;
 
-		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
+		for (Root root : _roots) {
 			File rootFile = root.getFile();
 			totalDiskSpaceAvailable += rootFile.getDiskSpaceAvailable();
 		}
@@ -181,8 +177,7 @@ public class RootCollection {
 	public long getTotalDiskSpaceCapacity() {
 		long totalDiskSpaceCapacity = 0;
 
-		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
+		for (Root root : _roots) {
 			File rootFile = root.getFile();
 			totalDiskSpaceCapacity += rootFile.getDiskSpaceCapacity();
 		}
@@ -190,11 +185,11 @@ public class RootCollection {
 		return totalDiskSpaceCapacity;
 	}
 
-	public Iterator iterator() {
+	public Iterator<Root> iterator() {
 		return _roots.iterator();
 	}
 
-	private static void validateRoots(Collection roots) throws IOException {
+	private static void validateRoots(Collection<Root> roots) throws IOException {
 		File[] mountsArr = File.listMounts();
 		ArrayList<File> mounts = new ArrayList<File>(mountsArr.length);
 
@@ -221,14 +216,8 @@ public class RootCollection {
 			}
 		});
 
-		for (Iterator iter = roots.iterator(); iter.hasNext();) {
-			Object o = iter.next();
+		for (Root root : roots) {
 
-			if (!(o instanceof Root)) {
-				throw new RuntimeException();
-			}
-
-			Root root = (Root) o;
 			File rootFile = root.getFile();
 
 			if (!rootFile.exists()) {
@@ -246,8 +235,7 @@ public class RootCollection {
 			
 			Hashtable<String, Object> usedMounts = new Hashtable<String, Object>();
 
-			for (Iterator iterator = mounts.iterator(); iterator.hasNext();) {
-				File mount = (File) iterator.next();
+			for (File mount : mounts) {
 
 				if (fullpath.startsWith(mount.getPath())) {
 					logger.info(fullpath + " in mount " + mount.getPath());
@@ -263,8 +251,7 @@ public class RootCollection {
 				}
 			}
 
-			for (Iterator iterator = roots.iterator(); iterator.hasNext();) {
-				Root root2 = (Root) iterator.next();
+			for (Root root2 : roots) {
 
 				if (root == root2) {
 					continue;
@@ -284,8 +271,7 @@ public class RootCollection {
 		if (Slave.isWin32) {
 			int maxPath = 0;
 
-			for (Iterator iter = iterator(); iter.hasNext();) {
-				Root root = (Root) iter.next();
+			for (Root root : _roots) {
 				maxPath = Math.max(root.getPath().length(), maxPath);
 			} // constant for win32, see
 

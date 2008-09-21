@@ -275,9 +275,7 @@ public abstract class ArchiveType {
 			return true;
 		}
 
-		for (Iterator iter = slaveSet.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
-
+		for (RemoteSlave rslave : slaveSet) {
 			if (!rslave.isAvailable()) {
 				throw new OfflineSlaveException(rslave.getName()
 						+ " is offline");
@@ -351,8 +349,8 @@ public abstract class ArchiveType {
 
 	public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
 		while (true) {
-			for (Iterator iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = (Job) iter.next();
+			for (Iterator<Job> iter = jobQueue.iterator(); iter.hasNext();) {
+				Job job = iter.next();
 
 				if (job.isDone()) {
 					logger.debug("Job " + job + " is done being sent");
@@ -373,11 +371,11 @@ public abstract class ArchiveType {
 
 	public abstract String toString();
 
-	protected String outputSlaves(Collection slaveList) {
+	protected String outputSlaves(Collection<RemoteSlave> slaveList) {
 		String toReturn = new String();
 
-		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
+		for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = iter.next();
 			toReturn = toReturn + rslave.getName();
 
 			if (iter.hasNext()) {

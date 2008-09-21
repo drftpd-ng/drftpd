@@ -38,9 +38,6 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.InodeHandleInterface;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.VirtualFileSystemInode;
-
 
 /**
  * @author mog
@@ -101,7 +98,7 @@ public class SlavetopFilter extends Filter {
         }
         ArrayList<ScoreChart.SlaveScore> slavescores = 
         	new ArrayList<ScoreChart.SlaveScore>(slavesmap.values());
-        ArrayList ss = slavescores;
+        ArrayList<ScoreChart.SlaveScore> ss = slavescores;
         Collections.sort(ss, Collections.reverseOrder());
 
 
@@ -110,9 +107,9 @@ public class SlavetopFilter extends Filter {
         		scorechart.removeSlaveFromChart(score.getRSlave());
         	}
         }
-        Iterator iter = slavescores.iterator();
+        Iterator<SlaveScore> iter = slavescores.iterator();
         for (int i = 0; i < _topslaves && iter.hasNext(); i++) {
-            ScoreChart.SlaveScore score = (SlaveScore) iter.next();
+            ScoreChart.SlaveScore score = iter.next();
 
             try {
                 scorechart.getScoreForSlave(score.getRSlave()).addScore(_assign);

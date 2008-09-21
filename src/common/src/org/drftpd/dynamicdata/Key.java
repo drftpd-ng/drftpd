@@ -23,14 +23,15 @@ import java.io.Serializable;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class Key implements Serializable {
 	private String _key;
 
-	private Class _owner;
+	private Class<?> _owner;
 
-	private Class _type;
+	private Class<?> _type;
 
-	public Key(Class owner, String key, Class type) {
+	public Key(Class<?> owner, String key, Class<?> type) {
 		assert owner != null;
 		assert key != null;
 		assert type != null;
@@ -53,11 +54,11 @@ public class Key implements Serializable {
 		return _key;
 	}
 
-	public Class getOwner() {
+	public Class<?> getOwner() {
 		return _owner;
 	}
 
-	public Class getType() {
+	public Class<?> getType() {
 		return _type;
 	}
 

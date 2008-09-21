@@ -19,7 +19,6 @@ package org.drftpd.usermanager;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.util.Iterator;
 
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
@@ -40,9 +39,9 @@ public class UserManagerConverter {
 	public static void convert(User from, User to) throws UserFileException {
 		logger.debug("Converting " + from.getName());
 
-		for (Iterator iter = from.getGroups().iterator(); iter.hasNext();) {
+		for (String group : from.getGroups()) {
 			try {
-				to.addSecondaryGroup((String) iter.next());
+				to.addSecondaryGroup(group);
 			} catch (DuplicateElementException e) {
 				logger.warn("", e);
 			}
@@ -132,7 +131,7 @@ public class UserManagerConverter {
 		UserManager to;
 
 		try {
-			Constructor c = Class.forName(args[1]).getConstructor(
+			Constructor<?> c = Class.forName(args[1]).getConstructor(
 					new Class[] { boolean.class });
 			to = (UserManager) c
 					.newInstance(new Object[] { new Boolean(false) });
@@ -142,8 +141,7 @@ public class UserManagerConverter {
 
 		logger.debug(from.getAllUsers());
 
-		for (Iterator iter = from.getAllUsers().iterator(); iter.hasNext();) {
-			User user = (User) iter.next();
+		for (User user : from.getAllUsers()) {
 			convert(user, to.create(user.getName()));
 		}
 	}

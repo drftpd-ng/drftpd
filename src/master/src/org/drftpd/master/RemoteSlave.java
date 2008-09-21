@@ -139,12 +139,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	
 	public static final Key SSL = new Key(RemoteSlave.class, "ssl", Boolean.class);
 
-	public final static Hashtable rslavesToHashtable(Collection rslaves) {
+	public final static Hashtable<String,RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
 		Hashtable<String, RemoteSlave> map = new Hashtable<String, RemoteSlave>(
 				rslaves.size());
 
-		for (Iterator iter = rslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
+		for (Iterator<RemoteSlave> iter = rslaves.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = iter.next();
 			map.put(rslave.getName(), rslave);
 		}
 
@@ -313,8 +313,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			bytesReceived = getReceivedBytes();
 			bytesSent = getSentBytes();
 
-			for (Iterator i = _transfers.values().iterator(); i.hasNext();) {
-				RemoteTransfer transfer = (RemoteTransfer) i.next();
+			for (Iterator<RemoteTransfer> i = _transfers.values().iterator(); i.hasNext();) {
+				RemoteTransfer transfer = i.next();
 				switch (transfer.getTransferDirection()) {
 				case Transfer.TRANSFER_RECEIVING_UPLOAD:
 					throughputUp += transfer.getXferSpeed();

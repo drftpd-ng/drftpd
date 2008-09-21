@@ -49,7 +49,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	private FilterChain _jobDownChain;
 	private FilterChain _jobUpChain;
 	
-	private CaseInsensitiveHashMap<String, Class> _filtersMap;
+	private CaseInsensitiveHashMap<String, Class<Filter>> _filtersMap;
 
 	public SlaveSelectionManager() throws IOException {
 		initFilters();
@@ -57,7 +57,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	}
 	
 	private void initFilters() {
-		CaseInsensitiveHashMap<String, Class> filtersMap = new CaseInsensitiveHashMap<String, Class>();
+		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<String, Class<Filter>>();
 		
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("org.drftpd.slaveselection.filter", "Filter");
@@ -72,8 +72,8 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 				if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor())) {
 					manager.activatePlugin(pluginId);
 				}
-				
-				Class clazz = classLoader.loadClass(className);
+				@SuppressWarnings("unchecked")
+				Class<Filter> clazz = (Class<Filter>)classLoader.loadClass(className);
 				if (clazz.getSuperclass() != Filter.class) {
 					logger.error(className + " does not extend Filter.class");
 					continue;
@@ -92,9 +92,10 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 		_filtersMap = filtersMap;
 	}
 	
-	public CaseInsensitiveHashMap<String, Class> getFiltersMap() {
+	@SuppressWarnings("unchecked")
+	public CaseInsensitiveHashMap<String, Class<Filter>> getFiltersMap() {
 		// we dont want to pass this object around allowing it to be modified, make a copy of it.
-		return (CaseInsensitiveHashMap<String, Class>) _filtersMap.clone();
+		return (CaseInsensitiveHashMap<String, Class<Filter>>) _filtersMap.clone();
 	}
 
 	/**

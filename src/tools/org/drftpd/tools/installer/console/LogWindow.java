@@ -20,7 +20,10 @@ package org.drftpd.tools.installer.console;
 import charva.awt.BorderLayout;
 import charva.awt.Color;
 import charva.awt.Container;
-import charva.awt.FlowLayout;
+import charva.awt.Dimension;
+import charva.awt.GridBagConstraints;
+import charva.awt.GridBagLayout;
+import charva.awt.Insets;
 import charva.awt.Toolkit;
 import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
@@ -35,6 +38,7 @@ import charvax.swing.JButton;
 import charvax.swing.JFileChooser;
 import charvax.swing.JFrame;
 import charvax.swing.JPanel;
+import charvax.swing.JProgressBar;
 import charvax.swing.JScrollPane;
 import charvax.swing.JTextArea;
 import charvax.swing.border.LineBorder;
@@ -44,13 +48,13 @@ import org.drftpd.tools.installer.FileLogger;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginBuilderThread;
-import org.drftpd.tools.installer.UserFileLocator;
+import org.drftpd.tools.installer.LogWindowInterface;
 
 /**
  * @author djb61
  * @version $Id$
  */
-public class LogWindow extends JFrame implements UserFileLocator {
+public class LogWindow extends JFrame implements LogWindowInterface {
 
 	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
@@ -58,16 +62,19 @@ public class LogWindow extends JFrame implements UserFileLocator {
 	private boolean _suppressLog;
 	private FileLogger _fileLog;
 	private JButton _okButton;
+	private JProgressBar _progressBar;
 	private JTextArea _logArea;
 	private BufferedReader _logReader;
 	private PipedInputStream _logInput;
 	private PluginBuilder _builder;
+	private int _pluginCount;
 
-	public LogWindow(PipedInputStream logInput, InstallerConfig config) {
+	public LogWindow(PipedInputStream logInput, InstallerConfig config, int pluginCount) {
 		super("Build Log");
 		_fileLogEnabled = config.getFileLogging();
 		_suppressLog = config.getSuppressLog();
 		_logInput = logInput;
+		_pluginCount = pluginCount;
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		JPanel centerPanel = new JPanel();
@@ -86,13 +93,19 @@ public class LogWindow extends JFrame implements UserFileLocator {
 		pluginBorder.setTitle("Plugin Build Log");
 		logPane.setViewportBorder(pluginBorder);
 		_logArea.setColumns(toolkit.getScreenColumns() - 4);
-		_logArea.setRows(toolkit.getScreenRows() - 11);
+		_logArea.setRows(toolkit.getScreenRows() - 12);
 		centerPanel.add(logPane, BorderLayout.CENTER);
 		contentPane.add(centerPanel, BorderLayout.CENTER);
 		JPanel southPanel = new JPanel();
-		FlowLayout southLayout = new FlowLayout();
-		southLayout.setAlignment(FlowLayout.CENTER);
+		GridBagLayout southLayout = new GridBagLayout();
 		southPanel.setLayout(southLayout);
+		_progressBar = new JProgressBar(0, _pluginCount);
+		_progressBar.setValue(0);
+		_progressBar.setString("Built 0/"+_pluginCount+" plugins");
+		_progressBar.setStringPainted(true);
+		_progressBar.setSize(new Dimension(toolkit.getScreenColumns() - 4, 1));
+		southPanel.add(_progressBar, new GridBagConstraints(0,0,1,1,100.0,0.0
+				,GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(0, 1, 0, 1), 0, 0));
 		_okButton = new JButton();
 		_okButton.setText("OK");
 		_okButton.setEnabled(false);
@@ -101,7 +114,8 @@ public class LogWindow extends JFrame implements UserFileLocator {
 				setVisible(false);
 			}
 		});
-		southPanel.add(_okButton);
+		southPanel.add(_okButton, new GridBagConstraints(0,1,1,1,100.0,0.0
+				,GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(0, 1, 0, 1), 0, 0));
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 		setSize(toolkit.getScreenColumns(),toolkit.getScreenRows() - 6);
 		setLocation(0,2);
@@ -133,6 +147,15 @@ public class LogWindow extends JFrame implements UserFileLocator {
 		} else {
 			return null;
 		}
+	}
+
+	public void setProgress(int pluginsDone) {
+		_progressBar.setValue(pluginsDone);
+		_progressBar.setString("Built "+pluginsDone+"/"+_pluginCount+" plugins");
+	}
+
+	public void setProgressMessage(String message) {
+		_progressBar.setString(message);
 	}
 
 	private class ReadingThread implements Runnable {

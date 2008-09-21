@@ -20,7 +20,10 @@ package org.drftpd.tools.installer.swing;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -33,6 +36,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.border.EtchedBorder;
@@ -40,13 +44,13 @@ import javax.swing.border.TitledBorder;
 
 import org.drftpd.tools.installer.FileLogger;
 import org.drftpd.tools.installer.InstallerConfig;
-import org.drftpd.tools.installer.UserFileLocator;
+import org.drftpd.tools.installer.LogWindowInterface;
 
 /**
  * @author djb61
  * @version $Id$
  */
-public class LogWindow extends JFrame implements UserFileLocator {
+public class LogWindow extends JFrame implements LogWindowInterface {
 
 	private boolean _fileLogEnabled;
 	private boolean _suppressLog;
@@ -55,11 +59,13 @@ public class LogWindow extends JFrame implements UserFileLocator {
 	private JButton _exitButton;
 	private JButton _okButton;
 	private JButton _selectAllButton;
+	private JProgressBar _progressBar;
 	private JTextArea _logArea;
 	private BufferedReader _logReader;
 	private PipedInputStream _logInput;
+	private int _pluginCount;
 
-	public LogWindow(PipedInputStream logInput, JButton buildButton, JButton selectAllButton, JButton exitButton, InstallerConfig config) {
+	public LogWindow(PipedInputStream logInput, JButton buildButton, JButton selectAllButton, JButton exitButton, InstallerConfig config, int pluginCount) {
 		super("Build Log");
 		_fileLogEnabled = config.getFileLogging();
 		_suppressLog = config.getSuppressLog();
@@ -67,6 +73,7 @@ public class LogWindow extends JFrame implements UserFileLocator {
 		_buildButton = buildButton;
 		_selectAllButton = selectAllButton;
 		_exitButton = exitButton;
+		_pluginCount = pluginCount;
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		JPanel centerPanel = new JPanel();
@@ -85,8 +92,14 @@ public class LogWindow extends JFrame implements UserFileLocator {
 		centerPanel.add(logPane, BorderLayout.CENTER);
 		contentPane.add(centerPanel, BorderLayout.CENTER);
 		JPanel southPanel = new JPanel();
-		FlowLayout southLayout = new FlowLayout(FlowLayout.CENTER);
+		GridBagLayout southLayout = new GridBagLayout();
 		southPanel.setLayout(southLayout);
+		_progressBar = new JProgressBar(0, _pluginCount);
+		_progressBar.setValue(0);
+		_progressBar.setString("Built 0/"+_pluginCount+" plugins");
+		_progressBar.setStringPainted(true);
+		southPanel.add(_progressBar, new GridBagConstraints(0,0,1,1,100.0,0.0
+				,GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
 		_okButton = new JButton();
 		_okButton.setText("OK");
 		_okButton.setEnabled(false);
@@ -97,7 +110,8 @@ public class LogWindow extends JFrame implements UserFileLocator {
 				dispose();
 			}
 		});
-		southPanel.add(_okButton);
+		southPanel.add(_okButton, new GridBagConstraints(0,1,1,1,0.0,0.0
+				,GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(5, 5, 5, 0), 0, 0));
 		contentPane.add(southPanel, BorderLayout.SOUTH);
 		setSize(500, 400);
 		validate();
@@ -127,6 +141,15 @@ public class LogWindow extends JFrame implements UserFileLocator {
 		} else {
 			return null;
 		}
+	}
+
+	public void setProgress(int pluginsDone) {
+		_progressBar.setValue(pluginsDone);
+		_progressBar.setString("Built "+pluginsDone+"/"+_pluginCount+" plugins");
+	}
+
+	public void setProgressMessage(String message) {
+		_progressBar.setString(message);
 	}
 
 	private class ReadingThread implements Runnable {

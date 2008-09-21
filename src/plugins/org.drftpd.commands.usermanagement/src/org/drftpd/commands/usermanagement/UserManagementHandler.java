@@ -54,7 +54,6 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserExistsException;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.util.FtpRequest;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -527,11 +526,11 @@ public class UserManagementHandler extends CommandInterface {
 				if (ratio == 0F) {
 					int usedleechslots = 0;
 
-					for (Iterator iter = GlobalContext.getGlobalContext()
+					for (Iterator<User> iter = GlobalContext.getGlobalContext()
 							.getUserManager().getAllUsersByGroup(
 									session.getUserNull(request.getUser()).getGroup())
 							.iterator(); iter.hasNext();) {
-						if (((User) iter.next()).getKeyedMap()
+						if ((iter.next()).getKeyedMap()
 								.getObjectFloat(UserManagement.RATIO) == 0F) {
 							usedleechslots++;
 						}
@@ -1148,10 +1147,9 @@ public class UserManagementHandler extends CommandInterface {
 		long allmbup = 0;
 		long allmbdn = 0;
 
-		Collection users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+		Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
-		for (Iterator iter = users.iterator(); iter.hasNext();) {
-			User user = (User) iter.next();
+		for (User user : users) {
 			if (!user.isMemberOf(group))
 				continue;
 
@@ -1335,13 +1333,12 @@ public class UserManagementHandler extends CommandInterface {
 
 		CommandResponse response = new CommandResponse(200);
 
-		Collection users = GlobalContext.getGlobalContext().getUserManager()
+		Collection<User> users = GlobalContext.getGlobalContext().getUserManager()
 		.getAllUsersByGroup(group);;
 
 		response.addComment("Changing '" + group + "' members " + opt);
 
-		for (Iterator iter = users.iterator(); iter.hasNext();) {
-			User userToChange = (User) iter.next();
+		for (User userToChange : users) {
 
 			if (userToChange.getGroup().equals(group)) {
 				if (opt.equals("num_logins")) {
@@ -1370,13 +1367,12 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_GROUPS(CommandRequest request) {
-		Collection groups = GlobalContext.getGlobalContext().getUserManager().getAllGroups();
+		Collection<String> groups = GlobalContext.getGlobalContext().getUserManager().getAllGroups();
 
 		CommandResponse response = new CommandResponse(200);
 		response.addComment("All groups:");
 
-		for (Iterator iter = groups.iterator(); iter.hasNext();) {
-			String element = (String) iter.next();
+		for (String element : groups) {
 			response.addComment(element);
 		}
 
@@ -1407,7 +1403,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		String newGroup = st.nextToken();
-		Collection users = GlobalContext.getGlobalContext().getUserManager()
+		Collection<User> users = GlobalContext.getGlobalContext().getUserManager()
 		.getAllUsersByGroup(oldGroup);;
 
 		if (!GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(
@@ -1418,8 +1414,8 @@ public class UserManagementHandler extends CommandInterface {
 		CommandResponse response = new CommandResponse(200);
 		response.addComment("Renaming group " + oldGroup + " to " + newGroup);
 
-		for (Iterator iter = users.iterator(); iter.hasNext();) {
-			User userToChange = (User) iter.next();
+		for (Iterator<User> iter = users.iterator(); iter.hasNext();) {
+			User userToChange = iter.next();
 
 			if (userToChange.getGroup().equals(oldGroup)) {
 				userToChange.setGroup(newGroup);
@@ -1473,8 +1469,7 @@ public class UserManagementHandler extends CommandInterface {
 		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
 				GlobalContext.getConnectionManager().getConnections());
 
-		for (Iterator iter = conns.iterator(); iter.hasNext();) {
-			BaseFtpConnection conn2 = (BaseFtpConnection) iter.next();
+		for (BaseFtpConnection conn2 : conns) {
 
 			try {
 				if (conn2.getUser().getName().equals(username)) {
@@ -1827,15 +1822,15 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		CommandResponse response = new CommandResponse(200);
-		Collection myUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+		Collection<User> myUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
 		if (request.hasArgument()) {
 			Permission perm = new Permission(Permission
 					.makeUsers(new StringTokenizer(request.getArgument())),
 					true);
 
-			for (Iterator iter = myUsers.iterator(); iter.hasNext();) {
-				User element = (User) iter.next();
+			for (Iterator<User> iter = myUsers.iterator(); iter.hasNext();) {
+				User element = iter.next();
 
 				if (!perm.check(element)) {
 					iter.remove();
@@ -1843,8 +1838,7 @@ public class UserManagementHandler extends CommandInterface {
 			}
 		}
 
-		for (Iterator iter = myUsers.iterator(); iter.hasNext();) {
-			User myUser = (User) iter.next();
+		for (User myUser : myUsers) {
 			response.addComment(myUser.getName());
 		}
 
@@ -1904,7 +1898,6 @@ public class UserManagementHandler extends CommandInterface {
 
 			synchronized (conn) {
 				TransferState ts = conn.getTransferState();
-				String userCommand = request.getCommand();
 
 				env.add("idle", Time.formatTime(System.currentTimeMillis()
 						- conn.getLastActive()));

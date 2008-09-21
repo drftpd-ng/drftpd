@@ -44,7 +44,7 @@ import org.java.plugin.registry.ExtensionPoint;
  * @version $Id$
  */
 public class DiskSelectionFilter extends DiskSelectionInterface{
-	private static final Class[] SIG = new Class[] { DiskSelectionFilter.class, Properties.class, Integer.class };
+	private static final Class<?>[] SIG = new Class[] { DiskSelectionFilter.class, Properties.class, Integer.class };
 	private static final Logger logger = Logger.getLogger(Slave.class);
 
 	private ArrayList<DiskFilter> _filters;
@@ -173,6 +173,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 					manager.activatePlugin(pluginId);
 				}
 				
+				@SuppressWarnings("unchecked")
 				Class<DiskFilter> clazz = (Class<DiskFilter>) classLoader.loadClass(className);
 			
 				filtersMap.put(filterName, clazz);				

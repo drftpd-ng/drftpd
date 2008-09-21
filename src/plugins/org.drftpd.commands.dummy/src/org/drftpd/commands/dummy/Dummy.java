@@ -45,7 +45,7 @@ public class Dummy extends CommandInterface {
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
-	private ArrayList<String> getHandledCommands(Class class1) {
+	private ArrayList<String> getHandledCommands(Class<?> class1) {
 		ArrayList<String> list = new ArrayList<String>();
 
 		for (Map.Entry<String,CommandInstanceContainer> element : _cManager.getCommandHandlersMap().entrySet()) {

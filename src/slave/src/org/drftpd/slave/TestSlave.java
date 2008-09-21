@@ -30,7 +30,6 @@ import java.util.Properties;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
-import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;

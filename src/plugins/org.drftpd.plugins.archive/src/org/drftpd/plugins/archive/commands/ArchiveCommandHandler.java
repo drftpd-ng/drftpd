@@ -124,11 +124,11 @@ public class ArchiveCommandHandler extends CommandInterface {
         if (st.hasMoreTokens()) { // load the specific type
             archiveTypeName = st.nextToken();
 
-            Class[] classParams = {
+            Class<?>[] classParams = {
                     org.drftpd.plugins.archive.Archive.class,
                     SectionInterface.class, Properties.class
                 };
-            Constructor constructor = null;
+            Constructor<?> constructor = null;
 
             try {
 				constructor = Class.forName(
@@ -252,9 +252,9 @@ public class ArchiveCommandHandler extends CommandInterface {
             return response;
         }
 
-        for (Iterator iter = archive.getArchiveHandlers().iterator();
+        for (Iterator<ArchiveHandler> iter = archive.getArchiveHandlers().iterator();
                 iter.hasNext(); x++) {
-            ArchiveHandler archiveHandler = (ArchiveHandler) iter.next();
+            ArchiveHandler archiveHandler = iter.next();
             response.addComment(x + ". " + archiveHandler.getArchiveType());
         }
 

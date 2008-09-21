@@ -374,8 +374,8 @@ public class Trial extends FtpListener {
 	}
 
 	private void checkPassed(User user, long bytes, int period) {
-		for (Iterator iter = _limits.iterator(); iter.hasNext();) {
-			Limit limit = (Limit) iter.next();
+		for (Iterator<Limit> iter = _limits.iterator(); iter.hasNext();) {
+			Limit limit = iter.next();
 
 			if ((limit.getPeriod() == period) && limit.getPerm().check(user)) {
 				long bytesleft = limit.getBytes() - bytes;
@@ -394,7 +394,7 @@ public class Trial extends FtpListener {
 		}
 	}
 
-	public ArrayList getLimits() {
+	public ArrayList<Limit> getLimits() {
 		return _limits;
 	}
 

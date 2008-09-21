@@ -77,7 +77,7 @@ public class IndexManager extends CommandInterface {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexingEngine();
 		
 		if (request.getArgument().equalsIgnoreCase("full")) {
-			for (Entry entry : ie.getStatus().entrySet()) {
+			for (Entry<String,String> entry : ie.getStatus().entrySet()) {
 				env.add("key", entry.getKey());
 				env.add("value", entry.getValue());
 				response.addComment(ReplacerUtils.jprintf(_keyPrefix+"indexstatus", env, _bundle));

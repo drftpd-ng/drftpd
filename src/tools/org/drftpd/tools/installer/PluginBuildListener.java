@@ -58,13 +58,14 @@ public class PluginBuildListener implements SubBuildListener {
 	private FileSet _slaveFiles;
 	private TreeSet<String> _missingLibs;
 	private InstallerConfig _config;
-	private UserFileLocator _locator;
+	private LogWindowInterface _logWindow;
+	private int _pluginsDone;
 
-	public PluginBuildListener(PipedInputStream input, InstallerConfig config, ArrayList<PluginData> buildPlugins, PluginRegistry registry, UserFileLocator locator) {
+	public PluginBuildListener(PipedInputStream input, InstallerConfig config, ArrayList<PluginData> buildPlugins, PluginRegistry registry, LogWindowInterface logWindow) {
 		_input = input;
 		_logLevel = config.getLogLevel();
 		_config = config;
-		_locator = locator;
+		_logWindow = logWindow;
 		_pluginMap = new HashMap<String,PluginDescriptor>();
 		for (PluginData plugin : buildPlugins) {
 			_pluginMap.put(plugin.getName(),plugin.getDescriptor());
@@ -90,6 +91,7 @@ public class PluginBuildListener implements SubBuildListener {
 		}
 		_slaveFiles = new FileSet();
 		_missingLibs = new TreeSet<String>();
+		_pluginsDone = 0;
 	}
 
 	public void init() throws IOException {
@@ -127,6 +129,7 @@ public class PluginBuildListener implements SubBuildListener {
 		// Create slave.zip
 		Project pluginProject = be.getProject();
 		if (pluginProject != null && be.getException() == null && !_config.getDevMode()) {
+			_logWindow.setProgressMessage("Building slave.zip");
 			Zip slaveZip = new Zip();
 			slaveZip.setProject(pluginProject);
 			File slaveFile = new File(pluginProject.getProperty("installdir")+File.separator+"slave.zip");
@@ -143,7 +146,8 @@ public class PluginBuildListener implements SubBuildListener {
 		}
 		// Convert userfiles
 		if (_config.getConvertUsers()) {
-			String userDir = _locator.getUserDir();
+			_logWindow.setProgressMessage("Converting userfiles");
+			String userDir = _logWindow.getUserDir();
 			UserFileConverter converter = new UserFileConverter(userDir,_config.getInstallDir());
 			converter.convertUsers();
 		}
@@ -187,6 +191,7 @@ public class PluginBuildListener implements SubBuildListener {
 			writeLog("");
 			be.getException().printStackTrace();
 		}
+		_logWindow.setProgressMessage("Build complete");
 	}
 
 	public void buildStarted(BuildEvent be) {
@@ -214,6 +219,8 @@ public class PluginBuildListener implements SubBuildListener {
 	public void subBuildFinished(BuildEvent be) {
 		// reset state
 		_isSlavePlugin = false;
+		_pluginsDone++;
+		_logWindow.setProgress(_pluginsDone);
 	}
 
 	public void subBuildStarted(BuildEvent be) {

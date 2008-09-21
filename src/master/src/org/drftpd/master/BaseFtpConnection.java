@@ -55,7 +55,6 @@ import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.ConnectionEvent;
 import org.drftpd.io.AddAsciiOutputStream;
-import org.drftpd.slave.Transfer;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -75,6 +74,7 @@ import org.tanesha.replacer.SimplePrintf;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class BaseFtpConnection extends Session implements Runnable {
 	private static final Logger debuglogger = Logger
 			.getLogger(BaseFtpConnection.class.getName() + ".service");
@@ -196,7 +196,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		return SimplePrintf.jprintf(format, env);
 	}
 
-	public static String jprintf(Class class1, String key,
+	public static String jprintf(Class<?> class1, String key,
 			ReplacerEnvironment env, User user) {
 		env = getReplacerEnvironment2(env, user);
 		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
@@ -204,7 +204,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		return ReplacerUtils.jprintf(key, env, bundle);
 	}
 
-	public static String jprintfExceptionStatic(Class class1, String key,
+	public static String jprintfExceptionStatic(Class<?> class1, String key,
 			ReplacerEnvironment env, User user) throws FormatterException {
 		env = getReplacerEnvironment2(env, user);
 		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
@@ -305,15 +305,15 @@ public class BaseFtpConnection extends Session implements Runnable {
 		return _controlSocket instanceof SSLSocket;
 	}
 
-	public String jprintf(Class baseName, String key) {
+	public String jprintf(Class<?> baseName, String key) {
 		return jprintf(baseName, key, null, getUserNull());
 	}
 
-	public String jprintf(Class class1, String string, ReplacerEnvironment env) {
+	public String jprintf(Class<?> class1, String string, ReplacerEnvironment env) {
 		return jprintf(class1, string, env, getUserNull());
 	}
 
-	public String jprintfException(Class class1, String key,
+	public String jprintfException(Class<?> class1, String key,
 			ReplacerEnvironment env) throws FormatterException {
 		env = getReplacerEnvironment(env, getUserNull());
 

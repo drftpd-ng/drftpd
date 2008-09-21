@@ -22,6 +22,7 @@ package org.drftpd.commandmanager;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class ImproperUsageException extends Exception {
 
 	public ImproperUsageException() {

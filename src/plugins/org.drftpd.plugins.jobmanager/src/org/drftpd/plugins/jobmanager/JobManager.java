@@ -65,8 +65,8 @@ public class JobManager implements PluginInterface, EventSubscriber {
 
 	public synchronized void addJobsToQueue(Collection<Job> jobs) {
 		ArrayList<Job> jobs2 = new ArrayList<Job>(jobs);
-		for (Iterator jobiter = jobs2.iterator(); jobiter.hasNext();) {
-			Job job = (Job) jobiter.next();
+		for (Iterator<Job> jobiter = jobs2.iterator(); jobiter.hasNext();) {
+			Job job = jobiter.next();
 			Collection<RemoteSlave> slaves;
 			try {
 				slaves = job.getFile().getSlaves();
@@ -108,9 +108,9 @@ public class JobManager implements PluginInterface, EventSubscriber {
 		return Collections.unmodifiableSet(_queuedJobSet);
 	}
 
-	public synchronized Job getNextJob(Set<RemoteSlave> busySlaves, Set skipJobs) {
-		for (Iterator iter = _queuedJobSet.iterator(); iter.hasNext();) {
-			Job tempJob = (Job) iter.next();
+	public synchronized Job getNextJob(Set<RemoteSlave> busySlaves, Set<Job> skipJobs) {
+		for (Iterator<Job> iter = _queuedJobSet.iterator(); iter.hasNext();) {
+			Job tempJob = iter.next();
 
 			if (tempJob.isDone()) {
 				iter.remove();
@@ -126,7 +126,7 @@ public class JobManager implements PluginInterface, EventSubscriber {
 				continue;
 			}
 
-			Collection availableSlaves = null;
+			Collection<RemoteSlave> availableSlaves = null;
 
 			try {
 				availableSlaves = tempJob.getFile().getAvailableSlaves();

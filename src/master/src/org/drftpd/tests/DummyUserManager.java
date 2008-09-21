@@ -49,7 +49,7 @@ public class DummyUserManager extends AbstractUserManager {
         return u;
     }
 
-    public Collection getAllGroups() {
+    public Collection<String> getAllGroups() {
         throw new UnsupportedOperationException();
     }
 

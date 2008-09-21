@@ -36,7 +36,7 @@ import se.mog.io.PermissionDeniedException;
  * @author zubov
  * @version $Id$
  */
-public abstract class InodeHandle implements InodeHandleInterface, Comparable {
+public abstract class InodeHandle implements InodeHandleInterface, Comparable<InodeHandle> {
 	protected String _path = null;
 	protected static final Logger logger = Logger.getLogger(InodeHandle.class.getName());
 	
@@ -51,8 +51,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable {
 		_path = path;
 	}
 	
-	public int compareTo(Object o) {
-		InodeHandle handle = (InodeHandle) o;
+	public int compareTo(InodeHandle handle) {
 		return(handle._path.compareTo(_path));
 	}
 	

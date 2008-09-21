@@ -225,7 +225,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	}
 
 	public HashSet<RemoteSlave> findSlavesBySpace(int numOfSlaves,
-			Set exemptSlaves, boolean ascending) {
+			Set<RemoteSlave> exemptSlaves, boolean ascending) {
 		Collection<RemoteSlave> slaveList = getSlaves();
 		HashMap<Long, RemoteSlave> map = new HashMap<Long, RemoteSlave>();
 
@@ -258,12 +258,11 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 
 		HashSet<RemoteSlave> returnMe = new HashSet<RemoteSlave>();
 
-		for (ListIterator iter = sorted.listIterator(); iter.hasNext();) {
+		for (ListIterator<Long> iter = sorted.listIterator(); iter.hasNext();) {
 			if (iter.nextIndex() == numOfSlaves) {
 				break;
 			}
-
-			Long key = (Long) iter.next();
+			Long key = iter.next();
 			RemoteSlave rslave = (RemoteSlave) map.get(key);
 			returnMe.add(rslave);
 		}
@@ -272,12 +271,12 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	}
 
 	public RemoteSlave findSmallestFreeSlave() {
-		Collection slaveList = getSlaves();
+		Collection<RemoteSlave> slaveList = getSlaves();
 		long smallSize = Integer.MAX_VALUE;
 		RemoteSlave smallSlave = null;
 
-		for (Iterator iter = slaveList.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
+		for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
+			RemoteSlave rslave = iter.next();
 			long size = Integer.MAX_VALUE;
 
 			try {
@@ -301,8 +300,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	public SlaveStatus getAllStatus() {
 		SlaveStatus allStatus = new SlaveStatus();
 
-		for (Iterator iter = getSlaves().iterator(); iter.hasNext();) {
-			RemoteSlave rslave = (RemoteSlave) iter.next();
+		for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter.hasNext();) {
+			RemoteSlave rslave = iter.next();
 
 			try {
 				allStatus = allStatus.append(rslave.getSlaveStatusAvailable());
@@ -582,7 +581,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		return _central;
 	}
 	
-	public AbstractIssuer getIssuerForClass(Class clazz) {
+	public AbstractIssuer getIssuerForClass(Class<?> clazz) {
 		return _central.getIssuerForClass(clazz);
 	}
 

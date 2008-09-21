@@ -153,7 +153,7 @@ public class SlaveManagement extends CommandInterface {
 		boolean showMore = request.hasArgument() &&
 		(request.getArgument().equalsIgnoreCase("more"));
 
-		Collection slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
+		Collection<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
 		CommandResponse response = new CommandResponse(200, "OK, " + slaves.size() + " slaves listed.");
 
 		int slavesFound = 0;
@@ -304,9 +304,9 @@ public class SlaveManagement extends CommandInterface {
 			response.addComment(session.jprintf(_bundle,
 					_keyPrefix+"slave.data.header", request.getUser()));
 
-			Map props = rslave.getProperties();
+			Map<Object,Object> props = rslave.getProperties();
 
-			for (Iterator iter = props.keySet().iterator(); iter.hasNext();) {
+			for (Iterator<Object> iter = props.keySet().iterator(); iter.hasNext();) {
 				Object key = iter.next();
 				Object value = props.get(key);
 				env.add("key", key);

@@ -17,16 +17,9 @@
  */
 package org.drftpd.slave;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.vfs.FileHandle;
 
 public class DIZInfo {
 	private String _diz;

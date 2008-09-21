@@ -162,7 +162,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 				logger.warn("Unable to write current config to build.conf",e);
 			}
 			PipedInputStream logInput = new PipedInputStream();
-			LogWindow logWindow = new LogWindow(logInput,_buildButton,_selectAllButton,_exitButton,_config);
+			LogWindow logWindow = new LogWindow(logInput,_buildButton,_selectAllButton,_exitButton,_config,toBuild.size());
 			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow);
 			try {
 				logWindow.init();

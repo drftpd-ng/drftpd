@@ -39,13 +39,13 @@ import org.drftpd.vfs.InodeHandleInterface;
  * @version $Id$
  */
 public class FilterChain {
-	private static Class[] SIG = new Class[] { int.class, Properties.class };
+	private static Class<?>[] SIG = new Class<?>[] { int.class, Properties.class };
 	
 	private String _cfgfileName;
 
 	private ArrayList<Filter> _filters;
 	
-	private CaseInsensitiveHashMap<String, Class> _filtersMap;
+	private CaseInsensitiveHashMap<String, Class<Filter>> _filtersMap;
 
 	protected FilterChain() {
 	}
@@ -54,7 +54,7 @@ public class FilterChain {
 		return new ArrayList<Filter>(_filters);
 	}
 
-	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class> filtersMap) throws FileNotFoundException, IOException {
+	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<Filter>> filtersMap) throws FileNotFoundException, IOException {
 		_cfgfileName = cfgFileName;
 		_filtersMap = filtersMap;
 		reload();
@@ -117,7 +117,7 @@ public class FilterChain {
 			}
 
 			try {
-				Class clazz = _filtersMap.get(filterName);
+				Class<Filter> clazz = _filtersMap.get(filterName);
 				Filter filter = (Filter) clazz.getConstructor(SIG).newInstance(new Object[] { new Integer(i), p });
 				filters.add(filter);
 			} catch (Exception e) {

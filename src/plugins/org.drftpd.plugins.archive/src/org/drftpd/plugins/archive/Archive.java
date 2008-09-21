@@ -74,8 +74,8 @@ public class Archive implements EventSubscriber, PluginInterface {
 			return null; // excluded, not setup
 		}
 
-		Constructor constructor = null;
-		Class[] classParams = { Archive.class, SectionInterface.class,
+		Constructor<?> constructor = null;
+		Class<?>[] classParams = { Archive.class, SectionInterface.class,
 				Properties.class };
 		Object[] objectParams = { this, section, _props };
 		try {
@@ -126,8 +126,8 @@ public class Archive implements EventSubscriber, PluginInterface {
 	}
 
 	public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
-		for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
-			ArchiveHandler ah = (ArchiveHandler) iter.next();
+		for (Iterator<ArchiveHandler> iter = _archiveHandlers.iterator(); iter.hasNext();) {
+			ArchiveHandler ah = iter.next();
 
 			if (ah == handler) {
 				iter.remove();
@@ -152,8 +152,8 @@ public class Archive implements EventSubscriber, PluginInterface {
 
 	public void checkPathForArchiveStatus(String handlerPath)
 			throws DuplicateArchiveException {
-		for (Iterator iter = _archiveHandlers.iterator(); iter.hasNext();) {
-			ArchiveHandler ah = (ArchiveHandler) iter.next();
+		for (Iterator<ArchiveHandler> iter = _archiveHandlers.iterator(); iter.hasNext();) {
+			ArchiveHandler ah = iter.next();
 			String ahPath = ah.getArchiveType().getDirectory().getPath();
 
 			if (ahPath.length() > handlerPath.length()) {

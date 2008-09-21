@@ -107,7 +107,7 @@ public class Permission {
 		return _invert ? (!allow) : false;
 	}
 	
-	public static ArrayList<String> makeUsers(Enumeration st) {
+	public static ArrayList<String> makeUsers(Enumeration<Object> st) {
 		ArrayList<String> users = new ArrayList<String>();
 
 		while (st.hasMoreElements()) {

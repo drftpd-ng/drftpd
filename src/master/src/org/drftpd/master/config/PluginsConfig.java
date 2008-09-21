@@ -58,7 +58,7 @@ public class PluginsConfig {
 		for (Entry<String, Properties> entry : getPropertiesMap().entrySet()) {
 			logger.debug("--> Configuration File: "+ entry.getKey());
 			logger.debug("Listing properties.");
-			for (Entry e : entry.getValue().entrySet()) {
+			for (Entry<Object,Object> e : entry.getValue().entrySet()) {
 				String key = (String) e.getKey();
 				String value = (String) e.getValue();
 				logger.debug(key+"="+value);

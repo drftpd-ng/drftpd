@@ -25,7 +25,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -193,8 +192,7 @@ public class Transfer {
 
 	private Transfer getUploadForPath(String path)
 			throws ObjectNotFoundException {
-		for (Iterator iter = _slave.getTransfersList().iterator(); iter.hasNext();) {
-			Transfer transfer = (Transfer) iter.next();
+		for (Transfer transfer : _slave.getTransfersList()) {
 			synchronized (transfer) {
 				if (!transfer.isReceivingUploading()) {
 					continue;

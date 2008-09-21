@@ -55,7 +55,7 @@ public class ArchiveHandler extends Thread {
 	
 	public ArrayList<Job> getJobs() {
 		if (_jobs == null) {
-			return (ArrayList<Job>) Collections.EMPTY_LIST;
+			return (ArrayList<Job>)Collections.<Job>emptyList();
 		}
 		return new ArrayList<Job>(_jobs);
 	}

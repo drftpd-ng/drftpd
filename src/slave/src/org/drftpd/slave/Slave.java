@@ -653,8 +653,8 @@ public class Slave {
 
 	public void rename(String from, String toDirPath, String toName)
 			throws IOException {
-		for (Iterator iter = _roots.iterator(); iter.hasNext();) {
-			Root root = (Root) iter.next();
+		for (Iterator<Root> iter = _roots.iterator(); iter.hasNext();) {
+			Root root = iter.next();
 
 			File fromfile = root.getFile(from);
 

@@ -40,8 +40,8 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class MaxbandwidthFilterTest extends TestCase {
     RemoteSlave[] rslaves = {
-            new RS("slave1", Collections.EMPTY_LIST),
-            new RS("slave2", Collections.EMPTY_LIST)
+            new RS("slave1", Collections.emptyList()),
+            new RS("slave2", Collections.emptyList())
         };
 
     /**
@@ -69,7 +69,7 @@ public class MaxbandwidthFilterTest extends TestCase {
     }
 
     public class RS extends DummyRemoteSlave {
-        public RS(String name, Collection duh) {
+        public RS(String name, Collection<Object> duh) {
             super(name);
         }
 

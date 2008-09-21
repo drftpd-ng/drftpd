@@ -42,7 +42,7 @@ public class LRUMapTest extends TestCase {
 		}
 	}
 	
-	public void dumpMap(Map m) {
+	public void dumpMap(Map<Integer,Integer> m) {
 		logger.debug("Dumping the map");
 		for (Entry<Integer, Integer> entry : _lruMap.entrySet()) {
 			logger.debug(entry.getKey()+","+entry.getValue());

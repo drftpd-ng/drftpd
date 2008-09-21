@@ -493,7 +493,7 @@ public final class SelectorUtils {
 	 * 
 	 * @return a Vector of path elements from the tokenized path
 	 */
-	public static Vector tokenizePath(String path) {
+	public static Vector<String> tokenizePath(String path) {
 		return tokenizePath(path, File.separator);
 	}
 
@@ -508,7 +508,7 @@ public final class SelectorUtils {
 	 * @return a Vector of path elements from the tokenized path
 	 * @since Ant 1.6
 	 */
-	public static Vector tokenizePath(String path, String separator) {
+	public static Vector<String> tokenizePath(String path, String separator) {
 		Vector<String> ret = new Vector<String>();
 		StringTokenizer st = new StringTokenizer(path, separator);
 		while (st.hasMoreTokens()) {
@@ -623,16 +623,16 @@ public final class SelectorUtils {
 	 * @return the leftmost part of the pattern without wildcards
 	 */
 	public static String rtrimWildcardTokens(String input) {
-		Vector v = tokenizePath(input, File.separator);
+		Vector<String> v = tokenizePath(input, File.separator);
 		StringBuffer sb = new StringBuffer();
 		for (int counter = 0; counter < v.size(); counter++) {
-			if (hasWildcards((String) v.elementAt(counter))) {
+			if (hasWildcards(v.elementAt(counter))) {
 				break;
 			}
 			if (counter > 0) {
 				sb.append(File.separator);
 			}
-			sb.append((String) v.elementAt(counter));
+			sb.append(v.elementAt(counter));
 		}
 		return sb.toString();
 	}

@@ -44,7 +44,7 @@ import org.java.plugin.registry.ExtensionPoint;
 public class MasterProtocolCentral {
 	private static final Logger logger = Logger.getLogger(MasterProtocolCentral.class);	
 	
-	private Map<Class, AbstractIssuer> _issuersMap;
+	private Map<Class<?>, AbstractIssuer> _issuersMap;
 	private List<String> _protocols;
 
 	/**
@@ -59,7 +59,7 @@ public class MasterProtocolCentral {
 	 * Iterate through all connected extensions, loading them.
 	 */
 	private void loadProtocolExtensions() {
-		HashMap<Class, AbstractIssuer> issuersMap = new HashMap<Class, AbstractIssuer>();
+		HashMap<Class<?>, AbstractIssuer> issuersMap = new HashMap<Class<?>, AbstractIssuer>();
 		ArrayList<String> protocols = new ArrayList<String>();
 		
 		PluginManager manager = PluginManager.lookup(this);
@@ -77,12 +77,12 @@ public class MasterProtocolCentral {
 					manager.activatePlugin(pluginId);
 				}
 
-				Class issuerClass = classLoader.loadClass(issuerClassName);
+				Class<?> issuerClass = classLoader.loadClass(issuerClassName);
 				if (!issuersMap.containsKey(issuerClass)) {
 					AbstractIssuer issuer = (AbstractIssuer) issuerClass.newInstance();
 					
 					// hackish way to allow us to have an AbstractBasicIssuer.
-					Class superClass = issuerClass.getSuperclass();
+					Class<?> superClass = issuerClass.getSuperclass();
 					if (superClass != AbstractIssuer.class) {
 						issuerClass = superClass;
 					}
@@ -101,12 +101,12 @@ public class MasterProtocolCentral {
 			}			
 		}
 		
-		_issuersMap = (Map<Class, AbstractIssuer>) Collections.unmodifiableMap(issuersMap);
+		_issuersMap = (Map<Class<?>, AbstractIssuer>) Collections.unmodifiableMap(issuersMap);
 		_protocols = (List<String>) Collections.unmodifiableList(protocols);
 		
 		logger.debug("Dumping issuers map");
-		for (Entry<Class, AbstractIssuer> e : _issuersMap.entrySet()) {
-			Class clazz = e.getKey();
+		for (Entry<Class<?>, AbstractIssuer> e : _issuersMap.entrySet()) {
+			Class<?> clazz = e.getKey();
 			AbstractIssuer issuer = e.getValue();
 			logger.debug("Class -> " + clazz.toString());
 			logger.debug("Issuer -> " + issuer.toString());
@@ -122,7 +122,7 @@ public class MasterProtocolCentral {
 	 * @param clazz
 	 * @return the Issuer instance for the given Class.
 	 */
-	public AbstractIssuer getIssuerForClass(Class clazz) {
+	public AbstractIssuer getIssuerForClass(Class<?> clazz) {
 		return _issuersMap.get(clazz);
 	}
 	

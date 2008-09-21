@@ -21,7 +21,11 @@ package org.drftpd.tools.installer;
  * @author djb61
  * @version $Id$
  */
-public interface UserFileLocator {
+public interface LogWindowInterface {
 
 	public String getUserDir();
+
+	public void setProgress(int pluginsDone);
+
+	public void setProgressMessage(String message);
 }

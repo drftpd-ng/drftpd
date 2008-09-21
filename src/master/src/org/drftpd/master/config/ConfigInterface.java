@@ -17,6 +17,7 @@
  */
 package org.drftpd.master.config;
 
+import java.net.InetAddress;
 import java.util.List;
 import java.util.Properties;
 
@@ -53,7 +54,7 @@ public interface ConfigInterface {
 	
 	public void addPermission(String directive, Permission permission);
 	
-	public List getBouncerIps();
+	public List<InetAddress> getBouncerIps();
 
 	public boolean getHideIps();
 

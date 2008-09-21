@@ -57,7 +57,7 @@ public class MinfreespaceFilterTest extends TestCase {
         SlaveStatus s = new SlaveStatus(new DiskStatus(Bytes.parseBytes("50MB"),
                 Bytes.parseBytes("100GB")), 0, 0, 0, 0, 0, 0);
         RemoteSlave[] rslaves = {
-                new RemoteSlaveTesting("slave1", Collections.EMPTY_LIST, s)
+                new RemoteSlaveTesting("slave1", Collections.emptyList(), s)
             };
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
@@ -71,7 +71,7 @@ public class MinfreespaceFilterTest extends TestCase {
     public static class RemoteSlaveTesting extends DummyRemoteSlave {
         private SlaveStatus _status;
 
-        public RemoteSlaveTesting(String name, Collection masks,
+        public RemoteSlaveTesting(String name, Collection<Object> masks,
             SlaveStatus status) {
             super(name);
             _status = status;

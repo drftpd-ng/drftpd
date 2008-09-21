@@ -45,7 +45,7 @@ public class PluginBuilder {
 	private PluginBuildListener _pbListener;
 	private Project _builderProject;
 
-	public PluginBuilder(ArrayList<PluginData> toBuild, PluginRegistry registry, PipedInputStream logInput, InstallerConfig config, UserFileLocator locator) {
+	public PluginBuilder(ArrayList<PluginData> toBuild, PluginRegistry registry, PipedInputStream logInput, InstallerConfig config, LogWindowInterface logWindow) {
 		// Sort selected plugins into correct order for building
 		PluginTools.reorder(toBuild,registry);
 		// Create a list of build files for the selected plugins
@@ -78,7 +78,7 @@ public class PluginBuilder {
 		ProjectHelper.configureProject(_builderProject,setupFile);
 
 		// Add a custom build listener for logging and handling our additional needs
-		_pbListener = new PluginBuildListener(logInput,config,toBuild,registry,locator);
+		_pbListener = new PluginBuildListener(logInput,config,toBuild,registry,logWindow);
 		try {
 			_pbListener.init();
 		} catch (IOException e) {

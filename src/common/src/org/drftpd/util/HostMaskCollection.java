@@ -34,6 +34,7 @@ import socks.server.Ident;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class HostMaskCollection extends ArrayList<HostMask> {
 
 	public HostMaskCollection() {
@@ -52,9 +53,7 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 	}
 
 	public void addAllMasks(HostMaskCollection hostMaskCollection) {
-		for (Iterator i = hostMaskCollection.iterator(); i.hasNext();) {
-			HostMask mask = (HostMask) i.next();
-
+		for (HostMask mask : hostMaskCollection) {
 			if (!contains(mask)) {
 				add(mask);
 			}
@@ -64,9 +63,7 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 	public void addMask(String mask) throws DuplicateElementException {
 		HostMask newMask = new HostMask(mask);
 
-		for (Iterator i = iterator(); i.hasNext();) {
-			HostMask hostMask = (HostMask) i.next();
-
+		for (HostMask hostMask : this) {
 			if (hostMask.equals(newMask)) {
 				throw new DuplicateElementException();
 			}
@@ -84,9 +81,7 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 		if (a == null) {
 			throw new NullPointerException();
 		}
-		for (Iterator iter = this.iterator(); iter.hasNext();) {
-			HostMask mask = (HostMask) iter.next();
-
+		for (HostMask mask : this) {
 			if (!mask.matchesHost(a)) {
 				continue;
 			}
@@ -115,8 +110,8 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 	 * @return
 	 */
 	public boolean removeMask(String mask) {
-		for (Iterator iter = iterator(); iter.hasNext();) {
-			if (((HostMask) iter.next()).getMask().equals(mask)) {
+		for (Iterator<HostMask> iter = iterator(); iter.hasNext();) {
+			if ((iter.next()).getMask().equals(mask)) {
 				iter.remove();
 				return true;
 			}
@@ -130,8 +125,8 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 			return "";
 		String masks = "";
 
-		for (Iterator iter = iterator(); iter.hasNext();) {
-			masks = masks + iter.next() + ", ";
+		for (HostMask hostMask : this) {
+			masks = masks + hostMask + ", ";
 		}
 
 		return masks.substring(0, masks.length() - 2);
