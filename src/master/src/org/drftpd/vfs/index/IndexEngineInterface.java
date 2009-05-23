@@ -87,14 +87,13 @@ public interface IndexEngineInterface {
 	
 	/**
 	 * Force the engine to save its current data.<br>
-	 * Not all databases need this operation, if that's your case,
-	 * do not enter any code while implenting this method.
+	 * Not all databases need this operation, if that's your case, make it a NoOp method.
 	 * @throws IndexException
 	 */
 	public void commit() throws IndexException;
 	
 	/**
-	 * Removes ALL the content from the Index and recurse through the site recreating the index.
+	 * Removes ALL the content from the Index and recurse through the VFS recreating the index.
 	 */
 	public void rebuildIndex() throws IndexException;
 	

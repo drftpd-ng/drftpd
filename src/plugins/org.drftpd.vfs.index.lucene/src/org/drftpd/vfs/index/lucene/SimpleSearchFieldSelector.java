@@ -31,7 +31,7 @@ import org.apache.lucene.document.FieldSelectorResult;
 public class SimpleSearchFieldSelector implements FieldSelector {	
 	@Override
 	public FieldSelectorResult accept(String fieldName) {
-		if (fieldName.equals("path")) {
+		if (fieldName.equals("name") || fieldName.equals("fullPath")) {
 			return FieldSelectorResult.LOAD;
 		} else {
 			return FieldSelectorResult.LAZY_LOAD;

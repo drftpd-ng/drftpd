@@ -25,7 +25,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -84,7 +83,9 @@ public class LuceneEngine implements IndexEngineInterface {
 	
 	private static final Document INDEX_DOCUMENT = new Document();
 	
-	private static final Field FIELD_PATH = new Field("path", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final Field FIELD_NAME = new Field("name", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_FULL_PATH = new Field("fullPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
@@ -92,7 +93,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
 	
 	private static final Field[] FIELDS = new Field[] {
-		FIELD_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SIZE, FIELD_SLAVES
+		FIELD_NAME, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SIZE, FIELD_SLAVES
 	};
 	
 	static {
@@ -105,10 +106,12 @@ public class LuceneEngine implements IndexEngineInterface {
 	private IndexWriter _iWriter;
 	private IndexSearcher _iSearcher;
 
-	private final TermQuery _dirQuery = new TermQuery(new Term("type", "d"));
-	private final TermQuery _fileQuery = new TermQuery(new Term("type", "f"));;
+	private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
+	private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));;
 	
-	private final Term _pathTerm = new Term("path", "/");
+	private static final Term TERM_NAME = new Term("name", "");
+	private static final Term TERM_PARENT = new Term("parentPath", "");
+	private static final Term TERM_FULL = new Term("fullPath", "");
 
 	private int _maxHitsNumber;
 	private int _maxDocsBuffer;
@@ -221,7 +224,9 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * Shortcut to create Lucene Document from the Inode's data. The fields that
 	 * are stored in the index are:
 	 * <ul>
-	 * <li>path</li>
+	 * <li>name</li>
+	 * <li>parentPath</li>
+	 * <li>fullPath</li>
 	 * <li>owner - The user who owns the file</li>
 	 * <li>group - The group of the user who owns the file</li>
 	 * <li>type - File or Directory</li>
@@ -237,7 +242,9 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		// locking the document so that noone touches it.
 		synchronized (INDEX_DOCUMENT) {
-			FIELD_PATH.setValue(inode.getPath());
+			FIELD_NAME.setValue(inode.getName());
+			FIELD_PARENT_PATH.setValue(inode.getParent().getPath());
+			FIELD_FULL_PATH.setValue(inode.getPath());
 			FIELD_OWNER.setValue(inode.getUsername());
 			FIELD_GROUP.setValue(inode.getGroup());
 			FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
@@ -256,13 +263,32 @@ public class LuceneEngine implements IndexEngineInterface {
 		return INDEX_DOCUMENT;
 	}
 
+	private Term makeNameTermFromInode(InodeHandle inode) {
+		return TERM_NAME.createTerm(inode.getName());
+	}
+	
+	private Term makeFullPathTermFromInode(InodeHandle inode) {
+		return TERM_FULL.createTerm(inode.getPath());
+	}
+	
+	private Term makeParentPathTermFromInode(InodeHandle inode) {
+		return TERM_PARENT.createTerm(inode.getPath());
+	}
+
 	/**
-	 * Shortcut to create Lucene Terms from a given inode.
-	 * 
 	 * @param inode
+	 * @return a Lucene Query that matches uniquely that Inode.
 	 */
-	private Term makeTermFromInode(InodeHandle inode) {
-		return _pathTerm.createTerm(inode.getPath());
+	private Query makeQueryFromInode(InodeHandle inode) {
+		BooleanQuery query = new BooleanQuery();
+		
+		TermQuery parentQuery = new TermQuery(makeParentPathTermFromInode(inode.getParent()));
+		TermQuery inodeQuery = new TermQuery(makeNameTermFromInode(inode));
+		
+		query.add(parentQuery, Occur.MUST);
+		query.add(inodeQuery, Occur.MUST);
+		
+		return query;
 	}
 
 	/* {@inheritDoc} */
@@ -281,9 +307,9 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	/* {@inheritDoc} */
 	public void deleteInode(InodeHandle inode) throws IndexException {
-		Term term = makeTermFromInode(inode);
 		try {
-			_iWriter.deleteDocuments(term);
+			Query query = makeQueryFromInode(inode);
+			_iWriter.deleteDocuments(query);
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to delete " + inode.getPath() + " to the index", e);
 		} catch (IOException e) {
@@ -294,7 +320,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	/* {@inheritDoc} */
 	public void updateInode(InodeHandle inode) throws IndexException {
 		try {
-			_iWriter.updateDocument(makeTermFromInode(inode), makeDocumentFromInode(inode));
+			_iWriter.updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " to the index", e);
 		} catch (FileNotFoundException e) {
@@ -386,9 +412,10 @@ public class LuceneEngine implements IndexEngineInterface {
 			BooleanQuery query = new BooleanQuery();
 
 			if (!startNode.getPath().equals(VirtualFileSystem.separator)) {
-				text = startNode.getPath() + " " + text;
+				TermQuery parentQuery = new TermQuery(makeParentPathTermFromInode(startNode));
+				query.add(parentQuery, Occur.MUST);
 			}
-
+			
 			Query pathQuery = analyzePath(text);
 			query.add(pathQuery, Occur.MUST);
 
@@ -401,9 +428,9 @@ public class LuceneEngine implements IndexEngineInterface {
 				 * Occur.SHOULD);
 				 */
 			} else if (inodeType == InodeType.DIRECTORY) {
-				query.add(_dirQuery, Occur.MUST);
+				query.add(QUERY_DIRECTORY, Occur.MUST);
 			} else if (inodeType == InodeType.FILE) {
-				query.add(_fileQuery, Occur.MUST);
+				query.add(QUERY_FILE, Occur.MUST);
 			}
 
 			TopDocs topDocs = _iSearcher.search(query, _maxHitsNumber);
@@ -411,7 +438,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
 				Document doc = _iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
-				inodes.add(doc.getFieldable("path").stringValue());
+				inodes.add(doc.getFieldable("fullPath").stringValue());
 			}
 
 			return inodes;
@@ -423,18 +450,18 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/**
-	 * Parses the path removing unwanted chars from it.
+	 * Parses the inode name removing unwanted chars from it.
 	 * 
-	 * @param path
+	 * @param name
 	 */
-	private Query analyzePath(String path) {
-		TokenStream ts = ANALYZER.tokenStream("path", new StringReader(path));
+	private Query analyzePath(String name) {
+		TokenStream ts = ANALYZER.tokenStream("name", new StringReader(name));
 		Token token = new Token();
 
 		BooleanQuery bQuery = new BooleanQuery();
 		WildcardQuery wQuery = null;
 
-		Set<String> set = new HashSet<String>(); // avoids repeated terms.
+		Set<String> tokens = new HashSet<String>(); // avoids repeated terms.
 
 		while (true) {
 			try {
@@ -448,12 +475,11 @@ public class LuceneEngine implements IndexEngineInterface {
 				break;
 			}
 			
-			set.add(new String(token.termBuffer(), 0, token.termLength()));
+			tokens.add(new String(token.termBuffer(), 0, token.termLength()));
 		}
 
-		Iterator<String> iter = set.iterator();
-		while (iter.hasNext()) {
-			wQuery = new WildcardQuery(_pathTerm.createTerm(iter.next()));
+		for (String text : tokens) {
+			wQuery = new WildcardQuery(TERM_NAME.createTerm(text));
 			bQuery.add(wQuery, Occur.MUST);
 		}
 
