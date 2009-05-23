@@ -41,12 +41,13 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Hit;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
@@ -67,7 +68,7 @@ import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 import se.mog.io.File;
 
 /**
- * Implementation of an Index engine based on <a
+ * Implementation of an Index engine based o\n <a
  * href="http://lucene.apache.org">Apache Lucene</a>
  * 
  * @author fr0w
@@ -140,9 +141,9 @@ public class LuceneEngine implements IndexEngineInterface {
 				_storage = FSDirectory.getDirectory(INDEX_DIR);
 			}
 
-			_iWriter = new IndexWriter(_storage, true, ANALYZER);
+			_iWriter = new IndexWriter(_storage, ANALYZER, new MaxFieldLength(1024)); // TODO make configurable?
 			_iSeacher = new IndexSearcher(_storage);
-			_iReader = IndexReader.open(_storage);
+			_iReader = IndexReader.open(_storage, true); // IndexReader will be read-only
 
 			_iWriter.setMaxBufferedDocs(_maxDocsBuffer);
 			_iWriter.setRAMBufferSizeMB(_maxRAMBufferSize);
@@ -219,18 +220,18 @@ public class LuceneEngine implements IndexEngineInterface {
 		Document doc = new Document();
 		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
 
-		doc.add(new Field("path", inode.getPath(), Field.Store.YES, Field.Index.TOKENIZED));
-		doc.add(new Field("owner", inode.getUsername(), Field.Store.YES, Field.Index.UN_TOKENIZED));
-		doc.add(new Field("group", inode.getGroup(), Field.Store.YES, Field.Index.UN_TOKENIZED));
-		doc.add(new Field("type", inodeType.toString().toLowerCase().substring(0, 1), Field.Store.YES, Field.Index.UN_TOKENIZED));
-		doc.add(new Field("size", String.valueOf(inode.getSize()), Field.Store.YES, Field.Index.UN_TOKENIZED));
+		doc.add(new Field("path", inode.getPath(), Field.Store.YES, Field.Index.ANALYZED));
+		doc.add(new Field("owner", inode.getUsername(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new Field("group", inode.getGroup(), Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new Field("type", inodeType.toString().toLowerCase().substring(0, 1), Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new Field("size", String.valueOf(inode.getSize()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
 
 		if (inodeType == InodeType.FILE) {
 			StringBuffer sb = new StringBuffer();
 			for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
 				sb.append(slaveName+",");				
 			}
-			doc.add(new Field("slaves", sb.toString(), Field.Store.YES, Field.Index.TOKENIZED));
+			doc.add(new Field("slaves", sb.toString(), Field.Store.YES, Field.Index.ANALYZED));
 		}
 
 		return doc;
@@ -245,9 +246,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		return _pathTerm.createTerm(inode.getPath());
 	}
 
-	/**
-	 * Queues an inode for addition in the Index.
-	 */
+	/* {@inheritDoc} */
 	public void addInode(InodeHandle inode) throws IndexException {
 		try {
 			Document doc = makeDocumentFromInode(inode);
@@ -261,9 +260,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 	}
 
-	/**
-	 * Queues an inode for deletion from Index.
-	 */
+	/* {@inheritDoc} */
 	public void deleteInode(InodeHandle inode) throws IndexException {
 		Term term = makeTermFromInode(inode);
 		try {
@@ -275,9 +272,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 	}
 
-	/**
-	 * Queues an update for Inode.
-	 */
+	/* {@inheritDoc} */
 	public void updateInode(InodeHandle inode) throws IndexException {
 		try {
 			_iWriter.updateDocument(makeTermFromInode(inode), makeDocumentFromInode(inode));
@@ -290,16 +285,18 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 	}
 	
+	/* {@inheritDoc} */
 	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException {
 		//TODO
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Forces the Index to be saved. Simply calls IndexWriter.flush().
 	 */
 	public void commit() throws IndexException {
 		try {
-			_iWriter.flush();
+			_iWriter.commit();
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to commit the index", e);
 		} catch (IOException e) {
@@ -307,10 +304,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 	}
 
-	/**
-	 * Removes ALL the content from the Index and recurse through the site
-	 * recreating the index.
-	 */
+	/* {@inheritDoc} */
 	public void rebuildIndex() throws IndexException {
 		closeAll();
 
@@ -344,6 +338,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 	}
 
+	/* {@inheritDoc} */
 	public Set<String> advancedFind(AdvancedSearchParams params) throws IndexException {
 		// TODO Auto-generated method stub
 		return null;
@@ -385,17 +380,12 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(_fileQuery, Occur.MUST);
 			}
 
-			Hits hits = iSearcher.search(query);
+			TopDocs topDocs = iSearcher.search(query, _maxHitsNumber);
 			logger.debug("Query: " + query);
 
-			for (Iterator<Hit> iter = hits.iterator(); iter.hasNext();) {
-				Hit hit = iter.next();
-				inodes.add(hit.get("path"));
-
-				if (inodes.size() == _maxHitsNumber) {
-					// search truncated.
-					break;
-				}
+			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+				inodes.add(doc.getField("path").stringValue());
 			}
 
 			return inodes;
@@ -413,7 +403,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 	private Query analyzePath(String path) {
 		TokenStream ts = ANALYZER.tokenStream("path", new StringReader(path));
-		Token t = null;
+		Token token = new Token();
 
 		BooleanQuery bQuery = new BooleanQuery();
 		WildcardQuery wQuery = null;
@@ -422,16 +412,17 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		while (true) {
 			try {
-				t = ts.next();
+				token = ts.next(token);
 			} catch (IOException e) {
-				t = null;
+				token = null;
+				break;
 			}
-
-			if (t == null) {
-				break; // EOS
+			
+			if (token == null) {
+				break;
 			}
-
-			set.add(new String(t.termBuffer(), 0, t.termLength()));
+			
+			set.add(new String(token.termBuffer(), 0, token.termLength()));
 		}
 
 		Iterator<String> iter = set.iterator();
@@ -466,7 +457,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		String lastSearch = df.format(new Date(_maintenanceThread.getSearcherCreationTime()));
 		String lastBackup = df.format(new Date(_backupThread.getLastBackup()));
 
-		status.put("inodes", String.valueOf(_iWriter.docCount()));
+		status.put("inodes", String.valueOf(_iWriter.maxDoc()));
 		status.put("backend", "Apache Lucene (http://lucene.apache.org)");
 		status.put("max hits", String.valueOf(_maxHitsNumber));
 		status.put("last optimization", lastOp);

@@ -63,7 +63,7 @@ public class LuceneMaintenanceThread extends Thread {
 
 				if (_currentTime >= _lastOptimization + _optimizeInterval) {
 					_engine.getWriter().optimize();
-					_engine.getWriter().flush();
+					_engine.getWriter().commit();
 					updateLastOptimizationTime();
 
 					logger.debug("Index was optimized successfully.");
