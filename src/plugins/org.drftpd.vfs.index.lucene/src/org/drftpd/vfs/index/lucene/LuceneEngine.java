@@ -385,7 +385,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
 				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
-				inodes.add(doc.getField("path").stringValue());
+				inodes.add(doc.getFieldable("path").stringValue());
 			}
 
 			return inodes;

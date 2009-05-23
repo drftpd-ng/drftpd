@@ -28,16 +28,13 @@ import org.apache.lucene.document.FieldSelectorResult;
  * @author fr0w
  * @version $Id$
  */
-public class SimpleSearchFieldSelector implements FieldSelector {
-	
+public class SimpleSearchFieldSelector implements FieldSelector {	
 	@Override
 	public FieldSelectorResult accept(String fieldName) {
-		/*if (fieldName.equals("path")) {
+		if (fieldName.equals("path")) {
 			return FieldSelectorResult.LOAD;
 		} else {
-			return FieldSelectorResult.LAZY_LOAD; // TODO buggy!
-		}*/
-		
-		return FieldSelectorResult.LOAD;
+			return FieldSelectorResult.LAZY_LOAD;
+		}
 	}
 }
