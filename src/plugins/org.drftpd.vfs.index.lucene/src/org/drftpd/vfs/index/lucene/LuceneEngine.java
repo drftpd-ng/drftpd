@@ -38,7 +38,6 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
@@ -68,8 +67,11 @@ import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 import se.mog.io.File;
 
 /**
- * Implementation of an Index engine based o\n <a
- * href="http://lucene.apache.org">Apache Lucene</a>
+ * Implementation of an Index engine based on <a href="http://lucene.apache.org">Apache Lucene</a>
+ * 
+ * This engine reuses {@link Field}s and {@link Document} instances as suggested by
+ * <a href="http://wiki.apache.org/lucene-java/ImproveIndexingSpeed">this article</a>
+ * in order to have better Indexing performance.
  * 
  * @author fr0w
  * @version $Id$
@@ -79,11 +81,29 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
 	protected static final String INDEX_DIR = "index";
+	
+	private static final Document INDEX_DOCUMENT = new Document();
+	
+	private static final Field FIELD_PATH = new Field("path", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_SIZE = new Field("size", "", Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
+	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
+	
+	private static final Field[] FIELDS = new Field[] {
+		FIELD_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SIZE, FIELD_SLAVES
+	};
+	
+	static {
+		for (Field field : FIELDS) {
+			INDEX_DOCUMENT.add(field);
+		}
+	}
 
 	private Directory _storage;
 	private IndexWriter _iWriter;
-	private IndexReader _iReader;
-	private IndexSearcher _iSeacher;
+	private IndexSearcher _iSearcher;
 
 	private final TermQuery _dirQuery = new TermQuery(new Term("type", "d"));
 	private final TermQuery _fileQuery = new TermQuery(new Term("type", "f"));;
@@ -102,7 +122,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	/**
 	 * Creates all the needed resources for the Index to work.
 	 * <ul>
-	 * <li>IndexSearcher / IndexWriter / IndexReader</li>
+	 * <li>IndexSearcher / IndexWriter</li>
 	 * <li>Reads <i>conf/plugins/lucene.conf</i> to grab some tweaking
 	 * settings, if this file is not found, a default values are loaded.</li>
 	 * <li>Adds a Shutdown Hook to save the index while closing DrFTPd</li>
@@ -141,9 +161,8 @@ public class LuceneEngine implements IndexEngineInterface {
 				_storage = FSDirectory.getDirectory(INDEX_DIR);
 			}
 
-			_iWriter = new IndexWriter(_storage, ANALYZER, new MaxFieldLength(1024)); // TODO make configurable?
-			_iSeacher = new IndexSearcher(_storage);
-			_iReader = IndexReader.open(_storage, true); // IndexReader will be read-only
+			_iWriter = new IndexWriter(_storage, ANALYZER, MaxFieldLength.UNLIMITED);
+			_iSearcher = new IndexSearcher(_storage);
 
 			_iWriter.setMaxBufferedDocs(_maxDocsBuffer);
 			_iWriter.setRAMBufferSizeMB(_maxRAMBufferSize);
@@ -183,21 +202,18 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 	private void closeAll() {
 		try {
-			if (_iSeacher != null)
-				_iSeacher.close();
+			if (_iSearcher != null)
+				_iSearcher.close();
 			if (_iWriter != null)
 				_iWriter.close();
-			if (_iReader != null)
-				_iReader.close();
 			if (_storage != null)
 				_storage.close();
 		} catch (Exception e) {
 			logger.error(e, e);
 		}
 
-		_iSeacher = null;
+		_iSearcher = null;
 		_iWriter = null;
-		_iReader = null;
 		_storage = null;
 	}
 
@@ -216,25 +232,28 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @param inode
 	 * @throws FileNotFoundException
 	 */
-	private Document makeDocumentFromInode(InodeHandle inode) throws FileNotFoundException {
-		Document doc = new Document();
+	private synchronized Document makeDocumentFromInode(InodeHandle inode) throws FileNotFoundException {
 		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
 
-		doc.add(new Field("path", inode.getPath(), Field.Store.YES, Field.Index.ANALYZED));
-		doc.add(new Field("owner", inode.getUsername(), Field.Store.YES, Field.Index.NOT_ANALYZED));
-		doc.add(new Field("group", inode.getGroup(), Field.Store.YES, Field.Index.NOT_ANALYZED));
-		doc.add(new Field("type", inodeType.toString().toLowerCase().substring(0, 1), Field.Store.YES, Field.Index.NOT_ANALYZED));
-		doc.add(new Field("size", String.valueOf(inode.getSize()), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+		// locking the document so that noone touches it.
+		synchronized (INDEX_DOCUMENT) {
+			FIELD_PATH.setValue(inode.getPath());
+			FIELD_OWNER.setValue(inode.getUsername());
+			FIELD_GROUP.setValue(inode.getGroup());
+			FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
+			FIELD_SIZE.setValue(String.valueOf(inode.getSize()));
 
-		if (inodeType == InodeType.FILE) {
-			StringBuffer sb = new StringBuffer();
-			for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
-				sb.append(slaveName+",");				
+			if (inodeType == InodeType.FILE) {
+				StringBuffer sb = new StringBuffer();
+				for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
+					sb.append(slaveName+",");				
+				}
+				
+				FIELD_SLAVES.setValue(sb.toString());
 			}
-			doc.add(new Field("slaves", sb.toString(), Field.Store.YES, Field.Index.ANALYZED));
 		}
-
-		return doc;
+		
+		return INDEX_DOCUMENT;
 	}
 
 	/**
@@ -292,7 +311,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	/**
 	 * {@inheritDoc}
-	 * Forces the Index to be saved. Simply calls IndexWriter.flush().
+	 * Forces the Index to be saved. Simply calls {@link IndexWriter}.commit();
 	 */
 	public void commit() throws IndexException {
 		try {
@@ -336,6 +355,14 @@ public class LuceneEngine implements IndexEngineInterface {
 				addInode(inode);
 			}
 		}
+		
+		commit(); // commit the writer so that the searcher can see the new stuff.
+		
+		try {
+			refreshSearcher();
+		} catch (Exception e) {
+			throw new IndexException(e);
+		}
 	}
 
 	/* {@inheritDoc} */
@@ -356,7 +383,6 @@ public class LuceneEngine implements IndexEngineInterface {
 		try {
 			Set<String> inodes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
-			IndexSearcher iSearcher = new IndexSearcher(_storage);
 			BooleanQuery query = new BooleanQuery();
 
 			if (!startNode.getPath().equals(VirtualFileSystem.separator)) {
@@ -380,11 +406,11 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(_fileQuery, Occur.MUST);
 			}
 
-			TopDocs topDocs = iSearcher.search(query, _maxHitsNumber);
+			TopDocs topDocs = _iSearcher.search(query, _maxHitsNumber);
 			logger.debug("Query: " + query);
 
 			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+				Document doc = _iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
 				inodes.add(doc.getFieldable("path").stringValue());
 			}
 
@@ -438,7 +464,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * This method returns a Map containing information about the index engine.<br>
 	 * Right now this Map contains the info bellow:
 	 * <ul>
-	 * <li>Number of inodes (ley => "inodes")</li>
+	 * <li>Number of inodes (key => "inodes")</li>
 	 * <li>Storage backend (key => "backend")</li>
 	 * <li>Maximum search hits (key => "max hits")</li>
 	 * <li>The date of the last optimization (key => "last optimization")</li>
@@ -489,12 +515,20 @@ public class LuceneEngine implements IndexEngineInterface {
 		return _iWriter;
 	}
 	
-	protected IndexSearcher getSearcher() {
-		return _iSeacher;
-	}
-	
-	protected void setSearcher(IndexSearcher searcher) {
-		_iSeacher = searcher;
+	protected void refreshSearcher() throws CorruptIndexException, IOException {
+		IndexSearcher newSearcher = new IndexSearcher(_storage);
+		IndexSearcher oldSearcher = _iSearcher;
+		
+		// locking here so nobody can touch it for now.
+		synchronized (oldSearcher) {
+			_iSearcher = newSearcher;
+			
+			try {
+				oldSearcher.close();
+			} catch (IOException e) {
+				// don't care about it
+			}
+		}
 	}
 	
 	/**
@@ -507,7 +541,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			_maintenanceThread.stopMaintenance();
 
 			// obtaining the objects' lock.
-			// doing that we ensure that nothing operations is running while closing the streams.
+			// doing that we ensure that no operations are running while closing the streams.
 			synchronized (_maintenanceThread) {
 				_maintenanceThread.notify();
 			}

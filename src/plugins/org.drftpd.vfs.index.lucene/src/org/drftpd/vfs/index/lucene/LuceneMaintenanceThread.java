@@ -21,7 +21,6 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.search.IndexSearcher;
 import org.drftpd.GlobalContext;
 
 /**
@@ -72,17 +71,7 @@ public class LuceneMaintenanceThread extends Thread {
 				if (_currentTime >= _lastSearcherCreation + _updateSearcherInterval) {
 					logger.debug("Creating a new IndexSearcher.");
 
-					IndexSearcher oldSearcher = _engine.getSearcher();
-					IndexSearcher newSeacher = new IndexSearcher(_engine.getStorage());
-
-					// locking here so nobody can touch it for now.
-					synchronized (oldSearcher) {
-						// replacing old instance
-						_engine.setSearcher(newSeacher);
-
-						// closing old instance.
-						oldSearcher.close();
-					}
+					_engine.refreshSearcher();
 
 					updateSearcherCreationTime();
 
