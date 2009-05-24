@@ -22,7 +22,6 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -96,45 +95,6 @@ public class ConnectionManager implements EventSubscriber {
 
 		try {
 			logger.info("Starting ConnectionManager");
-
-			// try using the JuiCE if available
-
-			Class<?> juiceJCE = null;
-			Class<?> bcJCE = null;
-
-			try {
-				juiceJCE = Class.forName("org.apache.security.juice.provider.JuiCEProviderOpenSSL");
-			} catch (ClassNotFoundException e) {
-				logger.info("JuiCE JCE not installed, using java native JSSE");
-			}
-
-			// Only try installing JuiCE provider if the class was found
-			
-			if (juiceJCE != null) {
-				int provider1Pos = Security.insertProviderAt((java.security.Provider) juiceJCE
-					.newInstance(), 2);
-				if (provider1Pos == -1) {
-					logger.info("Loading of JuiCE JCE failed");
-				}
-				else {
-					logger.debug("Juice JCE Provider successfully inserted at position: "+provider1Pos);
-				}
-				try {
-					bcJCE = Class.forName("org.bouncycastle.jce.provider.BouncyCastleProvider");
-				} catch (ClassNotFoundException e) {
-					logger.fatal("JuiCE JCE found but Bouncy Castle JCE not installed, please check installation");
-				}
-				if (bcJCE != null) {
-					int provider2Pos = Security.insertProviderAt((java.security.Provider) bcJCE
-						.newInstance(), 3);
-					if (provider2Pos == -1) {
-						logger.info("Loading of Bouncy Castle JCE failed");
-					}
-					else {
-						logger.debug("Bouncy Castle JCE Provider successfully inserted at position: "+provider2Pos);
-					}
-				}
-			}
 			
 			GlobalContext.getGlobalContext().init();
 

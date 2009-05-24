@@ -46,6 +46,10 @@ public class StatsPostHook implements PostHookInterface {
 	}
 
 	public void doRETRPostHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 226) {
+			// Transfer failed, abort update
+			return;
+		}
 		BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
 		DirectoryHandle dir = conn.getCurrentDirectory();
 		User user = conn.getUserNull(request.getUser());
@@ -77,6 +81,10 @@ public class StatsPostHook implements PostHookInterface {
 	}
 	
 	public void doSTORPostHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 226) {
+			// Transfer failed, abort update
+			return;
+		}
 		BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
 		DirectoryHandle dir = conn.getCurrentDirectory();
 		User user = conn.getUserNull(request.getUser());
@@ -108,6 +116,10 @@ public class StatsPostHook implements PostHookInterface {
 	}
 	
 	public void doDELEPostHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 250) {
+			// Transfer failed, abort update
+			return;
+		}
 		String userName = (String) response.getObject(Dir.USERNAME, null);
 		long fileSize  = response.getObjectLong(Dir.FILESIZE);
 

@@ -193,6 +193,8 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 				}
 				// build thread has finished, enable button
 				_okButton.setEnabled(true);
+				// change default focus to "ok" button for usability
+				_okButton.requestFocus();
 			}
 		}
 	}

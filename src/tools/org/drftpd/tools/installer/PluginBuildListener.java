@@ -191,7 +191,11 @@ public class PluginBuildListener implements SubBuildListener {
 			writeLog("");
 			be.getException().printStackTrace();
 		}
-		_logWindow.setProgressMessage("Build complete");
+		if (be.getException() == null) {
+			_logWindow.setProgressMessage("Build complete");
+		} else {
+			_logWindow.setProgressMessage("Build failed");
+		}
 	}
 
 	public void buildStarted(BuildEvent be) {
