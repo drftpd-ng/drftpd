@@ -2,76 +2,12 @@
 <!-- $Id$ -->
 <project name="org.drftpd.sections.conf"
          default="build">
-	<property name="pluginbase" value="${basedir}/src/plugins/org.drftpd.sections.conf" />
+	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.sections.conf" />
+	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
-		<jpf-info manifest="${pluginbase}/plugin.xml"
-			propertyid="plugin.id"
-			propertyversion="plugin.version" />
-		<property name="plugin.home"
-			value="${installdir}/plugins/master/${plugin.id}" />
-		<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
-		<loggingcopytask file="${pluginbase}/plugin.xml" todir="${plugin.home}" />
-		<resourcetask
-			basedir="${installdir}"
-			resourcedir="${pluginbase}/resources" />
-		<jpf-path
-			basedir="${installdir}"
-			pathid="plugin.classpath"
-			pluginid="${plugin.id}"
-			includes="core/*/plugin.xml,plugins/master/*/plugin.xml"
-			verbose="${build.verbose}" />
-		<if>
-			<equals arg1="${devmode}" arg2="true" />
-			<then>
-				<property name="compiledest" value="${plugin.home}/classes" />
-				<replaceregexp file="${plugin.home}/plugin.xml"
-					match="${plugin.id}\.jar"
-					replace="classes\/"
-					byline="true" />
-			</then>
-			<else>
-				<property name="compiledest" value="${pluginbase}/classes" />
-			</else>
-		</if>
-		<mkdir dir="${compiledest}" />
-		<javac destdir="${compiledest}"
-			srcdir="${pluginbase}/src"
-			classpathref="plugin.classpath"
-			source="${build.javac}"
-			target="${build.javac}"
-			debug="${build.debug}"
-			optimize="${build.optimize}">
-		</javac>
-		<if>
-			<equals arg1="${devmode}" arg2="false" />
-			<then>
-				<loggingjartask destfile="${plugin.home}/${plugin.id}.jar">
-					<manifest>
-						<attribute name="Specification-Title" value="DrFTPd - ${plugin.id}" />
-						<attribute name="Specification-Version" value="${plugin.version}" />
-						<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
-						<attribute name="Implementation-Title" value="${plugin.id}" />
-						<attribute name="Implementation-Version" value="${plugin.version}" />
-						<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
-					</manifest>
-					<fileset dir="${pluginbase}/classes" includes="**/*.class" />
-				</loggingjartask>
-			</then>
-		</if>
+		<buildplugin />
 	</target>
 	<target name="clean">
-		<jpf-info manifest="${pluginbase}/plugin.xml"
-			propertyid="plugin.id"
-			propertyversion="plugin.version" />
-		<echo>Cleaning ${plugin.id} plug-in</echo>
-		<if>
-			<equals arg1="${devmode}" arg2="true" />
-			<then>
-				<delete dir="${plugin.home}/classes" />
-			</then>
-			<else>
-				<delete dir="${pluginbase}/classes" />
-			</else>
-		</if>
+		<cleanplugin />
 	</target>
 </project>

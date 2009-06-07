@@ -68,7 +68,7 @@ public class LibCopyTask extends Task {
 			if (lib.getPath().equalsIgnoreCase(getProject().getName()+".jar")) {
 				continue;
 			}
-			File initial = new File(getProject().getProperty("pluginbase"),lib.getPath());
+			File initial = new File(getProject().getProperty("plugin.base"),lib.getPath());
 			try {
 				File actual = initial.getCanonicalFile();
 				if (actual.exists()) {

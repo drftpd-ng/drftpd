@@ -20,4 +20,86 @@
 	<tstamp>
 		<format property="build.plugins.start" pattern="yyyy.MM.dd HH:mm:ss.SSS" />
 	</tstamp>
+
+	<!-- define common macros for build and clean targets -->
+	<macrodef name="buildplugin">
+		<sequential>
+			<jpf-info manifest="${plugin.base}/plugin.xml"
+						propertyid="plugin.id"
+						propertyversion="plugin.version" />
+			<property name="plugin.home" value="${installdir}/${plugin.family}/${plugin.id}" />
+			<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
+			<loggingcopytask file="${plugin.base}/plugin.xml" todir="${plugin.home}" />
+			<resourcetask
+				basedir="${installdir}"
+				resourcedir="${plugin.base}/resources" />
+			<themetask
+				basedir="${installdir}"
+				plugindir="${plugin.base}/src" />
+			<jpf-path
+				basedir="${installdir}"
+				pathid="plugin.classpath"
+				pluginid="${plugin.id}"
+				includes="core/*/plugin.xml,plugins/common/*/plugin.xml,plugins/master/*/plugin.xml,plugins/slave/*/plugin.xml"
+				verbose="${build.verbose}" />
+			<if>
+				<equals arg1="${devmode}" arg2="true" />
+				<then>
+					<property name="compile.dest" value="${plugin.home}/classes" />
+					<replaceregexp file="${plugin.home}/plugin.xml"
+						match="${plugin.id}\.jar"
+						replace="classes\/"
+						byline="true" />
+				</then>
+				<else>
+					<property name="compile.dest" value="${plugin.base}/classes" />
+				</else>
+			</if>
+			<mkdir dir="${compile.dest}" />
+			<javac destdir="${compile.dest}"
+				srcdir="${plugin.base}/src"
+				classpathref="plugin.classpath"
+				excludes="${compile.excludes}"
+				source="${build.javac}"
+				target="${build.javac}"
+				debug="${build.debug}"
+				optimize="${build.optimize}">
+			</javac>
+			<libcopytask />
+			<if>
+				<equals arg1="${devmode}" arg2="false" />
+				<then>
+					<loggingjartask destfile="${plugin.home}/${plugin.id}.jar">
+						<manifest>
+							<attribute name="Specification-Title" value="DrFTPd - ${plugin.id}" />
+							<attribute name="Specification-Version" value="${plugin.version}" />
+							<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
+							<attribute name="Implementation-Title" value="${plugin.id}" />
+							<attribute name="Implementation-Version" value="${plugin.version}" />
+							<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
+						</manifest>
+						<fileset dir="${plugin.base}/classes" includes="**/*.class" />
+					</loggingjartask>
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+	<macrodef name="cleanplugin">
+		<sequential>
+			<jpf-info manifest="${plugin.base}/plugin.xml"
+				propertyid="plugin.id"
+				propertyversion="plugin.version" />
+			<property name="plugin.home" value="${installdir}/${plugin.family}/${plugin.id}" />
+			<echo>Cleaning ${plugin.id} plug-in</echo>
+			<if>
+				<equals arg1="${devmode}" arg2="true" />
+				<then>
+					<delete dir="${plugin.home}/classes" />
+				</then>
+				<else>
+					<delete dir="${plugin.base}/classes" />
+				</else>
+			</if>
+		</sequential>
+	</macrodef>
 </project>

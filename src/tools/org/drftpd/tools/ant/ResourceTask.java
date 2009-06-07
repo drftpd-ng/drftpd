@@ -81,7 +81,7 @@ public class ResourceTask extends Task {
 		}
 		_longDate = buildDate.getTime();
 		findResources(_resourceDir);
-		if (_slavePlugin) {
+		if (_slavePlugin && !_filePatterns.isEmpty()) {
 			String[] patterns = (String[])_filePatterns.toArray(new String[_filePatterns.size()]);
 			slaveFiles.appendIncludes(patterns);
 		}
@@ -96,8 +96,10 @@ public class ResourceTask extends Task {
 	 * @throws BuildException
 	 */
 	private void findResources(File dir) throws BuildException {
-		if (!dir.isDirectory())
-			throw new BuildException(dir.getPath() + " is not a directory");
+		if (!dir.isDirectory()) {
+			log("Resource directory "+dir.getPath()+" not found",Project.MSG_INFO);
+			return;
+		}
 
 		for (File file : dir.listFiles()) {
 			if (file.getName().startsWith(".")) {

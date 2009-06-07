@@ -169,7 +169,7 @@ public class ThemeTask extends Task {
 		dirPrefix = dirPrefix.replace(File.separatorChar,'.');
 		String[] parts = file.getName().split("\\.");
 		if (parts.length != 3) {
-			log("Skipping invalid filename: " + file.getName(),Project.MSG_ERR);
+			log("Skipping invalid filename: " + file.getName(),Project.MSG_INFO);
 		} else {
 			String keyPrefix = dirPrefix + "." + parts[0] + ".";
 			FileInputStream fis = null;
