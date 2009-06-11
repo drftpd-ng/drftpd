@@ -378,7 +378,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 		}
 		if (!_userDisconnected) {
 			try {
-				Thread.sleep(_config.getConnectDelay());
+				wait(_config.getConnectDelay());
 			}
 			catch (InterruptedException e) {
 				// do nothing
