@@ -41,7 +41,7 @@ public class Key implements Serializable {
 	}
 
 	public boolean equals(Object o) {
-		if (o == null) {
+		if (o == null || !(o instanceof Key)) {
 			return false;
 		}
 

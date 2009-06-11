@@ -31,10 +31,12 @@ public class QueuedOperation implements Serializable {
 
 	private String _destination;
 
-	public boolean equals(Object arg0) {
-		if (arg0 == null)
+	public boolean equals(Object obj) {
+		if (obj == null || !(obj instanceof QueuedOperation)) {
 			return false;
-		QueuedOperation arg = (QueuedOperation) arg0;
+		}
+		
+		QueuedOperation arg = (QueuedOperation) obj;
 		return arg.getSource().equals(getSource());
 	}
 
