@@ -18,13 +18,19 @@
 package org.drftpd.vfs.perms;
 
 import java.lang.reflect.Method;
+import java.util.StringTokenizer;
+
+import org.apache.log4j.Logger;
 
 /**
+ * Wraps the PermissionHandler instance and its "handling" method.
  * @author fr0w
  * @version $Id$
  */
 public class PermissionWrapper {
 
+	private static final Logger logger = Logger.getLogger(PermissionWrapper.class);
+	
 	private VFSPermHandler _permHandler;
 	private Method _method;
 	
@@ -33,11 +39,16 @@ public class PermissionWrapper {
 		_method = method;
 	}
 	
-	public VFSPermHandler getVFSPermHandler() {
-		return _permHandler;
-	}
-	
-	public Method getMethod() {
-		return _method;
+	/**
+	 * Invoke, passing the right parameters, the PermissionHandler for given line.
+	 * @param directive
+	 * @param st
+	 */
+	public void handle(String directive, StringTokenizer st) {
+		try {
+			_method.invoke(_permHandler, directive, st);
+		} catch (Exception e) {
+			logger.error("Unable to handle '"+directive+"'", e);
+		}
 	}
 }

@@ -60,7 +60,6 @@ public class VFSPermissions {
 		_priorities = new HashMap<String, TreeMap<Integer, String>>();
 		
 		PluginManager manager = PluginManager.lookup(this);
-		logger.debug("manager = " + manager);
 		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("master", "VFSPerm");
 		
 		/*
@@ -78,7 +77,14 @@ public class VFSPermissions {
 				String directive = ext.getParameter("Directive").valueAsString();
 				
 				if (_handlersMap.containsKey(directive)) {
-					logger.debug("A handler for "+ directive +" already loaded, check your plugin.xml's");
+					logger.debug("A handler for '"+ directive +"' already loaded, check your plugin.xml's");
+					continue;
+				}
+
+				String type = ext.getParameter("Type").valueAsString().toLowerCase();
+				
+				if (!verifyType(type)) {
+					logger.debug("Invalid VFS permission type ("+type+") for directive '"+directive+"'.");
 					continue;
 				}
 				
@@ -87,12 +93,6 @@ public class VFSPermissions {
 				ClassLoader clsLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());				
 				Class<?> clazz = clsLoader.loadClass(ext.getParameter("Class").valueAsString());				
 				Method m = clazz.getMethod(ext.getParameter("Method").valueAsString(), new Class[] { String.class, StringTokenizer.class });
-				
-				String type = ext.getParameter("Type").valueAsString().toLowerCase();
-				
-				if (!verifyType(type)) {
-					throw new IllegalArgumentException("Invalid VFS perm type.");
-				}
 
 				VFSPermHandler permHnd = (VFSPermHandler) clazz.newInstance();
 				PermissionWrapper pw = new PermissionWrapper(permHnd, m);				
@@ -141,11 +141,7 @@ public class VFSPermissions {
 		
 		PermissionWrapper pw = _handlersMap.get(directive);
 		
-		try {
-			pw.getMethod().invoke(pw.getVFSPermHandler(), directive, st);
-		} catch (Exception e) {
-			logger.warn(e, e);
-		}	
+		pw.handle(directive, st);
 	}
 	
 	protected void addPermissionToMap(String directive, PathPermission pathPerm) {
@@ -187,12 +183,12 @@ public class VFSPermissions {
 		}
 		
 		if (order == null) {
-			logger.debug("You've got some screwy plugin.xml files!  Blame fr0w!", new Throwable());
-			// we'll throw a null pointer at this point, but at least someone will notice :)
+			NullPointerException npe = new NullPointerException("You've got some screwy plugin.xml files!  Blame fr0w!");
+			logger.error(npe, npe);
+			throw npe;
 		}
 				
-		for (Iterator<Entry<Integer, String>> iter = order.entrySet().iterator(); iter.hasNext();) {
-			Entry<Integer, String> entry = iter.next();
+		for (Entry<Integer, String> entry : order.entrySet()) {
 			String directive = entry.getValue();
 			
 			LinkedList<PathPermission> perms = map.get(directive);
