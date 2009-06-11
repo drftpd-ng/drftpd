@@ -151,14 +151,14 @@ public abstract class CommandInterface implements EventSubscriber {
 							preHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class});
 					int priority = preHook.getParameter("Priority").valueAsNumber().intValue();
-					if (_preHooks.containsKey(new Integer(priority))) {
+					if (_preHooks.containsKey(priority)) {
 						logger.warn(pluginName + " already has a pre hook with priority " +
 								priority + " adding " + preHook.getId() + " with next available priority");
-						while (_preHooks.containsKey(new Integer(priority))) {
+						while (_preHooks.containsKey(priority)) {
 							priority++;
 						}
 					}
-					_preHooks.put(new Integer(priority),
+					_preHooks.put(priority,
 							new HookContainer<PreHookInterface>(m,preHookInstance));
 				}
 				catch(Exception e) {
