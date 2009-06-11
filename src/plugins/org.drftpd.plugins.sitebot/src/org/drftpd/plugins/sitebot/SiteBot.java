@@ -2724,6 +2724,8 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 					}
 				}
 			}
+			
+			// TODO check this, 'cuz this is looking odd!
 			if (newUser != null) {
 				users.put(newUser, newUser);
 			}
