@@ -98,14 +98,14 @@ public abstract class CommandInterface implements EventSubscriber {
 							postHook.getParameter("HookMethod").valueAsString(),
 							new Class[] {CommandRequest.class, CommandResponse.class});
 					int priority = postHook.getParameter("Priority").valueAsNumber().intValue();
-					if (_postHooks.containsKey(new Integer(priority))) {
+					if (_postHooks.containsKey(priority)) {
 						logger.warn(pluginName + " already has a post hook with priority " +
 								priority + " adding " + postHook.getId() + " with next available priority");
-						while (_postHooks.containsKey(new Integer(priority))) {
+						while (_postHooks.containsKey(priority)) {
 							priority++;
 						}
 					}
-					_postHooks.put(new Integer(priority),
+					_postHooks.put(priority,
 							new HookContainer<PostHookInterface>(m,postHookInstance));
 				}
 				catch(Exception e) {
