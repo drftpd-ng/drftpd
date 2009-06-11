@@ -173,7 +173,7 @@ public class Nuke extends CommandInterface {
                     add = 0L;
                 }
 
-                nukees2.put(user, add.longValue() + entry.getValue());
+                nukees2.put(null, add.longValue() + entry.getValue());
             } else {
                 nukees2.put(user, entry.getValue());
             }
