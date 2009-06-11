@@ -24,7 +24,8 @@ import java.io.Serializable;
  * @version $Id$
  */
 public final class TransferIndex implements Serializable {
-	static Integer transfers = 0;
+	private static Object mutex = new Object();
+	private static Integer transfers = 0;
 
 	private int _index;
 
@@ -33,13 +34,16 @@ public final class TransferIndex implements Serializable {
 	}
 
 	public TransferIndex() {
-		synchronized (transfers) {
+		synchronized (mutex) {
 			_index = transfers++;
 		}
 	}
 
 	public boolean equals(Object obj) {
-	if(obj == null) return false;
+		if (obj == null || !(obj instanceof TransferIndex)){
+			return false;
+		}
+		
 		return _index == ((TransferIndex) obj)._index;
 	}
 
