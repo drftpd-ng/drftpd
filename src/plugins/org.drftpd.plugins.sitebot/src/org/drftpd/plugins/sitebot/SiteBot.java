@@ -183,6 +183,9 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 		// Set internal name
 		_name = _config.getBotName();
 
+		// Set thread name to the internal bot name to aid debugging
+		Thread.currentThread().setName(_name);
+		
 		// Load commands config and get/initialise a command manager with them
 		loadCommands();
 		_commandManager = GlobalContext.getGlobalContext().getCommandManager();
@@ -2710,7 +2713,6 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 		channel = channel.toLowerCase();
 		synchronized (_channels) {
 			HashMap<IrcUser,IrcUser> users = _channels.get(channel);
-			IrcUser newUser = null;
 			if (users != null) {
 				for (IrcUser userObj : users.values()) {
 					if (userObj.getNick().equalsIgnoreCase(nick)) {
@@ -2723,16 +2725,6 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 						}
 					}
 				}
-			}
-			
-			// TODO check this, 'cuz this is looking odd!
-			if (newUser != null) {
-				users.put(newUser, newUser);
-			}
-			else {
-				// just in case ...
-				newUser = new IrcUser("", nick);
-				users.put(newUser, newUser);
 			}
 		}
 	}
@@ -2958,7 +2950,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 
 	public void onEvent(Object event) {
 		if (event instanceof ReloadEvent) {
-			logger.info("Reloading conf/plugins/"+_confDir+"/irccommands.conf, origin"+((ReloadEvent)event).getOrigin());
+			logger.info("Reloading conf/plugins/"+_confDir+"/irccommands.conf, origin "+((ReloadEvent)event).getOrigin());
 			loadCommands();
 			_commandManager.initialize(getCommands(), themeDir);
 			_config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
