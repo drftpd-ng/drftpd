@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.protocol.zipscript.zip.slave" version="2.1.0">
 	<attributes>
 		<attribute id="ProtocolName" value="ZipscriptZipProtocol"/>
@@ -13,7 +14,7 @@
 		<import plugin-id="slave" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.zip.slave" path="org.drftpd.protocol.zipscript.zip.slave.jar" type="code">
+		<library id="org.drftpd.protocol.zipscript.zip.slave" path="build/classes/" type="code">
 		</library>
 		<library id="truezip" path="../../../lib/truezip-6.6.jar" type="code">
 			<export prefix="*" />

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.commands.zipscript.mp3" version="2.1.0">
 	<attributes>
 		<attribute id="ProtocolName" value="ZipscriptMP3Protocol" />
@@ -18,7 +19,7 @@
 		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.zipscript.mp3" path="org.drftpd.commands.zipscript.mp3.jar" type="code">
+		<library id="org.drftpd.commands.zipscript.mp3" path="build/classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

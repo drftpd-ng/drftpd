@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.sections.conf" version="2.1.0">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
@@ -8,7 +9,7 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.sections.conf" path="org.drftpd.sections.conf.jar" type="code">
+		<library id="org.drftpd.sections.conf" path="build/classes/" type="code">
 		</library>
 	</runtime>
 	<extension plugin-id="master" point-id="SectionManager" id="ConfigurableSectionManager">

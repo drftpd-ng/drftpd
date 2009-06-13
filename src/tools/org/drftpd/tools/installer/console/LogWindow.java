@@ -68,13 +68,15 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 	private PipedInputStream _logInput;
 	private PluginBuilder _builder;
 	private int _pluginCount;
+	private boolean _cleanOnly;
 
-	public LogWindow(PipedInputStream logInput, InstallerConfig config, int pluginCount) {
+	public LogWindow(PipedInputStream logInput, InstallerConfig config, int pluginCount, boolean cleanOnly) {
 		super("Build Log");
 		_fileLogEnabled = config.getFileLogging();
 		_suppressLog = config.getSuppressLog();
 		_logInput = logInput;
 		_pluginCount = pluginCount;
+		_cleanOnly = cleanOnly;
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		JPanel centerPanel = new JPanel();
@@ -101,7 +103,11 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 		southPanel.setLayout(southLayout);
 		_progressBar = new JProgressBar(0, _pluginCount);
 		_progressBar.setValue(0);
-		_progressBar.setString("Built 0/"+_pluginCount+" plugins");
+		if (_cleanOnly) {
+			_progressBar.setString("Cleaned 0/"+_pluginCount+" plugins");
+		} else {
+			_progressBar.setString("Built 0/"+_pluginCount+" plugins");
+		}
 		_progressBar.setStringPainted(true);
 		_progressBar.setSize(new Dimension(toolkit.getScreenColumns() - 4, 1));
 		southPanel.add(_progressBar, new GridBagConstraints(0,0,1,1,100.0,0.0
@@ -151,7 +157,11 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 
 	public void setProgress(int pluginsDone) {
 		_progressBar.setValue(pluginsDone);
-		_progressBar.setString("Built "+pluginsDone+"/"+_pluginCount+" plugins");
+		if (_cleanOnly) {
+			_progressBar.setString("Cleaned "+pluginsDone+"/"+_pluginCount+" plugins");
+		} else {
+			_progressBar.setString("Built "+pluginsDone+"/"+_pluginCount+" plugins");
+		}
 	}
 
 	public void setProgressMessage(String message) {

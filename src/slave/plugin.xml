@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="slave" version="2.1.0" class="org.drftpd.slave.Boot">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
@@ -18,7 +19,7 @@
 		<import plugin-id="common" exported="true" />
 	</requires>
 	<runtime>
-		<library id="slave" path="slave.jar" type="code">
+		<library id="slave" path="build/classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

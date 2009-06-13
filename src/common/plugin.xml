@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="common" version="2.1.0">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
@@ -24,7 +25,7 @@
 		</attribute>
 	</attributes>
 	<runtime>
-		<library id="common" path="common.jar" type="code">
+		<library id="common" path="build/classes/" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="junit" path="../../lib/junit-4.3.1.jar" type="code">

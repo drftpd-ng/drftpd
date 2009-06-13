@@ -21,9 +21,12 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.PipedInputStream;
 import java.util.ArrayList;
@@ -54,6 +57,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 	private static final Logger logger = Logger.getLogger(SwingInstaller.class);
 
 	private JButton _buildButton;
+	private JButton _cleanButton;
 	private JButton _exitButton;
 	private JButton _selectAllButton;
 	private ConfigPanel _configPanel;
@@ -102,13 +106,17 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		_buildButton.setText("Build");
 		_buildButton.setPreferredSize(new Dimension(100,25));
 		_buildButton.addActionListener(this);
+		_cleanButton = new JButton();
+		_cleanButton.setText("Clean");
+		_cleanButton.setPreferredSize(new Dimension(100,25));
+		_cleanButton.addActionListener(this);
 		_selectAllButton = new JButton();
 		_selectAllButton.setText("Select All");
 		_selectAllButton.setPreferredSize(new Dimension(100,25));
 		_selectAllButton.addActionListener(this);
 
 		JPanel southPanel = new JPanel();
-		GridLayout southLayout = new GridLayout(1,2);
+		GridBagLayout southLayout = new GridBagLayout();
 		southPanel.setLayout(southLayout);
 		JPanel southWestPanel = new JPanel();
 		FlowLayout southWestLayout = new FlowLayout();
@@ -120,9 +128,12 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		southEastLayout.setAlignment(FlowLayout.RIGHT);
 		southEastPanel.setLayout(southEastLayout);
 		southEastPanel.add(_buildButton);
+		southEastPanel.add(_cleanButton);
 		southEastPanel.add(_exitButton);
-		southPanel.add(southWestPanel);
-		southPanel.add(southEastPanel);
+		southPanel.add(southWestPanel, new GridBagConstraints(0,0,1,1,0.0,0.0
+				,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0));
+		southPanel.add(southEastPanel, new GridBagConstraints(1,0,1,1,100.0,0.0
+				,GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0));
 
 		contentPane.add(centerPanel, BorderLayout.CENTER);
 		contentPane.add(southPanel, BorderLayout.SOUTH);
@@ -137,7 +148,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 			terminate();
 		}
 		Object actionSource = ae.getSource();
-		if (actionSource.equals(_buildButton)) {
+		if (actionSource.equals(_buildButton) || actionSource.equals(_cleanButton)) {
 			_config.setInstallDir(_configPanel.getInstallLocation().getText());
 			_config.setLogLevel(_configPanel.getLogLevel().getSelectedIndex());
 			_config.setFileLogging(_configPanel.getFileLog());
@@ -156,14 +167,17 @@ public class SwingInstaller extends JFrame implements ActionListener {
 			}
 			_config.setPluginSelections(selPlugins);
 			Logger.getRootLogger().setLevel(Level.toLevel(_configPanel.getLogLevel().getSelectedItem().toString()));
-			try {
-				_config.writeToDisk();
-			} catch (IOException e) {
-				logger.warn("Unable to write current config to build.conf",e);
+			// only save current config when building, not when just cleaning
+			if (actionSource.equals(_buildButton)) {
+				try {
+					_config.writeToDisk();
+				} catch (IOException e) {
+					logger.warn("Unable to write current config to build.conf",e);
+				}
 			}
 			PipedInputStream logInput = new PipedInputStream();
-			LogWindow logWindow = new LogWindow(logInput,_buildButton,_selectAllButton,_exitButton,_config,toBuild.size());
-			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow);
+			LogWindow logWindow = new LogWindow(logInput,_buildButton,_cleanButton,_selectAllButton,_exitButton,_config,toBuild.size(),actionSource.equals(_cleanButton));
+			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow,actionSource.equals(_cleanButton));
 			try {
 				logWindow.init();
 				new Thread(new PluginBuilderThread(builder)).start();
@@ -178,5 +192,12 @@ public class SwingInstaller extends JFrame implements ActionListener {
 
 	private static void terminate() {
 		System.exit(0);
+	}
+
+	protected void processWindowEvent(WindowEvent e) {
+		super.processWindowEvent(e);
+		if (e.getID() == WindowEvent.WINDOW_CLOSING) {
+			terminate();
+		}
 	}
 }

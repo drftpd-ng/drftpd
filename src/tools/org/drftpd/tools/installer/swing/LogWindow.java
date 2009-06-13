@@ -56,6 +56,7 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 	private boolean _suppressLog;
 	private FileLogger _fileLog;
 	private JButton _buildButton;
+	private JButton _cleanButton;
 	private JButton _exitButton;
 	private JButton _okButton;
 	private JButton _selectAllButton;
@@ -64,16 +65,19 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 	private BufferedReader _logReader;
 	private PipedInputStream _logInput;
 	private int _pluginCount;
+	private boolean _cleanOnly;
 
-	public LogWindow(PipedInputStream logInput, JButton buildButton, JButton selectAllButton, JButton exitButton, InstallerConfig config, int pluginCount) {
+	public LogWindow(PipedInputStream logInput, JButton buildButton, JButton cleanButton, JButton selectAllButton, JButton exitButton, InstallerConfig config, int pluginCount, boolean cleanOnly) {
 		super("Build Log");
 		_fileLogEnabled = config.getFileLogging();
 		_suppressLog = config.getSuppressLog();
 		_logInput = logInput;
 		_buildButton = buildButton;
+		_cleanButton = cleanButton;
 		_selectAllButton = selectAllButton;
 		_exitButton = exitButton;
 		_pluginCount = pluginCount;
+		_cleanOnly = cleanOnly;
 		Container contentPane = getContentPane();
 		contentPane.setLayout(new BorderLayout());
 		JPanel centerPanel = new JPanel();
@@ -96,7 +100,11 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 		southPanel.setLayout(southLayout);
 		_progressBar = new JProgressBar(0, _pluginCount);
 		_progressBar.setValue(0);
-		_progressBar.setString("Built 0/"+_pluginCount+" plugins");
+		if (_cleanOnly) {
+			_progressBar.setString("Cleaned 0/"+_pluginCount+" plugins");
+		} else {
+			_progressBar.setString("Built 0/"+_pluginCount+" plugins");
+		}
 		_progressBar.setStringPainted(true);
 		southPanel.add(_progressBar, new GridBagConstraints(0,0,1,1,100.0,0.0
 				,GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
@@ -126,6 +134,7 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 		_logReader = new BufferedReader(new InputStreamReader(_logInput));
 		// disable buttons whilst build is in progress
 		_buildButton.setEnabled(false);
+		_cleanButton.setEnabled(false);
 		_selectAllButton.setEnabled(false);
 		_exitButton.setEnabled(false);
 		new Thread(new ReadingThread()).start();
@@ -145,7 +154,11 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 
 	public void setProgress(int pluginsDone) {
 		_progressBar.setValue(pluginsDone);
-		_progressBar.setString("Built "+pluginsDone+"/"+_pluginCount+" plugins");
+		if (_cleanOnly) {
+			_progressBar.setString("Cleaned "+pluginsDone+"/"+_pluginCount+" plugins");
+		} else {
+			_progressBar.setString("Built "+pluginsDone+"/"+_pluginCount+" plugins");
+		}
 	}
 
 	public void setProgressMessage(String message) {
@@ -189,6 +202,7 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 				// build thread has finished, re-enable buttons
 				_okButton.setEnabled(true);
 				_buildButton.setEnabled(true);
+				_cleanButton.setEnabled(true);
 				_selectAllButton.setEnabled(true);
 				_exitButton.setEnabled(true);
 				// change default focus to "ok" button for usability

@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.commands.nuke" version="2.1.0">
 	<requires>
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
@@ -7,7 +8,7 @@
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.nuke" path="org.drftpd.commands.nuke.jar" type="code">
+		<library id="org.drftpd.commands.nuke" path="build/classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

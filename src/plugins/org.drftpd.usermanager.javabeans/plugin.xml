@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.usermanager.javabeans" version="2.1.0">
 	<attributes>
 		<attribute id="DefaultBuild" value="true" />
@@ -9,7 +10,7 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.usermanager.javabeans" path="org.drftpd.usermanager.javabeans.jar" type="code">
+		<library id="org.drftpd.usermanager.javabeans" path="build/classes/" type="code">
 		</library>
 	</runtime>
 	<extension plugin-id="master" point-id="UserManager" id="BeanUserManager">

@@ -60,13 +60,15 @@ public class PluginBuildListener implements SubBuildListener {
 	private InstallerConfig _config;
 	private LogWindowInterface _logWindow;
 	private int _pluginsDone;
+	private boolean _cleanOnly;
 
-	public PluginBuildListener(PipedInputStream input, InstallerConfig config, ArrayList<PluginData> buildPlugins, PluginRegistry registry, LogWindowInterface logWindow) {
+	public PluginBuildListener(PipedInputStream input, InstallerConfig config, ArrayList<PluginData> buildPlugins, PluginRegistry registry, LogWindowInterface logWindow, boolean cleanOnly) {
 		_input = input;
 		_logLevel = config.getLogLevel();
 		_config = config;
 		_logWindow = logWindow;
 		_pluginMap = new HashMap<String,PluginDescriptor>();
+		_cleanOnly = cleanOnly;
 		for (PluginData plugin : buildPlugins) {
 			_pluginMap.put(plugin.getName(),plugin.getDescriptor());
 		}
@@ -128,7 +130,7 @@ public class PluginBuildListener implements SubBuildListener {
 	public void buildFinished(BuildEvent be) {
 		// Create slave.zip
 		Project pluginProject = be.getProject();
-		if (pluginProject != null && be.getException() == null && !_config.getDevMode()) {
+		if (pluginProject != null && be.getException() == null && !_config.getDevMode() && !_cleanOnly) {
 			_logWindow.setProgressMessage("Building slave.zip");
 			Zip slaveZip = new Zip();
 			slaveZip.setProject(pluginProject);
@@ -145,7 +147,7 @@ public class PluginBuildListener implements SubBuildListener {
 			}
 		}
 		// Convert userfiles
-		if (_config.getConvertUsers()) {
+		if (_config.getConvertUsers() && !_cleanOnly) {
 			_logWindow.setProgressMessage("Converting userfiles");
 			String userDir = _logWindow.getUserDir();
 			UserFileConverter converter = new UserFileConverter(userDir,_config.getInstallDir());
@@ -161,9 +163,17 @@ public class PluginBuildListener implements SubBuildListener {
 		}
 		writeLog("");
 		if (be.getException() != null) {
-			writeLog("BUILD FAILED");
+			if (_cleanOnly) {
+				writeLog("CLEAN FAILED");
+			} else {
+				writeLog("BUILD FAILED");
+			}
 		} else {
-			writeLog("BUILD SUCCESSFUL");
+			if (_cleanOnly) {
+				writeLog("CLEAN SUCCESSFUL");
+			} else {
+				writeLog("BUILD SUCCESSFUL");
+			}
 		}
 		long endTime = System.currentTimeMillis();
 		long seconds = (endTime - _startTime) / 1000;
@@ -192,9 +202,17 @@ public class PluginBuildListener implements SubBuildListener {
 			be.getException().printStackTrace();
 		}
 		if (be.getException() == null) {
-			_logWindow.setProgressMessage("Build complete");
+			if (_cleanOnly) {
+				_logWindow.setProgressMessage("Clean complete");
+			} else {
+				_logWindow.setProgressMessage("Build complete");
+			}
 		} else {
-			_logWindow.setProgressMessage("Build failed");
+			if (_cleanOnly) {
+				_logWindow.setProgressMessage("Clean failed");
+			} else {
+				_logWindow.setProgressMessage("Build failed");
+			}
 		}
 	}
 

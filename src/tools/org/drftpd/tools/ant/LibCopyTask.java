@@ -64,8 +64,8 @@ public class LibCopyTask extends Task {
 		// First handle java libraries specified in the plugin manifest
 		Collection<Library> jpfLibs = descriptor.getLibraries();
 		for (Library lib : jpfLibs) {
-			// not interested in the jar of the plugin itself
-			if (lib.getPath().equalsIgnoreCase(getProject().getName()+".jar")) {
+			// not interested in the build files of the plugin itself
+			if (lib.getPath().equalsIgnoreCase("build/classes/")) {
 				continue;
 			}
 			File initial = new File(getProject().getProperty("plugin.base"),lib.getPath());

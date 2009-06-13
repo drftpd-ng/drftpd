@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.protocol.master.def" version="2.1.0">
 	<attributes>
 		<attribute id="ProtocolName" value="BasicProtocol"/>
@@ -14,7 +15,7 @@
 		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.master.def" path="org.drftpd.protocol.master.def.jar" type="code">
+		<library id="org.drftpd.protocol.master.def" path="build/classes/" type="code">
 		</library>
 	</runtime>
 

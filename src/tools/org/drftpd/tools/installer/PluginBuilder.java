@@ -44,8 +44,10 @@ public class PluginBuilder {
 	private SubAnt _antBuilder = new SubAnt();
 	private PluginBuildListener _pbListener;
 	private Project _builderProject;
+	private boolean _cleanOnly;
 
-	public PluginBuilder(ArrayList<PluginData> toBuild, PluginRegistry registry, PipedInputStream logInput, InstallerConfig config, LogWindowInterface logWindow) {
+	public PluginBuilder(ArrayList<PluginData> toBuild, PluginRegistry registry, PipedInputStream logInput, InstallerConfig config, LogWindowInterface logWindow, boolean cleanOnly) {
+		_cleanOnly = cleanOnly;
 		// Sort selected plugins into correct order for building
 		PluginTools.reorder(toBuild,registry);
 		// Create a list of build files for the selected plugins
@@ -78,7 +80,7 @@ public class PluginBuilder {
 		ProjectHelper.configureProject(_builderProject,setupFile);
 
 		// Add a custom build listener for logging and handling our additional needs
-		_pbListener = new PluginBuildListener(logInput,config,toBuild,registry,logWindow);
+		_pbListener = new PluginBuildListener(logInput,config,toBuild,registry,logWindow,_cleanOnly);
 		try {
 			_pbListener.init();
 		} catch (IOException e) {
@@ -101,14 +103,16 @@ public class PluginBuilder {
 		}
 
 		// Set target(s)
-		if (config.getClean()) {
+		if (config.getClean() || _cleanOnly) {
 			TargetElement cleanTarget = new TargetElement();
 			cleanTarget.setName("clean");
 			_antBuilder.addConfiguredTarget(cleanTarget);
 		}
-		TargetElement buildTarget = new TargetElement();
-		buildTarget.setName("build");
-		_antBuilder.addConfiguredTarget(buildTarget);
+		if (!_cleanOnly) {
+			TargetElement buildTarget = new TargetElement();
+			buildTarget.setName("build");
+			_antBuilder.addConfiguredTarget(buildTarget);
+		}
 
 		// Final setup of ant builder
 		_antBuilder.setProject(_builderProject);
@@ -120,7 +124,11 @@ public class PluginBuilder {
 		BuildException be = null;
 		try {
 			BuildEvent startEvent = new BuildEvent(_builderProject);
-			startEvent.setMessage("BUILD STARTED",0);
+			if (_cleanOnly) {
+				startEvent.setMessage("CLEAN STARTED",0);
+			} else {
+				startEvent.setMessage("BUILD STARTED",0);
+			}
 			_pbListener.buildStarted(startEvent);
 			_antBuilder.execute();
 		} catch (BuildException e) {

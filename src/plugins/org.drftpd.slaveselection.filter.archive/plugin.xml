@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.slaveselection.filter.archive" version="2.1.0">
 	<attributes>
 		<attribute id="DenyUnload" value="false" />
@@ -13,7 +14,7 @@
 		<import plugin-id="org.drftpd.plugins.archive" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.slaveselection.filter.archive" path="org.drftpd.slaveselection.filter.archive.jar" type="code">
+		<library id="org.drftpd.slaveselection.filter.archive" path="build/classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

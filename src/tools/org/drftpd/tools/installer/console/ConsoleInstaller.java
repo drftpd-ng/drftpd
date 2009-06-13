@@ -55,6 +55,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 	private JButton _buildButton;
+	private JButton _cleanButton;
 	private JButton _exitButton;
 	private JButton _selectAllButton;
 	private JTabbedPane _tabbedPane;
@@ -102,6 +103,9 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
 		_buildButton.addActionListener(this);
+		_cleanButton = new JButton();
+		_cleanButton.setText("Clean");
+		_cleanButton.addActionListener(this);
 		_selectAllButton = new JButton();
 		_selectAllButton.setText("Select All");
 		_selectAllButton.addActionListener(this);
@@ -114,6 +118,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 		southEastLayout.setAlignment(FlowLayout.RIGHT);
 		southEastPanel.setLayout(southEastLayout);
 		southEastPanel.add(_buildButton);
+		southEastPanel.add(_cleanButton);
 		southEastPanel.add(_exitButton);
 		JPanel southWestPanel = new JPanel();
 		FlowLayout southWestLayout = new FlowLayout();
@@ -139,7 +144,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 			terminate();
 		}
 		Object actionSource = ae.getSource();
-		if (actionSource.equals(_buildButton)) {
+		if (actionSource.equals(_buildButton) || actionSource.equals(_cleanButton)) {
 			_config.setInstallDir(_configPanel.getInstallLocation().getText());
 			_config.setLogLevel(_configPanel.getLogIndex());
 			_config.setFileLogging(_configPanel.getFileLog());
@@ -157,14 +162,17 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 				}
 			}
 			_config.setPluginSelections(selPlugins);
-			try {
-				_config.writeToDisk();
-			} catch (IOException e) {
-				logger.warn("Unable to write current config to build.conf",e);
+			// only save current config when building, not when just cleaning
+			if (actionSource.equals(_buildButton)) {
+				try {
+					_config.writeToDisk();
+				} catch (IOException e) {
+					logger.warn("Unable to write current config to build.conf",e);
+				}
 			}
 			PipedInputStream logInput = new PipedInputStream();
-			LogWindow logWindow = new LogWindow(logInput,_config,toBuild.size());
-			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow);
+			LogWindow logWindow = new LogWindow(logInput,_config,toBuild.size(),actionSource.equals(_cleanButton));
+			PluginBuilder builder = new PluginBuilder(toBuild,_registry,logInput,_config,logWindow,actionSource.equals(_cleanButton));
 			logWindow.setBuilder(builder);
 			try {
 				logWindow.init();

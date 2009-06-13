@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
 <plugin id="org.drftpd.slave.diskselection.filter" version="2.1.0">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
@@ -10,7 +11,7 @@
 		<import plugin-id="slave" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.slave.diskselection.filter" path="org.drftpd.slave.diskselection.filter.jar" type="code">
+		<library id="org.drftpd.slave.diskselection.filter" path="build/classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

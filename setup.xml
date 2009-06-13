@@ -28,8 +28,15 @@
 						propertyid="plugin.id"
 						propertyversion="plugin.version" />
 			<property name="plugin.home" value="${installdir}/${plugin.family}/${plugin.id}" />
-			<echo>Building ${plugin.id} plug-in to folder ${plugin.home}</echo>
-			<loggingcopytask file="${plugin.base}/plugin.xml" todir="${plugin.home}" />
+			<if>
+				<equals arg1="${devmode}" arg2="true" />
+				<then>
+					<echo>Building ${plugin.id} plug-in to directory ${plugin.home}</echo>
+				</then>
+				<else>
+					<echo>Building ${plugin.id} plug-in to file ${installdir}/${plugin.family}/${plugin.id}-${plugin.version}.zip</echo>
+				</else>
+			</if>
 			<resourcetask
 				basedir="${installdir}"
 				resourcedir="${plugin.base}/resources" />
@@ -37,24 +44,34 @@
 				basedir="${installdir}"
 				plugindir="${plugin.base}/src" />
 			<jpf-path
-				basedir="${installdir}"
+				basedir="${basedir}"
 				pathid="plugin.classpath"
 				pluginid="${plugin.id}"
-				includes="core/*/plugin.xml,plugins/common/*/plugin.xml,plugins/master/*/plugin.xml,plugins/slave/*/plugin.xml"
+				includes="src/*/plugin.xml,src/plugins/*/plugin.xml"
 				verbose="${build.verbose}" />
+			<property name="build.dir" value="${plugin.base}/build" />
+			<mkdir dir="${build.dir}" />
+			<copy file="${plugin.base}/plugin.xml" todir="${build.dir}" />
+			<replaceregexp file="${build.dir}/plugin.xml"
+				match="(library\x20id.*?)(\.\.\/){3,}(lib\/.*\.jar)"
+				replace="\1..\/..\/\3"
+				byline="true" />
 			<if>
 				<equals arg1="${devmode}" arg2="true" />
 				<then>
-					<property name="compile.dest" value="${plugin.home}/classes" />
-					<replaceregexp file="${plugin.home}/plugin.xml"
-						match="${plugin.id}\.jar"
+					<replaceregexp file="${build.dir}/plugin.xml"
+						match="build\/classes\/"
 						replace="classes\/"
 						byline="true" />
 				</then>
 				<else>
-					<property name="compile.dest" value="${plugin.base}/classes" />
+					<replaceregexp file="${build.dir}/plugin.xml"
+						match="build\/classes\/"
+						replace="${plugin.id}-${plugin.version}\.jar"
+						byline="true" />
 				</else>
 			</if>
+			<property name="compile.dest" value="${build.dir}/classes" />
 			<mkdir dir="${compile.dest}" />
 			<javac destdir="${compile.dest}"
 				srcdir="${plugin.base}/src"
@@ -67,9 +84,16 @@
 			</javac>
 			<libcopytask />
 			<if>
-				<equals arg1="${devmode}" arg2="false" />
+				<equals arg1="${devmode}" arg2="true" />
 				<then>
-					<loggingjartask destfile="${plugin.home}/${plugin.id}.jar">
+					<mkdir dir="${plugin.home}/classes" />
+					<copy todir="${plugin.home}/classes">
+						<fileset dir="${build.dir}/classes" />
+					</copy>
+					<copy file="${build.dir}/plugin.xml" todir="${plugin.home}" />
+				</then>
+				<else>
+					<jar destfile="${build.dir}/${plugin.id}-${plugin.version}.jar">
 						<manifest>
 							<attribute name="Specification-Title" value="DrFTPd - ${plugin.id}" />
 							<attribute name="Specification-Version" value="${plugin.version}" />
@@ -78,9 +102,13 @@
 							<attribute name="Implementation-Version" value="${plugin.version}" />
 							<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
 						</manifest>
-						<fileset dir="${plugin.base}/classes" includes="**/*.class" />
-					</loggingjartask>
-				</then>
+						<fileset dir="${build.dir}/classes" includes="**/*.class" />
+					</jar>
+					<mkdir dir="${installdir}/${plugin.family}" />
+					<loggingziptask destfile="${installdir}/${plugin.family}/${plugin.id}-${plugin.version}.zip"
+						basedir="${build.dir}"
+						includes="*.jar,plugin.xml" />
+				</else>
 			</if>
 		</sequential>
 	</macrodef>
@@ -91,15 +119,13 @@
 				propertyversion="plugin.version" />
 			<property name="plugin.home" value="${installdir}/${plugin.family}/${plugin.id}" />
 			<echo>Cleaning ${plugin.id} plug-in</echo>
-			<if>
-				<equals arg1="${devmode}" arg2="true" />
-				<then>
-					<delete dir="${plugin.home}/classes" />
-				</then>
-				<else>
-					<delete dir="${plugin.base}/classes" />
-				</else>
-			</if>
+			
+			<!-- clean any existing build files -->
+			<delete dir="${plugin.base}/build" />
+			
+			<!-- to be safe clean out any existing installed copy also -->
+			<delete dir="${plugin.home}" />
+			<delete file="${plugin.home}-${plugin.version}.zip" />
 		</sequential>
 	</macrodef>
 </project>
