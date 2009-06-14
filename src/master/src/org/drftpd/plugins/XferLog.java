@@ -60,8 +60,7 @@ public class XferLog extends FtpListener {
     Mon Aug 11 14:03:31 2003 33 hostname 15000000 /path/to/file b _ i r user group 1 user
     Mon Aug 11 14:03:44 2003 13 hostname 15000000 /path/to/file b _ i r user group 0 *
      */
-    public static SimpleDateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy",
-            Locale.ENGLISH);
+    public static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
     private PrintStream _out;
     private static final Logger logger = Logger.getLogger(XferLog.class);
 
