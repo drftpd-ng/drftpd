@@ -44,7 +44,8 @@ import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commandmanager.CommandRequestInterface;
@@ -71,7 +72,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
+public class SiteBot implements ReplyConstants, Runnable {
 
 	private static final Logger logger = Logger.getLogger(SiteBot.class);
 
@@ -215,10 +216,7 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 		loadAnnouncers(_confDir);
 
 		// Subscribe to events
-		GlobalContext.getEventService().subscribe(InviteEvent.class,this);
-		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
-		GlobalContext.getEventService().subscribe(LoadPluginEvent.class,this);
-		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class,this);
+		AnnotationProcessor.process(this);
 	}
 
 	/**
@@ -2948,106 +2946,105 @@ public class SiteBot implements ReplyConstants, EventSubscriber, Runnable {
 		return _writers;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof ReloadEvent) {
-			logger.info("Reloading conf/plugins/"+_confDir+"/irccommands.conf, origin "+((ReloadEvent)event).getOrigin());
-			loadCommands();
-			_commandManager.initialize(getCommands(), themeDir);
-			_config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
-					.getPropertiesForPlugin(_confDir+"/irc.conf"));
-			// Just call joinChannels() , this will join us to any new channels and update details
-			// held on any existing ones
-			joinChannels();
-			// Check whether each channel we are currently in is still listed in the conf, if not then part
-			ArrayList<ChannelConfig> chanConfig = _config.getChannels();
-			ArrayList<String> partChans = new ArrayList<String>();
-			for (String channel: _channels.keySet()) {
-				boolean isConf = false;
-				for (ChannelConfig confChan : chanConfig) {
-					if (confChan.getName().equalsIgnoreCase(channel)) {
-						isConf = true;
-						break;
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		logger.info("Reloading conf/plugins/"+_confDir+"/irccommands.conf, origin "+event.getOrigin());
+		loadCommands();
+		_commandManager.initialize(getCommands(), themeDir);
+		_config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
+				.getPropertiesForPlugin(_confDir+"/irc.conf"));
+		// Just call joinChannels() , this will join us to any new channels and update details
+		// held on any existing ones
+		joinChannels();
+		// Check whether each channel we are currently in is still listed in the conf, if not then part
+		ArrayList<ChannelConfig> chanConfig = _config.getChannels();
+		ArrayList<String> partChans = new ArrayList<String>();
+		for (String channel: _channels.keySet()) {
+			boolean isConf = false;
+			for (ChannelConfig confChan : chanConfig) {
+				if (confChan.getName().equalsIgnoreCase(channel)) {
+					isConf = true;
+					break;
+				}
+			}
+			if (!isConf) {
+				partChans.add(channel);
+			}
+		}
+		for (String channel : partChans) {
+			partChannel(channel,"No longer servicing this channel");
+		}
+		_announceConfig.reload();
+	}
+
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
+				for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
+					AnnounceInterface announcer = iter.next();
+					if (manager.getPluginFor(announcer).getDescriptor().getId().equals(event.getPlugin())) {
+						announcer.stop();
+						logger.debug("Unloading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
+						iter.remove();
 					}
 				}
-				if (!isConf) {
-					partChans.add(channel);
-				}
 			}
-			for (String channel : partChans) {
-				partChannel(channel,"No longer servicing this channel");
-			}
-			_announceConfig.reload();
-		} else {
-			if (event instanceof UnloadPluginEvent) {
-				UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-				PluginManager manager = PluginManager.lookup(this);
-				String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-				for (String pluginExtension : pluginEvent.getParentPlugins()) {
-					int pointIndex = pluginExtension.lastIndexOf("@");
-					String pluginName = pluginExtension.substring(0, pointIndex);
-					String extension = pluginExtension.substring(pointIndex+1);
-					if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
-						for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
-							AnnounceInterface announcer = iter.next();
-							if (manager.getPluginFor(announcer).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-								announcer.stop();
-								logger.debug("Unloading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
-								iter.remove();
+		}
+	}
+
+	@EventSubscriber
+	public void onLoadPluginEvent(LoadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
+				ExtensionPoint announceExtPoint = 
+					manager.getRegistry().getExtensionPoint( 
+							"org.drftpd.plugins.sitebot", "Announce");
+				for (Extension an : announceExtPoint.getConnectedExtensions()) {
+					if (an.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
+						try {
+							manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
+							ClassLoader anLoader = manager.getPluginClassLoader( 
+									an.getDeclaringPluginDescriptor());
+							Class<?> anCls = anLoader.loadClass( 
+									an.getParameter("class").valueAsString());
+							AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
+							_announcers.add(announcer);
+							for (String type : announcer.getEventTypes()) {
+								_eventTypes.add(type);
 							}
+							_announceConfig.updateEventTypes(_eventTypes);
+							_announceConfig.reload();
+							announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
+							logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
 						}
-					}
-				}
-			} else {
-				if (event instanceof LoadPluginEvent) {
-					LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
-					PluginManager manager = PluginManager.lookup(this);
-					String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-					for (String pluginExtension : pluginEvent.getParentPlugins()) {
-						int pointIndex = pluginExtension.lastIndexOf("@");
-						String pluginName = pluginExtension.substring(0, pointIndex);
-						String extension = pluginExtension.substring(pointIndex+1);
-						if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
-							ExtensionPoint announceExtPoint = 
-								manager.getRegistry().getExtensionPoint( 
-										"org.drftpd.plugins.sitebot", "Announce");
-							for (Extension an : announceExtPoint.getConnectedExtensions()) {
-								if (an.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
-									try {
-										manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
-										ClassLoader anLoader = manager.getPluginClassLoader( 
-												an.getDeclaringPluginDescriptor());
-										Class<?> anCls = anLoader.loadClass( 
-												an.getParameter("class").valueAsString());
-										AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
-										_announcers.add(announcer);
-										for (String type : announcer.getEventTypes()) {
-											_eventTypes.add(type);
-										}
-										_announceConfig.updateEventTypes(_eventTypes);
-										_announceConfig.reload();
-										announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
-										logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
-									}
-									catch (Exception e) {
-										logger.warn("Error loading sitebot announcer " + 
-												an.getDeclaringPluginDescriptor().getId(),e);
-									}
-								}
-							}
-						}
-					}
-				} else {
-					if (event instanceof InviteEvent) {
-						InviteEvent inviteEvent = (InviteEvent) event;
-						if (inviteEvent.getTargetBot().equalsIgnoreCase(_name)) {
-							UserDetails userDetails = new UserDetails(inviteEvent.getIrcNick(), "", this);
-							userDetails.setFtpUser(inviteEvent.getUser().getName());
-							_users.put(inviteEvent.getIrcNick(), userDetails);
-							sendRawLineViaQueue("WHOIS " + inviteEvent.getIrcNick());
+						catch (Exception e) {
+							logger.warn("Error loading sitebot announcer " + 
+									an.getDeclaringPluginDescriptor().getId(),e);
 						}
 					}
 				}
 			}
+		}
+	}
+
+	@EventSubscriber
+	public void onInviteEvent(InviteEvent event) {
+		if (event.getTargetBot().equalsIgnoreCase(_name)) {
+			UserDetails userDetails = new UserDetails(event.getIrcNick(), "", this);
+			userDetails.setFtpUser(event.getUser().getName());
+			_users.put(event.getIrcNick(), userDetails);
+			sendRawLineViaQueue("WHOIS " + event.getIrcNick());
 		}
 	}
 

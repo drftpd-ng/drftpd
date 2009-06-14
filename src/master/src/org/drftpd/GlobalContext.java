@@ -31,8 +31,11 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventService;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.EventServiceExistsException;
+import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.ThreadSafeEventService;
+import org.bushe.swing.event.annotation.EventSubscriber;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.config.ConfigManager;
 import org.drftpd.event.LoadPluginEvent;
@@ -65,7 +68,7 @@ import org.java.plugin.registry.ExtensionPoint;
  * @version $Id$
  */
 
-public class GlobalContext implements EventSubscriber {
+public class GlobalContext {
 
 	private static final Logger logger = Logger.getLogger(GlobalContext.class);
 
@@ -359,7 +362,7 @@ public class GlobalContext implements EventSubscriber {
 	 */
 	public void shutdown(String message) {
 		_shutdownMessage = message;
-		GlobalContext.getEventService().publish(new MessageEvent("SHUTDOWN", message));
+		EventServiceLocator.getEventBusService().publish(new MessageEvent("SHUTDOWN", message));
 		getConnectionManager().shutdownPrivate(message);
 		new Thread(new Shutdown()).start();
 	}
@@ -401,6 +404,11 @@ public class GlobalContext implements EventSubscriber {
 	public static GlobalContext getGlobalContext() {
 		if (_gctx == null) {
 			_gctx = new GlobalContext();
+			try {
+				EventServiceLocator.setEventService(EventServiceLocator.SERVICE_NAME_EVENT_BUS, eventService);
+			} catch (EventServiceExistsException e) {
+				logger.error("Error setting event service, likely something using the event bus before GlobalContext is instantiated",e);
+			}
 		}
 		return _gctx;
 	}
@@ -437,8 +445,8 @@ public class GlobalContext implements EventSubscriber {
 		loadSectionManager(getConfig().getMainProperties());
 		loadIndexingEngine(getConfig().getMainProperties());
 		loadPlugins();
-		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
-		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 	
 
@@ -526,58 +534,54 @@ public class GlobalContext implements EventSubscriber {
     	throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
 	}
 
-	public static EventService getEventService() {
-		return eventService;
-	}
-
-	public void onEvent(Object event) {
-		if (event instanceof UnloadPluginEvent) {
-			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
-					for (Iterator<PluginInterface> iter = _plugins.iterator(); iter.hasNext();) {
-						PluginInterface plugin = iter.next();
-						if (manager.getPluginFor(plugin).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							plugin.stopPlugin("Plugin being unloaded");
-							logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
-							iter.remove();
-						}
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
+				for (Iterator<PluginInterface> iter = _plugins.iterator(); iter.hasNext();) {
+					PluginInterface plugin = iter.next();
+					if (manager.getPluginFor(plugin).getDescriptor().getId().equals(event.getPlugin())) {
+						plugin.stopPlugin("Plugin being unloaded");
+						logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
+						iter.remove();
 					}
 				}
 			}
-		} else if (event instanceof LoadPluginEvent) {
-			LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
-					ExtensionPoint pluginExtPoint = 
-						manager.getRegistry().getExtensionPoint( 
-								"master", "Plugin");
-					for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
-						if (plugin.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							try {
-								manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
-								ClassLoader pluginLoader = manager.getPluginClassLoader( 
-										plugin.getDeclaringPluginDescriptor());
-								Class<?> pluginCls = pluginLoader.loadClass( 
-										plugin.getParameter("class").valueAsString());
-								PluginInterface newPlugin = (PluginInterface) pluginCls.newInstance();
-								newPlugin.startPlugin();
-								_plugins.add(newPlugin);
-							}
-							catch (Exception e) {
-								logger.warn("Error loading plugin " + 
-										plugin.getDeclaringPluginDescriptor().getId(),e);
-							}
+		}
+	}
+
+	@EventSubscriber
+	public void onLoadPluginEvent(LoadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
+				ExtensionPoint pluginExtPoint = 
+					manager.getRegistry().getExtensionPoint( 
+							"master", "Plugin");
+				for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
+					if (plugin.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
+						try {
+							manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+							ClassLoader pluginLoader = manager.getPluginClassLoader( 
+									plugin.getDeclaringPluginDescriptor());
+							Class<?> pluginCls = pluginLoader.loadClass( 
+									plugin.getParameter("class").valueAsString());
+							PluginInterface newPlugin = (PluginInterface) pluginCls.newInstance();
+							newPlugin.startPlugin();
+							_plugins.add(newPlugin);
+						}
+						catch (Exception e) {
+							logger.warn("Error loading plugin " + 
+									plugin.getDeclaringPluginDescriptor().getId(),e);
 						}
 					}
 				}

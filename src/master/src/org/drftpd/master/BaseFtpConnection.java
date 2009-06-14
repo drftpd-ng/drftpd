@@ -43,6 +43,7 @@ import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
@@ -450,7 +451,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 					logger.error("User does not exist, yet user is authenticated, this is a bug");
 				}
 				
-				GlobalContext.getEventService().publish(new ConnectionEvent(getUserNull(), "LOGOUT"));
+				EventServiceLocator.getEventBusService().publish(new ConnectionEvent(getUserNull(), "LOGOUT"));
 			}
 
 			GlobalContext.getConnectionManager().remove(this);

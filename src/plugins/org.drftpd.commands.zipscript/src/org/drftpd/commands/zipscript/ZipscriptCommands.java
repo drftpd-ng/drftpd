@@ -26,9 +26,9 @@ import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
-import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -53,7 +53,7 @@ import org.java.plugin.registry.ExtensionPoint;
  * @author djb61
  * @version $Id$
  */
-public class ZipscriptCommands extends CommandInterface implements EventSubscriber {
+public class ZipscriptCommands extends CommandInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptCommands.class);
 
@@ -62,8 +62,8 @@ public class ZipscriptCommands extends CommandInterface implements EventSubscrib
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
 
-		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
-		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+    	// Subscribe to events
+		AnnotationProcessor.process(this);
 
 		// load extensions just once and save the instances for later use.
 		PluginManager manager = PluginManager.lookup(this);
@@ -209,52 +209,52 @@ public class ZipscriptCommands extends CommandInterface implements EventSubscrib
 		return response;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof UnloadPluginEvent) {
-			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("RescanPostProcessDir")) {
-					for (Iterator<RescanPostProcessDirInterface> iter = _rescanAddons.iterator(); iter.hasNext();) {
-						RescanPostProcessDirInterface plugin = iter.next();
-						if (manager.getPluginFor(plugin).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
-							iter.remove();
-						}
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("RescanPostProcessDir")) {
+				for (Iterator<RescanPostProcessDirInterface> iter = _rescanAddons.iterator(); iter.hasNext();) {
+					RescanPostProcessDirInterface plugin = iter.next();
+					if (manager.getPluginFor(plugin).getDescriptor().getId().equals(event.getPlugin())) {
+						logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
+						iter.remove();
 					}
 				}
 			}
-		} else if (event instanceof LoadPluginEvent) {
-			LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("RescanPostProcessDir")) {
-					ExtensionPoint pluginExtPoint = 
-						manager.getRegistry().getExtensionPoint( 
-								"org.drftpd.commands.zipscript", "RescanPostProcessDir");
-					for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
-						if (plugin.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							try {
-								manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
-								ClassLoader pluginLoader = manager.getPluginClassLoader( 
-										plugin.getDeclaringPluginDescriptor());
-								Class<?> pluginCls = pluginLoader.loadClass( 
-										plugin.getParameter("Class").valueAsString());
-								RescanPostProcessDirInterface newPlugin = (RescanPostProcessDirInterface) pluginCls.newInstance();
-								_rescanAddons.add(newPlugin);
-							}
-							catch (Exception e) {
-								logger.warn("Error loading plugin " + 
-										plugin.getDeclaringPluginDescriptor().getId(),e);
-							}
+		}
+	}
+
+	@EventSubscriber
+	public void onLoadPluginEvent(LoadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("RescanPostProcessDir")) {
+				ExtensionPoint pluginExtPoint = 
+					manager.getRegistry().getExtensionPoint( 
+							"org.drftpd.commands.zipscript", "RescanPostProcessDir");
+				for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
+					if (plugin.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
+						try {
+							manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+							ClassLoader pluginLoader = manager.getPluginClassLoader( 
+									plugin.getDeclaringPluginDescriptor());
+							Class<?> pluginCls = pluginLoader.loadClass( 
+									plugin.getParameter("Class").valueAsString());
+							RescanPostProcessDirInterface newPlugin = (RescanPostProcessDirInterface) pluginCls.newInstance();
+							_rescanAddons.add(newPlugin);
+						}
+						catch (Exception e) {
+							logger.warn("Error loading plugin " + 
+									plugin.getDeclaringPluginDescriptor().getId(),e);
 						}
 					}
 				}

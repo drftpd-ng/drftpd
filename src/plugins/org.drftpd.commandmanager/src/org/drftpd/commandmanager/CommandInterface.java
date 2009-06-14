@@ -30,7 +30,8 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.permissions.Permission;
@@ -46,10 +47,10 @@ import org.java.plugin.registry.ExtensionPoint;
  * @author djb61
  * @version $Id$
  */
-public abstract class CommandInterface implements EventSubscriber {
+public abstract class CommandInterface {
 
 	private static final Logger logger = Logger.getLogger(CommandInterface.class);
-	
+
 	protected String[] _featReplies;
 
 	private Map<Integer, HookContainer<PostHookInterface>> _postHooks;
@@ -57,13 +58,14 @@ public abstract class CommandInterface implements EventSubscriber {
 	private Map<Integer, HookContainer<PreHookInterface>> _preHooks;
 
 	public CommandInterface() {
-		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		_postHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PostHookInterface>>());
 		_preHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PreHookInterface>>());
-		
+
 		PluginManager manager = PluginManager.lookup(this);
 
 		/* Iterate through the post hook extensions registered for this plugin
@@ -91,7 +93,7 @@ public abstract class CommandInterface implements EventSubscriber {
 					Class<?> postHookCls = postHookLoader.loadClass(
 							postHook.getParameter("HookClass").valueAsString());
 					PostHookInterface postHookInstance = (PostHookInterface) postHookCls.newInstance();
-					
+
 					postHookInstance.initialize(cManager);
 
 					Method m = postHookInstance.getClass().getMethod(
@@ -144,7 +146,7 @@ public abstract class CommandInterface implements EventSubscriber {
 					Class<?> preHookCls = preHookLoader.loadClass(
 							preHook.getParameter("HookClass").valueAsString());
 					PreHookInterface preHookInstance = (PreHookInterface) preHookCls.newInstance();
-					
+
 					preHookInstance.initialize(cManager);
 
 					Method m = preHookInstance.getClass().getMethod(
@@ -204,7 +206,7 @@ public abstract class CommandInterface implements EventSubscriber {
 		}
 		return request;
 	}
-	
+
 	protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
 		return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
 	}
@@ -214,7 +216,7 @@ public abstract class CommandInterface implements EventSubscriber {
 	}
 
 	public void addTextToResponse(CommandResponse response, String file)
-		throws FileNotFoundException, IOException {
+	throws FileNotFoundException, IOException {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "ISO-8859-1"));
@@ -226,37 +228,35 @@ public abstract class CommandInterface implements EventSubscriber {
 		}
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof UnloadPluginEvent) {
-			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String plugin = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (plugin.equals(currentPlugin) && extension.equals("PostHook")) {
-					for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
-						Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
-						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							logger.debug("Removing post hook provided by " + pluginEvent.getPlugin() + " from " + currentPlugin);
-							iter.remove();
-						}
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String plugin = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (plugin.equals(currentPlugin) && extension.equals("PostHook")) {
+				for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
+					Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
+					if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(event.getPlugin())) {
+						logger.debug("Removing post hook provided by " + event.getPlugin() + " from " + currentPlugin);
+						iter.remove();
 					}
 				}
-				if (plugin.equals(currentPlugin) && extension.equals("PreHook")) {
-					for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
-						Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
-						if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							logger.debug("Removing pre hook provided by " + pluginEvent.getPlugin() + " from " + currentPlugin);
-							iter.remove();
-						}
+			}
+			if (plugin.equals(currentPlugin) && extension.equals("PreHook")) {
+				for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
+					Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
+					if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(event.getPlugin())) {
+						logger.debug("Removing pre hook provided by " + event.getPlugin() + " from " + currentPlugin);
+						iter.remove();
 					}
 				}
 			}
 		}
 	}
-	
+
 	protected boolean checkCustomPermissionWithPrimaryGroup(User targetUser, CommandRequest request, String permissionName, String defaultPermission) {
 		if (checkCustomPermission(request, permissionName, defaultPermission)) {
 			return false;
@@ -274,17 +274,17 @@ public abstract class CommandInterface implements EventSubscriber {
 
 	protected boolean checkCustomPermission(CommandRequest request, String permissionName,
 			String defaultPermission) {
-				String permissionString = request.getProperties().getProperty(permissionName,defaultPermission);
-				User user;
-				try {
-					user = request.getUserObject();
-				} catch (NoSuchUserException e) {
-					logger.warn("",e);
-					return false;
-				} catch (UserFileException e) {
-					logger.warn("",e);
-					return false;
-				}
-				return new Permission(permissionString).check(user);
-			}
+		String permissionString = request.getProperties().getProperty(permissionName,defaultPermission);
+		User user;
+		try {
+			user = request.getUserObject();
+		} catch (NoSuchUserException e) {
+			logger.warn("",e);
+			return false;
+		} catch (UserFileException e) {
+			logger.warn("",e);
+			return false;
+		}
+		return new Permission(permissionString).check(user);
+	}
 }

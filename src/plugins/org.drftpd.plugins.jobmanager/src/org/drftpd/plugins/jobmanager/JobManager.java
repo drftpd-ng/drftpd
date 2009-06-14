@@ -28,7 +28,9 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
@@ -41,7 +43,7 @@ import org.drftpd.master.RemoteSlave;
  * @author zubov
  * @version $Id: JobManager.java 1787 2007-09-19 10:22:58Z zubov $
  */
-public class JobManager implements PluginInterface, EventSubscriber {
+public class JobManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
 
 	private boolean _isStopped = false;
@@ -306,7 +308,8 @@ public class JobManager implements PluginInterface, EventSubscriber {
 	}
 
 	public void startPlugin() {
-		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 		logger.info("JobManager plugin loaded successfully");
 		_queuedJobSet = new TreeSet<Job>(new JobComparator());
 		reload();
@@ -325,13 +328,12 @@ public class JobManager implements PluginInterface, EventSubscriber {
 				_queuedJobSet.clear();
 			}
 		}
-		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(ReloadEvent.class, this);
 		logger.info("JobManager plugin unloaded successfully");
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof ReloadEvent) {
-			reload();
-		}
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		reload();
 	}
 }

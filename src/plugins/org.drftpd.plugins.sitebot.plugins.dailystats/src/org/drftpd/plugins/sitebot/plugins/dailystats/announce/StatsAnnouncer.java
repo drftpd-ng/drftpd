@@ -20,8 +20,9 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.bushe.swing.event.EventSubscriber;
-import org.drftpd.GlobalContext;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.OutputWriter;
@@ -36,7 +37,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class StatsAnnouncer implements AnnounceInterface, EventSubscriber {
+public class StatsAnnouncer implements AnnounceInterface {
 
 	private AnnounceConfig _config;
 
@@ -48,12 +49,13 @@ public class StatsAnnouncer implements AnnounceInterface, EventSubscriber {
 		_config = config;
 		_bundle = bundle;
 		_keyPrefix = this.getClass().getName();
-		GlobalContext.getEventService().subscribe(StatsEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	public void stop() {
 		// The plugin is unloading so stop asking for events
-		GlobalContext.getEventService().unsubscribe(StatsEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(StatsEvent.class, this);
 	}
 
 	public String[] getEventTypes() {
@@ -61,13 +63,8 @@ public class StatsAnnouncer implements AnnounceInterface, EventSubscriber {
 		return types;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof StatsEvent) {
-			handleStatsEvent((StatsEvent) event);
-		}
-	}
-
-	private void handleStatsEvent(StatsEvent event) {
+	@EventSubscriber
+	public void onStatsEvent(StatsEvent event) {
 		AnnounceWriter writer = _config.getSimpleWriter("dailystats");
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {

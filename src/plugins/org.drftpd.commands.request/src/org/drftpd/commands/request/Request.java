@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -106,7 +107,7 @@ public class Request extends CommandInterface {
 					}
 
 					//if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
-					GlobalContext.getEventService().publish(new DirectoryFtpEvent(
+					EventServiceLocator.getEventBusService().publish(new DirectoryFtpEvent(
 							request.getSession().getUserNull(request.getUser()), "REQFILLED", dir));
 
 					//}
@@ -186,7 +187,7 @@ public class Request extends CommandInterface {
 			}
 
 			//if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
-			GlobalContext.getEventService().publish(new DirectoryFtpEvent(
+			EventServiceLocator.getEventBusService().publish(new DirectoryFtpEvent(
 					session.getUserNull(request.getUser()), "REQUEST", createdDir));
 
 			session.getUserNull(request.getUser()).getKeyedMap().incrementObjectLong(REQUESTS);

@@ -147,7 +147,7 @@ public class PluginBuildListener implements SubBuildListener {
 			}
 		}
 		// Convert userfiles
-		if (_config.getConvertUsers() && !_cleanOnly) {
+		if (_config.getConvertUsers() && !_cleanOnly && be.getException() == null) {
 			_logWindow.setProgressMessage("Converting userfiles");
 			String userDir = _logWindow.getUserDir();
 			UserFileConverter converter = new UserFileConverter(userDir,_config.getInstallDir());

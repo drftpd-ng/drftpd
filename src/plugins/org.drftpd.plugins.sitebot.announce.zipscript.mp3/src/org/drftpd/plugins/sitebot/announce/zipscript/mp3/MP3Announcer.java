@@ -19,8 +19,9 @@ package org.drftpd.plugins.sitebot.announce.zipscript.mp3;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.bushe.swing.event.EventSubscriber;
-import org.drftpd.GlobalContext;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.zipscript.mp3.event.MP3Event;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
@@ -36,7 +37,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class MP3Announcer implements AnnounceInterface, EventSubscriber {
+public class MP3Announcer implements AnnounceInterface {
 
 	private AnnounceConfig _config;
 
@@ -48,12 +49,13 @@ public class MP3Announcer implements AnnounceInterface, EventSubscriber {
 		_config = config;
 		_bundle = bundle;
 		_keyPrefix = this.getClass().getName();
-		GlobalContext.getEventService().subscribe(MP3Event.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	public void stop() {
 		// The plugin is unloading so stop asking for events
-		GlobalContext.getEventService().unsubscribe(MP3Event.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(MP3Event.class, this);
 	}
 
 	public String[] getEventTypes() {
@@ -61,13 +63,8 @@ public class MP3Announcer implements AnnounceInterface, EventSubscriber {
 		return types;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof MP3Event) {
-			handleMP3Event((MP3Event) event);
-		}
-	}
-
-	private void handleMP3Event(MP3Event event) {
+	@EventSubscriber
+	public void onMP3Event(MP3Event event) {
 		AnnounceWriter writer = _config.getPathWriter("mp3",event.getDir());
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {

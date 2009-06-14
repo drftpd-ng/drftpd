@@ -23,7 +23,7 @@
 		<library id="commons-net" path="../../lib/commons-net-1.4.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="eventbus" path="../../lib/EventBus-1.1.jar" type="code">
+		<library id="eventbus" path="../../lib/eventbus-1.3.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

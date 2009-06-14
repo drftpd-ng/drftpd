@@ -24,7 +24,9 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.event.ReloadEvent;
@@ -38,7 +40,7 @@ import org.drftpd.usermanager.util.UserComparator;
  * @author cyber
  * @version $Id$
  */
-public class DailyStats implements UserResetHookInterface, EventSubscriber {
+public class DailyStats implements UserResetHookInterface {
 
 	private static Logger logger = Logger.getLogger(DailyStats.class);
 
@@ -55,7 +57,8 @@ public class DailyStats implements UserResetHookInterface, EventSubscriber {
 	public void init() {
 		logger.info("Starting daily stats plugin");
 		loadConf();
-		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	private void loadConf() {
@@ -83,7 +86,7 @@ public class DailyStats implements UserResetHookInterface, EventSubscriber {
 		String bytes = null;
 		ArrayList<User> initialUsers = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
 		ArrayList<UserStats> outputUsers = new ArrayList<UserStats>();
-	
+
 		for (Iterator<User> iter = initialUsers.iterator(); iter.hasNext();) {
 			User user = iter.next();
 			allow = true;
@@ -100,7 +103,7 @@ public class DailyStats implements UserResetHookInterface, EventSubscriber {
 		}
 
 		Collections.sort(initialUsers, new UserComparator(type));
-		
+
 		for (int i=0; ((i < _outputnum) && (i < initialUsers.size())); ++i) {
 			if (type.equals("dayup")) {
 				if ((initialUsers.get(i).getUploadedBytesDay() < 1) && (!_showzero))
@@ -136,25 +139,25 @@ public class DailyStats implements UserResetHookInterface, EventSubscriber {
 			name = initialUsers.get(i).getName();
 			outputUsers.add(new UserStats(name, files, bytes));
 		}
-		
+
 		return outputUsers;
 	}
 
 	public void resetDay(Date d) {
 		if (_dayup) {
-			GlobalContext.getEventService().publish(new StatsEvent("dayup",getStats("dayup")));
+			EventServiceLocator.getEventBusService().publish(new StatsEvent("dayup",getStats("dayup")));
 		}
 		if (_daydn) {
-			GlobalContext.getEventService().publish(new StatsEvent("daydn",getStats("daydn")));
+			EventServiceLocator.getEventBusService().publish(new StatsEvent("daydn",getStats("daydn")));
 		}
 	}
 
 	public void resetWeek(Date d) {
 		if (_wkup) {
-			GlobalContext.getEventService().publish(new StatsEvent("wkup",getStats("wkup")));
+			EventServiceLocator.getEventBusService().publish(new StatsEvent("wkup",getStats("wkup")));
 		}
 		if (_wkdn) {
-			GlobalContext.getEventService().publish(new StatsEvent("wkdn",getStats("wkdn")));
+			EventServiceLocator.getEventBusService().publish(new StatsEvent("wkdn",getStats("wkdn")));
 		}
 		// Uncomment this if you want day stats at the end of the week also
 		// resetDay(d)
@@ -162,10 +165,10 @@ public class DailyStats implements UserResetHookInterface, EventSubscriber {
 
 	public void resetMonth(Date d) {
 		if (_mnup) {
-			GlobalContext.getEventService().publish(new StatsEvent("monthup",getStats("monthup")));
+			EventServiceLocator.getEventBusService().publish(new StatsEvent("monthup",getStats("monthup")));
 		}
 		if (_mndn) {
-			GlobalContext.getEventService().publish(new StatsEvent("monthdn",getStats("monthdn")));
+			EventServiceLocator.getEventBusService().publish(new StatsEvent("monthdn",getStats("monthdn")));
 		}
 		// Uncomment this if you want day stats at the end of the month also.
 		// If you want week stats when the end of a week coincides with the end of a month
@@ -187,9 +190,8 @@ public class DailyStats implements UserResetHookInterface, EventSubscriber {
 		resetMonth(d);*/
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof ReloadEvent) {
-			loadConf();
-		}
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		loadConf();
 	}
 }

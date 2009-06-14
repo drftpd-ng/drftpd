@@ -44,6 +44,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
+import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -396,7 +397,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				new RemergeMessage(this));
 		setAvailable(true);
 		logger.info("Slave added: '" + getName() + "' status: " + _status);
-		GlobalContext.getEventService().publish(new SlaveEvent("ADDSLAVE", this));
+		EventServiceLocator.getEventBusService().publish(new SlaveEvent("ADDSLAVE", this));
 	}
 
 	/**
@@ -879,7 +880,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_status = null;
 
 		if (_isAvailable) {
-			GlobalContext.getEventService().publish(
+			EventServiceLocator.getEventBusService().publish(
 					new SlaveEvent("DELSLAVE", reason, this));
 		}
 

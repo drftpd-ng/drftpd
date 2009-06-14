@@ -67,6 +67,7 @@ public class ZipscriptVFSDataMP3 {
 					try {
 						index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
 						mp3info = fetchMP3InfoFromIndex(rslave, index);
+						break;
 					} catch (SlaveUnavailableException e) {
 						// okay, it went offline while trying, try next file
 					} catch (RemoteIOException e) {
@@ -75,7 +76,7 @@ public class ZipscriptVFSDataMP3 {
 				}
 			}
 			if (mp3info != null) {
-				_inode.addKey(MP3Info.MP3INFO, mp3info);
+				dir.addKey(MP3Info.MP3INFO, mp3info);
 				return mp3info;
 			}
 			throw new FileNotFoundException("No usable mp3 files found in directory");
@@ -88,13 +89,13 @@ public class ZipscriptVFSDataMP3 {
 				try {
 					index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
 					mp3info = fetchMP3InfoFromIndex(rslave, index);
+					break;
 				} catch (SlaveUnavailableException e) {
 					// okay, it went offline while trying, continue
 					continue;
 				} catch (RemoteIOException e) {
 					throw new IOException(e.getMessage());
 				}
-				break;
 			}
 			if (mp3info == null) {
 				throw new FileNotFoundException("Unable to obtain info for MP3 file");
@@ -108,8 +109,8 @@ public class ZipscriptVFSDataMP3 {
 					getMP3InfoFromInode(dir);
 				} catch (KeyNotFoundException e1) {
 					_setDir = true;
+					dir.addKey(MP3Info.MP3INFO, mp3info);
 				}
-				dir.addKey(MP3Info.MP3INFO, mp3info);
 			}
 			return mp3info;
 		} else {

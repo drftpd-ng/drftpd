@@ -25,7 +25,9 @@ import java.util.Properties;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
@@ -39,7 +41,7 @@ import org.drftpd.sections.SectionInterface;
  * @version $Id$ This addon needs
  *          a little reworking, consider it and its related packages unstable
  */
-public class Archive implements EventSubscriber, PluginInterface {
+public class Archive implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(Archive.class);
 
 	private Properties _props;
@@ -170,14 +172,14 @@ public class Archive implements EventSubscriber, PluginInterface {
 		}
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof ReloadEvent) {
-			reload();
-		}
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		reload();
 	}
 
 	public void startPlugin() {
-		GlobalContext.getEventService().subscribe(ReloadEvent.class,this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 		logger.info("Archive plugin loaded successfully");
 		_archiveHandlers = new HashSet<ArchiveHandler>();
 		reload();
@@ -188,7 +190,7 @@ public class Archive implements EventSubscriber, PluginInterface {
 			_runHandler.cancel();
 			GlobalContext.getGlobalContext().getTimer().purge();
 		}
-		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(ReloadEvent.class, this);
 		logger.info("Archive plugin unloaded successfully");
 	}
 }

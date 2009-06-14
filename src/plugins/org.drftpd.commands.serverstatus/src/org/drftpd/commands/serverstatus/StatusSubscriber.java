@@ -1,14 +1,15 @@
 package org.drftpd.commands.serverstatus;
 
-import org.bushe.swing.event.EventSubscriber;
-import org.drftpd.GlobalContext;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.SlaveEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.java.plugin.PluginManager;
 
-public class StatusSubscriber implements EventSubscriber {
+public class StatusSubscriber {
 	private static StatusSubscriber _subscriber = null;
 	
 	/**
@@ -28,32 +29,31 @@ public class StatusSubscriber implements EventSubscriber {
 	}
 	
 	private StatusSubscriber() {
-		GlobalContext.getEventService().subscribe(SlaveEvent.class, this);
-		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
-	
-	public void onEvent(Object event) {
-		if (event instanceof SlaveEvent) {
-			SlaveEvent slaveEvent = (SlaveEvent) event;			
-			KeyedMap<Key, Object> keyedMap = slaveEvent.getRSlave().getTransientKeyedMap();
 
-			if (slaveEvent.getCommand().equals("ADDSLAVE")) {
-				keyedMap.setObject(ServerStatus.CONNECTTIME, System.currentTimeMillis());
-			} else if (slaveEvent.getCommand().equals("DELSLAVE")) {
-				keyedMap.remove(ServerStatus.CONNECTTIME);
-			}
-		} else if (event instanceof UnloadPluginEvent) {
-			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				if (pluginName.equals(currentPlugin)) {
-					GlobalContext.getEventService().unsubscribe(SlaveEvent.class, this);
-					GlobalContext.getEventService().unsubscribe(UnloadPluginEvent.class, this);
-					nullify();
-				}
+	@EventSubscriber
+	public void onSlaveEvent(SlaveEvent event) {
+		KeyedMap<Key, Object> keyedMap = event.getRSlave().getTransientKeyedMap();
+		if (event.getCommand().equals("ADDSLAVE")) {
+			keyedMap.setObject(ServerStatus.CONNECTTIME, System.currentTimeMillis());
+		} else if (event.getCommand().equals("DELSLAVE")) {
+			keyedMap.remove(ServerStatus.CONNECTTIME);
+		}
+	}
+
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			if (pluginName.equals(currentPlugin)) {
+				EventServiceLocator.getEventBusService().unsubscribe(SlaveEvent.class, this);
+				EventServiceLocator.getEventBusService().unsubscribe(UnloadPluginEvent.class, this);
+				nullify();
 			}
 		}
 	}

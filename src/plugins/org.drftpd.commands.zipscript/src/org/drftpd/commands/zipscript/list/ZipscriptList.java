@@ -23,7 +23,8 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.list.AddListElementsInterface;
@@ -50,15 +51,15 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class ZipscriptList extends SFVTools implements AddListElementsInterface, EventSubscriber {
+public class ZipscriptList extends SFVTools implements AddListElementsInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptList.class);
 
 	private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<ZipscriptListStatusBarInterface>();
 
 	public void initialize() {
-		GlobalContext.getEventService().subscribe(LoadPluginEvent.class, this);
-		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 
 		// load extensions just once and save the instances for later use.
 		PluginManager manager = PluginManager.lookup(this);
@@ -192,52 +193,52 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface,
 		return container;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof UnloadPluginEvent) {
-			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("ListStatusBarProvider")) {
-					for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
-						ZipscriptListStatusBarInterface plugin = iter.next();
-						if (manager.getPluginFor(plugin).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
-							iter.remove();
-						}
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("ListStatusBarProvider")) {
+				for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
+					ZipscriptListStatusBarInterface plugin = iter.next();
+					if (manager.getPluginFor(plugin).getDescriptor().getId().equals(event.getPlugin())) {
+						logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
+						iter.remove();
 					}
 				}
 			}
-		} else if (event instanceof LoadPluginEvent) {
-			LoadPluginEvent pluginEvent = (LoadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String pluginName = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (pluginName.equals(currentPlugin) && extension.equals("ListStatusBarProvider")) {
-					ExtensionPoint pluginExtPoint = 
-						manager.getRegistry().getExtensionPoint( 
-								"org.drftpd.commands.zipscript", "ListStatusBarProvider");
-					for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
-						if (plugin.getDeclaringPluginDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							try {
-								manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
-								ClassLoader pluginLoader = manager.getPluginClassLoader( 
-										plugin.getDeclaringPluginDescriptor());
-								Class<?> pluginCls = pluginLoader.loadClass( 
-										plugin.getParameter("Class").valueAsString());
-								ZipscriptListStatusBarInterface newPlugin = (ZipscriptListStatusBarInterface) pluginCls.newInstance();
-								_statusBarProviders.add(newPlugin);
-							}
-							catch (Exception e) {
-								logger.warn("Error loading plugin " + 
-										plugin.getDeclaringPluginDescriptor().getId(),e);
-							}
+		}
+	}
+
+	@EventSubscriber
+	public void onLoadPluginEvent(LoadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (pluginName.equals(currentPlugin) && extension.equals("ListStatusBarProvider")) {
+				ExtensionPoint pluginExtPoint = 
+					manager.getRegistry().getExtensionPoint( 
+							"org.drftpd.commands.zipscript", "ListStatusBarProvider");
+				for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
+					if (plugin.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
+						try {
+							manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+							ClassLoader pluginLoader = manager.getPluginClassLoader( 
+									plugin.getDeclaringPluginDescriptor());
+							Class<?> pluginCls = pluginLoader.loadClass( 
+									plugin.getParameter("Class").valueAsString());
+							ZipscriptListStatusBarInterface newPlugin = (ZipscriptListStatusBarInterface) pluginCls.newInstance();
+							_statusBarProviders.add(newPlugin);
+						}
+						catch (Exception e) {
+							logger.warn("Error loading plugin " + 
+									plugin.getDeclaringPluginDescriptor().getId(),e);
 						}
 					}
 				}

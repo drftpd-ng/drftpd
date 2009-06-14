@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.commands.UserManagement;
@@ -36,7 +38,7 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author fr0w
  * @version $Id$
  */
-public class StatsManager implements PluginInterface, EventSubscriber {
+public class StatsManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(StatsManager.class);
 	
     public static final Key LOGINS = new Key(StatsManager.class, "logins", Integer.class);
@@ -55,22 +57,18 @@ public class StatsManager implements PluginInterface, EventSubscriber {
     }
     
 	public void startPlugin() {
-		GlobalContext.getEventService().subscribe(UserEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 		logger.debug("Loaded the Stats plugin successfully");
 	}
 
 	public void stopPlugin(String reason) {
-		GlobalContext.getEventService().unsubscribe(UserEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(UserEvent.class, this);
 		logger.debug("Unloaded the Stats plugin successfully");
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof UserEvent) {
-			handleUserEvent((UserEvent) event);
-		}		
-	}
-
-	private void handleUserEvent(UserEvent event) {
+	@EventSubscriber
+	public void onUserEvent(UserEvent event) {
 		if (event.getCommand().equalsIgnoreCase("LOGIN")) {
 			User u = event.getUser();
 			u.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));

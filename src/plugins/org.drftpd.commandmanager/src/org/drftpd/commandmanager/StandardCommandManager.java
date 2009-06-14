@@ -32,8 +32,8 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
-import org.drftpd.GlobalContext;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.Session;
@@ -51,10 +51,10 @@ import org.tanesha.replacer.SimplePrintf;
  * @author djb61
  * @version $Id$
  */
-public class StandardCommandManager implements CommandManagerInterface, EventSubscriber {
+public class StandardCommandManager implements CommandManagerInterface {
 
 	private static final Logger logger = Logger
-			.getLogger(StandardCommandManager.class);
+	.getLogger(StandardCommandManager.class);
 
 	private static final String _defaultThemeDir = "conf/themes/ftp";
 	private static Hashtable<String,CommandResponse> _genericResponses;
@@ -72,7 +72,8 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 	private Map<String, CommandInstanceContainer> _commands;
 
 	public StandardCommandManager() {
-		GlobalContext.getEventService().subscribe(UnloadPluginEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	public void initialize(HashMap<String,Properties> requiredCmds, String themeDir) {
@@ -149,12 +150,12 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		}
 
 		_commands = Collections.synchronizedMap(new HashMap<String, CommandInstanceContainer>());
-		
+
 		PluginManager manager = PluginManager.lookup(this);
 		ExtensionPoint cmdExtPoint = 
 			manager.getRegistry().getExtensionPoint( 
 					"org.drftpd.commandmanager", "Command");
-		
+
 		/* Iterate over the available extensions connected to this extension
 		 * point and build a hashtable which the next section can use to retrieve
 		 * an extension based on its declaring plugin name.
@@ -177,15 +178,15 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 					|| pluginString == null) {
 				throw new FatalException(
 						"Cannot load command "
-								+ requiredCmd.getKey()
-								+ ", make sure method, class, and plugin are all specified");
+						+ requiredCmd.getKey()
+						+ ", make sure method, class, and plugin are all specified");
 			}
 
 			if(!extensions.containsKey(pluginString)) {
 				logger.warn("Command plugin "+pluginString+" not found");
 				continue;
 			}
-			
+
 			Extension cmd = extensions.get(pluginString);
 			//	If plugin isn't already activated then activate it
 			if (!manager.isPluginActivated(cmd.getDeclaringPluginDescriptor())) {
@@ -225,49 +226,49 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		}
 		request.setProperties(request.getSession().getCommands().get(request.getCommand()));
 		CommandResponseInterface response = null;
-    	request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
-    	if(!request.isAllowed()) {
-    		response = request.getDeniedResponse();
-    		if (response == null) {
-    			response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-    		}
-    		return response;
-    	}
-    	try {
-    		try {
-    			response = (CommandResponseInterface) commandContainer.getMethod().invoke(commandContainer.getCommandInterfaceInstance(), new Object[] {request});
-    		}
-    		catch (InvocationTargetException e) {
-    			throw e.getCause();
-    		}
-    	} catch (ImproperUsageException e) {
-    		response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-    		String helpString = request.getProperties().getProperty("help.specific");
-    		if (helpString == null) {
-    			response.addComment("Bug your siteop to add help for the \""
+		request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
+		if(!request.isAllowed()) {
+			response = request.getDeniedResponse();
+			if (response == null) {
+				response = StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			}
+			return response;
+		}
+		try {
+			try {
+				response = (CommandResponseInterface) commandContainer.getMethod().invoke(commandContainer.getCommandInterfaceInstance(), new Object[] {request});
+			}
+			catch (InvocationTargetException e) {
+				throw e.getCause();
+			}
+		} catch (ImproperUsageException e) {
+			response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+			String helpString = request.getProperties().getProperty("help.specific");
+			if (helpString == null) {
+				response.addComment("Bug your siteop to add help for the \""
 						+ request.getCommand() + "\" command");
-    		}
-    		else {
-    			ReplacerEnvironment env = new ReplacerEnvironment();
-    			env.add("command", request.getCommand().toUpperCase());
-    			try {
-    				response.addComment(SimplePrintf.jprintf(helpString,env));
-    			}
-    			catch (FormatterException e1) {
-    				response.addComment(request.getCommand().toUpperCase()
-    						+ " command has an invalid help.specific definition");
-    			}
-    		}
-    	} catch (Throwable t) {
-    		if (!(t instanceof Error)) {
-    			CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
-    			logger.error("Command "+request.getCommand()+" failed", t);
-    			return cmdFailed;
-    		}
-    		throw (Error) t;
-    	}
+			}
+			else {
+				ReplacerEnvironment env = new ReplacerEnvironment();
+				env.add("command", request.getCommand().toUpperCase());
+				try {
+					response.addComment(SimplePrintf.jprintf(helpString,env));
+				}
+				catch (FormatterException e1) {
+					response.addComment(request.getCommand().toUpperCase()
+							+ " command has an invalid help.specific definition");
+				}
+			}
+		} catch (Throwable t) {
+			if (!(t instanceof Error)) {
+				CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
+				logger.error("Command "+request.getCommand()+" failed", t);
+				return cmdFailed;
+			}
+			throw (Error) t;
+		}
 
-    	commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
+		commandContainer.getCommandInterfaceInstance().doPostHooks(request, response);
 		return response;
 	}
 
@@ -277,7 +278,7 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		}
 		catch (NullPointerException e) {
 			logger.error("An unknown generic FTP response was used: "+type+
-					" this is almost certainly a bug");
+			" this is almost certainly a bug");
 			return new CommandResponse(540, "No response message defined");
 		}
 	}
@@ -295,7 +296,7 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		if (_genericResponses != null) {
 			return;
 		}
-		
+
 		Hashtable<String,CommandResponse> genericResponses = 
 			new Hashtable<String,CommandResponse>();
 
@@ -418,7 +419,6 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 
 	public CommandRequestInterface newRequest(String originalCommand, String argument,
 			DirectoryHandle directory, String user, Session session, Properties config) {
-		
 		return new CommandRequest(originalCommand, argument, directory, user, session, config);
 	}
 
@@ -426,22 +426,20 @@ public class StandardCommandManager implements CommandManagerInterface, EventSub
 		return _commands;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof UnloadPluginEvent) {
-			UnloadPluginEvent pluginEvent = (UnloadPluginEvent) event;
-			PluginManager manager = PluginManager.lookup(this);
-			String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-			for (String pluginExtension : pluginEvent.getParentPlugins()) {
-				int pointIndex = pluginExtension.lastIndexOf("@");
-				String plugin = pluginExtension.substring(0, pointIndex);
-				String extension = pluginExtension.substring(pointIndex+1);
-				if (plugin.equals(currentPlugin) && extension.equals("Command")) {
-					for (Iterator<Entry<String,CommandInstanceContainer>> iter = _commands.entrySet().iterator(); iter.hasNext();) {
-						Entry<String, CommandInstanceContainer> entry = iter.next();
-						if (manager.getPluginFor(entry.getValue().getCommandInterfaceInstance()).getDescriptor().getId().equals(pluginEvent.getPlugin())) {
-							logger.debug("Removing command "+ entry.getKey());
-							iter.remove();
-						}
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		PluginManager manager = PluginManager.lookup(this);
+		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String plugin = pluginExtension.substring(0, pointIndex);
+			String extension = pluginExtension.substring(pointIndex+1);
+			if (plugin.equals(currentPlugin) && extension.equals("Command")) {
+				for (Iterator<Entry<String,CommandInstanceContainer>> iter = _commands.entrySet().iterator(); iter.hasNext();) {
+					Entry<String, CommandInstanceContainer> entry = iter.next();
+					if (manager.getPluginFor(entry.getValue().getCommandInterfaceInstance()).getDescriptor().getId().equals(event.getPlugin())) {
+						logger.debug("Removing command "+ entry.getKey());
+						iter.remove();
 					}
 				}
 			}

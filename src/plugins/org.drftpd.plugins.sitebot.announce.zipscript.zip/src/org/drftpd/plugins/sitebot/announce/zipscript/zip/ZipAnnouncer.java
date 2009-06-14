@@ -26,7 +26,9 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
@@ -61,7 +63,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class ZipAnnouncer extends ZipTools implements AnnounceInterface, EventSubscriber {
+public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipAnnouncer.class);
 
@@ -75,11 +77,12 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface, EventSu
 		_config = config;
 		_bundle = bundle;
 		_keyPrefix = this.getClass().getName();
-		GlobalContext.getEventService().subscribe(DirectoryFtpEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	public void stop() {
-		GlobalContext.getEventService().unsubscribe(DirectoryFtpEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(DirectoryFtpEvent.class, this);
 	}
 
 	public String[] getEventTypes() {
@@ -87,13 +90,8 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface, EventSu
 		return types;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof DirectoryFtpEvent) {
-			handleDirectoryFtpEvent((DirectoryFtpEvent) event);
-		}
-	}
-
-	private void handleDirectoryFtpEvent(DirectoryFtpEvent direvent) {
+	@EventSubscriber
+	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {
 		if ("PRE".equals(direvent.getCommand())) {
 			outputDirectoryEvent(direvent, "pre");
 		} else if ("STOR".equals(direvent.getCommand())) {

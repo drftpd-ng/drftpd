@@ -34,7 +34,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.CommandManagerInterface;
@@ -47,9 +48,9 @@ import org.drftpd.usermanager.User;
 /**
  * @version $Id$
  */
-public class ConnectionManager implements EventSubscriber {
+public class ConnectionManager {
 	private static final Logger logger = Logger
-			.getLogger(ConnectionManager.class.getName());
+	.getLogger(ConnectionManager.class.getName());
 
 	private static final String cmdConf = "conf/ftpcommands.conf";
 
@@ -62,7 +63,7 @@ public class ConnectionManager implements EventSubscriber {
 	private CommandManagerInterface _commandManager = null;
 
 	private List<BaseFtpConnection> _conns = new Vector<BaseFtpConnection>();
-	
+
 	private ThreadPoolExecutor _pool;
 
 	/**
@@ -77,7 +78,8 @@ public class ConnectionManager implements EventSubscriber {
 
 		// loadTimer();
 		getGlobalContext().getSlaveManager().addShutdownHook();
-		GlobalContext.getEventService().subscribe(ReloadEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	public static ConnectionManager getConnectionManager() {
@@ -90,12 +92,14 @@ public class ConnectionManager implements EventSubscriber {
 	public static void boot() {
 		System.out.println(Slave.VERSION + " master server starting.");
 		System.out.println("http://drftpd.org/");
-		System.out
-				.println("Further logging will be done using (mostly) log4j, check logs/");
+		System.out.println("Further logging will be done using (mostly) log4j, check logs/");
+		// Set current thread name to make it clear in logfiles what is coming from the main master process 
+		// instead of being named after the wrapper
+		Thread.currentThread().setName("Master Thread");
 
 		try {
 			logger.info("Starting ConnectionManager");
-			
+
 			GlobalContext.getGlobalContext().init();
 
 			getConnectionManager().loadCommands();
@@ -128,9 +132,9 @@ public class ConnectionManager implements EventSubscriber {
 						.getProperty(cfg, "master.port")));
 				logger.info("Listening on port " + server.getLocalPort());
 			}
-			
+
 			getConnectionManager().createThreadPool();
-			
+
 			while (true) {		
 				getConnectionManager().start(server.accept());
 			}
@@ -144,21 +148,21 @@ public class ConnectionManager implements EventSubscriber {
 			return;
 		}
 	}
-	
+
 	public void createThreadPool() {
 		int maxUserConnected = GlobalContext.getConfig().getMaxUsersTotal();
 		int maxAliveThreads = maxUserConnected + GlobalContext.getConfig().getMaxUsersExempt();
 		int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
-		
+
 		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS, 
 				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
-		
+
 		// that's java1.6, can't be used for now.
 		// _pool.allowCoreThreadTimeOut(false);
-		
+
 		// _pool.prestartAllCoreThreads();
 	}
-	
+
 	public void dumpThreadPool() {
 		logger.debug("Active threads: "+_pool.getActiveCount()+" / Completed Tasks: "+ _pool.getCompletedTaskCount());
 		logger.debug("Pool information - Min # of threads: "+_pool.getCorePoolSize()+" / Max: "+ _pool.getMaximumPoolSize());
@@ -204,15 +208,15 @@ public class ConnectionManager implements EventSubscriber {
 				return new FtpReply(530, "Sorry, your account is restricted to "
 						+ user.getKeyedMap().getObjectInt(
 								UserManagement.MAXLOGINS)
-						+ " simultaneous logins.");
+								+ " simultaneous logins.");
 			}
 		}
 		if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) > 0) {
 			if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) <= ipCount) {
 				return new FtpReply(530,
 						"Sorry, your maximum number of connections from this IP ("
-								+ user.getKeyedMap().getObjectInt(
-										UserManagement.MAXLOGINSIP)
+						+ user.getKeyedMap().getObjectInt(
+								UserManagement.MAXLOGINSIP)
 								+ ") has been reached.");
 			}
 		}
@@ -312,14 +316,13 @@ public class ConnectionManager implements EventSubscriber {
 		return _cmds;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof ReloadEvent) {
-			logger.info("Reloading "+ cmdConf +", origin "+((ReloadEvent)event).getOrigin());
-			loadCommands();
-			_commandManager.initialize(getCommands(), themeDir);
-			for (BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
-				conn.setCommands(getCommands());
-			}
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		logger.info("Reloading "+ cmdConf +", origin "+event.getOrigin());
+		loadCommands();
+		_commandManager.initialize(getCommands(), themeDir);
+		for (BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
+			conn.setCommands(getCommands());
 		}
 	}
 }
@@ -328,7 +331,7 @@ class ConnectionThreadFactory implements ThreadFactory {
 	public static String getIdleThreadName(long threadId) {
 		return "FtpConnection Handler-"+ threadId + " - Waiting for connections";
 	}
-	
+
 	public Thread newThread(Runnable r) {
 		Thread t = Executors.defaultThreadFactory().newThread(r);
 		t.setName(getIdleThreadName(t.getId()));

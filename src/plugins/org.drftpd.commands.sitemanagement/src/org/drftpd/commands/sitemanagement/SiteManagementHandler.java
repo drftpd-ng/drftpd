@@ -33,6 +33,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.OptionConverter;
+import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.CommandInterface;
@@ -146,7 +147,7 @@ public class SiteManagementHandler extends CommandInterface {
 		if (manager.isPluginActivated(newPlugin)) {
 			return new CommandResponse(500, "Plugin is already loaded and active");
 		}
-		GlobalContext.getEventService().publish(new LoadPluginEvent(request.getArgument()));
+		EventServiceLocator.getEventBusService().publish(new LoadPluginEvent(request.getArgument()));
 		return new CommandResponse(200, "Successfully loaded plugin");
 	}
 
@@ -173,7 +174,7 @@ public class SiteManagementHandler extends CommandInterface {
 			GlobalContext.getGlobalContext().loadPluginsConfig();
 			GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
 
-			GlobalContext.getEventService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
+			EventServiceLocator.getEventBusService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
 
 		} catch (IOException e) {
 			logger.log(Level.FATAL, "Error reloading config", e);
@@ -245,7 +246,7 @@ public class SiteManagementHandler extends CommandInterface {
 				return new CommandResponse(500, "Unloading of this plugin is prohibited");
 			}
 		}
-		GlobalContext.getEventService().publish(new UnloadPluginEvent(request.getArgument()));
+		EventServiceLocator.getEventBusService().publish(new UnloadPluginEvent(request.getArgument()));
 		manager.deactivatePlugin(request.getArgument());
 		if (manager.isPluginActivated(pluginDesc)) {
 			return new CommandResponse(500, "Unable to unload plugin");

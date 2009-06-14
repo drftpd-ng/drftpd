@@ -21,8 +21,9 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventSubscriber;
-import org.drftpd.GlobalContext;
+import org.bushe.swing.event.EventServiceLocator;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.slavemanagement.SlaveManagement;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.SlaveEvent;
@@ -43,7 +44,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
+public class BasicAnnouncer implements AnnounceInterface {
 
 	private static final Logger logger = Logger.getLogger(BasicAnnouncer.class);
 
@@ -57,15 +58,14 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 		_config = config;
 		_bundle = bundle;
 		_keyPrefix = this.getClass().getName();
-		GlobalContext.getEventService().subscribe(DirectoryFtpEvent.class, this);
-		GlobalContext.getEventService().subscribe(InviteEvent.class, this);
-		GlobalContext.getEventService().subscribe(SlaveEvent.class, this);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 	}
 
 	public void stop() {
-		GlobalContext.getEventService().unsubscribe(DirectoryFtpEvent.class, this);
-		GlobalContext.getEventService().unsubscribe(InviteEvent.class, this);
-		GlobalContext.getEventService().unsubscribe(SlaveEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(DirectoryFtpEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(InviteEvent.class, this);
+		EventServiceLocator.getEventBusService().unsubscribe(SlaveEvent.class, this);
 	}
 
 	public String[] getEventTypes() {
@@ -74,17 +74,8 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 		return types;
 	}
 
-	public void onEvent(Object event) {
-		if (event instanceof DirectoryFtpEvent) {
-			handleDirectoryFtpEvent((DirectoryFtpEvent) event);
-		} else if (event instanceof SlaveEvent) {
-			handleSlaveEvent((SlaveEvent) event);
-		} else if (event instanceof InviteEvent) {
-			handleInviteEvent((InviteEvent) event);
-		}
-	}
-
-	private void handleDirectoryFtpEvent(DirectoryFtpEvent direvent) {
+	@EventSubscriber
+	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {
 		if ("MKD".equals(direvent.getCommand())) {
 			outputDirectoryEvent(direvent, "mkdir");
 		} else if ("REQUEST".equals(direvent.getCommand())) {
@@ -100,7 +91,8 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 		}
 	}
 
-	private void handleSlaveEvent(SlaveEvent event) {
+	@EventSubscriber
+	public void onSlaveEvent(SlaveEvent event) {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("slave", event.getRSlave().getName());
 		env.add("message", event.getMessage());
@@ -124,7 +116,8 @@ public class BasicAnnouncer implements AnnounceInterface, EventSubscriber {
 		}
 	}
 
-	private void handleInviteEvent(InviteEvent event) {
+	@EventSubscriber
+	public void onInviteEvent(InviteEvent event) {
 		if (_config.getBot().getBotName().equalsIgnoreCase(event.getTargetBot())) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("user", event.getUser().getName());
