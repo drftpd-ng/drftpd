@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLSocket;
 
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventServiceLocator;
@@ -53,7 +52,6 @@ import org.drftpd.commandmanager.CommandResponseInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.ConnectionEvent;
 import org.drftpd.io.AddAsciiOutputStream;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -94,20 +92,14 @@ public class BaseFtpConnection extends Session implements Runnable {
 	private CommandManagerInterface _commandManager;
 
 	protected Socket _controlSocket;
-	
-	protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
-	
-	public KeyedMap<Key, Object> getKeyedMap() {
-		return _keyedMap;
-	}
-	
+		
 	public TransferState getTransferState() {
 		TransferState ts;
 		try {
-			ts = (TransferState) getKeyedMap().getObject(TransferState.TRANSFERSTATE);
+			ts = (TransferState) getObject(TransferState.TRANSFERSTATE);
 		} catch (KeyNotFoundException e) {
 			ts = new TransferState();
-			getKeyedMap().setObject(TransferState.TRANSFERSTATE,ts);
+			setObject(TransferState.TRANSFERSTATE,ts);
 		}
 		return ts;
 	}
