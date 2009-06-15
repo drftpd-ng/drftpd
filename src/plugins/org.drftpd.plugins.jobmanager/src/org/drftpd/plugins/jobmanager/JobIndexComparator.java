@@ -5,7 +5,7 @@ import java.util.Comparator;
 /**
  * 
  * @author zubov
- * @version $Id: JobIndexComparator.java 1621 2007-02-13 20:41:31Z djb61 $
+ * @version $Id$
  */
 public class JobIndexComparator implements Comparator<Job> {
 	public int compare(Job arg0, Job arg1) {

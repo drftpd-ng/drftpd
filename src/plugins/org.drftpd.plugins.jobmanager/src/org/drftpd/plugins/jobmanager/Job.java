@@ -38,7 +38,7 @@ import org.drftpd.vfs.FileHandle;
 /**
  * @author zubov
  * @author mog
- * @version $Id: Job.java 1787 2007-09-19 10:22:58Z zubov $
+ * @version $Id$
  */
 public class Job {
 	private static long jobIndexCount = 0;

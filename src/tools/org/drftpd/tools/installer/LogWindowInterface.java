@@ -19,7 +19,7 @@ package org.drftpd.tools.installer;
 
 /**
  * @author djb61
- * @version $Id: UserFileLocator.java 1883 2008-02-24 19:30:17Z djb61 $
+ * @version $Id$
  */
 public interface LogWindowInterface {
 

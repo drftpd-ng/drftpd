@@ -21,7 +21,7 @@ import java.util.Comparator;
 
 /**
  * @author zubov
- * @version $Id: JobComparator.java 1621 2007-02-13 20:41:31Z djb61 $
+ * @version $Id$
  * 
  */
 public class JobComparator implements Comparator<Job> {

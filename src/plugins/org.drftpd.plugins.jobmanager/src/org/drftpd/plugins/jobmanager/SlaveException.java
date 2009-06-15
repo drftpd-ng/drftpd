@@ -18,7 +18,7 @@ package org.drftpd.plugins.jobmanager;
 
 /**
  * @author zubov
- * @version $Id: SlaveException.java 1621 2007-02-13 20:41:31Z djb61 $
+ * @version $Id$
  */
 public class SlaveException extends Exception {
 	public SlaveException() {

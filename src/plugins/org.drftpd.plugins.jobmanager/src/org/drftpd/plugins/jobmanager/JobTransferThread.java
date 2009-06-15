@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 
 /**
  * @author zubov
- * @version $Id: JobTransferThread.java 1621 2007-02-13 20:41:31Z djb61 $
+ * @version $Id$
  */
 public class JobTransferThread extends Thread {
 	private static final Logger logger = Logger

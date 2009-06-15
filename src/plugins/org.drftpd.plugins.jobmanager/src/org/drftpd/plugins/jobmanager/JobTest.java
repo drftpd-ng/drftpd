@@ -28,7 +28,7 @@ import org.drftpd.tests.DummyRemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobTest.java 1788 2007-09-19 23:47:41Z zubov $
+ * @version $Id$
  */
 public class JobTest extends TestCase {
     public JobTest(String arg0) {

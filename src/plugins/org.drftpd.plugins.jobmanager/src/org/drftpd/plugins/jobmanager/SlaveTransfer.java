@@ -34,7 +34,7 @@ import org.drftpd.vfs.FileHandle;
 /**
  * @author mog
  * @author zubov
- * @version $Id: SlaveTransfer.java 1790 2007-09-21 03:26:50Z fr0w $
+ * @version $Id$
  */
 public class SlaveTransfer {
 	private RemoteSlave _destSlave;

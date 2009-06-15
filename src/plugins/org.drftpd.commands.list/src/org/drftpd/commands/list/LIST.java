@@ -59,7 +59,7 @@ import org.java.plugin.registry.ExtensionPoint;
 /**
  * @author mog
  * 
- * @version $Id: LIST.java 1621 2007-02-13 20:41:31Z djb61 $
+ * @version $Id$
  */
 public class LIST extends CommandInterface {
 	private final static DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");

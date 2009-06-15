@@ -29,7 +29,7 @@ import org.drftpd.sections.SectionInterface;
 
 /**
  * @author zubov
- * @version $Id: ArchiveHandler.java 1787 2007-09-19 10:22:58Z zubov $
+ * @version $Id$
  */
 public class ArchiveHandler extends Thread {
 	protected final static Logger logger = Logger

@@ -61,7 +61,7 @@ import org.tanesha.replacer.SimplePrintf;
 /**
  * @author mog
  * @author zubov
- * @version $Id: UserManagement.java 1646 2007-02-23 17:29:39Z djb61 $
+ * @version $Id$
  */
 public class UserManagementHandler extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(UserManagement.class);

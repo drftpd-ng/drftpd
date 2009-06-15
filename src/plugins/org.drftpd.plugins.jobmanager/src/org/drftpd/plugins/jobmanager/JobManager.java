@@ -41,7 +41,7 @@ import org.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
- * @version $Id: JobManager.java 1787 2007-09-19 10:22:58Z zubov $
+ * @version $Id$
  */
 public class JobManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(JobManager.class);
