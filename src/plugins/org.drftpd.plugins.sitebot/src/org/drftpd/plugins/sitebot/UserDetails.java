@@ -36,8 +36,7 @@ public class UserDetails {
 
 	private static final Logger logger = Logger.getLogger(UserDetails.class);
 
-	public static final Key BLOWKEY = new Key(UserDetails.class,
-			"blowfishkey", String.class);
+	public static final Key<String> BLOWKEY = new Key<String>(UserDetails.class, "blowfishkey");
 
 	private SiteBot _bot;
 

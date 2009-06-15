@@ -114,7 +114,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private Properties _keysAndValues;
 	
-	private KeyedMap<Key, Object> _transientKeyedMap;
+	private KeyedMap<Key<?>, Object> _transientKeyedMap;
 
 	private LinkedList<QueuedOperation> _renameQueue;
 
@@ -133,12 +133,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public RemoteSlave(String name) {
 		_name = name;
 		_keysAndValues = new Properties();
-		_transientKeyedMap = new KeyedMap<Key, Object>();
+		_transientKeyedMap = new KeyedMap<Key<?>, Object>();
 		_ipMasks = new HostMaskCollection();
 		_renameQueue = new LinkedList<QueuedOperation>();
 	}
 	
-	public static final Key SSL = new Key(RemoteSlave.class, "ssl", Boolean.class);
+	public static final Key<Boolean> SSL = new Key<Boolean>(RemoteSlave.class, "ssl");
 
 	public final static Hashtable<String,RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
 		Hashtable<String, RemoteSlave> map = new Hashtable<String, RemoteSlave>(
@@ -223,7 +223,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 	}
 	
-	public KeyedMap<Key, Object> getTransientKeyedMap() {
+	public KeyedMap<Key<?>, Object> getTransientKeyedMap() {
 		synchronized (_transientKeyedMap) {
 			return _transientKeyedMap;
 		}
@@ -1079,8 +1079,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				}
 			});
 			out.setPersistenceDelegate(Key.class,
-					new DefaultPersistenceDelegate(new String[] { "owner",
-							"key", "type" }));
+					new DefaultPersistenceDelegate(new String[] { "owner", "key" }));
 			out.setPersistenceDelegate(HostMask.class,
 					new DefaultPersistenceDelegate(new String[] { "mask" }));
 			out.setPersistenceDelegate(RemoteSlave.class,

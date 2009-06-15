@@ -222,7 +222,7 @@ public class BeanUserManager extends AbstractUserManager {
 		e.setPersistenceDelegate(BeanUser.class,
 				new DefaultPersistenceDelegate(new String[] { "name" }));
 		e.setPersistenceDelegate(Key.class, new DefaultPersistenceDelegate(
-				new String[] { "owner", "key", "type" }));
+				new String[] { "owner", "key" }));
 		e.setPersistenceDelegate(HostMask.class,
 				new DefaultPersistenceDelegate(new String[] { "mask" }));
 		return e;

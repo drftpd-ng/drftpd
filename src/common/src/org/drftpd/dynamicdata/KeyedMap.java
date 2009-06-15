@@ -17,7 +17,6 @@
 package org.drftpd.dynamicdata;
 
 import java.util.Collections;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -27,25 +26,22 @@ import java.util.Map;
  * @author mog
  * @version $Id$
  */
-@SuppressWarnings("serial")
-public class KeyedMap<K extends Key, V> extends Hashtable {
+public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> {
 	public KeyedMap() {
 		super();
-	}
+	} 
 
-	public Map<Key, Object> getAllObjects() {
-		return Collections.unmodifiableMap(this);
-	}
-
-	public Object getObject(Key key) throws KeyNotFoundException {
-		Object ret = get(key);
+	@SuppressWarnings("unchecked")
+	public <T> T getObject(Key<T> key) throws KeyNotFoundException {
+		T ret = (T) get(key);
+		
 		if (ret == null) {
 			throw new KeyNotFoundException();
 		}
 		return ret;
 	}
 
-	public Object getObject(Key key, Object def) {
+	public <T> T getObject(Key<T> key, T def) {
 		try {
 			return getObject(key);
 		} catch (KeyNotFoundException e) {
@@ -53,102 +49,64 @@ public class KeyedMap<K extends Key, V> extends Hashtable {
 		}
 	}
 
-	public boolean getObjectBoolean(Key key) {
-		try {
-			return ((Boolean) getObject(key)).booleanValue();
-		} catch (KeyNotFoundException e) {
-			return false;
-		}
-	}
-
-	public Date getObjectDate(Key key) {
-		return ((Date) getObject(key, new Date(System.currentTimeMillis())));
-	}
-
-	public float getObjectFloat(Key key) {
-		return ((Float) getObject(key, new Float(0))).floatValue();
-	}
-
-	public int getObjectInt(Key key) {
-		try {
-			return ((Integer) getObject(key)).intValue();
-		} catch (KeyNotFoundException e) {
-			return 0;
-		}
-	}
-
-	/**
-	 * If key is not found, returns 0
-	 */
-	public long getObjectLong(Key key) {
-		return ((Long) getObject(key, new Long(0))).longValue();
-	}
-
-	public String getObjectString(Key key) {
-		return (String) getObject(key, "");
-	}
-
-	public void incrementObjectInt(Key key, int amount) {
-		if (!key.getType().equals(Integer.class)) {
-			throw new ClassCastException();
-		}
-
-		synchronized (this) {
-			Integer i;
-
-			try {
-				i = (Integer) getObject(key);
-			} catch (KeyNotFoundException e) {
-				i = new Integer(0);
-			}
-
-			setObject(key, new Integer(i.intValue() + amount));
-		}
-	}
-
-	public void incrementObjectLong(Key key) {
-		incrementObjectInt(key, 1);
-	}
-
-	public void incrementObjectLong(Key key, long amount) {
-		if (!key.getType().equals(Long.class)) {
-			throw new ClassCastException();
-		}
-
-		synchronized (this) {
-			Long i;
-
-			try {
-				i = (Long) getObject(key);
-			} catch (KeyNotFoundException e) {
-				i = new Long(0);
-			}
-
-			setObject(key, new Long(i.longValue() + amount));
-		}
-	}
-
-	public void setAllObjects(KeyedMap m) {
+	public void setAllObjects(KeyedMap<K, V> m) {
 		putAll(m.getAllObjects());
 	}
 
-	public void setObject(Key key, Object obj) {
+	public Map<K, V> getAllObjects() {
+		return Collections.unmodifiableMap(this);
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> void setObject(Key<T> key, T obj) {
         if (obj == null) {
             throw new NullPointerException(key + " - is null");
         }
 
-		if (!key.getType().isInstance(obj)) {
-			throw new ClassCastException(key + " - " + key.getType().getName()
-					+ " - " + obj + " - " + obj.getClass().getName());
+		put((K) key, (V) obj);
+	}
+	
+	public Integer getObjectInteger(Key<Integer> key) {
+		return getObject(key, 0);
+	}
+	
+	public Long getObjectLong(Key<Long> key) {
+		return getObject(key, 0L);
+	}
+	
+	public Float getObjectFloat(Key<Float> key) {
+		return getObject(key, 0F);
+	}
+	
+	public Boolean getObjectBoolean(Key<Boolean> key) {
+		return getObject(key, false);
+	}
+	
+	public String getObjectString(Key<String> key) {
+		return getObject(key, "");
+	}
+	
+	public void incrementInt(Key<Integer> key) {
+		incrementInt(key, 1);
+	}
+	
+	public void incrementInt(Key<Integer> key, int amount) {
+		synchronized (this) {
+			Integer i = getObject(key, 0);
+
+			setObject(key, i + amount);
 		}
-		put(key, obj);
 	}
 
-	public void setObject(Key k, int v) {
-		setObject(k, new Integer(v));
+	public void incrementLong(Key<Long> key) {
+		incrementLong(key, 1L);
 	}
 
-	public void setObject(Key k, long v) {
-		setObject(k, new Long(v));
+	public void incrementLong(Key<Long> key, long amount) {
+		synchronized (this) {
+			Long l = getObject(key, 0L);
+
+			setObject(key, l + amount);
+		}
 	}
 }

@@ -35,7 +35,7 @@ public class StatusSubscriber {
 
 	@EventSubscriber
 	public void onSlaveEvent(SlaveEvent event) {
-		KeyedMap<Key, Object> keyedMap = event.getRSlave().getTransientKeyedMap();
+		KeyedMap<Key<?>, Object> keyedMap = event.getRSlave().getTransientKeyedMap();
 		if (event.getCommand().equals("ADDSLAVE")) {
 			keyedMap.setObject(ServerStatus.CONNECTTIME, System.currentTimeMillis());
 		} else if (event.getCommand().equals("DELSLAVE")) {

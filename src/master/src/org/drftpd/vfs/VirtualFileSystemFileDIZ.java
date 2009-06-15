@@ -22,13 +22,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.slave.DIZInfo;
 
 public class VirtualFileSystemFileDIZ extends VirtualFileSystemFile {
 
-	public static final Key DIZ = new Key(VirtualFileSystemFileDIZ.class,
-			"diz", DIZInfo.class);
+	public static final Key<DIZInfo> DIZ = new Key<DIZInfo>(VirtualFileSystemFileDIZ.class, "diz");
 
 	public VirtualFileSystemFileDIZ(String username, String group, long size,
 			Set<String> slaves) {
@@ -42,11 +40,7 @@ public class VirtualFileSystemFileDIZ extends VirtualFileSystemFile {
 	}
 
 	public DIZInfo getDIZFile() {
-		try {
-			return (DIZInfo) getKeyedMap().getObject(DIZ);
-		} catch (KeyNotFoundException e) {
-			return null;
-		}
+		return getKeyedMap().getObject(DIZ, null);
 	}
 
 	public void setDIZFile(DIZInfo dizFile) {

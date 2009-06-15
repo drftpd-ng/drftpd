@@ -73,13 +73,13 @@ import se.mog.io.PermissionDeniedException;
 public class DataConnectionHandler extends CommandInterface {
     private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
 
-    public static final Key CHECKSUM = new Key(DataConnectionHandler.class, "checksum", Long.class);
+    public static final Key<Long> CHECKSUM = new Key<Long>(DataConnectionHandler.class, "checksum");
 
-    public static final Key TRANSFER_FILE = new Key(DataConnectionHandler.class, "transfer_file", FileHandle.class);
+    public static final Key<FileHandle> TRANSFER_FILE = new Key<FileHandle>(DataConnectionHandler.class, "transfer_file");
     
-    public static final Key INET_ADDRESS = new Key(DataConnectionHandler.class, "inetAddress", String.class);
+    public static final Key<String> INET_ADDRESS = new Key<String>(DataConnectionHandler.class, "inetAddress");
     
-    public static final Key XFER_STATUS = new Key(DataConnectionHandler.class, "transferStatus", TransferStatus.class);
+    public static final Key<TransferStatus> XFER_STATUS = new Key<TransferStatus>(DataConnectionHandler.class, "transferStatus");
 
     private ResourceBundle _bundle;
 
@@ -975,7 +975,7 @@ public class DataConnectionHandler extends CommandInterface {
 
             //transfer
             try {
-            	String address = (String) request.getSession().getObject(INET_ADDRESS, "*@*");           	
+            	String address = request.getSession().getObject(INET_ADDRESS, "*@*");           	
             	
                 if (isRetr) {
                     ts.sendFile(ts.getTransferFile().getPath(), ts.getType(),

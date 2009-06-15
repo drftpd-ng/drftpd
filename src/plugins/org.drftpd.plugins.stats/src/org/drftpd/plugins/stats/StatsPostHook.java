@@ -121,7 +121,7 @@ public class StatsPostHook implements PostHookInterface {
 			return;
 		}
 		String userName = (String) response.getObject(Dir.USERNAME, null);
-		long fileSize  = response.getObjectLong(Dir.FILESIZE);
+		long fileSize  = response.getObject(Dir.FILESIZE, 0L);
 
 		try {
 			DirectoryHandle dir = request.getCurrentDirectory();

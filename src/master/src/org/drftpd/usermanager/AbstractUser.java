@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventServiceLocator;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
@@ -51,7 +50,7 @@ public abstract class AbstractUser extends User implements Commitable {
 
 	private long _credits;
 
-	protected KeyedMap<Key, Object> _data = new KeyedMap<Key, Object>();
+	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<Key<?>, Object>();
 
 	private String _group = "nogroup";
 
@@ -191,11 +190,11 @@ public abstract class AbstractUser extends User implements Commitable {
 		return _idleTime;
 	}
 
-	public KeyedMap<Key, Object> getKeyedMap() {
+	public KeyedMap<Key<?>, Object> getKeyedMap() {
 		return _data;
 	}
 
-	public void setKeyedMap(KeyedMap<Key, Object> data) {
+	public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
 		_data = data;
 	}
 
@@ -297,8 +296,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		super.resetWeek(resetDate);
 		
 		if (getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT) > 0) {
-			setCredits(getKeyedMap().getObjectLong(
-					UserManagement.WKLY_ALLOTMENT));
+			setCredits(getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT));
 		}
 		logger.info("Reset weekly stats for " + getName());
 	}	
@@ -381,7 +379,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	// }
 	
 	public int getMaxSimUp() {
-		return getKeyedMap().getObjectInt(UserManagement.MAXSIMUP);
+		return getKeyedMap().getObjectInteger(UserManagement.MAXSIMUP);
 	}
 
 	public void setMaxSimUp(int maxSimUp) {
@@ -389,9 +387,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public float getMinRatio() {
-		return getKeyedMap().containsKey(UserManagement.MINRATIO) ? getKeyedMap()
-				.getObjectFloat(UserManagement.MINRATIO)
-				: 3F;
+		return getKeyedMap().getObject(UserManagement.MINRATIO, 3F);
 	}
 
 	public void setMinRatio(float minRatio) {
@@ -399,9 +395,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public float getMaxRatio() {
-		return getKeyedMap().containsKey(UserManagement.MAXRATIO) ? getKeyedMap()
-				.getObjectFloat(UserManagement.MAXRATIO)
-				: 3F;
+		return getKeyedMap().getObject(UserManagement.MAXRATIO, 3F);
 	}
 
 	public void setMaxRatio(float maxRatio) {
@@ -409,7 +403,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public int getMaxSimDown() {
-		return getKeyedMap().getObjectInt(UserManagement.MAXSIMDN);
+		return getKeyedMap().getObjectInteger(UserManagement.MAXSIMDN);
 	}
 
 	public void setMaxSimDown(int maxSimDown) {

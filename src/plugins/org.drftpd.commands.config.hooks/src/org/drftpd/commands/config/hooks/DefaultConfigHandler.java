@@ -39,7 +39,7 @@ import org.drftpd.permissions.Permission;
 public class DefaultConfigHandler extends ConfigHandler {
 	private static final Logger logger = Logger.getLogger(DefaultConfigHandler.class);
 	
-	protected static final Key MSGPATH = new Key(DefaultConfigHandler.class, "msgPath", ArrayList.class);
+	protected static final Key<ArrayList<MessagePathPermission>> MSGPATH = new Key<ArrayList<MessagePathPermission>>(DefaultConfigHandler.class, "msgPath");
 	
 	public void handlePathPerm(String directive, StringTokenizer st) throws MalformedPatternException {
 		addPathPermission(directive, new GlobPathPermission(st.nextToken(), Permission.makeUsers(st)));
@@ -49,7 +49,6 @@ public class DefaultConfigHandler extends ConfigHandler {
 		addPermission(directive, new Permission(Permission.makeUsers(st)));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void handleMsgPath(String directive, StringTokenizer st) throws MalformedPatternException {
 		String pattern = st.nextToken();
 		String messageFile = st.nextToken();
@@ -61,8 +60,8 @@ public class DefaultConfigHandler extends ConfigHandler {
 			logger.error("Unable to read "+messageFile+" directive ignored");
 		}
 		
-		KeyedMap<Key, Object> map = GlobalContext.getConfig().getKeyedMap();		
-		ArrayList<MessagePathPermission> list = (ArrayList<MessagePathPermission>) map.getObject(MSGPATH, null);		
+		KeyedMap<Key<?>, Object> map = GlobalContext.getConfig().getKeyedMap();		
+		ArrayList<MessagePathPermission> list = map.getObject(MSGPATH, null);		
 		if (list == null) { // in case that's the first directive that's being loaded
 			list = new ArrayList<MessagePathPermission>();
 			map.setObject(MSGPATH, list);

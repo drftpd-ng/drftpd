@@ -376,18 +376,19 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		}
 	}
 
-	public void addKey(Key key, Object object) throws FileNotFoundException {
+	public <T> void addKey(Key<T> key, T object) throws FileNotFoundException {
 		getInode().getKeyedMap().setObject(key,object);
 		getInode().commit();
 	}
 
-	public Object removeKey(Key key) throws FileNotFoundException {
-		Object value = getInode().getKeyedMap().remove(key);
+	@SuppressWarnings("unchecked")
+	public <T> T removeKey(Key<T> key) throws FileNotFoundException {
+		T value = (T) getInode().getKeyedMap().remove(key);
 		getInode().commit();
 		return value;
 	}
 
-	public Object getKey(Key key) throws FileNotFoundException, KeyNotFoundException {
+	public <T> T getKey(Key<T> key) throws FileNotFoundException, KeyNotFoundException {
 		return getInode().getKeyedMap().getObject(key);
 	}
 }

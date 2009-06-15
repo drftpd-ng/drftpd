@@ -24,30 +24,27 @@ import java.io.Serializable;
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public class Key implements Serializable {
+public class Key<T> implements Serializable {
 	private String _key;
 
 	private Class<?> _owner;
 
-	private Class<?> _type;
-
-	public Key(Class<?> owner, String key, Class<?> type) {
+	public Key(Class<?> owner, String key) {
 		assert owner != null;
 		assert key != null;
-		assert type != null;
 		_owner = owner;
 		_key = key;
-		_type = type;
 	}
-
+	
+	@SuppressWarnings("unchecked")
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Key)) {
 			return false;
 		}
 
-		Key ok = (Key) o;
+		Key<T> ok = (Key<T>) o;
 
-		return ok.getOwner() == getOwner() && ok.getKey().equals(getKey());
+		return ok.getOwner().equals(getOwner()) && ok.getKey().equals(getKey());
 	}
 
 	public String getKey() {
@@ -58,15 +55,11 @@ public class Key implements Serializable {
 		return _owner;
 	}
 
-	public Class<?> getType() {
-		return _type;
-	}
-
 	public String toString() {
 		return getOwner().getName() + '@' + getKey();
 	}
-
-	public String toString(Object value) {
+	
+	public String toString(T value) {
 		return value.toString();
 	}
 

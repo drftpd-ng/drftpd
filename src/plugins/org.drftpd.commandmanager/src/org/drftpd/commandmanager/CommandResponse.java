@@ -29,22 +29,17 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author djb61
  * @version $Id$
  */
-public class CommandResponse extends KeyedMap implements CommandResponseInterface {
+public class CommandResponse extends KeyedMap<Key<?>, Object> implements CommandResponseInterface {
 
-	public static final Key CODE = new Key(CommandResponse.class, "code",
-			Integer.class);
+	public static final Key<Integer> CODE = new Key<Integer>(CommandResponse.class, "code");
 
-	public static final Key COMMENT = new Key(CommandResponse.class, "comment",
-			Vector.class);
+	public static final Key<Vector<String>> COMMENT = new Key<Vector<String>>(CommandResponse.class, "comment");
 
-	public static final Key CURRENTDIRECTORY = new Key(CommandResponse.class, "currentDirectory",
-			DirectoryHandle.class);
+	public static final Key<DirectoryHandle> CURRENTDIRECTORY = new Key<DirectoryHandle>(CommandResponse.class, "currentDirectory");
 
-	public static final Key MESSAGE = new Key(CommandResponse.class, "message",
-			String.class);
+	public static final Key<String> MESSAGE = new Key<String>(CommandResponse.class, "message");
 
-	public static final Key USER = new Key(CommandResponse.class, "user",
-			String.class);
+	public static final Key<String> USER = new Key<String>(CommandResponse.class, "user");
 
 	public CommandResponse(int code) {
 		setCode(code);
@@ -111,22 +106,22 @@ public class CommandResponse extends KeyedMap implements CommandResponseInterfac
 	}
 
 	public int getCode() {
-		return ((Integer) getObject(CommandResponse.CODE, new Integer(500))).intValue();
+		return getObject(CommandResponse.CODE, new Integer(500)).intValue();
 	}
 
 	public Vector<String> getComment() {
-		return (Vector<String>) getObject(CommandResponse.COMMENT, new Vector<String>());
+		return getObject(CommandResponse.COMMENT, new Vector<String>());
 	}
 
 	public DirectoryHandle getCurrentDirectory() {
-		return (DirectoryHandle) getObject(CommandResponse.CURRENTDIRECTORY, null);
+		return getObject(CommandResponse.CURRENTDIRECTORY, null);
 	}
 
 	public String getMessage() {
-		return (String) getObject(CommandResponse.MESSAGE, null);
+		return getObject(CommandResponse.MESSAGE, null);
 	}
 
 	public String getUser() {
-		return (String) getObject(CommandResponse.USER, null);
+		return getObject(CommandResponse.USER, null);
 	}
 }

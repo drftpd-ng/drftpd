@@ -32,7 +32,7 @@ import org.drftpd.util.HostMaskCollection;
 public abstract class User extends ExtendedTimedStats implements Entity {
 	public abstract UserManager getUserManager();
 
-	public abstract KeyedMap<Key, Object> getKeyedMap();
+	public abstract KeyedMap<Key<?>, Object> getKeyedMap();
 
 	public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 

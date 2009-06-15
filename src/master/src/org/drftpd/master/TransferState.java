@@ -42,8 +42,7 @@ import org.drftpd.vfs.FileHandle;
  */
 public class TransferState {
 	
-	public static final Key TRANSFERSTATE = new Key(TransferState.class,
-			"transferstate", TransferState.class);
+	public static final Key<TransferState> TRANSFERSTATE = new Key<TransferState>(TransferState.class, "transferstate");
 	private static final Logger logger = Logger.getLogger(TransferState.class);
 	
 	/**

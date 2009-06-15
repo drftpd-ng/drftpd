@@ -33,7 +33,7 @@ public class XDupePreHook implements PreHookInterface {
 		}
 		
 		User user = request.getSession().getUserNull(request.getUser());
-		int xdupe = request.getSession().getObjectInt(XDupe.XDUPE);		
+		int xdupe = request.getSession().getObjectInteger(XDupe.XDUPE);		
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		String mode1or4 = "";
 

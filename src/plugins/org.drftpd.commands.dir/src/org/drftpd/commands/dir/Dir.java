@@ -59,13 +59,13 @@ public class Dir extends CommandInterface {
 	"yyyyMMddHHmmss.SSS");
 	private static final Logger logger = Logger.getLogger(Dir.class);
 
-	private static final Key RENAMEFROM = new Key(Dir.class, "renamefrom", InodeHandle.class);
+	private static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
 
 	// This Keys are place holders for usefull information that gets removed during
 	// deletion operations but are need to process hooks.
-	public static final Key USERNAME = new Key(Dir.class, "username", String.class);
-	public static final Key FILESIZE = new Key(Dir.class, "fileSize", Long.class);
-	public static final Key FILENAME = new Key(Dir.class, "fileName", String.class);
+	public static final Key<String> USERNAME = new Key<String>(Dir.class, "username");
+	public static final Key<Long> FILESIZE = new Key<Long>(Dir.class, "fileSize");
+	public static final Key<String> FILENAME = new Key<String>(Dir.class, "fileName");
 
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>
@@ -120,7 +120,7 @@ public class Dir extends CommandInterface {
 	private void addVictimInformationToResponse(InodeHandle victim,
 			CommandResponse response) throws FileNotFoundException {
 		response.setObject(FILENAME, victim.getName());
-		response.setObject(FILESIZE, victim.getSize());
+		response.setObject(FILESIZE, Long.valueOf(victim.getSize()));
 		response.setObject(USERNAME, victim.getUsername());
 	}
 
@@ -348,7 +348,7 @@ public class Dir extends CommandInterface {
 		}
 
 		// set state variables
-		InodeHandle fromInode = (InodeHandle) request.getSession().getObject(RENAMEFROM, null);
+		InodeHandle fromInode = request.getSession().getObject(RENAMEFROM, null);
 		if (fromInode == null) {
 			return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
 		}

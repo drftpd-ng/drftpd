@@ -18,7 +18,6 @@
 package org.drftpd.commands.config.hooks;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
@@ -37,10 +36,12 @@ public class DefaultConfigPostHook implements PostHookInterface {
 	public void initialize(StandardCommandManager manager) {		
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void showMessageForPath(CommandRequest request, CommandResponse response) {
-		Collection<MessagePathPermission> msgPath = (Collection<MessagePathPermission>) 
-			GlobalContext.getConfig().getKeyedMap().getObject(DefaultConfigHandler.MSGPATH, Collections.EMPTY_LIST);
+		Collection<MessagePathPermission> msgPath = GlobalContext.getConfig().getKeyedMap().getObject(DefaultConfigHandler.MSGPATH, null);
+
+		if (msgPath == null) {
+			return;
+		}
 		
 		for (MessagePathPermission perm : msgPath) {
 			if (perm.checkPath(response.getCurrentDirectory())) {

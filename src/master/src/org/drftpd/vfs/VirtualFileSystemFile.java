@@ -51,23 +51,20 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	// xfertime, checksum, downloadedBytes, downloadedFiles, downloadedTime,
 	// uploadedBytes, uploadedFiles, uploadedTime
 
-	public static final Key CRC = new Key(VirtualFileSystemFile.class,
-			"checksum", Long.class);
+	public static final Key<Long> CRC = new Key<Long>(VirtualFileSystemFile.class, "checksum");
 
-	public static final Key MD5 = new Key(VirtualFileSystemFile.class, "md5",
-			Long.class);
+	public static final Key<Long> MD5 = new Key<Long>(VirtualFileSystemFile.class, "md5");
 
-	public static final Key XFERTIME = new Key(VirtualFileSystemFile.class,
-			"xfertime", Long.class);
+	public static final Key<Long> XFERTIME = new Key<Long>(VirtualFileSystemFile.class,	"xfertime");
 	
 	protected Set<String> _slaves;
 	
 	
-	public static final Key DOWNLOADEDTIMES = new Key(VirtualFileSystemFile.class, 
-			"dltimes", Integer.class);
+	public static final Key<Integer> DOWNLOADEDTIMES = new Key<Integer>(VirtualFileSystemFile.class, 
+			"dltimes");
 	
-	public static final Key DOWNLOADDURATION = new Key(VirtualFileSystemFile.class, 
-			"dlduration", Long.class);
+	public static final Key<Long> DOWNLOADDURATION = new Key<Long>(VirtualFileSystemFile.class, 
+			"dlduration");
 	
 	private transient ArrayList<RemoteTransfer> _uploads = new ArrayList<RemoteTransfer>(1);
 	
@@ -303,11 +300,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	}
 
 	public long getDownloadedBytes() {
-		return getKeyedMap().getObjectInt(DOWNLOADEDTIMES) * getSize() ;
+		return getKeyedMap().getObjectInteger(DOWNLOADEDTIMES) * getSize() ;
 	}
 
 	public int getDownloadedFiles() {
-		return getKeyedMap().getObjectInt(DOWNLOADEDTIMES);
+		return getKeyedMap().getObjectInteger(DOWNLOADEDTIMES);
 	}
 
 	public long getDownloadedTime() {
@@ -346,11 +343,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	}
 
 	public void setDownloadedFiles(int files) {
-		getKeyedMap().incrementObjectInt(DOWNLOADEDTIMES, files);
+		getKeyedMap().incrementInt(DOWNLOADEDTIMES);
 	}
 
 	public void setDownloadedTime(long millis) {
-		getKeyedMap().incrementObjectLong(DOWNLOADDURATION, millis);
+		getKeyedMap().incrementLong(DOWNLOADDURATION);
 	}
 
 	/*

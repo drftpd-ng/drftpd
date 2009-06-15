@@ -49,7 +49,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
 	protected String _group;
 
-	protected KeyedMap<Key, Object> _keyedMap = new KeyedMap<Key, Object>();
+	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<Key<?>, Object>();
 
 	protected long _lastModified;
 
@@ -105,7 +105,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	/**
 	 * @return the KeyedMap containing the Dynamic Data. 
 	 */
-	public KeyedMap<Key, Object> getKeyedMap() {
+	public KeyedMap<Key<?>, Object> getKeyedMap() {
 		return _keyedMap;
 	}
 
@@ -224,7 +224,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		_group = group;
 	}
 
-	public void setKeyedMap(KeyedMap<Key, Object> data) {
+	public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
 		_keyedMap = data;
 	}
 
@@ -249,8 +249,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
 	protected void setupXML(XMLEncoder enc) {
 		enc.setPersistenceDelegate(Key.class,
-				new DefaultPersistenceDelegate(new String[] { "owner",
-						"key", "type" }));
+				new DefaultPersistenceDelegate(new String[] { "owner", "key" }));
 	}
 
 	/**

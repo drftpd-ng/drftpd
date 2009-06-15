@@ -8,7 +8,7 @@ import org.drftpd.dynamicdata.Key;
 
 public class XDupe extends CommandInterface {
 	
-	public static final Key XDUPE = new Key(XDupe.class, "XDUPE", Integer.class);
+	public static final Key<Integer> XDUPE = new Key<Integer>(XDupe.class, "XDUPE");
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
@@ -18,7 +18,7 @@ public class XDupe extends CommandInterface {
 	}
 	
 	public CommandResponse doSITE_XDUPE(CommandRequest request) {
-		int xDupe = request.getSession().getObjectInt(XDUPE);
+		int xDupe = request.getSession().getObjectInteger(XDUPE);
 			
 		if (!request.hasArgument()) {
 			if (xDupe == 0) {

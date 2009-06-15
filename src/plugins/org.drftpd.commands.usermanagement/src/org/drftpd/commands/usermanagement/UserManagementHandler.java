@@ -70,7 +70,7 @@ public class UserManagementHandler extends CommandInterface {
 
 	private String _keyPrefix;
 	
-	public static final Key CONNECTIONS = new Key(UserManagement.class, "connections", List.class); 
+	public static final Key<List<BaseFtpConnection>> CONNECTIONS = new Key<List<BaseFtpConnection>>(UserManagement.class, "connections"); 
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -209,7 +209,7 @@ public class UserManagementHandler extends CommandInterface {
 							.getAllUsersByGroup(
 									session.getUserNull(request.getUser()).getGroup()));
 
-			if (users >= session.getUserNull(request.getUser()).getKeyedMap().getObjectInt(
+			if (users >= session.getUserNull(request.getUser()).getKeyedMap().getObjectInteger(
 					UserManagement.GROUPSLOTS)) {
 				return new CommandResponse(452, session.jprintf(_bundle,
 						_keyPrefix+"adduser.noslots", request.getUser()));
@@ -537,7 +537,7 @@ public class UserManagementHandler extends CommandInterface {
 					}
 
 					if (usedleechslots >= session.getUserNull(request.getUser()).getKeyedMap()
-							.getObjectInt(UserManagement.LEECHSLOTS)) {
+							.getObjectInteger(UserManagement.LEECHSLOTS)) {
 						return new CommandResponse(452, session.jprintf(_bundle,
 										_keyPrefix+"changeratio.nomoreslots", request.getUser()));
 					}
@@ -638,7 +638,7 @@ public class UserManagementHandler extends CommandInterface {
 				if (commandArguments.length == 2) {
 					numLoginsIP = Integer.parseInt(commandArguments[1]);
 				} else {
-					numLoginsIP = userToChange.getKeyedMap().getObjectInt(
+					numLoginsIP = userToChange.getKeyedMap().getObjectInteger(
 							UserManagement.MAXLOGINSIP);
 				}
 
@@ -647,10 +647,10 @@ public class UserManagementHandler extends CommandInterface {
 						+ "' changed num_logins for '"
 						+ userToChange.getName()
 						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectInt(
+						+ userToChange.getKeyedMap().getObjectInteger(
 								UserManagement.MAXLOGINS)
 						+ "' '"
-						+ userToChange.getKeyedMap().getObjectInt(
+						+ userToChange.getKeyedMap().getObjectInteger(
 								UserManagement.MAXLOGINSIP) + "' to '"
 						+ numLogins + "' '" + numLoginsIP + "'");
 				userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS,
@@ -770,7 +770,7 @@ public class UserManagementHandler extends CommandInterface {
 				if (commandArguments.length >= 2) {
 					groupLeechSlots = Integer.parseInt(commandArguments[1]);
 				} else {
-					groupLeechSlots = userToChange.getKeyedMap().getObjectInt(
+					groupLeechSlots = userToChange.getKeyedMap().getObjectInteger(
 							UserManagement.LEECHSLOTS);
 				}
 
@@ -779,10 +779,10 @@ public class UserManagementHandler extends CommandInterface {
 						+ "' changed group_slots for '"
 						+ userToChange.getName()
 						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectInt(
+						+ userToChange.getKeyedMap().getObjectInteger(
 								UserManagement.GROUPSLOTS)
 						+ "' "
-						+ userToChange.getKeyedMap().getObjectInt(
+						+ userToChange.getKeyedMap().getObjectInteger(
 								UserManagement.LEECHSLOTS) + "' to '"
 						+ groupSlots + "' '" + groupLeechSlots + "'");
 				userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS,
@@ -790,10 +790,10 @@ public class UserManagementHandler extends CommandInterface {
 				userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS,
 						groupLeechSlots);
 				env.add("groupslots", ""
-						+ userToChange.getKeyedMap().getObjectInt(
+						+ userToChange.getKeyedMap().getObjectInteger(
 								UserManagement.GROUPSLOTS));
 				env.add("groupleechslots", ""
-						+ userToChange.getKeyedMap().getObjectInt(
+						+ userToChange.getKeyedMap().getObjectInteger(
 								UserManagement.LEECHSLOTS));
 				response.addComment(session.jprintf(_bundle,
 						_keyPrefix+"changegroupslots.success", env, request.getUser()));
@@ -821,8 +821,8 @@ public class UserManagementHandler extends CommandInterface {
 					+ "' changed created for '"
 					+ userToChange.getName()
 					+ "' from '"
-					+ new Date(userToChange.getKeyedMap().getObjectLong(
-							UserManagement.CREATED)) + "' to '" + myDate + "'");
+					+ userToChange.getKeyedMap().getObject(
+							UserManagement.CREATED, new Date(0)) + "' to '" + myDate + "'");
 			userToChange.getKeyedMap()
 					.setObject(UserManagement.CREATED, myDate);
 
@@ -854,7 +854,7 @@ public class UserManagementHandler extends CommandInterface {
 			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed tagline for '" + userToChange.getName()
 					+ "' from '"
-					+ userToChange.getKeyedMap().getObject(UserManagement.TAGLINE, "")
+					+ userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE)
 					+ "' to '" + fullCommandArgument + "'");
 			userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
 					fullCommandArgument);
@@ -1170,7 +1170,7 @@ public class UserManagementHandler extends CommandInterface {
 				env.add("fdn", "" + user.getDownloadedFiles());
 				env.add("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
 				env.add("ratio", "1:"
-						+ (int) user.getKeyedMap().getObjectFloat(
+						+ user.getKeyedMap().getObjectFloat(
 								UserManagement.RATIO));
 				env.add("wkly", Bytes.formatBytes(user.getKeyedMap()
 						.getObjectLong(UserManagement.WKLY_ALLOTMENT)));
@@ -1183,7 +1183,7 @@ public class UserManagementHandler extends CommandInterface {
 
 			// update totals
 			numUsers++;
-			if ((int) user.getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0) {
+			if (user.getKeyedMap().getObjectFloat(UserManagement.RATIO).intValue() == 0) {
 				numLeechUsers++;
 			}
 			allfup += user.getUploadedFiles();
@@ -1634,7 +1634,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		return new CommandResponse(200, "User was last seen: "
-				+ user.getKeyedMap().getObjectDate(UserManagement.LASTSEEN));
+				+ user.getKeyedMap().getObject(UserManagement.LASTSEEN, new Date(0)));
 	}
 
 	public CommandResponse doSITE_TAGLINE(CommandRequest request) throws ImproperUsageException {
@@ -1647,7 +1647,7 @@ public class UserManagementHandler extends CommandInterface {
 		User u = session.getUserNull(request.getUser());
 		
 		logger.info("'" + request.getUser()	+ "' changed his tagline from '"
-				+ u.getKeyedMap().getObject(UserManagement.TAGLINE, "")
+				+ u.getKeyedMap().getObjectString(UserManagement.TAGLINE)
 				+ "' to '" + request.getArgument() + "'");
 		
 		u.getKeyedMap().setObject(UserManagement.TAGLINE,	request.getArgument());
@@ -1850,7 +1850,6 @@ public class UserManagementHandler extends CommandInterface {
 	/**
 	 * Lists currently connected users.
 	 */
-	@SuppressWarnings("unchecked")
 	private CommandResponse doListConnections(CommandRequest request, String type, boolean up, boolean down,
 			boolean idle, boolean command, boolean statusUsers, boolean statusSpeed, boolean restrictUser) {
 		Session session = request.getSession();
@@ -1864,7 +1863,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		
-		List<BaseFtpConnection> conns = (List<BaseFtpConnection>) request.getSession().getObject(CONNECTIONS, null);		
+		List<BaseFtpConnection> conns = request.getSession().getObject(CONNECTIONS, null);		
 		if (conns == null) {
 			conns = Collections.unmodifiableList(ConnectionManager.getConnectionManager().getConnections());
 		}	
@@ -2092,8 +2091,8 @@ public class UserManagementHandler extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		for (User user : myUsers) {
-			long timeleft = user.getKeyedMap().getObjectDate(
-					UserManagement.BAN_TIME).getTime()
+			long timeleft = user.getKeyedMap().getObject(
+					UserManagement.BAN_TIME, new Date()).getTime()
 					- System.currentTimeMillis();
 			if (timeleft > 0) {
 				ReplacerEnvironment env = new ReplacerEnvironment();

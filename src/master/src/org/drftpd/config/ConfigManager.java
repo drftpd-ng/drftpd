@@ -59,11 +59,13 @@ public class ConfigManager implements ConfigInterface {
 	private static final File permsFile = new File("conf/perms.conf");
 	private static final File mainFile = new File("master.conf");
 	
-	private static final Key PATHPERMS = new Key(ConfigManager.class, "pathPerms", Hashtable.class);
-	private static final Key PERMS = new Key(ConfigManager.class, "perms", Hashtable.class);
+	private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS 
+							= new Key<Hashtable<String, ArrayList<PathPermission>>>(ConfigManager.class, "pathPerms");
+	private static final Key<Hashtable<String, Permission>> PERMS 
+							= new Key<Hashtable<String, Permission>>(ConfigManager.class, "perms");
 
 	private HashMap<String, ConfigContainer> _directivesMap;
-	private KeyedMap<Key, Object> _keyedMap;
+	private KeyedMap<Key<?>, Object> _keyedMap;
 	private Properties _mainCfg;
 	
 	private VFSPermissions _vfsPerms;
@@ -109,7 +111,7 @@ public class ConfigManager implements ConfigInterface {
 	 * @see DefaultConfigHandler 
 	 * @see DefaultConfigPostHook
 	 */
-	public KeyedMap<Key, Object> getKeyedMap() {
+	public KeyedMap<Key<?>, Object> getKeyedMap() {
 		return _keyedMap;
 	}
 	
@@ -179,20 +181,18 @@ public class ConfigManager implements ConfigInterface {
 	 * @see #getKeyedMap()
 	 */
 	private void initializeKeyedMap() {
-		_keyedMap = new KeyedMap<Key, Object>();
+		_keyedMap = new KeyedMap<Key<?>, Object>();
 		
 		_keyedMap.setObject(PATHPERMS, new Hashtable<String, ArrayList<PathPermission>>());
 		_keyedMap.setObject(PERMS, new Hashtable<String, Permission>());
 	}
 	
-	@SuppressWarnings("unchecked")
 	private Hashtable<String, ArrayList<PathPermission>> getPathPermsMap() {
-		return (Hashtable<String, ArrayList<PathPermission>>) _keyedMap.getObject(PATHPERMS, null);
+		return _keyedMap.getObject(PATHPERMS, null);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private Hashtable<String, Permission> getPermissionsMap() {
-		return (Hashtable<String, Permission>) _keyedMap.getObject(PERMS, null);
+		return _keyedMap.getObject(PERMS, null);
 	}
 	
 	/**

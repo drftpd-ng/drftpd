@@ -45,10 +45,8 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class Request extends CommandInterface {
-	public static final Key REQUESTSFILLED = new Key(Request.class,
-			"requestsFilled", Integer.class);
-	public static final Key REQUESTS = new Key(Request.class, "requests",
-			Integer.class);
+	public static final Key<Integer> REQUESTSFILLED = new Key<Integer>(Request.class,	"requestsFilled");
+	public static final Key<Integer> REQUESTS = new Key<Integer>(Request.class, "requests");
 	private static final String FILLEDPREFIX = "FILLED-for.";
 	private static final Logger logger = Logger.getLogger(Request.class);
 	private static final String REQPREFIX = "REQUEST-by.";
@@ -111,7 +109,7 @@ public class Request extends CommandInterface {
 							request.getSession().getUserNull(request.getUser()), "REQFILLED", dir));
 
 					//}
-					request.getSession().getUserNull(request.getUser()).getKeyedMap().incrementObjectLong(REQUESTSFILLED);
+					request.getSession().getUserNull(request.getUser()).getKeyedMap().incrementInt(REQUESTSFILLED);
 
 					CommandResponse response = new CommandResponse(200,
 							"OK, renamed " + myreqname + " to " + filledname);
@@ -171,7 +169,7 @@ public class Request extends CommandInterface {
 				User user;
 				try {
 					user = request.getUserObject();
-					user.getKeyedMap().setObject(Request.REQUESTS, user.getKeyedMap().getObjectInt(Request.REQUESTS)+1);
+					user.getKeyedMap().incrementInt(Request.REQUESTS);
 				} catch (NoSuchUserException e) {
 					// Shouldn't happen as the user must exist to have got this far, log the exception to be safe
 					logger.warn("",e);
@@ -190,7 +188,7 @@ public class Request extends CommandInterface {
 			EventServiceLocator.getEventBusService().publish(new DirectoryFtpEvent(
 					session.getUserNull(request.getUser()), "REQUEST", createdDir));
 
-			session.getUserNull(request.getUser()).getKeyedMap().incrementObjectLong(REQUESTS);
+			session.getUserNull(request.getUser()).getKeyedMap().incrementInt(REQUESTS);
 
 			//conn.getUser().addRequests();
 			CommandResponse response = new CommandResponse(257, "\"" + createdDir.getPath() +

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 
@@ -30,11 +31,19 @@ import org.drftpd.PluginInterface;
  */
 public class SiteBotWrapper implements PluginInterface {
 
+	private static final Logger logger = Logger.getLogger(SiteBotWrapper.class);
+	
 	private ArrayList<SiteBot> _bots = new ArrayList<SiteBot>();
 
 	public void startPlugin() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()
 			.getPropertiesForPlugin("irc/irc.conf");
+		
+		if (cfg.isEmpty()) {
+			logger.debug("No configuration found for the SiteBot, skipping initialization");
+			return;
+		}
+		
 		SiteBot bot = new SiteBot("irc");
 		new Thread(bot).start();
 		_bots.add(bot);

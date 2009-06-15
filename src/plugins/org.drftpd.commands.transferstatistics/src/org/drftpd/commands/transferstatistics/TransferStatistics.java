@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -139,7 +140,7 @@ public class TransferStatistics extends CommandInterface  {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		UserManager userman = GlobalContext.getGlobalContext().getUserManager();
 		response.addComment("created: " +
-				user.getKeyedMap().getObject(UserManagement.CREATED, ""));
+				user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
 		response.addComment("rank alup: " +
 				UserTransferStats.getStatsPlace("ALUP", user, userman));
 		response.addComment("rank aldn: " +

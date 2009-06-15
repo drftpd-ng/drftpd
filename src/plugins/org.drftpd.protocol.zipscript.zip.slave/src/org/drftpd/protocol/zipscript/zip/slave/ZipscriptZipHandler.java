@@ -16,10 +16,6 @@
  */
 package org.drftpd.protocol.zipscript.zip.slave;
 
-import de.schlichtherle.io.archive.zip.Zip32InputArchive;
-import de.schlichtherle.io.rof.SimpleReadOnlyFile;
-import de.schlichtherle.util.zip.ZipEntry;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -34,11 +30,12 @@ import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
-import org.drftpd.util.Base64;
 
 import se.mog.io.File;
-
 import sun.misc.BASE64Encoder;
+import de.schlichtherle.io.archive.zip.Zip32InputArchive;
+import de.schlichtherle.io.rof.SimpleReadOnlyFile;
+import de.schlichtherle.util.zip.ZipEntry;
 
 /**
  * Handler for Zip requests.

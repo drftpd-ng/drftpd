@@ -32,11 +32,9 @@ import org.tanesha.replacer.ReplacerEnvironment;
 @SuppressWarnings("serial")
 public class ServiceCommand extends Session {
 
-	public static final Key IDENT = new Key(ServiceCommand.class, "ident",
-			String.class);
+	public static final Key<String> IDENT = new Key<String>(ServiceCommand.class, "ident");
 
-	public static final Key IRCUSER = new Key(ServiceCommand.class,"ircuser",
-			UserDetails.class);
+	public static final Key<UserDetails> IRCUSER = new Key<UserDetails>(ServiceCommand.class,"ircuser");
 
 	private SiteBot _bot;
 
@@ -68,11 +66,11 @@ public class ServiceCommand extends Session {
 	}
 
 	public String getIdent() {
-		return (String) getObject(IDENT, null);
+		return getObject(IDENT, null);
 	}
 
 	public UserDetails getIrcUser() {
-		return (UserDetails) getObject(IRCUSER, null);
+		return getObject(IRCUSER, null);
 	}
 
 	public SiteBot getBot() {

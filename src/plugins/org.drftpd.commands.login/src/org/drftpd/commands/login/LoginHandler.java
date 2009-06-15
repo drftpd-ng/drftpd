@@ -49,8 +49,8 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class LoginHandler extends CommandInterface {
     private static final Logger logger = Logger.getLogger(LoginHandler.class);
     
-    public static final Key IDENT = new Key(LoginHandler.class, "ident", String.class);
-    public static final Key ADDRESS = new Key(LoginHandler.class, "address", InetAddress.class);
+    public static final Key<String> IDENT = new Key<String>(LoginHandler.class, "ident");
+    public static final Key<InetAddress> ADDRESS = new Key<InetAddress>(LoginHandler.class, "address");
 
     private ResourceBundle _bundle;
     private String _keyPrefix;
@@ -192,7 +192,7 @@ public class LoginHandler extends CommandInterface {
 
         if (newUser.isDeleted()) {
         	return new CommandResponse(530,
-        			(String)newUser.getKeyedMap().getObject(
+        			newUser.getKeyedMap().getObject(
         					UserManagement.REASON,
         					StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
@@ -202,8 +202,8 @@ public class LoginHandler extends CommandInterface {
         }
 
         try {
-        	InetAddress address = (InetAddress) request.getSession().getObject(ADDRESS, null);
-        	String ident = (String) request.getSession().getObject(IDENT, null);
+        	InetAddress address = request.getSession().getObject(ADDRESS, null);
+        	String ident = request.getSession().getObject(IDENT, null);
         	
         	boolean hostMaskPassed = false;
         	if (address != null) {

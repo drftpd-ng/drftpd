@@ -27,8 +27,7 @@ import org.drftpd.id3.ID3Tag;
 
 public class VirtualFileSystemFileID3 extends VirtualFileSystemFile {
 
-	public static final Key ID3 = new Key(VirtualFileSystemFileID3.class,
-			"id3", ID3Tag.class);
+	public static final Key<ID3Tag> ID3 = new Key<ID3Tag>(VirtualFileSystemFileID3.class, "id3");
 
 	public VirtualFileSystemFileID3(String username, String group, long size,
 			Set<String> slaves) {

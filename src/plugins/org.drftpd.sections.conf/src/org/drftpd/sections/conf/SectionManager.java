@@ -43,7 +43,7 @@ import org.drftpd.vfs.VirtualFileSystem;
 public class SectionManager implements SectionManagerInterface {
 	private static Logger logger = Logger.getLogger(SectionManager.class);
 	
-	private static final Class[] CONSTRUCTOR_SIG = new Class[] { int.class, Properties.class };
+	private static final Class<?>[] CONSTRUCTOR_SIG = new Class<?>[] { int.class, Properties.class };
 	private static final PlainSection EMPTYSECTION = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
 
 	private HashMap<String, SectionInterface> _sections;

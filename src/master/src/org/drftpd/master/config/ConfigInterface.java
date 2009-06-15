@@ -36,7 +36,7 @@ import org.drftpd.vfs.perms.VFSPermissions;
  * @version $Id$
  */
 public interface ConfigInterface {
-	public KeyedMap<Key, Object> getKeyedMap();
+	public KeyedMap<Key<?>, Object> getKeyedMap();
 	
 	public Properties getMainProperties();	
 	

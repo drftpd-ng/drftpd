@@ -41,10 +41,10 @@ import org.drftpd.vfs.DirectoryHandle;
 public class StatsManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(StatsManager.class);
 	
-    public static final Key LOGINS = new Key(StatsManager.class, "logins", Integer.class);
+    public static final Key<Integer> LOGINS = new Key<Integer>(StatsManager.class, "logins");
     
-    public static final Key CREDITCHECK = new Key(StatsManager.class, "creditcheck", ArrayList.class);
-    public static final Key CREDITLOSS = new Key(StatsManager.class, "creditloss", ArrayList.class);
+    public static final Key<ArrayList> CREDITCHECK = new Key<ArrayList>(StatsManager.class, "creditcheck");
+    public static final Key<ArrayList> CREDITLOSS = new Key<ArrayList>(StatsManager.class, "creditloss");
 
     public static StatsManager getStatsManager() {
     	for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
@@ -72,7 +72,7 @@ public class StatsManager implements PluginInterface {
 		if (event.getCommand().equalsIgnoreCase("LOGIN")) {
 			User u = event.getUser();
 			u.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
-			u.getKeyedMap().incrementObjectInt(LOGINS, 1);
+			u.getKeyedMap().incrementInt(LOGINS);
 		}		
 	}
 	
@@ -89,10 +89,10 @@ public class StatsManager implements PluginInterface {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private float getRatioPathPerm(Key key, DirectoryHandle dir, User user, float defaultRatio) {
+	private float getRatioPathPerm(Key<ArrayList> key, DirectoryHandle dir, User user, float defaultRatio) {
 				
 		ArrayList<RatioPathPermission> list = 
-			(ArrayList<RatioPathPermission>) GlobalContext.getConfig().getKeyedMap().getObject(key, null);
+			GlobalContext.getConfig().getKeyedMap().getObject(key, null);
 		
 		if (list == null) {
 			return defaultRatio;

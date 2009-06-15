@@ -94,7 +94,7 @@ public class BeanUser extends AbstractUser {
 	 * Setter for userfile backwards comptibility. Should work but i had nothing
 	 * to test with.
 	 */
-	public void setGroupLeechSlots(short s) {
+	public void setGroupLeechSlots(int s) {
 		getKeyedMap().setObject(UserManagement.LEECHSLOTS, s);
 	}
 

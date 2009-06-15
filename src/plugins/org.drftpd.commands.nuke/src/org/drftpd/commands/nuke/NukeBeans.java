@@ -95,7 +95,6 @@ public class NukeBeans {
 	 * @param path
 	 * @param nd
 	 */
-	@SuppressWarnings("unchecked")
 	public synchronized void add(String path, NukeData nd) {
 		_nukes.put(path, nd);
 		try {
@@ -128,7 +127,6 @@ public class NukeBeans {
 	/**
 	 * @return all NukeData Objects stored on the TreeMap.
 	 */
-	@SuppressWarnings("unchecked")
 	public synchronized Collection<NukeData> getAll() {
 		return _nukes.values();
 	}

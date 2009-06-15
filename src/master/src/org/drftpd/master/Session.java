@@ -17,6 +17,7 @@
  */
 package org.drftpd.master;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -37,19 +38,16 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-@SuppressWarnings("serial")
-public abstract class Session extends KeyedMap<Key,Object> {
+public abstract class Session extends KeyedMap<Key<?>, Object> {
 
-	public static final Key COMMANDS = new Key(Session.class, "commands",
-			HashMap.class);
+	public static final Key<HashMap<String, Properties>> COMMANDS = new Key<HashMap<String, Properties>>(Session.class, "commands");
 
 	public void setCommands(HashMap<String,Properties> commands) {
 		setObject(Session.COMMANDS, commands);
 	}
 
-	@SuppressWarnings("unchecked")
-	public HashMap<String,Properties> getCommands() {
-		return (HashMap<String,Properties>) getObject(Session.COMMANDS, null);
+	public HashMap<String, Properties> getCommands() {
+		return getObject(Session.COMMANDS, null);
 	}
 
 	public ReplacerEnvironment getReplacerEnvironment(
@@ -57,22 +55,15 @@ public abstract class Session extends KeyedMap<Key,Object> {
 		env = new ReplacerEnvironment(env);
 
 		if (user != null) {
-			for (Map.Entry<Key, Object> o : user.getKeyedMap().getAllObjects()
-					.entrySet()) {
-				env.add(o.getKey().toString(), o.getKey()
-						.toString(o.getValue()));
-				// logger.debug("Added "+o.getKey().toString()+"
-				// "+o.getKey().toString(o.getValue()));
+			for (Map.Entry<Key<?>, Object> entry : user.getKeyedMap().getAllObjects().entrySet()) {
+				env.add(entry.getKey().toString(), entry.getValue().toString());
 			}
 			env.add("user", user.getName());
 			env.add("username", user.getName());
 			env.add("idletime", "" + user.getIdleTime());
 			env.add("credits", Bytes.formatBytes(user.getCredits()));
-			env.add("ratio", ""
-					+ user.getKeyedMap().get((UserManagement.RATIO)));
-			env
-					.add("tagline", user.getKeyedMap().get(
-							(UserManagement.TAGLINE)));
+			env.add("ratio", ""+ user.getKeyedMap().get(UserManagement.RATIO));
+			env.add("tagline", user.getKeyedMap().get(UserManagement.TAGLINE));
 			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
 			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
 			env.add("group", user.getGroup());
@@ -80,39 +71,11 @@ public abstract class Session extends KeyedMap<Key,Object> {
 			env.add("averagespeed", Bytes.formatBytes(user.getUploadedTime()
 					+ (user.getDownloadedTime() / 2)));
 			env.add("ipmasks", user.getHostMaskCollection().toString());
-			env.add("isbanned",
-					""
-							+ ((user.getKeyedMap()
-									.getObjectDate(UserManagement.BAN_TIME))
-									.getTime() > System.currentTimeMillis()));
-			// } else {
-			// env.add("user", "<unknown>");
+			env.add("isbanned",""+ (user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date()).getTime() > System.currentTimeMillis()));
 		}
 		return env;
 	}
-
-	/*public static String jprintf(ReplacerFormat format,
-			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment(env, user);
-
-		return SimplePrintf.jprintf(format, env);
-	}
-
-	public static String jprintf(ResourceBundle bundle, String key,
-			ReplacerEnvironment env, User user) {
-		env = getReplacerEnvironment(env, user);
-
-		return ReplacerUtils.jprintf(key, env, bundle);
-	}
-
-	public static String jprintfExceptionStatic(ResourceBundle bundle, String key,
-			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment(env, user);
-
-		return SimplePrintf
-				.jprintf(ReplacerUtils.finalFormat(bundle, key), env);
-	}*/
-
+	
 	public User getUserNull(String user) {
 		if (user == null) {
 			return null;
@@ -142,12 +105,15 @@ public abstract class Session extends KeyedMap<Key,Object> {
 		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, getUserNull(user)), bundle);
 	}
 
-	/*public String jprintfException(ResourceBundle bundle, String key,
-			ReplacerEnvironment env, String user) throws FormatterException {
-		env = getReplacerEnvironment(env, getUserNull(user));
+	public String jprintf(ResourceBundle bundle, String key, ReplacerEnvironment env, User user) {
+		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, user), bundle);
+	}
 
-		return jprintfExceptionStatic(bundle, key, env, getUserNull(user));
-	}*/
+	public String jprintf(Class<?> baseName, String key, ReplacerEnvironment env, User user) {
+		ResourceBundle bundle = ResourceBundle.getBundle(baseName.getName());
+
+		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, user), bundle);
+	}
 
 	public abstract boolean isSecure();
 

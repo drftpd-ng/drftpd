@@ -16,7 +16,6 @@
  */
 package org.drftpd.commands.prehook.permissions;
 
-import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
@@ -31,9 +30,7 @@ import org.drftpd.usermanager.UserFileException;
  * @version $Id$
  */
 public class PermissionPreHook implements PreHookInterface {
-	
-	private static final Logger logger = Logger.getLogger(PermissionPreHook.class);
-	
+		
 	public void initialize(StandardCommandManager cManager) {
 		
 	}

@@ -23,6 +23,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -49,8 +50,7 @@ import org.drftpd.usermanager.User;
  * @version $Id$
  */
 public class ConnectionManager {
-	private static final Logger logger = Logger
-	.getLogger(ConnectionManager.class.getName());
+	private static final Logger logger = Logger.getLogger(ConnectionManager.class.getName());
 
 	private static final String cmdConf = "conf/ftpcommands.conf";
 
@@ -203,31 +203,26 @@ public class ConnectionManager {
 			}
 		}
 
-		if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) > 0) {
-			if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINS) <= userCount) {
+		int maxLogins = user.getKeyedMap().getObjectInteger(UserManagement.MAXLOGINS);
+		if (maxLogins > 0) {
+			if (maxLogins <= userCount) {
 				return new FtpReply(530, "Sorry, your account is restricted to "
-						+ user.getKeyedMap().getObjectInt(
-								UserManagement.MAXLOGINS)
-								+ " simultaneous logins.");
+						+ maxLogins + " simultaneous logins.");
 			}
 		}
-		if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) > 0) {
-			if (user.getKeyedMap().getObjectInt(UserManagement.MAXLOGINSIP) <= ipCount) {
-				return new FtpReply(530,
-						"Sorry, your maximum number of connections from this IP ("
-						+ user.getKeyedMap().getObjectInt(
-								UserManagement.MAXLOGINSIP)
-								+ ") has been reached.");
+		
+		int maxLoginsIP = user.getKeyedMap().getObjectInteger(UserManagement.MAXLOGINSIP); 
+		if (maxLoginsIP > 0) {
+			if (maxLoginsIP <= ipCount) {
+				return new FtpReply(530, "Sorry, your maximum number of connections from this IP ("
+						+ maxLoginsIP	+ ") has been reached.");
 			}
 		}
 
-		if (user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME).getTime() > System
-				.currentTimeMillis()) {
+		Date banTime = user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date());
+		if (banTime.getTime() > System.currentTimeMillis()) {
 			return new FtpReply(530, "Sorry you are banned until "
-					+ user.getKeyedMap().getObjectDate(UserManagement.BAN_TIME)
-					+ "! ("
-					+ user.getKeyedMap().getObjectString(
-							UserManagement.BAN_REASON) + ")");
+					+ banTime + "! ("+ user.getKeyedMap().getObjectString(UserManagement.BAN_REASON) + ")");
 		}
 
 		if (!baseconn.isSecure()

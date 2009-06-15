@@ -36,30 +36,23 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author djb61
  * @version $Id$
  */
-public class CommandRequest extends KeyedMap implements CommandRequestInterface {
+public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandRequestInterface {
 
-	public static final Key ALLOWED = new Key(CommandRequest.class, "allowed",
-			Boolean.class);
+	public static final Key<Boolean> ALLOWED = new Key<Boolean>(CommandRequest.class, "allowed");
 
-	public static final Key DENIED_RESPONSE = new Key(CommandRequest.class, "denied_response",
-			CommandResponse.class);
+	public static final Key<CommandResponse> DENIED_RESPONSE = new Key<CommandResponse>(CommandRequest.class, "denied_response");
 
-	public static final Key ARGUMENT = new Key(CommandRequest.class, "argument",
-			String.class);
+	public static final Key<String> ARGUMENT = new Key<String>(CommandRequest.class, "argument");
 
-	public static final Key COMMAND = new Key(CommandRequest.class, "command",
-			String.class);
+	public static final Key<String> COMMAND = new Key<String>(CommandRequest.class, "command");
 
-	public static final Key CURRENT_DIRECTORY = new Key(CommandRequest.class, "current_directory",
-			DirectoryHandle.class);
+	public static final Key<DirectoryHandle> CURRENT_DIRECTORY = new Key<DirectoryHandle>(CommandRequest.class, "current_directory");
 
-	public static final Key SESSION = new Key(CommandRequest.class, "session",
-			Session.class);
+	public static final Key<Session> SESSION = new Key<Session>(CommandRequest.class, "session");
 
-	public static final Key USER = new Key(CommandRequest.class, "user",
-			String.class);
+	public static final Key<String> USER = new Key<String>(CommandRequest.class, "user");
 
-	private static final Key PROPERTIES = new Key(CommandRequest.class, "properties", Properties.class);
+	private static final Key<Properties> PROPERTIES = new Key<Properties>(CommandRequest.class, "properties");
 
 	public CommandRequest(String argument, String command,
 			DirectoryHandle directory, String user) {
@@ -116,7 +109,7 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 	}
 
 	public String getArgument() {
-		return (String) getObject(CommandRequest.ARGUMENT, "");
+		return getObjectString(CommandRequest.ARGUMENT);
 	}
 	
 	public Permission getPermission() {
@@ -136,23 +129,23 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 	}
 
 	public CommandResponse getDeniedResponse() {
-		return (CommandResponse) getObject(CommandRequest.DENIED_RESPONSE, null);
+		return getObject(CommandRequest.DENIED_RESPONSE, null);
 	}
 
 	public DirectoryHandle getCurrentDirectory() {
-		return (DirectoryHandle) getObject(CommandRequest.CURRENT_DIRECTORY, new DirectoryHandle("/"));
+		return getObject(CommandRequest.CURRENT_DIRECTORY, new DirectoryHandle("/"));
 	}
 
 	public String getCommand() {
-		return (String) getObject(CommandRequest.COMMAND, null);
+		return getObject(CommandRequest.COMMAND, null);
 	}
 
 	public Session getSession() {
-		return (Session) getObject(CommandRequest.SESSION, null);
+		return getObject(CommandRequest.SESSION, null);
 	}
 
 	public String getUser() {
-		return (String) getObject(CommandRequest.USER, null);
+		return getObject(CommandRequest.USER, null);
 	}
 
 	public boolean hasArgument() {
@@ -173,7 +166,7 @@ public class CommandRequest extends KeyedMap implements CommandRequestInterface 
 	}
 	
 	public Properties getProperties() {
-		return (Properties) getObject(CommandRequest.PROPERTIES, new Properties());
+		return getObject(CommandRequest.PROPERTIES, new Properties());
 	}
 
 	public User getUserObject() throws NoSuchUserException, UserFileException {

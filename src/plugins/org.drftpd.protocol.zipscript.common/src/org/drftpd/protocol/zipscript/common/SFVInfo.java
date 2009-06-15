@@ -35,8 +35,7 @@ public class SFVInfo implements Serializable {
 	private String _sfvFileName = null;
 	private long _checksum = 0L;
 
-	public static final Key SFV = new Key(SFVInfo.class,
-			"sfv", SFVInfo.class);
+	public static final Key<SFVInfo> SFV = new Key<SFVInfo>(SFVInfo.class, "sfv");
 
 	/**
 	 * Constructor for SFVInfo

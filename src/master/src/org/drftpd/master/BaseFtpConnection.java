@@ -30,8 +30,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -43,14 +41,11 @@ import javax.net.ssl.SSLSocket;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventServiceLocator;
-import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponseInterface;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.ConnectionEvent;
 import org.drftpd.io.AddAsciiOutputStream;
@@ -58,12 +53,7 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.FtpRequest;
-import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
 
 /**
  * This is a generic ftp connection handler. It delegates the request to
@@ -75,11 +65,9 @@ import org.tanesha.replacer.SimplePrintf;
  */
 @SuppressWarnings("serial")
 public class BaseFtpConnection extends Session implements Runnable {
-	private static final Logger debuglogger = Logger
-			.getLogger(BaseFtpConnection.class.getName() + ".service");
+	private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
 
-	private static final Logger logger = Logger
-			.getLogger(BaseFtpConnection.class);
+	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
 
 	public static final String NEWLINE = "\r\n";
 
@@ -141,69 +129,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 		setControlSocket(soc);
 		_lastActive = System.currentTimeMillis();
 		setCurrentDirectory(getGlobalContext().getRoot());
-	}
-
-	public static ReplacerEnvironment getReplacerEnvironment2(
-			ReplacerEnvironment env, User user) {
-		env = new ReplacerEnvironment(env);
-
-		if (user != null) {
-			for (Map.Entry<Key, Object> o : user.getKeyedMap().getAllObjects()
-					.entrySet()) {
-				env.add(o.getKey().toString(), o.getKey()
-						.toString(o.getValue()));
-				// logger.debug("Added "+o.getKey().toString()+"
-				// "+o.getKey().toString(o.getValue()));
-			}
-			env.add("user", user.getName());
-			env.add("username", user.getName());
-			env.add("idletime", "" + user.getIdleTime());
-			env.add("credits", Bytes.formatBytes(user.getCredits()));
-			env.add("ratio", ""
-					+ user.getKeyedMap().get((UserManagement.RATIO)));
-			env
-					.add("tagline", user.getKeyedMap().get(
-							(UserManagement.TAGLINE)));
-			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
-			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.add("group", user.getGroup());
-			env.add("groups", user.getGroups());
-			env.add("averagespeed", Bytes.formatBytes(user.getUploadedTime()
-					+ (user.getDownloadedTime() / 2)));
-			env.add("ipmasks", user.getHostMaskCollection().toString());
-			env.add("isbanned",
-					""
-							+ ((user.getKeyedMap()
-									.getObjectDate(UserManagement.BAN_TIME))
-									.getTime() > System.currentTimeMillis()));
-			// } else {
-			// env.add("user", "<unknown>");
-		}
-		return env;
-	}
-
-	public static String jprintf(ReplacerFormat format,
-			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment2(env, user);
-
-		return SimplePrintf.jprintf(format, env);
-	}
-
-	public static String jprintf(Class<?> class1, String key,
-			ReplacerEnvironment env, User user) {
-		env = getReplacerEnvironment2(env, user);
-		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
-
-		return ReplacerUtils.jprintf(key, env, bundle);
-	}
-
-	public static String jprintfExceptionStatic(Class<?> class1, String key,
-			ReplacerEnvironment env, User user) throws FormatterException {
-		env = getReplacerEnvironment2(env, user);
-		ResourceBundle bundle = ResourceBundle.getBundle(class1.getName());
-
-		return SimplePrintf
-				.jprintf(ReplacerUtils.finalFormat(bundle, key), env);
 	}
 
 	/**
@@ -300,17 +225,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 
 	public String jprintf(Class<?> baseName, String key) {
 		return jprintf(baseName, key, null, getUserNull());
-	}
-
-	public String jprintf(Class<?> class1, String string, ReplacerEnvironment env) {
-		return jprintf(class1, string, env, getUserNull());
-	}
-
-	public String jprintfException(Class<?> class1, String key,
-			ReplacerEnvironment env) throws FormatterException {
-		env = getReplacerEnvironment(env, getUserNull());
-
-		return jprintfExceptionStatic(class1, key, env, getUserNull());
 	}
 
 	/**

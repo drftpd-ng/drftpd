@@ -52,9 +52,9 @@ import org.drftpd.vfs.ObjectNotValidException;
  * @version $Id$
  */
 public class Nuke extends CommandInterface {
-    public static final Key NUKED = new Key(Nuke.class, "nuked", Integer.class);
-    public static final Key NUKEDBYTES = new Key(Nuke.class, "nukedBytes", Long.class);
-    public static final Key LASTNUKED = new Key(Nuke.class, "lastNuked", Long.class);
+    public static final Key<Integer> NUKED = new Key<Integer>(Nuke.class, "nuked");
+    public static final Key<Long> NUKEDBYTES = new Key<Long>(Nuke.class, "nukedBytes");
+    public static final Key<Long> LASTNUKED = new Key<Long>(Nuke.class, "lastNuked");
     
     private static final Logger logger = Logger.getLogger(Nuke.class);
 
@@ -200,9 +200,10 @@ public class Nuke extends CommandInterface {
             nukeDirSize += size;
             nukee.updateCredits(-debt);
             nukee.updateUploadedBytes(-size);
-            nukee.getKeyedMap().incrementObjectLong(NUKEDBYTES, debt);
+            
+            nukee.getKeyedMap().incrementLong(NUKEDBYTES, debt);
 
-            nukee.getKeyedMap().incrementObjectLong(NUKED);
+            nukee.getKeyedMap().incrementInt(NUKED);
             nukee.getKeyedMap().setObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
 
             nukee.commit();
@@ -363,7 +364,7 @@ public class Nuke extends CommandInterface {
             nukee.updateCredits(nukedAmount);
             nukee.updateUploadedBytes(nukeeObj.getAmount());
 
-            nukee.getKeyedMap().incrementObjectInt(NUKED, -1);
+            nukee.getKeyedMap().incrementInt(NUKED, -1);
 
             nukee.commit();
 
