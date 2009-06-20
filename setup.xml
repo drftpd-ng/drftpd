@@ -82,6 +82,12 @@
 				debug="${build.debug}"
 				optimize="${build.optimize}">
 			</javac>
+			<copy todir="${compile.dest}">
+				<fileset dir="${plugin.base}/src">
+					<include name="**/*.properties" />
+					<exclude name="**/*.*.properties" />
+				</fileset>
+			</copy>
 			<libcopytask />
 			<if>
 				<equals arg1="${devmode}" arg2="true" />
@@ -102,7 +108,10 @@
 							<attribute name="Implementation-Version" value="${plugin.version}" />
 							<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
 						</manifest>
-						<fileset dir="${build.dir}/classes" includes="**/*.class" />
+						<fileset dir="${build.dir}/classes">
+							<include name="**/*.class" />
+							<include name="**/*.properties" />
+						</fileset>
 					</jar>
 					<mkdir dir="${installdir}/${plugin.family}" />
 					<loggingziptask destfile="${installdir}/${plugin.family}/${plugin.id}-${plugin.version}.zip"
@@ -119,10 +128,10 @@
 				propertyversion="plugin.version" />
 			<property name="plugin.home" value="${installdir}/${plugin.family}/${plugin.id}" />
 			<echo>Cleaning ${plugin.id} plug-in</echo>
-			
+
 			<!-- clean any existing build files -->
 			<delete dir="${plugin.base}/build" />
-			
+
 			<!-- to be safe clean out any existing installed copy also -->
 			<delete dir="${plugin.home}" />
 			<delete file="${plugin.home}-${plugin.version}.zip" />
