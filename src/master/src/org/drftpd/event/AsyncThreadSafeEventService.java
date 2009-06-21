@@ -21,8 +21,6 @@ import java.lang.reflect.Type;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.bushe.swing.event.ThreadSafeEventService;
-import org.java.plugin.PluginClassLoader;
-import org.java.plugin.PluginManager;
 
 /**
  * @author djb61
@@ -85,10 +83,6 @@ public class AsyncThreadSafeEventService extends ThreadSafeEventService {
 	private class EventHandler implements Runnable {
 
 		public void run() {
-			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager
-					.getPluginFor(this)).getDescriptor());
-			Thread.currentThread().setContextClassLoader(loader);
 			Thread.currentThread().setName("AsyncEventHandler");
 			while (true) {
 				try {
