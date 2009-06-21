@@ -22,7 +22,6 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -165,7 +164,7 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix+"stor.mp3info.text"));
 				}
 				FileHandle file = (FileHandle) inode;
-				EventServiceLocator.getEventBusService().publish(new MP3Event(mp3Info,file.getParent(),mp3Data.isFirst()));
+				GlobalContext.getEventService().publishAsync(new MP3Event(mp3Info,file.getParent(),mp3Data.isFirst()));
 			} else {
 				response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix+"cwd.mp3info.text"));
 			}

@@ -25,7 +25,6 @@ import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -240,7 +239,7 @@ public class Nuke extends CommandInterface {
         // adding to the nukelog.
         NukeBeans.getNukeBeans().add(nd);
         
-        EventServiceLocator.getEventBusService().publish(nuke);
+        GlobalContext.getEventService().publishAsync(nuke);
 
         return response;
     }
@@ -393,7 +392,7 @@ public class Nuke extends CommandInterface {
         
         nukeData.setReason(reason);
         NukeEvent nukeEvent = new NukeEvent(request.getSession().getUserNull(request.getUser()), "UNNUKE", nukeData);
-        EventServiceLocator.getEventBusService().publish(nukeEvent);
+        GlobalContext.getEventService().publishAsync(nukeEvent);
 
         return response;
     }

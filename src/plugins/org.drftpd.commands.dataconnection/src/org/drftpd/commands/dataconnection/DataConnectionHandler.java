@@ -30,7 +30,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
@@ -1103,7 +1102,7 @@ public class DataConnectionHandler extends CommandInterface {
 			}
 
             // Dispatch for both STOR and RETR
-            EventServiceLocator.getEventBusService().publish(
+            GlobalContext.getEventService().publishAsync(
 					new TransferEvent(conn, eventType, ts.getTransferFile(),
 							conn.getClientAddress(), ts.getTransferSlave(), ts
 									.getAddress().getAddress(), ts.getType()));

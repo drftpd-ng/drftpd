@@ -22,7 +22,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
@@ -277,21 +277,21 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void resetDay(Date resetDate) {
-		EventServiceLocator.getEventBusService().publish(new UserEvent(this, "RESETDAY", resetDate
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETDAY", resetDate
 				.getTime()));
 		super.resetDay(resetDate);
 		logger.info("Reset daily stats for " + getName());
 	}
 
 	public void resetMonth(Date resetDate) {
-		EventServiceLocator.getEventBusService().publish(new UserEvent(this, "RESETMONTH", resetDate
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETMONTH", resetDate
 				.getTime()));
 		super.resetMonth(resetDate);
 		logger.info("Reset monthly stats for " + getName());
 	}
 
 	public void resetWeek(Date resetDate) {
-		EventServiceLocator.getEventBusService().publish(new UserEvent(this, "RESETWEEK", resetDate
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate
 				.getTime()));
 		super.resetWeek(resetDate);
 		

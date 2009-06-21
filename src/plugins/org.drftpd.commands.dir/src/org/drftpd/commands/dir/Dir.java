@@ -24,9 +24,9 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
+import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -169,14 +169,14 @@ public class Dir extends CommandInterface {
 			.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 		if (victim.isFile() || victim.isLink()) { // link or file
-			EventServiceLocator.getEventBusService().publish(
+			GlobalContext.getEventService().publishAsync(
 					new DirectoryFtpEvent(request.getSession().getUserNull(
 							request.getUser()), "DELE", victim.getParent()));
 			// strange that we're sending the parent directory of the file being
 			// deleted without mentioning the file that was deleted...
 		} else { // if (requestedFile.isDirectory()) {
-			EventServiceLocator.getEventBusService()
-			.publish(
+			GlobalContext.getEventService()
+			.publishAsync(
 					new DirectoryFtpEvent(request.getSession()
 							.getUserNull(request.getUser()), "RMD",
 							(DirectoryHandle) victim));
@@ -261,7 +261,7 @@ public class Dir extends CommandInterface {
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
 
-			EventServiceLocator.getEventBusService().publish(new DirectoryFtpEvent(
+			GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(
 					session.getUserNull(request.getUser()), "MKD", newDir));
 
 			return new CommandResponse(257, "\"" + newDir.getPath() +
@@ -563,7 +563,7 @@ public class Dir extends CommandInterface {
 				}
 			}
 
-			EventServiceLocator.getEventBusService().publish(
+			GlobalContext.getEventService().publishAsync(
 					new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "WIPE", wipeFile
 							.getParent()));
 

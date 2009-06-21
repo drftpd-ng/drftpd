@@ -28,7 +28,6 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -328,7 +327,7 @@ public class JobManager implements PluginInterface {
 				_queuedJobSet.clear();
 			}
 		}
-		EventServiceLocator.getEventBusService().unsubscribe(ReloadEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
 		logger.info("JobManager plugin unloaded successfully");
 	}
 

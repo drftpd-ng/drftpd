@@ -20,9 +20,9 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.OutputWriter;
@@ -55,7 +55,7 @@ public class StatsAnnouncer implements AnnounceInterface {
 
 	public void stop() {
 		// The plugin is unloading so stop asking for events
-		EventServiceLocator.getEventBusService().unsubscribe(StatsEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(StatsEvent.class, this);
 	}
 
 	public String[] getEventTypes() {

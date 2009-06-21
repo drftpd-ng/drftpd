@@ -26,7 +26,6 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -82,7 +81,7 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 	}
 
 	public void stop() {
-		EventServiceLocator.getEventBusService().unsubscribe(DirectoryFtpEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(DirectoryFtpEvent.class, this);
 	}
 
 	public String[] getEventTypes() {

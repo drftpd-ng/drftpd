@@ -30,14 +30,13 @@ import java.util.Timer;
 import javax.net.ssl.SSLContext;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventService;
 import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
-import org.bushe.swing.event.ThreadSafeEventService;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.config.ConfigManager;
+import org.drftpd.event.AsyncThreadSafeEventService;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.MessageEvent;
 import org.drftpd.event.UnloadPluginEvent;
@@ -100,7 +99,7 @@ public class GlobalContext {
 
 	private static DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
 
-	private static EventService eventService = new ThreadSafeEventService();
+	private static AsyncThreadSafeEventService eventService = new AsyncThreadSafeEventService();
 
 	public void reloadFtpConfig() throws IOException {
 		_config.reload();
@@ -362,7 +361,7 @@ public class GlobalContext {
 	 */
 	public void shutdown(String message) {
 		_shutdownMessage = message;
-		EventServiceLocator.getEventBusService().publish(new MessageEvent("SHUTDOWN", message));
+		getEventService().publish(new MessageEvent("SHUTDOWN", message));
 		getConnectionManager().shutdownPrivate(message);
 		new Thread(new Shutdown()).start();
 	}
@@ -532,6 +531,10 @@ public class GlobalContext {
 
     	}
     	throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
+	}
+
+	public static AsyncThreadSafeEventService getEventService() {
+		return eventService;
 	}
 
 	@EventSubscriber

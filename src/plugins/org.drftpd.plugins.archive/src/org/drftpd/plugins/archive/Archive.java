@@ -25,7 +25,6 @@ import java.util.Properties;
 import java.util.TimerTask;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -190,7 +189,7 @@ public class Archive implements PluginInterface {
 			_runHandler.cancel();
 			GlobalContext.getGlobalContext().getTimer().purge();
 		}
-		EventServiceLocator.getEventBusService().unsubscribe(ReloadEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
 		logger.info("Archive plugin unloaded successfully");
 	}
 }

@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -63,7 +62,7 @@ public class StatsManager implements PluginInterface {
 	}
 
 	public void stopPlugin(String reason) {
-		EventServiceLocator.getEventBusService().unsubscribe(UserEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(UserEvent.class, this);
 		logger.debug("Unloaded the Stats plugin successfully");
 	}
 

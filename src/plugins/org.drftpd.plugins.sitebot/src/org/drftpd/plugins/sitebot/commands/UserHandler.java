@@ -20,7 +20,6 @@ package org.drftpd.plugins.sitebot.commands;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.CommandInterface;
@@ -127,7 +126,7 @@ public class UserHandler extends CommandInterface {
 		}
 		ServiceCommand session = (ServiceCommand) request.getSession();
 		boolean success = user.checkPassword(password);
-		EventServiceLocator.getEventBusService().publish(
+		GlobalContext.getEventService().publish(
 				new InviteEvent(success ? "INVITE" : "BINVITE", session.getIrcUser().getNick(), user,
 						session.getBot().getBotName()));
 
@@ -201,12 +200,12 @@ public class UserHandler extends CommandInterface {
 		String nickname = st.nextToken();
 		if (multipleBots) {
 			logger.info("Inviting "+request.getUser()+ " with nickname "+nickname+ " using bot "+botname);
-			EventServiceLocator.getEventBusService().publish(
+			GlobalContext.getEventService().publish(
 					new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
 			return new CommandResponse(200, "Inviting "+nickname+" with bot "+botname);
 		} else {
 			logger.info("Inviting "+request.getUser()+ " with nickname "+nickname);
-			EventServiceLocator.getEventBusService().publish(
+			GlobalContext.getEventService().publish(
 					new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
 			return new CommandResponse(200, "Inviting "+nickname);
 		}

@@ -19,9 +19,9 @@ package org.drftpd.plugins.sitebot.announce.zipscript.mp3;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.zipscript.mp3.event.MP3Event;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
@@ -55,7 +55,7 @@ public class MP3Announcer implements AnnounceInterface {
 
 	public void stop() {
 		// The plugin is unloading so stop asking for events
-		EventServiceLocator.getEventBusService().unsubscribe(MP3Event.class, this);
+		GlobalContext.getEventService().unsubscribe(MP3Event.class, this);
 	}
 
 	public String[] getEventTypes() {

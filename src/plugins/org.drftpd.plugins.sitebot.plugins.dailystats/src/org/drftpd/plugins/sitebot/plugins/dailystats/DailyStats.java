@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -145,19 +144,19 @@ public class DailyStats implements UserResetHookInterface {
 
 	public void resetDay(Date d) {
 		if (_dayup) {
-			EventServiceLocator.getEventBusService().publish(new StatsEvent("dayup",getStats("dayup")));
+			GlobalContext.getEventService().publishAsync(new StatsEvent("dayup",getStats("dayup")));
 		}
 		if (_daydn) {
-			EventServiceLocator.getEventBusService().publish(new StatsEvent("daydn",getStats("daydn")));
+			GlobalContext.getEventService().publishAsync(new StatsEvent("daydn",getStats("daydn")));
 		}
 	}
 
 	public void resetWeek(Date d) {
 		if (_wkup) {
-			EventServiceLocator.getEventBusService().publish(new StatsEvent("wkup",getStats("wkup")));
+			GlobalContext.getEventService().publishAsync(new StatsEvent("wkup",getStats("wkup")));
 		}
 		if (_wkdn) {
-			EventServiceLocator.getEventBusService().publish(new StatsEvent("wkdn",getStats("wkdn")));
+			GlobalContext.getEventService().publishAsync(new StatsEvent("wkdn",getStats("wkdn")));
 		}
 		// Uncomment this if you want day stats at the end of the week also
 		// resetDay(d)
@@ -165,10 +164,10 @@ public class DailyStats implements UserResetHookInterface {
 
 	public void resetMonth(Date d) {
 		if (_mnup) {
-			EventServiceLocator.getEventBusService().publish(new StatsEvent("monthup",getStats("monthup")));
+			GlobalContext.getEventService().publishAsync(new StatsEvent("monthup",getStats("monthup")));
 		}
 		if (_mndn) {
-			EventServiceLocator.getEventBusService().publish(new StatsEvent("monthdn",getStats("monthdn")));
+			GlobalContext.getEventService().publishAsync(new StatsEvent("monthdn",getStats("monthdn")));
 		}
 		// Uncomment this if you want day stats at the end of the month also.
 		// If you want week stats when the end of a week coincides with the end of a month

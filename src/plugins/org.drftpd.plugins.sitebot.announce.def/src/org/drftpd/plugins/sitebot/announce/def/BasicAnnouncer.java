@@ -21,9 +21,9 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
-import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.slavemanagement.SlaveManagement;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.SlaveEvent;
@@ -63,9 +63,9 @@ public class BasicAnnouncer implements AnnounceInterface {
 	}
 
 	public void stop() {
-		EventServiceLocator.getEventBusService().unsubscribe(DirectoryFtpEvent.class, this);
-		EventServiceLocator.getEventBusService().unsubscribe(InviteEvent.class, this);
-		EventServiceLocator.getEventBusService().unsubscribe(SlaveEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(DirectoryFtpEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(InviteEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(SlaveEvent.class, this);
 	}
 
 	public String[] getEventTypes() {

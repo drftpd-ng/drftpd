@@ -25,7 +25,6 @@ import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
-import org.bushe.swing.event.EventServiceLocator;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -126,7 +125,7 @@ public class LoginHandler extends CommandInterface {
         // login failure - close connection
         if (conn.getUserNull().checkPassword(pass)) {
             conn.setAuthenticated(true);
-            EventServiceLocator.getEventBusService().publish(new UserEvent(
+            GlobalContext.getEventService().publishAsync(new UserEvent(
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
             CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, _keyPrefix+"pass.success", request.getUser()));
