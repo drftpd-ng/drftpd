@@ -45,7 +45,7 @@ public class PluginsConfig {
 	private HashMap<String, Properties> _propertiesMap = new HashMap<String, Properties>();
 
 	public PluginsConfig() {
-		loadConfigs(pluginsConfFile);
+		searchForConfigurations(pluginsConfFile);
 		dumpHashMap();
 	}
 	
@@ -69,17 +69,18 @@ public class PluginsConfig {
 	/**
 	 * Makes a list of all files in 'conf/plugins' and start reading all files that has the '.conf' extension.
 	 */
-	public void loadConfigs(File dir) {
+	protected void searchForConfigurations(File dir) {
 		if (!dir.isDirectory())
 			throw new RuntimeException(pluginsConfPath + " is not a directory");
 		
 		for (File file : dir.listFiles()) {
+			// TODO: by doing startsWith(".") i'm preveting people using a config file like '.hidden.conf' is that a problem?
 			if (file.getName().startsWith(".")) {
 				continue;
 			} else if (file.isFile() && file.getName().endsWith(".conf")) {
 				loadConf(file);
 			} else if (file.isDirectory()){
-				loadConfigs(file);
+				searchForConfigurations(file);
 			}
 		}
 	}
@@ -87,7 +88,7 @@ public class PluginsConfig {
 	/**
 	 * @return all configurations.
 	 */
-	public HashMap<String, Properties> getPropertiesMap() {
+	private HashMap<String, Properties> getPropertiesMap() {
 		return _propertiesMap;
 	}
 
