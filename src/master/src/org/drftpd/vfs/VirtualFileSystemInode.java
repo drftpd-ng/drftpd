@@ -140,8 +140,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		if (getParent() instanceof VirtualFileSystemRoot) {
 			return VirtualFileSystem.separator + getName();
 		}
-		return getParent().getPath() + VirtualFileSystem.separator
-				+ getName();
+		return getParent().getPath() + VirtualFileSystem.separator + getName();
 	}
 
 	/**
@@ -180,32 +179,41 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	protected void rename(String destination) throws FileExistsException {
 		if (!destination.startsWith(VirtualFileSystem.separator)) {
-			throw new IllegalArgumentException("Accepts a full path and name");
+			throw new IllegalArgumentException(destination + " is a relative path and it should be a full path");
 		}
+		
 		try {
 			getVFS().getInodeByPath(destination);
-			throw new FileExistsException("Destination exists");
+			throw new FileExistsException(destination + "already exists");
 		} catch (FileNotFoundException e) {
 			// This is good
 		}
+		
 		VirtualFileSystemDirectory destinationDir = null;
 		try {
-			destinationDir = (VirtualFileSystemDirectory) getVFS()
-					.getInodeByPath(VirtualFileSystem.stripLast(destination));
+			destinationDir = (VirtualFileSystemDirectory) getVFS().getInodeByPath(VirtualFileSystem.stripLast(destination));
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException(
-					"Error in logic, this should not happen", e);
+			throw new RuntimeException("Error in logic, this should not happen", e);
 		}
 		String fileString = "rename(" + this + ")";
 		_parent.removeChild(this);
-		try {
+		try {			
 			VirtualFileSystem.getVirtualFileSystem().renameInode(
 					this.getPath(),
 					destinationDir.getPath() + VirtualFileSystem.separator
 							+ VirtualFileSystem.getLast(destination));
 		} catch (FileNotFoundException e) {
-			// we may be able to handle this, but not yet
-			throw new RuntimeException("FileSystemError", e);
+			
+			// if the file is in the commit queue
+			// and a FileNotFoundException was thrown in this situation
+			// this file was just created and never commited.
+			boolean inCommitQueue = CommitManager.getCommitManager().contains(this);
+			if (!inCommitQueue) {
+				// file is not on the commit queue
+				// and does not exist, this is an error.
+				throw new RuntimeException("Tried to rename a file that does not exist: " + getPath(), e);
+			}
+			
 		} catch (PermissionDeniedException e) {
 			throw new RuntimeException("FileSystemError", e);
 		}
