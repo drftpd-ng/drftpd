@@ -20,16 +20,18 @@ package org.drftpd.master;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.java.plugin.PluginClassLoader;
 import org.java.plugin.PluginManager;
 
 /**
+ * This classes handle all XML commits.
+ * The main purpose of having this is to avoiding serializing the same object tons of times,
+ * even if it data was not changed. 
  * @author zubov
  * @version $Id$
  */
@@ -37,33 +39,72 @@ public class CommitManager {
 
 	private static final Logger logger = Logger.getLogger(CommitManager.class);
 
-	private Map<Commitable, Date> _commitMap = null;
+	private static CommitManager _instance;
 
+	private ConcurrentHashMap<Commitable, Date> _commitMap = null;
+	private boolean _isStarted = false;
+
+	/**
+	 * Private constructor in order to make this class a Singleton.
+	 */
 	private CommitManager() {
-
+		_commitMap = new ConcurrentHashMap<Commitable, Date>();
 	}
 
-	private static CommitManager manager = new CommitManager();
-
+	/**
+	 * @return the unique CommitManager instance, creating the instance if it does not exist yet.
+	 */
 	public static CommitManager getCommitManager() {
-		return manager;
+		if (_instance == null) {
+			_instance = new CommitManager();
+		}
+		return _instance;
 	}
 
-	public synchronized void start() {
-		_commitMap = new HashMap<Commitable, Date>();
+	/**
+	 * Starts the {@link CommitHandler}.
+	 * @throws IllegalStateException if the thread has already started.
+	 */
+	public void start() {
+		if (_isStarted) {
+			throw new IllegalStateException("The CommitManager is already started");
+		}
+		
+		_isStarted = true;
 		new Thread(new CommitHandler()).start();
 	}
 
-	public synchronized void add(Commitable object) {
+	/**
+	 * Adds a {@link Commitable} object to the commit queue.
+	 * If the object is already present on the queue, this call is just ignored.
+	 * @param object
+	 */
+	public void add(Commitable object) {
 		if (_commitMap.containsKey(object)) {
 			return;
 			// object already queued to write
 		}
 		_commitMap.put(object, new Date());
-		notifyAll();
+	}
+	
+
+	/**
+	 * @param object
+	 * @return true if the object was removed from the CommitQueue, false otherwise.
+	 */
+	public boolean remove(Commitable object) {
+		return _commitMap.remove(object) != null;
+	}
+	
+	/**
+	 * @param object
+	 * @return true if the object is present on the CommitQueue, false otherwise.
+	 */
+	public boolean contains(Commitable object) {
+		return _commitMap.containsKey(object);
 	}
 
-	private synchronized void processAllLoop() {
+	private void processAllLoop() {
 		while (true) {
 		long time = System.currentTimeMillis() - 10000;
 			for (Iterator<Entry<Commitable, Date>> iter = _commitMap.entrySet()
@@ -79,8 +120,9 @@ public class CommitManager {
 					iter.remove();
 				}
 			}
+			
 			try {
-				wait(10050);
+				Thread.sleep(10000);
 			} catch (InterruptedException e) {
 			}
 		}
@@ -99,15 +141,6 @@ public class CommitManager {
 			Thread.currentThread().setName("CommitHandler");
 			processAllLoop();
 		}
-	}
-
-	/**
-	 * Returns true if the object was removed from the CommitQueue
-	 * @param object
-	 * @return
-	 */
-	public synchronized boolean remove(Commitable object) {
-		return _commitMap.remove(object) != null;
 	}
 
 }
