@@ -39,8 +39,7 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.HostMask;
-import org.java.plugin.PluginClassLoader;
-import org.java.plugin.PluginManager;
+import org.drftpd.util.CommonPluginUtils;
 
 /**
  * This is a new usermanager that after recommendation from captain- serializes
@@ -125,9 +124,7 @@ public class BeanUserManager extends AbstractUserManager {
 			xd = new XMLDecoder(new FileInputStream(getUserFile(userName)));
 			logger.debug("Loading '"+userName+"' data from disk.");
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
-			Thread.currentThread().setContextClassLoader(loader);
+			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			user = (BeanUser) xd.readObject();
 			Thread.currentThread().setContextClassLoader(prevCL);
 			user.setUserManager(this);

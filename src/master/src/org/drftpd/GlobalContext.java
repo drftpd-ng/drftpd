@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Timer;
 
 import javax.net.ssl.SSLContext;
@@ -53,13 +54,12 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.MasterPluginUtils;
 import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.IndexEngineInterface;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @author mog
@@ -114,26 +114,12 @@ public class GlobalContext {
 	}
 
 	private void loadSlaveSelectionManager(Properties cfg) {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint extPoint = manager.getRegistry().getExtensionPoint("master", "SlaveSelection");
-		
 		String desiredSL = PropertyHelper.getProperty(cfg, "slaveselection");
-		for (Extension ext : extPoint.getConnectedExtensions()) {
-			if (desiredSL.equals(ext.getDeclaringPluginDescriptor().getId())) {
-				try {
-					manager.activatePlugin(desiredSL);
-					String className = ext.getParameter("class").valueAsString();
-					ClassLoader cl = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
-					Class<?> clazz = cl.loadClass(className);
-					_slaveSelectionManager = (SlaveSelectionManagerInterface) clazz.newInstance();
-				} catch (Throwable t) {
-					throw new FatalException("Unable to load the slaveselection plugin, check config.", t);
-				}
-			}
+		try {
+			_slaveSelectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SlaveSelection", "class", desiredSL);
+		} catch (Exception e) {
+			throw new FatalException("Unable to load the slaveselection plugin, check config.", e);
 		}
-		
-		if (_slaveSelectionManager == null)
-			throw new FatalException("Unable to find the SlaveSelection plugin, check the configuration file");
 	}
 
 	public PluginsConfig getPluginsConfig() {
@@ -193,114 +179,47 @@ public class GlobalContext {
 	}
 
 	public CommandManagerInterface getCommandManager() {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint cmExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"master", "CommandManager");
-
-		/*	Iterate over all extensions that have been connected to the
-				CommandManager extension point and return the desired one */
-
 		Properties cfg = GlobalContext.getConfig().getMainProperties();
 
-		Class<?> cmCls = null;
-
 		String desiredCm = PropertyHelper.getProperty(cfg, "commandmanager");
-
-		for (Extension cm : cmExtPoint.getConnectedExtensions()) {
-			try {
-				if (cm.getDeclaringPluginDescriptor().getId().equals(desiredCm)) {
-					// If plugin isn't already activated then activate it
-					if (!manager.isPluginActivated(cm.getDeclaringPluginDescriptor())) {
-						manager.activatePlugin(cm.getDeclaringPluginDescriptor().getId());
-					}
-					ClassLoader cmLoader = manager.getPluginClassLoader( 
-							cm.getDeclaringPluginDescriptor());
-					cmCls = cmLoader.loadClass( 
-							cm.getParameter("class").valueAsString());
-					CommandManagerInterface commandManager = (CommandManagerInterface) cmCls.newInstance();
-					return commandManager;
-				}
-			}
-			catch (Exception e) {
-				throw new FatalException(
-						"Cannot create instance of commandmanager, check 'commandmanager' in the configuration file",
-						e);
-			}
+		try {
+			return CommonPluginUtils.getSinglePluginObject(this, "master", "CommandManager", "class", desiredCm);
+		} catch (Exception e) {
+			throw new FatalException(
+					"Cannot create instance of commandmanager, check 'commandmanager' in the configuration file",
+					e);
 		}
-		return null;
 	}
 
 	private void loadPlugins() {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint pluginExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"master", "Plugin");
-
-		for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
-			try {
-				manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
-				ClassLoader pluginLoader = manager.getPluginClassLoader( 
-						plugin.getDeclaringPluginDescriptor());
-				Class<?> pluginCls = pluginLoader.loadClass( 
-						plugin.getParameter("class").valueAsString());
-				PluginInterface newPlugin = (PluginInterface) pluginCls.newInstance();
+		try {
+			List<PluginInterface> loadedPlugins = CommonPluginUtils.getPluginObjects(this, "master", "Plugin", "class");
+			for (PluginInterface newPlugin : loadedPlugins) {
 				newPlugin.startPlugin();
 				_plugins.add(newPlugin);
 			}
-			catch (Exception e) {
-				logger.warn("Error loading plugin " + 
-						plugin.getDeclaringPluginDescriptor().getId(),e);
-			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for master extension point 'Plugin', possibly the master extension " +
+					"point definition has changed in the plugin.xml",e);
 		}
 	}
 	
 	private void loadSectionManager(Properties cfg) {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint smExtPoint = manager.getRegistry().getExtensionPoint("master", "SectionManager");
-
 		String desiredSm = PropertyHelper.getProperty(cfg, "sectionmanager");
-
-		for (Extension sm : smExtPoint.getConnectedExtensions()) {
-			try {
-				if (sm.getDeclaringPluginDescriptor().getId().equals(desiredSm)) {
-					manager.activatePlugin(desiredSm);
-					ClassLoader smLoader = manager.getPluginClassLoader(sm.getDeclaringPluginDescriptor());
-					Class<?> smCls = smLoader.loadClass(sm.getParameter("class").valueAsString());
-					_sectionManager = (SectionManagerInterface) smCls.newInstance();
-				}
-			} catch (Exception e) {
-				throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
-			}
-		}
-		
-		if (_sectionManager == null) {
-			logger.fatal("SectionManager plugin not found, check 'sectionmanager' in the configuration file");
+		try {
+			_sectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SectionManager", "class", desiredSm);
+		} catch (Exception e) {
+			throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
 		}
 	}
 	
 	private void loadIndexingEngine(Properties cfg) {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint iExtPoint = manager.getRegistry().getExtensionPoint("master", "IndexingEngine");
-
 		String desiredIe = PropertyHelper.getProperty(cfg, "indexingengine");
-
-		for (Extension ie : iExtPoint.getConnectedExtensions()) {
-			try {
-				if (ie.getDeclaringPluginDescriptor().getId().equals(desiredIe)) {
-					manager.activatePlugin(desiredIe);
-					ClassLoader iLoader = manager.getPluginClassLoader(ie.getDeclaringPluginDescriptor());
-					Class<?> iCls = iLoader.loadClass(ie.getParameter("class").valueAsString());
-					_indexEngine = (IndexEngineInterface) iCls.newInstance();
-					_indexEngine.init();
-				}
-			} catch (Exception e) {
-				throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
-			}
-		}
-		
-		if (_indexEngine == null) {
-			logger.fatal("IndexingEngine plugin not found, check 'indexingengine' in the configuration file");
+		try {
+			_indexEngine = CommonPluginUtils.getSinglePluginObject(this, "master", "IndexingEngine", "class", desiredIe);
+			_indexEngine.init();
+		} catch (Exception e) {
+			throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
 		}
 	}
 
@@ -318,38 +237,14 @@ public class GlobalContext {
 	}
 
 	protected void loadUserManager(Properties cfg) {
-		//	Find the desired user manager plugin and initialise it
-		
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint umExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"master", "UserManager");
-		
-		/*	Iterate over all extensions that have been connected to the
-			UserManager extension point and init the desired one */
-
 		String desiredUm = PropertyHelper.getProperty(cfg, "usermanager");
-		
-		for (Extension um : umExtPoint.getConnectedExtensions()) {
-			try {
-				if (um.getDeclaringPluginDescriptor().getId().equals(desiredUm)) {
-					manager.activatePlugin(desiredUm);
-					ClassLoader umLoader = manager.getPluginClassLoader( 
-							um.getDeclaringPluginDescriptor());
-					Class<?> umCls = umLoader.loadClass( 
-							um.getParameter("class").valueAsString());
-					_usermanager = (AbstractUserManager) umCls.newInstance();
-					_usermanager.init();
-				}
-			}
-			catch (Exception e) {
-				throw new FatalException(
-						"Cannot create instance of usermanager, check 'usermanager' in the configuration file",
-						e);
-			}
-		}
-		if (_usermanager == null) {
-			logger.fatal("Usermanager plugin not found, check master.usermanager in config file");
+		try {
+			_usermanager = CommonPluginUtils.getSinglePluginObject(this, "master", "UserManager", "class", desiredUm);
+			_usermanager.init();
+		} catch (Exception e) {
+			throw new FatalException(
+					"Cannot create instance of usermanager, check 'usermanager' in the configuration file",
+					e);
 		}
 	}
 
@@ -539,20 +434,14 @@ public class GlobalContext {
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
-				for (Iterator<PluginInterface> iter = _plugins.iterator(); iter.hasNext();) {
-					PluginInterface plugin = iter.next();
-					if (manager.getPluginFor(plugin).getDescriptor().getId().equals(event.getPlugin())) {
-						plugin.stopPlugin("Plugin being unloaded");
-						logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
-						iter.remove();
-					}
+		Set<PluginInterface> unloadedExtensions = MasterPluginUtils.getUnloadedExtensionObjects(this, "Plugin", event, _plugins);
+		if (!unloadedExtensions.isEmpty()) {
+			for (Iterator<PluginInterface> iter = _plugins.iterator(); iter.hasNext();) {
+				PluginInterface plugin = iter.next();
+				if (unloadedExtensions.contains(plugin)) {
+					plugin.stopPlugin("Plugin being unloaded");
+					logger.debug("Unloading plugin "+CommonPluginUtils.getPluginIdForObject(plugin));
+					iter.remove();
 				}
 			}
 		}
@@ -560,35 +449,16 @@ public class GlobalContext {
 
 	@EventSubscriber
 	public void onLoadPluginEvent(LoadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("Plugin")) {
-				ExtensionPoint pluginExtPoint = 
-					manager.getRegistry().getExtensionPoint( 
-							"master", "Plugin");
-				for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
-					if (plugin.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
-						try {
-							manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
-							ClassLoader pluginLoader = manager.getPluginClassLoader( 
-									plugin.getDeclaringPluginDescriptor());
-							Class<?> pluginCls = pluginLoader.loadClass( 
-									plugin.getParameter("class").valueAsString());
-							PluginInterface newPlugin = (PluginInterface) pluginCls.newInstance();
-							newPlugin.startPlugin();
-							_plugins.add(newPlugin);
-						}
-						catch (Exception e) {
-							logger.warn("Error loading plugin " + 
-									plugin.getDeclaringPluginDescriptor().getId(),e);
-						}
-					}
-				}
+		try {
+			List<PluginInterface> loadedExtensions = MasterPluginUtils.getLoadedExtensionObjects(this, "master", "Plugin", "class", event);
+			for (PluginInterface newExtension : loadedExtensions) {
+				newExtension.startPlugin();
+				logger.debug("Loading plugin "+CommonPluginUtils.getPluginIdForObject(newExtension));
+				_plugins.add(newExtension);
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins from a loadplugin event for master extension point 'Plugin', possibly the "
+					+"master extension point definition has changed in the plugin.xml",e);
 		}
 	}
 }

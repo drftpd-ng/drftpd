@@ -26,8 +26,7 @@ import org.drftpd.master.CommitManager;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
-import org.java.plugin.PluginClassLoader;
-import org.java.plugin.PluginManager;
+import org.drftpd.util.CommonPluginUtils;
 
 /**
  * @author mog
@@ -106,9 +105,7 @@ public class BeanUser extends AbstractUser {
 			out = _um.getXMLEncoder(new SafeFileOutputStream(_um
 					.getUserFile(getName())));
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
-			Thread.currentThread().setContextClassLoader(loader);
+			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			out.writeObject(this);
 			Thread.currentThread().setContextClassLoader(prevCL);
 		} finally {

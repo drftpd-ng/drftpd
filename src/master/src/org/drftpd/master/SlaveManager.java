@@ -60,9 +60,8 @@ import org.drftpd.protocol.master.MasterProtocolCentral;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
+import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
-import org.java.plugin.PluginClassLoader;
-import org.java.plugin.PluginManager;
 
 /**
  * @author mog
@@ -166,9 +165,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 					getSlaveFile(slavename)));
 
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
-			Thread.currentThread().setContextClassLoader(loader);
+			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			rslave = (RemoteSlave) in.readObject();
 			Thread.currentThread().setContextClassLoader(prevCL);
 

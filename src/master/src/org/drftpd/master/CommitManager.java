@@ -25,8 +25,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
-import org.java.plugin.PluginClassLoader;
-import org.java.plugin.PluginManager;
+import org.drftpd.util.CommonPluginUtils;
 
 /**
  * This classes handle all XML commits.
@@ -134,10 +133,7 @@ public class CommitManager {
 		}
 
 		public void run() {
-			PluginManager manager = PluginManager.lookup(this);
-			PluginClassLoader loader = manager.getPluginClassLoader((manager
-					.getPluginFor(this)).getDescriptor());
-			Thread.currentThread().setContextClassLoader(loader);
+			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			Thread.currentThread().setName("CommitHandler");
 			processAllLoop();
 		}
