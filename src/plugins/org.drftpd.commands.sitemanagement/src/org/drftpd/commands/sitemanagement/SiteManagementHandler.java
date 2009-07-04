@@ -44,6 +44,7 @@ import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.java.plugin.JpfException;
@@ -173,7 +174,7 @@ public class SiteManagementHandler extends CommandInterface {
 			GlobalContext.getGlobalContext().loadPluginsConfig();
 			GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
 
-			GlobalContext.getEventService().publish(new ReloadEvent(PluginManager.lookup(this).getPluginFor(this).getDescriptor().getId()));
+			GlobalContext.getEventService().publish(new ReloadEvent(CommonPluginUtils.getPluginIdForObject(this)));
 
 		} catch (IOException e) {
 			logger.log(Level.FATAL, "Error reloading config", e);

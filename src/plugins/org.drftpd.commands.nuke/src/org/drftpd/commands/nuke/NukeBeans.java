@@ -35,8 +35,7 @@ import org.drftpd.Bytes;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.misc.LRUMap;
-import org.java.plugin.PluginClassLoader;
-import org.java.plugin.PluginManager;
+import org.drftpd.util.CommonPluginUtils;
 
 /**
  * NukeBeans handles the logging of nukes. Using a TreeMap, it sorts all nukes
@@ -260,9 +259,7 @@ public class NukeBeans {
 	}
 	
 	private void switchClassLoaders() {
-		PluginManager manager = PluginManager.lookup(this);
-		PluginClassLoader loader = manager.getPluginClassLoader((manager.getPluginFor(this)).getDescriptor());
-		Thread.currentThread().setContextClassLoader(loader);
+		Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 	}
 	
 	private void setPreviousClassLoader() {

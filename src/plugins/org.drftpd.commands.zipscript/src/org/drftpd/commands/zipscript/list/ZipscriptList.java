@@ -20,7 +20,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -38,13 +40,11 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.slave.LightRemoteInode;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.MasterPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
@@ -61,32 +61,16 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 
-		// load extensions just once and save the instances for later use.
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint sbExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"org.drftpd.commands.zipscript", "ListStatusBarProvider");
-		for (Extension sbExt : sbExtPoint.getConnectedExtensions()) {
-			try {
-				manager.activatePlugin(sbExt.getDeclaringPluginDescriptor().getId());
-				ClassLoader sbLoader = manager.getPluginClassLoader( 
-						sbExt.getDeclaringPluginDescriptor());
-				Class<?> sbCls = sbLoader.loadClass( 
-						sbExt.getParameter("Class").valueAsString());
-				ZipscriptListStatusBarInterface sbAddon = (ZipscriptListStatusBarInterface) sbCls.newInstance();
+		// Load any additional status bar element providers from plugins
+		try {
+			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.commands.zipscript", "ListStatusBarProvider", "Class");
+			for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
 				_statusBarProviders.add(sbAddon);
 			}
-			catch (PluginLifecycleException e) {
-				logger.debug("plugin lifecycle exception", e);
-			}
-			catch (ClassNotFoundException e) {
-				logger.debug("bad plugin.xml or badly installed plugin: "+
-						sbExt.getDeclaringPluginDescriptor().getId(),e);
-			}
-			catch (Exception e) {
-				logger.debug("failed to load class for list extension from: "+
-						sbExt.getDeclaringPluginDescriptor().getId(),e);
-			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.commands.zipscript extension point 'ListStatusBarProvider'"+
+					", possibly the org.drftpd.commands.zipscript extension point definition has changed in the plugin.xml",e);
 		}
 	}
 
@@ -195,19 +179,15 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("ListStatusBarProvider")) {
-				for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
-					ZipscriptListStatusBarInterface plugin = iter.next();
-					if (manager.getPluginFor(plugin).getDescriptor().getId().equals(event.getPlugin())) {
-						logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
-						iter.remove();
-					}
+		Set<ZipscriptListStatusBarInterface> unloadedStatusBarAddons =
+			MasterPluginUtils.getUnloadedExtensionObjects(this, "ListStatusBarProviders", event, _statusBarProviders);
+		if (!unloadedStatusBarAddons.isEmpty()) {
+			for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
+				ZipscriptListStatusBarInterface sbAddon = iter.next();
+				if (unloadedStatusBarAddons.contains(sbAddon)) {
+					logger.debug("Unloading status bar provider addon provided by plugin "
+							+CommonPluginUtils.getPluginIdForObject(sbAddon));
+					iter.remove();
 				}
 			}
 		}
@@ -215,34 +195,15 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 
 	@EventSubscriber
 	public void onLoadPluginEvent(LoadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("ListStatusBarProvider")) {
-				ExtensionPoint pluginExtPoint = 
-					manager.getRegistry().getExtensionPoint( 
-							"org.drftpd.commands.zipscript", "ListStatusBarProvider");
-				for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
-					if (plugin.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
-						try {
-							manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
-							ClassLoader pluginLoader = manager.getPluginClassLoader( 
-									plugin.getDeclaringPluginDescriptor());
-							Class<?> pluginCls = pluginLoader.loadClass( 
-									plugin.getParameter("Class").valueAsString());
-							ZipscriptListStatusBarInterface newPlugin = (ZipscriptListStatusBarInterface) pluginCls.newInstance();
-							_statusBarProviders.add(newPlugin);
-						}
-						catch (Exception e) {
-							logger.warn("Error loading plugin " + 
-									plugin.getDeclaringPluginDescriptor().getId(),e);
-						}
-					}
-				}
+		try {
+			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "ListStatusBarProvider", "Class", event);
+			for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
+				_statusBarProviders.add(sbAddon);
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.commands.zipscript extension point 'ListStatusBarProvider'"+
+					", possibly the org.drftpd.commands.zipscript extension point definition has changed in the plugin.xml",e);
 		}
 	}
 }

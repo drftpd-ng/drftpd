@@ -55,10 +55,8 @@ import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseException;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.slave.diskselection.DiskSelectionInterface;
+import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PortRange;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 
 import se.mog.io.File;
 import se.mog.io.PermissionDeniedException;
@@ -215,32 +213,14 @@ public class Slave {
 	}
 	
 	private void loadDiskSelection(Properties cfg) {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("slave", "DiskSelection");
-		String desiredDiskSelection = PropertyHelper.getProperty(cfg, "diskselection");
-		
-		for (Extension ext : exp.getAvailableExtensions()) {
-			String pluginId = ext.getDeclaringPluginDescriptor().getId();
-			if (pluginId.equals(desiredDiskSelection)) {
-				ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
-				String className = ext.getParameter("Class").valueAsString();
-
-				try {
-					if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor()))
-						manager.activatePlugin(pluginId);
-
-					Class<?> clazz = classLoader.loadClass(className);
-					
-					_diskSelection = (DiskSelectionInterface) clazz
-											.getConstructor(new Class[] { Slave.class }).newInstance(new Object[] { this });
-				} catch (Exception e) {
-					throw new RuntimeException("Unable to load DiskSelection", e);
-				}
-			}
-		}
-		
-		if (_diskSelection == null) {
-			throw new RuntimeException("Unable to load DiskSelection");
+		String desiredDs = PropertyHelper.getProperty(cfg, "diskselection");
+		try {
+			_diskSelection = CommonPluginUtils.getSinglePluginObject(this, "slave", "DiskSelection", "Class", desiredDs,
+					new Class[] { Slave.class }, new Object[] { this });
+		} catch (Exception e) {
+			throw new RuntimeException(
+					"Cannot create instance of diskselection, check 'diskselection' in the configuration file",
+					e);
 		}
 	}
 

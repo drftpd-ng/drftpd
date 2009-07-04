@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
@@ -46,15 +48,13 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.TransferState;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.MasterPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandleInterface;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @author mog
@@ -88,34 +88,18 @@ public class LIST extends CommandInterface {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 
-		// load extensions just once and save the instances for later use.
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint listExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"org.drftpd.commands.list", "AddElements");
-		for (Extension listExt : listExtPoint.getConnectedExtensions()) {
-			try {
-				manager.activatePlugin(listExt.getDeclaringPluginDescriptor().getId());
-				ClassLoader listLoader = manager.getPluginClassLoader( 
-						listExt.getDeclaringPluginDescriptor());
-				Class<?> listCls = listLoader.loadClass( 
-						listExt.getParameter("Class").valueAsString());
-				AddListElementsInterface listAddon = (AddListElementsInterface) listCls.newInstance();
+		// Load any additional element providers from plugins
+		try {
+			List<AddListElementsInterface> loadedListAddons =
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.commands.list", "AddElements", "Class");
+			for (AddListElementsInterface listAddon : loadedListAddons) {
 				listAddon.initialize();
 				_listAddons.add(listAddon);
 			}
-			catch (PluginLifecycleException e) {
-				logger.debug("plugin lifecycle exception", e);
-			}
-			catch (ClassNotFoundException e) {
-				logger.debug("bad plugin.xml or badly installed plugin: "+
-						listExt.getDeclaringPluginDescriptor().getId(),e);
-			}
-			catch (Exception e) {
-				logger.debug("failed to load class for list extension from: "+
-						listExt.getDeclaringPluginDescriptor().getId(),e);
-			}
-		}		
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.commands.list extension point 'AddElements', possibly the "+
+					"org.drftpd.commands.list extension point definition has changed in the plugin.xml",e);
+		}
 	}
 
 	/**
@@ -414,19 +398,15 @@ public class LIST extends CommandInterface {
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("AddElements")) {
-				for (Iterator<AddListElementsInterface> iter = _listAddons.iterator(); iter.hasNext();) {
-					AddListElementsInterface plugin = iter.next();
-					if (manager.getPluginFor(plugin).getDescriptor().getId().equals(event.getPlugin())) {
-						logger.debug("Unloading plugin "+manager.getPluginFor(plugin).getDescriptor().getId());
-						iter.remove();
-					}
+		Set<AddListElementsInterface> unloadedListAddons =
+			MasterPluginUtils.getUnloadedExtensionObjects(this, "AddElements", event, _listAddons);
+		if (!unloadedListAddons.isEmpty()) {
+			for (Iterator<AddListElementsInterface> iter = _listAddons.iterator(); iter.hasNext();) {
+				AddListElementsInterface listAddon = iter.next();
+				if (unloadedListAddons.contains(listAddon)) {
+					logger.debug("Unloading list element addon provided by plugin "
+							+CommonPluginUtils.getPluginIdForObject(listAddon));
+					iter.remove();
 				}
 			}
 		}
@@ -434,34 +414,15 @@ public class LIST extends CommandInterface {
 
 	@EventSubscriber
 	public void onLoadPluginEvent(LoadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("AddElements")) {
-				ExtensionPoint pluginExtPoint = 
-					manager.getRegistry().getExtensionPoint( 
-							"org.drftpd.commands.list", "AddElements");
-				for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
-					if (plugin.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
-						try {
-							manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
-							ClassLoader pluginLoader = manager.getPluginClassLoader( 
-									plugin.getDeclaringPluginDescriptor());
-							Class<?> pluginCls = pluginLoader.loadClass( 
-									plugin.getParameter("Class").valueAsString());
-							AddListElementsInterface newPlugin = (AddListElementsInterface) pluginCls.newInstance();
-							_listAddons.add(newPlugin);
-						}
-						catch (Exception e) {
-							logger.warn("Error loading plugin " + 
-									plugin.getDeclaringPluginDescriptor().getId(),e);
-						}
-					}
-				}
+		try {
+			List<AddListElementsInterface> loadedListAddons =
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.list", "AddElements", "Class", event);
+			for (AddListElementsInterface listAddon : loadedListAddons) {
+				_listAddons.add(listAddon);
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.commands.list extension point 'AddElements'"+
+					", possibly the org.drftpd.commands.list extension point definition has changed in the plugin.xml",e);
 		}
 	}
 }

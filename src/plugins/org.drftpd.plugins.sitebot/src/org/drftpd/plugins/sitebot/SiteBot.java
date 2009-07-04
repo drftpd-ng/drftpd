@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -61,10 +63,9 @@ import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.config.ServerConfig;
 import org.drftpd.plugins.sitebot.config.SiteBotConfig;
 import org.drftpd.plugins.sitebot.event.InviteEvent;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.MasterPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
@@ -166,7 +167,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		_userPrefixes.put("v", "+");
 
 		// Set version to current plugin version
-		_version = PluginManager.lookup(this).getPluginFor(this).getDescriptor().getVersion().toString();
+		_version = CommonPluginUtils.getPluginVersionForObject(this);
 
 		// Set CTCP responses if defined in config
 		String finger = _config.getCTCPFinger();
@@ -2905,33 +2906,22 @@ public class SiteBot implements ReplyConstants, Runnable {
 	}
 
 	private void loadAnnouncers(String confDir) {
-
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint anExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"org.drftpd.plugins.sitebot", "Announce");
-
-		// Iterate over all extensions that have been connected to the
-		// Announce extension point and find what events they support
-
-		for (Extension an : anExtPoint.getConnectedExtensions()) {
-			try {
-				manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
-				ClassLoader anLoader = manager.getPluginClassLoader( 
-						an.getDeclaringPluginDescriptor());
-				Class<?> anCls = anLoader.loadClass( 
-						an.getParameter("class").valueAsString());
-				AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
+		try {
+			List<AnnounceInterface> loadedAnnouncers =
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Announce", "class");
+			for (AnnounceInterface announcer : loadedAnnouncers) {
 				_announcers.add(announcer);
-				logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
+				logger.debug("Loading sitebot announcer from plugin "
+						+CommonPluginUtils.getPluginIdForObject(announcer));
 				for (String type : announcer.getEventTypes()) {
 					_eventTypes.add(type);
 				}
 			}
-			catch (Exception e) {
-				logger.warn("Failed to load announce extension to sitebot",e);
-			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.plugins.sitebot extension point 'Announce', possibly the "+
+					"org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
+
 		// Add the fallback default type to the eventTypes list
 		_eventTypes.add("default");
 		_announceConfig = new AnnounceConfig(confDir, _eventTypes, this);
@@ -2979,62 +2969,54 @@ public class SiteBot implements ReplyConstants, Runnable {
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
-				for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
-					AnnounceInterface announcer = iter.next();
-					if (manager.getPluginFor(announcer).getDescriptor().getId().equals(event.getPlugin())) {
-						announcer.stop();
-						logger.debug("Unloading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
-						iter.remove();
+		Set<AnnounceInterface> unloadedAnnouncers =
+			MasterPluginUtils.getUnloadedExtensionObjects(this, "Announce", event, _announcers);
+		if (!unloadedAnnouncers.isEmpty()) {
+			boolean typeRemoved = false;
+			for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
+				AnnounceInterface announcer = iter.next();
+				if (unloadedAnnouncers.contains(announcer)) {
+					for (String type : announcer.getEventTypes()) {
+						if (_eventTypes.remove(type)) {
+							typeRemoved = true;
+						}
 					}
+					announcer.stop();
+					logger.debug("Unloading sitebot announcer provided by plugin "
+							+CommonPluginUtils.getPluginIdForObject(announcer));
+					iter.remove();
 				}
+			}
+			if (typeRemoved) {
+				_announceConfig.updateEventTypes(_eventTypes);
+				_announceConfig.reload();
 			}
 		}
 	}
 
 	@EventSubscriber
 	public void onLoadPluginEvent(LoadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin) && extension.equals("Announce")) {
-				ExtensionPoint announceExtPoint = 
-					manager.getRegistry().getExtensionPoint( 
-							"org.drftpd.plugins.sitebot", "Announce");
-				for (Extension an : announceExtPoint.getConnectedExtensions()) {
-					if (an.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
-						try {
-							manager.activatePlugin(an.getDeclaringPluginDescriptor().getId());
-							ClassLoader anLoader = manager.getPluginClassLoader( 
-									an.getDeclaringPluginDescriptor());
-							Class<?> anCls = anLoader.loadClass( 
-									an.getParameter("class").valueAsString());
-							AnnounceInterface announcer = (AnnounceInterface) anCls.newInstance();
-							_announcers.add(announcer);
-							for (String type : announcer.getEventTypes()) {
-								_eventTypes.add(type);
-							}
-							_announceConfig.updateEventTypes(_eventTypes);
-							_announceConfig.reload();
-							announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
-							logger.debug("Loading sitebot announcer "+manager.getPluginFor(announcer).getDescriptor().getId());
-						}
-						catch (Exception e) {
-							logger.warn("Error loading sitebot announcer " + 
-									an.getDeclaringPluginDescriptor().getId(),e);
-						}
-					}
+		try {
+			boolean typeAdded = false;
+			List<AnnounceInterface> loadedAnnouncers =
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.plugins.sitebot", "Announce", "class", event);
+			for (AnnounceInterface announcer : loadedAnnouncers) {
+				logger.debug("Loading sitebot announcer provided by plugin "
+						+CommonPluginUtils.getPluginIdForObject(announcer));
+				announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
+				_announcers.add(announcer);
+				for (String type : announcer.getEventTypes()) {
+					_eventTypes.add(type);
+					typeAdded = true;
 				}
 			}
+			if (typeAdded) {
+				_announceConfig.updateEventTypes(_eventTypes);
+				_announceConfig.reload();
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.plugins.sitebot extension point 'Announce'"+
+					", possibly the org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
 	}
 

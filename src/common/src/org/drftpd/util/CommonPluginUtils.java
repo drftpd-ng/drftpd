@@ -17,6 +17,7 @@
  */
 package org.drftpd.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,7 +95,8 @@ public class CommonPluginUtils {
 	throws IllegalArgumentException {
 		List<T> objList = null;
 		try {
-			objList = getPluginObjects(caller, pluginName, extName, classParamName, true, true, false);
+			objList = getPluginObjects(caller, pluginName, extName, classParamName, new Class[] {}, 
+					new Object[] {}, true, true, false);
 		} catch (PluginLifecycleException e) {
 			// Can't happen as method has been called with argument not to throw this exception
 		} catch (ClassNotFoundException e) {
@@ -102,6 +104,68 @@ public class CommonPluginUtils {
 		} catch (IllegalAccessException e) {
 			// Can't happen as method has been called with argument not to throw this exception
 		} catch (InstantiationException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		} catch (InvocationTargetException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		} catch (NoSuchMethodException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		}
+		return objList;
+	}
+
+	/**
+	 * Get an instance of each plugin class extending the extension point as a <tt>List</tt>.
+	 * Each plugin which implements the extension point will be activated in the plugin
+	 * framework if it is not already active. Any errors encounted when loading plugins
+	 * will be logged to the standard log files, this method will not fail if loading one
+	 * or more plugins fails, the failed plugins will not be contained in the returned
+	 * <tt>List</tt>. This method should be used when the classes to be loaded require
+	 * a non nullary constructor to be used at instantiation.
+	 * 
+	 * @param  caller
+	 *         The object instance calling this method
+	 *
+	 * @param  pluginName
+	 *         The name of the plugin defining the extension point
+	 *
+	 * @param  extName
+	 *         The name of the extension point in the plugin to get plugin objects for
+	 *
+	 * @param  classParamName
+	 *         The name of the parameter in the extension point containing the class name to instantiate
+	 *
+	 * @param  constructorSig
+	 *         The signature of the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Class</tt> array.
+	 *
+	 * @param  constructorArgs
+	 *         The objects to pass to the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Object</tt> array.
+	 *
+	 * @return	A <tt>List</tt> containing an instance of the class from each 
+	 *          extension that could successfully be loaded from.
+	 *
+	 * @throws  IllegalArgumentException
+	 *          If the requested extension point does not exist
+	 */
+	public static <T> List<T> getPluginObjects(Object caller, String pluginName, String extName, String classParamName,
+			Class<?>[] constructorSig, Object[] constructorArgs) 
+	throws IllegalArgumentException {
+		List<T> objList = null;
+		try {
+			objList = getPluginObjects(caller, pluginName, extName, classParamName, constructorSig, 
+					constructorArgs, true, true, false);
+		} catch (PluginLifecycleException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		} catch (ClassNotFoundException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		} catch (IllegalAccessException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		} catch (InstantiationException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		} catch (InvocationTargetException e) {
+			// Can't happen as method has been called with argument not to throw this exception
+		} catch (NoSuchMethodException e) {
 			// Can't happen as method has been called with argument not to throw this exception
 		}
 		return objList;
@@ -121,6 +185,14 @@ public class CommonPluginUtils {
 	 *
 	 * @param  classParamName
 	 *         The name of the parameter in the extension point containing the class name to instantiate
+	 *
+	 * @param  constructorSig
+	 *         The signature of the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Class</tt> array.
+	 *
+	 * @param  constructorArgs
+	 *         The objects to pass to the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Object</tt> array.
 	 *
 	 * @param  activatePlugin
 	 *         If <tt>true</tt> then each plugin found will be activated in the plugin framework if it
@@ -150,13 +222,22 @@ public class CommonPluginUtils {
 	 *          If the class in the extension definition of a plugin is not a concrete class and <tt>failOnError</tt>
 	 *          is <tt>true</tt>
 	 *
+	 * @throws  InvocationTargetException
+	 *          If an exception is thrown from a requested non-default constructor in a loaded class and
+	 *          <tt>failOnError</tt> is <tt>true</tt>
+	 *
+	 * @throws  NoSuchMethodException
+	 *          If a non-default constructor is requested and a loaded class has no such constructor and
+	 *          <tt>failOnError</tt> is <tt>true</tt>
+	 *
 	 * @throws  PluginLifecycleException
 	 *          If a plugin cannot be activated and <tt>failOnError</tt> is <tt>true</tt>
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> List<T> getPluginObjects(Object caller, String pluginName, String extName, String classParamName,
-			boolean activatePlugin, boolean logError, boolean failOnError) throws
-			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException, PluginLifecycleException {
+			Class<?>[] constructorSig, Object[] constructorArgs, boolean activatePlugin, boolean logError, boolean failOnError) throws
+			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
 		List<T> pluginObjs = new ArrayList<T>();
 		PluginManager manager = PluginManager.lookup(caller);
 		ExtensionPoint pluginExtPoint = 
@@ -169,9 +250,13 @@ public class CommonPluginUtils {
 				}
 				ClassLoader pluginLoader = manager.getPluginClassLoader( 
 						plugin.getDeclaringPluginDescriptor());
-				Class<?> pluginCls = pluginLoader.loadClass( 
+				Class<?> pluginCls = loadPluginClass(pluginLoader, 
 						plugin.getParameter(classParamName).valueAsString());
-				pluginObjs.add((T)pluginCls.newInstance());
+				if (constructorSig.length == 0) {
+					pluginObjs.add((T)pluginCls.newInstance());
+				} else {
+					pluginObjs.add((T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs));
+				}
 			} catch (ClassNotFoundException e) {
 				if (logError) {
 					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
@@ -194,6 +279,23 @@ public class CommonPluginUtils {
 					logger.warn("Error loading plugin"+plugin.getDeclaringPluginDescriptor().getId()
 							+", requested class "+plugin.getParameter(classParamName)
 							+" is not a concrete class",e);
+				}
+				if (failOnError) {
+					throw e;
+				}
+			} catch (InvocationTargetException e) {
+				if (logError) {
+					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
+							+", requested constructor in class "+plugin.getParameter(classParamName)+
+							" threw an exception",e);
+				}
+				if (failOnError) {
+					throw e;
+				}
+			} catch (NoSuchMethodException e) {
+				if (logError) {
+					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
+							+", requested constructor in class "+plugin.getParameter(classParamName)+" not found",e);
 				}
 				if (failOnError) {
 					throw e;
@@ -253,7 +355,78 @@ public class CommonPluginUtils {
 	public static <T> T getSinglePluginObject(Object caller, String parentPluginName, String extName, String classParamName,
 			String desiredPlugin) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException, PluginLifecycleException {
-		return CommonPluginUtils.<T>getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin, true, true);
+		T retObj = null;
+		try {
+			retObj = CommonPluginUtils.<T>getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
+				new Class[] {}, new Object[] {}, true, true);
+		} catch (InvocationTargetException e) {
+			// can't happen as called with nullary constructor
+		} catch (NoSuchMethodException e) {
+			// can't happen as called with nullary constructor
+		}
+		return retObj;
+	}
+
+	/**
+	 * Get an instance of a plugin class extending the given parent plugin at the given extension point provided
+	 * by the given plugin.
+	 * If the child plugin is not activated in the plugin framework then it will be activated
+	 * by this method, if any error is encountered loading the desired plugin then this will be logged to the standard
+	 * log files and an exception thrown. This method should be used when the class to be loaded needs to be instantiated
+	 * using a non nullary constructor.
+	 *
+	 * @param  caller
+	 *         The object instance calling this method
+	 *
+	 * @param  parentPluginName
+	 *         The name of the plugin defining the extension point
+	 *
+	 * @param  extName
+	 *         The name of the extension point in the plugin to get plugin objects for
+	 *
+	 * @param  classParamName
+	 *         The name of the parameter in the extension point containing the class name to instantiate
+	 *
+	 * @param  desiredPlugin
+	 *         The name of the plugin providing the extension to be loaded
+	 *
+	 * @param  constructorSig
+	 *         The signature of the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Class</tt> array.
+	 *
+	 * @param  constructorArgs
+	 *         The objects to pass to the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Object</tt> array.
+	 *
+	 * @return  An instance of the class implementing the extension in the child plugin
+	 *
+	 * @throws  ClassNotFoundException
+	 *          If the class in the extension definition of the requested plugin cannot be found
+	 *
+	 * @throws  IllegalAccessException
+	 *          If the class in the extension definition of the requested plugin has no default constructor
+	 *
+	 * @throws  IllegalArgumentException
+	 *          If the requested extension point does not exist or the requested plugin does not implement this extension point
+	 *
+	 * @throws  InstantiationException
+	 *          If the class in the extension definition of a plugin is not a concrete class
+	 *
+	 * @throws  InvocationTargetException
+	 *          If an exception is thrown from a requested non-default constructor in the loaded class
+	 *
+	 * @throws  NoSuchMethodException
+	 *          If a non-default constructor is requested and the loaded class has no such constructor
+	 *
+	 * @throws  PluginLifecycleException
+	 *          If the requested plugin cannot be activated
+	 */
+	public static <T> T getSinglePluginObject(Object caller, String parentPluginName, String extName, String classParamName,
+			String desiredPlugin, Class<?>[] constructorSig, Object[] constructorArgs) throws
+			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
+		return CommonPluginUtils.<T>getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
+				constructorSig, constructorArgs, true, true);
 	}
 
 	/**
@@ -274,6 +447,14 @@ public class CommonPluginUtils {
 	 *
 	 * @param  desiredPlugin
 	 *         The name of the plugin providing the extension to be loaded
+	 *
+	 * @param  constructorSig
+	 *         The signature of the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Class</tt> array.
+	 *
+	 * @param  constructorArgs
+	 *         The objects to pass to the constructor in the class to be used when instantiating an instance.
+	 *         To use an empty constructor pass an empty <tt>Object</tt> array.
 	 *
 	 * @param  activatePlugin
 	 *         If <tt>true</tt> then the requested plugin will be activated in the plugin framework if it
@@ -297,13 +478,20 @@ public class CommonPluginUtils {
 	 * @throws  InstantiationException
 	 *          If the class in the extension definition of a plugin is not a concrete class
 	 *
+	 * @throws  InvocationTargetException
+	 *          If an exception is thrown from a requested non-default constructor in the loaded class
+	 *
+	 * @throws  NoSuchMethodException
+	 *          If a non-default constructor is requested and the loaded class has no such constructor
+	 *
 	 * @throws  PluginLifecycleException
 	 *          If the requested plugin cannot be activated
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getSinglePluginObject(Object caller, String parentPluginName, String extName, String classParamName,
-			String desiredPlugin, boolean activatePlugin, boolean logError) throws
-			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException, PluginLifecycleException {
+			String desiredPlugin, Class<?>[] constructorSig, Object[] constructorArgs, boolean activatePlugin, boolean logError) throws
+			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
+			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
 		PluginManager manager = PluginManager.lookup(caller);
 		ExtensionPoint pluginExtPoint = 
 			manager.getRegistry().getExtensionPoint( 
@@ -316,9 +504,13 @@ public class CommonPluginUtils {
 					}
 					ClassLoader pluginLoader = manager.getPluginClassLoader( 
 							plugin.getDeclaringPluginDescriptor());
-					Class<?> pluginCls = pluginLoader.loadClass( 
+					Class<?> pluginCls = loadPluginClass(pluginLoader, 
 							plugin.getParameter(classParamName).valueAsString());
-					return (T)pluginCls.newInstance();
+					if (constructorSig.length == 0) {
+						return (T)pluginCls.newInstance();
+					} else {
+						return (T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
+					}
 				}
 			} catch (ClassNotFoundException e) {
 				if (logError) {
@@ -326,7 +518,7 @@ public class CommonPluginUtils {
 							+", requested class "+plugin.getParameter(classParamName)+" not found",e);
 				}
 				throw e;
-			} catch (IllegalAccessException e) {
+			}catch (IllegalAccessException e) {
 				if (logError) {
 					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
 							+", requested class "+plugin.getParameter(classParamName)
@@ -340,7 +532,20 @@ public class CommonPluginUtils {
 							+" is not a concrete class",e);
 				}
 				throw e;
-			} catch (PluginLifecycleException e) {
+			} catch (InvocationTargetException e) {
+				if (logError) {
+					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
+							+", requested constructor in class "+plugin.getParameter(classParamName)+
+							" threw an exception",e);
+				}
+				throw e;
+			} catch (NoSuchMethodException e) {
+				if (logError) {
+					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
+							+", requested constructor in class "+plugin.getParameter(classParamName)+" not found",e);
+				}
+				throw e;
+			}  catch (PluginLifecycleException e) {
 				if (logError) {
 					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
 							+", plugin not found or can't be activated",e);
@@ -372,5 +577,45 @@ public class CommonPluginUtils {
 			}
 		}
 		return returnId;
+	}
+
+	/**
+	 * Interrogates the plugin framework to get the version number of the plugin which loaded the object.
+	 * 
+	 * @param  obj
+	 *         The object to check for an owning plugin for
+	 *
+	 * @return A <tt>String</tt> containing the version number of the plugin the object belongs to
+	 *         or an empty <tt>String</tt> if the class defining the object was loaded outside
+	 *         of the plugin framework.
+	 */
+	public static String getPluginVersionForObject(Object obj) {
+		String returnId = "";
+		PluginManager manager = PluginManager.lookup(obj);
+		if (manager != null) {
+			Plugin plugin = manager.getPluginFor(obj);
+			if (plugin != null) {
+				returnId = plugin.getDescriptor().getVersion().toString();
+			}
+		}
+		return returnId;
+	}
+
+	/**
+	 * Loads the given class using the given classloader.
+	 * 
+	 * @param  loader
+	 *         The classloader to use to load the class with
+	 *
+	 * @param  className
+	 *         The name of the class to load
+	 *
+	 * @throws  ClassNotFoundException
+	 *          If the requested class cannot be found by the provided classloader
+	 *
+	 * @return A <tt>Class</tt> object of the loaded class
+	 */
+	protected static Class<?> loadPluginClass(ClassLoader loader, String className) throws ClassNotFoundException {
+		return loader.loadClass(className);
 	}
 }

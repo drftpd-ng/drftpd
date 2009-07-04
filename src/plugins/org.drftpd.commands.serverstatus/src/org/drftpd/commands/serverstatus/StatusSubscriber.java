@@ -7,7 +7,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.SlaveEvent;
 import org.drftpd.event.UnloadPluginEvent;
-import org.java.plugin.PluginManager;
+import org.drftpd.util.CommonPluginUtils;
 
 public class StatusSubscriber {
 	private static StatusSubscriber _subscriber = null;
@@ -45,8 +45,7 @@ public class StatusSubscriber {
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
 		for (String pluginExtension : event.getParentPlugins()) {
 			int pointIndex = pluginExtension.lastIndexOf("@");
 			String pluginName = pluginExtension.substring(0, pointIndex);

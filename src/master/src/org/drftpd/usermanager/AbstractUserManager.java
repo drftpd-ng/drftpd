@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -35,9 +37,8 @@ import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.FileExistsException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.MasterPluginUtils;
 
 import se.mog.io.PermissionDeniedException;
 
@@ -327,82 +328,63 @@ public abstract class AbstractUserManager implements UserManager {
 	}
 
 	private void loadResetHooks() {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint prExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"master", "PreUserResetHook");
-
-		// Iterate over all extensions that have been connected to the
-		// PreUserResetHook extension point, init them and add to list
-
-		for (Extension pr : prExtPoint.getConnectedExtensions()) {
-			try {
-				manager.activatePlugin(pr.getDeclaringPluginDescriptor().getId());
-				ClassLoader prLoader = manager.getPluginClassLoader( 
-						pr.getDeclaringPluginDescriptor());
-				Class<?> prCls = prLoader.loadClass( 
-						pr.getParameter("Class").valueAsString());
-				UserResetHookInterface preResetHook = (UserResetHookInterface) prCls.newInstance();
+		// Load hooks to be run before the reset
+		try {
+			List<UserResetHookInterface> preResetHooks =
+				CommonPluginUtils.getPluginObjects(this, "master", "PreUserResetHook", "Class");
+			for (UserResetHookInterface preResetHook : preResetHooks) {
 				preResetHook.init();
 				_preResetHooks.add(preResetHook);
-				logger.debug("Loading PreUserResetHook into UserManager "+manager.getPluginFor(preResetHook).getDescriptor().getId());
+				logger.debug("Loading PreUserResetHook into UserManager from plugin "
+						+CommonPluginUtils.getPluginIdForObject(preResetHook));
 			}
-			catch (Exception e) {
-				logger.warn("Failed to load PreUserResetHook extension to usermanager",e);
-			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for master extension point 'PreUserResetHook', possibly the master extension " +
+					"point definition has changed in the plugin.xml",e);
 		}
 
-		ExtensionPoint poExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"master", "PostUserResetHook");
-
-		// Iterate over all extensions that have been connected to the
-		// PostUserResetHook extension point, init them and add to list
-
-		for (Extension po : poExtPoint.getConnectedExtensions()) {
-			try {
-				manager.activatePlugin(po.getDeclaringPluginDescriptor().getId());
-				ClassLoader poLoader = manager.getPluginClassLoader( 
-						po.getDeclaringPluginDescriptor());
-				Class<?> poCls = poLoader.loadClass( 
-						po.getParameter("Class").valueAsString());
-				UserResetHookInterface postResetHook = (UserResetHookInterface) poCls.newInstance();
+		// Load hooks to be run after the reset
+		try {
+			List<UserResetHookInterface> postResetHooks =
+				CommonPluginUtils.getPluginObjects(this, "master", "PostUserResetHook", "Class");
+			for (UserResetHookInterface postResetHook : postResetHooks) {
 				postResetHook.init();
 				_postResetHooks.add(postResetHook);
-				logger.debug("Loading PostUserResetHook into UserManager "+manager.getPluginFor(postResetHook).getDescriptor().getId());
+				logger.debug("Loading PostUserResetHook into UserManager from plugin "
+						+CommonPluginUtils.getPluginIdForObject(postResetHook));
 			}
-			catch (Exception e) {
-				logger.warn("Failed to load PostUserResetHook extension to usermanager",e);
-			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for master extension point 'PostUserResetHook', possibly the master extension " +
+					"point definition has changed in the plugin.xml",e);
 		}
 	}
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this.getClass().getSuperclass()).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin)) {
-				if (extension.equals("PreUserResetHook")) {
-					for (Iterator<UserResetHookInterface> iter = _preResetHooks.iterator(); iter.hasNext();) {
-						UserResetHookInterface preResetHook = iter.next();
-						if (manager.getPluginFor(preResetHook).getDescriptor().getId().equals(event.getPlugin())) {
-							logger.debug("Unloading PreUserResetHook from UserManager "+manager.getPluginFor(preResetHook).getDescriptor().getId());
-							iter.remove();
-						}
-					}
+		// Unload any pre reset hooks that belong to the unloaded plugin
+		Set<UserResetHookInterface> unloadedPreResetHooks =
+			MasterPluginUtils.getUnloadedExtensionObjects(this, "PreUserResetHook", event, _preResetHooks);
+		if (!unloadedPreResetHooks.isEmpty()) {
+			for (Iterator<UserResetHookInterface> iter = _preResetHooks.iterator(); iter.hasNext();) {
+				UserResetHookInterface preResetHook = iter.next();
+				if (unloadedPreResetHooks.contains(preResetHook)) {
+					logger.debug("Unloading PreUserResetHook from UserManager from plugin "
+							+CommonPluginUtils.getPluginIdForObject(preResetHook));
+					iter.remove();
 				}
-				if (extension.equals("PostUserResetHook")) {
-					for (Iterator<UserResetHookInterface> iter = _postResetHooks.iterator(); iter.hasNext();) {
-						UserResetHookInterface postResetHook = iter.next();
-						if (manager.getPluginFor(postResetHook).getDescriptor().getId().equals(event.getPlugin())) {
-							logger.debug("Unloading PostUserResetHook from UserManager "+manager.getPluginFor(postResetHook).getDescriptor().getId());
-							iter.remove();
-						}
-					}
+			}
+		}
+
+		// Unload any post reset hooks that belong to the unloaded plugin
+		Set<UserResetHookInterface> unloadedPostResetHooks =
+			MasterPluginUtils.getUnloadedExtensionObjects(this, "PostUserResetHook", event, _postResetHooks);
+		if (!unloadedPostResetHooks.isEmpty()) {
+			for (Iterator<UserResetHookInterface> iter = _postResetHooks.iterator(); iter.hasNext();) {
+				UserResetHookInterface postResetHook = iter.next();
+				if (unloadedPostResetHooks.contains(postResetHook)) {
+					logger.debug("Unloading PostUserResetHook from UserManager from plugin "
+							+CommonPluginUtils.getPluginIdForObject(postResetHook));
+					iter.remove();
 				}
 			}
 		}
@@ -410,62 +392,34 @@ public abstract class AbstractUserManager implements UserManager {
 
 	@EventSubscriber
 	public void onLoadPluginEvent(LoadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this.getClass().getSuperclass()).getDescriptor().getId();
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			String extension = pluginExtension.substring(pointIndex+1);
-			if (pluginName.equals(currentPlugin)) {
-				if (extension.equals("PreUserResetHook")) {
-					ExtensionPoint prExtPoint = 
-						manager.getRegistry().getExtensionPoint( 
-								"master", "PreUserResetHook");
-					for (Extension pr : prExtPoint.getConnectedExtensions()) {
-						if (pr.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
-							try {
-								manager.activatePlugin(pr.getDeclaringPluginDescriptor().getId());
-								ClassLoader prLoader = manager.getPluginClassLoader( 
-										pr.getDeclaringPluginDescriptor());
-								Class<?> prCls = prLoader.loadClass( 
-										pr.getParameter("Class").valueAsString());
-								UserResetHookInterface preResetHook = (UserResetHookInterface) prCls.newInstance();
-								preResetHook.init();
-								_preResetHooks.add(preResetHook);
-								logger.debug("Loading PreUserResetHook into UserManager "+manager.getPluginFor(preResetHook).getDescriptor().getId());
-							}
-							catch (Exception e) {
-								logger.warn("Error loading PreUserResetHook extension to UserManager " + 
-										pr.getDeclaringPluginDescriptor().getId(),e);
-							}
-						}
-					}
-				}
-				if (extension.equals("PostUserResetHook")) {
-					ExtensionPoint poExtPoint = 
-						manager.getRegistry().getExtensionPoint( 
-								"master", "PostUserResetHook");
-					for (Extension po : poExtPoint.getConnectedExtensions()) {
-						if (po.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
-							try {
-								manager.activatePlugin(po.getDeclaringPluginDescriptor().getId());
-								ClassLoader poLoader = manager.getPluginClassLoader( 
-										po.getDeclaringPluginDescriptor());
-								Class<?> poCls = poLoader.loadClass( 
-										po.getParameter("Class").valueAsString());
-								UserResetHookInterface postResetHook = (UserResetHookInterface) poCls.newInstance();
-								postResetHook.init();
-								_postResetHooks.add(postResetHook);
-								logger.debug("Loading PostUserResetHook into UserManager "+manager.getPluginFor(postResetHook).getDescriptor().getId());
-							}
-							catch (Exception e) {
-								logger.warn("Error loading PostUserResetHook extension to UserManager " + 
-										po.getDeclaringPluginDescriptor().getId(),e);
-							}
-						}
-					}
-				}
+		// Load any new pre reset hooks provided by the plugin being loaded
+		try {
+			List<UserResetHookInterface> loadedPreResetHooks = 
+				MasterPluginUtils.getLoadedExtensionObjects(this, "master", "PreUserResetHook", "Class", event);
+			for (UserResetHookInterface preResetHook : loadedPreResetHooks) {
+				preResetHook.init();
+				_preResetHooks.add(preResetHook);
+				logger.debug("Loading PreUserResetHook into UserManager from plugin "
+						+CommonPluginUtils.getPluginIdForObject(preResetHook));
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins from a loadplugin event for master extension point 'PreUserResetHook', possibly the "
+					+"master extension point definition has changed in the plugin.xml",e);
+		}
+
+		// Load any new post reset hooks provided by the plugin being loaded
+		try {
+			List<UserResetHookInterface> loadedPostResetHooks = 
+				MasterPluginUtils.getLoadedExtensionObjects(this, "master", "PostUserResetHook", "Class", event);
+			for (UserResetHookInterface postResetHook : loadedPostResetHooks) {
+				postResetHook.init();
+				_postResetHooks.add(postResetHook);
+				logger.debug("Loading PostUserResetHook into UserManager from plugin "
+						+CommonPluginUtils.getPluginIdForObject(postResetHook));
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins from a loadplugin event for master extension point 'PostUserResetHook', possibly the "
+					+"master extension point definition has changed in the plugin.xml",e);
 		}
 	}
 }
