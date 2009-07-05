@@ -185,6 +185,8 @@ public class SiteManagementHandler extends CommandInterface {
 		// ugly hack to clear resourcebundle cache
 		// see
 		// http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
+		// TODO look at using ResourceBundle.clearCache() for this once we
+		// can mandate java 6
 		try {
 			Field cacheList = ResourceBundle.class
 			.getDeclaredField("cacheList");

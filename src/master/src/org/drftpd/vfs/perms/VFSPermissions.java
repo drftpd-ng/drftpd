@@ -17,10 +17,10 @@
  */
 package org.drftpd.vfs.perms;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -28,10 +28,9 @@ import java.util.Map.Entry;
 import org.apache.log4j.Logger;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.DirectoryHandle;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * This object handles all the permissions releated to the VFS.
@@ -58,10 +57,7 @@ public class VFSPermissions {
 		_handlersMap = new HashMap<String, PermissionWrapper>();
 		_directiveToType = new HashMap<String, String>();
 		_priorities = new HashMap<String, TreeMap<Integer, String>>();
-		
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("master", "VFSPerm");
-		
+
 		/*
 		<extension-point id="VFSPerm">
 	      	<parameter-def id="Class" />
@@ -71,36 +67,31 @@ public class VFSPermissions {
 	     	<parameter-def id="Priority" />
 	   	</extension-point>
 		*/
-		
-		for (Extension ext : exp.getConnectedExtensions()) {
-			try {
-				String directive = ext.getParameter("Directive").valueAsString();
-				
+
+		try {
+			List<PluginObjectContainer<VFSPermHandler>> loadedHandlers =
+				CommonPluginUtils.getPluginObjectsInContainer(this, "master", "VFSPerm", "Class", "Method",
+						new Class[] { String.class, StringTokenizer.class });
+			for (PluginObjectContainer<VFSPermHandler> container : loadedHandlers) {
+				String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
+
 				if (_handlersMap.containsKey(directive)) {
 					logger.debug("A handler for '"+ directive +"' already loaded, check your plugin.xml's");
 					continue;
 				}
 
-				String type = ext.getParameter("Type").valueAsString().toLowerCase();
-				
+				String type = container.getPluginExtension().getParameter("Type").valueAsString().toLowerCase();
+
 				if (!verifyType(type)) {
 					logger.debug("Invalid VFS permission type ("+type+") for directive '"+directive+"'.");
 					continue;
 				}
-				
-				manager.activatePlugin(ext.getDeclaringPluginDescriptor().getId());
-				
-				ClassLoader clsLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());				
-				Class<?> clazz = clsLoader.loadClass(ext.getParameter("Class").valueAsString());				
-				Method m = clazz.getMethod(ext.getParameter("Method").valueAsString(), new Class[] { String.class, StringTokenizer.class });
-
-				VFSPermHandler permHnd = (VFSPermHandler) clazz.newInstance();
-				PermissionWrapper pw = new PermissionWrapper(permHnd, m);				
+				PermissionWrapper pw = new PermissionWrapper(container.getPluginObject(), container.getPluginMethod());				
 				_handlersMap.put(directive, pw);
 				_directiveToType.put(directive, type);
 				
 				// building execution order.
-				int priority = ext.getParameter("Priority").valueAsNumber().intValue();
+				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
 				TreeMap<Integer, String> order = _priorities.get(type);
 				if (order == null) {
 					order = new TreeMap<Integer, String>();
@@ -109,17 +100,17 @@ public class VFSPermissions {
 				while (true) {
 					if (order.containsKey(priority)) {
 						logger.debug("The slot that " + directive + " is trying to use is already allocated, " +
-								"check you xmls, allocting the next available");
+								"check the xmls, allocating the next available slot");
 						priority++;
 					} else {
 						order.put(priority, directive);
 						break;
 					}
 				}
-				
-			} catch (Exception e) {
-				logger.error(e, e);
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for master extension point 'VFSPerm', possibly the master"
+					+" extension point definition has changed in the plugin.xml",e);
 		}
 	}
 	

@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -37,12 +36,10 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.Session;
+import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.ExtendedPropertyResourceBundle;
+import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.DirectoryHandle;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -77,6 +74,48 @@ public class StandardCommandManager implements CommandManagerInterface {
 	}
 
 	public void initialize(HashMap<String,Properties> requiredCmds, String themeDir) {
+		loadThemes(themeDir);
+		if (_genericResponses == null ) {
+			initGenericResponses();
+		}
+
+		_commands = Collections.synchronizedMap(new HashMap<String, CommandInstanceContainer>());
+
+		/*	Iterate over the ArrayList of commands that the calling frontend
+		 * 	has stated it needs. Check to see whether we have a valid Command
+		 * 	extension attached for the command, is so add it to the commands
+		 * 	map to be used
+		 */
+		for (Entry<String,Properties> requiredCmd : requiredCmds.entrySet()) {
+			String methodString = requiredCmd.getValue().getProperty("method");
+			String classString = requiredCmd.getValue().getProperty("class");
+			String pluginString = requiredCmd.getValue().getProperty("plugin");
+			if (methodString == null || classString == null
+					|| pluginString == null) {
+				throw new FatalException(
+						"Cannot load command "
+						+ requiredCmd.getKey()
+						+ ", make sure method, class, and plugin are all specified");
+			}
+
+			try {
+				PluginObjectContainer<CommandInterface> container =
+					CommonPluginUtils.getSinglePluginObjectInContainer(this, "org.drftpd.commandmanager", "Command",
+							pluginString+"."+classString, methodString, pluginString, new Class[] { CommandRequest.class });
+				CommandInterface cmdInstance = container.getPluginObject();
+				cmdInstance.initialize(methodString, pluginString, this);
+				_commands.put(requiredCmd.getKey(),new CommandInstanceContainer(container.getPluginMethod(),cmdInstance));
+				logger.debug("Adding CommandInstance " + requiredCmd.getKey());
+			} catch(Exception e) {
+				/* Should be safe to continue, just means this command class won't be
+				 * available
+				 */
+				logger.info("Failed to add command handler: "+requiredCmd, e);
+			}
+		}
+	}
+
+	private void loadThemes(String themeDir) {
 		// Load the default theme for the frontend as well as any user overrides
 		FileInputStream defaultIs = null;
 		try {
@@ -144,77 +183,6 @@ public class StandardCommandManager implements CommandManagerInterface {
 				}
 			}
 			_defaultTheme.setParent(_fallbackTheme);
-		}
-		if (_commands == null ) {
-			initGenericResponses();
-		}
-
-		_commands = Collections.synchronizedMap(new HashMap<String, CommandInstanceContainer>());
-
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint cmdExtPoint = 
-			manager.getRegistry().getExtensionPoint( 
-					"org.drftpd.commandmanager", "Command");
-
-		/* Iterate over the available extensions connected to this extension
-		 * point and build a hashtable which the next section can use to retrieve
-		 * an extension based on its declaring plugin name.
-		 */
-		Hashtable<String,Extension> extensions = new Hashtable<String,Extension>();
-		for (Extension cmd : cmdExtPoint.getConnectedExtensions()) {
-			String pluginId = cmd.getDeclaringPluginDescriptor().getId();
-			extensions.put(pluginId,cmd);
-		}
-		/*	Iterate over the ArrayList of commands that the calling frontend
-		 * 	has stated it needs. Check to see whether we have a valid Command
-		 * 	extension attached for the command, is so add it to the commands
-		 * 	map to be used
-		 */
-		for (Entry<String,Properties> requiredCmd : requiredCmds.entrySet()) {
-			String methodString = requiredCmd.getValue().getProperty("method");
-			String classString = requiredCmd.getValue().getProperty("class");
-			String pluginString = requiredCmd.getValue().getProperty("plugin");
-			if (methodString == null || classString == null
-					|| pluginString == null) {
-				throw new FatalException(
-						"Cannot load command "
-						+ requiredCmd.getKey()
-						+ ", make sure method, class, and plugin are all specified");
-			}
-
-			if(!extensions.containsKey(pluginString)) {
-				logger.warn("Command plugin "+pluginString+" not found");
-				continue;
-			}
-
-			Extension cmd = extensions.get(pluginString);
-			//	If plugin isn't already activated then activate it
-			if (!manager.isPluginActivated(cmd.getDeclaringPluginDescriptor())) {
-				try {
-					manager.activatePlugin(pluginString);
-				}
-				catch (PluginLifecycleException e) {
-					logger.debug("plugin lifecycle exception", e);
-					// Not overly concerned about this
-				}
-			}
-			ClassLoader cmdLoader = manager.getPluginClassLoader( 
-					cmd.getDeclaringPluginDescriptor());
-			try {
-				Class<?> cmdCls = cmdLoader.loadClass(pluginString+"."+classString);
-				CommandInterface cmdInstance = (CommandInterface) cmdCls.newInstance();
-				cmdInstance.initialize(methodString, pluginString, this);
-				Method m = cmdInstance.getClass().getMethod(methodString,
-						new Class[] {CommandRequest.class});
-				_commands.put(requiredCmd.getKey(),new CommandInstanceContainer(m,cmdInstance));
-				logger.debug("Adding CommandInstance " + requiredCmd.getKey());
-			}
-			catch(Exception e) {
-				/* Should be safe to continue, just means this command class won't be
-				 * available
-				 */
-				logger.info("Failed to add command handler: "+requiredCmd, e);
-			}
 		}
 	}
 
@@ -293,9 +261,6 @@ public class StandardCommandManager implements CommandManagerInterface {
 	}
 
 	private static synchronized void initGenericResponses() {
-		if (_genericResponses != null) {
-			return;
-		}
 
 		Hashtable<String,CommandResponse> genericResponses = 
 			new Hashtable<String,CommandResponse>();
@@ -428,8 +393,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
 		for (String pluginExtension : event.getParentPlugins()) {
 			int pointIndex = pluginExtension.lastIndexOf("@");
 			String plugin = pluginExtension.substring(0, pointIndex);
@@ -437,7 +401,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			if (plugin.equals(currentPlugin) && extension.equals("Command")) {
 				for (Iterator<Entry<String,CommandInstanceContainer>> iter = _commands.entrySet().iterator(); iter.hasNext();) {
 					Entry<String, CommandInstanceContainer> entry = iter.next();
-					if (manager.getPluginFor(entry.getValue().getCommandInterfaceInstance()).getDescriptor().getId().equals(event.getPlugin())) {
+					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getCommandInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing command "+ entry.getKey());
 						iter.remove();
 					}

@@ -29,10 +29,8 @@ import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.HandshakeWrapper;
 import org.drftpd.protocol.ProtocolException;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 
 /**
  * MasterProtocolCentral handles the load of all connected Protocol Extensions,
@@ -59,51 +57,39 @@ public class MasterProtocolCentral {
 	 * Iterate through all connected extensions, loading them.
 	 */
 	private void loadProtocolExtensions() {
-		HashMap<Class<?>, AbstractIssuer> issuersMap = new HashMap<Class<?>, AbstractIssuer>();
+		HashMap<Class<?>, AbstractIssuer> issuersMap = 
+			new HashMap<Class<?>, AbstractIssuer>();
 		ArrayList<String> protocols = new ArrayList<String>();
-		
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("master", "ProtocolExtension");
-		
-		for (Extension ext : exp.getConnectedExtensions()) {
-			ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
-			
-			String pluginId = ext.getDeclaringPluginDescriptor().getId();
-			String issuerClassName = ext.getParameter("IssuerClass").valueAsString();
-			String protocolName = ext.getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
-			
-			try {
-				if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor())) {
-					manager.activatePlugin(pluginId);
-				}
 
-				Class<?> issuerClass = classLoader.loadClass(issuerClassName);
+		try {
+			List<PluginObjectContainer<AbstractIssuer>> loadedIssuers =
+				CommonPluginUtils.getPluginObjectsInContainer(this, "master", "ProtocolExtension", "IssuerClass");
+			for (PluginObjectContainer<AbstractIssuer> container : loadedIssuers) {
+				String protocolName = 
+					container.getPluginExtension().getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
+				Class<?> issuerClass = container.getPluginClass();
 				if (!issuersMap.containsKey(issuerClass)) {
-					AbstractIssuer issuer = (AbstractIssuer) issuerClass.newInstance();
-					
+
 					// hackish way to allow us to have an AbstractBasicIssuer.
 					Class<?> superClass = issuerClass.getSuperclass();
 					if (superClass != AbstractIssuer.class) {
 						issuerClass = superClass;
 					}
-					issuersMap.put(issuerClass, issuer);
+					issuersMap.put(issuerClass, container.getPluginObject());
 				}
-				
-				if (!protocols.contains(protocolName))
+
+				if (!protocols.contains(protocolName)) {
 					protocols.add(protocolName);
-				
-			} catch (PluginLifecycleException e) {
-				logger.debug("Error while activating plugin: " + pluginId, e);
-				continue;
-			} catch (Exception e) {
-				logger.error("Unable to load protocol plugin: " + pluginId, e);
-				continue;
-			}			
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for master extension point 'ProtocolExtension', possibly the master"
+					+" extension point definition has changed in the plugin.xml",e);
 		}
-		
-		_issuersMap = (Map<Class<?>, AbstractIssuer>) Collections.unmodifiableMap(issuersMap);
-		_protocols = (List<String>) Collections.unmodifiableList(protocols);
-		
+
+		_issuersMap = Collections.unmodifiableMap(issuersMap);
+		_protocols = Collections.unmodifiableList(protocols);
+
 		logger.debug("Dumping issuers map");
 		for (Entry<Class<?>, AbstractIssuer> e : _issuersMap.entrySet()) {
 			Class<?> clazz = e.getKey();

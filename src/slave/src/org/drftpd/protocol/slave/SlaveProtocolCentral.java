@@ -32,10 +32,8 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseException;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 
 /**
  * SlaveProtocolCentral handles the load of all connected Handlers.<br>
@@ -115,42 +113,25 @@ public class SlaveProtocolCentral {
 	 * Loads all connected Handlers and make them avaialable for later usage.
 	 */
 	private void loadHandlers() {
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint ep = manager.getRegistry().getExtensionPoint("slave", "Handler");
-		
 		HashMap<String, HandlerWrapper> handlers = new HashMap<String, HandlerWrapper>();
 		ArrayList<String> protocols = new ArrayList<String>();
 
-		for (Extension ext : ep.getConnectedExtensions()) {
-			ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
-
-			String pluginId = ext.getDeclaringPluginDescriptor().getId();
-			String protocolName = ext.getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
-			String className = ext.getParameter("Class").valueAsString();
-			String methodName = ext.getParameter("Method").valueAsString();
-			String name = ext.getParameter("Name").valueAsString();
-			
-			if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor())) {
-				try {
-					manager.activatePlugin(pluginId);
-				} catch (PluginLifecycleException e) {
-					logger.debug("Error while activating plugin: " + pluginId, e);
-				}
-			}
-
-			try {
-				Class<?> clazz = classLoader.loadClass(className);
-				AbstractHandler ah = (AbstractHandler) clazz.getConstructor(CONSTRUCTORPARMS).newInstance(new Object[]{ this });
-				Method m = clazz.getDeclaredMethod(methodName, METHODPARMS);
-
-				if (!protocols.contains(protocolName)) 
+		try {
+			List<PluginObjectContainer<AbstractHandler>> loadedHandlers =
+				CommonPluginUtils.getPluginObjectsInContainer(this, "slave", "Handler", "Class", "Method",
+						CONSTRUCTORPARMS, new Object[] { this }, METHODPARMS);
+			for (PluginObjectContainer<AbstractHandler> container : loadedHandlers) {
+				String protocolName = 
+					container.getPluginExtension().getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
+				String name = container.getPluginExtension().getParameter("Name").valueAsString();
+				if (!protocols.contains(protocolName)) {
 					protocols.add(protocolName);
-				
-				handlers.put(name, new HandlerWrapper(ah, m));
-			} catch (Exception e) {
-				logger.error("Unable to load handler: " + name, e);
-				continue;
+				}
+				handlers.put(name, new HandlerWrapper(container.getPluginObject(), container.getPluginMethod()));
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for slave extension point 'Handler', possibly the slave"
+					+" extension point definition has changed in the plugin.xml",e);
 		}
 		
 		_handlersMap = Collections.unmodifiableMap(handlers);

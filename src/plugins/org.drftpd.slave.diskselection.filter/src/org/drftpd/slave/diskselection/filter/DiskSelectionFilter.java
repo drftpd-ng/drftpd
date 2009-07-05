@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.drftpd.misc.CaseInsensitiveHashMap;
@@ -30,10 +31,8 @@ import org.drftpd.slave.RootCollection;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.diskselection.DiskSelectionInterface;
 import org.drftpd.slave.diskselection.filter.ScoreChart.RootScore;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 
 /**
  * DiskSelection core.<br>
@@ -159,34 +158,21 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 	
 	private void initFilters() {
 		CaseInsensitiveHashMap<String, Class<DiskFilter>> filtersMap = new CaseInsensitiveHashMap<String, Class<DiskFilter>>();
-		
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("org.drftpd.slave.diskselection.filter", "DiskFilter");
-		
-		for (Extension ext : exp.getAvailableExtensions()) {
-			ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
-			String pluginId = ext.getDeclaringPluginDescriptor().getId();
-			String filterName = ext.getParameter("FilterName").valueAsString();
-			String className = ext.getParameter("ClassName").valueAsString();
-			
-			try {
-				if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor())) {
-					manager.activatePlugin(pluginId);
-				}
-				
-				@SuppressWarnings("unchecked")
-				Class<DiskFilter> clazz = (Class<DiskFilter>) classLoader.loadClass(className);
-			
-				filtersMap.put(filterName, clazz);				
-			} catch (ClassNotFoundException e) {
-				logger.error(className + ": was not found", e);
-				continue;
-			} catch (PluginLifecycleException e) {
-				logger.debug("Error while activating plugin: "+pluginId, e);
-				continue;
+
+		try {
+			List<PluginObjectContainer<DiskFilter>> loadedFilters =
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.slave.diskselection.filter", "DiskFilter", "ClassName",
+						false);
+			for (PluginObjectContainer<DiskFilter> container : loadedFilters) {
+				String filterName = container.getPluginExtension().getParameter("FilterName").valueAsString();
+				filtersMap.put(filterName, container.getPluginClass());
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.slave.diskselection.filter extension point 'DiskFilter'"
+					+", possibly the org.drftpd.slave.diskselection.filter"
+					+" extension point definition has changed in the plugin.xml",e);
 		}
-		
+
 		_filtersMap = filtersMap;
 	}
 }

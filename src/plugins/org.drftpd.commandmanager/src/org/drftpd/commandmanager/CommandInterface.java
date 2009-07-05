@@ -25,9 +25,10 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -38,10 +39,8 @@ import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 
 /**
  * @author djb61
@@ -63,115 +62,55 @@ public abstract class CommandInterface {
 	}
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		_postHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PostHookInterface>>());
 		_preHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PreHookInterface>>());
+		_postHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PostHookInterface>>());
 
-		PluginManager manager = PluginManager.lookup(this);
-
-		/* Iterate through the post hook extensions registered for this plugin
-		 * and find any which belong to the method we are using in this instance,
-		 * add these to a method map for later use.
-		 */
-		ExtensionPoint postHookExtPoint = 
-			manager.getRegistry().getExtensionPoint(pluginName, "PostHook");
-
-		for (Extension postHook : postHookExtPoint.getConnectedExtensions()) {
-
-			if (postHook.getParameter("ParentMethod").valueAsString().equals(method)) {
-				if (!manager.isPluginActivated(postHook.getDeclaringPluginDescriptor())) {
-					try {
-						manager.activatePlugin(postHook.getDeclaringPluginDescriptor().getId());
-					}
-					catch (PluginLifecycleException e) {
-						// Not overly concerned about this
-						logger.debug("plugin lifecycle exception", e);
+		// Populate all available pre hooks
+		try {
+			List<PluginObjectContainer<PreHookInterface>> loadedPreHooks = 
+				CommonPluginUtils.getPluginObjectsInContainer(this, pluginName, "PreHook", "HookClass", "HookMethod",
+						"ParentMethod", method, new Class[] {CommandRequest.class});
+			for (PluginObjectContainer<PreHookInterface> container : loadedPreHooks) {
+				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
+				if (_preHooks.containsKey(priority)) {
+					logger.warn(pluginName + " already has a pre hook with priority " +
+							priority + " adding " + container.getPluginExtension().getId() + " with next available priority");
+					while (_preHooks.containsKey(priority)) {
+						priority++;
 					}
 				}
-				ClassLoader postHookLoader = manager.getPluginClassLoader( 
-						postHook.getDeclaringPluginDescriptor());
-				try {
-					Class<?> postHookCls = postHookLoader.loadClass(
-							postHook.getParameter("HookClass").valueAsString());
-					PostHookInterface postHookInstance = (PostHookInterface) postHookCls.newInstance();
-
-					postHookInstance.initialize(cManager);
-
-					Method m = postHookInstance.getClass().getMethod(
-							postHook.getParameter("HookMethod").valueAsString(),
-							new Class[] {CommandRequest.class, CommandResponse.class});
-					int priority = postHook.getParameter("Priority").valueAsNumber().intValue();
-					if (_postHooks.containsKey(priority)) {
-						logger.warn(pluginName + " already has a post hook with priority " +
-								priority + " adding " + postHook.getId() + " with next available priority");
-						while (_postHooks.containsKey(priority)) {
-							priority++;
-						}
-					}
-					_postHooks.put(priority,
-							new HookContainer<PostHookInterface>(m,postHookInstance));
-				}
-				catch(Exception e) {
-					/* Should be safe to continue, just means this post hook won't be
-					 * available
-					 */
-					logger.info("Failed to add post hook handler to " +
-							pluginName + " from plugin: "
-							+postHook.getDeclaringPluginDescriptor().getId(),e);
-				}
+				PreHookInterface preHookInstance = container.getPluginObject();
+				preHookInstance.initialize(cManager);
+				_preHooks.put(priority,
+						new HookContainer<PreHookInterface>(container.getPluginMethod(),preHookInstance));
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for "+pluginName+" extension point 'PreHook', possibly the "+pluginName
+					+" extension point definition has changed in the plugin.xml",e);
 		}
 
-		/* Iterate through the pre hook extensions registered for this plugin
-		 * and find any which belong to the method we are using in this instance,
-		 * add these to a method map for later use.
-		 */
-		ExtensionPoint preHookExtPoint = 
-			manager.getRegistry().getExtensionPoint(pluginName, "PreHook");
-
-		for (Extension preHook : preHookExtPoint.getConnectedExtensions()) {
-
-			if (preHook.getParameter("ParentMethod").valueAsString().equals(method)) {
-				if (!manager.isPluginActivated(preHook.getDeclaringPluginDescriptor())) {
-					try {
-						manager.activatePlugin(preHook.getDeclaringPluginDescriptor().getId());
-					}
-					catch (PluginLifecycleException e) {
-						// Not overly concerned about this
-						logger.debug("plugin lifecycle exception", e);
+		// Populate all available post hooks
+		try {
+			List<PluginObjectContainer<PostHookInterface>> loadedPostHooks = 
+				CommonPluginUtils.getPluginObjectsInContainer(this, pluginName, "PostHook", "HookClass", "HookMethod",
+						"ParentMethod", method, new Class[] {CommandRequest.class, CommandResponse.class});
+			for (PluginObjectContainer<PostHookInterface> container : loadedPostHooks) {
+				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
+				if (_postHooks.containsKey(priority)) {
+					logger.warn(pluginName + " already has a post hook with priority " +
+							priority + " adding " + container.getPluginExtension().getId() + " with next available priority");
+					while (_postHooks.containsKey(priority)) {
+						priority++;
 					}
 				}
-				ClassLoader preHookLoader = manager.getPluginClassLoader( 
-						preHook.getDeclaringPluginDescriptor());
-				try {
-					Class<?> preHookCls = preHookLoader.loadClass(
-							preHook.getParameter("HookClass").valueAsString());
-					PreHookInterface preHookInstance = (PreHookInterface) preHookCls.newInstance();
-
-					preHookInstance.initialize(cManager);
-
-					Method m = preHookInstance.getClass().getMethod(
-							preHook.getParameter("HookMethod").valueAsString(),
-							new Class[] {CommandRequest.class});
-					int priority = preHook.getParameter("Priority").valueAsNumber().intValue();
-					if (_preHooks.containsKey(priority)) {
-						logger.warn(pluginName + " already has a pre hook with priority " +
-								priority + " adding " + preHook.getId() + " with next available priority");
-						while (_preHooks.containsKey(priority)) {
-							priority++;
-						}
-					}
-					_preHooks.put(priority,
-							new HookContainer<PreHookInterface>(m,preHookInstance));
-				}
-				catch(Exception e) {
-					/* Should be safe to continue, just means this post hook won't be
-					 * available
-					 */
-					logger.info("Failed to add pre hook handler to " +
-							pluginName + " from plugin: "
-							+preHook.getDeclaringPluginDescriptor().getId(),e);
-				}
+				PostHookInterface postHookInstance = container.getPluginObject();
+				postHookInstance.initialize(cManager);
+				_postHooks.put(priority,
+						new HookContainer<PostHookInterface>(container.getPluginMethod(),postHookInstance));
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for "+pluginName+" extension point 'PostHook', possibly the "+pluginName
+					+" extension point definition has changed in the plugin.xml",e);
 		}
 	}
 
@@ -230,8 +169,7 @@ public abstract class CommandInterface {
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		PluginManager manager = PluginManager.lookup(this);
-		String currentPlugin = manager.getPluginFor(this).getDescriptor().getId();
+		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
 		for (String pluginExtension : event.getParentPlugins()) {
 			int pointIndex = pluginExtension.lastIndexOf("@");
 			String plugin = pluginExtension.substring(0, pointIndex);
@@ -239,7 +177,7 @@ public abstract class CommandInterface {
 			if (plugin.equals(currentPlugin) && extension.equals("PostHook")) {
 				for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
-					if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(event.getPlugin())) {
+					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing post hook provided by " + event.getPlugin() + " from " + currentPlugin);
 						iter.remove();
 					}
@@ -248,7 +186,7 @@ public abstract class CommandInterface {
 			if (plugin.equals(currentPlugin) && extension.equals("PreHook")) {
 				for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
-					if (manager.getPluginFor(entry.getValue().getHookInterfaceInstance()).getDescriptor().getId().equals(event.getPlugin())) {
+					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing pre hook provided by " + event.getPlugin() + " from " + currentPlugin);
 						iter.remove();
 					}

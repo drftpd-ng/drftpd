@@ -22,7 +22,6 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,12 +38,11 @@ import org.drftpd.permissions.PathPermission;
 import org.drftpd.permissions.Permission;
 import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.perms.VFSPermissions;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * Handles the loading of 'master.conf' and 'conf/perms.conf'<br>
@@ -120,39 +118,23 @@ public class ConfigManager implements ConfigInterface {
 	 */
 	private void loadConfigHandlers() {
 		_directivesMap = new HashMap<String, ConfigContainer>();
-		
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("master", "ConfigHandler");
-		
-		/*   
-		<extension-point id="ConfigHandler">
-		    <parameter-def id="Class" />
-		    <parameter-def id="Method" />
-		 	<parameter-def id="Directive" />
-		 </extension-point>
-		 */
-		
-		for (Extension ext : exp.getConnectedExtensions()) {
-			try {
-				String directive = ext.getParameter("Directive").valueAsString();
-				
+
+		try {
+			List<PluginObjectContainer<ConfigHandler>> loadedDirectives = 
+				CommonPluginUtils.getPluginObjectsInContainer(this, "master", "ConfigHandler", "Class", "Method",
+						new Class[] { String.class, StringTokenizer.class });
+			for (PluginObjectContainer<ConfigHandler> container : loadedDirectives) {
+				String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
 				if (_directivesMap.containsKey(directive)) {
 					logger.debug("A handler for "+ directive +" already loaded, check your plugin.xml's");
 					continue;
 				}
-				
-				manager.activatePlugin(ext.getDeclaringPluginDescriptor().getId());
-				
-				ClassLoader clsLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());				
-				Class<?> clazz = clsLoader.loadClass(ext.getParameter("Class").valueAsString());				
-				ConfigHandler cfgHnd = (ConfigHandler) clazz.newInstance();
-				Method m = clazz.getMethod(ext.getParameter("Method").valueAsString(), new Class[] { String.class, StringTokenizer.class });
-				
-				ConfigContainer cc = new ConfigContainer(cfgHnd, m);				
+				ConfigContainer cc = new ConfigContainer(container.getPluginObject(), container.getPluginMethod());				
 				_directivesMap.put(directive, cc);
-			} catch (Exception e) {
-				logger.error("Impossible to load extension: "+ ext.getId() ,e);
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for master extension point 'Directive', possibly the master"
+					+" extension point definition has changed in the plugin.xml",e);
 		}
 	}
 	

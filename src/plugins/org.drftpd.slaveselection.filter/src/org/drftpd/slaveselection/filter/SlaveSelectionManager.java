@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -30,12 +31,10 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
-import org.java.plugin.PluginLifecycleException;
-import org.java.plugin.PluginManager;
-import org.java.plugin.registry.Extension;
-import org.java.plugin.registry.ExtensionPoint;
 
 /**
  * @author mog
@@ -58,35 +57,18 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	
 	private void initFilters() {
 		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<String, Class<Filter>>();
-		
-		PluginManager manager = PluginManager.lookup(this);
-		ExtensionPoint exp = manager.getRegistry().getExtensionPoint("org.drftpd.slaveselection.filter", "Filter");
-		
-		for (Extension ext : exp.getAvailableExtensions()) {
-			ClassLoader classLoader = manager.getPluginClassLoader(ext.getDeclaringPluginDescriptor());
-			String pluginId = ext.getDeclaringPluginDescriptor().getId();
-			String filterName = ext.getParameter("FilterName").valueAsString();
-			String className = ext.getParameter("ClassName").valueAsString();
-			
-			try {
-				if (!manager.isPluginActivated(ext.getDeclaringPluginDescriptor())) {
-					manager.activatePlugin(pluginId);
-				}
-				@SuppressWarnings("unchecked")
-				Class<Filter> clazz = (Class<Filter>)classLoader.loadClass(className);
-				if (clazz.getSuperclass() != Filter.class) {
-					logger.error(className + " does not extend Filter.class");
-					continue;
-				}
-				
-				filtersMap.put(filterName, clazz);				
-			} catch (ClassNotFoundException e) {
-				logger.error(className + ": was not found", e);
-				continue;
-			} catch (PluginLifecycleException e) {
-				logger.debug("Error while activating plugin: "+pluginId, e);
-				continue;
+
+		try {
+			List<PluginObjectContainer<Filter>> loadedFilters =
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.slaveselection.filter", "Filter", "ClassName", false);
+			for (PluginObjectContainer<Filter> container : loadedFilters) {
+				String filterName = container.getPluginExtension().getParameter("FilterName").valueAsString();
+				filtersMap.put(filterName, container.getPluginClass());
 			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.slaveselection.filter extension point 'Filter'"
+					+", possibly the org.drftpd.slaveselection.filter"
+					+" extension point definition has changed in the plugin.xml",e);
 		}
 		
 		_filtersMap = filtersMap;

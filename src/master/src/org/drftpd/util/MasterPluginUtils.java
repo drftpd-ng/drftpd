@@ -125,7 +125,7 @@ public class MasterPluginUtils {
 		List<T> loadedExtensions = null;
 		try {
 			loadedExtensions = getLoadedExtensionObjects(caller, parentPluginName, extName, classParamName, event,
-					new Class[] {}, new Object[] {}, true, true, false);
+					null, null, true, true, false);
 		} catch (PluginLifecycleException e) {
 			// Can't happen as method has been called with argument not to throw this exception
 		} catch (ClassNotFoundException e) {
@@ -168,11 +168,11 @@ public class MasterPluginUtils {
 	 *
 	 * @param  constructorSig
 	 *         The signature of the constructor in the class to be used when instantiating an instance.
-	 *         To use an empty constructor pass an empty <tt>Class</tt> array.
+	 *         To use an empty constructor pass <tt>null</tt>.
 	 *
 	 * @param  constructorArgs
 	 *         The objects to pass to the constructor in the class to be used when instantiating an instance.
-	 *         To use an empty constructor pass an empty <tt>Object</tt> array.
+	 *         To use an empty constructor pass <tt>null</tt>.
 	 *
 	 * @return  A <tt>List</tt> containing an instance of the class from each extension that could
 	 *          successfully be loaded from. If the plugin being loaded does not implement the passed
@@ -224,11 +224,11 @@ public class MasterPluginUtils {
 	 *
 	 * @param  constructorSig
 	 *         The signature of the constructor in the class to be used when instantiating an instance.
-	 *         To use an empty constructor pass an empty <tt>Class</tt> array.
+	 *         To use an empty constructor pass <tt>null</tt>.
 	 *
 	 * @param  constructorArgs
 	 *         The objects to pass to the constructor in the class to be used when instantiating an instance.
-	 *         To use an empty constructor pass an empty <tt>Object</tt> array.
+	 *         To use an empty constructor pass <tt>null</tt>.
 	 *
 	 * @param  activatePlugin
 	 *         If <tt>true</tt> then the new plugin will be activated in the plugin framework if it
@@ -290,12 +290,14 @@ public class MasterPluginUtils {
 				for (Extension plugin : pluginExtPoint.getConnectedExtensions()) {
 					if (plugin.getDeclaringPluginDescriptor().getId().equals(event.getPlugin())) {
 						try {
-							manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+							if (activatePlugin && !manager.isPluginActivated(plugin.getDeclaringPluginDescriptor())) {
+								manager.activatePlugin(plugin.getDeclaringPluginDescriptor().getId());
+							}
 							ClassLoader pluginLoader = manager.getPluginClassLoader( 
 									plugin.getDeclaringPluginDescriptor());
 							Class<?> pluginCls = CommonPluginUtils.loadPluginClass(pluginLoader,
 									plugin.getParameter(classParamName).valueAsString());
-							if (constructorSig.length == 0) {
+							if (constructorSig == null) {
 								loadedExtensions.add((T)pluginCls.newInstance());
 							} else {
 								loadedExtensions.add((T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs));
@@ -303,7 +305,8 @@ public class MasterPluginUtils {
 						} catch (ClassNotFoundException e) {
 							if (logError) {
 								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-										+", requested class "+plugin.getParameter(classParamName)+" not found",e);
+										+", requested class "+plugin.getParameter(classParamName).valueAsString()
+										+" not found",e);
 							}
 							if (failOnError) {
 								throw e;
@@ -311,7 +314,7 @@ public class MasterPluginUtils {
 						} catch (IllegalAccessException e) {
 							if (logError) {
 								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-										+", requested class "+plugin.getParameter(classParamName)
+										+", requested class "+plugin.getParameter(classParamName).valueAsString()
 										+" has no default constructor",e);
 							}
 							if (failOnError) {
@@ -319,8 +322,8 @@ public class MasterPluginUtils {
 							}
 						} catch (InstantiationException e) {
 							if (logError) {
-								logger.warn("Error loading plugin"+plugin.getDeclaringPluginDescriptor().getId()
-										+", requested class "+plugin.getParameter(classParamName)
+								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
+										+", requested class "+plugin.getParameter(classParamName).valueAsString()
 										+" is not a concrete class",e);
 							}
 							if (failOnError) {
@@ -329,8 +332,8 @@ public class MasterPluginUtils {
 						} catch (InvocationTargetException e) {
 							if (logError) {
 								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-										+", requested constructor in class "+plugin.getParameter(classParamName)+
-										" threw an exception",e);
+										+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
+										+" threw an exception",e);
 							}
 							if (failOnError) {
 								throw e;
@@ -338,7 +341,8 @@ public class MasterPluginUtils {
 						} catch (NoSuchMethodException e) {
 							if (logError) {
 								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-										+", requested constructor in class "+plugin.getParameter(classParamName)+" not found",e);
+										+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
+										+" not found",e);
 							}
 							if (failOnError) {
 								throw e;

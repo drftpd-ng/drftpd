@@ -114,15 +114,6 @@ public class BasicIssuer extends AbstractBasicIssuer {
 		return index;
 	}
 
-	/*public String issueDIZFileToSlave(RemoteSlave rslave, InodeHandle file)	throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "dizfile", file
-				.getPath());
-
-		rslave.sendCommand(ac);
-		return index;
-	}*/
-
 	public String issueStatusToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
 		rslave.sendCommand(new AsyncCommand(index, "status"));
