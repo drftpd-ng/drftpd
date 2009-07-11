@@ -2908,7 +2908,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private void loadAnnouncers(String confDir) {
 		try {
 			List<AnnounceInterface> loadedAnnouncers =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Announce", "class");
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Announce", "Class");
 			for (AnnounceInterface announcer : loadedAnnouncers) {
 				_announcers.add(announcer);
 				logger.debug("Loading sitebot announcer from plugin "

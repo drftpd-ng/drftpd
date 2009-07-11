@@ -15,18 +15,8 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension-point id="PostHook">
-		<parameter-def id="HookClass" type="string" />
-		<parameter-def id="HookMethod" type="string" />
-		<parameter-def id="ParentMethod" type="string" />
-		<parameter-def id="Priority" type="number" />
-	</extension-point>
-	<extension-point id="PreHook">
-		<parameter-def id="HookClass" type="string" />
-		<parameter-def id="HookMethod" type="string" />
-		<parameter-def id="ParentMethod" type="string" />
-		<parameter-def id="Priority" type="number" />
-	</extension-point>
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
 	
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="IndexManagerHandler" />
 	
