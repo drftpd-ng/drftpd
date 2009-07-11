@@ -270,7 +270,6 @@ public class MasterPluginUtils {
 	 * @throws  PluginLifecycleException
 	 *          If the plugin cannot be activated and <tt>failOnError</tt> is <tt>true</tt>
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> List<T> getLoadedExtensionObjects(Object caller, String parentPluginName, String extName, 
 			String classParamName, LoadPluginEvent event, Class<?>[] constructorSig, Object[] constructorArgs,
 			boolean activatePlugin, boolean logError, boolean failOnError) throws
@@ -295,12 +294,12 @@ public class MasterPluginUtils {
 							}
 							ClassLoader pluginLoader = manager.getPluginClassLoader( 
 									plugin.getDeclaringPluginDescriptor());
-							Class<?> pluginCls = CommonPluginUtils.loadPluginClass(pluginLoader,
+							Class<T> pluginCls = CommonPluginUtils.loadPluginClass(pluginLoader,
 									plugin.getParameter(classParamName).valueAsString());
 							if (constructorSig == null) {
-								loadedExtensions.add((T)pluginCls.newInstance());
+								loadedExtensions.add(pluginCls.newInstance());
 							} else {
-								loadedExtensions.add((T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs));
+								loadedExtensions.add(pluginCls.getConstructor(constructorSig).newInstance(constructorArgs));
 							}
 						} catch (ClassNotFoundException e) {
 							if (logError) {

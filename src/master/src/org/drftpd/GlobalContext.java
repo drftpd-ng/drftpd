@@ -116,7 +116,7 @@ public class GlobalContext {
 	private void loadSlaveSelectionManager(Properties cfg) {
 		String desiredSL = PropertyHelper.getProperty(cfg, "slaveselection");
 		try {
-			_slaveSelectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SlaveSelection", "class", desiredSL);
+			_slaveSelectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SlaveSelection", "Class", desiredSL);
 		} catch (Exception e) {
 			throw new FatalException("Unable to load the slaveselection plugin, check config.", e);
 		}
@@ -183,7 +183,7 @@ public class GlobalContext {
 
 		String desiredCm = PropertyHelper.getProperty(cfg, "commandmanager");
 		try {
-			return CommonPluginUtils.getSinglePluginObject(this, "master", "CommandManager", "class", desiredCm);
+			return CommonPluginUtils.getSinglePluginObject(this, "master", "CommandManager", "Class", desiredCm);
 		} catch (Exception e) {
 			throw new FatalException(
 					"Cannot create instance of commandmanager, check 'commandmanager' in the configuration file",
@@ -193,7 +193,7 @@ public class GlobalContext {
 
 	private void loadPlugins() {
 		try {
-			List<PluginInterface> loadedPlugins = CommonPluginUtils.getPluginObjects(this, "master", "Plugin", "class");
+			List<PluginInterface> loadedPlugins = CommonPluginUtils.getPluginObjects(this, "master", "Plugin", "Class");
 			for (PluginInterface newPlugin : loadedPlugins) {
 				newPlugin.startPlugin();
 				_plugins.add(newPlugin);
@@ -207,7 +207,7 @@ public class GlobalContext {
 	private void loadSectionManager(Properties cfg) {
 		String desiredSm = PropertyHelper.getProperty(cfg, "sectionmanager");
 		try {
-			_sectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SectionManager", "class", desiredSm);
+			_sectionManager = CommonPluginUtils.getSinglePluginObject(this, "master", "SectionManager", "Class", desiredSm);
 		} catch (Exception e) {
 			throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
 		}
@@ -216,7 +216,7 @@ public class GlobalContext {
 	private void loadIndexingEngine(Properties cfg) {
 		String desiredIe = PropertyHelper.getProperty(cfg, "indexingengine");
 		try {
-			_indexEngine = CommonPluginUtils.getSinglePluginObject(this, "master", "IndexingEngine", "class", desiredIe);
+			_indexEngine = CommonPluginUtils.getSinglePluginObject(this, "master", "IndexingEngine", "Class", desiredIe);
 			_indexEngine.init();
 		} catch (Exception e) {
 			throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
@@ -239,7 +239,7 @@ public class GlobalContext {
 	protected void loadUserManager(Properties cfg) {
 		String desiredUm = PropertyHelper.getProperty(cfg, "usermanager");
 		try {
-			_usermanager = CommonPluginUtils.getSinglePluginObject(this, "master", "UserManager", "class", desiredUm);
+			_usermanager = CommonPluginUtils.getSinglePluginObject(this, "master", "UserManager", "Class", desiredUm);
 			_usermanager.init();
 		} catch (Exception e) {
 			throw new FatalException(

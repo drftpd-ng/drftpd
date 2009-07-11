@@ -13,19 +13,19 @@
 		</library>
 	</runtime>
 	<extension-point id="PostHook">
-		<parameter-def id="HookClass" />
-		<parameter-def id="HookMethod" />
-		<parameter-def id="ParentMethod" />
+		<parameter-def id="HookClass" type="string" />
+		<parameter-def id="HookMethod" type="string" />
+		<parameter-def id="ParentMethod" type="string" />
 		<parameter-def id="Priority" type="number" />
 	</extension-point>
 	<extension-point id="PreHook">
-		<parameter-def id="HookClass" />
-		<parameter-def id="HookMethod" />
-		<parameter-def id="ParentMethod" />
+		<parameter-def id="HookClass" type="string" />
+		<parameter-def id="HookMethod" type="string" />
+		<parameter-def id="ParentMethod" type="string" />
 		<parameter-def id="Priority" type="number" />
 	</extension-point>
 	
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="NukeHandler"></extension>
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="NukeHandler" />
 	
 	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="NukeCheck">
 		<parameter id="ParentMethod" value="doMKD" />

@@ -15,8 +15,7 @@
 		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.master.def" path="build/classes/" type="code">
-		</library>
+		<library id="org.drftpd.protocol.master.def" path="build/classes/" type="code" />
 	</runtime>
 
 	<extension plugin-id="master" point-id="ProtocolExtension" id="BasicProtocol">

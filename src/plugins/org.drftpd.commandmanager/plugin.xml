@@ -15,9 +15,8 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension-point id="Command">
-	</extension-point>
+	<extension-point id="Command" />
 	<extension plugin-id="master" point-id="CommandManager" id="StandardCommandManager">
-		<parameter id="class" value="org.drftpd.commandmanager.StandardCommandManager"/>
+		<parameter id="Class" value="org.drftpd.commandmanager.StandardCommandManager" />
 	</extension>
 </plugin>

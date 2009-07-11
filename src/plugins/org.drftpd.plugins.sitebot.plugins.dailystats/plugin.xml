@@ -7,13 +7,12 @@
 		<import plugin-id="org.drftpd.plugins.sitebot" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot.plugins.dailystats" path="build/classes/" type="code">
-		</library>
+		<library id="org.drftpd.plugins.sitebot.plugins.dailystats" path="build/classes/" type="code" />
 	</runtime>
 	<extension plugin-id="master" point-id="PreUserResetHook" id="StatsTimer">
 		<parameter id="Class" value="org.drftpd.plugins.sitebot.plugins.dailystats.DailyStats"/>
 	</extension>
 	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="StatsAnnounce">
-		<parameter id="class" value="org.drftpd.plugins.sitebot.plugins.dailystats.announce.StatsAnnouncer" />
+		<parameter id="Class" value="org.drftpd.plugins.sitebot.plugins.dailystats.announce.StatsAnnouncer" />
 	</extension>
 </plugin>

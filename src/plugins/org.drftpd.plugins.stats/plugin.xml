@@ -78,6 +78,6 @@
 	
 	
 	<extension plugin-id="master" point-id="Plugin" id="StatsManager">
-		<parameter id="class" value="org.drftpd.plugins.stats.StatsManager"/>
+		<parameter id="Class" value="org.drftpd.plugins.stats.StatsManager"/>
 	</extension>
 </plugin>

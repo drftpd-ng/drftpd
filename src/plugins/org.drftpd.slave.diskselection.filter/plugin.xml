@@ -17,8 +17,8 @@
 	</runtime>
 	
 	<extension-point id="DiskFilter">
-		<parameter-def id="FilterName" />
-		<parameter-def id="ClassName" />
+		<parameter-def id="FilterName" type="string" />
+		<parameter-def id="ClassName" type="string" />
 	</extension-point>
 	
 	<extension plugin-id="slave" point-id="DiskSelection" id="DiskSelectionFilter">

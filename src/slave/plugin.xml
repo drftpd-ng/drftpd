@@ -25,12 +25,12 @@
 	</runtime>
 	
 	<extension-point id="Handler">
-		<parameter-def id="Name" />
-		<parameter-def id="Class" />
-		<parameter-def id="Method" />
+		<parameter-def id="Name" type="string" />
+		<parameter-def id="Class" type="string" />
+		<parameter-def id="Method" type="string" />
 	</extension-point>
 	
 	<extension-point id="DiskSelection">
-		<parameter-def id="Class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 </plugin>

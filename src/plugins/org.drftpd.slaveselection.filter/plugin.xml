@@ -16,12 +16,12 @@
 		</library>
 	</runtime>
 	<extension-point id="Filter">
-		<parameter-def id="FilterName" />
-		<parameter-def id="ClassName" />
+		<parameter-def id="FilterName" type="string" />
+		<parameter-def id="ClassName" type="string" />
 	</extension-point>
 	
 	<extension plugin-id="master" point-id="SlaveSelection" id="SlaveSelectionFilter">
-		<parameter id="class" value="org.drftpd.slaveselection.filter.SlaveSelectionManager"/>
+		<parameter id="Class" value="org.drftpd.slaveselection.filter.SlaveSelectionManager"/>
 	</extension>
 	
 	<!-- Filters -->

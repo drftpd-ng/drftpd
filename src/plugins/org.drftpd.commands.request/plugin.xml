@@ -13,19 +13,18 @@
 		</library>
 	</runtime>
 	<extension-point id="PostHook">
-		<parameter-def id="HookClass" />
-		<parameter-def id="HookMethod" />
-		<parameter-def id="ParentMethod" />
+		<parameter-def id="HookClass" type="string" />
+		<parameter-def id="HookMethod" type="string" />
+		<parameter-def id="ParentMethod" type="string" />
 		<parameter-def id="Priority" type="number" />
 	</extension-point>
 	<extension-point id="PreHook">
-		<parameter-def id="HookClass" />
-		<parameter-def id="HookMethod" />
-		<parameter-def id="ParentMethod" />
+		<parameter-def id="HookClass" type="string" />
+		<parameter-def id="HookMethod" type="string" />
+		<parameter-def id="ParentMethod" type="string" />
 		<parameter-def id="Priority" type="number" />
 	</extension-point>
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="RequestHandler">
-	</extension>
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="RequestHandler" />
 	<extension plugin-id="org.drftpd.commands.request" point-id="PreHook" id="doSITE_REQUESTPerm">
 		<parameter id="ParentMethod" value="doSITE_REQUEST" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />

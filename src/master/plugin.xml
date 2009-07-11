@@ -28,43 +28,43 @@
 		</library>
 	</runtime>
 	<extension-point id="UserManager">
-		<parameter-def id="class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="PreUserResetHook">
-		<parameter-def id="Class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="PostUserResetHook">
-		<parameter-def id="Class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="CommandManager">
-		<parameter-def id="class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="SectionManager">
-		<parameter-def id="class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="Plugin">
-		<parameter-def id="class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="SlaveSelection">
-		<parameter-def id="class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="IndexingEngine">
-		<parameter-def id="class" />
+		<parameter-def id="Class" type="string" />
 	</extension-point>
 	<extension-point id="ProtocolExtension">
-		<parameter-def id="IssuerClass" />
+		<parameter-def id="IssuerClass" type="string" />
 	</extension-point>
 	
 	<extension-point id="ConfigHandler">
-		<parameter-def id="Class" />
-		<parameter-def id="Method" />
-		<parameter-def id="Directive" />
+		<parameter-def id="Class" type="string" />
+		<parameter-def id="Method" type="string" />
+		<parameter-def id="Directive" type="string" />
 	</extension-point>
 	<extension-point id="VFSPerm">
-	   	<parameter-def id="Class" />
-	   	<parameter-def id="Method" />
-	   	<parameter-def id="Type" />
-	  	<parameter-def id="Directive" />
-	  	<parameter-def id="Priority" type="number"/>
+	   	<parameter-def id="Class" type="string" />
+	   	<parameter-def id="Method" type="string" />
+	   	<parameter-def id="Type" type="string" />
+	  	<parameter-def id="Directive" type="string" />
+	  	<parameter-def id="Priority" type="number" />
 	</extension-point>
 </plugin>

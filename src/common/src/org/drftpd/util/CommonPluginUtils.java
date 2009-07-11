@@ -234,7 +234,6 @@ public class CommonPluginUtils {
 	 * @throws  PluginLifecycleException
 	 *          If a plugin cannot be activated and <tt>failOnError</tt> is <tt>true</tt>
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> List<T> getPluginObjects(Object caller, String pluginName, String extName, String classParamName,
 			Class<?>[] constructorSig, Object[] constructorArgs, boolean activatePlugin, boolean logError, boolean failOnError) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
@@ -251,12 +250,12 @@ public class CommonPluginUtils {
 				}
 				ClassLoader pluginLoader = manager.getPluginClassLoader( 
 						plugin.getDeclaringPluginDescriptor());
-				Class<?> pluginCls = loadPluginClass(pluginLoader, 
+				Class<T> pluginCls = loadPluginClass(pluginLoader, 
 						plugin.getParameter(classParamName).valueAsString());
 				if (constructorSig == null) {
-					pluginObjs.add((T)pluginCls.newInstance());
+					pluginObjs.add(pluginCls.newInstance());
 				} else {
-					pluginObjs.add((T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs));
+					pluginObjs.add(pluginCls.getConstructor(constructorSig).newInstance(constructorArgs));
 				}
 			} catch (ClassNotFoundException e) {
 				if (logError) {
@@ -490,7 +489,6 @@ public class CommonPluginUtils {
 	 * @throws  PluginLifecycleException
 	 *          If the requested plugin cannot be activated
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> T getSinglePluginObject(Object caller, String parentPluginName, String extName, String classParamName,
 			String desiredPlugin, Class<?>[] constructorSig, Object[] constructorArgs, boolean activatePlugin, boolean logError) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
@@ -507,12 +505,12 @@ public class CommonPluginUtils {
 					}
 					ClassLoader pluginLoader = manager.getPluginClassLoader( 
 							plugin.getDeclaringPluginDescriptor());
-					Class<?> pluginCls = loadPluginClass(pluginLoader, 
+					Class<T> pluginCls = loadPluginClass(pluginLoader, 
 							plugin.getParameter(classParamName).valueAsString());
 					if (constructorSig == null) {
-						return (T)pluginCls.newInstance();
+						return pluginCls.newInstance();
 					} else {
-						return (T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
+						return pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 					}
 				}
 			} catch (ClassNotFoundException e) {
@@ -620,8 +618,9 @@ public class CommonPluginUtils {
 	 *
 	 * @return  A <tt>Class</tt> object of the loaded class
 	 */
-	protected static Class<?> loadPluginClass(ClassLoader loader, String className) throws ClassNotFoundException {
-		return loader.loadClass(className);
+	@SuppressWarnings("unchecked")
+	protected static <T> Class<T> loadPluginClass(ClassLoader loader, String className) throws ClassNotFoundException {
+		return (Class<T>)loader.loadClass(className);
 	}
 
 	/**
@@ -1050,7 +1049,6 @@ public class CommonPluginUtils {
 	 * @throws  PluginLifecycleException
 	 *          If a plugin cannot be activated and <tt>failOnError</tt> is <tt>true</tt>
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> List<PluginObjectContainer<T>> getPluginObjectsInContainer(Object caller, String pluginName, String extName,
 			String classParamName, String methodParamName, String inclusionParamName, String inclusionParamValue,
 			Class<?>[] constructorSig, Object[] constructorArgs, Class<?>[] methodSig, boolean createInstance,
@@ -1072,15 +1070,15 @@ public class CommonPluginUtils {
 				}
 				ClassLoader pluginLoader = manager.getPluginClassLoader( 
 						plugin.getDeclaringPluginDescriptor());
-				Class<T> pluginCls = (Class<T>)loadPluginClass(pluginLoader, 
+				Class<T> pluginCls = loadPluginClass(pluginLoader, 
 						plugin.getParameter(classParamName).valueAsString());
 				PluginObjectContainer<T> container = null;
 				if (createInstance) {
 					T pluginInstance = null;
 					if (constructorSig == null) {
-						pluginInstance = (T)pluginCls.newInstance();
+						pluginInstance = pluginCls.newInstance();
 					} else {
-						pluginInstance = (T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
+						pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 					}
 					if (methodSig == null) {
 						container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin);
@@ -1296,7 +1294,6 @@ public class CommonPluginUtils {
 	 * @throws  PluginLifecycleException
 	 *          If the requested plugin cannot be activated
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> PluginObjectContainer<T> getSinglePluginObjectInContainer(Object caller, String parentPluginName,
 			String extName, String className, String methodName, String desiredPlugin, Class<?>[] constructorSig,
 			Object[] constructorArgs, Class<?>[] methodSig, boolean createInstance, boolean activatePlugin, boolean logError) throws
@@ -1314,14 +1311,14 @@ public class CommonPluginUtils {
 					}
 					ClassLoader pluginLoader = manager.getPluginClassLoader( 
 							plugin.getDeclaringPluginDescriptor());
-					Class<T> pluginCls = (Class<T>)loadPluginClass(pluginLoader,className); 
+					Class<T> pluginCls = loadPluginClass(pluginLoader,className); 
 					PluginObjectContainer<T> container = null;
 					if (createInstance) {
 						T pluginInstance = null;
 						if (constructorSig == null) {
-							pluginInstance = (T)pluginCls.newInstance();
+							pluginInstance = pluginCls.newInstance();
 						} else {
-							pluginInstance = (T)pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
+							pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 						}
 						if (methodSig == null) {
 							container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin);

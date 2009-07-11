@@ -12,10 +12,9 @@ plugin as well as the MP3 zipscript plugins are required by this plugin.</doc-te
 		<import plugin-id="org.drftpd.plugins.sitebot" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot.announce.zipscript.mp3" path="build/classes/" type="code">
-		</library>
+		<library id="org.drftpd.plugins.sitebot.announce.zipscript.mp3" path="build/classes/" type="code" />
 	</runtime>
 	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="MP3Announce">
-		<parameter id="class" value="org.drftpd.plugins.sitebot.announce.zipscript.mp3.MP3Announcer" />
+		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.zipscript.mp3.MP3Announcer" />
 	</extension>
 </plugin>
