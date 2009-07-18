@@ -13,10 +13,6 @@
 		<fileset dir="lib" includes="*.jar" />
 	</path>
 
-	<typedef resource="org/java/plugin/tools/ant/jpf-tasks.properties">
-			<classpath refid="classpath" />
-	</typedef>
-
 	<target name="build" description="Builds entire project">
 		<!-- beware of dragons -->
 		<echo>WARNING: The trunk branch of DrFTPD is bleeding edge code, which includes</echo>
@@ -35,6 +31,30 @@
 		<echo>be capable of solving difficult system problems on their own.</echo>
 		<echo /> 
 		<echo>If you are new to DrFTPD, think twice before installing this version.</echo>
+		<!-- compile plugin framework classes -->
+		<javac
+			srcdir="src/jpf"
+			classpathref="classpath"
+			excludes=""
+			target="${build.javac}"
+			debug="${build.debug}"
+			optimize="${build.optimize}" />
+		<!-- create tools jar -->
+		<jar destfile="lib/${app.name}-jpf-${app.version}.jar">
+			<manifest>
+				<attribute name="Class-Path" value="ant.jar" />
+				<attribute name="Specification-Title" value="DrFTPd - plugin framework library" />
+				<attribute name="Specification-Version" value="${app.version}" />
+				<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
+				<attribute name="Implementation-Title" value="org.java.plugin.drftpd" />
+				<attribute name="Implementation-Version" value="${app.version}" />
+				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
+			</manifest>
+			<fileset dir="src/jpf" includes="**/*.class" />
+		</jar>
+		<delete>
+			<fileset dir="src/jpf" includes="**/*.class" />
+		</delete>
 		<!-- compile tools classes -->
 		<javac
 			srcdir="src/tools"
@@ -44,7 +64,7 @@
 			debug="${build.debug}"
 			optimize="${build.optimize}" />
 		<!-- create tools jar -->
-		<jar destfile="lib/${app.name}-tools.jar">
+		<jar destfile="lib/${app.name}-tools-${app.version}.jar">
 			<manifest>
 				<attribute name="Class-Path" value="ant.jar" />
 				<attribute name="Specification-Title" value="DrFTPd - tools library" />
@@ -54,19 +74,10 @@
 				<attribute name="Implementation-Version" value="${app.version}" />
 				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
 			</manifest>
-			<fileset dir="src/tools" includes="**/*.class,**/*.properties"/>
+			<fileset dir="src/tools" includes="**/*.class,**/*.properties" />
 		</jar>
 		<delete>
 			<fileset dir="src/tools" includes="**/*.class" />
 		</delete>
-	</target>
-
-	<target name="check"
-		depends="build"
-		description="Checks plug-ins integrity">
-		<jpf-check basedir="${basedir}"
-			includes="core/*/plugin.xml,plugins/*/plugin.xml"
-			verbose="${build.verbose}"
-			usepathresolver="true" />
 	</target>
 </project>

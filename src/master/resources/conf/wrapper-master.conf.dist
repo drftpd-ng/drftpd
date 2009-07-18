@@ -20,6 +20,7 @@ wrapper.java.classpath.2=lib/jpf-1.5.1.jar
 wrapper.java.classpath.3=lib/jpf-boot-1.5.1.jar
 wrapper.java.classpath.4=lib/commons-logging-1.1.1.jar
 wrapper.java.classpath.5=lib/log4j-1.2.15.jar
+wrapper.java.classpath.6=lib/drftpd-jpf-2.1.0.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib
@@ -27,6 +28,8 @@ wrapper.java.library.path.1=lib
 # Java Additional Parameters
 wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-default.properties
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-master.properties
+wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
+wrapper.java.additional.4=-XX:+UnsyncloadClass
 
 # ---------------------------------------
 # Enable below if you wish to monitor the memory that drftpd uses, the 
@@ -36,7 +39,7 @@ wrapper.java.additional.2=-Djpf.boot.config=conf/boot-master.properties
 # If you have a jvm greater or equal to 1.5.0.03 HAT (the tool I was
 # going to use) will work with it.  If your JVM is old, upgrade or
 # don't bother
-#wrapper.java.additional.2=-Xrunhprof:heap=dump,file=hprof.txt,format=b
+#wrapper.java.additional.5=-Xrunhprof:heap=dump,file=hprof.txt,format=b
 # ---------------------------------------
 
 # Initial Java Heap Size (in MB)
