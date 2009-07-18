@@ -450,7 +450,7 @@ public class GlobalContext {
 	@EventSubscriber
 	public void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
-			List<PluginInterface> loadedExtensions = MasterPluginUtils.getLoadedExtensionObjects(this, "master", "Plugin", "class", event);
+			List<PluginInterface> loadedExtensions = MasterPluginUtils.getLoadedExtensionObjects(this, "master", "Plugin", "Class", event);
 			for (PluginInterface newExtension : loadedExtensions) {
 				newExtension.startPlugin();
 				logger.debug("Loading plugin "+CommonPluginUtils.getPluginIdForObject(newExtension));

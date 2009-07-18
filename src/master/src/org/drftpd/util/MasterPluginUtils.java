@@ -46,7 +46,7 @@ import org.java.plugin.registry.ExtensionPoint;
  * @author djb61
  * @version $Id$
  */
-public class MasterPluginUtils {
+public class MasterPluginUtils extends CommonPluginUtils {
 
 	private static final Logger logger = Logger.getLogger(MasterPluginUtils.class);
 
@@ -294,7 +294,7 @@ public class MasterPluginUtils {
 							}
 							ClassLoader pluginLoader = manager.getPluginClassLoader( 
 									plugin.getDeclaringPluginDescriptor());
-							Class<T> pluginCls = CommonPluginUtils.loadPluginClass(pluginLoader,
+							Class<T> pluginCls = loadPluginClass(pluginLoader,
 									plugin.getParameter(classParamName).valueAsString());
 							if (constructorSig == null) {
 								loadedExtensions.add(pluginCls.newInstance());
