@@ -53,6 +53,7 @@ public class StatusSubscriber {
 				GlobalContext.getEventService().unsubscribe(SlaveEvent.class, this);
 				GlobalContext.getEventService().unsubscribe(UnloadPluginEvent.class, this);
 				nullify();
+				return;
 			}
 		}
 	}

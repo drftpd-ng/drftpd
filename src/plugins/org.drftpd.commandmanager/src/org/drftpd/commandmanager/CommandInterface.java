@@ -61,9 +61,9 @@ public abstract class CommandInterface {
 		AnnotationProcessor.process(this);
 	}
 
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		_preHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PreHookInterface>>());
-		_postHooks = Collections.synchronizedMap(new TreeMap<Integer, HookContainer<PostHookInterface>>());
+	public synchronized void initialize(String method, String pluginName, StandardCommandManager cManager) {
+		TreeMap<Integer,HookContainer<PreHookInterface>> preHooks = new TreeMap<Integer,HookContainer<PreHookInterface>>();
+		TreeMap<Integer,HookContainer<PostHookInterface>> postHooks = new TreeMap<Integer,HookContainer<PostHookInterface>>();
 
 		// Populate all available pre hooks
 		try {
@@ -72,16 +72,16 @@ public abstract class CommandInterface {
 						"ParentMethod", method, new Class[] {CommandRequest.class});
 			for (PluginObjectContainer<PreHookInterface> container : loadedPreHooks) {
 				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
-				if (_preHooks.containsKey(priority)) {
+				if (preHooks.containsKey(priority)) {
 					logger.warn(pluginName + " already has a pre hook with priority " +
 							priority + " adding " + container.getPluginExtension().getId() + " with next available priority");
-					while (_preHooks.containsKey(priority)) {
+					while (preHooks.containsKey(priority)) {
 						priority++;
 					}
 				}
 				PreHookInterface preHookInstance = container.getPluginObject();
 				preHookInstance.initialize(cManager);
-				_preHooks.put(priority,
+				preHooks.put(priority,
 						new HookContainer<PreHookInterface>(container.getPluginMethod(),preHookInstance));
 			}
 		} catch (IllegalArgumentException e) {
@@ -96,22 +96,24 @@ public abstract class CommandInterface {
 						"ParentMethod", method, new Class[] {CommandRequest.class, CommandResponse.class});
 			for (PluginObjectContainer<PostHookInterface> container : loadedPostHooks) {
 				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
-				if (_postHooks.containsKey(priority)) {
+				if (postHooks.containsKey(priority)) {
 					logger.warn(pluginName + " already has a post hook with priority " +
 							priority + " adding " + container.getPluginExtension().getId() + " with next available priority");
-					while (_postHooks.containsKey(priority)) {
+					while (postHooks.containsKey(priority)) {
 						priority++;
 					}
 				}
 				PostHookInterface postHookInstance = container.getPluginObject();
 				postHookInstance.initialize(cManager);
-				_postHooks.put(priority,
+				postHooks.put(priority,
 						new HookContainer<PostHookInterface>(container.getPluginMethod(),postHookInstance));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for "+pluginName+" extension point 'PostHook', possibly the "+pluginName
 					+" extension point definition has changed in the plugin.xml",e);
 		}
+		_preHooks = preHooks;
+		_postHooks = postHooks;
 	}
 
 	protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
@@ -168,28 +170,45 @@ public abstract class CommandInterface {
 	}
 
 	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
+		TreeMap<Integer,HookContainer<PreHookInterface>> clonedPreHooks = null;
+		TreeMap<Integer,HookContainer<PostHookInterface>> clonedPostHooks = null;
 		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
 		for (String pluginExtension : event.getParentPlugins()) {
 			int pointIndex = pluginExtension.lastIndexOf("@");
 			String plugin = pluginExtension.substring(0, pointIndex);
 			String extension = pluginExtension.substring(pointIndex+1);
 			if (plugin.equals(currentPlugin) && extension.equals("PostHook")) {
+				if (clonedPostHooks == null) {
+					clonedPostHooks = new TreeMap<Integer,HookContainer<PostHookInterface>>(_postHooks);
+				}
+				boolean hookRemoved = false;
 				for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing post hook provided by " + event.getPlugin() + " from " + currentPlugin);
 						iter.remove();
+						hookRemoved = true;
 					}
+				}
+				if (hookRemoved) {
+					_postHooks = clonedPostHooks;
 				}
 			}
 			if (plugin.equals(currentPlugin) && extension.equals("PreHook")) {
+				if (clonedPreHooks == null) {
+					clonedPreHooks = new TreeMap<Integer,HookContainer<PreHookInterface>>(_preHooks);
+				}
+				boolean hookRemoved = false;
 				for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing pre hook provided by " + event.getPlugin() + " from " + currentPlugin);
 						iter.remove();
 					}
+				}
+				if (hookRemoved) {
+					_preHooks = clonedPreHooks;
 				}
 			}
 		}

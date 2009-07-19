@@ -27,9 +27,9 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.vfs.DirectoryHandle;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author djb61
@@ -39,14 +39,14 @@ public class AnnounceConfig {
 
 	private static final Logger logger = Logger.getLogger(AnnounceConfig.class);
 
-	private ConcurrentHashMap<String,ArrayList<AnnounceWriter>> _pathWriters = 
-		new ConcurrentHashMap<String,ArrayList<AnnounceWriter>>();
+	private HashMap<String,ArrayList<AnnounceWriter>> _pathWriters = 
+		new HashMap<String,ArrayList<AnnounceWriter>>();
 
-	private ConcurrentHashMap<String,ArrayList<AnnounceWriter>> _sectionWriters =
-		new ConcurrentHashMap<String,ArrayList<AnnounceWriter>>();
+	private HashMap<String,ArrayList<AnnounceWriter>> _sectionWriters =
+		new HashMap<String,ArrayList<AnnounceWriter>>();
 
-	private ConcurrentHashMap<String,AnnounceWriter> _simpleWriters =
-		new ConcurrentHashMap<String,AnnounceWriter>();
+	private HashMap<String,AnnounceWriter> _simpleWriters =
+		new HashMap<String,AnnounceWriter>();
 
 	private ArrayList<String> _eventTypes;
 
@@ -62,8 +62,15 @@ public class AnnounceConfig {
 				.getPropertiesForPlugin(confDir+"/ircannounce.conf"));
 	}
 
-	private void loadConfig(Properties cfg) {
-		for (String type : _eventTypes) {
+	private synchronized void loadConfig(Properties cfg) {
+		ArrayList<String> clonedEvents = new ArrayList<String>(_eventTypes);
+		HashMap<String,ArrayList<AnnounceWriter>> pathWriters =
+			new HashMap<String,ArrayList<AnnounceWriter>>();
+		HashMap<String,ArrayList<AnnounceWriter>> sectionWriters =
+			new HashMap<String,ArrayList<AnnounceWriter>>();
+		HashMap<String,AnnounceWriter> simpleWriters =
+			new HashMap<String,AnnounceWriter>();
+		for (String type : clonedEvents) {
 			// First check for any path settings for this type
 			ArrayList<AnnounceWriter> pWriters = new ArrayList<AnnounceWriter>();
 			for (int i = 1;; i++) {
@@ -90,10 +97,7 @@ public class AnnounceConfig {
 				pWriters.add(new AnnounceWriter(matcher,writers,displayName));
 			}
 			if (pWriters.size() > 0) {
-				_pathWriters.put(type, pWriters);
-			} else {
-				// In case this setting has been removed and conf reloaded
-				_pathWriters.remove(type);
+				pathWriters.put(type, pWriters);
 			}
 
 			// Next check for any section settings for this type
@@ -114,10 +118,7 @@ public class AnnounceConfig {
 				sWriters.add(new AnnounceWriter(null,writers,sectionName));
 			}
 			if (sWriters.size() > 0) {
-				_sectionWriters.put(type, sWriters);
-			} else {
-				// In case this setting has been removed and conf reloaded
-				_sectionWriters.remove(type);
+				sectionWriters.put(type, sWriters);
 			}
 
 			// Finally check for any pathless settings for this type
@@ -125,14 +126,14 @@ public class AnnounceConfig {
 			if (destination == null || destination.equals("")) {
 				continue;
 			}
-			ArrayList<OutputWriter> simpleWriters = parseDestinations(destination);
-			if (simpleWriters.size() > 0) {
-				_simpleWriters.put(type, new AnnounceWriter(null,simpleWriters,null));
-			} else {
-				// In case this setting has been removed and conf reloaded
-				_simpleWriters.remove(type);
+			ArrayList<OutputWriter> simpWriters = parseDestinations(destination);
+			if (simpWriters.size() > 0) {
+				simpleWriters.put(type, new AnnounceWriter(null,simpWriters,null));
 			}
 		}
+		_pathWriters = pathWriters;
+		_sectionWriters = sectionWriters;
+		_simpleWriters = simpleWriters;
 	}
 
 	private ArrayList<OutputWriter> parseDestinations(String destination) {
@@ -217,9 +218,5 @@ public class AnnounceConfig {
 
 	public SiteBot getBot() {
 		return _bot;
-	}
-
-	public void updateEventTypes(ArrayList<String> eventTypes) {
-		_eventTypes = eventTypes;
 	}
 }

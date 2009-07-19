@@ -2948,7 +2948,6 @@ public class SiteBot implements ReplyConstants, Runnable {
 		joinChannels();
 		// Check whether each channel we are currently in is still listed in the conf, if not then part
 		ArrayList<ChannelConfig> chanConfig = _config.getChannels();
-		ArrayList<String> partChans = new ArrayList<String>();
 		for (String channel: _channels.keySet()) {
 			boolean isConf = false;
 			for (ChannelConfig confChan : chanConfig) {
@@ -2958,17 +2957,14 @@ public class SiteBot implements ReplyConstants, Runnable {
 				}
 			}
 			if (!isConf) {
-				partChans.add(channel);
+				partChannel(channel,"No longer servicing this channel");
 			}
-		}
-		for (String channel : partChans) {
-			partChannel(channel,"No longer servicing this channel");
 		}
 		_announceConfig.reload();
 	}
 
 	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
 		Set<AnnounceInterface> unloadedAnnouncers =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "Announce", event, _announcers);
 		if (!unloadedAnnouncers.isEmpty()) {
@@ -2988,14 +2984,13 @@ public class SiteBot implements ReplyConstants, Runnable {
 				}
 			}
 			if (typeRemoved) {
-				_announceConfig.updateEventTypes(_eventTypes);
 				_announceConfig.reload();
 			}
 		}
 	}
 
 	@EventSubscriber
-	public void onLoadPluginEvent(LoadPluginEvent event) {
+	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			boolean typeAdded = false;
 			List<AnnounceInterface> loadedAnnouncers =
@@ -3011,7 +3006,6 @@ public class SiteBot implements ReplyConstants, Runnable {
 				}
 			}
 			if (typeAdded) {
-				_announceConfig.updateEventTypes(_eventTypes);
 				_announceConfig.reload();
 			}
 		} catch (IllegalArgumentException e) {

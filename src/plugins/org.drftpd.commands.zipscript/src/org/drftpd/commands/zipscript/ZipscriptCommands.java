@@ -62,10 +62,10 @@ public class ZipscriptCommands extends CommandInterface {
 	private StandardCommandManager _commandManager;
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-    	_commandManager = cManager;
+		super.initialize(method, pluginName, cManager);
+		_commandManager = cManager;
 
-    	// Subscribe to events
+		// Subscribe to events
 		AnnotationProcessor.process(this);
 
 		// Load any rescan post process providers from plugins
@@ -197,29 +197,39 @@ public class ZipscriptCommands extends CommandInterface {
 	}
 
 	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
 		Set<RescanPostProcessDirInterface> unloadedRescanAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "RescanPostProcessDir", event, _rescanAddons);
 		if (!unloadedRescanAddons.isEmpty()) {
-			for (Iterator<RescanPostProcessDirInterface> iter = _rescanAddons.iterator(); iter.hasNext();) {
+			ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<RescanPostProcessDirInterface>(_rescanAddons);
+			boolean addonRemoved = false;
+			for (Iterator<RescanPostProcessDirInterface> iter = clonedRescanAddons.iterator(); iter.hasNext();) {
 				RescanPostProcessDirInterface rescanAddon = iter.next();
 				if (unloadedRescanAddons.contains(rescanAddon)) {
 					logger.debug("Unloading rescan post process addon provided by plugin "
 							+CommonPluginUtils.getPluginIdForObject(rescanAddon));
 					iter.remove();
+					addonRemoved = true;
 				}
+			}
+			if (addonRemoved) {
+				_rescanAddons = clonedRescanAddons;
 			}
 		}
 	}
 
 	@EventSubscriber
-	public void onLoadPluginEvent(LoadPluginEvent event) {
+	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<RescanPostProcessDirInterface> loadedRescanAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "RescanPostProcessDir", "Class", event);
-			for (RescanPostProcessDirInterface rescanAddon : loadedRescanAddons) {
-				rescanAddon.initialize(_commandManager);
-				_rescanAddons.add(rescanAddon);
+			if (!loadedRescanAddons.isEmpty()) {
+				ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<RescanPostProcessDirInterface>(_rescanAddons);
+				for (RescanPostProcessDirInterface rescanAddon : loadedRescanAddons) {
+					rescanAddon.initialize(_commandManager);
+					clonedRescanAddons.add(rescanAddon);
+				}
+				_rescanAddons = clonedRescanAddons;
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for org.drftpd.commands.zipscript extension point 'RescanPostProcessDir'"+

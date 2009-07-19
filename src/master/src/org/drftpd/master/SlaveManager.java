@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.net.ssl.SSLSocket;
@@ -81,7 +82,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	
 	private static AbstractBasicIssuer _basicIssuer = null;
 	
-	protected Map<String,RemoteSlave> _rslaves = Collections.synchronizedMap(new HashMap<String,RemoteSlave>());
+	protected Map<String,RemoteSlave> _rslaves = new ConcurrentHashMap<String,RemoteSlave>();
 
 	private int _port;
 

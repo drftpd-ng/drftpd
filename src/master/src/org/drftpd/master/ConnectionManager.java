@@ -104,6 +104,8 @@ public class ConnectionManager {
 
 			getConnectionManager().loadCommands();
 			Properties cfg = GlobalContext.getConfig().getMainProperties();
+			/** initialise command manager before accepting connections **/
+			getConnectionManager().initCommandManager();
 
 			/** listen for connections * */
 			String bindip = null;
@@ -238,13 +240,16 @@ public class ConnectionManager {
 		return null; // everything passed
 	}
 
-	public CommandManagerInterface getCommandManager() {
+	private void initCommandManager() {
 		if (_commandManager == null) {
 			_commandManager = getGlobalContext().getCommandManager();
 			if (_commandManager != null) {
 				_commandManager.initialize(getCommands(), themeDir);
 			}
 		}
+	}
+
+	public CommandManagerInterface getCommandManager() {
 		return _commandManager;
 	}
 

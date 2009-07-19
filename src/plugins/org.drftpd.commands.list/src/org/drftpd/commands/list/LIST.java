@@ -397,28 +397,38 @@ public class LIST extends CommandInterface {
 	}
 
 	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
 		Set<AddListElementsInterface> unloadedListAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "AddElements", event, _listAddons);
 		if (!unloadedListAddons.isEmpty()) {
-			for (Iterator<AddListElementsInterface> iter = _listAddons.iterator(); iter.hasNext();) {
+			ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<AddListElementsInterface>(_listAddons);
+			boolean addonRemoved = false;
+			for (Iterator<AddListElementsInterface> iter = clonedListAddons.iterator(); iter.hasNext();) {
 				AddListElementsInterface listAddon = iter.next();
 				if (unloadedListAddons.contains(listAddon)) {
 					logger.debug("Unloading list element addon provided by plugin "
 							+CommonPluginUtils.getPluginIdForObject(listAddon));
 					iter.remove();
+					addonRemoved = true;
 				}
+			}
+			if (addonRemoved) {
+				_listAddons = clonedListAddons;
 			}
 		}
 	}
 
 	@EventSubscriber
-	public void onLoadPluginEvent(LoadPluginEvent event) {
+	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<AddListElementsInterface> loadedListAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.list", "AddElements", "Class", event);
-			for (AddListElementsInterface listAddon : loadedListAddons) {
-				_listAddons.add(listAddon);
+			if (!loadedListAddons.isEmpty()) {
+				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<AddListElementsInterface>(_listAddons);
+				for (AddListElementsInterface listAddon : loadedListAddons) {
+					clonedListAddons.add(listAddon);
+				}
+				_listAddons = clonedListAddons;
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.commands.list extension point 'AddElements'"+

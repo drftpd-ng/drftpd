@@ -12,7 +12,6 @@
 	</path>
 
 	<!-- declare third party tasks -->
-	<taskdef resource="org/java/plugin/tools/ant/jpf-tasks.properties" />
 	<typedef resource="org/java/plugin/tools/ant/jpf-tasks.properties">
 		<classpath refid="classpath" />
 	</typedef>

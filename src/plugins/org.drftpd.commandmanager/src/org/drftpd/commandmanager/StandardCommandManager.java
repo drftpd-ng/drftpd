@@ -22,9 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -54,7 +52,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 	.getLogger(StandardCommandManager.class);
 
 	private static final String _defaultThemeDir = "conf/themes/ftp";
-	private static Hashtable<String,CommandResponse> _genericResponses;
+	private static HashMap<String,CommandResponse> _genericResponses = initGenericResponses();
 
 	private ExtendedPropertyResourceBundle _defaultTheme;
 
@@ -73,13 +71,10 @@ public class StandardCommandManager implements CommandManagerInterface {
 		AnnotationProcessor.process(this);
 	}
 
-	public void initialize(HashMap<String,Properties> requiredCmds, String themeDir) {
+	public synchronized void initialize(HashMap<String,Properties> requiredCmds, String themeDir) {
 		loadThemes(themeDir);
-		if (_genericResponses == null ) {
-			initGenericResponses();
-		}
 
-		_commands = Collections.synchronizedMap(new HashMap<String, CommandInstanceContainer>());
+		HashMap<String,CommandInstanceContainer> commands = new HashMap<String,CommandInstanceContainer>();
 
 		/*	Iterate over the ArrayList of commands that the calling frontend
 		 * 	has stated it needs. Check to see whether we have a valid Command
@@ -104,7 +99,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 							pluginString+"."+classString, methodString, pluginString, new Class[] { CommandRequest.class });
 				CommandInterface cmdInstance = container.getPluginObject();
 				cmdInstance.initialize(methodString, pluginString, this);
-				_commands.put(requiredCmd.getKey(),new CommandInstanceContainer(container.getPluginMethod(),cmdInstance));
+				commands.put(requiredCmd.getKey(),new CommandInstanceContainer(container.getPluginMethod(),cmdInstance));
 				logger.debug("Adding CommandInstance " + requiredCmd.getKey());
 			} catch(Exception e) {
 				/* Should be safe to continue, just means this command class won't be
@@ -113,6 +108,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 				logger.info("Failed to add command handler: "+requiredCmd, e);
 			}
 		}
+		_commands = commands;
 	}
 
 	private void loadThemes(String themeDir) {
@@ -260,10 +256,9 @@ public class StandardCommandManager implements CommandManagerInterface {
 		return response;
 	}
 
-	private static synchronized void initGenericResponses() {
-
-		Hashtable<String,CommandResponse> genericResponses = 
-			new Hashtable<String,CommandResponse>();
+	private static HashMap<String,CommandResponse> initGenericResponses() {
+		HashMap<String,CommandResponse> genericResponses = 
+			new HashMap<String,CommandResponse>();
 
 		/** 150 File status okay; about to open data connection. */
 		genericResponses.put("RESPONSE_150_OK",
@@ -374,7 +369,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 		genericResponses.put("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS",
 				new CommandResponse(553, "Requested action not taken. File exists."));
 
-		_genericResponses = genericResponses;
+		return genericResponses;
 	}
 
 	public CommandRequestInterface newRequest(String argument,
@@ -392,19 +387,28 @@ public class StandardCommandManager implements CommandManagerInterface {
 	}
 
 	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
+		HashMap<String,CommandInstanceContainer> clonedCommands = null;
 		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
 		for (String pluginExtension : event.getParentPlugins()) {
 			int pointIndex = pluginExtension.lastIndexOf("@");
 			String plugin = pluginExtension.substring(0, pointIndex);
 			String extension = pluginExtension.substring(pointIndex+1);
 			if (plugin.equals(currentPlugin) && extension.equals("Command")) {
-				for (Iterator<Entry<String,CommandInstanceContainer>> iter = _commands.entrySet().iterator(); iter.hasNext();) {
+				if (clonedCommands == null) {
+					clonedCommands = new HashMap<String,CommandInstanceContainer>(_commands);
+				}
+				boolean removedCmd = false;
+				for (Iterator<Entry<String,CommandInstanceContainer>> iter = clonedCommands.entrySet().iterator(); iter.hasNext();) {
 					Entry<String, CommandInstanceContainer> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getCommandInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing command "+ entry.getKey());
 						iter.remove();
+						removedCmd = true;
 					}
+				}
+				if (removedCmd) {
+					_commands = clonedCommands;
 				}
 			}
 		}

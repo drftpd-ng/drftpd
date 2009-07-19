@@ -72,9 +72,9 @@ public class GlobalContext {
 	private static final Logger logger = Logger.getLogger(GlobalContext.class);
 
 	private static GlobalContext _gctx;
-	
+
 	private PluginsConfig _pluginsConfig;
-	
+
 	private ConfigInterface _config;
 
 	private ArrayList<PluginInterface> _plugins = new ArrayList<PluginInterface>();
@@ -92,9 +92,9 @@ public class GlobalContext {
 	protected SlaveSelectionManagerInterface _slaveSelectionManager;
 
 	private SSLContext _sslContext;
-	
+
 	private TimeManager _timeManager;
-	
+
 	private IndexEngineInterface _indexEngine;
 
 	private static DirectoryHandle root = new DirectoryHandle(VirtualFileSystem.separator);
@@ -104,7 +104,7 @@ public class GlobalContext {
 	public void reloadFtpConfig() throws IOException {
 		_config.reload();
 	}
-	
+
 	/**
 	 * If you're creating a GlobalContext object and it's not part of a TestCase
 	 * you're not doing it correctly, GlobalContext is a Singleton
@@ -125,7 +125,7 @@ public class GlobalContext {
 	public PluginsConfig getPluginsConfig() {
 		return _pluginsConfig;
 	}
-	
+
 	public void loadPluginsConfig() {
 		_pluginsConfig = new PluginsConfig();
 	}
@@ -133,7 +133,7 @@ public class GlobalContext {
 	public static ConnectionManager getConnectionManager() {
 		return ConnectionManager.getConnectionManager();
 	}
-	
+
 	public static ConfigInterface getConfig() {
 		return getGlobalContext()._config;
 	}
@@ -161,7 +161,7 @@ public class GlobalContext {
 
 		return _slaveManager;
 	}
-	
+
 	public IndexEngineInterface getIndexingEngine() {
 		return _indexEngine;
 	}
@@ -203,7 +203,7 @@ public class GlobalContext {
 					"point definition has changed in the plugin.xml",e);
 		}
 	}
-	
+
 	private void loadSectionManager(Properties cfg) {
 		String desiredSm = PropertyHelper.getProperty(cfg, "sectionmanager");
 		try {
@@ -212,7 +212,7 @@ public class GlobalContext {
 			throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
 		}
 	}
-	
+
 	private void loadIndexingEngine(Properties cfg) {
 		String desiredIe = PropertyHelper.getProperty(cfg, "indexingengine");
 		try {
@@ -260,7 +260,7 @@ public class GlobalContext {
 		getConnectionManager().shutdownPrivate(message);
 		new Thread(new Shutdown()).start();
 	}
-	
+
 	class Shutdown implements Runnable {
 		public void run() {
 			while(GlobalContext.getConnectionManager().getConnections().size() > 0) {
@@ -282,7 +282,7 @@ public class GlobalContext {
 	public SlaveSelectionManagerInterface getSlaveSelectionManager() {
 		return _slaveSelectionManager;
 	}
-	
+
 	public void addTimeEvent(TimeEventInterface timeEvent) {
 		_timeManager.addTimeEvent(timeEvent);
 	}
@@ -314,7 +314,7 @@ public class GlobalContext {
 	public void init() {
 		_config = new ConfigManager();
 		_config.reload();
-		
+
 		CommitManager.getCommitManager().start();
 		_timeManager = new TimeManager();
 		loadPluginsConfig();
@@ -342,7 +342,7 @@ public class GlobalContext {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
-	
+
 
 	/**
 	 * Will return null if SSL/TLS is not configured
@@ -353,33 +353,33 @@ public class GlobalContext {
 
 	public static HashMap<String, Properties> loadCommandConfig(String cmdConf) {
 		HashMap<String,Properties> commandsConfig = new HashMap<String,Properties>();
-        LineNumberReader reader = null;
-        try {
-        	reader = new LineNumberReader(new FileReader(cmdConf));
-        	String curLine = null;
-        	
-        	while (reader.ready()) {
-        		curLine = reader.readLine().trim();
-        		if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
-        			// comment or blank line, ignore
-        			continue;
-        		}
-        		if (curLine.endsWith("{")) {
-        			// internal loop
-        			String cmdName = curLine.substring(0, curLine.lastIndexOf("{")-1).toLowerCase();
-    				if (commandsConfig.containsKey(cmdName)) {
-    					throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
-    				}
-        			Properties p = getPropertiesUntilClosed(reader);
-        			logger.debug("Adding command " + cmdName);
+		LineNumberReader reader = null;
+		try {
+			reader = new LineNumberReader(new FileReader(cmdConf));
+			String curLine = null;
 
-        			commandsConfig.put(cmdName,p);
-        		} else {
-        			throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
-        		}
-        	}
-        	// done reading for new commands, must be finished
-        	return commandsConfig;
+			while (reader.ready()) {
+				curLine = reader.readLine().trim();
+				if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
+					// comment or blank line, ignore
+					continue;
+				}
+				if (curLine.endsWith("{")) {
+					// internal loop
+					String cmdName = curLine.substring(0, curLine.lastIndexOf("{")-1).toLowerCase();
+					if (commandsConfig.containsKey(cmdName)) {
+						throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+					}
+					Properties p = getPropertiesUntilClosed(reader);
+					logger.debug("Adding command " + cmdName);
+
+					commandsConfig.put(cmdName,p);
+				} else {
+					throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
+				}
+			}
+			// done reading for new commands, must be finished
+			return commandsConfig;
 		} catch (IOException e) {
 			throw new FatalException("Error loading "+cmdConf, e);
 		} catch (Exception e) {
@@ -388,44 +388,44 @@ public class GlobalContext {
 			}
 			throw new FatalException(e);
 		} finally {
-	    	if(reader != null) {
-	    		try {
+			if(reader != null) {
+				try {
 					reader.close();
 				} catch (IOException e) {
 				}
-	    	}
-	    }
+			}
+		}
 	}
 
 	private static Properties getPropertiesUntilClosed(LineNumberReader reader) throws IOException {
 		Properties p = new Properties();
 		String curLine = null;
-    	while (reader.ready()) {
-    		curLine = reader.readLine().trim();
-    		if (curLine.startsWith("#") || curLine.equals("")) {
-    			// comment or blank line, ignore
-    			continue;
-    		}
-    		if (curLine.equals("}")) {
-    			// end of this block
-    			return p;
-    		}
-    		// internal loop
-    		int spaceIndex = curLine.indexOf(" ");
-    		if (spaceIndex == -1) {
-    			throw new FatalException("Line " + reader.getLineNumber() + " is not formatted properly");
-    		}
-    		String propName = curLine.substring(0, spaceIndex);
-    		String value = curLine.substring(spaceIndex).trim();
-    		String concatenate = p.getProperty(propName);
-    		if (concatenate == null) {
-        		p.put(propName, value);    			
-    		} else {
-    			p.put(propName, concatenate + "\n" + value);
-    		}
+		while (reader.ready()) {
+			curLine = reader.readLine().trim();
+			if (curLine.startsWith("#") || curLine.equals("")) {
+				// comment or blank line, ignore
+				continue;
+			}
+			if (curLine.equals("}")) {
+				// end of this block
+				return p;
+			}
+			// internal loop
+			int spaceIndex = curLine.indexOf(" ");
+			if (spaceIndex == -1) {
+				throw new FatalException("Line " + reader.getLineNumber() + " is not formatted properly");
+			}
+			String propName = curLine.substring(0, spaceIndex);
+			String value = curLine.substring(spaceIndex).trim();
+			String concatenate = p.getProperty(propName);
+			if (concatenate == null) {
+				p.put(propName, value);    			
+			} else {
+				p.put(propName, concatenate + "\n" + value);
+			}
 
-    	}
-    	throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
+		}
+		throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
 	}
 
 	public static AsyncThreadSafeEventService getEventService() {
@@ -433,28 +433,38 @@ public class GlobalContext {
 	}
 
 	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
 		Set<PluginInterface> unloadedExtensions = MasterPluginUtils.getUnloadedExtensionObjects(this, "Plugin", event, _plugins);
 		if (!unloadedExtensions.isEmpty()) {
-			for (Iterator<PluginInterface> iter = _plugins.iterator(); iter.hasNext();) {
+			ArrayList<PluginInterface> clonedPlugins = new ArrayList<PluginInterface>(_plugins);
+			boolean pluginRemoved = false;
+			for (Iterator<PluginInterface> iter = clonedPlugins.iterator(); iter.hasNext();) {
 				PluginInterface plugin = iter.next();
 				if (unloadedExtensions.contains(plugin)) {
 					plugin.stopPlugin("Plugin being unloaded");
 					logger.debug("Unloading plugin "+CommonPluginUtils.getPluginIdForObject(plugin));
 					iter.remove();
+					pluginRemoved = true;
 				}
+			}
+			if (pluginRemoved) {
+				_plugins = clonedPlugins;
 			}
 		}
 	}
 
 	@EventSubscriber
-	public void onLoadPluginEvent(LoadPluginEvent event) {
+	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<PluginInterface> loadedExtensions = MasterPluginUtils.getLoadedExtensionObjects(this, "master", "Plugin", "Class", event);
-			for (PluginInterface newExtension : loadedExtensions) {
-				newExtension.startPlugin();
-				logger.debug("Loading plugin "+CommonPluginUtils.getPluginIdForObject(newExtension));
-				_plugins.add(newExtension);
+			if (!loadedExtensions.isEmpty()) {
+				ArrayList<PluginInterface> clonedPlugins = new ArrayList<PluginInterface>(_plugins);
+				for (PluginInterface newExtension : loadedExtensions) {
+					newExtension.startPlugin();
+					logger.debug("Loading plugin "+CommonPluginUtils.getPluginIdForObject(newExtension));
+					clonedPlugins.add(newExtension);
+				}
+				_plugins = clonedPlugins;
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins from a loadplugin event for master extension point 'Plugin', possibly the "

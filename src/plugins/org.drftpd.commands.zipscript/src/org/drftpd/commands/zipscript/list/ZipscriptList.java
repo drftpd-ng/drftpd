@@ -178,28 +178,38 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 	}
 
 	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
 		Set<ZipscriptListStatusBarInterface> unloadedStatusBarAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "ListStatusBarProviders", event, _statusBarProviders);
 		if (!unloadedStatusBarAddons.isEmpty()) {
+			ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<ZipscriptListStatusBarInterface>(_statusBarProviders);
+			boolean providerRemoved = false;
 			for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
 				ZipscriptListStatusBarInterface sbAddon = iter.next();
 				if (unloadedStatusBarAddons.contains(sbAddon)) {
 					logger.debug("Unloading status bar provider addon provided by plugin "
 							+CommonPluginUtils.getPluginIdForObject(sbAddon));
 					iter.remove();
+					providerRemoved = true;
 				}
+			}
+			if (providerRemoved) {
+				_statusBarProviders = clonedProviders;
 			}
 		}
 	}
 
 	@EventSubscriber
-	public void onLoadPluginEvent(LoadPluginEvent event) {
+	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "ListStatusBarProvider", "Class", event);
-			for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
-				_statusBarProviders.add(sbAddon);
+			if (!loadedStatusBarAddons.isEmpty()) {
+				ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<ZipscriptListStatusBarInterface>(_statusBarProviders);
+				for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
+					clonedProviders.add(sbAddon);
+				}
+				_statusBarProviders = clonedProviders;
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.commands.zipscript extension point 'ListStatusBarProvider'"+
