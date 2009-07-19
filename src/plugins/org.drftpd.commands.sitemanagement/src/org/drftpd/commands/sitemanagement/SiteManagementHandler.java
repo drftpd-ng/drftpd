@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
+import java.util.TreeMap;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -43,6 +45,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
@@ -53,6 +56,7 @@ import org.java.plugin.boot.DefaultPluginsCollector;
 import org.java.plugin.registry.PluginAttribute;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.util.ExtendedProperties;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
@@ -63,6 +67,16 @@ public class SiteManagementHandler extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(SiteManagementHandler.class);
 
 	private static final String jpfConf = "conf/boot-master.properties";
+
+	private ResourceBundle _bundle;
+
+	private String _keyPrefix;
+
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+		super.initialize(method, pluginName, cManager);
+		_bundle = cManager.getResourceBundle();
+		_keyPrefix = this.getClass().getName()+".";
+	}
 
 	public CommandResponse doSITE_LIST(CommandRequest request) {
 
@@ -152,17 +166,33 @@ public class SiteManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_PLUGINS(CommandRequest request) {
+		Session session = request.getSession();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		response.addComment("Plugins loaded:");
-		ArrayList<String> plugins = new ArrayList<String>();
-		for (PluginDescriptor pluginDesc : PluginManager.lookup(this).getRegistry().getPluginDescriptors()) {
-			plugins.add(pluginDesc.getId());
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		response.addComment(session.jprintf(_bundle,
+				_keyPrefix+"plugins.header", env, request.getUser()));
+
+		TreeMap<String,String> plugins = new TreeMap<String,String>();
+		PluginManager manager = PluginManager.lookup(this);
+		for (PluginDescriptor pluginDesc : manager.getRegistry().getPluginDescriptors()) {
+			if (manager.isBadPlugin(pluginDesc)) {
+				plugins.put(pluginDesc.getId(),"BAD");
+			} else if (manager.isPluginActivated(pluginDesc)) {
+				plugins.put(pluginDesc.getId(),"Active");
+			} else {
+				plugins.put(pluginDesc.getId(),"Inactive");
+			}
 		}
-		Collections.sort(plugins);
-		for (String pluginName : plugins) {
-			response.addComment(pluginName);
+		for(Entry<String,String> entry : plugins.entrySet()) {
+			env.add("id",entry.getKey());
+			env.add("status",entry.getValue());
+			response.addComment(session.jprintf(_bundle,
+					_keyPrefix+"plugins.info", env, request.getUser()));
 		}
-		response.addComment(plugins.size()+" plugins currently loaded.");
+		env.add("total",plugins.size());
+		response.addComment(session.jprintf(_bundle,
+				_keyPrefix+"plugins.total", env, request.getUser()));
+
 		return response;
 	}
 

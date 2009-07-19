@@ -355,3 +355,13 @@ help.specific ${command} ALL - shortcut to display ALL Info.
 input all
 output source
 }
+
+plugins {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_PLUGINS
+perms =siteop
+help Will show plugins registered with the master and their status
+input all
+output source
+}
