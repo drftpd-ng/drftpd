@@ -41,7 +41,7 @@ public class Wrapper {
 			logger.fatal("Exception whilst parsing plugins: ",e);
 			System.exit(0);
 		}
-		String input = new String("");
+		String input = "";
 		InputStreamReader isr = new InputStreamReader(System.in);
 		BufferedReader br = new BufferedReader(isr);
 		ConfigReader cr = new ConfigReader();
@@ -54,13 +54,17 @@ public class Wrapper {
 			} catch (IOException e) {
 				// Not an issue we'll just retry
 			}
-		} while (!input.equalsIgnoreCase("y") && !input.equalsIgnoreCase("n"));
-		if (input.equalsIgnoreCase("y")) {
-			SwingInstaller installer = new SwingInstaller(parser.getRegistry(),config);
-			installer.setVisible(true);
-		} else if (input.equalsIgnoreCase("n")) {
-			ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry(),config);
-			installer.show();
+		} while (input != null && !input.equalsIgnoreCase("y") && !input.equalsIgnoreCase("n"));
+		if (input == null) {
+			System.exit(0);
+		} else {
+			if (input.equalsIgnoreCase("y")) {
+				SwingInstaller installer = new SwingInstaller(parser.getRegistry(),config);
+				installer.setVisible(true);
+			} else if (input.equalsIgnoreCase("n")) {
+				ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry(),config);
+				installer.show();
+			}
 		}
 	}
 }

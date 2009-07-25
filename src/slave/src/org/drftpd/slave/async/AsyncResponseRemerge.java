@@ -27,6 +27,7 @@ import org.drftpd.slave.LightRemoteInode;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseRemerge extends AsyncResponse {
 	private List<LightRemoteInode> _inodes;
 

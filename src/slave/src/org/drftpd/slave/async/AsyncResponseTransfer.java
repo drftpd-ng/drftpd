@@ -23,6 +23,7 @@ import org.drftpd.slave.ConnectInfo;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseTransfer extends AsyncResponse {
 	private ConnectInfo _ci;
 

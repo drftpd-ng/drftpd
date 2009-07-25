@@ -40,7 +40,7 @@ public class ConstantMirroring extends ArchiveType {
     public ConstantMirroring(Archive archive, SectionInterface section,
         Properties p) {
         super(archive, section, p);
-        _slaveDeadAfter = 1000 * 60 * Integer.parseInt(p.getProperty(
+        _slaveDeadAfter = 1000 * 60 * Long.parseLong(p.getProperty(
                 section.getName() + ".slaveDeadAfter", "0"));
         int size = 0;
         if (_slaveList.isEmpty()) {

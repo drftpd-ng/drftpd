@@ -24,7 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author djb61
  * @version $Id$
  */
-@SuppressWarnings("serial")
 public class Queue {
 
 	private LinkedBlockingQueue<String> _queue;

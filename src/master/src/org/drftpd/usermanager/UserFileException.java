@@ -21,6 +21,7 @@ package org.drftpd.usermanager;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class UserFileException extends Exception {
 	public UserFileException() {
 		super();

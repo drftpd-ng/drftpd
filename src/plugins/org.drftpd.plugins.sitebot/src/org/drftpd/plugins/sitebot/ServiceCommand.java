@@ -36,7 +36,7 @@ public class ServiceCommand extends Session {
 
 	public static final Key<UserDetails> IRCUSER = new Key<UserDetails>(ServiceCommand.class,"ircuser");
 
-	private SiteBot _bot;
+	private transient SiteBot _bot;
 
 	private ArrayList<OutputWriter> _outputs;
 

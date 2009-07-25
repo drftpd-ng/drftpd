@@ -29,6 +29,7 @@ import java.io.PrintStream;
  * @author Originally taken from JLayer - http://www.javazoom.net/javalayer/javalayer.html
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class JavaLayerException extends Exception {
 
 	private Throwable		exception;

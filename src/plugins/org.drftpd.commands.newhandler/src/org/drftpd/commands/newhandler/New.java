@@ -165,7 +165,7 @@ public class New extends CommandInterface {
 		return response;
 	}
 
-	private class DateComparator implements Comparator<DirectoryHandle> {
+	private static class DateComparator implements Comparator<DirectoryHandle> {
 		public int compare(DirectoryHandle d1, DirectoryHandle d2) {
 			long lastModified1 = 0;
 			long lastModified2 = 0;

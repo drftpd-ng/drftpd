@@ -26,6 +26,7 @@ import java.util.Map;
  * @author fr0w
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class LRUMap<K, V> extends LinkedHashMap<K, V> {
 	
 	private int _maxSize = Integer.MAX_VALUE; 

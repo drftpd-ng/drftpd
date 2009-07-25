@@ -48,6 +48,7 @@ import org.java.plugin.registry.PluginRegistry;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class PluginPanel extends JPanel {
 
 	private ArrayList<PluginData> _plugins;
@@ -123,6 +124,7 @@ public class PluginPanel extends JPanel {
 	}
 }
 
+@SuppressWarnings("serial")
 class PluginCellRenderer extends DefaultTableCellRenderer {
 
 	private ArrayList<PluginData> _plugins;
@@ -145,6 +147,7 @@ class PluginCellRenderer extends DefaultTableCellRenderer {
 	}
 }
 
+@SuppressWarnings("serial")
 class SwingTableModel extends AbstractTableModel implements TableModelListener {
 
 	private String[] _columnNames;
@@ -173,7 +176,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 
 	public Object getValueAt(int row, int col) {
 		switch(col) {
-		case 0: return new Boolean(_plugins.get(row).isSelected()); 
+		case 0: return Boolean.valueOf(_plugins.get(row).isSelected()); 
 		case 1: return _plugins.get(row).getName();
 		case 2: return _plugins.get(row).getDescriptor().getVersion().toString();
 		default: return null;
@@ -219,7 +222,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 						if (!dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
-							setValueAt(new Boolean(dep.isSelected()),i,0);
+							setValueAt(Boolean.valueOf(dep.isSelected()),i,0);
 							_internalChange = false;
 						}
 					}
@@ -230,7 +233,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 						if (dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
-							setValueAt(new Boolean(dep.isSelected()),i,0);
+							setValueAt(Boolean.valueOf(dep.isSelected()),i,0);
 							_internalChange = false;
 						}
 					}

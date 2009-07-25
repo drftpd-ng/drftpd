@@ -23,6 +23,7 @@ import java.io.Serializable;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class TransferStatus implements Serializable {
 	private long _checksum;
 

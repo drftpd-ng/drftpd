@@ -51,7 +51,7 @@ public class BandwidthFilterTest extends TestCase {
 		assertEquals(-300, sc.getScoreForSlave(list[0]).getScore());
 	}
 	
-	public class RS extends DummyRemoteSlave {
+	static class RS extends DummyRemoteSlave {
 		private SlaveStatus _status;
 
 		public RS(String name, SlaveStatus status) {

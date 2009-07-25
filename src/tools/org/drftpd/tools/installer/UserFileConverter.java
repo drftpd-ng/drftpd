@@ -152,7 +152,7 @@ public class UserFileConverter {
 		}
 	}
 
-	private class UserFilter implements FilenameFilter {
+	private static class UserFilter implements FilenameFilter {
 		
 		public UserFilter() {
 			

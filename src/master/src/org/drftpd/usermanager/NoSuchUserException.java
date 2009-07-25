@@ -22,6 +22,7 @@ package org.drftpd.usermanager;
  * 
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class NoSuchUserException extends Exception {
 	/**
 	 * 

@@ -28,6 +28,7 @@ import org.apache.lucene.document.FieldSelectorResult;
  * @author fr0w
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class SimpleSearchFieldSelector implements FieldSelector {
 	public FieldSelectorResult accept(String fieldName) {
 		if (fieldName.equals("name") || fieldName.equals("fullPath")) {

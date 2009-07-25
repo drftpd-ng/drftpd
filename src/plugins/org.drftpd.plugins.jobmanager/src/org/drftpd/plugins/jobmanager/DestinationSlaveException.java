@@ -20,6 +20,7 @@ package org.drftpd.plugins.jobmanager;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class DestinationSlaveException extends SlaveException {
 	public DestinationSlaveException() {
 		super();

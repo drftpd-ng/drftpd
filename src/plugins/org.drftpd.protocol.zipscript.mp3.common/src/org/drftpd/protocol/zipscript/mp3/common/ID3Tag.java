@@ -23,6 +23,7 @@ import java.io.Serializable;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class ID3Tag implements Serializable {
 
 	private String _artist = "";

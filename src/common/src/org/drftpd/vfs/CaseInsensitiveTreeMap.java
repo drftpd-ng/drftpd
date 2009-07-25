@@ -19,6 +19,7 @@ package org.drftpd.vfs;
 
 import java.util.TreeMap;
 
+@SuppressWarnings("serial")
 public class CaseInsensitiveTreeMap<K, V> extends TreeMap<K, V> {
 
 	private static CaseInsensitiveComparator<String> comparer = new CaseInsensitiveComparator<String>();

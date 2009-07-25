@@ -26,7 +26,7 @@ import org.bushe.swing.event.ThreadSafeEventService;
  * @author djb61
  * @version $Id$
  */
-public class AsyncThreadSafeEventService extends ThreadSafeEventService {
+public final class AsyncThreadSafeEventService extends ThreadSafeEventService {
 
 	private LinkedBlockingQueue<QueuedAsyncEvent> _eventQueue = new LinkedBlockingQueue<QueuedAsyncEvent>();
 
@@ -47,7 +47,7 @@ public class AsyncThreadSafeEventService extends ThreadSafeEventService {
 		_eventQueue.add(new QueuedAsyncEvent(topicName,eventObj));
 	}
 
-	private class QueuedAsyncEvent {
+	private static class QueuedAsyncEvent {
 
 		private Object _event;
 		private String _topic;

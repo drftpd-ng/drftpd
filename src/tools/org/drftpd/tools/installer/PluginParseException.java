@@ -21,6 +21,7 @@ package org.drftpd.tools.installer;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class PluginParseException extends Exception {
 
 	/**

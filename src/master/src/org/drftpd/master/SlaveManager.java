@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -237,7 +238,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			Long size;
 
 			try {
-				size = new Long(rslave.getSlaveStatusAvailable()
+				size = Long.valueOf(rslave.getSlaveStatusAvailable()
 						.getDiskSpaceAvailable());
 			} catch (SlaveUnavailableException e) {
 				continue;
@@ -544,8 +545,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				rslave.addQueueDelete(directory.getPath());
 			}
 		}
-		for (RemoteSlave rslave : slaveMap.keySet()) {
-			String index = slaveMap.get(rslave);
+		for (Entry<RemoteSlave,String> slaveEntry : slaveMap.entrySet()) {
+			RemoteSlave rslave = slaveEntry.getKey();
+			String index = slaveEntry.getValue();
 			try {
 				rslave.fetchResponse(index, 300000);
 			} catch (SlaveUnavailableException e) {

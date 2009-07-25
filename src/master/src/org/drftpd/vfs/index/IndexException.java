@@ -23,6 +23,7 @@ package org.drftpd.vfs.index;
  * @author fr0w
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class IndexException extends Exception {
 	public IndexException(Throwable cause) {
 		super(cause);

@@ -49,6 +49,7 @@ import org.drftpd.tools.installer.LogWindowInterface;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class LogWindow extends JFrame implements LogWindowInterface {
 
 	private boolean _fileLogEnabled;

@@ -17,6 +17,7 @@
  */
 package org.drftpd.plugins.jobmanager;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -24,7 +25,8 @@ import java.util.Comparator;
  * @version $Id$
  * 
  */
-public class JobComparator implements Comparator<Job> {
+@SuppressWarnings("serial")
+public class JobComparator implements Comparator<Job>, Serializable {
 	/**
 	 * Compares Jobs
 	 */

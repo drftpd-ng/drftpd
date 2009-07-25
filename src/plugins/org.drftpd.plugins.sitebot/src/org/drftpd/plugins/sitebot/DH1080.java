@@ -53,7 +53,7 @@ public class DH1080 {
 	}
 
 	public String getPublicKey() {
-		return new String(encodeB64(getBytes(_publicInt)));
+		return encodeB64(getBytes(_publicInt));
 	}
 
 	public String getSharedSecret(String peerPubKey) {
@@ -63,7 +63,7 @@ public class DH1080 {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			byte[] hashed = md.digest(getBytes(shareInt));
-			return new String(encodeB64(hashed));
+			return encodeB64(hashed);
 		} catch (NoSuchAlgorithmException e) {
 			logger.debug("Algorithm for DH1080 shared secret hashing not available",e);
 		}
@@ -97,7 +97,7 @@ public class DH1080 {
 	 * not be used for anything else.
 	 */
 	public static byte[] decodeB64(String input) {
-		String output = "";
+		StringBuilder outputBuilder = new StringBuilder();
 		int k = 0;
 		int overflow;
 		byte temp;
@@ -110,7 +110,7 @@ public class DH1080 {
 				if (overflow < 0) {
 					overflow += 256;
 				}
-				output += (char)overflow;
+				outputBuilder.append((char)overflow);
 			}
 			else {
 				break;
@@ -123,7 +123,7 @@ public class DH1080 {
 				if (overflow < 0) {
 					overflow += 256;
 				}
-				output += (char)overflow;
+				outputBuilder.append((char)overflow);
 			}
 			else {
 				break;
@@ -136,18 +136,18 @@ public class DH1080 {
 				if (overflow < 0) {
 					overflow += 256;
 				}
-				output += (char)overflow;
+				outputBuilder.append((char)overflow);
 			}
 			else {
 				break;
 			}
 			k++;
 		} try {
-			return output.getBytes("8859_1");
+			return outputBuilder.toString().getBytes("8859_1");
 		} catch (UnsupportedEncodingException e) {
 			// Shouldn't be possible as this is a JVM default charset
 			logger.warn("Couldn't use 8859_1 charset",e);
-			return output.getBytes();
+			return outputBuilder.toString().getBytes();
 		}
 	}
 
@@ -161,7 +161,7 @@ public class DH1080 {
 	public static String encodeB64(byte[] input) {
 		int i;
 		char m,t;
-		String output = "";
+		StringBuilder outputBuilder = new StringBuilder();
 
 		m=0x80;
 		for (i=0,t=0; i<(input.length<<3); i++){
@@ -172,7 +172,7 @@ public class DH1080 {
 				m=0x80;
 			}
 			if (((i+1)%6) == 0) {
-				output += B64.charAt(t);
+				outputBuilder.append(B64.charAt(t));
 				t&=0;
 			}
 			t<<=1;
@@ -180,8 +180,8 @@ public class DH1080 {
 		m=(char)(5-(i%6));
 		t<<=m;
 		if (((int)m) != 0) {
-			output += B64.charAt(t);
+			outputBuilder.append(B64.charAt(t));
 		}
-		return output;
+		return outputBuilder.toString();
 	}
 }

@@ -42,8 +42,10 @@ public class StatsManager implements PluginInterface {
 	
     public static final Key<Integer> LOGINS = new Key<Integer>(StatsManager.class, "logins");
     
-    public static final Key<ArrayList> CREDITCHECK = new Key<ArrayList>(StatsManager.class, "creditcheck");
-    public static final Key<ArrayList> CREDITLOSS = new Key<ArrayList>(StatsManager.class, "creditloss");
+    public static final Key<ArrayList<RatioPathPermission>> CREDITCHECK =
+    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditcheck");
+    public static final Key<ArrayList<RatioPathPermission>> CREDITLOSS =
+    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditloss");
 
     public static StatsManager getStatsManager() {
     	for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
@@ -87,8 +89,7 @@ public class StatsManager implements PluginInterface {
 		return getRatioPathPerm(CREDITCHECK, dir, user, defaultRatio);
 	}
 	
-	@SuppressWarnings("unchecked")
-	private float getRatioPathPerm(Key<ArrayList> key, DirectoryHandle dir, User user, float defaultRatio) {
+	private float getRatioPathPerm(Key<ArrayList<RatioPathPermission>> key, DirectoryHandle dir, User user, float defaultRatio) {
 				
 		ArrayList<RatioPathPermission> list = 
 			GlobalContext.getConfig().getKeyedMap().getObject(key, null);

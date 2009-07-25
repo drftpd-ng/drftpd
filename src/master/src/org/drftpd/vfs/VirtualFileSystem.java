@@ -39,6 +39,7 @@ public class VirtualFileSystem {
 
 	protected static final InodeHandleCaseInsensitiveComparator INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR = new InodeHandleCaseInsensitiveComparator();
 
+	@SuppressWarnings("serial")
 	static class InodeHandleCaseInsensitiveComparator extends
 			CaseInsensitiveComparator<InodeHandle> {
 

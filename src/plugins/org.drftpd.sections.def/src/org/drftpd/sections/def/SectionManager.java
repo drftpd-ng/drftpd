@@ -101,7 +101,7 @@ public class SectionManager implements SectionManagerInterface {
 
 	}
 
-	public class Section implements SectionInterface {
+	static class Section implements SectionInterface {
 		private DirectoryHandle _dir;
 
 		public Section(DirectoryHandle lrf) {

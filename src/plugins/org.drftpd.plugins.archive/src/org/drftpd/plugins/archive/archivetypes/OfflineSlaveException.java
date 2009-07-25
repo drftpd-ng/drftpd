@@ -22,6 +22,7 @@ package org.drftpd.plugins.archive.archivetypes;
  * 
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class OfflineSlaveException extends Exception {
 	public OfflineSlaveException() {
 		super();

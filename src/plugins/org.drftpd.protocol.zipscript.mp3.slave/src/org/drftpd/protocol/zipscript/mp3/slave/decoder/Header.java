@@ -247,7 +247,7 @@ public final class Header {
 				}		
 			}				
 		}
-		catch (ArrayIndexOutOfBoundsException e) {
+		catch (IndexOutOfBoundsException e) {
 			throw new BitstreamException("XingVBRHeader Corrupted",e);
 		}
 
@@ -275,7 +275,7 @@ public final class Header {
 				length += 4;	
 			}
 		}
-		catch (ArrayIndexOutOfBoundsException e) {
+		catch (IndexOutOfBoundsException e) {
 			throw new BitstreamException("VBRIVBRHeader Corrupted",e);
 		}
 	}

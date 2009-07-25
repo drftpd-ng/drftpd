@@ -20,6 +20,7 @@ package org.drftpd.plugins.jobmanager;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class SourceSlaveException extends SlaveException {
 	public SourceSlaveException() {
 		super();

@@ -24,6 +24,7 @@ package org.drftpd.vfs;
  *              requested type of object i.e, getDirectory() when the object is
  *              a file
  */
+@SuppressWarnings("serial")
 public class ObjectNotValidException extends Exception {
 
 	public ObjectNotValidException(String arg0) {

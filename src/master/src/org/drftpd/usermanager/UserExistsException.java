@@ -9,6 +9,7 @@ package org.drftpd.usermanager;
 /**
  * @author mog
  */
+@SuppressWarnings("serial")
 public class UserExistsException extends Exception {
 	public UserExistsException() {
 		super();

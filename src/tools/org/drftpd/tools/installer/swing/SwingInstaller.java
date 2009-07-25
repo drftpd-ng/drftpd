@@ -52,6 +52,7 @@ import org.java.plugin.registry.PluginRegistry;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class SwingInstaller extends JFrame implements ActionListener {
 
 	private static final Logger logger = Logger.getLogger(SwingInstaller.class);

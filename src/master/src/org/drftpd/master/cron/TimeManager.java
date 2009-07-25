@@ -42,10 +42,6 @@ public class TimeManager {
 	
 	private static final long HOUR = MINUTE * 60;
 	
-	private static final long DAY = HOUR * 24;
-	
-	private static final long WEEK = DAY * 7;
-	
 	TimerTask _processHour = new TimerTask() {
 		public void run() {
 			doReset(Calendar.getInstance());

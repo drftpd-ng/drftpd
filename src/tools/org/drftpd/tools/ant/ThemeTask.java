@@ -197,11 +197,13 @@ public class ThemeTask extends Task {
 				// adding the correct namespace prefix
 				while (input.ready()) {
 					String line = input.readLine();
-					if (line.indexOf('=') != -1) {
-						output.append(keyPrefix);
+					if (line != null) {
+						if (line.indexOf('=') != -1) {
+							output.append(keyPrefix);
+						}
+						output.append(line);
+						output.append("\n");
 					}
-					output.append(line);
-					output.append("\n");
 				}
 
 				// Put modified theme back in the map

@@ -316,7 +316,7 @@ public class TransferStatistics extends CommandInterface  {
 	}
 
 	public static String getUpRate(User user, int period) {
-		double s = user.getUploadedTimeForPeriod(period) / 1000;
+		double s = user.getUploadedTimeForPeriod(period) / 1000.0;
 
 		if (s <= 0) {
 			return "- k/s";
@@ -328,7 +328,7 @@ public class TransferStatistics extends CommandInterface  {
 	}
 
 	public static String getDownRate(User user, int period) {
-		double s = user.getDownloadedTimeForPeriod(period) / 1000;
+		double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
 
 		if (s <= 0) {
 			return "- k/s";

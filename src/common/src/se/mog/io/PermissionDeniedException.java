@@ -23,6 +23,7 @@ import java.io.IOException;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class PermissionDeniedException extends IOException {
 	public PermissionDeniedException() {
 		super();

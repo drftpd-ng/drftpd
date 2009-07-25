@@ -17,6 +17,7 @@
  */
 package org.drftpd.usermanager.util;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 import org.drftpd.usermanager.User;
@@ -26,7 +27,8 @@ import org.drftpd.usermanager.User;
  * @author zubov
  * @version $Id$
  */
-public class UserComparator implements Comparator<User> {
+@SuppressWarnings("serial")
+public class UserComparator implements Comparator<User>, Serializable {
     private String _type;
 
     public UserComparator(String type) {

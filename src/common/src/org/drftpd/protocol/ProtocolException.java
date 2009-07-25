@@ -21,6 +21,7 @@ package org.drftpd.protocol;
  * @author fr0w
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class ProtocolException extends Exception {
 	public ProtocolException() {
 		super();

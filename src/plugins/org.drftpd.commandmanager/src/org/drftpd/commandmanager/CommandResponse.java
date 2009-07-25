@@ -29,6 +29,7 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class CommandResponse extends KeyedMap<Key<?>, Object> implements CommandResponseInterface {
 
 	public static final Key<Integer> CODE = new Key<Integer>(CommandResponse.class, "code");
@@ -106,7 +107,7 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 	}
 
 	public int getCode() {
-		return getObject(CommandResponse.CODE, new Integer(500)).intValue();
+		return getObject(CommandResponse.CODE, Integer.valueOf(500)).intValue();
 	}
 
 	public Vector<String> getComment() {

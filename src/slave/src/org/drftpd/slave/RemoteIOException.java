@@ -23,6 +23,7 @@ import java.io.IOException;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class RemoteIOException extends Exception {
 	public RemoteIOException(IOException cause) {
 		super(cause);

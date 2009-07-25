@@ -31,21 +31,6 @@ public class VirtualFileSystemTest extends TestCase {
 		super(arg0);
 	}
 
-	private void recursiveList(VirtualFileSystemDirectory root) {
-		for (String name : root.getInodeNames()) {
-			VirtualFileSystemInode inode;
-			try {
-				inode = root.getInodeByName(name);
-			} catch (FileNotFoundException e) {
-				throw new RuntimeException("this cannot happen except for a race condition", e);
-			}
-			if (inode.isDirectory()) {
-				recursiveList((VirtualFileSystemDirectory) inode);
-			}
-			System.out.println(inode);
-		}
-	}
-
 	protected void setUp() {
 		vfs = VirtualFileSystem.getVirtualFileSystem();
 		try {

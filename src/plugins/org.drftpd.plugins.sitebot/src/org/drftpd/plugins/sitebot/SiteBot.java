@@ -1112,17 +1112,17 @@ public class SiteBot implements ReplyConstants, Runnable {
 			StringTokenizer tokenizer = new StringTokenizer(response.substring(response.indexOf(" :") + 2));
 			while (tokenizer.hasMoreTokens()) {
 				String nick = tokenizer.nextToken();
-				String prefix = "";
+				StringBuilder prefixBuilder = new StringBuilder();
 				while (nick.length() > 0) {
 					char first = nick.charAt(0);
 					if (first >= 0x41 && first <= 0x7D) {
 						break;
 					} else {
-						prefix += first;
+						prefixBuilder.append(first);
 						nick = nick.substring(1);
 					}
 				}
-				this.addUser(channel, new IrcUser(prefix, nick));
+				this.addUser(channel, new IrcUser(prefixBuilder.toString(), nick));
 			}
 		}
 		else if (code == RPL_ENDOFNAMES) {
@@ -2588,13 +2588,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 	 *         are in.
 	 */
 	public final String[] getChannels() {
-		String[] channels = new String[0];
+		String[] channels;
 		synchronized (_channels) {
-			channels = new String[_channels.size()];
-			Iterator<String> iter = _channels.keySet().iterator();
-			for (int i = 0; i < channels.length; i++) {
-				channels[i] = iter.next();
-			}
+			channels = _channels.keySet().toArray(new String[0]);
 		}
 		return channels;
 	}
@@ -2702,9 +2698,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	 * Removes all channels from our memory of users.
 	 */
 	private final void removeAllChannels() {
-		synchronized (_channels) {
-			_channels = new CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>>();
-		}
+		_channels = new CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>>();
 	}
 
 

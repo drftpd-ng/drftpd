@@ -20,6 +20,7 @@ package org.drftpd.commands.zipscript.list;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class NoEntryAvailableException extends Exception {
 
 }

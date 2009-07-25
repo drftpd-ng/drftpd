@@ -30,6 +30,7 @@ import se.mog.io.File;
  * For use in sending the filelist from the slave to the master
  * Also used for creating files/directories that are superfluous
  */
+@SuppressWarnings("serial")
 public class LightRemoteInode implements Serializable, InodeHandleInterface {
 	private String _filename;
 

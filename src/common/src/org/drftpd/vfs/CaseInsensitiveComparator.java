@@ -20,6 +20,7 @@ package org.drftpd.vfs;
 import java.io.Serializable;
 import java.util.Comparator;
 
+@SuppressWarnings("serial")
 public class CaseInsensitiveComparator<K> implements Comparator, Serializable {
 
 	public CaseInsensitiveComparator() {

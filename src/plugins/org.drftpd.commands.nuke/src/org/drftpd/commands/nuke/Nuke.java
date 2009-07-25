@@ -203,7 +203,7 @@ public class Nuke extends CommandInterface {
             nukee.getKeyedMap().incrementLong(NUKEDBYTES, debt);
 
             nukee.getKeyedMap().incrementInt(NUKED);
-            nukee.getKeyedMap().setObject(Nuke.LASTNUKED, new Long(System.currentTimeMillis()));
+            nukee.getKeyedMap().setObject(Nuke.LASTNUKED, Long.valueOf(System.currentTimeMillis()));
 
             nukee.commit();
 

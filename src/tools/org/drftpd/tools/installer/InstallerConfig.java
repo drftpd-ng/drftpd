@@ -27,6 +27,7 @@ import java.util.HashMap;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class InstallerConfig implements Serializable {
 
 	private String _installDir;

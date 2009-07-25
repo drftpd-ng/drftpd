@@ -220,28 +220,28 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 								Integer.toString(
 										(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
 						raceenv.add("alup",
-								new Integer(UserTransferStats.getStatsPlace("ALUP",
+								Integer.valueOf(UserTransferStats.getStatsPlace("ALUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("monthup",
-								new Integer(UserTransferStats.getStatsPlace("MONTHUP",
+								Integer.valueOf(UserTransferStats.getStatsPlace("MONTHUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("wkup",
-								new Integer(UserTransferStats.getStatsPlace("WKUP",
+								Integer.valueOf(UserTransferStats.getStatsPlace("WKUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("dayup",
-								new Integer(UserTransferStats.getStatsPlace("DAYUP",
+								Integer.valueOf(UserTransferStats.getStatsPlace("DAYUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("aldn",
-								new Integer(UserTransferStats.getStatsPlace("ALDN",
+								Integer.valueOf(UserTransferStats.getStatsPlace("ALDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("monthdn",
-								new Integer(UserTransferStats.getStatsPlace("MONTHDN",
+								Integer.valueOf(UserTransferStats.getStatsPlace("MONTHDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("wkdn",
-								new Integer(UserTransferStats.getStatsPlace("WKDN",
+								Integer.valueOf(UserTransferStats.getStatsPlace("WKDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						raceenv.add("daydn",
-								new Integer(UserTransferStats.getStatsPlace("DAYDN",
+								Integer.valueOf(UserTransferStats.getStatsPlace("DAYDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete.racer", raceenv, _bundle), writer);
 					}

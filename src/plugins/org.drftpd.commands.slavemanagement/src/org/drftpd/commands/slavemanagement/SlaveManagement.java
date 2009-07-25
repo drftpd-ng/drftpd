@@ -18,8 +18,8 @@
 package org.drftpd.commands.slavemanagement;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
@@ -306,11 +306,9 @@ public class SlaveManagement extends CommandInterface {
 
 			Map<Object,Object> props = rslave.getProperties();
 
-			for (Iterator<Object> iter = props.keySet().iterator(); iter.hasNext();) {
-				Object key = iter.next();
-				Object value = props.get(key);
-				env.add("key", key);
-				env.add("value", value);
+			for(Entry<Object,Object> entry : props.entrySet()) {
+				env.add("key", entry.getKey());
+				env.add("value", entry.getValue());
 				response.addComment(session.jprintf(_bundle,
 						_keyPrefix+"slave.data", env, request.getUser()));
 			}

@@ -23,6 +23,7 @@ package org.drftpd.slave.async;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncCommand extends AsyncCommandArgument  {
 	public AsyncCommand(String index, String name) {
 		super(index,name, "");

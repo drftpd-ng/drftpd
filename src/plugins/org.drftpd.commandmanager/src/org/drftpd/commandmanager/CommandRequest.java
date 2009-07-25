@@ -36,6 +36,7 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandRequestInterface {
 
 	public static final Key<Boolean> ALLOWED = new Key<Boolean>(CommandRequest.class, "allowed");
@@ -174,6 +175,6 @@ public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandR
 	}
 
 	public void setAllowed(boolean b) {
-		setAllowed(new Boolean(b));
+		setAllowed(Boolean.valueOf(b));
 	}
 }

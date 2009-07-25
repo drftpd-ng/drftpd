@@ -23,6 +23,7 @@ import org.drftpd.slave.DiskStatus;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseDiskStatus extends AsyncResponse {
 	private DiskStatus _status;
 

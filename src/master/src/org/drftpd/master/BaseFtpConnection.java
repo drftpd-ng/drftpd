@@ -539,16 +539,18 @@ public class BaseFtpConnection extends Session implements Runnable {
 			CommandResponseInterface cmdResponse = _commandManager
 				.execute(cmdRequest);
 			if (cmdResponse != null) {
-				if (cmdResponse.getCurrentDirectory() instanceof DirectoryHandle)
+				if (cmdResponse.getCurrentDirectory() != null) {
 					_currentDirectory = cmdResponse.getCurrentDirectory();
-				if (cmdResponse.getUser() instanceof String)
+				}
+				if (cmdResponse.getUser() != null) {
 					_user = cmdResponse.getUser();
+				}
 				printOutput(new FtpReply(cmdResponse));
 			}
 		}
 	}
 
-	class CommandThreadFactory implements ThreadFactory {
+	static class CommandThreadFactory implements ThreadFactory {
 
 		String _parentName;
 

@@ -23,6 +23,7 @@ import org.drftpd.slave.TransferStatus;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseTransferStatus extends AsyncResponse {
 	private TransferStatus _ts;
 

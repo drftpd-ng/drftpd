@@ -260,8 +260,10 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 					request.getSession().getUserNull(request.getUser()));
 
 			//Start building race message
-			String racetext = _bundle.getString(_keyPrefix+"cwd.racestats.header") + "\n";
-			racetext += _bundle.getString(_keyPrefix+"cwd.racers.header") + "\n";
+			StringBuilder raceTextBuilder = new StringBuilder(_bundle.getString(_keyPrefix+"cwd.racestats.header"));
+			raceTextBuilder.append('\n');
+			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.racers.header"));
+			raceTextBuilder.append('\n');
 
 			ReplacerFormat raceformat = null;
 
@@ -296,16 +298,18 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 								(stat.getFiles() * 100) / sfvInfo.getSize()) + "%");
 
 				try {
-					racetext += (SimplePrintf.jprintf(racerline,
-							raceenv) + "\n");
+					raceTextBuilder.append(SimplePrintf.jprintf(racerline,raceenv));
+					raceTextBuilder.append('\n');
 					position++;
 				} catch (FormatterException e) {
 					logger.warn(e);
 				}
 			}
 
-			racetext += _bundle.getString(_keyPrefix+"cwd.racers.footer") + "\n";
-			racetext += _bundle.getString(_keyPrefix+"cwd.groups.header") + "\n";
+			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.racers.footer"));
+			raceTextBuilder.append('\n');
+			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.groups.header"));
+			raceTextBuilder.append('\n');
 
 			//add groups stats
 			position = 1;
@@ -324,15 +328,16 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 						Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
 				try {
-					racetext += (SimplePrintf.jprintf(groupline,
-							raceenv) + "\n");
+					raceTextBuilder.append(SimplePrintf.jprintf(groupline,raceenv));
+					raceTextBuilder.append('\n');
 					position++;
 				} catch (FormatterException e) {
 					logger.warn(e);
 				}
 			}
 
-			racetext += _bundle.getString(_keyPrefix+"cwd.groups.footer") + "\n";
+			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.groups.footer"));
+			raceTextBuilder.append('\n');
 
 			env.add("completefiles", Integer.toString(sfvStatus.getPresent()) + "/" + Integer.toString(sfvInfo.getSize()));
 			env.add("totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
@@ -343,11 +348,13 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 							(sfvStatus.getPresent() * 100) / sfvInfo.getSize()) +
 			"%");
 
-			racetext += _bundle.getString(_keyPrefix+"cwd.totals.body") + "\n";
-			racetext += _bundle.getString(_keyPrefix+"cwd.racestats.footer") + "\n";
+			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.totals.body"));
+			raceTextBuilder.append('\n');
+			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.racestats.footer"));
+			raceTextBuilder.append('\n');
 
 			try {
-				raceformat = ReplacerFormat.createFormat(racetext);
+				raceformat = ReplacerFormat.createFormat(raceTextBuilder.toString());
 			} catch (FormatterException e1) {
 				logger.warn(e1);
 			}

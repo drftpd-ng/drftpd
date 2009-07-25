@@ -23,6 +23,7 @@ import java.io.Serializable;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public final class TransferIndex implements Serializable {
 	private static Object mutex = new Object();
 	private static Integer transfers = 0;

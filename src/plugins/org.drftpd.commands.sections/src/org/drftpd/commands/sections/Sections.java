@@ -64,7 +64,7 @@ public class Sections extends CommandInterface {
         return response;
     }
     
-    private class SectionComparator implements Comparator<SectionInterface> {
+    private static class SectionComparator implements Comparator<SectionInterface> {
 		public int compare(SectionInterface o1, SectionInterface o2) {
 			return o1.getName().compareToIgnoreCase(o2.getName());
 		}    	

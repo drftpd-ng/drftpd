@@ -25,6 +25,7 @@ import org.drftpd.dynamicdata.Key;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class MP3Info implements Serializable {
 
 	public static final Key<MP3Info> MP3INFO = new Key<MP3Info>(MP3Info.class, "mp3");

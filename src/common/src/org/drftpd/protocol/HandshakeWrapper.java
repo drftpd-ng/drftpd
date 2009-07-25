@@ -24,6 +24,7 @@ import java.io.Serializable;
  * @author fr0w
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class HandshakeWrapper implements Serializable {
 	private boolean _status;
 	private Exception _exception;

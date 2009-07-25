@@ -121,7 +121,7 @@ public class SectionManager implements SectionManagerInterface {
 					SectionInterface section = (SectionInterface) clazz
 							.getDeclaredConstructor(CONSTRUCTOR_SIG)
 							.newInstance(
-									new Object[] { new Integer(i), p });
+									new Object[] { Integer.valueOf(i), p });
 					sections.put(name, section);
 					
 					createSectionDir(section);

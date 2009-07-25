@@ -21,6 +21,7 @@ package org.drftpd.plugins.archive;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class DuplicateArchiveException extends Exception {
 	public DuplicateArchiveException() {
 		super();

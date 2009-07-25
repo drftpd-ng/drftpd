@@ -21,6 +21,7 @@ package org.drftpd.slave.async;
  * @author fr0w
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseSSLCheck extends AsyncResponse {
 	private boolean _sslCheck = false;
 	

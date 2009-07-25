@@ -289,13 +289,14 @@ public class Job {
 	}
 
 	private String outputDestinationSlaves() {
-		String toReturn = "";
+		StringBuilder slaveBuilder = new StringBuilder();
 
 		for (String rslave : new HashSet<String>(_destSlaves)) {
-			toReturn = toReturn + rslave + ",";
+			slaveBuilder.append(rslave);
+			slaveBuilder.append(',');
 		}
-		if (!toReturn.equals("")) {
-			return toReturn.substring(0, toReturn.length() - 1);
+		if (slaveBuilder.length() > 0) {
+			return slaveBuilder.substring(0, slaveBuilder.length() - 1);
 		}
 		return null;
 	}

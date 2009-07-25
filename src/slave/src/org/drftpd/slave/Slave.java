@@ -45,8 +45,6 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.SSLUnavailableException;
-import org.drftpd.id3.ID3Tag;
-import org.drftpd.id3.MP3File;
 import org.drftpd.master.QueuedOperation;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.async.AsyncCommandArgument;
@@ -419,35 +417,6 @@ public class Slave {
 
 	public boolean getDownloadChecksums() {
 		return _downloadChecksums;
-	}
-
-	public ID3Tag getID3v1Tag(String path) throws IOException {
-		String absPath = _roots.getFile(path).getAbsolutePath();
-		logger.warn("Extracting ID3Tag info from: " + absPath);
-
-		MP3File mp3 = null;
-		try {
-			mp3 = new MP3File(absPath, "r");
-
-			if (!mp3.hasID3v1Tag) {
-				mp3.close();
-				throw new IOException("No id3tag found for " + absPath);
-			}
-
-			ID3Tag id3tag = mp3.readID3v1Tag();
-			mp3.close();
-
-			return id3tag;
-		} catch (FileNotFoundException e) {
-			logger.warn("FileNotFoundException: ", e);
-		} catch (IOException e) {
-			logger.warn("IOException: ", e);
-		} finally {
-			if (mp3 != null)
-				mp3.close();
-		}
-
-		return null;
 	}
 
 	public RootCollection getRoots() {

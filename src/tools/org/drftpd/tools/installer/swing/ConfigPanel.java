@@ -43,6 +43,7 @@ import org.drftpd.tools.installer.InstallerConfig;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class ConfigPanel extends JPanel implements ActionListener, ItemListener {
 
 	private JTextField _installLocation;
@@ -78,11 +79,11 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		JLabel logLevelLabel = new JLabel();
 		logLevelLabel.setText("Build log level: ");
 		_logLevel = new JComboBox();
-		_logLevel.addItem(new String("ERROR"));
-		_logLevel.addItem(new String("WARN"));
-		_logLevel.addItem(new String("INFO"));
-		_logLevel.addItem(new String("VERBOSE"));
-		_logLevel.addItem(new String("DEBUG"));
+		_logLevel.addItem("ERROR");
+		_logLevel.addItem("WARN");
+		_logLevel.addItem("INFO");
+		_logLevel.addItem("VERBOSE");
+		_logLevel.addItem("DEBUG");
 		_logLevel.setMaximumRowCount(5);
 		_logLevel.addItemListener(this);
 		_logLevel.setSelectedIndex(_config.getLogLevel());

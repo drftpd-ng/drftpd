@@ -68,7 +68,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         assertEquals(sc.getBestSlave(), rslaves[1]);
     }
 
-    public class RS extends DummyRemoteSlave {
+    static class RS extends DummyRemoteSlave {
         public RS(String name, Collection<Object> duh) {
             super(name);
         }

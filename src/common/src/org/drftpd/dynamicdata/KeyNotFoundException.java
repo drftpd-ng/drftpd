@@ -21,6 +21,7 @@ package org.drftpd.dynamicdata;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class KeyNotFoundException extends Exception {
 	public KeyNotFoundException() {
 		super();

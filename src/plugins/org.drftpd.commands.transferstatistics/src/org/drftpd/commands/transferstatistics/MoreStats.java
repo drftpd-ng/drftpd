@@ -233,7 +233,7 @@ public class MoreStats extends CommandInterface {
     }
 
     public static String getDownRate(User user, int period) {
-        double s = user.getDownloadedTimeForPeriod(period) / 1000;
+        double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
 
         if (s <= 0) {
             return "- k/s";
@@ -352,7 +352,7 @@ public class MoreStats extends CommandInterface {
         return response;
     }
 
-    public class MyGroupPosition extends GroupPosition {
+    static class MyGroupPosition extends GroupPosition {
         int members;
 
         public MyGroupPosition(String groupname, long bytes, int files,

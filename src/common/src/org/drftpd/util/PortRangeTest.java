@@ -38,20 +38,20 @@ public class PortRangeTest extends TestCase {
         ArrayList<ServerSocket> sockets = new ArrayList<ServerSocket>();
 
         for (int x = 45300; x <= 45310; x++) {
-            ports.add(new Integer(x));
+            ports.add(Integer.valueOf(x));
         }
 
         assertEquals(11, ports.size());
 
         ServerSocket ss = new ServerSocket(45305);
         sockets.add(ss);
-        ports.remove(new Integer(ss.getLocalPort()));
+        ports.remove(Integer.valueOf(ss.getLocalPort()));
         assertEquals(10, ports.size());
 
         for (int x = 0; x < 10; x++) {
             ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault());
             sockets.add(socket);
-            ports.remove(new Integer(socket.getLocalPort()));
+            ports.remove(Integer.valueOf(socket.getLocalPort()));
             assertEquals(9 - x, ports.size());
         }
 

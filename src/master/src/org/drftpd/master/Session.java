@@ -38,6 +38,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public abstract class Session extends KeyedMap<Key<?>, Object> {
 
 	public static final Key<HashMap<String, Properties>> COMMANDS = new Key<HashMap<String, Properties>>(Session.class, "commands");

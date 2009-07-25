@@ -261,7 +261,7 @@ public class GlobalContext {
 		new Thread(new Shutdown()).start();
 	}
 
-	class Shutdown implements Runnable {
+	static class Shutdown implements Runnable {
 		public void run() {
 			while(GlobalContext.getConnectionManager().getConnections().size() > 0) {
 				logger.info("Waiting for connections to be shutdown...");
@@ -359,23 +359,26 @@ public class GlobalContext {
 			String curLine = null;
 
 			while (reader.ready()) {
-				curLine = reader.readLine().trim();
-				if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
-					// comment or blank line, ignore
-					continue;
-				}
-				if (curLine.endsWith("{")) {
-					// internal loop
-					String cmdName = curLine.substring(0, curLine.lastIndexOf("{")-1).toLowerCase();
-					if (commandsConfig.containsKey(cmdName)) {
-						throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+				curLine = reader.readLine();
+				if (curLine != null) {
+					curLine = curLine.trim();
+					if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
+						// comment or blank line, ignore
+						continue;
 					}
-					Properties p = getPropertiesUntilClosed(reader);
-					logger.debug("Adding command " + cmdName);
+					if (curLine.endsWith("{")) {
+						// internal loop
+						String cmdName = curLine.substring(0, curLine.lastIndexOf("{")-1).toLowerCase();
+						if (commandsConfig.containsKey(cmdName)) {
+							throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+						}
+						Properties p = getPropertiesUntilClosed(reader);
+						logger.debug("Adding command " + cmdName);
 
-					commandsConfig.put(cmdName,p);
-				} else {
-					throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
+						commandsConfig.put(cmdName,p);
+					} else {
+						throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
+					}
 				}
 			}
 			// done reading for new commands, must be finished
@@ -401,29 +404,31 @@ public class GlobalContext {
 		Properties p = new Properties();
 		String curLine = null;
 		while (reader.ready()) {
-			curLine = reader.readLine().trim();
-			if (curLine.startsWith("#") || curLine.equals("")) {
-				// comment or blank line, ignore
-				continue;
+			curLine = reader.readLine();
+			if (curLine != null) {
+				curLine = curLine.trim();
+				if (curLine.startsWith("#") || curLine.equals("")) {
+					// comment or blank line, ignore
+					continue;
+				}
+				if (curLine.equals("}")) {
+					// end of this block
+					return p;
+				}
+				// internal loop
+				int spaceIndex = curLine.indexOf(" ");
+				if (spaceIndex == -1) {
+					throw new FatalException("Line " + reader.getLineNumber() + " is not formatted properly");
+				}
+				String propName = curLine.substring(0, spaceIndex);
+				String value = curLine.substring(spaceIndex).trim();
+				String concatenate = p.getProperty(propName);
+				if (concatenate == null) {
+					p.put(propName, value);    			
+				} else {
+					p.put(propName, concatenate + "\n" + value);
+				}
 			}
-			if (curLine.equals("}")) {
-				// end of this block
-				return p;
-			}
-			// internal loop
-			int spaceIndex = curLine.indexOf(" ");
-			if (spaceIndex == -1) {
-				throw new FatalException("Line " + reader.getLineNumber() + " is not formatted properly");
-			}
-			String propName = curLine.substring(0, spaceIndex);
-			String value = curLine.substring(spaceIndex).trim();
-			String concatenate = p.getProperty(propName);
-			if (concatenate == null) {
-				p.put(propName, value);    			
-			} else {
-				p.put(propName, concatenate + "\n" + value);
-			}
-
 		}
 		throw new FatalException("Premature end of file, not enough \"}\" characters exist.");
 	}

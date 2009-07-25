@@ -17,6 +17,7 @@
  */
 package org.drftpd.tools.installer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,7 +118,8 @@ public class PluginTools {
 	}
 }
 
-class PluginComparator implements Comparator<PluginData> {
+@SuppressWarnings("serial")
+class PluginComparator implements Comparator<PluginData>, Serializable {
 
 	public int compare(PluginData plugin1, PluginData plugin2) {
 		return plugin1.getName().compareTo(plugin2.getName());

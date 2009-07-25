@@ -21,6 +21,7 @@ package org.drftpd.exceptions;
  * @author fr0w
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class TransferDeniedException extends Exception {
 	public TransferDeniedException() {
 		super();

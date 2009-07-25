@@ -24,6 +24,7 @@ import java.io.IOException;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class TransferFailedException extends IOException {
 	private TransferStatus _status;
 

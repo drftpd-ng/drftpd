@@ -96,7 +96,7 @@ public class MP3Announcer implements AnnounceInterface {
 				env.add("samplerate", mp3Info.getSamplerate());
 				env.add("stereomode", mp3Info.getStereoMode());
 				int runSeconds = (int) (mp3Info.getRuntime() / 1000);
-				String runtime = new String("");
+				String runtime = "";
 				if (runSeconds > 59) {
 					int runMins = runSeconds / 60;
 					runSeconds %= 60;

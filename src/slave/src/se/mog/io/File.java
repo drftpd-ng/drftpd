@@ -24,6 +24,7 @@ import java.net.URI;
  * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class File extends java.io.File {
 	private static FileSystem fs = FileSystem.getFileSystem();
 	public static final String separator = "/";

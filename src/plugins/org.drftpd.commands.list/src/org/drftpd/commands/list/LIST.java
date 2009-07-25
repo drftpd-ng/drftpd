@@ -220,29 +220,6 @@ public class LIST extends CommandInterface {
 	}
 
 	/**
-	 * Print file list.
-	 * 
-	 * <pre>
-	 *    -l : detail listing
-	 *    -a : display all (including hidden files)
-	 * </pre>
-	 * 
-	 * @return true if success
-	 */
-	private static void printNList(Collection<InodeHandleInterface> fileList, boolean bDetail,
-			Writer out) throws IOException {
-		for (Iterator<InodeHandleInterface> iter = fileList.iterator(); iter.hasNext();) {
-			InodeHandleInterface file = iter.next();
-
-			if (bDetail) {
-				printLine(file, out, false);
-			} else {
-				out.write(file.getName() + NEWLINE);
-			}
-		}
-	}
-
-	/**
 	 * <code>NLST [&lt;SP&gt; &lt;pathname&gt;] &lt;CRLF&gt;</code><br>
 	 * 
 	 * This command causes a directory listing to be sent from server to user
@@ -296,10 +273,6 @@ public class LIST extends CommandInterface {
 			// check options
 			// boolean allOption = options.indexOf('a') != -1;
 			boolean fulldate = options.indexOf('T') != -1;
-			boolean detailOption = request.getCommand().equalsIgnoreCase("LIST")
-			|| (options.indexOf('l') != -1);
-
-			// boolean directoryOption = options.indexOf("d") != -1;
 
 			if (!ts.isPasv() && !ts.isPort() && !isStat) {
 				//ts.reset(); issued on the finally block.

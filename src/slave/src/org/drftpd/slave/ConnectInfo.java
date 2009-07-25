@@ -23,6 +23,7 @@ import java.io.Serializable;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class ConnectInfo implements Serializable {
 	private int _port;
 

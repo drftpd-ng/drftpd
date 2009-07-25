@@ -21,6 +21,7 @@ package org.drftpd.slave.async;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseMaxPath extends AsyncResponse {
 	int _maxPath;
 

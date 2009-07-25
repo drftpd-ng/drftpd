@@ -21,6 +21,7 @@ package org.drftpd.plugins.archive.archivetypes;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class IncompleteDirectoryException extends Exception {
 	public IncompleteDirectoryException() {
 		super();

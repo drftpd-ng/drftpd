@@ -372,16 +372,16 @@ public abstract class ArchiveType {
 	public abstract String toString();
 
 	protected String outputSlaves(Collection<RemoteSlave> slaveList) {
-		String toReturn = new String();
-
+		StringBuilder slaveBuilder = new StringBuilder();
+		
 		for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = iter.next();
-			toReturn = toReturn + rslave.getName();
+			slaveBuilder.append(rslave.getName());
 
 			if (iter.hasNext()) {
-				toReturn = toReturn + ",";
+				slaveBuilder.append(',');
 			} else {
-				return toReturn;
+				return slaveBuilder.toString();
 			}
 		}
 

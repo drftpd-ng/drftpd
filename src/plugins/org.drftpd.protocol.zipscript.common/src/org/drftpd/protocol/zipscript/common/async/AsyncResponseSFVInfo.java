@@ -24,6 +24,7 @@ import org.drftpd.slave.async.AsyncResponse;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseSFVInfo extends AsyncResponse {
 	private SFVInfo _sfv;
 

@@ -21,6 +21,7 @@ package org.drftpd.slave.async;
  * @author zubov
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseChecksum extends AsyncResponse {
 	long _checksum;
 

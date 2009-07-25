@@ -278,6 +278,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
  * periodicity type and the current time, it computes the start of the next
  * interval.
  */
+@SuppressWarnings("serial")
 class RollingCalendar extends GregorianCalendar {
 	int _type = DatedSection.TOP_OF_TROUBLE;
 

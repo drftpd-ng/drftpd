@@ -24,6 +24,7 @@ import org.drftpd.slave.async.AsyncResponse;
  * @author djb61
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class AsyncResponseMP3Info extends AsyncResponse {
 
 	private MP3Info _mp3info;
