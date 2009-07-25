@@ -31,12 +31,12 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.permissions.Permission;
-import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
@@ -69,7 +69,7 @@ public class ConfigManager implements ConfigInterface {
 	private VFSPermissions _vfsPerms;
 	
 	private ArrayList<InetAddress> _bouncerIps;
-	private String _loginPrompt = Slave.VERSION + " http://drftpd.org";
+	private String _loginPrompt = GlobalContext.VERSION + " http://drftpd.org";
 	private String _pasvAddr = null;
 	private PortRange _portRange = new PortRange(0); 
 	private boolean _hideIps = true;

@@ -42,7 +42,6 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.event.ReloadEvent;
-import org.drftpd.slave.Slave;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 
@@ -90,7 +89,7 @@ public class ConnectionManager {
 	}
 
 	public static void boot() {
-		System.out.println(Slave.VERSION + " master server starting.");
+		System.out.println(GlobalContext.VERSION + " master server starting.");
 		System.out.println("http://drftpd.org/");
 		System.out.println("Further logging will be done using (mostly) log4j, check logs/");
 		// Set current thread name to make it clear in logfiles what is coming from the main master process 

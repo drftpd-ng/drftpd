@@ -73,8 +73,6 @@ public class Slave {
 
 	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
 
-	public static final String VERSION = "DrFTPD 2.1.0-dev";
-
 	public static final String separator = "/";
 
 	private int _bufferSize;
@@ -244,7 +242,8 @@ public class Slave {
 	}
 
 	public static void boot() throws Exception {
-		System.out.println("DrFTPD Slave starting, further logging will be done through log4j");
+		System.out.println("DrFTPD " + CommonPluginUtils.getPluginVersionForObject(Slave.class)
+				+ " Slave starting, further logging will be done through log4j");
 		
 		Properties p = new Properties();
 		FileInputStream fis = new FileInputStream("slave.conf");

@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInstanceContainer;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -35,7 +36,6 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
-import org.drftpd.slave.Slave;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -271,7 +271,7 @@ public class Misc extends CommandInterface {
     }
 
     public CommandResponse doSITE_VERS(CommandRequest request) {
-    	return new CommandResponse(200, Slave.VERSION);
+    	return new CommandResponse(200, GlobalContext.VERSION);
     }
 
     public void unload() {
