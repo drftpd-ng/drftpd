@@ -415,3 +415,38 @@ help.specific <PLUGIN> - the full name of the plugin to be unloaded
 input all
 output source
 }
+
+help {
+plugin org.drftpd.commands.misc
+class Misc
+method doSITE_HELP
+perms *
+help duh! it does this dummy!
+help.specific ${command} <command> will display specific information on that command
+input all
+output source
+}
+
+time {
+plugin org.drftpd.commands.misc
+class Misc
+method doSITE_TIME
+perms *
+help Show current server time
+help.specific ${command}
+help.specific Show current server time
+input all
+output source
+}
+
+version {
+plugin org.drftpd.commands.misc
+class Misc
+method doSITE_VERS
+perms *
+help Show drftpd version
+help.specific ${command}
+help.specific Show drftpd version
+input all
+output source
+}

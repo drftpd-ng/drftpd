@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
-<plugin id="org.drftpd.plugins.sitebot.announce.zipscript.mp3" version="2.1.0">
+<plugin id="org.drftpd.plugins.sitebot.announce.zipscript.mp3" version="3.0.0">
 	<doc>
 		<doc-text>This plugin provides IRC announcements concerning MP3 uploads. Information such as
 bitrate, runtime and information from the ID3 tag are available for announcements. The standard sitebot

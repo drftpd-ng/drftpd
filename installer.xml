@@ -2,7 +2,7 @@
 <!-- $Id$ -->
 <project name="DRFTPD Trunk Plugin Branch" default="build" basedir=".">
 	<property name="app.name" value="drftpd" />
-	<property name="app.version" value="2.1.0" />
+	<property name="app.version" value="3.0.0" />
 
 	<property name="build.debug" value="true" />
 	<property name="build.javac" value="1.5" />

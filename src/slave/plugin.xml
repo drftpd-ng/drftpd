@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
-<plugin id="slave" version="2.1.0" class="org.drftpd.slave.Boot">
+<plugin id="slave" version="3.0.0" class="org.drftpd.slave.Boot">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />

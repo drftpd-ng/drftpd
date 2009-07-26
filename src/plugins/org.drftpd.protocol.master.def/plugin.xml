@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
-<plugin id="org.drftpd.protocol.master.def" version="2.1.0">
+<plugin id="org.drftpd.protocol.master.def" version="3.0.0">
 	<attributes>
 		<attribute id="ProtocolName" value="BasicProtocol"/>
 		<attribute id="DefaultBuild" value="true" />
