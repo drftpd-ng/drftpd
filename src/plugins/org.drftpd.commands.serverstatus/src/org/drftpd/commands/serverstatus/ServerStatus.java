@@ -40,12 +40,13 @@ public class ServerStatus extends CommandInterface {
 	}
 	
 	public CommandResponse doMasterUptime(CommandRequest request) {
+		Session session = request.getSession();
 		CommandResponse response = new CommandResponse(200);	
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		
 		long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
 		env.add("uptime", Time.formatTime(uptime));		
-		response.setMessage(ReplacerUtils.jprintf(_keyPrefix+"master.uptime", env, _bundle));
+		response.setMessage(session.jprintf(_bundle, env, _keyPrefix+"master.uptime"));
 		
 		return response;		
 	}
