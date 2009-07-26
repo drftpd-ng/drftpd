@@ -34,9 +34,9 @@ class SiteManagementHandler
 method doSITE_LOADPLUGIN
 perms =siteop
 help Load a plugin
-help.specific ${command} <CLASS>
+help.specific ${command} <PLUGIN>
 help.specific Load a plugin
-help.specific <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
+help.specific <PLUGIN> - the full name of the plugin to be loaded
 }
 
 SITE UNLOADPLUGIN {
@@ -45,9 +45,9 @@ class SiteManagementHandler
 method doSITE_UNLOADPLUGIN
 perms =siteop
 help Unload a plugin
-help.specific ${command} <CLASS>
+help.specific ${command} <PLUGIN>
 help.specific Unload a plugin
-help.specific <CLASS> - can be either the class name if the class is in org.drftpd.plugins or the full class name
+help.specific <PLUGIN> - the full name of the plugin to be unloaded
 }
 
 SITE PLUGINS {
