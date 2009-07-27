@@ -46,7 +46,7 @@
 		<library id="jpf-boot" path="../../lib/jpf-boot-1.5.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-2.1.0.jar" type="code">
+		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.0.0.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

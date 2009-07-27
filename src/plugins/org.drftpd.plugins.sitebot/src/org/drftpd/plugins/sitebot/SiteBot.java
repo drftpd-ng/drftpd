@@ -2770,7 +2770,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		if (cmd == null) {
 			return;
 		}
-		String inputs = cmd.getProperty("input");
+		String inputs = cmd.getProperty("input","");
 		StringTokenizer ist = new StringTokenizer(inputs);
 		while (ist.hasMoreTokens()) {
 			String token = ist.nextToken();
@@ -2792,7 +2792,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		if (proceed) {
 			// Find what outputs we should be sending the response to
 			ArrayList<OutputWriter> cmdOutputs = new ArrayList<OutputWriter>();
-			String outputs = cmd.getProperty("output");
+			String outputs = cmd.getProperty("output","");
 			StringTokenizer ost = new StringTokenizer(outputs);
 			while(ost.hasMoreTokens()) {
 				String token = ost.nextToken();

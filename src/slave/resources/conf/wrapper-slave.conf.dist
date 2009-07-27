@@ -20,7 +20,7 @@ wrapper.java.classpath.2=lib/jpf-1.5.1.jar
 wrapper.java.classpath.3=lib/jpf-boot-1.5.1.jar
 wrapper.java.classpath.4=lib/commons-logging-1.1.1.jar
 wrapper.java.classpath.5=lib/log4j-1.2.15.jar
-wrapper.java.classpath.6=lib/drftpd-jpf-2.1.0.jar
+wrapper.java.classpath.6=lib/drftpd-jpf-3.0.0.jar
 
 #URLBootStrap (more options further down, need to comment out item 3 above)
 #wrapper.java.classpath.3=classes/
