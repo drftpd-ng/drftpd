@@ -96,7 +96,11 @@
 				<then>
 					<mkdir dir="${plugin.home}/classes" />
 					<copy todir="${plugin.home}/classes">
-						<fileset dir="${build.dir}/classes" />
+						<fileset dir="${build.dir}/classes">
+							<include name="**/*.class" />
+							<include name="**/*.properties" />
+							<exclude name="**/*.*.properties" />
+						</fileset>
 					</copy>
 					<copy file="${build.dir}/plugin.xml" todir="${plugin.home}" />
 				</then>
@@ -113,6 +117,7 @@
 						<fileset dir="${build.dir}/classes">
 							<include name="**/*.class" />
 							<include name="**/*.properties" />
+							<exclude name="**/*.*.properties" />
 						</fileset>
 					</jar>
 					<mkdir dir="${installdir}/${plugin.family}" />
