@@ -1036,7 +1036,7 @@ public class UserManagementHandler extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
-		CommandResponse response = new CommandResponse(200);
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
 		for (int i = 1; i < args.length; i++) {
 			String string = args[i].replace(",",""); // strip commas (for easy copy+paste)
