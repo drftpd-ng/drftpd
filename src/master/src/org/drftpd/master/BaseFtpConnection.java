@@ -45,6 +45,7 @@ import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponseInterface;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.ConnectionEvent;
 import org.drftpd.io.AddAsciiOutputStream;
@@ -68,6 +69,9 @@ public class BaseFtpConnection extends Session implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
 
+	public static final Key<InetAddress> ADDRESS = new Key<InetAddress>(BaseFtpConnection.class, "address");
+	public static final Key<String> IDENT = new Key<String>(BaseFtpConnection.class, "ident");
+	
 	public static final String NEWLINE = "\r\n";
 
 	/**
@@ -75,7 +79,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 */
 	protected boolean _authenticated = false;
 
-	// protected ConnectionManager _cm;
 	private CommandManagerInterface _commandManager;
 
 	protected Socket _controlSocket;

@@ -31,7 +31,6 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.UserEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
@@ -48,9 +47,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class LoginHandler extends CommandInterface {
     private static final Logger logger = Logger.getLogger(LoginHandler.class);
     
-    public static final Key<String> IDENT = new Key<String>(LoginHandler.class, "ident");
-    public static final Key<InetAddress> ADDRESS = new Key<InetAddress>(LoginHandler.class, "address");
-
     private ResourceBundle _bundle;
     private String _keyPrefix;
 
@@ -66,7 +62,7 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doIDNT(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        if (request.getSession().getObject(ADDRESS, null) != null) {
+        if (request.getSession().getObject(BaseFtpConnection.ADDRESS, null) != null) {
             logger.error("Multiple IDNT commands");
             return new CommandResponse(530, "Multiple IDNT commands");
 
@@ -92,8 +88,8 @@ public class LoginHandler extends CommandInterface {
         }
 
         try {
-            request.getSession().setObject(ADDRESS, InetAddress.getByName(arg.substring(pos1 + 1, pos2)));
-            request.getSession().setObject(IDENT, arg.substring(0, pos1));
+            request.getSession().setObject(BaseFtpConnection.ADDRESS, InetAddress.getByName(arg.substring(pos1 + 1, pos2)));
+            request.getSession().setObject(BaseFtpConnection.IDENT, arg.substring(0, pos1));
         } catch (UnknownHostException e) {
             logger.info("Invalid hostname passed to IDNT", e);
 
@@ -201,8 +197,8 @@ public class LoginHandler extends CommandInterface {
         }
 
         try {
-        	InetAddress address = request.getSession().getObject(ADDRESS, null);
-        	String ident = request.getSession().getObject(IDENT, null);
+        	InetAddress address = request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
+        	String ident = request.getSession().getObject(BaseFtpConnection.IDENT, null);
         	
         	boolean hostMaskPassed = false;
         	if (address != null) {
@@ -213,7 +209,7 @@ public class LoginHandler extends CommandInterface {
         		hostMaskPassed = newUser.getHostMaskCollection().check(null, conn.getClientAddress(), conn.getControlSocket());
         		
         		// ADDRESS is null, let's set it. 
-        		request.getSession().setObject(ADDRESS, conn.getClientAddress());
+        		request.getSession().setObject(BaseFtpConnection.ADDRESS, conn.getClientAddress());
         	}
         	
             if (hostMaskPassed) {
