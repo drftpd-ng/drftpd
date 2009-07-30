@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -45,6 +46,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.TransferState;
 import org.drftpd.usermanager.User;
@@ -55,6 +57,7 @@ import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandleInterface;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog
@@ -80,11 +83,19 @@ public class LIST extends CommandInterface {
 	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<AddListElementsInterface>();
 
 	private StandardCommandManager _cManager;
+	
+	private ResourceBundle _bundle;
+
+	private String _keyPrefix;
 
 	@Override
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_cManager = cManager;
+		
+    	_bundle = cManager.getResourceBundle();
+    	_keyPrefix = this.getClass().getName()+".";
+		
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 
@@ -357,6 +368,24 @@ public class LIST extends CommandInterface {
 	}
 
 	public CommandResponse doSTAT(CommandRequest request) {
+		if (!request.hasArgument()) {
+			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+			
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			
+			env.add("ssl.enabled", conn.isSecure() ? "Yes" : "No");
+			env.add("user", conn.getUsername());
+			env.add("user.ip", conn.getClientAddress().getHostAddress()); // TODO FIX
+			env.add("user.timeout", conn.getUserNull().getIdleTime());
+			env.add("conns", ConnectionManager.getConnectionManager().getConnections().size()); // TODO sync this.
+			env.add("version", GlobalContext.VERSION);
+			
+			CommandResponse response = new CommandResponse(211, "End of status");
+			response.addComment(conn.jprintf(_bundle, env, _keyPrefix+ "daemon.stat"));
+			
+			return response;
+		}
+		
 		return list(request, true);
 	}
 
