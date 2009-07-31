@@ -375,7 +375,7 @@ public class LIST extends CommandInterface {
 			
 			env.add("ssl.enabled", conn.isSecure() ? "Yes" : "No");
 			env.add("user", conn.getUsername());
-			env.add("user.ip", conn.getClientAddress().getHostAddress()); // TODO FIX
+			env.add("user.ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
 			env.add("user.timeout", conn.getUserNull().getIdleTime());
 			env.add("conns", ConnectionManager.getConnectionManager().getConnections().size()); // TODO sync this.
 			env.add("version", GlobalContext.VERSION);
