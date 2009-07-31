@@ -24,7 +24,7 @@ import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.commands.login.LoginHandler;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.vfs.DirectoryHandle;
@@ -54,7 +54,7 @@ public class FXPPermissionPreHook implements PreHookInterface {
 		if (config.checkPathPermission(directive, request.getSession().getUserNull(request.getUser()), fromDir)) {
 			// denied to make fxp.
 			// let's set the ip that is going to be sent to the slave.
-			InetAddress inetAdd = (InetAddress) request.getSession().getObject(LoginHandler.ADDRESS, null);
+			InetAddress inetAdd = (InetAddress) request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
 			mask = "*@"+inetAdd.getHostAddress();						
 		}
 		
