@@ -46,7 +46,6 @@ import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponseInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.ConnectionEvent;
@@ -528,7 +527,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	public void abortCommand() {
 		super.abortCommand();
 		if (getTransferState().abort("Transfer aborted")) {
-    		printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED")));
+    		printOutput(new FtpReply(426, "Connection closed; transfer aborted."));
     	}
 	}
 
