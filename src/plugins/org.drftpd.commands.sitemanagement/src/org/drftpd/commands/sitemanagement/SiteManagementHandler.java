@@ -319,4 +319,22 @@ public class SiteManagementHandler extends CommandInterface {
 
 		return new CommandResponse(200, "Successfully unloaded your plugin");
 	}
+
+	public CommandResponse doSITE_RELOADPLUGIN(CommandRequest request) throws ImproperUsageException {
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+		CommandResponse response = doSITE_UNLOADPLUGIN(request);
+		if (response.getCode() == 200) {
+			response = doSITE_LOADPLUGIN(request);
+			if (response.getCode() == 200) {
+				response = doSITE_RELOAD(request);
+			}
+		}
+		if (response.getCode() == 200) {
+			return new CommandResponse(200, "Successfully reloaded plugin");
+		} else {
+			return response;
+		}
+	}
 }

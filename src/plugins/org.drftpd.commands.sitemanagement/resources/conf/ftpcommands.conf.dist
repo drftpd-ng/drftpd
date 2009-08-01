@@ -50,6 +50,17 @@ help.specific Unload a plugin
 help.specific <PLUGIN> - the full name of the plugin to be unloaded
 }
 
+SITE RELOADPLUGIN {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_RELOADPLUGIN
+perms =siteop
+help Reload a plugin
+help.specific ${command} <PLUGIN>
+help.specific Unload a plugin, load the plugin again and reload all configs
+help.specific <PLUGIN> - the full name of the plugin to be reloaded
+}
+
 SITE PLUGINS {
 plugin org.drftpd.commands.sitemanagement
 class SiteManagementHandler

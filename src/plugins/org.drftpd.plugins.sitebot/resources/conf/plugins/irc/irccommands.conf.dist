@@ -416,6 +416,19 @@ input all
 output source
 }
 
+reloadplugin {
+plugin org.drftpd.commands.sitemanagement
+class SiteManagementHandler
+method doSITE_RELOADPLUGIN
+perms =siteop
+help Reload a plugin
+help.specific ${command} <PLUGIN>
+help.specific Unload a plugin, load the plugin again and reload all configs
+help.specific <PLUGIN> - the full name of the plugin to be reloaded
+input all
+output source
+}
+
 help {
 plugin org.drftpd.commands.misc
 class Misc
