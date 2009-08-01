@@ -30,6 +30,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
@@ -45,6 +46,7 @@ import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponseInterface;
+import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.ConnectionEvent;
@@ -121,6 +123,8 @@ public class BaseFtpConnection extends Session implements Runnable {
 	private ThreadPoolExecutor _pool;
 
 	private boolean _authDone = false;
+
+	private AtomicInteger _commandCount = new AtomicInteger(0);
 
 	protected BaseFtpConnection() {
 	}
@@ -520,6 +524,14 @@ public class BaseFtpConnection extends Session implements Runnable {
 		//logger.debug("active threads: "+_pool.getActiveCount());
 	}
 
+	@Override
+	public void abortCommand() {
+		super.abortCommand();
+		if (getTransferState().abort("Transfer aborted")) {
+    		printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED")));
+    	}
+	}
+
 	class CommandThread implements Runnable {
 
 		private FtpRequest _ftpRequest;
@@ -532,24 +544,29 @@ public class BaseFtpConnection extends Session implements Runnable {
 		}
 
 		public void run() {
-			// Remove this for now as it seems to cause lockups due to a race between checking active count and the old thread dying
-			/*if (_pool.getActiveCount() > 1 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+			if (_commandCount.get() > 0 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
 				return;
-			}*/
+			} else {
+				_commandCount.incrementAndGet();
+			}
+			clearAborted();
 			CommandRequestInterface cmdRequest = _commandManager.newRequest(
 					_ftpRequest.getCommand(), _ftpRequest.getArgument(),
 					_currentDirectory, _user, _conn, _conn.getCommands().get(_ftpRequest.getCommand()));
 			CommandResponseInterface cmdResponse = _commandManager
 				.execute(cmdRequest);
 			if (cmdResponse != null) {
-				if (cmdResponse.getCurrentDirectory() != null) {
-					_currentDirectory = cmdResponse.getCurrentDirectory();
+				if (!isAborted() || _ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
+					if (cmdResponse.getCurrentDirectory() != null) {
+						_currentDirectory = cmdResponse.getCurrentDirectory();
+					}
+					if (cmdResponse.getUser() != null) {
+						_user = cmdResponse.getUser();
+					}
+					printOutput(new FtpReply(cmdResponse));
 				}
-				if (cmdResponse.getUser() != null) {
-					_user = cmdResponse.getUser();
-				}
-				printOutput(new FtpReply(cmdResponse));
 			}
+			_commandCount.decrementAndGet();
 		}
 	}
 

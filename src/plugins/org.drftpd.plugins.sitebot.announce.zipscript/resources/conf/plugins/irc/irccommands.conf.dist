@@ -1,4 +1,4 @@
-SITE RESCAN {
+rescan {
 plugin org.drftpd.commands.zipscript
 class ZipscriptCommands
 method doSITE_RESCAN
@@ -10,4 +10,6 @@ help.specific     The force option makes the slave recalculate the checksums.
 help.specific     The delete option removes bad files rather than just reporting them.
 help.specific     The quiet option only prints output for files which aren't good.
 help.specific     Specifying a path will rescan the requested directory instead of the current directory.
+input all
+output source
 }

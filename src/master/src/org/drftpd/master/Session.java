@@ -43,6 +43,8 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 
 	public static final Key<HashMap<String, Properties>> COMMANDS = new Key<HashMap<String, Properties>>(Session.class, "commands");
 
+	private boolean _aborted = false;
+
 	public void setCommands(HashMap<String,Properties> commands) {
 		setObject(Session.COMMANDS, commands);
 	}
@@ -121,4 +123,16 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 	public abstract void printOutput(Object o);
 
 	public abstract void printOutput(int code, Object o);
+
+	public void abortCommand() {
+		_aborted = true;
+	}
+
+	public void clearAborted() {
+		_aborted = false;
+	}
+
+	public boolean isAborted() {
+		return _aborted;
+	}
 }

@@ -47,6 +47,7 @@ import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 
 /**
@@ -85,6 +86,7 @@ public class ZipscriptCommands extends CommandInterface {
 	public CommandResponse doSITE_RESCAN(CommandRequest request) throws ImproperUsageException {
 
 		Session session = request.getSession();
+		String startPath = null;
 		boolean recursive = false;
 		boolean forceRescan = false;
 		boolean deleteBad = false;
@@ -100,6 +102,8 @@ public class ZipscriptCommands extends CommandInterface {
 				deleteBad = true;
 			} else if (arg.equalsIgnoreCase("quiet")) {
 				quiet = true;
+			} else if (arg.startsWith("/")) {
+				startPath = arg;
 			} else {
 				throw new ImproperUsageException();
 			}
@@ -107,9 +111,32 @@ public class ZipscriptCommands extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
-		dirs.add(request.getCurrentDirectory());
-		while (dirs.size() > 0) {
+		if (startPath != null) {
+			boolean validPath = false;
+			try {
+				if (InodeHandle.isDirectory(startPath)) {
+					dirs.add(new DirectoryHandle(startPath));
+					validPath = true;
+				}
+			} catch (FileNotFoundException e) {
+				// Do nothing, the valid path check will deal with this
+			}
+			if (!validPath) {
+				session.printOutput(startPath+" is not a valid path");
+				throw new ImproperUsageException();
+			}
+		} else {
+			dirs.add(request.getCurrentDirectory());
+		}
+		while (dirs.size() > 0 && !session.isAborted()) {
 			DirectoryHandle workingDir = dirs.poll();
+			if (recursive) {
+				try {
+					dirs.addAll(workingDir.getDirectories(request.getSession().getUserNull(request.getUser())));
+				} catch (FileNotFoundException e1) {
+					session.printOutput(200,"Error recursively listing: "+workingDir.getPath());
+				}
+			}
 			SFVInfo workingSfv;
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(workingDir);
 			try {
@@ -132,14 +159,10 @@ public class ZipscriptCommands extends CommandInterface {
 				continue;
 			}
 			session.printOutput(200,"Rescanning: "+workingDir.getPath());
-			if (recursive) {
-				try {
-					dirs.addAll(workingDir.getDirectories(request.getSession().getUserNull(request.getUser())));
-				} catch (FileNotFoundException e1) {
-					session.printOutput(200,"Error recursively listing: "+workingDir.getPath());
-				}
-			}
 			for (Entry<String,Long> sfvEntry : workingSfv.getEntries().entrySet()) {
+				if (session.isAborted()) {
+					break;
+				}
 				FileHandle file = new FileHandle(workingDir.getPath()
 						+VirtualFileSystem.separator+sfvEntry.getKey());
 				Long sfvChecksum = sfvEntry.getValue();

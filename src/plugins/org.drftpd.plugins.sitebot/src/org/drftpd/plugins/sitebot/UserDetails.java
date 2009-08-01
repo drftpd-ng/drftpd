@@ -18,6 +18,7 @@
 package org.drftpd.plugins.sitebot;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -261,5 +262,9 @@ public class UserDetails {
 
 	protected synchronized void removeCommandSession(ServiceCommand session) {
 		_commandSessions.remove(session);
+	}
+
+	protected List<ServiceCommand> getCommandSessions() {
+		return _commandSessions;
 	}
 }

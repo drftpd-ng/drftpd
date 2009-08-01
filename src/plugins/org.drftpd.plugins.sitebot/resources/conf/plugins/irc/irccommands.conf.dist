@@ -463,3 +463,13 @@ help.specific Show drftpd version
 input all
 output source
 }
+
+abort {
+plugin org.drftpd.commands.misc
+class Misc
+method doABOR
+perms *
+help Abort all commands being run by the user issuing the abort
+input all
+output source
+}

@@ -35,7 +35,6 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.master.FtpReply;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -75,10 +74,7 @@ public class Misc extends CommandInterface {
      * transfers are not multi-threaded.
      */
 	public CommandResponse doABOR(CommandRequest request) {
-    	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-    	if (conn.getTransferState().abort("Transfer aborted.")) {
-    		conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED")));
-    	}
+    	request.getSession().abortCommand();
     	return new CommandResponse(226, request.getCommand().toUpperCase() + " command successful");
     }
 

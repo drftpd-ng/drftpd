@@ -40,11 +40,14 @@ public class ServiceCommand extends Session {
 
 	private ArrayList<OutputWriter> _outputs;
 
+	private UserDetails _runningUser;
+
 	public ServiceCommand(SiteBot bot, ArrayList<OutputWriter> outputs, UserDetails runningUser, String ident) {
 		_bot = bot;
 		_outputs = outputs;
 		setObject(IRCUSER,runningUser);
 		setObject(IDENT,ident);
+		_runningUser = runningUser;
 	}
 
 	public void printOutput(Object o) {
@@ -86,5 +89,18 @@ public class ServiceCommand extends Session {
 			ReplacerEnvironment env, User user) {
 		env = super.getReplacerEnvironment(env, user);
 		return ReplacerEnvironment.chain(env, SiteBot.GLOBAL_ENV);
+	}
+
+	@Override
+	public void abortCommand() {
+		synchronized(_runningUser) {
+			for (ServiceCommand runningCommand : _runningUser.getCommandSessions()) {
+				runningCommand.setAborted();
+			}
+		}
+	}
+
+	protected void setAborted() {
+		super.abortCommand();
 	}
 }

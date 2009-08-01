@@ -980,12 +980,13 @@ public class DataConnectionHandler extends CommandInterface {
                     ts.sendFile(ts.getTransferFile().getPath(), ts.getType(),
                         ts.getResumePosition(), address);
 
-                    while (true) {
-                        status = ts.getTransferStatus();
-
-                        if (status.isFinished()) {
-                            break;
-                        }
+                    while (!conn.isAborted()) {
+                   		synchronized(ts) {
+                   			status = ts.getTransferStatus();
+                   		}	
+                       	if (status.isFinished()) {
+                           	break;
+                       	}
 
                         try {
                             Thread.sleep(100);
@@ -996,8 +997,10 @@ public class DataConnectionHandler extends CommandInterface {
                     ts.receiveFile(ts.getTransferFile().getPath(), ts.getType(),
                         ts.getResumePosition(), address);
 
-                    while (true) {
-                        status = ts.getTransferStatus();
+                    while (!conn.isAborted()) {
+                    	synchronized(ts) {
+                    		status = ts.getTransferStatus();
+                    	}
                         ts.getTransferFile().setSize(status.getTransfered());
                         if (status.isFinished()) {
                             break;
@@ -1009,6 +1012,9 @@ public class DataConnectionHandler extends CommandInterface {
                     }
                 } else {
                     throw new RuntimeException();
+                }
+                if (conn.isAborted()) {
+                	return new CommandResponse(226,"Transfer aborted");
                 }
             } catch (IOException ex) {          	                
                 CommandResponse response = null;
