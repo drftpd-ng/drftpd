@@ -426,8 +426,11 @@ public class Dir extends CommandInterface {
 		return new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
 	}
 
-	public CommandResponse doSITE_CHOWN(CommandRequest request) {
-
+	public CommandResponse doSITE_CHOWN(CommandRequest request) throws ImproperUsageException {
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+		
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 		String owner = st.nextToken();
 		String group = null;
@@ -450,6 +453,10 @@ public class Dir extends CommandInterface {
 		CommandResponse response = new CommandResponse(200);
 		User user = request.getSession().getUserNull(request.getUser());
 
+		if (!st.hasMoreTokens()) {
+			throw new ImproperUsageException();
+		}
+		
 		while (st.hasMoreTokens()) {
 			try {
 				InodeHandle file = request.getCurrentDirectory().getInodeHandle(st.nextToken(), user);
