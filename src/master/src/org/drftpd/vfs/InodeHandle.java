@@ -376,19 +376,110 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		}
 	}
 
-	public <T> void addKey(Key<T> key, T object) throws FileNotFoundException {
-		getInode().getKeyedMap().setObject(key,object);
-		getInode().commit();
+	/**
+	 * Add custom meta data provided by a plugin to the map serialized as part of the inode
+	 * for future retrieval. It is safe to use custom classes and keys defined in the plugin
+	 * for storing data here but be the data will be lost if the inode is deserialized when
+	 * the plugin providing the classes is not loaded. This should only be used for data which
+	 * can be repopulated as required.
+	 * 
+	 * @param  key
+	 *         An instance of <tt>Key</tt> to store the data against
+	 *
+	 * @param  object
+	 *         The data to be stored in the map
+	 *
+	 * @throws  FileNotFoundException
+	 *          If the inode for this handle does not exist
+	 */
+	public <T> void addPluginMetaData(Key<T> key, T object) throws FileNotFoundException {
+		getInode().addPluginMetaData(key, object);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> T removeKey(Key<T> key) throws FileNotFoundException {
-		T value = (T) getInode().getKeyedMap().remove(key);
-		getInode().commit();
-		return value;
+	/**
+	 * Remove custom meta data provided by a plugin from the map serialized as part of the inode.
+	 * 
+	 * @param  key
+	 *         An instance of <tt>Key</tt> which was used to store the data against
+	 * 
+	 * @return  The data which was stored against the key or <tt>null</tt> if the map contained
+	 *          no entry for the key
+	 *
+	 * @throws  FileNotFoundException
+	 *          If the inode for this handle does not exist
+	 */
+	public <T> T removePluginMetaData(Key<T> key) throws FileNotFoundException {
+		return getInode().removePluginMetaData(key);
 	}
 
-	public <T> T getKey(Key<T> key) throws FileNotFoundException, KeyNotFoundException {
-		return getInode().getKeyedMap().getObject(key);
+	/**
+	 * Retrieve custom meta data provided by a plugin from the map serialized as part of the inode.
+	 * 
+	 * @param  key
+	 *         An instance of <tt>Key</tt> which was used to store the data against
+	 * 
+	 * @return  The data which was stored against the key
+	 * 
+	 * @throws  FileNotFoundException
+	 *          If the inode for this handle does not exist
+	 * 
+	 * @throws  KeyNotFoundException
+	 *          If no entry exists in the map for the provided key
+	 */
+	public <T> T getPluginMetaData(Key<T> key) throws FileNotFoundException, KeyNotFoundException {
+		return getInode().getPluginMetaData(key);
+	}
+
+	/**
+	 * Add meta data provided by a plugin to the map serialized as part of the inode
+	 * for future retrieval. It is not safe to use custom classes defined in the plugin
+	 * for storing data here, only classes provided by the Java API or the master plugin and
+	 * its parents should be used, using other classes will lead to potential memory leaks.
+	 * Data stored against this map will not be lost if the plugin which stored it is not
+	 * loaded at the time the inode is deserialized providing the stated conditions are met.
+	 * 
+	 * @param  key
+	 *         A unique key to store the meta data against
+	 * 
+	 * @param  object
+	 *         The data to be stored
+	 * 
+	 * @throws  FileNotFoundException
+	 *          If the inode for this handle does not exist
+	 */
+	public <T> void addUntypedPluginMetaData(String key, T object) throws FileNotFoundException {
+		getInode().addUntypedPluginMetaData(key, object);
+	}
+
+	/**
+	 * Remove meta data provided by a plugin from the map serialized as part of the inode.
+	 * 
+	 * @param  key
+	 *         The key which was used when storing the data in the map
+	 * 
+	 * @return  The data which was stored against the key or <tt>null</tt> if the map contained
+	 *          no entry for the key
+	 *
+	 * @throws  FileNotFoundException
+	 *          If the inode for this handle does not exist
+	 */
+	public <T> T removeUntypedPluginMetaData(String key) throws FileNotFoundException {
+		return getInode().removeUntypedPluginMetaData(key);
+	}
+
+	/**
+	 * Retrieve custom meta data provided by a plugin from the map serialized as part of the inode.
+	 * 
+	 * @param  key
+	 *         The key which was used when storing the data in the map
+	 * 
+	 * @return  The data which was stored against the key or <tt>null</tt> if the map contained
+	 *          no entry for the provided key
+	 * 
+	 * @throws  FileNotFoundException
+	 *          If the inode for this handle does not exist
+	 */
+	public <T> T getUntypedPluginMetaData(String key) throws FileNotFoundException {
+		return getInode().getUntypedPluginMetaData(key);
 	}
 }

@@ -32,6 +32,10 @@ public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> {
 		super();
 	} 
 
+	public KeyedMap(Map<? extends K,? extends V> map) {
+		super(map);
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T> T getObject(Key<T> key) throws KeyNotFoundException {
 		T ret = (T) get(key);

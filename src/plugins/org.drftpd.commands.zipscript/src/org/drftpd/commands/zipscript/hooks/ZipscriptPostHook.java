@@ -236,7 +236,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		}
 		if (deleFileName.toLowerCase().endsWith(".sfv")) {
 			try {
-				request.getCurrentDirectory().removeKey(SFVInfo.SFV);
+				request.getCurrentDirectory().removePluginMetaData(SFVInfo.SFV);
 			} catch(FileNotFoundException e) {
 				// No inode to remove sfvinfo from
 			}

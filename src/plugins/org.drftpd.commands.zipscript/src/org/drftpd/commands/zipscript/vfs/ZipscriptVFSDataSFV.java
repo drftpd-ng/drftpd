@@ -62,12 +62,12 @@ public class ZipscriptVFSDataSFV {
 				// just continue, it couldn't find the previous sfv file, the line below here will remove it
 				// we will then continue to try to find a new one right afterward
 			}
-			_dir.removeKey(SFVInfo.SFV);
+			_dir.removePluginMetaData(SFVInfo.SFV);
 		} catch (KeyNotFoundException e1) {
 			// bah, let's load it
 		} catch (ObjectNotValidException e) {
 			// the previous sfv file is no longer of type VirtualFileSystemFile
-			_dir.removeKey(SFVInfo.SFV);
+			_dir.removePluginMetaData(SFVInfo.SFV);
 		}
 
 		for (FileHandle file : _dir.getFilesUnchecked()) {
@@ -85,7 +85,7 @@ public class ZipscriptVFSDataSFV {
 					} catch (RemoteIOException e) {
 						throw new IOException(e.getMessage());
 					}
-					_dir.addKey(SFVInfo.SFV, info);
+					_dir.addPluginMetaData(SFVInfo.SFV, info);
 					return info;
 				}
 				throw new SlaveUnavailableException("No slave for SFV file available");
@@ -113,7 +113,7 @@ public class ZipscriptVFSDataSFV {
 	}
 	
 	private SFVInfo getSFVInfoFromInode(DirectoryHandle vfsDirHandle) throws FileNotFoundException, KeyNotFoundException {
-		return (SFVInfo) vfsDirHandle.getKey(SFVInfo.SFV);
+		return (SFVInfo) vfsDirHandle.getPluginMetaData(SFVInfo.SFV);
 	}
 	
 	private SFVInfo fetchSFVInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {

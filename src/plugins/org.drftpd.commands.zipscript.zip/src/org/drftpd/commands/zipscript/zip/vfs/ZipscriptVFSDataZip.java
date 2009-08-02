@@ -75,7 +75,7 @@ public class ZipscriptVFSDataZip {
 		}
 		if (dizInfo != null) {
 			if (dizInfo.isValid()) {
-				_dir.addKey(DizInfo.DIZ, dizInfo);
+				_dir.addPluginMetaData(DizInfo.DIZ, dizInfo);
 				return dizInfo;
 			}
 		}
@@ -100,7 +100,7 @@ public class ZipscriptVFSDataZip {
 	}
 
 	private DizInfo getDizInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
-		return (DizInfo) vfsInodeHandle.getKey(DizInfo.DIZ);
+		return (DizInfo) vfsInodeHandle.getPluginMetaData(DizInfo.DIZ);
 	}
 
 	private DizInfo fetchDizInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {

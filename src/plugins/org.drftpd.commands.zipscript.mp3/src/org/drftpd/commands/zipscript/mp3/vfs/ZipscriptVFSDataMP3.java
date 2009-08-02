@@ -76,7 +76,7 @@ public class ZipscriptVFSDataMP3 {
 				}
 			}
 			if (mp3info != null) {
-				dir.addKey(MP3Info.MP3INFO, mp3info);
+				dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
 				return mp3info;
 			}
 			throw new FileNotFoundException("No usable mp3 files found in directory");
@@ -100,7 +100,7 @@ public class ZipscriptVFSDataMP3 {
 			if (mp3info == null) {
 				throw new FileNotFoundException("Unable to obtain info for MP3 file");
 			} else {
-				_inode.addKey(MP3Info.MP3INFO, mp3info);
+				_inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
 			}
 			// Update mp3info on parent directory inode
 			DirectoryHandle dir = file.getParent();
@@ -109,7 +109,7 @@ public class ZipscriptVFSDataMP3 {
 					getMP3InfoFromInode(dir);
 				} catch (KeyNotFoundException e1) {
 					_setDir = true;
-					dir.addKey(MP3Info.MP3INFO, mp3info);
+					dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
 				}
 			}
 			return mp3info;
@@ -123,7 +123,7 @@ public class ZipscriptVFSDataMP3 {
 	}
 
 	private MP3Info getMP3InfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
-		return (MP3Info) vfsInodeHandle.getKey(MP3Info.MP3INFO);
+		return (MP3Info) vfsInodeHandle.getPluginMetaData(MP3Info.MP3INFO);
 	}
 
 	private MP3Info fetchMP3InfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
