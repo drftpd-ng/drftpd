@@ -123,7 +123,7 @@ public class ZipscriptVFSDataMP3 {
 	}
 
 	private MP3Info getMP3InfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
-		return (MP3Info) vfsInodeHandle.getPluginMetaData(MP3Info.MP3INFO);
+		return vfsInodeHandle.getPluginMetaData(MP3Info.MP3INFO);
 	}
 
 	private MP3Info fetchMP3InfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {

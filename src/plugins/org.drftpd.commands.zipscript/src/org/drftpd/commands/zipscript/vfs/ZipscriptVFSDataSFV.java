@@ -113,7 +113,7 @@ public class ZipscriptVFSDataSFV {
 	}
 	
 	private SFVInfo getSFVInfoFromInode(DirectoryHandle vfsDirHandle) throws FileNotFoundException, KeyNotFoundException {
-		return (SFVInfo) vfsDirHandle.getPluginMetaData(SFVInfo.SFV);
+		return vfsDirHandle.getPluginMetaData(SFVInfo.SFV);
 	}
 	
 	private SFVInfo fetchSFVInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {

@@ -100,7 +100,7 @@ public class ZipscriptVFSDataZip {
 	}
 
 	private DizInfo getDizInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
-		return (DizInfo) vfsInodeHandle.getPluginMetaData(DizInfo.DIZ);
+		return vfsInodeHandle.getPluginMetaData(DizInfo.DIZ);
 	}
 
 	private DizInfo fetchDizInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
