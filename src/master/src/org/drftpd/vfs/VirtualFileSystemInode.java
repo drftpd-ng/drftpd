@@ -47,17 +47,17 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		return VirtualFileSystem.getVirtualFileSystem();
 	}
 
+	protected transient String _name;
+
+	protected transient VirtualFileSystemDirectory _parent;
+	
+	protected String _username;
+	
 	protected String _group;
 
 	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<Key<?>, Object>();
 
 	protected long _lastModified;
-
-	protected transient String _name;
-
-	protected transient VirtualFileSystemDirectory _parent;
-
-	protected String _username;
 	
 	public String descriptiveName() {
 		return getPath();
@@ -93,6 +93,8 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
 		_parent.removeChild(this);
 		CommitManager.getCommitManager().remove(this);
+		
+		getVFS().notifyInodeDeleted(getPath());
 	}
 
 	/**
@@ -229,7 +231,11 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 * Sets the group which owns the Inode.
 	 */
 	public void setGroup(String group) {
+		String oldGroup = _group;
+		
 		_group = group;
+		
+		getVFS().notifyOwnershipChanged(getPath(), getUsername(), getUsername(), oldGroup, _group);
 	}
 
 	public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
@@ -247,7 +253,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	/**
 	 * Sets the Inode name.
 	 */
-	public void setName(String name) {
+	protected void setName(String name) {
 		_name = name;
 	}
 
@@ -265,7 +271,11 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 *            The user to set.
 	 */
 	public void setUsername(String user) {
-		_username = user;
+		String oldUser = _username;
+		
+		_username = user; 
+		
+		getVFS().notifyOwnershipChanged(getPath(), oldUser, _username, getGroup(), getGroup());
 	}
 
 	/*
@@ -290,4 +300,5 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		
 		return ((VirtualFileSystemInode) obj).getPath().equalsIgnoreCase(getPath());
 	}
+	
 }

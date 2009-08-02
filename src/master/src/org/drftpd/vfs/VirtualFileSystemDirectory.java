@@ -87,6 +87,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 					+ " already exists in " + getPath());
 		}
 		createDirectoryRaw(name, user, group);
+		
+		getVFS().notifyInodeCreated(getPath() + VirtualFileSystem.separator + name);
 	}
 	
 	
@@ -105,8 +107,6 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				group);
 		inode.setName(name);
 		inode.setParent(this);
-		//inode.setLastModified(System.currentTimeMillis());
-		// call above is superfluous, it's done in the Inode constructor
 		inode.commit();
 		addChild(inode);
 		logger.info("createDirectory(" + inode + ")");
@@ -129,11 +129,12 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				0, initialSlave);
 		inode.setName(name);
 		inode.setParent(this);
-		inode.setLastModified(System.currentTimeMillis());
 		inode.commit();
 		addChild(inode);
 		commit();
 		logger.info("createFile(" + inode + ")");
+		
+		getVFS().notifyInodeCreated(getPath() + VirtualFileSystem.separator + name);
 	}
 
 	/**
@@ -153,7 +154,6 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				target);
 		inode.setName(name);
 		inode.setParent(this);
-		inode.setLastModified(System.currentTimeMillis());
 		inode.commit();
 		addChild(inode);
 		commit();

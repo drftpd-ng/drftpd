@@ -119,6 +119,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 			_slaves.add(rslave);
 		}
 		commit();
+		
+		getVFS().notifySlavesChanged(getPath(), _slaves);
 	}
 
 	/**
@@ -149,6 +151,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 			delete();
 		} else {
 			commit();
+			
+			getVFS().notifySlavesChanged(getPath(), _slaves);
 		}
 	}
 
