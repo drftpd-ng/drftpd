@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.list.ListElementsContainer;
 import org.drftpd.commands.zipscript.list.NoEntryAvailableException;
@@ -39,8 +38,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
-
-	private static final Logger logger = Logger.getLogger(ZipscriptMP3StatusBar.class);
 
 	public ArrayList<String> getStatusBarEntry(DirectoryHandle dir,ListElementsContainer container) throws NoEntryAvailableException {
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
@@ -67,16 +64,12 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
 						keyPrefix+"statusbar.id3tag",env,container.getUser()));
 				return statusBarEntries;
 			} catch (FileNotFoundException e) {
-				logger.debug("Exception: ",e);
 				// Error fetching mp3 info, ignore
 			} catch (IOException e) {
-				logger.debug("Exception: ",e);
 				// Error fetching mp3 info, ignore
 			} catch (NoAvailableSlaveException e) {
-				logger.debug("Exception: ",e);
 				// Error fetching mp3 info, ignore
 			} catch (SlaveUnavailableException e) {
-				logger.debug("Exception: ",e);
 				// Error fetching mp3 info, ignore
 			}
 		}

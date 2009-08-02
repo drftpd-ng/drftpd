@@ -129,7 +129,7 @@ public class LoginHandler extends CommandInterface {
             try {
                 addTextToResponse(response, "text/welcome.txt");
             } catch (IOException e) {
-                logger.warn("Error reading welcome", e);
+                // Not mandatory to have a welcome text, so if it is not present silently ignore
             }
 
             return response;

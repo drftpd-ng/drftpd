@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -45,8 +44,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class ZipscriptMP3PostHook implements PostHookInterface {
-
-	private static final Logger logger = Logger.getLogger(ZipscriptMP3PostHook.class);
 
 	private ResourceBundle _bundle;
 
@@ -169,16 +166,12 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 				response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix+"cwd.mp3info.text"));
 			}
 		} catch (FileNotFoundException e) {
-			logger.debug("Exception: ",e);
 			// Error fetching mp3 info, ignore
 		} catch (IOException e) {
-			logger.debug("Exception: ",e);
 			// Error fetching mp3 info, ignore
 		} catch (NoAvailableSlaveException e) {
-			logger.debug("Exception: ",e);
 			// Error fetching mp3 info, ignore
 		} catch (SlaveUnavailableException e) {
-			logger.debug("Exception: ",e);
 			// Error fetching mp3 info, ignore
 		}
 	}
