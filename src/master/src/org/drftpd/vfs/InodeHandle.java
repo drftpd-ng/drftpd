@@ -464,7 +464,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 *          If the inode for this handle does not exist
 	 */
 	public <T> T removeUntypedPluginMetaData(String key) throws FileNotFoundException {
-		return getInode().removeUntypedPluginMetaData(key);
+		return getInode().<T>removeUntypedPluginMetaData(key);
 	}
 
 	/**
@@ -480,6 +480,6 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 *          If the inode for this handle does not exist
 	 */
 	public <T> T getUntypedPluginMetaData(String key) throws FileNotFoundException {
-		return getInode().getUntypedPluginMetaData(key);
+		return getInode().<T>getUntypedPluginMetaData(key);
 	}
 }
