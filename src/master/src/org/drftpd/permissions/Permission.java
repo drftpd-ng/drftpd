@@ -63,7 +63,6 @@ public class Permission {
 		for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
 			String aclUser = iter.next();
 			allow = true;
-			System.out.println("Evaluating permissions = " + aclUser);
 			if (aclUser.charAt(0) == '!') {
 				allow = false;
 				aclUser = aclUser.substring(1);
