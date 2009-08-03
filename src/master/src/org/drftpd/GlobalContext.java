@@ -33,8 +33,8 @@ import javax.net.ssl.SSLContext;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
-import org.bushe.swing.event.annotation.EventSubscriber;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.config.ConfigManager;
 import org.drftpd.event.AsyncThreadSafeEventService;
@@ -164,7 +164,7 @@ public class GlobalContext {
 		return _slaveManager;
 	}
 
-	public IndexEngineInterface getIndexingEngine() {
+	public IndexEngineInterface getIndexEngine() {
 		return _indexEngine;
 	}
 

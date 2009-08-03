@@ -52,7 +52,7 @@ public class LuceneBackupThread  extends Thread {
 
 	protected LuceneBackupThread() {
 		setName("LuceneBackupThread");
-		_engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexingEngine();
+		_engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
 	}
 
 	public void run() {

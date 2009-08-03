@@ -60,6 +60,7 @@ import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
+import org.drftpd.vfs.index.IndexingVirtualFileSystemListener;
 import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 
@@ -89,11 +90,10 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_SIZE = new Field("size", "", Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS);
 	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
 	
 	private static final Field[] FIELDS = new Field[] {
-		FIELD_NAME, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SIZE, FIELD_SLAVES
+		FIELD_NAME, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
 	};
 	
 	static {
@@ -122,6 +122,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	private LuceneMaintenanceThread _maintenanceThread;
 	private LuceneBackupThread _backupThread;
 
+	private IndexingVirtualFileSystemListener _listener;
+	
 	/**
 	 * Creates all the needed resources for the Index to work.
 	 * <ul>
@@ -144,6 +146,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		Runtime.getRuntime().addShutdownHook(new Thread(new IndexShutdownHookRunnable(), "IndexSaverThread"));
 		_maintenanceThread.start();
 		_backupThread.start();
+		
+		_listener = new IndexingVirtualFileSystemListener();
+		_listener.init();
 	}
 
 	private void createThreads() {
@@ -224,13 +229,12 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * Shortcut to create Lucene Document from the Inode's data. The fields that
 	 * are stored in the index are:
 	 * <ul>
-	 * <li>name</li>
-	 * <li>parentPath</li>
-	 * <li>fullPath</li>
+	 * <li>name - the name of the inode</li>
+	 * <li>parentPath - the full path of the parent inode</li>
+	 * <li>fullPath - the full path of the inode</li>
 	 * <li>owner - The user who owns the file</li>
 	 * <li>group - The group of the user who owns the file</li>
 	 * <li>type - File or Directory</li>
-	 * <li>size - The size of the inode</li>
 	 * <li>slaves - If the inode is a file, then the slaves are stored</li>
 	 * </ul>
 	 * 
@@ -248,7 +252,6 @@ public class LuceneEngine implements IndexEngineInterface {
 			FIELD_OWNER.setValue(inode.getUsername());
 			FIELD_GROUP.setValue(inode.getGroup());
 			FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
-			FIELD_SIZE.setValue(String.valueOf(inode.getSize()));
 
 			if (inodeType == InodeType.FILE) {
 				StringBuffer sb = new StringBuffer();

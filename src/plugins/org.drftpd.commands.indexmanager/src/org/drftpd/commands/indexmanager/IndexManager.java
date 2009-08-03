@@ -58,7 +58,7 @@ public class IndexManager extends CommandInterface {
 	public CommandResponse doRebuildIndex(CommandRequest request) {
 		CommandResponse response = new CommandResponse(200, "Index rebuilt");
 
-		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexingEngine();
+		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		try {
 			ie.rebuildIndex();
 		} catch (IndexException e) {
@@ -74,7 +74,7 @@ public class IndexManager extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
-		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexingEngine();
+		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		
 		if (request.getArgument().equalsIgnoreCase("full")) {
 			for (Entry<String,String> entry : ie.getStatus().entrySet()) {
@@ -93,7 +93,7 @@ public class IndexManager extends CommandInterface {
 		CommandResponse response = new CommandResponse(200, "Search complete");
 		User user = request.getSession().getUserNull(request.getUser());
 
-		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexingEngine();
+		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Set<String> inodes = null;
 
 		try {

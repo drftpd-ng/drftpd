@@ -45,7 +45,7 @@ public class LuceneMaintenanceThread extends Thread {
 	
 	public LuceneMaintenanceThread() {
 		setName("IndexMaintenanceThread");
-		_engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexingEngine();
+		_engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
 		
 		_lastOptimization = System.currentTimeMillis();
 		_lastSearcherCreation = System.currentTimeMillis();
