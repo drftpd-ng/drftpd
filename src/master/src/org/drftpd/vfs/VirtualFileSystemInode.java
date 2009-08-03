@@ -89,7 +89,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 * When called, this method will save the Inode data to the disk.
 	 */
 	public void commit() {
-		logger.debug("Committing " + getPath());
+		//logger.debug("Committing " + getPath());
 		CommitManager.getCommitManager().add(this);
 	}
 
