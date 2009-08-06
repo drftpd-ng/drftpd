@@ -43,6 +43,9 @@
 # at that point the event will be ignored.
 # It is therefore recommended to make sure your default type configuration
 # catches everything as a last resort.
+# There is a special destination of "null" that can be used to explicitly
+# suppress output, this allows certain paths/sections/events to not announce
+# to IRC whilst still allowing a catch all default to be used.
 #
 # The default type is configured identically to any other type, simply with
 # the name of default, like this:
@@ -59,6 +62,8 @@
 # mkdir.path.1.destination=#newstuff
 # mkdir.path.2=/specialdir/*
 # mkdir.path.2.destination=#privatechannel
+# mkdir.path.3=/hiddendir/*
+# mkdir.path.3.destination=null
 # mkdir.section.1=MP3
 # mkdir.section.1.destination=public
 #
@@ -70,6 +75,8 @@
 # of there in #newstuff. Any directories made inside /specialdir/ or any sub
 # directories of there will be announced in #privatechannel.
 # Any directories made in the MP3 section will be announced in all channels.
+# Any directories made inside /hiddendir/ or any sub directories of there will not
+# be announced at all.
 # Any directories made anywhere else on the site will be passed onto the default
 # type and announced in #mainchannel with a section name of DEFAULT
 #
