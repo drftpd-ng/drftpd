@@ -17,11 +17,12 @@
  */
 package org.drftpd.dynamicdata;
 
-import java.lang.ref.WeakReference;
+import com.google.common.collect.MapMaker;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * A collection of helper methods to aid with the serialization of KeyedMap instances. The
@@ -35,8 +36,8 @@ import java.util.WeakHashMap;
  */
 public class SerializationUtils {
 
-	private static WeakHashMap<Key<?>,WeakReference<Key<?>>> _keyCache =
-		new WeakHashMap<Key<?>,WeakReference<Key<?>>>();
+	private static ConcurrentMap<Key<?>,Key<?>> _keyCache =
+		new MapMaker().weakKeys().weakValues().makeMap();
 
 	/**
 	 * Constructs a WeakKeyedMap containing the same entries as the passed KeyedMap. The <tt>Key</tt>
@@ -92,11 +93,7 @@ public class SerializationUtils {
 	 *          the owning class
 	 */
 	private static Key<?> findStaticReferencedKey(Key<?> inputKey) throws KeyNotFoundException {
-		Key<?> staticKey = null;
-		WeakReference<Key<?>> cachedRef = _keyCache.get(inputKey);
-		if (cachedRef != null) {
-			staticKey = cachedRef.get();
-		}
+		Key<?> staticKey = _keyCache.get(inputKey);
 		if (staticKey == null) {
 			Class<?> keyOwner = inputKey.getOwner();
 			for (Field ownerField : keyOwner.getDeclaredFields()) {
@@ -104,9 +101,9 @@ public class SerializationUtils {
 						&& Modifier.isStatic(ownerField.getModifiers()) && Modifier.isFinal(ownerField.getModifiers())) {
 					try {
 						Key<?> testKey = (Key<?>)ownerField.get(keyOwner);
-						if (testKey.equals(inputKey)) {
+						if (testKey != null && testKey.equals(inputKey)) {
 							staticKey = testKey;
-							_keyCache.put(testKey, new WeakReference<Key<?>>(testKey));
+							_keyCache.put(testKey,testKey);
 							break;
 						}
 					} catch (IllegalAccessException e) {

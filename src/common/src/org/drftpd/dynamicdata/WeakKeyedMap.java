@@ -16,12 +16,13 @@
  */
 package org.drftpd.dynamicdata;
 
+import com.google.common.collect.MapMaker;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Implements Weak referenced Map for javabeans support.
@@ -29,23 +30,22 @@ import java.util.Map.Entry;
  * @author djb61
  * @version $Id$
  */
-public class WeakKeyedMap<K extends Key<?>, V> extends WeakHashMap<K,V> {
+public class WeakKeyedMap<K extends Key<?>, V> implements ConcurrentMap<K,V>, KeyedMapInterface<K,V> {
+
+	private ConcurrentMap<K,V> _map = new MapMaker().weakKeys().weakValues().makeMap();
 
 	public WeakKeyedMap() {
-		super();
+		
 	}
 
 	public WeakKeyedMap(Map<? extends K,? extends V> map) {
-		super(map);
-	}
-
-	public synchronized Map<K,V> getAllObjects() {
-		return Collections.unmodifiableMap(this);
+		_map.putAll(map);
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T getObject(Key<T> key) throws KeyNotFoundException {
-		T ret = (T)get(key);
+		T ret = (T) get(key);
+		
 		if (ret == null) {
 			throw new KeyNotFoundException();
 		}
@@ -60,26 +60,43 @@ public class WeakKeyedMap<K extends Key<?>, V> extends WeakHashMap<K,V> {
 		}
 	}
 
-	public boolean getObjectBoolean(Key<Boolean> key) {
-		return getObject(key,false);
+	public void setAllObjects(KeyedMapInterface<K, V> m) {
+		putAll(m.getAllObjects());
 	}
 
-	public Float getObjectFloat(Key<Float> key) {
-		return getObject(key, 0F);
+	public Map<K, V> getAllObjects() {
+		return Collections.unmodifiableMap(this);
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T> void setObject(Key<T> key, T obj) {
+        if (obj == null) {
+            throw new NullPointerException(key + " - is null");
+        }
+
+		put((K) key, (V) obj);
+	}
+	
 	public Integer getObjectInteger(Key<Integer> key) {
 		return getObject(key, 0);
 	}
-
+	
 	public Long getObjectLong(Key<Long> key) {
 		return getObject(key, 0L);
 	}
-
+	
+	public Float getObjectFloat(Key<Float> key) {
+		return getObject(key, 0F);
+	}
+	
+	public Boolean getObjectBoolean(Key<Boolean> key) {
+		return getObject(key, false);
+	}
+	
 	public String getObjectString(Key<String> key) {
 		return getObject(key, "");
 	}
-
+	
 	public void incrementInt(Key<Integer> key) {
 		incrementInt(key, 1);
 	}
@@ -104,94 +121,83 @@ public class WeakKeyedMap<K extends Key<?>, V> extends WeakHashMap<K,V> {
 		}
 	}
 
-	public void setAllObjects(KeyedMap<? extends K,? extends V> m) {
-		putAll(m.getAllObjects());
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T> void setObject(Key<T> key, T obj) {
-        if (obj == null) {
-            throw new NullPointerException(key + " - is null");
-        }
-
-		put((K) key, (V) obj);
+	@Override
+	public V putIfAbsent(K key, V value) {
+		return _map.putIfAbsent(key, value);
 	}
 
 	@Override
-	public synchronized int size() {
-		return super.size();
+	public boolean remove(Object key, Object value) {
+		return _map.remove(key, value);
 	}
 
 	@Override
-	public synchronized boolean isEmpty() {
-		return super.isEmpty();
+	public V replace(K key, V value) {
+		return _map.replace(key, value);
 	}
 
 	@Override
-	public synchronized boolean containsKey(Object key) {
-		return super.containsKey(key);
+	public boolean replace(K key, V oldValue, V newValue) {
+		return _map.replace(key, oldValue, newValue);
 	}
 
 	@Override
-	public synchronized boolean containsValue(Object value) {
-		return super.containsValue(value);
+	public void clear() {
+		_map.clear();
 	}
 
 	@Override
-	public synchronized V get(Object key) {
-		return super.get(key);
+	public boolean containsKey(Object key) {
+		return _map.containsKey(key);
 	}
 
 	@Override
-	public synchronized V put(K key, V value) {
-		if (key != null) {	
-			return super.put(key,value);
-		}
-		return null;		
+	public boolean containsValue(Object value) {
+		return _map.containsValue(value);
 	}
 
 	@Override
-	public synchronized V remove(Object key) {
-		return super.remove(key);
+	public Set<Entry<K, V>> entrySet() {
+		return _map.entrySet();
 	}
 
 	@Override
-	public synchronized void putAll(Map<? extends K,? extends V> map) {
-		super.putAll(map);
+	public V get(Object key) {
+		return _map.get(key);
 	}
 
 	@Override
-	public synchronized void clear() {
-		super.clear();
+	public boolean isEmpty() {
+		return _map.isEmpty();
 	}
 
 	@Override
-	public synchronized Set<K> keySet() {
-		return Collections.synchronizedSet(super.keySet());
+	public Set<K> keySet() {
+		return _map.keySet();
 	}
 
 	@Override
-	public synchronized Set<Entry<K,V>> entrySet() {
-		return Collections.synchronizedSet(super.entrySet());
+	public V put(K key, V value) {
+		return _map.put(key, value);
 	}
 
 	@Override
-	public synchronized Collection<V> values() {
-		return Collections.synchronizedCollection(super.values());
+	public void putAll(Map<? extends K, ? extends V> m) {
+		_map.putAll(m);
 	}
 
 	@Override
-	public synchronized boolean equals(Object o) {
-		return super.equals(o);
+	public V remove(Object key) {
+		return _map.remove(key);
 	}
 
 	@Override
-	public synchronized int hashCode() {
-		return super.hashCode();
+	public int size() {
+		return _map.size();
 	}
 
 	@Override
-	public synchronized String toString() {
-		return super.toString();
+	public Collection<V> values() {
+		return _map.values();
 	}
 }

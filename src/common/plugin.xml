@@ -49,5 +49,8 @@
 		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.0.0.jar" type="code">
 			<export prefix="*" />
 		</library>
+		<library id="google-collections" path="../../lib/google-collect-1.0-rc2.jar" type="code">
+			<export prefix="*" />
+		</library>
 	</runtime>
 </plugin>
