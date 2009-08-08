@@ -2,21 +2,13 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.zipscript.zip" version="3.0.0">
-	<attributes>
-		<attribute id="ProtocolName" value="ZipscriptZipProtocol" />
-		<attribute id="ImplicitDependencies">
-			<attribute id="Dependency1" value="org.drftpd.protocol.zipscript.zip.slave" />
-		</attribute>
-	</attributes>
-	
 	<requires>
-		<import plugin-id="org.drftpd.protocol.zipscript.zip.common" exported="true" />
+	<import plugin-id="org.drftpd.protocol.zipscript.zip.master" exported="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
 		<import plugin-id="org.drftpd.commands.list" exported="true" />
 		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
-		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.zipscript.zip" path="build/classes/" type="code">
@@ -52,10 +44,6 @@
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
 		<parameter id="HookMethod" value="doZipscriptSTORDizStatsHook" />
 		<parameter id="Priority" value="14" />
-	</extension>
-	
-	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptZipProtocol">
-		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.zip.ZipscriptZipIssuer" />
 	</extension>
 
 	<extension plugin-id="org.drftpd.commands.zipscript" point-id="ListStatusBarProvider" id="ListDizStatusBarProvider">

@@ -2,21 +2,13 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.zipscript.mp3" version="3.0.0">
-	<attributes>
-		<attribute id="ProtocolName" value="ZipscriptMP3Protocol" />
-		<attribute id="ImplicitDependencies">
-			<attribute id="Dependency1" value="org.drftpd.protocol.zipscript.mp3.slave" />
-		</attribute>
-	</attributes>
-	
 	<requires>
-		<import plugin-id="org.drftpd.protocol.zipscript.mp3.common" exported="true" />
+		<import plugin-id="org.drftpd.protocol.zipscript.mp3.master" exported="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
 		<import plugin-id="org.drftpd.commands.list" exported="true" />
 		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
-		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.zipscript.mp3" path="build/classes/" type="code">
@@ -40,10 +32,6 @@
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
 		<parameter id="HookMethod" value="doZipscriptSTORMP3Hook" />
 		<parameter id="Priority" value="12" />
-	</extension>
-	
-	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptMP3Protocol">
-		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.mp3.ZipscriptMP3Issuer" />
 	</extension>
 
 	<extension plugin-id="org.drftpd.commands.zipscript" point-id="ListStatusBarProvider" id="ListMP3StatusBarProvider">

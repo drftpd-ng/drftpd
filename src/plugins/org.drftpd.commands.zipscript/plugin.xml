@@ -2,21 +2,13 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.zipscript" version="3.0.0">
-	<attributes>
-		<attribute id="ProtocolName" value="ZipscriptProtocol"/>
-		<attribute id="ImplicitDependencies">
-			<attribute id="Dependency1" value="org.drftpd.protocol.zipscript.slave" />
-		</attribute>
-	</attributes>
-	
 	<requires>
-		<import plugin-id="org.drftpd.protocol.zipscript.common" exported="true" />
+		<import plugin-id="org.drftpd.protocol.zipscript.master" exported="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
 		<import plugin-id="org.drftpd.commands.list" exported="true" />
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
-		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.zipscript" path="build/classes/" type="code">
@@ -73,10 +65,6 @@
 	</extension>
 	
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ZipscriptCommandsHandler" />
-	
-	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptProtocol">
-		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.ZipscriptIssuer" />
-	</extension>
 	
 	<extension plugin-id="org.drftpd.commands.zipscript" point-id="PreHook" id="doSITE_RESCANPerm">
 		<parameter id="ParentMethod" value="doSITE_RESCAN" />

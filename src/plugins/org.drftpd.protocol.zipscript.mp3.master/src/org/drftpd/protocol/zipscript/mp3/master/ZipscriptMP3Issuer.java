@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.protocol.zipscript.zip;
+package org.drftpd.protocol.zipscript.mp3.master;
 
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
@@ -26,18 +26,10 @@ import org.drftpd.slave.async.AsyncCommandArgument;
  * @author djb61
  * @version $Id$
  */
-public class ZipscriptZipIssuer extends AbstractIssuer {
-	public String issueZipCRCToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
+public class ZipscriptMP3Issuer extends AbstractIssuer {
+	public String issueMP3FileToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipcrc", path);
-		rslave.sendCommand(ac);
-
-		return index;
-	}
-
-	public String issueZipDizInfoToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipdiz", path);
+		AsyncCommandArgument ac = new AsyncCommandArgument(index, "mp3file", path);
 		rslave.sendCommand(ac);
 
 		return index;
