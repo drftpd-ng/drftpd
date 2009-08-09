@@ -2,6 +2,9 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.protocol.zipscript.zip.common" version="3.0.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
 	<requires>
 		<import plugin-id="common" />
 	</requires>
