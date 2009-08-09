@@ -21,7 +21,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 /**
@@ -34,8 +33,6 @@ public class SFVInfo implements Serializable {
 	private CaseInsensitiveTreeMap<String, Long> _entries = null;
 	private String _sfvFileName = null;
 	private long _checksum = 0L;
-
-	public static final Key<SFVInfo> SFV = new Key<SFVInfo>(SFVInfo.class, "sfv");
 
 	/**
 	 * Constructor for SFVInfo

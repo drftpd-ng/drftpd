@@ -12,7 +12,7 @@
 	
 	<requires>
 		<import plugin-id="org.drftpd.protocol.zipscript.common" exported="true" />
-		<import plugin-id="master" exported="true" reverse-lookup="true"/>
+		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.protocol.zipscript.master" path="build/classes/" type="code">

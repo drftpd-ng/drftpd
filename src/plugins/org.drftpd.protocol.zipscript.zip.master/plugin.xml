@@ -11,8 +11,8 @@
 	</attributes>
 	
 	<requires>
+		<import plugin-id="master" exported="true" />
 		<import plugin-id="org.drftpd.protocol.zipscript.zip.common" exported="true" />
-		<import plugin-id="master" exported="true" reverse-lookup="true"/>
 	</requires>
 	<runtime>
 		<library id="org.drftpd.protocol.zipscript.zip.master" path="build/classes/" type="code">

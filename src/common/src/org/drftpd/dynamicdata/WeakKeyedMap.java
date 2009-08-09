@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class WeakKeyedMap<K extends Key<?>, V> implements ConcurrentMap<K,V>, KeyedMapInterface<K,V> {
 
-	private ConcurrentMap<K,V> _map = new MapMaker().weakKeys().weakValues().makeMap();
+	private ConcurrentMap<K,V> _map = new MapMaker().weakKeys().makeMap();
 
 	public WeakKeyedMap() {
 		
@@ -73,7 +73,6 @@ public class WeakKeyedMap<K extends Key<?>, V> implements ConcurrentMap<K,V>, Ke
         if (obj == null) {
             throw new NullPointerException(key + " - is null");
         }
-
 		put((K) key, (V) obj);
 	}
 	

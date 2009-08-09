@@ -195,7 +195,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 					}
 				}
 				if (noZip) {
-					request.getCurrentDirectory().removePluginMetaData(DizInfo.DIZ);
+					request.getCurrentDirectory().removePluginMetaData(ZipscriptVFSDataZip.DIZINFO);
 				}
 			} catch(FileNotFoundException e) {
 				// No inode to remove dizinfo from or dir has been deleted

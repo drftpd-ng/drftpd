@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.zipscript.zip.DizStatus;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
@@ -39,6 +40,8 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class ZipscriptVFSDataZip {
+
+	public static final Key<DizInfo> DIZINFO = new Key<DizInfo>(ZipscriptVFSDataZip.class, "diz");
 
 	private DirectoryHandle _dir;
 
@@ -75,7 +78,7 @@ public class ZipscriptVFSDataZip {
 		}
 		if (dizInfo != null) {
 			if (dizInfo.isValid()) {
-				_dir.addPluginMetaData(DizInfo.DIZ, dizInfo);
+				_dir.addPluginMetaData(DIZINFO, dizInfo);
 				return dizInfo;
 			}
 		}
@@ -100,7 +103,7 @@ public class ZipscriptVFSDataZip {
 	}
 
 	private DizInfo getDizInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {
-		return vfsInodeHandle.getPluginMetaData(DizInfo.DIZ);
+		return vfsInodeHandle.getPluginMetaData(DIZINFO);
 	}
 
 	private DizInfo fetchDizInfoFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {

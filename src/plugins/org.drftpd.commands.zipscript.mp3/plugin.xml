@@ -3,6 +3,7 @@
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.zipscript.mp3" version="3.0.0">
 	<requires>
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
 		<import plugin-id="org.drftpd.protocol.zipscript.mp3.master" exported="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
