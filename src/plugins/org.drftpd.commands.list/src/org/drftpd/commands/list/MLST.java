@@ -27,6 +27,7 @@ import java.util.Iterator;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Checksum;
+import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -101,14 +102,18 @@ public class MLST extends CommandInterface {
 				conn.printOutput("250-MLST" + LIST.NEWLINE);
 				os = out;
 			} else {
+				if (!ts.getSendFilesEncrypted()
+						&& GlobalContext.getConfig().checkPermission(
+								"denydiruncrypted", conn.getUserNull())) {
+					return new CommandResponse(550, "Secure Listing Required");
+				}
+				conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
 				try {
 					os = new PrintWriter(new OutputStreamWriter(ts.getDataSocketForLIST().getOutputStream()));
 				} catch (IOException ex) {
 					logger.warn(ex);
 					return new CommandResponse(425, ex.getMessage());
 				}
-
-				conn.printOutput(new FtpReply(StandardCommandManager.genericResponse("RESPONSE_150_OK")));
 			}
 
 			ListElementsContainer container = new ListElementsContainer(request.getSession(), request.getUser(), _cManager);
