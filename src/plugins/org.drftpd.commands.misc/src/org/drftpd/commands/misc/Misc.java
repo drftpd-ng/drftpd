@@ -269,7 +269,4 @@ public class Misc extends CommandInterface {
     public CommandResponse doSITE_VERS(CommandRequest request) {
     	return new CommandResponse(200, GlobalContext.VERSION);
     }
-
-    public void unload() {
-    }
 }

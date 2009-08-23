@@ -6,7 +6,7 @@
 		<attribute id="DenyUnload" value="true" />
 	</attributes>
 	<requires>
-		<import plugin-id="common" />
+		<import plugin-id="common" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.protocol.zipscript.mp3.common" path="build/classes/" type="code">

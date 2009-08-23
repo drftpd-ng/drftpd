@@ -219,8 +219,9 @@ public class ZipscriptCommands extends CommandInterface {
 		return response;
 	}
 
-	@EventSubscriber
+	@EventSubscriber @Override
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
+		super.onUnloadPluginEvent(event);
 		Set<RescanPostProcessDirInterface> unloadedRescanAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "RescanPostProcessDir", event, _rescanAddons);
 		if (!unloadedRescanAddons.isEmpty()) {

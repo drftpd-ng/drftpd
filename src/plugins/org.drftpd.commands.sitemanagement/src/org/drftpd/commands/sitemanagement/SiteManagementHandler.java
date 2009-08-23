@@ -25,8 +25,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -51,10 +53,13 @@ import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.java.plugin.JpfException;
+import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.boot.DefaultPluginsCollector;
 import org.java.plugin.registry.PluginAttribute;
 import org.java.plugin.registry.PluginDescriptor;
+import org.java.plugin.registry.PluginPrerequisite;
+import org.java.plugin.registry.PluginRegistry;
 import org.java.plugin.util.ExtendedProperties;
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -120,39 +125,44 @@ public class SiteManagementHandler extends CommandInterface {
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
-		ExtendedProperties jpfProps = new ExtendedProperties();
-		FileInputStream fis = null;
+		Session session = request.getSession();
+		PluginDescriptor newPlugin;
+		PluginManager manager = PluginManager.lookup(this);
 		try {
-			fis = new FileInputStream(jpfConf);
-			jpfProps.load(fis);
-		} catch (IOException e) {
-			logger.debug("Exception loading JPF properties",e);
-			return new CommandResponse(500,e.getMessage());
-		}
-		finally {
-			if (fis != null) {
-				try {
-					fis.close();
-				} catch (IOException e) {
-					// Stream is already closed
+			newPlugin = manager.getRegistry().getPluginDescriptor(request.getArgument());
+		} catch (IllegalArgumentException e) {
+			ExtendedProperties jpfProps = new ExtendedProperties();
+			FileInputStream fis = null;
+			try {
+				fis = new FileInputStream(jpfConf);
+				jpfProps.load(fis);
+			} catch (IOException e2) {
+				logger.debug("Exception loading JPF properties",e);
+				return new CommandResponse(500,e2.getMessage());
+			}
+			finally {
+				if (fis != null) {
+					try {
+						fis.close();
+					} catch (IOException e2) {
+						// Stream is already closed
+					}
 				}
 			}
+			DefaultPluginsCollector collector = new DefaultPluginsCollector();
+			try {
+				collector.configure(jpfProps);
+			} catch (Exception e2) {
+				logger.debug("Exception configuring plugins collector",e2);
+				return new CommandResponse(500,e2.getMessage());
+			}
+			try {
+				manager.publishPlugins(collector.collectPluginLocations().toArray(new PluginManager.PluginLocation[0]));
+			} catch (JpfException e2) {
+				logger.debug("Exception publishing plugins", e2);
+				return new CommandResponse(500,e2.getMessage());
+			}
 		}
-		PluginManager manager = PluginManager.lookup(this);
-		DefaultPluginsCollector collector = new DefaultPluginsCollector();
-		try {
-			collector.configure(jpfProps);
-		} catch (Exception e) {
-			logger.debug("Exception configuring plugins collector",e);
-			return new CommandResponse(500,e.getMessage());
-		}
-		try {
-			manager.publishPlugins(collector.collectPluginLocations().toArray(new PluginManager.PluginLocation[0]));
-		} catch (JpfException e) {
-			logger.debug("Exception publishing plugins", e);
-			return new CommandResponse(500,e.getMessage());
-		}
-		PluginDescriptor newPlugin;
 		try {
 			newPlugin = manager.getRegistry().getPluginDescriptor(request.getArgument());
 		} catch (IllegalArgumentException e) {
@@ -161,7 +171,17 @@ public class SiteManagementHandler extends CommandInterface {
 		if (manager.isPluginActivated(newPlugin)) {
 			return new CommandResponse(500, "Plugin is already loaded and active");
 		}
-		GlobalContext.getEventService().publish(new LoadPluginEvent(request.getArgument()));
+		for (PluginDescriptor loadPlugin : getPluginsToLoad(newPlugin, manager)) {
+			try {
+				manager.activatePlugin(loadPlugin.getId());
+			} catch (PluginLifecycleException e) {
+				session.printOutput(200, "Failed to load plugin - " + loadPlugin.getId());
+				logger.warn("Error starting plugin " + loadPlugin.getId(),e);
+				return new CommandResponse(500, "Plugin instantiation failed");
+			}
+			GlobalContext.getEventService().publish(new LoadPluginEvent(loadPlugin.getId()));
+			session.printOutput(200, "Loaded plugin - " + loadPlugin.getId());
+		}
 		return new CommandResponse(200, "Successfully loaded plugin");
 	}
 
@@ -260,6 +280,7 @@ public class SiteManagementHandler extends CommandInterface {
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
+		Session session = request.getSession();
 		PluginManager manager = PluginManager.lookup(this);
 		PluginDescriptor pluginDesc;
 		try {
@@ -278,12 +299,12 @@ public class SiteManagementHandler extends CommandInterface {
 				return new CommandResponse(500, "Unloading of this plugin is prohibited");
 			}
 		}
-		GlobalContext.getEventService().publish(new UnloadPluginEvent(request.getArgument()));
-		manager.deactivatePlugin(request.getArgument());
-		if (manager.isPluginActivated(pluginDesc)) {
-			return new CommandResponse(500, "Unable to unload plugin");
+		for (PluginDescriptor unloadPlugin : getPluginsToUnload(pluginDesc, manager.getRegistry())) {
+			GlobalContext.getEventService().publish(new UnloadPluginEvent(unloadPlugin.getId()));
+			manager.deactivatePlugin(unloadPlugin.getId());
+			session.printOutput(200, "Unloaded plugin - " + unloadPlugin.getId());
 		}
-		manager.getRegistry().unregister(new String[] {request.getArgument()});
+		manager.getRegistry().unregister(new String[] {pluginDesc.getId()});
 		/* The following is a rather nasty hack but unfortunately appears to be the only way
 		 * to do this. When plugins are loaded from .jar archives doing an unloadplugin, recompile
 		 * with altered code, loadplugin will not work. This is because internally the JVM caches
@@ -335,6 +356,71 @@ public class SiteManagementHandler extends CommandInterface {
 			return new CommandResponse(200, "Successfully reloaded plugin");
 		} else {
 			return response;
+		}
+	}
+
+	private List<PluginDescriptor> getPluginsToUnload(PluginDescriptor unloadingPlugin, PluginRegistry registry) {
+		ArrayList<PluginDescriptor> unloadingPlugins = new ArrayList<PluginDescriptor>();
+		unloadingPlugins.add(unloadingPlugin);
+		for (PluginDescriptor descr : registry.getPluginDescriptors()) {
+			if (descr != unloadingPlugin) {
+				if (isPluginDependant(descr, unloadingPlugin, registry)) {
+					unloadingPlugins.add(descr);
+				}
+			}
+		}
+		reorderPlugins(unloadingPlugins, registry, true);
+		return unloadingPlugins;
+	}
+
+	private List<PluginDescriptor> getPluginsToLoad(PluginDescriptor loadingPlugin, PluginManager manager) {
+		ArrayList<PluginDescriptor> loadingPlugins = new ArrayList<PluginDescriptor>();
+		loadingPlugins.add(loadingPlugin);
+		for (PluginDescriptor descr : manager.getRegistry().getPluginDescriptors()) {
+			if (descr != loadingPlugin) {
+				if (!manager.isPluginActivated(descr) && isPluginDependant(loadingPlugin, descr, manager.getRegistry())) {
+					loadingPlugins.add(descr);
+				}
+			}
+		}
+		reorderPlugins(loadingPlugins, manager.getRegistry(), false);
+		return loadingPlugins;
+	}
+
+	private boolean isPluginDependant(PluginDescriptor plugin1, PluginDescriptor plugin2, PluginRegistry registry) {
+		// Circular (mutual) dependencies are treated as absence of dependency
+		// at all.
+		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
+		Set<PluginDescriptor> pre2 = new HashSet<PluginDescriptor>();
+		collectPluginPrerequisites(plugin1, pre1, registry);
+		collectPluginPrerequisites(plugin2, pre2, registry);
+		return pre1.contains(plugin2) && !pre2.contains(plugin1);
+	}
+
+	private void collectPluginPrerequisites(PluginDescriptor descr, Set<PluginDescriptor> result, PluginRegistry registry) {
+		for (PluginPrerequisite pre : descr.getPrerequisites()) {
+			if (!pre.matches()) {
+				continue;
+			}
+			PluginDescriptor descriptor = registry.getPluginDescriptor(pre.getPluginId());
+			if (result.add(descriptor)) {
+				collectPluginPrerequisites(descriptor, result, registry);
+			}
+		}
+	}
+
+	private void reorderPlugins(List<PluginDescriptor> plugins, PluginRegistry registry, boolean reverse) {
+		for (int i = 0; i < plugins.size(); i++) {
+			for (int j = i + 1; j < plugins.size(); j++) {
+				if (isPluginDependant(plugins.get(i), plugins.get(j), registry)) {
+					Collections.swap(plugins, i, j);
+					i = -1;
+					break;
+				}
+			}
+		}
+		if (reverse) {
+			Collections.reverse(plugins);
 		}
 	}
 }

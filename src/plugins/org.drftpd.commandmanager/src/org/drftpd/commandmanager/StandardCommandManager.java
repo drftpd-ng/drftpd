@@ -404,6 +404,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getCommandInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing command "+ entry.getKey());
 						iter.remove();
+						entry.getValue().getCommandInterfaceInstance().unload();
 						removedCmd = true;
 					}
 				}

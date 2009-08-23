@@ -19,12 +19,16 @@ package org.drftpd.protocol.zipscript.zip.common;
 
 import java.io.Serializable;
 
+import org.drftpd.dynamicdata.Key;
+
 /**
  * @author djb61
  * @version $Id$
  */
 @SuppressWarnings("serial")
 public class DizInfo implements Serializable {
+
+	public static final Key<DizInfo> DIZINFO = new Key<DizInfo>(DizInfo.class, "diz");
 
 	private boolean _dizValid = false;
 

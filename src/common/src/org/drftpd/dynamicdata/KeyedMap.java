@@ -27,7 +27,7 @@ import java.util.Map;
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> implements KeyedMapInterface<K,V> {
+public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> {
 	public KeyedMap() {
 		super();
 	} 
@@ -54,7 +54,7 @@ public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> implements Ke
 		}
 	}
 
-	public void setAllObjects(KeyedMapInterface<K, V> m) {
+	public void setAllObjects(KeyedMap<K, V> m) {
 		putAll(m.getAllObjects());
 	}
 

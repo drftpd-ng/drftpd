@@ -398,8 +398,9 @@ public class LIST extends CommandInterface {
 		return null;
 	}
 
-	@EventSubscriber
+	@EventSubscriber @Override
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
+		super.onUnloadPluginEvent(event);
 		Set<AddListElementsInterface> unloadedListAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "AddElements", event, _listAddons);
 		if (!unloadedListAddons.isEmpty()) {
@@ -408,6 +409,7 @@ public class LIST extends CommandInterface {
 			for (Iterator<AddListElementsInterface> iter = clonedListAddons.iterator(); iter.hasNext();) {
 				AddListElementsInterface listAddon = iter.next();
 				if (unloadedListAddons.contains(listAddon)) {
+					listAddon.unload();
 					logger.debug("Unloading list element addon provided by plugin "
 							+CommonPluginUtils.getPluginIdForObject(listAddon));
 					iter.remove();
@@ -428,6 +430,7 @@ public class LIST extends CommandInterface {
 			if (!loadedListAddons.isEmpty()) {
 				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<AddListElementsInterface>(_listAddons);
 				for (AddListElementsInterface listAddon : loadedListAddons) {
+					listAddon.initialize();
 					clonedListAddons.add(listAddon);
 				}
 				_listAddons = clonedListAddons;

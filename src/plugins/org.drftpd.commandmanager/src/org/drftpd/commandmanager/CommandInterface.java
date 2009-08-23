@@ -182,7 +182,7 @@ public abstract class CommandInterface {
 					clonedPostHooks = new TreeMap<Integer,HookContainer<PostHookInterface>>(_postHooks);
 				}
 				boolean hookRemoved = false;
-				for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = _postHooks.entrySet().iterator(); iter.hasNext();) {
+				for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = clonedPostHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing post hook provided by " + event.getPlugin() + " from " + currentPlugin);
@@ -199,7 +199,7 @@ public abstract class CommandInterface {
 					clonedPreHooks = new TreeMap<Integer,HookContainer<PreHookInterface>>(_preHooks);
 				}
 				boolean hookRemoved = false;
-				for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = _preHooks.entrySet().iterator(); iter.hasNext();) {
+				for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = clonedPreHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing pre hook provided by " + event.getPlugin() + " from " + currentPlugin);
@@ -242,5 +242,14 @@ public abstract class CommandInterface {
 			return false;
 		}
 		return new Permission(permissionString).check(user);
+	}
+
+	/**
+	 * Called when the command instance has been unloaded from the parent command map. At this
+	 * point the command is no longer referenced or accessible, this method performs any cleanup
+	 * required at this point.
+	 */
+	protected void unload() {
+		GlobalContext.getEventService().unsubscribe(UnloadPluginEvent.class, this);
 	}
 }

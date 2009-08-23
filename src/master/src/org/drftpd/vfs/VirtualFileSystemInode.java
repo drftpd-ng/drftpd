@@ -21,14 +21,12 @@ import java.beans.DefaultPersistenceDelegate;
 import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.dynamicdata.WeakKeyedMap;
-import org.drftpd.dynamicdata.SerializationUtils;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.Commitable;
@@ -61,11 +59,9 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
 	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<Key<?>, Object>();
 
-	protected transient WeakKeyedMap<Key<?>, Object> _weakPluginMap = new WeakKeyedMap<Key<?>, Object>();
+	protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<Key<?>, Object>();
 
-	protected KeyedMap<Key<?>, Object> _pluginMap;
-
-	protected HashMap<String,Object> _untypedPluginMap = new HashMap<String,Object>();
+	protected ConcurrentHashMap<String,Object> _untypedPluginMap = new ConcurrentHashMap<String,Object>();
 
 	protected long _lastModified;
 	
@@ -289,35 +285,35 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	}
 
 	public KeyedMap<Key<?>, Object> getPluginMap() {
-		return SerializationUtils.populateKeyedMap(_weakPluginMap);
+		return _pluginMap;
 	}
 
 	public void setPluginMap(KeyedMap<Key<?>, Object> data) {
-		_weakPluginMap = SerializationUtils.populateWeakKeyedMap(data);
+		_pluginMap = data;
 	}
 
-	public HashMap<String,Object> getUntypedPluginMap() {
+	public ConcurrentHashMap<String,Object> getUntypedPluginMap() {
 		return _untypedPluginMap;
 	}
 
-	public void setUntypedPluginMap(HashMap<String,Object> data) {
+	public void setUntypedPluginMap(ConcurrentHashMap<String,Object> data) {
 		_untypedPluginMap = data;
 	}
 
 	protected <T> void addPluginMetaData(Key<T> key, T object) {
-		_weakPluginMap.setObject(key,object);
+		_pluginMap.setObject(key,object);
 		commit();
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T removePluginMetaData(Key<T> key) {
-		T value = (T) _weakPluginMap.remove(key);
+		T value = (T)_pluginMap.remove(key);
 		commit();
 		return value;
 	}
 
 	protected <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
-		return _weakPluginMap.getObject(key);
+		return _pluginMap.getObject(key);
 	}
 
 	protected <T> void addUntypedPluginMetaData(String key, T object) {
@@ -327,14 +323,14 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
 	@SuppressWarnings("unchecked")
 	protected <T> T removeUntypedPluginMetaData(String key) {
-		T value = (T) _untypedPluginMap.remove(key);
+		T value = (T)_untypedPluginMap.remove(key);
 		commit();
 		return value;
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T getUntypedPluginMetaData(String key) {
-		return (T)_weakPluginMap.get(key);
+		return (T)_untypedPluginMap.get(key);
 	}
 
 	/*

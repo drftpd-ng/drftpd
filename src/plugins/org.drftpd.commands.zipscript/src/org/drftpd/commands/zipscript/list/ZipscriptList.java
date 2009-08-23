@@ -75,7 +75,6 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 	}
 
 	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
-
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
 		String keyPrefix = this.getClass().getName()+".";
 		// Check config
@@ -215,5 +214,10 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.commands.zipscript extension point 'ListStatusBarProvider'"+
 					", possibly the org.drftpd.commands.zipscript extension point definition has changed in the plugin.xml",e);
 		}
+	}
+
+	public void unload() {
+		GlobalContext.getEventService().unsubscribe(UnloadPluginEvent.class, this);
+		GlobalContext.getEventService().unsubscribe(LoadPluginEvent.class, this);
 	}
 }

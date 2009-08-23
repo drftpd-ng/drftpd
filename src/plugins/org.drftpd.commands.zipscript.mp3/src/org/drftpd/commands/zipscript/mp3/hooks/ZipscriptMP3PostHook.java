@@ -105,7 +105,7 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 					}
 				}
 				if (noMP3) {
-					request.getCurrentDirectory().removePluginMetaData(ZipscriptVFSDataMP3.MP3INFO);
+					request.getCurrentDirectory().removePluginMetaData(MP3Info.MP3INFO);
 				}
 			} catch(FileNotFoundException e) {
 				// No inode to remove mp3info from or dir has been deleted
