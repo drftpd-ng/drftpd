@@ -34,7 +34,7 @@ public class AssignSlave {
 
 		while (st.hasMoreTokens()) {
 			String toParse = st.nextToken();
-			AssignParser ap = new AssignParser(toParse, _gctx);
+			AssignParser ap = new AssignParser(toParse);
 			list.add(ap);
 		}
 				
@@ -75,7 +75,7 @@ class AssignParser {
 	
 	private boolean _all = false;
 
-	public AssignParser(String s, GlobalContext gctx) throws ObjectNotFoundException{
+	public AssignParser(String s) throws ObjectNotFoundException{
 		boolean positive;
 		int pos = s.indexOf("+");
 
@@ -101,7 +101,7 @@ class AssignParser {
 		}
 
 		try {
-			_rslave = gctx.getSlaveManager().getRemoteSlave(slavename);
+			_rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 		} catch (ObjectNotFoundException e) {
 			throw new ObjectNotFoundException(slavename + "does not exist.", e);
 		}
