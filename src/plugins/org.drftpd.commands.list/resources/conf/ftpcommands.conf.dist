@@ -1,27 +1,27 @@
 LIST {
 plugin org.drftpd.commands.list
-class LIST
+class ListHandler
 method doLIST
 perms *
 }
 
 STAT {
 plugin org.drftpd.commands.list
-class LIST
+class ListHandler
 method doSTAT
 perms *
 }
 
 MLST {
 plugin org.drftpd.commands.list
-class MLST
+class ListHandler
 method doMLST
 perms *
 }
 
 MLSD {
 plugin org.drftpd.commands.list
-class MLST
+class ListHandler
 method doMLSD
 perms *
 }

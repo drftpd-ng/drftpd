@@ -204,6 +204,7 @@ public abstract class CommandInterface {
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
 						logger.debug("Removing pre hook provided by " + event.getPlugin() + " from " + currentPlugin);
 						iter.remove();
+						hookRemoved = true;
 					}
 				}
 				if (hookRemoved) {
