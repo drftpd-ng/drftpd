@@ -281,8 +281,6 @@ public class ListHandler extends CommandInterface {
 		ArrayList<String> fileTypes = container.getFileTypes();
 		int numOnline = container.getNumOnline();
 		int numTotal = container.getNumTotal();
-		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-		String keyPrefix = ListUtils.class.getName()+".";
 
 		for (InodeHandle element : tempFileList) {
 			boolean offlineFilesEnabled = GlobalContext.getConfig().getMainProperties().getProperty("files.offline.enabled", "true").equals("true");
@@ -291,7 +289,7 @@ public class ListHandler extends CommandInterface {
 				if (!((FileHandleInterface) element).isAvailable()) {
 					ReplacerEnvironment env = new ReplacerEnvironment();
 					env.add("ofilename", element.getName());
-					String oFileName = container.getSession().jprintf(bundle, keyPrefix+"files.offline.filename", env, container.getUser());
+					String oFileName = container.getSession().jprintf(_bundle, _keyPrefix+"files.offline.filename", env, container.getUser());
 
 					listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
 					numTotal++;
