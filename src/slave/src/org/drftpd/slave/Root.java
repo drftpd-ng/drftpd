@@ -17,25 +17,26 @@
  */
 package org.drftpd.slave;
 
+import java.io.File;
 import java.io.IOException;
 
-import se.mog.io.File;
+import org.drftpd.io.PhysicalFile;
 
 /**
  * @author mog
  * @version $Id$
  */
 public class Root {
-	private File _rootFile;
+	private PhysicalFile _rootFile;
 
 	private long _lastModified;
 
 	public Root(String root) throws IOException {
-		_rootFile = new File(new File(root).getCanonicalFile());
+		_rootFile = new PhysicalFile(new PhysicalFile(root).getCanonicalFile());
 		_lastModified = getFile().lastModified();
 	}
 
-	public File getFile() {
+	public PhysicalFile getFile() {
 		return _rootFile;
 	}
 
@@ -56,15 +57,15 @@ public class Root {
 	}
 
 	public long getDiskSpaceAvailable() {
-		return getFile().getDiskSpaceAvailable();
+		return getFile().getUsableSpace();
 	}
 
 	public long getDiskSpaceCapacity() {
-		return getFile().getDiskSpaceCapacity();
+		return getFile().getTotalSpace();
 	}
 
-	public File getFile(String path) {
-		return new File(getPath() + File.separator + path);
+	public PhysicalFile getFile(String path) {
+		return new PhysicalFile(getPath() + File.separator + path);
 	}
 
 	/* (non-Javadoc)

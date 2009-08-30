@@ -17,6 +17,7 @@
 package org.drftpd.protocol.zipscript.slave;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,8 +32,6 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseException;
-
-import se.mog.io.File;
 
 /**
  * Handler for SFV requests.

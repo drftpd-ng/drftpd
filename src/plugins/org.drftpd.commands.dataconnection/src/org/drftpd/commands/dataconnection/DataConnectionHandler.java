@@ -45,6 +45,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.exceptions.TransferDeniedException;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.RemoteSlave;
@@ -62,7 +63,6 @@ import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import se.mog.io.PermissionDeniedException;
 
 /**
  * @author mog

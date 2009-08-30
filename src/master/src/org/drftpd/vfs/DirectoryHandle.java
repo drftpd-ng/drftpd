@@ -29,11 +29,11 @@ import java.util.Set;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.usermanager.User;
 
-import se.mog.io.PermissionDeniedException;
 
 /**
  * @author zubov

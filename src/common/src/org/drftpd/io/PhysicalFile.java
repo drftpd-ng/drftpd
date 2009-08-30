@@ -15,92 +15,55 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package se.mog.io;
+package org.drftpd.io;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
+
+
 /**
- * @author <a href="mailto:drftpd@mog.se">Morgan Christiansson</a>
+ * @author djb61
  * @version $Id$
  */
 @SuppressWarnings("serial")
-public class File extends java.io.File {
-	private static FileSystem fs = FileSystem.getFileSystem();
+public class PhysicalFile extends File {
+
 	public static final String separator = "/";
 
-	/**
-	 * @param pathname
-	 */
-	public File(String pathname) {
+	public PhysicalFile(String pathname) {
 		super(pathname);
 	}
 
-	public File(java.io.File file) {
+	public PhysicalFile(java.io.File file) {
 		super(file.getPath());
 	}
 
-	/**
-	 * @param parent
-	 * @param child
-	 */
-	public File(String parent, String child) {
+	public PhysicalFile(String parent, String child) {
 		super(parent, child);
 	}
 
-	/**
-	 * @param parent
-	 * @param child
-	 */
-	public File(java.io.File parent, String child) {
+	public PhysicalFile(java.io.File parent, String child) {
 		super(parent, child);
 	}
 
-	/**
-	 * @param uri
-	 */
-	public File(URI uri) {
+	public PhysicalFile(URI uri) {
 		super(uri);
-	}
-
-	/**
-	 * Returns all mounted volumes on the system, this includes file system
-	 * roots.
-	 * 
-	 * @see java.io.File#listRoots()
-	 */
-	public static File[] listMounts() throws IOException {
-		return fs.listMounts();
-	}
-
-	public long getDiskSpaceAvailable() {
-		return fs.getDiskFreeSpace(this).freeBytes;
-	}
-
-	public long getDiskSpaceCapacity() {
-		return fs.getDiskFreeSpace(this).totalBytes;
 	}
 
 	public boolean isSymbolicLink() throws IOException {
 		return !getCanonicalPath().equals(getAbsolutePath());
 	}
 
-	/**
-	 * Works exactly like <code>{@link java.io.File#delete()}</code> but has
-	 * the added funcionality of working recursively.
-	 * 
-	 * @see java.io.File#delete()
-	 */
 	public boolean deleteRecursive() {
 		if (isDirectory()) {
-			java.io.File[] files = listFiles();
-
+			File[] files = listFiles();
 			for (int i = 0; i < files.length; i++) {
-				File file = new File(files[i]);
+				PhysicalFile file = new PhysicalFile(files[i]);
 				file.deleteRecursive();
 			}
 		}
-
 		return super.delete();
 	}
 

@@ -42,6 +42,7 @@ import org.drftpd.commands.UserManagement;
 import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.plugins.jobmanager.JobManager;
@@ -53,7 +54,6 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 
-import se.mog.io.PermissionDeniedException;
 
 /**
  * SITE FIND <options>-action <action>Options: -user <user>-group

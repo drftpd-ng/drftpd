@@ -30,6 +30,8 @@ import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.TransferDeniedException;
+import org.drftpd.io.PermissionDeniedException;
+import org.drftpd.io.PhysicalFile;
 import org.drftpd.master.QueuedOperation;
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
@@ -50,9 +52,6 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSSLCheck;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
-
-import se.mog.io.File;
-import se.mog.io.PermissionDeniedException;
 
 /**
  * Basic operations handling. 
@@ -210,7 +209,7 @@ public class BasicHandler extends AbstractHandler {
 
 		for (String inode : inodes) {
 			String fullPath = path + "/" + inode;
-			File file;
+			PhysicalFile file;
 			try {
 				file = rootCollection.getFile(fullPath);
 			} catch (FileNotFoundException e) {

@@ -6,14 +6,6 @@
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />
-		<attribute id="Native">
-			<attribute id="Native1" value="lib/FileSystem.dll">
-				<attribute id="Executable" value="false" />
-			</attribute>
-			<attribute id="Native2" value="lib/libFileSystem.so">
-				<attribute id="Executable" value="false" />
-			</attribute>
-		</attribute>
 	</attributes>
 	<requires>
 		<import plugin-id="common" exported="true" />

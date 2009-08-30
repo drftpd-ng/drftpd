@@ -25,12 +25,12 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.perms.VFSPermissions;
 
-import se.mog.io.PermissionDeniedException;
 
 /**
  * @author zubov

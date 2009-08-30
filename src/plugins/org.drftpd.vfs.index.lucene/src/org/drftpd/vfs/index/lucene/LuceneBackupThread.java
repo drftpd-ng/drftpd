@@ -17,6 +17,7 @@
  */
 package org.drftpd.vfs.index.lucene;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -26,8 +27,7 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.drftpd.GlobalContext;
-
-import se.mog.io.File;
+import org.drftpd.io.PhysicalFile;
 
 /**
  * Thread that performs backup operations on the index.
@@ -74,7 +74,7 @@ public class LuceneBackupThread  extends Thread {
 					if (BACKUP_HOME.list().length < _maxNumberBackup) {
 						break;
 					}
-					new File(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
+					new PhysicalFile(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
 				}
 			}
 

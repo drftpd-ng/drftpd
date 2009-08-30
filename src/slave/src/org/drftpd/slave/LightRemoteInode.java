@@ -17,12 +17,11 @@
  */
 package org.drftpd.slave;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 
 import org.drftpd.vfs.InodeHandleInterface;
-
-import se.mog.io.File;
 
 /**
  * @author zubov

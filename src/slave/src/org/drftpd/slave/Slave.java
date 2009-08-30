@@ -18,6 +18,7 @@
 package org.drftpd.slave;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -45,6 +46,8 @@ import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.SSLUnavailableException;
+import org.drftpd.io.PermissionDeniedException;
+import org.drftpd.io.PhysicalFile;
 import org.drftpd.master.QueuedOperation;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.async.AsyncCommandArgument;
@@ -56,8 +59,6 @@ import org.drftpd.slave.diskselection.DiskSelectionInterface;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PortRange;
 
-import se.mog.io.File;
-import se.mog.io.PermissionDeniedException;
 
 /**
  * @author mog
@@ -367,7 +368,7 @@ public class Slave {
 
 		for (Iterator<Root> iter = files.iterator(); iter.hasNext();) {
 			Root root = iter.next();
-			File file = root.getFile(path);
+			PhysicalFile file = root.getFile(path);
 
 			if (!file.exists()) {
 				iter.remove();
@@ -382,7 +383,7 @@ public class Slave {
 				}
 				logger.info("DELETEDIR: " + path);
 			} else if (file.isFile()) {
-				File dir = new File(file.getParentFile());
+				File dir = new PhysicalFile(file.getParentFile());
 				logger.info("DELETE: " + path);
 				file.delete();
 
@@ -402,7 +403,7 @@ public class Slave {
 					if (tmpFile == null) {
 						break;
 					}
-					dir = new File(tmpFile);
+					dir = new PhysicalFile(tmpFile);
 
 					dirList = dir.list();
 				}

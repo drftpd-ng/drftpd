@@ -53,6 +53,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.io.PhysicalFile;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
@@ -64,7 +65,6 @@ import org.drftpd.vfs.index.IndexingVirtualFileSystemListener;
 import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 
-import se.mog.io.File;
 
 /**
  * Implementation of an Index engine based on <a href="http://lucene.apache.org">Apache Lucene</a>
@@ -356,7 +356,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	public void rebuildIndex() throws IndexException {
 		closeAll();
 
-		File f = new File(INDEX_DIR);
+		PhysicalFile f = new PhysicalFile(INDEX_DIR);
 		f.deleteRecursive();
 
 		openStreams();
@@ -526,7 +526,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		try {
 			paths = _storage.list();
 			for (String path : paths) {
-				size += new File(INDEX_DIR + "/" + path).length();
+				size += new PhysicalFile(INDEX_DIR + "/" + path).length();
 			}
 
 			status.put("size", Bytes.formatBytes(size));

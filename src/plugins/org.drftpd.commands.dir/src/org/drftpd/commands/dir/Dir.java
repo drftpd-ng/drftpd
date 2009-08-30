@@ -36,6 +36,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
@@ -46,7 +47,6 @@ import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
 
-import se.mog.io.PermissionDeniedException;
 
 
 /**

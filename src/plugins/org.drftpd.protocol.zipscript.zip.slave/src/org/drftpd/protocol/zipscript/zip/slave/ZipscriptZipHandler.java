@@ -16,6 +16,7 @@
  */
 package org.drftpd.protocol.zipscript.zip.slave;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -31,7 +32,6 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 
-import se.mog.io.File;
 import sun.misc.BASE64Encoder;
 import de.schlichtherle.io.archive.zip.Zip32InputArchive;
 import de.schlichtherle.io.rof.SimpleReadOnlyFile;

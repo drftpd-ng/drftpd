@@ -17,6 +17,7 @@
  */
 package org.drftpd.slave;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,8 +31,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-
-import se.mog.io.File;
+import org.drftpd.io.PhysicalFile;
 
 /**
  * @author mog
@@ -103,28 +103,24 @@ public class RootCollection {
 		}
 		bestRoot.touch();
 
-		File file = bestRoot.getFile(dir);
+		PhysicalFile file = bestRoot.getFile(dir);
 		file.mkdirs2();
 
 		return file;
 	}
 
 	// Get root which has most of the tree structure that we have.
-	public File getFile(String path) throws FileNotFoundException {
-		return new File(getRootForFile(path).getPath() + File.separatorChar
+	public PhysicalFile getFile(String path) throws FileNotFoundException {
+		return new PhysicalFile(getRootForFile(path).getPath() + File.separatorChar
 				+ path);
 	}
 
-	/**
-	 * Returns an ArrayList containing se.mog.io.File objects
-	 */
 	public List<File> getMultipleFiles(String path) throws FileNotFoundException {
 		ArrayList<File> files = new ArrayList<File>();
 
 		for (Root r : getMultipleRootsForFile(path)) {
 			files.add(r.getFile(path));
 		}
-
 		return files;
 	}
 
@@ -155,7 +151,7 @@ public class RootCollection {
 
 	public Root getRootForFile(String path) throws FileNotFoundException {
 		for (Root root : _roots) {
-			File file = new File(root.getPath() + File.separatorChar + path);
+			File file = new File(root.getPath() + PhysicalFile.separatorChar + path);
 			if (file.exists()) {
 				return root;
 			}
@@ -167,8 +163,7 @@ public class RootCollection {
 		long totalDiskSpaceAvailable = 0;
 
 		for (Root root : _roots) {
-			File rootFile = root.getFile();
-			totalDiskSpaceAvailable += rootFile.getDiskSpaceAvailable();
+			totalDiskSpaceAvailable += root.getDiskSpaceAvailable();
 		}
 
 		return totalDiskSpaceAvailable;
@@ -178,8 +173,7 @@ public class RootCollection {
 		long totalDiskSpaceCapacity = 0;
 
 		for (Root root : _roots) {
-			File rootFile = root.getFile();
-			totalDiskSpaceCapacity += rootFile.getDiskSpaceCapacity();
+			totalDiskSpaceCapacity += root.getDiskSpaceCapacity();
 		}
 
 		return totalDiskSpaceCapacity;
@@ -190,7 +184,7 @@ public class RootCollection {
 	}
 
 	private static void validateRoots(Collection<Root> roots) throws IOException {
-		File[] mountsArr = File.listMounts();
+		File[] mountsArr = File.listRoots();
 		ArrayList<File> mounts = new ArrayList<File>(mountsArr.length);
 
 		for (int i = 0; i < mountsArr.length; i++) {

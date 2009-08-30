@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.event.VirtualFileSystemChangeEvent;
@@ -41,7 +42,6 @@ import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
 import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeEvent.VirtualFileSystemInodeEventType;
 
-import se.mog.io.PermissionDeniedException;
 
 public class VirtualFileSystem {
 

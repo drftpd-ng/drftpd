@@ -28,10 +28,10 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.Commitable;
 
-import se.mog.io.PermissionDeniedException;
 
 /**
  * VirtualFileSystemInode is an abstract class used to handle basic functions

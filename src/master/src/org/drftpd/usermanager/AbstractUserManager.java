@@ -37,10 +37,10 @@ import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
 
-import se.mog.io.PermissionDeniedException;
 
 /**
  * This is the base class of all the user manager classes. If we want to add a

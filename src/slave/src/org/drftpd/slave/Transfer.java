@@ -17,6 +17,7 @@
  */
 package org.drftpd.slave;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -35,11 +36,10 @@ import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.TransferDeniedException;
 import org.drftpd.io.AddAsciiOutputStream;
+import org.drftpd.io.PhysicalFile;
 import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.util.HostMask;
-
-import se.mog.io.File;
 
 /**
  * @author zubov
@@ -292,7 +292,7 @@ public class Transfer {
 			throws IOException, TransferDeniedException {
 		try {
 
-			_in = new FileInputStream(_file = new File(_slave.getRoots()
+			_in = new FileInputStream(_file = new PhysicalFile(_slave.getRoots()
 					.getFile(path)));
 
 			if (_slave.getDownloadChecksums()) {
