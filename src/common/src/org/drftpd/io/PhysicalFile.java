@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-
-
 /**
  * @author djb61
  * @version $Id$

@@ -71,11 +71,6 @@ public class ConnectionManager {
 	 *
 	 */
 	protected ConnectionManager() {
-
-		// getGlobalContext().addFtpListener(new RaceStatistics());
-		// getGlobalContext().addFtpListener(new Statistics());
-
-		// loadTimer();
 		getGlobalContext().getSlaveManager().addShutdownHook();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
@@ -157,11 +152,8 @@ public class ConnectionManager {
 
 		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS, 
 				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
-
-		// that's java1.6, can't be used for now.
-		// _pool.allowCoreThreadTimeOut(false);
-
-		// _pool.prestartAllCoreThreads();
+		_pool.allowCoreThreadTimeOut(false);
+		_pool.prestartAllCoreThreads();
 	}
 
 	public void dumpThreadPool() {
