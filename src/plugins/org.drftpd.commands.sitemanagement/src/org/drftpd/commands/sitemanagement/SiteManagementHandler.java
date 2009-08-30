@@ -232,20 +232,12 @@ public class SiteManagementHandler extends CommandInterface {
 			return new CommandResponse(200, e.getMessage());
 		}
 
-		// ugly hack to clear resourcebundle cache
-		// see
-		// http://developer.java.sun.com/developer/bugParade/bugs/4212439.html
-		// TODO look at using ResourceBundle.clearCache() for this once we
-		// can mandate java 6
-		try {
-			Field cacheList = ResourceBundle.class
-			.getDeclaredField("cacheList");
-			cacheList.setAccessible(true);
-			((Map<?,?>) cacheList.get(ResourceBundle.class)).clear();
-			cacheList.setAccessible(false);
-		} catch (Exception e) {
-			logger.error("", e);
+		PluginManager manager = PluginManager.lookup(this);
+		for (PluginDescriptor descr : manager.getRegistry().getPluginDescriptors()) {
+			ResourceBundle.clearCache(manager.getPluginClassLoader(descr));
 		}
+		// Clear base system classloader also
+		ResourceBundle.clearCache(ClassLoader.getSystemClassLoader());
 
 		try {
 			OptionConverter.selectAndConfigure(
