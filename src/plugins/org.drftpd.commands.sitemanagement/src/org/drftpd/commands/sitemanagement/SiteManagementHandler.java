@@ -171,16 +171,20 @@ public class SiteManagementHandler extends CommandInterface {
 		if (manager.isPluginActivated(newPlugin)) {
 			return new CommandResponse(500, "Plugin is already loaded and active");
 		}
+		ReplacerEnvironment env = new ReplacerEnvironment();
 		for (PluginDescriptor loadPlugin : getPluginsToLoad(newPlugin, manager)) {
+			env.add("plugin.name",loadPlugin.getId());
 			try {
 				manager.activatePlugin(loadPlugin.getId());
 			} catch (PluginLifecycleException e) {
-				session.printOutput(200, "Failed to load plugin - " + loadPlugin.getId());
+				session.printOutput(200, session.jprintf(_bundle,
+						_keyPrefix+"plugin.load.failure", env, request.getUser()));
 				logger.warn("Error starting plugin " + loadPlugin.getId(),e);
 				return new CommandResponse(500, "Plugin instantiation failed");
 			}
 			GlobalContext.getEventService().publish(new LoadPluginEvent(loadPlugin.getId()));
-			session.printOutput(200, "Loaded plugin - " + loadPlugin.getId());
+			session.printOutput(200, session.jprintf(_bundle,
+					_keyPrefix+"plugin.load.success", env, request.getUser()));
 		}
 		return new CommandResponse(200, "Successfully loaded plugin");
 	}
@@ -291,10 +295,15 @@ public class SiteManagementHandler extends CommandInterface {
 				return new CommandResponse(500, "Unloading of this plugin is prohibited");
 			}
 		}
+		ReplacerEnvironment env = new ReplacerEnvironment();
 		for (PluginDescriptor unloadPlugin : getPluginsToUnload(pluginDesc, manager.getRegistry())) {
-			GlobalContext.getEventService().publish(new UnloadPluginEvent(unloadPlugin.getId()));
-			manager.deactivatePlugin(unloadPlugin.getId());
-			session.printOutput(200, "Unloaded plugin - " + unloadPlugin.getId());
+			if (manager.isPluginActivated(unloadPlugin)) {
+				GlobalContext.getEventService().publish(new UnloadPluginEvent(unloadPlugin.getId()));
+				manager.deactivatePlugin(unloadPlugin.getId());
+				env.add("plugin.name",unloadPlugin.getId());
+				session.printOutput(200, session.jprintf(_bundle,
+						_keyPrefix+"plugin.unloaded", env, request.getUser()));
+			}
 		}
 		manager.getRegistry().unregister(new String[] {pluginDesc.getId()});
 		/* The following is a rather nasty hack but unfortunately appears to be the only way
