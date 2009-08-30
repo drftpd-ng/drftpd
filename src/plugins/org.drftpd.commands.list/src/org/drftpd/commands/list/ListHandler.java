@@ -276,7 +276,7 @@ public class ListHandler extends CommandInterface {
 
 	private ListElementsContainer listElements(DirectoryHandle dir, Session session, String user) throws IOException {
 		ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
-		ArrayList<InodeHandle> tempFileList = new ArrayList<InodeHandle>(dir.getInodeHandles(container.getSession().getUserNull(container.getUser())));
+		ArrayList<InodeHandle> tempFileList = new ArrayList<InodeHandle>(dir.getInodeHandles(session.getUserNull(user)));
 		ArrayList<InodeHandleInterface> listFiles = container.getElements();
 		ArrayList<String> fileTypes = container.getFileTypes();
 		int numOnline = container.getNumOnline();
@@ -289,7 +289,7 @@ public class ListHandler extends CommandInterface {
 				if (!((FileHandleInterface) element).isAvailable()) {
 					ReplacerEnvironment env = new ReplacerEnvironment();
 					env.add("ofilename", element.getName());
-					String oFileName = container.getSession().jprintf(_bundle, _keyPrefix+"files.offline.filename", env, container.getUser());
+					String oFileName = session.jprintf(_bundle, _keyPrefix+"files.offline.filename", env, user);
 
 					listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
 					numTotal++;
