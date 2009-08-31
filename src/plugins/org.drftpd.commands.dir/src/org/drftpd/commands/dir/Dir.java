@@ -430,7 +430,7 @@ public class Dir extends CommandInterface {
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
-		
+
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 		String owner = st.nextToken();
 		String group = null;
@@ -456,7 +456,7 @@ public class Dir extends CommandInterface {
 		if (!st.hasMoreTokens()) {
 			throw new ImproperUsageException();
 		}
-		
+
 		while (st.hasMoreTokens()) {
 			try {
 				InodeHandle file = request.getCurrentDirectory().getInodeHandle(st.nextToken(), user);
@@ -483,7 +483,7 @@ public class Dir extends CommandInterface {
 		}
 
 		StringTokenizer st = new StringTokenizer(request.getArgument(),
-				" ");
+		" ");
 
 		if (st.countTokens() != 2) {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -570,11 +570,11 @@ public class Dir extends CommandInterface {
 				}
 			}
 
-			GlobalContext.getEventService().publishAsync(
-					new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "WIPE", wipeFile
-							.getParent()));
-
 			wipeFile.delete(request.getSession().getUserNull(request.getUser()));
+			if (wipeFile.isDirectory()) {
+				GlobalContext.getEventService().publishAsync(
+						new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "WIPE", (DirectoryHandle)wipeFile));
+			}
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		} catch (PermissionDeniedException e) {
