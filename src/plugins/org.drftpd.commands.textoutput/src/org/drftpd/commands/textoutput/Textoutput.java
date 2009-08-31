@@ -37,7 +37,7 @@ public class Textoutput extends CommandInterface {
         }
 
         try {
-            CommandResponse response = new CommandResponse(200);
+        	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
             addTextToResponse(response, request.getProperties().getProperty("file"));
 
             return response;

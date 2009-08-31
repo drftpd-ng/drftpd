@@ -248,11 +248,19 @@ public class TransferStatistics extends CommandInterface  {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ArrayList<User> users2 = new ArrayList<User>(users);
 		Collections.sort(users2, new UserComparator(type));
+		ReplacerEnvironment env = new ReplacerEnvironment();
 
-		try {
-			addTextToResponse(response, "text/" + type + "_header.txt");
-		} catch (IOException ioe) {
-			logger.warn("Error reading " + "text/" + type + "_header.txt", ioe);
+		String headerBundleKey = _keyPrefix + type + ".header"; 
+		String headerText = request.getSession().jprintf(_bundle, headerBundleKey, env,
+				request.getUser());
+		if (headerText.equals(headerBundleKey)) {
+			try {
+				addTextToResponse(response, "text/" + type + "_header.txt");
+			} catch (IOException ioe) {
+				logger.warn("Error reading " + "text/" + type + "_header.txt", ioe);
+			}
+		} else {
+			response.addComment(headerText);
 		}
 
 		int i = 0;
@@ -262,7 +270,6 @@ public class TransferStatistics extends CommandInterface  {
 				break;
 			}
 
-			ReplacerEnvironment env = new ReplacerEnvironment();
 			env.add("pos", "" + i);
 
 			env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
@@ -296,7 +303,7 @@ public class TransferStatistics extends CommandInterface  {
 			env.add("dnfiles", "" + user.getDownloadedFiles());
 			env.add("dnrate", getDownRate(user, Trial.PERIOD_ALL));
 
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"transferstatistics" + type, env,
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix + type, env,
 					user.getName()));
 
 			//			response.addComment(
@@ -306,10 +313,17 @@ public class TransferStatistics extends CommandInterface  {
 			//			getStats(command.substring("SITE ".length()), user)));
 		}
 
-		try {
-			addTextToResponse(response, "text/" + type + "_footer.txt");
-		} catch (IOException ioe) {
-			logger.warn("Error reading " + type + "_footer", ioe);
+		String footerBundleKey = _keyPrefix + type + ".footer"; 
+		String footerText = request.getSession().jprintf(_bundle, footerBundleKey, env,
+				request.getUser());
+		if (footerText.equals(footerBundleKey)) {
+			try {
+				addTextToResponse(response, "text/" + type + "_footer.txt");
+			} catch (IOException ioe) {
+				logger.warn("Error reading " + "text/" + type + "_footer.txt", ioe);
+			}
+		} else {
+			response.addComment(footerText);
 		}
 
 		return response;

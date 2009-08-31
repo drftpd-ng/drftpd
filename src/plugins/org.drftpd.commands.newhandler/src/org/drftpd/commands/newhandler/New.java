@@ -18,7 +18,6 @@
 package org.drftpd.commands.newhandler;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -123,7 +122,7 @@ public class New extends CommandInterface {
 		ArrayList<DirectoryHandle> directories = new ArrayList<DirectoryHandle>();
 		for (SectionInterface section : sections.values()) {
 			try {
-				directories.addAll(section.getBaseDirectory().getDirectories(user));
+				directories.addAll(section.getCurrentDirectory().getDirectories(user));
 			} catch (FileNotFoundException e) {
 				logger.error("The directory was just there! How come it's gone?", e);
 			}
@@ -131,14 +130,10 @@ public class New extends CommandInterface {
 
 		Collections.sort(directories, new DateComparator());
 
-		try {
-			addTextToResponse(response, "text/new_header.txt");
-		} catch (IOException ioe) {
-			logger.warn("Error reading text/new_header.txt");
-		}
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"header", env, request.getUser()));
 
 		// Print the reply! 
-		ReplacerEnvironment env = new ReplacerEnvironment();
 		int pos = 1;
 
 		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext() && (pos <= count); pos++) {
@@ -155,12 +150,7 @@ public class New extends CommandInterface {
 				logger.error("The directory was just there! How come it's gone?", e);
 			}
 		}
-
-		try {
-			addTextToResponse(response, "text/new_footer.txt");
-		} catch (IOException ioe) {
-			logger.warn("Error reading text/new_footer.txt");
-		}
+		response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"footer", env, request.getUser()));
 
 		return response;
 	}
