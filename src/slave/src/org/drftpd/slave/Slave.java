@@ -423,46 +423,6 @@ public class Slave {
 		return _roots;
 	}
 
-	/*private String getDIZFile(String path) throws IOException {
-		ZipEntry zipEntry = null;
-		ZipInputStream zipInput = null;
-		byte[] buf = new byte[20 * 1024];
-		int numRd;
-		try {
-
-			zipInput = new ZipInputStream(new BufferedInputStream(
-					new FileInputStream(_roots.getFile(path))));
-
-			// Access a list of all of the files in the zip archive
-			while ((zipEntry = zipInput.getNextEntry()) != null) {
-				// Is this entry a DIZ file?
-				if (zipEntry.getName().toLowerCase().endsWith(".diz")) {
-					// Read 20 KBytes from the DIZ file, hopefully this
-					// will be the entire file.
-					numRd = zipInput.read(buf, 0, 20 * 1024);
-
-					if (numRd > 0) {
-						return new String(buf, 0, numRd);
-					} else {
-						throw new FileNotFoundException(
-								"0 bytes read from .zip file - " + path);
-					}
-
-				}
-			}
-		} catch (Throwable t) {
-			logger.error("Error extracting .diz from zipfile", t);
-		} finally {
-			try {
-				if (zipInput != null) {
-					zipInput.close();
-				}
-			} catch (IOException e) {
-			}
-		}
-		throw new FileNotFoundException("No diz entry in - " + path);
-	}*/
-
 	public DiskStatus getDiskStatus() {
 		return new DiskStatus(_roots.getTotalDiskSpaceAvailable(), _roots.getTotalDiskSpaceCapacity());
 	}
@@ -631,9 +591,6 @@ public class Slave {
 		}
 		return _cipherSuites;
 	}
-	
-	// 00000000000000000000000000
-	
 	
 	public HashMap<TransferIndex, Transfer> getTransferMap() {
 		synchronized (_transfers) {

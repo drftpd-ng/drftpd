@@ -22,16 +22,20 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.sections.SectionInterface;
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author mog
  * @version $Id$
  */
-public class PlainSection implements SectionInterface {
+public class PlainSection implements ConfSectionInterface {
+	private static Logger logger = Logger.getLogger(PlainSection.class);
+
 	private String _name;
 	
 	protected DirectoryHandle _basePath;
@@ -73,5 +77,17 @@ public class PlainSection implements SectionInterface {
 	
 	protected static GlobalContext getGlobalContext() {
 		return GlobalContext.getGlobalContext();
+	}
+
+	public void createSectionDir() {
+		try {
+			String path = getCurrentDirectory().getPath();
+			DirectoryHandle dir = new DirectoryHandle(VirtualFileSystem.stripLast(path));		
+			dir.createDirectoryRecursive(VirtualFileSystem.getLast(path));
+		} catch (FileExistsException e) {
+			// good the file exists, no need to create it.
+		} catch (FileNotFoundException e) {
+			logger.error("What happened? I don't know how to handle this", e);
+		}
 	}
 }

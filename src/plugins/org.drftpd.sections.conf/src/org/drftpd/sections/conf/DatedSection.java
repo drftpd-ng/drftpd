@@ -203,7 +203,11 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		} else {
 			logger.warn("DatedDirectory " + dateDirName + " already exists in section " + getName());
 		}
-		
+		createLink(newDir);
+		return;
+	}
+
+	private void createLink(DirectoryHandle targetDir) {
 		// create the link
 		if (_now == null || _now.equals("")) {
 			return;
@@ -220,7 +224,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		}
 		if (link != null) {
 			try {
-				link.setTarget(newDir.getPath());
+				link.setTarget(targetDir.getPath());
 				return;
 				// link's target path has been updated
 			} catch (FileNotFoundException e) {
@@ -228,14 +232,18 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			}
 		}
 		try {
-			root.createLinkUnchecked(linkName, newDir.getPath(), "drftpd", "drftpd");
+			root.createLinkUnchecked(linkName, targetDir.getPath(), "drftpd", "drftpd");
 		} catch (FileExistsException e) {
 			logger.error(linkName + " already exists in / for section " + getName() + ", this should not happen, we just deleted it", e);
 		} catch (FileNotFoundException e) {
 			logger.error("Unable to find the Root DirectoryHandle, this should not happen, it's the root!", e);
 		}
+	}
 
-		
+	@Override
+	public void createSectionDir() {
+		super.createSectionDir();
+		createLink(getCurrentDirectory());
 	}
 
 	public void resetDay(Date d) {

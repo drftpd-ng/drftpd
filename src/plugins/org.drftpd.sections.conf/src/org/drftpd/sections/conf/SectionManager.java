@@ -18,7 +18,6 @@
 package org.drftpd.sections.conf;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,21 +26,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
-import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author mog
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
-	private static Logger logger = Logger.getLogger(SectionManager.class);
 	
 	private static final Class<?>[] CONSTRUCTOR_SIG = new Class<?>[] { int.class, Properties.class };
 	private static final PlainSection EMPTYSECTION = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
@@ -118,13 +113,14 @@ public class SectionManager implements SectionManagerInterface {
 					Class<?> clazz = Class.forName("org.drftpd.sections.conf."
 							+ type.substring(0, 1).toUpperCase()
 							+ type.substring(1) + "Section");
-					SectionInterface section = (SectionInterface) clazz
+					ConfSectionInterface section = (ConfSectionInterface) clazz
 							.getDeclaredConstructor(CONSTRUCTOR_SIG)
 							.newInstance(
 									new Object[] { Integer.valueOf(i), p });
 					sections.put(name, section);
-					
-					createSectionDir(section);
+					if (_mkdirs) {
+						section.createSectionDir();
+					}
 				} catch (Exception e) {
 					throw new FatalException("Unknown section type: " + i
 						+ ".type = " + type, e);
@@ -136,21 +132,4 @@ public class SectionManager implements SectionManagerInterface {
 	public SectionInterface lookup(DirectoryHandle directory) {
 		return lookup(directory.getPath());
 	}
-	
-	private void createSectionDir(SectionInterface section) {
-		if (!_mkdirs) {
-			return;
-		}
-		
-		try {
-			String path = section.getCurrentDirectory().getPath();
-			DirectoryHandle dir = new DirectoryHandle(VirtualFileSystem.stripLast(path));		
-			dir.createDirectoryRecursive(VirtualFileSystem.getLast(path));
-		} catch (FileExistsException e) {
-			// good the file exists, no need to create it.
-		} catch (FileNotFoundException e) {
-			logger.error("What happened? I don't know how to handle this", e);
-		}
-	}
-
 }
