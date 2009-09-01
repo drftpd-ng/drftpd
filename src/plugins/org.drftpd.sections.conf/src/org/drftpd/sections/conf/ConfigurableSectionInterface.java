@@ -23,7 +23,7 @@ import org.drftpd.sections.SectionInterface;
  * @author djb61
  * @version $Id$
  */
-public interface ConfSectionInterface extends SectionInterface {
+public interface ConfigurableSectionInterface extends SectionInterface {
 
 	public void createSectionDir();
 }

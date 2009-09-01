@@ -113,7 +113,7 @@ public class SectionManager implements SectionManagerInterface {
 					Class<?> clazz = Class.forName("org.drftpd.sections.conf."
 							+ type.substring(0, 1).toUpperCase()
 							+ type.substring(1) + "Section");
-					ConfSectionInterface section = (ConfSectionInterface) clazz
+					ConfigurableSectionInterface section = (ConfigurableSectionInterface) clazz
 							.getDeclaredConstructor(CONSTRUCTOR_SIG)
 							.newInstance(
 									new Object[] { Integer.valueOf(i), p });

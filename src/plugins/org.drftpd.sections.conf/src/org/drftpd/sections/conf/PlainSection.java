@@ -33,7 +33,7 @@ import org.drftpd.vfs.VirtualFileSystem;
  * @author mog
  * @version $Id$
  */
-public class PlainSection implements ConfSectionInterface {
+public class PlainSection implements ConfigurableSectionInterface {
 	private static Logger logger = Logger.getLogger(PlainSection.class);
 
 	private String _name;

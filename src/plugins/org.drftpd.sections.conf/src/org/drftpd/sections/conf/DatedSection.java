@@ -116,56 +116,42 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		return TOP_OF_TROUBLE; // Deliberately head for trouble...
 	}
 
-	void printPeriodicity(int type) {
+	private void printPeriodicity(int type) {
 		switch (type) {
 		case TOP_OF_MINUTE:
-			logger.debug("DatedSection [" + getName()
-					+ "] to be rolled every minute.");
-
+			logger.debug("DatedSection [" + getName() + "] to be rolled every minute.");
 			break;
 
 		case TOP_OF_HOUR:
-			logger.debug("DatedSection [" + getName()
-					+ "] to be rolled on top of every hour.");
-
+			logger.debug("DatedSection [" + getName() + "] to be rolled on top of every hour.");
 			break;
 
 		case HALF_DAY:
-			logger.debug("DatedSection [" + getName()
-					+ "] to be rolled at midday and midnight.");
-
+			logger.debug("DatedSection [" + getName() + "] to be rolled at midday and midnight.");
 			break;
 
 		case TOP_OF_DAY:
-			logger.debug("DatedSection [" + getName()
-					+ "] to be rolled at midnight.");
-
+			logger.debug("DatedSection [" + getName() + "] to be rolled at midnight.");
 			break;
 
 		case TOP_OF_WEEK:
-			logger.debug("DatedSection [" + getName()
-					+ "] to be rolled at start of week.");
-
+			logger.debug("DatedSection [" + getName() + "] to be rolled at start of week.");
 			break;
 
 		case TOP_OF_MONTH:
-			logger.debug("DatedSection [" + getName()
-					+ "] to be rolled at start of every month.");
-
+			logger.debug("DatedSection [" + getName() + "] to be rolled at start of every month.");
 			break;
 
 		default:
-			logger
-					.warn("Unknown periodicity for DatedSection [" + getName()
-							+ "].");
+			logger.warn("Unknown periodicity for DatedSection [" + getName() + "].");
 		}
 	}
 	
 	public void processNewDate(Date d) {
 		String dateDirName = _dateFormat.format(new Date());
 		if (!getBaseDirectory().exists()) {
-			logger.error("Section directory does not exist while creating dated directory - " + dateDirName);
-			logger.info("Creating base directory for section " + getName());
+			logger.debug("Section directory was not found while creating" +
+					"dated directory: " + dateDirName + ", creating it.");
 			try {
 				getBaseDirectory().getParent().createDirectoryRecursive(getBaseDirectory().getName());
 			} catch (FileExistsException e) {
@@ -183,18 +169,16 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		} catch (FileNotFoundException e) {
 			// this is good
 		} catch (ObjectNotValidException e) {
-			logger.error("There is already a non-Directory object in the place where the new dated directory should go, removing " + dateDirName + " from section " + getName());
-			try {
-				getBaseDirectory().getInodeHandleUnchecked(dateDirName).deleteUnchecked();
-			} catch (FileNotFoundException e1) {
-				// this is good, although a little strange since it was just there a few milliseconds ago...
-			}
+			logger.error("There is already a non-Directory inode in the place" +
+					"where the new dated directory should go. Remove it first", e);
+			return;
 		}
+		
 		if (newDir == null) { // this is good, this is the standard process
 			try {
 				newDir = getBaseDirectory().createDirectoryUnchecked(dateDirName, "drftpd", "drftpd");
 			} catch (FileExistsException e) {
-				logger.error(dateDirName + " already exists in section " + getName() + ", this should not happen, we just deleted it", e);
+				logger.error(dateDirName + " already exists in section " + getName() + ", this should not happen, we just checked it", e);
 				return;
 			} catch (FileNotFoundException e) {
 				logger.error(dateDirName + " base directory does not exist for section " + getName() + ", this should not happen, we just verified it existed", e);
@@ -202,13 +186,14 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			}
 		} else {
 			logger.warn("DatedDirectory " + dateDirName + " already exists in section " + getName());
+			return;
 		}
 		createLink(newDir);
 		return;
 	}
 
 	private void createLink(DirectoryHandle targetDir) {
-		// create the link
+		// creating the symlink
 		if (_now == null || _now.equals("")) {
 			return;
 		}
@@ -220,7 +205,9 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		} catch (FileNotFoundException e) {
 			// this is okay, the link was deleted, we will recreate it below
 		} catch (ObjectNotValidException e) {
-			
+			logger.error("There is already a non-Link inode in the place" +
+					"where the new dated directory should go. Remove it first", e);
+			return;
 		}
 		if (link != null) {
 			try {
