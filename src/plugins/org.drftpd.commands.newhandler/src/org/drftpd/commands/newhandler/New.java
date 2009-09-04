@@ -53,11 +53,11 @@ public class New extends CommandInterface {
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 
-    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-    	super.initialize(method, pluginName, cManager);
-    	_bundle = cManager.getResourceBundle();
-    	_keyPrefix = this.getClass().getName()+".";
-    }
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+		super.initialize(method, pluginName, cManager);
+		_bundle = cManager.getResourceBundle();
+		_keyPrefix = this.getClass().getName()+".";
+	}
 
 	public CommandResponse doNEW(CommandRequest request) throws ImproperUsageException {
 		int defaultCount = Integer.parseInt(request.getProperties().getProperty("default", "5"));;
@@ -67,33 +67,33 @@ public class New extends CommandInterface {
 
 		SectionManagerInterface sectionManager = GlobalContext.getGlobalContext().getSectionManager();
 		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
-		
+
 		// site new
 		// site new <number>
 		// site new <section> <number>
 		SectionInterface specificSection = null;
 		int count = defaultCount;
 		boolean allSections = false;
-		
+
 		if (request.hasArgument()) {
 			StringTokenizer st = new StringTokenizer(request.getArgument());
 			if (st.countTokens() > 2)
 				throw new ImproperUsageException(); // invalid number of arguments.
-			
+
 			while (st.hasMoreTokens()) {
 				String parm = st.nextToken();
-				
+
 				if (isInteger(parm)) { // found a number.
 					count = Integer.parseInt(parm);
-					
+
 					if (count > maxCount)
 						count = maxCount;
-					
+
 					if (specificSection == null) { // not section specified, adding all.
 						sections.putAll(sectionManager.getSectionsMap());
 						allSections = true;
 					}
-					
+
 					break; // nothing else to do.
 				} else {
 					specificSection = sectionManager.getSection(parm);
@@ -105,17 +105,16 @@ public class New extends CommandInterface {
 			}
 		} else {
 			// no param found. setting default values.
-			count = 10;
 			sections.putAll(sectionManager.getSectionsMap());
 			allSections = true;
 		}
-		
+
 		if (allSections) {
 			for (String s : sectionFilter.split(" ")) {
 				sections.remove(s);
 			}
 		}
-		
+
 		User user = request.getSession().getUserNull(request.getUser());
 
 		// Collect all dirs from all sections
@@ -128,29 +127,33 @@ public class New extends CommandInterface {
 			}
 		}
 
-		Collections.sort(directories, new DateComparator());
-
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"header", env, request.getUser()));
+		if (directories.size() == 0) {
+			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new.empty", env, request.getUser()));
+		} else {
+			Collections.sort(directories, new DateComparator());
 
-		// Print the reply! 
-		int pos = 1;
+			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"header", env, request.getUser()));
 
-		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext() && (pos <= count); pos++) {
-			try {
-				DirectoryHandle dir = iter.next();
-				env.add("pos", "" + pos);
-				env.add("name", allSections ? dir.getPath() : dir.getName());
-				env.add("diruser", dir.getUsername());
-				env.add("files", "" + dir.getInodeHandles(user).size());
-				env.add("size", Bytes.formatBytes(dir.getSize()));
-				env.add("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
-				response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new", env, request.getUser()));
-			} catch (FileNotFoundException e) {
-				logger.error("The directory was just there! How come it's gone?", e);
+			// Print the reply! 
+			int pos = 1;
+
+			for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext() && (pos <= count); pos++) {
+				try {
+					DirectoryHandle dir = iter.next();
+					env.add("pos", "" + pos);
+					env.add("name", allSections ? dir.getPath() : dir.getName());
+					env.add("diruser", dir.getUsername());
+					env.add("files", "" + dir.getInodeHandles(user).size());
+					env.add("size", Bytes.formatBytes(dir.getSize()));
+					env.add("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
+					response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new", env, request.getUser()));
+				} catch (FileNotFoundException e) {
+					logger.error("The directory was just there! How come it's gone?", e);
+				}
 			}
+			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"footer", env, request.getUser()));
 		}
-		response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"footer", env, request.getUser()));
 
 		return response;
 	}
@@ -174,7 +177,7 @@ public class New extends CommandInterface {
 			return (lastModified1 > lastModified2) ? (-1) : 1;
 		}
 	}
-	
+
 	private static boolean isInteger(String s) {
 		try {
 			Integer.parseInt(s);
