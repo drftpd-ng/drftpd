@@ -35,6 +35,10 @@ wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-default.properti
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-slave.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
+# Uncommenting the following time will increase initial startup time but should
+# improve performance once running. This option requires you to have a full JDK
+# installed, not simply a JRE.
+#wrapper.java.additional.5=-server
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=3

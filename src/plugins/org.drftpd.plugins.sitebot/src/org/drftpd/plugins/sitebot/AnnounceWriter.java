@@ -96,8 +96,7 @@ public class AnnounceWriter {
 				if (sectionBase.isRoot()) {
 					return dir.getPath().substring(1);
 				} else {
-					return dir.getPath().substring(GlobalContext.getGlobalContext().getSectionManager()
-							.lookup(dir).getBaseDirectory().getPath().length()+1);
+					return dir.getPath().substring(sectionBase.getPath().length()+1);
 				}
 			}
 		}
