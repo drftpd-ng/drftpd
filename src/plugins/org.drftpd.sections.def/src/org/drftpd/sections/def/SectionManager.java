@@ -136,6 +136,15 @@ public class SectionManager implements SectionManagerInterface {
 		public String getBasePath() {
 			return getPath();
 		}
+
+		@Override
+		public boolean equals(Object arg0) {
+			if (!(arg0 instanceof Section)) {
+				return false;
+			}
+			Section compareSection = (Section)arg0;
+			return getBaseDirectory().equals(compareSection.getBaseDirectory());
+		}
 	}
 
 	@SuppressWarnings("unchecked")
