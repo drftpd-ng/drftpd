@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.config.GlobPathMatcher;
+import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -65,7 +66,13 @@ public class AnnounceWriter {
 				return "/";
 			}
 			else {
-				return GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getName();
+				SectionInterface section = 
+					GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+				if (section.getCurrentDirectory().isRoot()) {
+					return "/";
+				} else {
+					return section.getName();
+				}
 			}
 		} else {
 			return _sectionName;
@@ -84,8 +91,14 @@ public class AnnounceWriter {
 				return dir.getPath().substring(1);
 			}
 			else {
-				return dir.getPath().substring(GlobalContext.getGlobalContext().getSectionManager()
-					.lookup(dir).getBaseDirectory().getPath().length()+1);
+				DirectoryHandle sectionBase = 
+					GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getBaseDirectory();
+				if (sectionBase.isRoot()) {
+					return dir.getPath().substring(1);
+				} else {
+					return dir.getPath().substring(GlobalContext.getGlobalContext().getSectionManager()
+							.lookup(dir).getBaseDirectory().getPath().length()+1);
+				}
 			}
 		}
 	}
