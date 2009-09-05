@@ -17,6 +17,8 @@
  */
 package org.drftpd.slave;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -182,8 +184,9 @@ public class Slave {
 				throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.", e);
 			}
 		}
-		_sout = new ObjectOutputStream(_s.getOutputStream());
-		_sin = new ObjectInputStream(_s.getInputStream());
+		_sout = new ObjectOutputStream(new BufferedOutputStream(_s.getOutputStream()));
+		_sout.flush();
+		_sin = new ObjectInputStream(new BufferedInputStream(_s.getInputStream()));
 
 		_central = new SlaveProtocolCentral(this);
 		

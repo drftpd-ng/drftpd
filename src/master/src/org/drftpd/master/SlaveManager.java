@@ -18,6 +18,8 @@
 package org.drftpd.master;
 
 import java.beans.XMLDecoder;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -424,8 +426,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				logger.debug("Slave connected from "
 						+ socket.getRemoteSocketAddress());
 
-				in = new ObjectInputStream(socket.getInputStream());
-				out = new ObjectOutputStream(socket.getOutputStream());
+				out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+				out.flush();
+				in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
 
 				String slavename = RemoteSlave.getSlaveNameFromObjectInput(in);
 
