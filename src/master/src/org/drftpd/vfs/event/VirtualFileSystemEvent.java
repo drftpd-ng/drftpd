@@ -18,6 +18,10 @@
 
 package org.drftpd.vfs.event;
 
+import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.VFSUtils;
+import org.drftpd.vfs.VirtualFileSystemInode;
+
 /**
  * This class represents an event that occured in the Virtual File System.
  * All events that are fired from the VFS must extend this class.
@@ -25,19 +29,25 @@ package org.drftpd.vfs.event;
  * @author fr0w
  * @version $Id$
  */
-public abstract class VirtualFileSystemChangeEvent {
+public abstract class VirtualFileSystemEvent {
 	
-	private String _path;
-	
-	public VirtualFileSystemChangeEvent(String path) {
-		_path = path;
+	private InodeHandle _inode;
+
+	/**
+	 * This constructor accepts a {@link VirtualFileSystemInode} but in order
+	 * to prevent futher access to low level VFS API it uses {@link VFSUtils}
+	 * to convert the current <code>realInode</code> to an {@link InodeHandle}
+	 * @param realInode
+	 */
+	public VirtualFileSystemEvent(VirtualFileSystemInode realInode) {
+		_inode = VFSUtils.getInodeHandleFor(realInode);
 	}
 	
 	/**
-	 * @return the path that the event is releated to.
+	 * @return the {@link InodeHandle} that this event is releated to.
 	 */
-	public String getPath() {
-		return _path;
+	public InodeHandle getInode() {
+		return _inode;
 	}
 
 }

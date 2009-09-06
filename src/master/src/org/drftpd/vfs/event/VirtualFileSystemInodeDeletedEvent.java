@@ -15,33 +15,19 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package org.drftpd.vfs.event;
 
-import java.util.Set;
-
-import org.drftpd.vfs.VirtualFileSystemFile;
+import org.drftpd.vfs.VirtualFileSystemInode;
 
 /**
- * This event is fired whenever a slave is added or removed from a {@link VirtualFileSystemFile}
+ * This event is fired whenever an inode is deleted.
  * @author fr0w
  * @version $Id$
  */
-public class VirtualFileSystemSlaveEvent extends VirtualFileSystemEvent {
-
-	private Set<String> _slaves;
-
-	public VirtualFileSystemSlaveEvent(VirtualFileSystemFile file, Set<String> slaves) {
-		super(file);
-		
-		_slaves = slaves;
-	}
+public class VirtualFileSystemInodeDeletedEvent extends VirtualFileSystemEvent {
 	
-	/**
-	 * @return the new set of Slaves
-	 */
-	public Set<String> getSlaves() {
-		return _slaves;
+	public VirtualFileSystemInodeDeletedEvent(VirtualFileSystemInode inode) {
+		super(inode);
 	}
 	
 }

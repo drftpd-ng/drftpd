@@ -15,37 +15,31 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.vfs.event;
+
+package org.drftpd.vfs;
 
 /**
- * This event is fired whenever an inode is created or deleted.
  * @author fr0w
  * @version $Id$
  */
-public class VirtualFileSystemInodeEvent extends VirtualFileSystemChangeEvent {
+public class VFSUtils {
 
+	
 	/**
-	 * This enum serves the only purpose of differentiating
-	 * what kind of event happened in a type safe manner. 
+	 * Utility method to convert a Real VFS Inode into a simple {@link InodeHandle}
+	 * @param realInode
 	 */
-	public static enum VirtualFileSystemInodeEventType {
-		CREATED, DELETED
-	}
-	
-	private VirtualFileSystemInodeEventType _type;
-	
-	public VirtualFileSystemInodeEvent(String path, VirtualFileSystemInodeEventType type) {
-		super(path);
+	public static InodeHandle getInodeHandleFor(VirtualFileSystemInode realInode) {
+		String path = realInode.getPath();
 		
-		_type = type;
+		if (realInode.isDirectory()) {
+			return new DirectoryHandle(path);
+		} else if (realInode.isFile()) {
+			return new FileHandle(path);
+		} else if (realInode.isLink()) {
+			return new LinkHandle(path);
+		} else {
+			throw new UnsupportedOperationException("This listener is not capable of handling symbolic links");
+		}
 	}
-	
-	/**
-	 * @return the type of event that occured
-	 * @see VirtualFileSystemInodeEventType
-	 */
-	public VirtualFileSystemInodeEventType getType() {
-		return _type;
-	}
-
 }

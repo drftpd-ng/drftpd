@@ -100,7 +100,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		_parent.removeChild(this);
 		CommitManager.getCommitManager().remove(this);
 		
-		getVFS().notifyInodeDeleted(getPath());
+		getVFS().notifyInodeDeleted(this);
 	}
 
 	/**
@@ -237,11 +237,9 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 * Sets the group which owns the Inode.
 	 */
 	public void setGroup(String group) {
-		String oldGroup = _group;
-		
 		_group = group;
 		
-		getVFS().notifyOwnershipChanged(getPath(), getUsername(), getUsername(), oldGroup, _group);
+		getVFS().notifyOwnershipChanged(this, getUsername(), _group);
 	}
 
 	public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
@@ -277,11 +275,9 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 *            The user to set.
 	 */
 	public void setUsername(String user) {
-		String oldUser = _username;
-		
 		_username = user; 
 		
-		getVFS().notifyOwnershipChanged(getPath(), oldUser, _username, getGroup(), getGroup());
+		getVFS().notifyOwnershipChanged(this, _username, getGroup());
 	}
 
 	public KeyedMap<Key<?>, Object> getPluginMap() {

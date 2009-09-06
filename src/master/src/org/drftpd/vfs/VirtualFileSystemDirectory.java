@@ -86,9 +86,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			throw new FileExistsException("An object named " + name
 					+ " already exists in " + getPath());
 		}
-		createDirectoryRaw(name, user, group);
+		VirtualFileSystemDirectory inode = createDirectoryRaw(name, user, group);
 		
-		getVFS().notifyInodeCreated(getPath() + VirtualFileSystem.separator + name);
+		getVFS().notifyInodeCreated(inode);
 	}
 	
 	
@@ -102,14 +102,16 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @param user
 	 * @param group
 	 */
-	protected void createDirectoryRaw(String name, String user, String group) {
-		VirtualFileSystemInode inode = new VirtualFileSystemDirectory(user,
+	protected VirtualFileSystemDirectory createDirectoryRaw(String name, String user, String group) {
+		VirtualFileSystemDirectory inode = new VirtualFileSystemDirectory(user,
 				group);
 		inode.setName(name);
 		inode.setParent(this);
 		inode.commit();
 		addChild(inode);
 		logger.info("createDirectory(" + inode + ")");
+		
+		return inode;
 	}
 
 	/**
@@ -134,7 +136,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		commit();
 		logger.info("createFile(" + inode + ")");
 		
-		getVFS().notifyInodeCreated(getPath() + VirtualFileSystem.separator + name);
+		getVFS().notifyInodeCreated(inode);
 	}
 
 	/**
@@ -158,6 +160,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		addChild(inode);
 		commit();
 		logger.info("createLink(" + inode + ")");
+		
+		getVFS().notifyInodeCreated(inode);
 	}
 
 	/**

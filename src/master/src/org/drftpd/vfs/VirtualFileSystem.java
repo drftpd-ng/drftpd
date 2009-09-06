@@ -35,13 +35,12 @@ import org.drftpd.GlobalContext;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.vfs.event.VirtualFileSystemChangeEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeEvent;
+import org.drftpd.vfs.event.VirtualFileSystemEvent;
+import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
+import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
 import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
 import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeEvent.VirtualFileSystemInodeEventType;
-
 
 public class VirtualFileSystem {
 
@@ -396,76 +395,37 @@ public class VirtualFileSystem {
 		return path;
 	}
 
-	/*
-	 * protected synchronized VirtualFileSystemInode getFile(String path) throws
-	 * FileNotFoundException { WeakReference ref = _loadedFiles.get(path);
-	 * VirtualFileSystemInode inode = null; if (ref == null || ref.get() ==
-	 * null) { _loadedFiles.remove(path); inode = loadFile(path);
-	 * _loadedFiles.put(path, new WeakReference<VirtualFileSystemInode>(inode)); }
-	 * return _loadedFiles.get(path).get(); }
-	 */
+	protected void notifyOwnershipChanged(VirtualFileSystemInode inode, String owner, String group) {
+		logger.debug("Notifying that ownership of " + inode.getPath() + " has changed to: " + owner + "/" + group);
 
-	/*
-	 * private synchronized VirtualFileSystemInode loadFile(String path) throws
-	 * FileNotFoundException { boolean isRootDirectory = !(path.equals("/") ||
-	 * path.equals("")); if (isRootDirectory) { path =
-	 * FtpConfig.getFtpConfig().getProperties().getProperty("filesystem.location","files") +
-	 * File.pathSeparator + path; } else { path =
-	 * FtpConfig.getFtpConfig().getProperties().getProperty("filesystem.root","root"); }
-	 * File file = new File(path); XMLDecoder decode; try { decode = new
-	 * XMLDecoder(new BufferedInputStream( new FileInputStream(file))); return
-	 * (VirtualFileSystemInode) decode.readObject(); } catch
-	 * (FileNotFoundException e) { if (isRootDirectory) { logger.warn("Loading
-	 * new root VirtualFileSystemInode", e); return new
-	 * VirtualFileSystemDirectory("/", "drftpd", "drftpd", 0); } throw e; }
-	 * catch (Exception e) { logger.warn(path + " was unable to be read from
-	 * file", e); file.delete(); throw new FileNotFoundException(path); } }
-	 */
-
-	/*
-	 * public void createFile(String path, User user) throws FileExistsException {
-	 * if (!ListUtils.isLegalFileName(path)) { throw new
-	 * IllegalArgumentException("Illegal filename - " + path); }
-	 * VirtualFileSystemInode vfsi = null; synchronized (this) { try { vfsi =
-	 * getFile(path); throw new FileExistsException(path); } catch
-	 * (FileNotFoundException e) { // This is good, continue } vfsi = new
-	 * VirtualFileSystemFile(path, user.getName(), user .getGroup(), 0);
-	 * _loadedFiles.put(path, new WeakReference<VirtualFileSystemInode>(
-	 * vfsi)); vfsi.getParent().addChild(path); } }
-	 */
-	
-	// TODO revisit this method signature
-	protected void notifyOwnershipChanged(String path, String oldOwner, String owner, String oldGroup, String group) {
-		logger.debug("Notifying that ownership of " + path + " has changed from : "+ oldOwner + "/" + oldGroup+ " to: " + owner + "/" + group);
-
-		publishAsyncEvent(new VirtualFileSystemOwnershipEvent(path, owner, group));
+		publishAsyncEvent(new VirtualFileSystemOwnershipEvent(inode, owner, group));
 	}
 	
-	protected void notifySlavesChanged(String path, Set<String> slaves) {
-		logger.debug("Notifying the list of slaves of " + path + " has changed to: " + slaves);
+	protected void notifySlavesChanged(VirtualFileSystemFile inode, Set<String> slaves) {
+		logger.debug("Notifying the list of slaves of " + inode.getPath() + " has changed to: " + slaves);
 		
-		publishAsyncEvent(new VirtualFileSystemSlaveEvent(path, slaves));
+		publishAsyncEvent(new VirtualFileSystemSlaveEvent(inode, slaves));
 	}
 	
-	protected void notifyInodeRenamed(String source, String destination) {
-		logger.debug("Notifying that " + source + " has been renamed to " + destination);
+	protected void notifyInodeRenamed(VirtualFileSystemInode source, VirtualFileSystemInode destination) {
+		logger.debug("Notifying that " + source.getPath() + " has been renamed to " + destination.getPath());
 
 		publishAsyncEvent(new VirtualFileSystemRenameEvent(source, destination));
 	}
 	
-	protected void notifyInodeCreated(String path) {
-		logger.debug("Notifying that " + path + " has been created");
+	protected void notifyInodeCreated(VirtualFileSystemInode inode) {
+		logger.debug("Notifying that " + inode.getPath() + " has been created");
 
-		publishAsyncEvent(new VirtualFileSystemInodeEvent(path, VirtualFileSystemInodeEventType.CREATED));
+		publishAsyncEvent(new VirtualFileSystemInodeCreatedEvent(inode));
 	}
 	
-	protected void notifyInodeDeleted(String path) {
-		logger.debug("Notifying that " + path+ " has been deleted");
+	protected void notifyInodeDeleted(VirtualFileSystemInode inode) {
+		logger.debug("Notifying that " + inode.getPath() + " has been deleted");
 
-		publishAsyncEvent(new VirtualFileSystemInodeEvent(path, VirtualFileSystemInodeEventType.DELETED));
+		publishAsyncEvent(new VirtualFileSystemInodeDeletedEvent(inode));
 	}
 	
-	private void publishAsyncEvent(VirtualFileSystemChangeEvent event) {
+	private void publishAsyncEvent(VirtualFileSystemEvent event) {
 		GlobalContext.getEventService().publishAsync(event);
 	}
 }

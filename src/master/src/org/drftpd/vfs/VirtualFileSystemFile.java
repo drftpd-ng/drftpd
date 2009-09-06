@@ -120,7 +120,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		}
 		commit();
 		
-		getVFS().notifySlavesChanged(getPath(), _slaves);
+		getVFS().notifySlavesChanged(this, _slaves);
 	}
 
 	/**
@@ -152,7 +152,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		} else {
 			commit();
 			
-			getVFS().notifySlavesChanged(getPath(), _slaves);
+			getVFS().notifySlavesChanged(this, _slaves);
 		}
 	}
 

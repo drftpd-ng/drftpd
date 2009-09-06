@@ -17,23 +17,29 @@
  */
 package org.drftpd.vfs.event;
 
+import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.VFSUtils;
+import org.drftpd.vfs.VirtualFileSystemInode;
+
 /**
  * This event is fired whenever a rename happens in the Virtual File System.
  * @author flavio
  * @version $Id$
  */
-public class VirtualFileSystemRenameEvent extends VirtualFileSystemChangeEvent {
+public class VirtualFileSystemRenameEvent extends VirtualFileSystemEvent {
 
-	private String _destination;
+	private InodeHandle _destination;
 	
-	public VirtualFileSystemRenameEvent(String path, String destination) {
-		super(path);
+	public VirtualFileSystemRenameEvent(VirtualFileSystemInode inode, VirtualFileSystemInode destination) {
+		super(inode);
+		
+		_destination = VFSUtils.getInodeHandleFor(destination);
 	}
 	
 	/**
 	 * @return where the file is being renamed to.
 	 */
-	public String getDestination() {
+	public InodeHandle getDestination() {
 		return _destination;
 	}
 
