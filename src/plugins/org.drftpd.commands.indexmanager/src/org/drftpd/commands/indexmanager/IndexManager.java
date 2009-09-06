@@ -111,7 +111,7 @@ public class IndexManager extends CommandInterface {
 					response.addComment(inode.getPath());
 				}
 			} catch (FileNotFoundException e) {
-				logger.error("Index contained an unexistent file.", e);
+				logger.warn("Index contained an unexistent inode: " + path);
 				continue;
 			}
 		}

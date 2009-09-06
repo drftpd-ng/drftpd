@@ -46,19 +46,7 @@ public interface IndexEngineInterface {
 
 	/**
 	 * Adds an inode to the index.<br>
-	 * All indexes <b>must</b> contain at least this fields in the index:
-	 * <ul>
-	 * <li>path</li> 
-	 * <li>owner - The user who owns the file</li>
-	 * <li>group - The group of the user who owns the file</li>
-	 * <li>type - File or Directory</li>
-	 * <li>size - The size of the inode</li>
-	 * <li>slaves - If the inode is a file, then the slaves are stored</li>
-	 * </ul>
-	 * If this pattern is not respected the behaviour is unpredictable.<br>
-	 * You can add more fields if you happen to need them, but beware that you will
-	 * also have to write your own code to make use of them.
-	 * @param inode
+	 * The kind of information stored in the index is up to the implementation.
 	 * @throws IndexException
 	 */
 	public void addInode(InodeHandle inode) throws IndexException;
