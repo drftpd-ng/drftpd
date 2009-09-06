@@ -114,8 +114,8 @@ public class Blowfish {
 			decrypted = _ecipher.doFinal(again);
 
 			// Recup exact length
-			int leng = 0;
-			while(decrypted[leng] != 0x0 && leng < (decrypted.length - 1)) {leng++;}
+			int leng = decrypted.length - 8;
+			while(leng < decrypted.length && decrypted[leng] != 0x0) {leng++;}
 			byte[] finalArray = new byte[leng];
 			// Format & Limit the Result String
 			for(int i = 0; i < leng; i++) {
