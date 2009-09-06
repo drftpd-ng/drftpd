@@ -11,7 +11,9 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.vfs.index.lucene" path="build/classes/" type="code" />
+		<library id="org.drftpd.vfs.index.lucene" path="build/classes/" type="code">
+			<export prefix="*" />
+		</library>
 		<library id="lucene" path="../../../lib/lucene-core-2.4.1.jar" type="code">
 			<export prefix="*" />
 		</library>

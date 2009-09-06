@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
+<plugin id="org.drftpd.commands.indexmanager.lucene" version="3.0.0">
+	<attributes>
+		<attribute id="DefaultBuild" value="true" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+		<import plugin-id="org.drftpd.vfs.index.lucene" />
+	</requires>
+	
+	<runtime>
+		<library id="org.drftpd.commands.indexmanager.lucene" path="build/classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+	
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="LuceneHandler" />
+	
+	<extension plugin-id="org.drftpd.commands.indexmanager.lucene" point-id="PreHook" id="doUpdateSearcher">
+		<parameter id="ParentMethod" value="doUpdateSearcher" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+
+</plugin>
