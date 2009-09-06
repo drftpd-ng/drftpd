@@ -78,10 +78,15 @@ public class Dir extends CommandInterface {
 	 */
 	public CommandResponse doCDUP(CommandRequest request) {
 		// change directory
-		DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
-		return new CommandResponse(200,
+		if (request.getCurrentDirectory().isRoot()) {
+			return new CommandResponse(250,
+				"Directory remains " + request.getCurrentDirectory().getPath());
+		} else {
+			DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
+			return new CommandResponse(250,
 				"Directory changed to " + newCurrentDirectory.getPath(),
 				newCurrentDirectory, request.getUser());
+		}
 	}
 
 	/**
