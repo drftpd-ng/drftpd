@@ -544,7 +544,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		return _iWriter;
 	}
 	
-	protected void refreshSearcher() throws CorruptIndexException, IOException {
+	public void refreshSearcher() throws CorruptIndexException, IOException {
 		IndexSearcher newSearcher = new IndexSearcher(_storage);
 		IndexSearcher oldSearcher = _iSearcher;
 		
