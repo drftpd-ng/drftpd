@@ -52,5 +52,8 @@
 		<library id="google-collections" path="../../lib/google-collect-1.0-rc2.jar" type="code">
 			<export prefix="*" />
 		</library>
+		<library id="commons-lang" path="../../lib/commons-lang-2.4.jar" type="code">
+			<export prefix="*" />
+		</library>
 	</runtime>
 </plugin>

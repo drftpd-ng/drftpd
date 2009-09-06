@@ -96,7 +96,7 @@ public class DH1080 {
 	 * implements the broken version used by DH1080 and should
 	 * not be used for anything else.
 	 */
-	public static byte[] decodeB64(String input) {
+	private static byte[] decodeB64(String input) {
 		StringBuilder outputBuilder = new StringBuilder();
 		int k = 0;
 		int overflow;
@@ -158,7 +158,7 @@ public class DH1080 {
 	 * implements the broken version used by DH1080 and should
 	 * not be used for anything else.
 	 */
-	public static String encodeB64(byte[] input) {
+	private static String encodeB64(byte[] input) {
 		int i;
 		char m,t;
 		StringBuilder outputBuilder = new StringBuilder();
