@@ -144,10 +144,11 @@ public class Request extends CommandInterface {
 			} else {
 				requestDir = new DirectoryHandle(requestDirProp);
 			}
-			if (!GlobalContext.getConfig().checkPathPermission("request",
+			// TODO looks like we haven't implemented a config handler for this permission type
+			/*if (!GlobalContext.getConfig().checkPathPermission("request",
 					session.getUserNull(request.getUser()), requestDir)) {
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-			}
+			}*/
 		}
 
 		if (!request.hasArgument()) {
