@@ -208,6 +208,7 @@ public class Nuke extends CommandInterface {
         long nukedAmount = 0;
 
 		StringBuffer nukeeOutput = new StringBuffer();
+        ReplacerEnvironment env = new ReplacerEnvironment();
 
         //update credits, nukedbytes, timesNuked, lastNuked
         for (Entry<User, Long> entry : nukees2.entrySet()) {
@@ -234,11 +235,9 @@ public class Nuke extends CommandInterface {
 
             nukee.commit();
 
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			env = request.getSession().getReplacerEnvironment(env, nukee);
 			env.add("nukedamount", Bytes.formatBytes(debt));
 
-			nukeeOutput.append(ReplacerUtils.jprintf(_keyPrefix+"nuke.nukees", env, _bundle));
+			nukeeOutput.append(request.getSession().jprintf(_bundle, _keyPrefix+"nuke.nukees", env, nukee));
         }
         
         
@@ -269,8 +268,6 @@ public class Nuke extends CommandInterface {
         
         GlobalContext.getEventService().publishAsync(nuke);
 
-		ReplacerEnvironment env = new ReplacerEnvironment();
-		env = request.getSession().getReplacerEnvironment(env, requestUser);
 		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
 		env.add("section", section);
 		env.add("dir", nukeDirName);
@@ -282,7 +279,7 @@ public class Nuke extends CommandInterface {
 		env.add("size", Bytes.formatBytes(nukeDirSize));
 
 		if (request.getSession() instanceof BaseFtpConnection) {
-			response.addComment(ReplacerUtils.jprintf(_keyPrefix+"nuke", env, _bundle));
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nuke", env, requestUser));
 			response.addComment(nukeeOutput);
 		}
 
@@ -421,6 +418,7 @@ public class Nuke extends CommandInterface {
 		}
         
 		StringBuffer nukeeOutput = new StringBuffer();
+        ReplacerEnvironment env = new ReplacerEnvironment();
 
         for (NukedUser nukeeObj : NukeBeans.getNukeeList(nukeData)) {
             String nukeeName = nukeeObj.getUsername();
@@ -448,11 +446,9 @@ public class Nuke extends CommandInterface {
 
             nukee.commit();
 
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			env = request.getSession().getReplacerEnvironment(env, nukee);
 			env.add("nukedamount", Bytes.formatBytes(nukedAmount));
 
-			nukeeOutput.append(ReplacerUtils.jprintf(_keyPrefix+"unnuke.nukees", env, _bundle));
+			nukeeOutput.append(request.getSession().jprintf(_bundle, _keyPrefix+"unnuke.nukees", env, nukee));
         }
 
         try {
@@ -478,8 +474,6 @@ public class Nuke extends CommandInterface {
         NukeEvent nukeEvent = new NukeEvent(request.getSession().getUserNull(request.getUser()), "UNNUKE", nukeData);
         GlobalContext.getEventService().publishAsync(nukeEvent);
 
-		ReplacerEnvironment env = new ReplacerEnvironment();
-		env = request.getSession().getReplacerEnvironment(env, user);
 		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
 		env.add("section", section);
 		env.add("dir", nukeDir.getName());
@@ -491,7 +485,7 @@ public class Nuke extends CommandInterface {
 		env.add("size", Bytes.formatBytes(nukeData.getSize()));
 
 		if (request.getSession() instanceof BaseFtpConnection) {
-			response.addComment(ReplacerUtils.jprintf(_keyPrefix+"unnuke", env, _bundle));
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"unnuke", env, user));
 			response.addComment(nukeeOutput);
 		}
 
