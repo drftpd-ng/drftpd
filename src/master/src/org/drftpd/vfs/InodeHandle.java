@@ -335,7 +335,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		
 		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle) inode : inode.getParent();
 		
-		if (getVFSPermissions().checkPathPermission("privpath", user, dir)) {
+		if (getVFSPermissions().checkPathPermission("privpath", user, dir, false, true)) {
 			// this has to mirror what is said in
 			// VirtualFileSystemDirectory.getInodeByName()
 			throw new FileNotFoundException("FileNotFound: " + inode.getName()

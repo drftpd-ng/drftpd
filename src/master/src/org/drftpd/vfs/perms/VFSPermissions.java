@@ -159,8 +159,12 @@ public class VFSPermissions {
 	public boolean checkPathPermission(String type, User user, DirectoryHandle path) {
 		return checkPathPermission(type, user, path, false);
 	}
-	
+
 	public boolean checkPathPermission(String type, User user, DirectoryHandle path, boolean defaults) {
+		return checkPathPermission(type, user, path, defaults, false);
+	}
+	
+	public boolean checkPathPermission(String type, User user, DirectoryHandle path, boolean defaults, boolean invertUserSemantic) {
 		
 		if (!verifyType(type)) {
 			throw new IllegalArgumentException("Invalid VFS perm type.");
@@ -192,7 +196,11 @@ public class VFSPermissions {
 			if (perms != null && !perms.isEmpty()) {
 				for (PathPermission perm : perms) {
 					if (perm.checkPath(path)) {
-						return perm.check(user);
+						if (invertUserSemantic) {
+							return !perm.check(user);
+						} else {
+							return perm.check(user);
+						}
 					}
 				}
 			}
