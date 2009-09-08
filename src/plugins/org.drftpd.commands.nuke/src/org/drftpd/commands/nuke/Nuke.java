@@ -22,11 +22,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
+import java.util.ResourceBundle;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.util.ReplacerUtils;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -42,6 +46,8 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * nukedamount -> amount after multiplier
@@ -54,8 +60,17 @@ public class Nuke extends CommandInterface {
     public static final Key<Integer> NUKED = new Key<Integer>(Nuke.class, "nuked");
     public static final Key<Long> NUKEDBYTES = new Key<Long>(Nuke.class, "nukedBytes");
     public static final Key<Long> LASTNUKED = new Key<Long>(Nuke.class, "lastNuked");
+
+	private ResourceBundle _bundle;
+	private String _keyPrefix;
     
     private static final Logger logger = Logger.getLogger(Nuke.class);
+
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+		super.initialize(method, pluginName, cManager);
+		_bundle = cManager.getResourceBundle();
+		_keyPrefix = this.getClass().getName()+".";
+	}
 
     /**
      * USAGE: site nuke <directory> <multiplier> <message>
@@ -92,23 +107,33 @@ public class Nuke extends CommandInterface {
             throw new ImproperUsageException();
         }
 
-        int multiplier;
+		int multiplier;
         
         DirectoryHandle currentDir = request.getCurrentDirectory();
-        DirectoryHandle nukeDir = null;
-        String nukeDirName = "";
+		DirectoryHandle nukeDir;
+		String nukeDirName = st.nextToken();
         User requestUser = request.getSession().getUserNull(request.getUser());
 
-        try {
-            nukeDirName = st.nextToken();
-            nukeDir = currentDir.getDirectory(nukeDirName, requestUser);
-        } catch (FileNotFoundException e) {
-            return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-        } catch (ObjectNotValidException e) {
-        	return new CommandResponse(550, nukeDirName + " is not a directory");
+		String nukeDirPath = VirtualFileSystem.fixPath(nukeDirName);
+
+		if (!(nukeDirPath.startsWith(VirtualFileSystem.separator))) {
+			// Not a full path, let's make it one
+			if (request.getCurrentDirectory().isRoot()) {
+				nukeDirPath = VirtualFileSystem.separator + nukeDirPath;
+			} else {
+				nukeDirPath = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + nukeDirPath;
+			}
 		}
 
-        String nukeDirPath = nukeDir.getPath();
+		try {
+			nukeDir = request.getCurrentDirectory().getDirectory(nukeDirPath, requestUser);
+		} catch (FileNotFoundException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+		} catch (ObjectNotValidException e) {
+			return new CommandResponse(550, nukeDirPath + " is not a directory");
+		}
+
+		nukeDirName = nukeDir.getName();
 
         if (!st.hasMoreTokens()) {
             throw new ImproperUsageException();
@@ -129,8 +154,8 @@ public class Nuke extends CommandInterface {
         if (st.hasMoreTokens()) {
             reason = st.nextToken("").trim();
         }
-        
-        CommandResponse response = new CommandResponse(200, "Nuke suceeded");
+
+		CommandResponse response = new CommandResponse(200, "Nuke succeeded");
 
         //get nukees with string as key
         Hashtable<String,Long> nukees = new Hashtable<String,Long>();
@@ -173,7 +198,7 @@ public class Nuke extends CommandInterface {
                     add = 0L;
                 }
 
-                nukees2.put(null, add.longValue() + entry.getValue());
+				nukees2.put(null, add + entry.getValue());
             } else {
                 nukees2.put(user, entry.getValue());
             }
@@ -181,6 +206,8 @@ public class Nuke extends CommandInterface {
 
         long nukeDirSize = 0;
         long nukedAmount = 0;
+
+		StringBuffer nukeeOutput = new StringBuffer();
 
         //update credits, nukedbytes, timesNuked, lastNuked
         for (Entry<User, Long> entry : nukees2.entrySet()) {
@@ -203,12 +230,15 @@ public class Nuke extends CommandInterface {
             nukee.getKeyedMap().incrementLong(NUKEDBYTES, debt);
 
             nukee.getKeyedMap().incrementInt(NUKED);
-            nukee.getKeyedMap().setObject(Nuke.LASTNUKED, Long.valueOf(System.currentTimeMillis()));
+			nukee.getKeyedMap().setObject(Nuke.LASTNUKED, System.currentTimeMillis());
 
             nukee.commit();
 
-            response.addComment(nukee.getName() + " " +
-                Bytes.formatBytes(debt));
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			env = request.getSession().getReplacerEnvironment(env, nukee);
+			env.add("nukedamount", Bytes.formatBytes(debt));
+
+			nukeeOutput.append(ReplacerUtils.jprintf(_keyPrefix+"nuke.nukees", env, _bundle));
         }
         
         
@@ -217,7 +247,6 @@ public class Nuke extends CommandInterface {
         String toName = "[NUKED]-" + nukeDir.getName();
         String toFullPath = toDirPath+"/"+toName;
 
-        
         try {
             nukeDir.renameToUnchecked(nukeDir.getNonExistentDirectoryHandle(toFullPath)); // rename.
             nukeDir = currentDir.getDirectory(toFullPath, requestUser);
@@ -229,10 +258,9 @@ public class Nuke extends CommandInterface {
             return r;
         } catch (ObjectNotValidException e) {
         	return new CommandResponse(550, toFullPath + " is not a directory");
-		}     
-        
-        NukeData nd = 
-			new NukeData(request.getUser(), nukeDirPath, reason, nukees, multiplier, nukedAmount, nukeDirSize);
+		}
+
+		NukeData nd = new NukeData(request.getUser(), nukeDirPath, reason, nukees, multiplier, nukedAmount, nukeDirSize);
 
         NukeEvent nuke = new NukeEvent(request.getSession().getUserNull(request.getUser()), "NUKE", nd);
         
@@ -241,15 +269,48 @@ public class Nuke extends CommandInterface {
         
         GlobalContext.getEventService().publishAsync(nuke);
 
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		env = request.getSession().getReplacerEnvironment(env, requestUser);
+		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
+		env.add("section", section);
+		env.add("dir", nukeDirName);
+		env.add("path", nukeDirPath);
+		env.add("relpath", nukeDirPath.replaceAll("/"+section+"/",""));
+		env.add("multiplier", ""+multiplier);
+		env.add("nukedamount", Bytes.formatBytes(nukedAmount));
+		env.add("reason", reason);
+		env.add("size", Bytes.formatBytes(nukeDirSize));
+
+		if (request.getSession() instanceof BaseFtpConnection) {
+			response.addComment(ReplacerUtils.jprintf(_keyPrefix+"nuke", env, _bundle));
+			response.addComment(nukeeOutput);
+		}
+
         return response;
     }
 
     public CommandResponse doSITE_NUKES(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
+		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(request.getArgument());
+
+		if (request.hasArgument() && section.getName().equalsIgnoreCase("")) {
+			return new CommandResponse(501, "Invalid section!");
+		}
+
+		if (NukeBeans.getNukeBeans().getAll().isEmpty()) {
+			response.addComment("Nukelog empty.");
+		}
+
         for (NukeData nd : NukeBeans.getNukeBeans().getAll()) {
-            response.addComment(nd.toString());
+			if (nd.getPath().startsWith(request.getArgument(), 1)) {
+				response.addComment(nd.toString());
+			}
         }
+
+		if (response.getComment().isEmpty()) {
+			response.addComment("Nukelog empty for section " + section.getName() + ".");
+		}
 
         return response;
     }
@@ -276,24 +337,36 @@ public class Nuke extends CommandInterface {
         
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
-        String toName = st.nextToken();
-        String toPath;
-        
         DirectoryHandle currentDir = request.getCurrentDirectory();
+		String toName = st.nextToken();
+		String toDir;
+		String nukeName;
 
-        {
-            StringBuffer toPath2 = new StringBuffer(currentDir.getPath());
-
-            if (toPath2.length() != 1) {
-                toPath2.append("/"); // isn't /
+		if (!toName.startsWith(VirtualFileSystem.separator)) {
+			// Not a full path, let's make it one and append [NUKED]- if needed.
+			if (toName.startsWith("[NUKED]-")) {
+				nukeName = toName;
+				toName = toName.substring(8);
+			} else {
+				nukeName = "[NUKED]-" + toName;
             }
-
-            toPath2.append(toName);
-            toPath = toPath2.toString();
+			if (request.getCurrentDirectory().isRoot()) {
+				toDir = VirtualFileSystem.separator;
+			} else {
+				toDir = currentDir.getPath() + VirtualFileSystem.separator;
+			}
+		} else {
+			// Full path to Nuked dir provided, append [NUKED]- if needed.
+			toDir = VirtualFileSystem.fixPath(toName);
+			toName = toDir.substring(toDir.lastIndexOf(VirtualFileSystem.separator)+1);
+			toDir = toDir.substring(0,toDir.lastIndexOf(VirtualFileSystem.separator)+1);
+			if (toName.startsWith("[NUKED]-")) {
+				nukeName = toName;
+				toName = toName.substring(8);
+			} else {
+				nukeName = "[NUKED]-" + toName;
+			}
         }
-
-        String toDir = currentDir.getPath();
-        String nukeName = "[NUKED]-" + toName;
 
         String reason;
 
@@ -303,44 +376,52 @@ public class Nuke extends CommandInterface {
             reason = "";
         }
 
-        DirectoryHandle nukeDir = null;
+		DirectoryHandle nukeDir;
         User user = request.getSession().getUserNull(request.getUser());
 
         try {
-            nukeDir = currentDir.getDirectory(nukeName, user);
+			nukeDir = currentDir.getDirectory(toDir+nukeName, user);
         } catch (FileNotFoundException e) {
-            return new CommandResponse(200,  nukeName + " doesn't exist: " + e.getMessage());
+			// Maybe dir was deleted/wiped, lets remove it from nukelog.
+			try {
+				NukeBeans.getNukeBeans().remove(toDir+toName);
+			} catch (ObjectNotFoundException ex) {
+				return new CommandResponse(500, toDir+nukeName + " doesnt exist and no nukelog for this path was found.");
+			}
+			return new CommandResponse(200,  toDir+nukeName + " doesnt exist, removed nuke from nukelog.");
         } catch (ObjectNotValidException e) {
-        	return new CommandResponse(550, nukeName + " is not a directory");
+			return new CommandResponse(550, toDir+nukeName + " is not a directory");
 		}
         
         GlobalContext.getGlobalContext().getSlaveManager().cancelTransfersInDirectory(nukeDir);
 
-        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		CommandResponse response = new CommandResponse(200, "Unnuke succeeded");
         
         NukeData nukeData;
 
         try {
-            nukeData = NukeBeans.getNukeBeans().get(toPath);
+			nukeData = NukeBeans.getNukeBeans().get(toDir+toName);
         } catch (ObjectNotFoundException ex) {
             response.addComment(ex.getMessage());
             return response;
         }
 
         try {
-            nukeDir.renameToUnchecked(nukeDir.getNonExistentDirectoryHandle(toDir+"/"+toName));
-            nukeDir = currentDir.getDirectory(toDir+"/"+toName, user); //updating reference.
+			nukeDir.renameToUnchecked(nukeDir.getNonExistentDirectoryHandle(toDir+toName));
+			nukeDir = currentDir.getDirectory(toDir+toName, user); //updating reference.
         } catch (FileExistsException e) {
-            response.addComment("Error renaming nuke, target dir already exists");
+			response.addComment("Error renaming nuke, target dir already exist");
             return response;
         } catch (FileNotFoundException e) {
         	logger.fatal("How come "+nukeDir.getPath()+" was just here and now it isnt?", e);
         	response.addComment(nukeDir.getPath() + " does not exist, how?");
         	return response;
 		} catch (ObjectNotValidException e) {
-			return new CommandResponse(550, toDir+"/"+toName + " is not a directory");
+			return new CommandResponse(550, toDir+toName + " is not a directory");
 		}
         
+		StringBuffer nukeeOutput = new StringBuffer();
+
         for (NukedUser nukeeObj : NukeBeans.getNukeeList(nukeData)) {
             String nukeeName = nukeeObj.getUsername();
             User nukee;
@@ -367,12 +448,15 @@ public class Nuke extends CommandInterface {
 
             nukee.commit();
 
-            response.addComment(nukeeName + ": restored " +
-                Bytes.formatBytes(nukedAmount));
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			env = request.getSession().getReplacerEnvironment(env, nukee);
+			env.add("nukedamount", Bytes.formatBytes(nukedAmount));
+
+			nukeeOutput.append(ReplacerUtils.jprintf(_keyPrefix+"unnuke.nukees", env, _bundle));
         }
 
         try {
-            NukeBeans.getNukeBeans().remove(toPath);
+			NukeBeans.getNukeBeans().remove(toDir+toName);
         } catch (ObjectNotFoundException e) {
             response.addComment("Error removing nukelog entry, unnuking anyway.");
         }
@@ -387,12 +471,29 @@ public class Nuke extends CommandInterface {
         } catch (FileNotFoundException e) {
             logger.debug("Failed to delete 'REASON-" + nukeData.getReason() + "' dir in UNNUKE", e);
         } catch (ObjectNotValidException e) {
-        	logger.error(nukeName + " is not a directory, unable to remove 'REASON' dir");
+			logger.error("REASON-" + nukeData.getReason() + " is not a directory, unable to remove 'REASON' dir");
 		}
         
         nukeData.setReason(reason);
         NukeEvent nukeEvent = new NukeEvent(request.getSession().getUserNull(request.getUser()), "UNNUKE", nukeData);
         GlobalContext.getEventService().publishAsync(nukeEvent);
+
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		env = request.getSession().getReplacerEnvironment(env, user);
+		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
+		env.add("section", section);
+		env.add("dir", nukeDir.getName());
+		env.add("path", nukeDir.getPath());
+		env.add("relpath", nukeDir.getPath().replaceAll("/"+section+"/",""));
+		env.add("multiplier", ""+nukeData.getMultiplier());
+		env.add("nukedamount", Bytes.formatBytes(nukeData.getAmount()));
+		env.add("reason", reason);
+		env.add("size", Bytes.formatBytes(nukeData.getSize()));
+
+		if (request.getSession() instanceof BaseFtpConnection) {
+			response.addComment(ReplacerUtils.jprintf(_keyPrefix+"unnuke", env, _bundle));
+			response.addComment(nukeeOutput);
+		}
 
         return response;
     }

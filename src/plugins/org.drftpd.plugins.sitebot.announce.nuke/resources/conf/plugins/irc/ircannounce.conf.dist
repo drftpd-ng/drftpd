@@ -1,0 +1,11 @@
+# To specify where the nuke/unnuke announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#nuke.path.1=/path/subpath/*
+#nuke.path.1.destination=public
+#nuke.section.1=*
+#nuke.section.1.destination=public
+
+#unnuke.path.1=/path/subpath/*
+#unnuke.path.1.destination=public
+#unnuke.section.1=*
+#unnuke.section.1.destination=public

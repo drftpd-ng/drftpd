@@ -167,10 +167,6 @@ public class NukeBeans {
 	 * @throws IOException
 	 */
 	public void commit() throws IOException {
-		if (_nukes.size() == 0) {
-			return;
-		}
-		
 		saveClassLoader();
 
 		XMLEncoder enc = null;
