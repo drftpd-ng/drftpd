@@ -29,7 +29,7 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.event.DirectoryFtpEvent;
+import org.drftpd.event.RequestEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.Session;
 import org.drftpd.permissions.Permission;
@@ -118,7 +118,8 @@ public class Request extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 		
-		User user = request.getSession().getUserNull(request.getUser());
+		Session session = request.getSession();
+		User user = session.getUserNull(request.getUser());
 		DirectoryHandle requestDir = getRequestDirectory(request);
 		String requestName = request.getArgument().trim();
 		
@@ -134,6 +135,8 @@ public class Request extends CommandInterface {
 				}
 
 				RequestParser parser = new RequestParser(dir.getName());
+				
+				env.add("request.owner", parser.getUser());
 
 				if (parser.getRequestName().equals(requestName)) {
 					String filledname = _reqFilledPrefix + parser.getUser() + "-" + parser.getRequestName();
@@ -147,8 +150,7 @@ public class Request extends CommandInterface {
 						return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.error", env, request.getUser()));
 					}
 
-					// TODO revisit his (replace with an IrcAnnouncer?)
-					GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "REQFILLED", dir));
+					GlobalContext.getEventService().publishAsync(new RequestEvent("reqfilled", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 
 					// TODO PostHook to increment REQFILLED
 
@@ -170,17 +172,17 @@ public class Request extends CommandInterface {
 		}
 
 		User user = session.getUserNull(request.getUser());
-		String createdDirName = _requestPrefix + user.getName() +	"-" + request.getArgument().trim();
+		String requestName = request.getArgument().trim();
+		String createdDirName = _requestPrefix + user.getName() +	"-" + requestName;
 		DirectoryHandle requestDir = getRequestDirectory(request);
 		
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("user", request.getUser());
-		env.add("request.name", request.getArgument().trim());
+		env.add("request.name", requestName);
 		env.add("request.root", requestDir.getPath());
 		
-		DirectoryHandle createdDir = null;
 		try {
-			createdDir = requestDir.createDirectoryUnchecked(createdDirName, user.getName(), user.getGroup());
+			requestDir.createDirectoryUnchecked(createdDirName, user.getName(), user.getGroup());
 		} catch (FileExistsException e) {
 			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"request.exists", env, user.getName()));
 		} catch (FileNotFoundException e) {
@@ -190,8 +192,7 @@ public class Request extends CommandInterface {
 		
 		// TODO Post Hook to increment request number
 		
-		// TODO revisit his (replace with an IrcAnnouncer?)
-		GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(session.getUserNull(request.getUser()), "REQUEST", createdDir));
+		GlobalContext.getEventService().publishAsync(new RequestEvent("request", requestDir, user, requestName));
 		
 		return new CommandResponse(257, session.jprintf(_bundle, _keyPrefix+"request.success", env, user.getName()));
 	}
@@ -236,7 +237,8 @@ public class Request extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		User user = request.getSession().getUserNull(request.getUser());
+		Session session = request.getSession();
+		User user = session.getUserNull(request.getUser());
 		String requestName = request.getArgument().trim();
 		String deleteOthers = request.getProperties().getProperty("request.deleteOthers","=siteop");
 		DirectoryHandle requestDir = getRequestDirectory(request);
@@ -270,7 +272,8 @@ public class Request extends CommandInterface {
 						dir.deleteUnchecked();
 						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.success", env, request.getUser()));
 						
-						// TODO fire event?!
+						GlobalContext.getEventService().publishAsync(new RequestEvent("reqdelete", user, requestDir, session.getUserNull(parser.getUser()), requestName));
+						
 						// TODO decrement the weekly request amount? (not sure if wanted, make configurable?)
 						
 						break;
