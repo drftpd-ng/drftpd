@@ -2,7 +2,7 @@ SITE REQUEST {
 plugin org.drftpd.commands.request
 class Request
 method doSITE_REQUEST
-perms *
+perms =request
 help Add a request
 help.specific ${command} <nameofrequest>
 }
@@ -30,9 +30,10 @@ SITE REQDELETE {
 plugin org.drftpd.commands.request
 class Request
 method doSITE_REQDELETE
-perms *
-deleteOthers =siteop
-#you can only delete your own without deleteOthers
+perms =request
 help Deletes a request
 help.specific ${command} <nameofrequest>
+
+# you can only delete your own without deleteOthers
+deleteOthers =siteop
 }

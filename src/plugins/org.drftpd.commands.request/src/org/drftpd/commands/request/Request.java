@@ -33,9 +33,7 @@ import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.Session;
 import org.drftpd.permissions.Permission;
-import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -46,172 +44,163 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class Request extends CommandInterface {
 	public static final Key<Integer> REQUESTSFILLED = new Key<Integer>(Request.class,	"requestsFilled");
 	public static final Key<Integer> REQUESTS = new Key<Integer>(Request.class, "requests");
-	private static final String FILLEDPREFIX = "FILLED-for.";
+	
 	private static final Logger logger = Logger.getLogger(Request.class);
-	private static final String REQPREFIX = "REQUEST-by.";
 
 	private ResourceBundle _bundle;
-
 	private String _keyPrefix;
+	
+	private String _requestPath;
+	private boolean _createRequestPath;
+	
+	private String _reqFilledPrefix;
+	private String _requestPrefix;
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_bundle = cManager.getResourceBundle();
     	_keyPrefix = this.getClass().getName()+".";
+    	
+    	readConfig();
+    	
+    	createDirectory();
     }
+
+	/**
+	 * Reads 'conf/plugins/requests.conf'
+	 */
+	private void readConfig() {
+		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("requests");
+		
+		_requestPath = props.getProperty("request.dirpath", "/requests/");
+		_createRequestPath = Boolean.parseBoolean(props.getProperty("request.createpath", "false"));
+		
+		_reqFilledPrefix = props.getProperty("reqfilled.prefix", "FILLED-for.");
+		_requestPrefix = props.getProperty("request.prefix", "REQUEST-by.");
+	}
+	
+	/**
+	 * Create the request directory if it does not exist and 'request.createpath' is <code>true</code>
+	 */
+	private void createDirectory() {
+		DirectoryHandle requestDir = new DirectoryHandle(_requestPath);
+
+    	if (_createRequestPath && !requestDir.exists()) {
+    		try {
+				requestDir.getParent().createDirectoryRecursive(requestDir.getName());
+			} catch (FileExistsException e) {
+				logger.error("Tried to create a directory that already exists during request plugin initialization.", e);
+			} catch (FileNotFoundException e) {
+				logger.error("How did this happened? It was there couple lines above", e);
+			}
+    	}		
+	}
+	
+	/**
+	 * If the commands has a 'request.dirpath' set we will use this one
+	 * otherwise we will use the fallback/default path set in 'conf/plugins/requests.conf'
+	 * 
+	 * This allows multiple request dirs.
+	 * @param request
+	 * @return a {@link DirectoryHandle} representing the correct request dir.
+	 */
+	private DirectoryHandle getRequestDirectory(CommandRequest request) {
+		String requestDirProp = request.getProperties().getProperty("request.dirpath");
+		if (requestDirProp == null) {
+			return new DirectoryHandle(_requestPath);
+		} else {
+			return new DirectoryHandle(requestDirProp);
+		}
+	}
 
 	public CommandResponse doSITE_REQFILLED(CommandRequest request) throws ImproperUsageException {
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
-
-		DirectoryHandle currdir = request.getCurrentDirectory();
-		Properties props = request.getProperties();
-		String requestDirProp = props.getProperty("request.dirpath");
-		String reqname = request.getArgument().trim();
-		if (requestDirProp != null) {
-			currdir = new DirectoryHandle(requestDirProp);
-		}
+		
+		User user = request.getSession().getUserNull(request.getUser());
+		DirectoryHandle requestDir = getRequestDirectory(request);
+		String requestName = request.getArgument().trim();
+		
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		env.add("ftpuser", request.getUser());
-		env.add("fdirname", reqname);
+		env.add("user", user);
+		env.add("request.name", requestName);
+		
 		try {
-			for (DirectoryHandle dir : currdir.getDirectoriesUnchecked()) {
+			for (DirectoryHandle dir : requestDir.getDirectoriesUnchecked()) {
 
-				if (!dir.getName().startsWith(REQPREFIX)) {
+				if (!dir.getName().startsWith(_requestPrefix)) {
 					continue;
 				}
 
-				String username = dir.getName().substring(REQPREFIX.length());
-				String myreqname = username.substring(username.indexOf('-') + 1);
-				username = username.substring(0, username.indexOf('-'));
+				RequestParser parser = new RequestParser(dir.getName());
 
-				if (myreqname.equals(reqname)) {
-					String filledname = FILLEDPREFIX + username + "-" + myreqname;
+				if (parser.getRequestName().equals(requestName)) {
+					String filledname = _reqFilledPrefix + parser.getUser() + "-" + parser.getRequestName();
 
 					try {
-						dir.renameToUnchecked(currdir.getNonExistentFileHandle(filledname));
+						dir.renameToUnchecked(requestDir.getNonExistentDirectoryHandle(filledname));
 					} catch (FileExistsException e) {
-						env.add("fdirname", filledname);
-						CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.exists", env, request.getUser()));
-						return response;
+						return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.exists", env, request.getUser()));
 					} catch (FileNotFoundException e) {
-						env.add("fdirname", dir.getName());
-						CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.error", env, request.getUser()));
-						return response;
+						logger.error("File was just here but it vanished", e);
+						return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.error", env, request.getUser()));
 					}
 
-					//if (conn.getConfig().checkDirLog(conn.getUserNull(), file)) {
-					GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(
-							request.getSession().getUserNull(request.getUser()), "REQFILLED", dir));
+					// TODO revisit his (replace with an IrcAnnouncer?)
+					GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(request.getSession().getUserNull(request.getUser()), "REQFILLED", dir));
 
-					//}
-					request.getSession().getUserNull(request.getUser()).getKeyedMap().incrementInt(REQUESTSFILLED);
+					// TODO PostHook to increment REQFILLED
 
-					CommandResponse response = new CommandResponse(200,
-							"OK, renamed " + myreqname + " to " + filledname);
-					env.add("fdirname", reqname);
-					response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.success", env, request.getUser()));
-					return response;
+					return new CommandResponse(200, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.success", env, request.getUser()));
 				}
 			}
 		} catch (FileNotFoundException e) {
-			CommandResponse response = new CommandResponse(500, "Request directory does not exist, please CWD /");
-			env.add("fdirname", currdir.getName());
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.notfound", env, request.getUser()));
-			return response;
+			return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.root.notfound", env, request.getUser()));
 		}
 
-		env.add("rdirname", reqname);
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.error", env, request.getUser()));
-		return response;
+		return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.notfound", env, request.getUser()));
 	}
 
 	public CommandResponse doSITE_REQUEST(CommandRequest request) throws ImproperUsageException {
 		Session session = request.getSession();
-		DirectoryHandle requestDir = request.getCurrentDirectory();
-		if (!GlobalContext.getConfig().checkPathPermission("request",
-				session.getUserNull(request.getUser()), requestDir)) {
-			// if CWD isn't allowed then try falling back to the dir set in command config
-			// if such a dir exists
-			Properties props = request.getProperties();
-			String requestDirProp = props.getProperty("request.dirpath");
-			if (requestDirProp == null) {
-				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-			} else {
-				requestDir = new DirectoryHandle(requestDirProp);
-			}
-			// TODO looks like we haven't implemented a config handler for this permission type
-			/*if (!GlobalContext.getConfig().checkPathPermission("request",
-					session.getUserNull(request.getUser()), requestDir)) {
-				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-			}*/
-		}
-
+		
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 
-		String createdDirName = REQPREFIX + session.getUserNull(request.getUser()).getName() +
-			"-" + request.getArgument().trim();
+		User user = session.getUserNull(request.getUser());
+		String createdDirName = _requestPrefix + user.getName() +	"-" + request.getArgument().trim();
+		DirectoryHandle requestDir = getRequestDirectory(request);
+		
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		env.add("ftpuser", request.getUser());
-		env.add("rdirname", request.getArgument().trim());
+		env.add("user", request.getUser());
+		env.add("request.name", request.getArgument().trim());
+		env.add("request.root", requestDir.getPath());
+		
+		DirectoryHandle createdDir = null;
 		try {
-			DirectoryHandle createdDir;
-			try {
-				createdDir = requestDir.createDirectoryUnchecked(createdDirName,
-						session.getUserNull(request.getUser()).getName(),
-						session.getUserNull(request.getUser()).getGroup());
-				User user;
-				try {
-					user = request.getUserObject();
-					user.getKeyedMap().incrementInt(Request.REQUESTS);
-				} catch (NoSuchUserException e) {
-					// Shouldn't happen as the user must exist to have got this far, log the exception to be safe
-					logger.warn("",e);
-				} catch (UserFileException e) {
-					logger.warn("Error loading userfile for "+request.getUser(),e);
-				}
-				
-			} catch (FileNotFoundException e) {
-				CommandResponse response = new CommandResponse(500, "Current directory does not exist, please CWD /");
-				env.add("rdirname", requestDir.getPath());
-				response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"request.error", env, request.getUser()));
-				return response;
-			}
-
-			//if (conn.getConfig().checkDirLog(conn.getUserNull(), createdDir)) {
-			GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(
-					session.getUserNull(request.getUser()), "REQUEST", createdDir));
-
-			session.getUserNull(request.getUser()).getKeyedMap().incrementInt(REQUESTS);
-
-			//conn.getUser().addRequests();
-			CommandResponse response = new CommandResponse(257, "\"" + createdDir.getPath() +
-				"\" created.");
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"request.success", env, request.getUser()));
-			return response;
-		} catch (FileExistsException ex) {
-			CommandResponse response = new CommandResponse(550,
-					"directory " + createdDirName + " already exists");
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"request.exists", env, request.getUser()));
-			return response;
+			createdDir = requestDir.createDirectoryUnchecked(createdDirName, user.getName(), user.getGroup());
+		} catch (FileExistsException e) {
+			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"request.exists", env, user.getName()));
+		} catch (FileNotFoundException e) {
+			logger.error("File was just here but it vanished", e);
+			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"request.error", env, user.getName()));
 		}
+		
+		// TODO Post Hook to increment request number
+		
+		// TODO revisit his (replace with an IrcAnnouncer?)
+		GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(session.getUserNull(request.getUser()), "REQUEST", createdDir));
+		
+		return new CommandResponse(257, session.jprintf(_bundle, _keyPrefix+"request.success", env, user.getName()));
 	}
 
 	public CommandResponse doSITE_REQUESTS(CommandRequest request) throws ImproperUsageException {
 		if (request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
-		Properties props = request.getProperties();
-		String requestDirProp = props.getProperty("request.dirpath");
-		if (requestDirProp == null) {
-			return new CommandResponse(500, "Requests path not set in command conf");
-		}
+		
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.header", env, request.getUser()));
@@ -220,17 +209,19 @@ public class Request extends CommandInterface {
 		User user = request.getSession().getUserNull(request.getUser());
 		
 		try {
-			for (DirectoryHandle dir : new DirectoryHandle(requestDirProp).getDirectories(user)) {
-				if (!dir.getName().startsWith(REQPREFIX)) {
+			for (DirectoryHandle dir : getRequestDirectory(request).getDirectories(user)) {
+				if (!dir.getName().startsWith(_requestPrefix)) {
 					continue;
 				}
-				String username = dir.getName().substring(REQPREFIX.length());
-				String reqname = username.substring(username.indexOf('-') + 1);
-				username = username.substring(0, username.indexOf('-'));
+				
+				RequestParser parser = new RequestParser(dir.getName());
+				
 				env.add("num",Integer.toString(i));
-                env.add("requser",username);
-                env.add("reqrequest",reqname);
-                i = i+1;
+                env.add("request.user",parser.getUser());
+                env.add("request.name",parser.getRequestName());
+                
+                i++;
+                
                 response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.list", env, request.getUser()));
 			}
 		} catch (FileNotFoundException e) {
@@ -244,58 +235,86 @@ public class Request extends CommandInterface {
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
-		DirectoryHandle currdir = request.getCurrentDirectory();
-		Properties props = request.getProperties();
-		String requestDirProp = props.getProperty("request.dirpath");
-		String deleteOthers = props.getProperty("deleteOthers","=siteop");
-		String reqname = request.getArgument().trim();
-		if (requestDirProp != null) {
-			currdir = new DirectoryHandle(requestDirProp);
-		}
+
+		User user = request.getSession().getUserNull(request.getUser());
+		String requestName = request.getArgument().trim();
+		String deleteOthers = request.getProperties().getProperty("request.deleteOthers","=siteop");
+		DirectoryHandle requestDir = getRequestDirectory(request);
+
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		env.add("ftpuser", request.getUser());
-		env.add("ddirname", reqname);
-		boolean nodir = false;
-		boolean deldir = false;
+		env.add("user", user.getName());
+		env.add("request.name", requestName);
+		env.add("request.root", requestDir.getPath());
+		
+		boolean requestNotFound = true;
+		
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		User user;
-		try {
-			user = request.getUserObject();
-		} catch (NoSuchUserException e) {
-			// Shouldn't happen as user must exist to get here, log exception
-			logger.warn("",e);
-			return response;
-		} catch (UserFileException e) {
-			logger.warn("Error loading userfile for "+request.getUser(),e);
-			return response;
-		}
 		
 		try {
-			for (DirectoryHandle dir : currdir.getDirectories(user)) {
-				if (dir.getName().endsWith(reqname)) {
-					nodir = false;
-					if (dir.getUsername().equals(request.getUser())
-							|| new Permission(deleteOthers).check(user)) {
+			for (DirectoryHandle dir : requestDir.getDirectories(user)) {
+				
+				if (!dir.getName().startsWith(_requestPrefix)) {
+					continue;
+				}
+				
+				RequestParser parser = new RequestParser(dir.getName());
+				
+				if (parser.getRequestName().equals(requestName)) {
+					requestNotFound = false;
+					
+					// checking if the user trying to delete this request
+					// is either the owner or has "super-powers"
+					if (parser.getUser().equals(user.getName()) ||
+							new Permission(deleteOthers).check(user)) {
+						
 						dir.deleteUnchecked();
-						deldir = true;
 						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.success", env, request.getUser()));
+						
+						// TODO fire event?!
+						// TODO decrement the weekly request amount? (not sure if wanted, make configurable?)
+						
 						break;
 					} else {
 						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
 						break;
 					}
-				} else {
-					nodir = true;
 				}
 			}
-			if (nodir && !deldir) {
+			
+			if (requestNotFound) {
 				response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.notfound", env, request.getUser()));
 			}
+			
 		} catch (FileNotFoundException e) {
-			env.add("ddirname", currdir.getName());
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.error", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.root.notfound", env, request.getUser()));
 		}
+		
 		return response;
+	}
+	
+	/**
+	 * Class to centralize how requests are parsed.
+	 * 
+	 * Transforms a 'request.prefix'-'user'-'requestname' in
+	 * a nice looking data structure instead of simple strings. 
+	 */
+	private class RequestParser {
+		private String _user;
+		private String _requestName;
+		
+		public RequestParser(String dirname) {
+			_user= dirname.substring(_requestPrefix.length());
+			_requestName = _user.substring(_user.indexOf('-') + 1);
+			_user = _user.substring(0, _user.indexOf('-'));
+		}
+		
+		public String getUser() {
+			return _user;
+		}
+		
+		public String getRequestName() {
+			return _requestName;
+		}
 	}
 
 }

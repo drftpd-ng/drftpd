@@ -1,0 +1,14 @@
+# Request path
+request.dirpath=/requests
+
+# Creates 'request.dirpath' if it does not exist.
+request.createpath=true
+
+# Max allowed requests/week
+request.weekmax=2
+# Users exempt from the weekmax rule
+request.weekexempt=
+
+# Customize the directories prefix
+reqfilled.prefix=FILLED-for.
+request.prefix=REQUEST-by.
