@@ -228,53 +228,6 @@ input all
 output source
 }
 
-request {
-plugin org.drftpd.commands.request
-class Request
-method doSITE_REQUEST
-perms *
-help Add a request
-help.specific ${command} <nameofrequest>
-request.dirpath /requests
-input all
-output source
-}
-
-requests {
-plugin org.drftpd.commands.request
-class Request
-method doSITE_REQUESTS
-perms *
-help List current requests
-request.dirpath /requests
-input all
-output source
-}
-
-reqfilled {
-plugin org.drftpd.commands.request
-class Request
-method doSITE_REQFILLED
-perms *
-help Fill a request
-help.specific ${command} <nameofrequest>
-request.dirpath /requests
-input all
-output source
-}
-
-reqdel {
-plugin org.drftpd.commands.request
-class Request
-method doSITE_REQDELETE
-perms *
-help Deletes a request
-help.specific ${command} <nameofrequest>
-request.dirpath /requests
-input all
-output source
-}
-
 new {
 plugin org.drftpd.commands.newhandler
 class New

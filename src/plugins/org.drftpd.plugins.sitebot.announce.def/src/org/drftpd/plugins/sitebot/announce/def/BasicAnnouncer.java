@@ -69,7 +69,7 @@ public class BasicAnnouncer implements AnnounceInterface {
 	}
 
 	public String[] getEventTypes() {
-		String[] types = {"mkdir","request","reqfilled","rmdir","wipe","pre","addslave",
+		String[] types = {"mkdir","rmdir","wipe","addslave",
 				"delslave","store","invite"};
 		return types;
 	}
@@ -78,10 +78,6 @@ public class BasicAnnouncer implements AnnounceInterface {
 	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {
 		if ("MKD".equals(direvent.getCommand())) {
 			outputDirectoryEvent(direvent, "mkdir");
-		} else if ("REQUEST".equals(direvent.getCommand())) {
-			outputDirectoryEvent(direvent, "request");
-		} else if ("REQFILLED".equals(direvent.getCommand())) {
-			outputDirectoryEvent(direvent, "reqfilled");
 		} else if ("RMD".equals(direvent.getCommand())) {
 			outputDirectoryEvent(direvent, "rmdir");
 		} else if ("WIPE".equals(direvent.getCommand())) {

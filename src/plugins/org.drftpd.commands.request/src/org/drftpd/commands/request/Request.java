@@ -32,6 +32,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.RequestEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.Session;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
@@ -144,24 +145,28 @@ public class Request extends CommandInterface {
 					try {
 						dir.renameToUnchecked(requestDir.getNonExistentDirectoryHandle(filledname));
 					} catch (FileExistsException e) {
-						return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.exists", env, request.getUser()));
+						return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.exists", env, request.getUser()));
 					} catch (FileNotFoundException e) {
 						logger.error("File was just here but it vanished", e);
-						return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.error", env, request.getUser()));
+						return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.error", env, request.getUser()));
 					}
 
 					GlobalContext.getEventService().publishAsync(new RequestEvent("reqfilled", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 
 					// TODO PostHook to increment REQFILLED
 
-					return new CommandResponse(200, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.success", env, request.getUser()));
+					if (session instanceof BaseFtpConnection) {
+						return new CommandResponse(200, session.jprintf(_bundle, _keyPrefix+"reqfilled.success", env, request.getUser()));
+					}
+					// Return ok status to IRC so we know the command was successful
+					return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 				}
 			}
 		} catch (FileNotFoundException e) {
-			return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.root.notfound", env, request.getUser()));
+			return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.root.notfound", env, request.getUser()));
 		}
 
-		return new CommandResponse(500, request.getSession().jprintf(_bundle, _keyPrefix+"reqfilled.notfound", env, request.getUser()));
+		return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.notfound", env, request.getUser()));
 	}
 
 	public CommandResponse doSITE_REQUEST(CommandRequest request) throws ImproperUsageException {
@@ -194,7 +199,11 @@ public class Request extends CommandInterface {
 		
 		GlobalContext.getEventService().publishAsync(new RequestEvent("request", requestDir, user, requestName));
 		
-		return new CommandResponse(257, session.jprintf(_bundle, _keyPrefix+"request.success", env, user.getName()));
+		if (session instanceof BaseFtpConnection) {
+			return new CommandResponse(257, session.jprintf(_bundle, _keyPrefix+"request.success", env, user.getName()));
+		}
+		// Return ok status to IRC so we know the command was successful
+		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
 	public CommandResponse doSITE_REQUESTS(CommandRequest request) throws ImproperUsageException {
@@ -270,26 +279,29 @@ public class Request extends CommandInterface {
 							new Permission(deleteOthers).check(user)) {
 						
 						dir.deleteUnchecked();
-						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.success", env, request.getUser()));
+
+						if (session instanceof BaseFtpConnection) {
+							response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.success", env, request.getUser()));
+						}
 						
-						GlobalContext.getEventService().publishAsync(new RequestEvent("reqdelete", user, requestDir, session.getUserNull(parser.getUser()), requestName));
+						GlobalContext.getEventService().publishAsync(new RequestEvent("reqdel", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 						
 						// TODO decrement the weekly request amount? (not sure if wanted, make configurable?)
 						
 						break;
 					} else {
-						response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
+						response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
 						break;
 					}
 				}
 			}
 			
 			if (requestNotFound) {
-				response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.notfound", env, request.getUser()));
+				response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.notfound", env, request.getUser()));
 			}
 			
 		} catch (FileNotFoundException e) {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"reqdel.root.notfound", env, request.getUser()));
+			response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.root.notfound", env, request.getUser()));
 		}
 		
 		return response;

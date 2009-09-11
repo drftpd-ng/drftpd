@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
+<plugin id="org.drftpd.plugins.sitebot.announce.request" version="3.0.0">
+	<requires>
+        <import plugin-id="org.drftpd.commands.request" />
+		<import plugin-id="org.drftpd.plugins.sitebot" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.sitebot.announce.request" path="build/classes/" type="code" />
+	</runtime>
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="RequestAnnounce">
+		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.request.RequestAnnouncer" />
+	</extension>
+</plugin>

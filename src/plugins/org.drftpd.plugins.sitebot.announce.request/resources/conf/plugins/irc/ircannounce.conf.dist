@@ -1,0 +1,5 @@
+# To specify where the request, reqfilled and reqdel announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#request.destination=public
+#reqfilled.destination=public
+#reqdel.destination=public
