@@ -2130,7 +2130,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	protected void onInvite(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String channel)  {
 		if (_config.getChannelAutoJoin()) {
 			for (ChannelConfig chan : _config.getChannels()) {
-				if (chan.getName().equals(channel)) {
+				if (chan.getName().equalsIgnoreCase(channel)) {
 					joinChannel(chan);
 					if (_config.getBlowfishEnabled()) {
 						Blowfish cipher = new Blowfish(chan.getBlowKey());
