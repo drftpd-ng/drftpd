@@ -133,7 +133,7 @@ public class DirectoryHandle extends InodeHandle implements
 				if (inode.isFile()) {
 					files.add((FileHandle) inode);
 				} else if (inode.isDirectory()) {
-					files.addAll(getAllFilesRecursiveUnchecked());
+					files.addAll(((DirectoryHandle)inode).getAllFilesRecursiveUnchecked());
 				}
 			}
 		} catch (FileNotFoundException e) {

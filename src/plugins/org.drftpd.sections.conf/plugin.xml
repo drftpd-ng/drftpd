@@ -10,7 +10,7 @@
 	</requires>
 	<runtime>
 		<library id="org.drftpd.sections.conf" path="build/classes/" type="code" >
-            <export prefix="*" />
+			<export prefix="*" />
 		</library>
 	</runtime>
 	<extension plugin-id="master" point-id="SectionManager" id="ConfigurableSectionManager">
