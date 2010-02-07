@@ -1951,7 +1951,9 @@ public class UserManagementHandler extends CommandInterface {
 		env.add("xfersup", xfersup);
 		env.add("xfersdn", xfersdn);
 		env.add("xfers", xfersup+xfersdn);
-		response.addComment("");
+		if (response.getComment().size() > 0 && (statusSpeed || statusUsers)) {
+			response.addComment("");
+		}
 		if (statusSpeed) {
 			response.addComment(session.jprintf(_bundle, _keyPrefix+type+".statusspeed", env, request.getUser()));
 		}
@@ -1982,15 +1984,27 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doLeechers(CommandRequest request) {
-		return doListConnections(request, "who", false, true, false, false, false, false, false);
+		CommandResponse response = doListConnections(request, "who", false, true, false, false, false, false, false);
+		if (response.getComment().size() == 0) {
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"download.empty", request.getUser()));
+		}
+		return response;
 	}
 
 	public CommandResponse doUploaders(CommandRequest request) {
-		return doListConnections(request, "who", true, false, false, false, false, false, false);
+		CommandResponse response = doListConnections(request, "who", true, false, false, false, false, false, false);
+		if (response.getComment().size() == 0) {
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"upload.empty", request.getUser()));
+		}
+		return response;
 	}
 
 	public CommandResponse doIdlers(CommandRequest request) {
-		return doListConnections(request, "who", false, false, true, false, false, false, false);
+		CommandResponse response = doListConnections(request, "who", false, false, true, false, false, false, false);
+		if (response.getComment().size() == 0) {
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"idle.empty", request.getUser()));
+		}
+		return response;
 	}
 
 	public CommandResponse doBW(CommandRequest request) {
