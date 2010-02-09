@@ -189,6 +189,8 @@ public class VirtualFileSystem {
 			inode = walker.getInodeByName(values[x]);
 			if (inode.isDirectory()) {
 				walker = (VirtualFileSystemDirectory) inode;
+			} else if (inode.isLink()) {
+				walker = (VirtualFileSystemDirectory) getInodeByPath(((VirtualFileSystemLink)inode).getLinkPath());
 			} else { // We better be at the end of the array
 				if (x != values.length - 1) {
 					// Can't get /path/name/file when /path/name is a File

@@ -257,6 +257,18 @@ public class Dir extends CommandInterface {
 		}
 
 		try {
+			try {
+				if (!fakeDirectory.getParent().equals(request.getCurrentDirectory()) && 
+						InodeHandle.isLink(fakeDirectory.getParent().getPath())) {
+					fakeDirectory = new LinkHandle(fakeDirectory.getParent().getPath())
+					.getTargetDirectory(session.getUserNull(request.getUser()))
+					.getNonExistentDirectoryHandle(dirName);
+				}
+			} catch (FileNotFoundException e1) {
+				return new CommandResponse(550, "Parent directory does not exist");
+			} catch (ObjectNotValidException e) {
+				return new CommandResponse(550, "Parent directory does not exist");
+			}
 			DirectoryHandle newDir = null;
 			try {
 				newDir = fakeDirectory.getParent().createDirectory(session.getUserNull(request.getUser()), dirName);
