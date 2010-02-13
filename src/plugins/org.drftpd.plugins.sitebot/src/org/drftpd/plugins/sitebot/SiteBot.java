@@ -1304,7 +1304,15 @@ public class SiteBot implements ReplyConstants, Runnable {
 					return;
 				}
 			} else {
-				// means we got an unencrypted line from a chan that should be encrypted
+				if(_users.containsKey(sender)) {
+					StringBuilder reply = new StringBuilder("Use site command ");
+					if (_config.getDH1080Enabled()) {
+						reply.append("or DH1080 key-exchange ");
+					}
+					reply.append("to set a blowfish key before sending a private message");
+					sendMessage(sender, reply.toString());
+				}
+				// means we got an unencrypted line from a user that should be encrypted
 				if (_config.getBlowfishPunish()) {
 					punishUnencryptedUser(sender,sender+"!"+login+"@"+hostname);
 				}
