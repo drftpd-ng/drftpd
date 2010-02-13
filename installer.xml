@@ -39,7 +39,7 @@
 			target="${build.javac}"
 			debug="${build.debug}"
 			optimize="${build.optimize}" />
-		<!-- create tools jar -->
+		<!-- create plugin framework jar -->
 		<jar destfile="lib/${app.name}-jpf-${app.version}.jar">
 			<manifest>
 				<attribute name="Class-Path" value="ant.jar" />

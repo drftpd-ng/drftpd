@@ -47,6 +47,7 @@ public class ResourceTask extends Task {
 	private long _longDate = 0L;
 	private boolean _slavePlugin;
 	private ArrayList<String> _filePatterns;
+	private ArrayList<String> _installedConfs;
 
 	/**
 	 * @param aBaseDir base directory for project
@@ -65,6 +66,7 @@ public class ResourceTask extends Task {
 	/**
 	 * @see org.apache.tools.ant.Task#execute()
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void execute() throws BuildException {
 		// See if this is a slave plugin
@@ -80,6 +82,7 @@ public class ResourceTask extends Task {
 			throw new BuildException("Plugin build timestamp not set correctly");
 		}
 		_longDate = buildDate.getTime();
+		_installedConfs = (ArrayList<String>)getProject().getReference("installed.confs");
 		findResources(_resourceDir);
 		if (_slavePlugin && !_filePatterns.isEmpty()) {
 			String[] patterns = (String[])_filePatterns.toArray(new String[_filePatterns.size()]);
@@ -180,6 +183,42 @@ public class ResourceTask extends Task {
 				outputWriter.close();
 			} catch (IOException e) {
 				// FileWriter is already closed
+			}
+		}
+		// See if this is a dist file that needs installing
+		if (relativePath.endsWith(".dist")) {
+			String installRelativePath = relativePath.substring(0, relativePath.lastIndexOf(".dist"));
+			File installConfFile = new File(_baseDir, installRelativePath);
+			boolean doInstall = true;
+			if (installConfFile.exists()) {
+				if (!_installedConfs.contains(installRelativePath)) {
+					doInstall = false;
+				}
+			} else {
+				_installedConfs.add(installRelativePath);
+			}
+			if (doInstall) {
+				// Write data to installed file
+				FileWriter installOutputWriter = null;
+				try {
+					installOutputWriter = new FileWriter(installConfFile,true);
+					installOutputWriter.write(output.toString()+"\n");
+					installOutputWriter.flush();
+				} catch (FileNotFoundException e) {
+					log("Cannot install resource file to: " + installConfFile.getParent(),Project.MSG_ERR);
+				} catch (IOException e) {
+					log("Error installing resource file: " + installConfFile.getName(),Project.MSG_ERR);
+				} finally {
+					try {
+						installOutputWriter.close();
+					} catch (IOException e) {
+						// FileWriter is already closed
+					}
+				}
+			}
+			// Do this regardless so that any existing user installed confs get pulled into slave.zip
+			if (_slavePlugin) {
+				_filePatterns.add(installRelativePath);
 			}
 		}
 		// If non windows and a shell script then chmod

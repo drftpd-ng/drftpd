@@ -56,6 +56,7 @@ public class PluginBuildListener implements SubBuildListener {
 	private HashMap<String,PluginDescriptor> _pluginMap;
 	private HashMap<String,PluginDescriptor> _slavePluginMap;
 	private FileSet _slaveFiles;
+	private ArrayList<String> _installedConfs;
 	private TreeSet<String> _missingLibs;
 	private InstallerConfig _config;
 	private LogWindowInterface _logWindow;
@@ -92,6 +93,7 @@ public class PluginBuildListener implements SubBuildListener {
 			}
 		}
 		_slaveFiles = new FileSet();
+		_installedConfs = new ArrayList<String>();
 		_missingLibs = new TreeSet<String>();
 		_pluginsDone = 0;
 	}
@@ -255,6 +257,7 @@ public class PluginBuildListener implements SubBuildListener {
 				p.setProperty("slave.plugin",String.valueOf(_isSlavePlugin));
 				p.addReference("plugin.descriptor",currDescriptor);
 				p.addReference("slave.fileset",_slaveFiles);
+				p.addReference("installed.confs",_installedConfs);
 				p.addReference("libs.missing",_missingLibs);
 			}
 		}
