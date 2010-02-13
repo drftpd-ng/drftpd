@@ -1,0 +1,5 @@
+# $Id$
+
+# Maximum number of users/groups to include in race complete announce
+irc.sfv.maxusers=10
+irc.sfv.maxgroups=10

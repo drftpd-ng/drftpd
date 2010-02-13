@@ -1,0 +1,5 @@
+# $Id$
+
+# Maximum number of users/groups to include in race complete announce
+irc.zip.maxusers=10
+irc.zip.maxgroups=10

@@ -191,6 +191,24 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 					env.add("speed", Bytes.formatBytes(getXferspeed(dir)) + "/s");
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete", env, _bundle), writer);
 
+					// Find max users/groups to announce
+					int maxUsers;
+					int maxGroups;
+					try {
+						maxUsers = Integer.valueOf(GlobalContext.getGlobalContext().getPluginsConfig().
+								getPropertiesForPlugin("zipscript.conf").getProperty("irc.zip.maxusers", "10"));
+					} catch (NumberFormatException e) {
+						logger.error("Non numeric irc.zip.maxusers setting in zipscript.conf, using default");
+						maxUsers = 10;
+					}
+					try {
+						maxGroups = Integer.valueOf(GlobalContext.getGlobalContext().getPluginsConfig().
+								getPropertiesForPlugin("zipscript.conf").getProperty("irc.zip.maxgroups", "10"));
+					} catch (NumberFormatException e) {
+						logger.error("Non numeric irc.zip.maxgroups setting in zipscript.conf, using default");
+						maxGroups = 10;
+					}
+
 					// Add racer stats
 					int position = 1;
 
@@ -244,6 +262,11 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 								Integer.valueOf(UserTransferStats.getStatsPlace("DAYDN",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
 						sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete.racer", raceenv, _bundle), writer);
+
+						position++;
+						if (position > maxUsers) {
+							break;
+						}
 					}
 
 					//add groups stats
@@ -264,6 +287,11 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 								Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
 						sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete.group", raceenv, _bundle), writer);
+
+						position++;
+						if (position > maxGroups) {
+							break;
+						}
 					}
 				}
 
