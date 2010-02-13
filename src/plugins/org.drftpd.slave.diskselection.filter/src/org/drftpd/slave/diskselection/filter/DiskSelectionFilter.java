@@ -132,10 +132,10 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 		
 		for (RootScore rs : sc.getScoreList()) {
 			long score = rs.getScore();
-			//TODO check this!
-			if (bestRoot != null && score > bestRoot.getScore()) {
+
+			if (bestRoot == null) {
 				bestRoot = rs;
-			} else {
+			} else if (score > bestRoot.getScore()) {
 				bestRoot = rs;
 			}
 		}
