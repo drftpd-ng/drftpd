@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
-<project name="DRFTPD Trunk Plugin Branch" default="build" basedir=".">
+<project name="DrFTPd 3.0.0" default="build" basedir=".">
 	<property name="app.name" value="drftpd" />
 	<property name="app.version" value="3.0.0" />
 
 	<property name="build.debug" value="true" />
-	<property name="build.javac" value="1.5" />
+	<property name="build.javac" value="1.6" />
 	<property name="build.optimize" value="false" />
 	<property name="build.verbose" value="true" />
 
@@ -31,14 +31,21 @@
 		<echo>be capable of solving difficult system problems on their own.</echo>
 		<echo /> 
 		<echo>If you are new to DrFTPD, think twice before installing this version.</echo>
+
 		<!-- compile plugin framework classes -->
-		<javac
-			srcdir="src/jpf"
+		<property name="jpf.src" value="src/jpf" />
+		<property name="jpf.dest" value="build/jpf/classes" />
+		<mkdir dir="${jpf.dest}" />
+		<javac destdir="${jpf.dest}"
+			srcdir="${jpf.src}"
 			classpathref="classpath"
 			excludes=""
 			target="${build.javac}"
 			debug="${build.debug}"
 			optimize="${build.optimize}" />
+		<copy todir="${jpf.dest}">
+			<fileset dir="${jpf.src}" includes="**/*.properties" />
+		</copy>
 		<!-- create plugin framework jar -->
 		<jar destfile="lib/${app.name}-jpf-${app.version}.jar">
 			<manifest>
@@ -50,19 +57,23 @@
 				<attribute name="Implementation-Version" value="${app.version}" />
 				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
 			</manifest>
-			<fileset dir="src/jpf" includes="**/*.class" />
+			<fileset dir="${jpf.dest}" includes="**/*.class" />
 		</jar>
-		<delete>
-			<fileset dir="src/jpf" includes="**/*.class" />
-		</delete>
+
 		<!-- compile tools classes -->
-		<javac
-			srcdir="src/tools"
+		<property name="tools.src" value="src/tools" />
+		<property name="tools.dest" value="build/tools/classes" />
+		<mkdir dir="${tools.dest}" />
+		<javac destdir="${tools.dest}"
+			srcdir="${tools.src}"
 			classpathref="classpath"
 			excludes=""
 			target="${build.javac}"
 			debug="${build.debug}"
 			optimize="${build.optimize}" />
+		<copy todir="${tools.dest}">
+			<fileset dir="${tools.src}" includes="**/*.properties" />
+		</copy>
 		<!-- create tools jar -->
 		<jar destfile="lib/${app.name}-tools-${app.version}.jar">
 			<manifest>
@@ -74,10 +85,7 @@
 				<attribute name="Implementation-Version" value="${app.version}" />
 				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
 			</manifest>
-			<fileset dir="src/tools" includes="**/*.class,**/*.properties" />
+			<fileset dir="${tools.dest}" includes="**/*.class,**/*.properties" />
 		</jar>
-		<delete>
-			<fileset dir="src/tools" includes="**/*.class" />
-		</delete>
 	</target>
 </project>

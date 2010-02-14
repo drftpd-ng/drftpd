@@ -9,7 +9,7 @@
 		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.vfs.perms.regex" path="build/classes/" type="code">
+		<library id="org.drftpd.vfs.perms.regex" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

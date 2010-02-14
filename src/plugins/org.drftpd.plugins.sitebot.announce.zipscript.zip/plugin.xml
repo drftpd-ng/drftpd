@@ -7,7 +7,7 @@
 		<import plugin-id="org.drftpd.plugins.sitebot" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot.announce.zipscript.zip" path="build/classes/" type="code" />
+		<library id="org.drftpd.plugins.sitebot.announce.zipscript.zip" path="classes/" type="code" />
 	</runtime>
 	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="ZipAnnounce">
 		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.zipscript.zip.ZipAnnouncer" />

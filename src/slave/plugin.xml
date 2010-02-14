@@ -11,7 +11,7 @@
 		<import plugin-id="common" exported="true" />
 	</requires>
 	<runtime>
-		<library id="slave" path="build/classes/" type="code">
+		<library id="slave" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

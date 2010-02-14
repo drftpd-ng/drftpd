@@ -10,7 +10,7 @@
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.usermanagement" path="build/classes/" type="code">
+		<library id="org.drftpd.commands.usermanagement" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

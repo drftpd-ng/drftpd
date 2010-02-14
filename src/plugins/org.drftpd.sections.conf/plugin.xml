@@ -9,7 +9,7 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.sections.conf" path="build/classes/" type="code" >
+		<library id="org.drftpd.sections.conf" path="classes/" type="code" >
 			<export prefix="*" />
 		</library>
 	</runtime>

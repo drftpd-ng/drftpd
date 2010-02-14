@@ -25,7 +25,7 @@
 		</attribute>
 	</attributes>
 	<runtime>
-		<library id="common" path="build/classes/" type="code">
+		<library id="common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="junit" path="../../lib/junit-4.6.jar" type="code">

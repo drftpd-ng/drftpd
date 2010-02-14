@@ -11,7 +11,7 @@
 		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.slaveselection.filter" path="build/classes/" type="code">
+		<library id="org.drftpd.slaveselection.filter" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

@@ -11,7 +11,7 @@
 		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.zipscript.mp3" path="build/classes/" type="code">
+		<library id="org.drftpd.commands.zipscript.mp3" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

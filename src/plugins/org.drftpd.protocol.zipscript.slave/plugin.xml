@@ -14,7 +14,7 @@
 		<import plugin-id="slave" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.slave" path="build/classes/" type="code" />
+		<library id="org.drftpd.protocol.zipscript.slave" path="classes/" type="code" />
 	</runtime>
 			
 	<extension plugin-id="slave" point-id="Handler" id="SfvfileHandler">

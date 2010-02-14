@@ -9,7 +9,7 @@
 		<import plugin-id="common" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.common" path="build/classes/" type="code">
+		<library id="org.drftpd.protocol.zipscript.common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

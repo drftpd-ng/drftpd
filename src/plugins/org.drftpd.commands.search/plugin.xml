@@ -8,7 +8,7 @@
 		<import plugin-id="org.drftpd.plugins.jobmanager" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.search" path="build/classes/" type="code">
+		<library id="org.drftpd.commands.search" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

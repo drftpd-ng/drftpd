@@ -6,7 +6,7 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.newhandler" path="build/classes/" type="code">
+		<library id="org.drftpd.commands.newhandler" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

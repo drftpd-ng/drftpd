@@ -14,7 +14,7 @@
 		<import plugin-id="slave" exported="true" />
 	</requires>
 	<runtime>
-		<library id="master" path="build/classes/" type="code">
+		<library id="master" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="replacer" path="../../lib/replacer.jar" type="code">

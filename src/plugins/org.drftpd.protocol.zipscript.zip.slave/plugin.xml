@@ -14,7 +14,7 @@
 		<import plugin-id="slave" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.zip.slave" path="build/classes/" type="code" />
+		<library id="org.drftpd.protocol.zipscript.zip.slave" path="classes/" type="code" />
 		<library id="truezip" path="../../../lib/truezip-6.6.jar" type="code">
 			<export prefix="*" />
 		</library>

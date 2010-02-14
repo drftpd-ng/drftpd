@@ -65,7 +65,7 @@ public class LibCopyTask extends Task {
 		Collection<Library> jpfLibs = descriptor.getLibraries();
 		for (Library lib : jpfLibs) {
 			// not interested in the build files of the plugin itself
-			if (lib.getPath().equalsIgnoreCase("build/classes/")) {
+			if (lib.getPath().equalsIgnoreCase("classes/")) {
 				continue;
 			}
 			File initial = new File(getProject().getProperty("plugin.base"),lib.getPath());

@@ -15,7 +15,7 @@
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.master" path="build/classes/" type="code">
+		<library id="org.drftpd.protocol.zipscript.master" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

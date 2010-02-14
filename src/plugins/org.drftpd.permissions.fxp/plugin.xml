@@ -15,7 +15,7 @@
 	</requires>
 	
 	<runtime>
-		<library id="org.drftpd.permissions.fxp" path="build/classes/" type="code">
+		<library id="org.drftpd.permissions.fxp" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

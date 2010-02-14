@@ -7,7 +7,7 @@
 		<import plugin-id="org.drftpd.commands.dataconnection" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.xdupe" path="build/classes/" type="code">
+		<library id="org.drftpd.commands.xdupe" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

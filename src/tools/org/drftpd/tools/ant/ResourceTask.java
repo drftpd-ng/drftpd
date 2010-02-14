@@ -174,8 +174,6 @@ public class ResourceTask extends Task {
 			if (_slavePlugin) {
 				_filePatterns.add(relativePath);
 			}
-		} catch (FileNotFoundException e) {
-			log("Cannot write resource file to: " + newFile.getParent(),Project.MSG_ERR);
 		} catch (IOException e) {
 			log("Error writing resource file: " + newFile.getName(),Project.MSG_ERR);
 		} finally {
@@ -204,8 +202,9 @@ public class ResourceTask extends Task {
 					installOutputWriter = new FileWriter(installConfFile,true);
 					installOutputWriter.write(output.toString()+"\n");
 					installOutputWriter.flush();
-				} catch (FileNotFoundException e) {
-					log("Cannot install resource file to: " + installConfFile.getParent(),Project.MSG_ERR);
+					if (_slavePlugin) {
+						_filePatterns.add(installRelativePath);
+					}
 				} catch (IOException e) {
 					log("Error installing resource file: " + installConfFile.getName(),Project.MSG_ERR);
 				} finally {
@@ -215,10 +214,6 @@ public class ResourceTask extends Task {
 						// FileWriter is already closed
 					}
 				}
-			}
-			// Do this regardless so that any existing user installed confs get pulled into slave.zip
-			if (_slavePlugin) {
-				_filePatterns.add(installRelativePath);
 			}
 		}
 		// If non windows and a shell script then chmod

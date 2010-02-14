@@ -6,7 +6,7 @@
 		<import plugin-id="org.drftpd.commands.dataconnection" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.prehook.denydownload" path="build/classes/" type="code">
+		<library id="org.drftpd.commands.prehook.denydownload" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
