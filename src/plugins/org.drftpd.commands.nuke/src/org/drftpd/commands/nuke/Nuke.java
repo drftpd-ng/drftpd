@@ -30,7 +30,6 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.sections.SectionInterface;
-import org.drftpd.util.ReplacerUtils;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
