@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
@@ -2934,7 +2933,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		}
 	}
 
-	public ConcurrentHashMap<String,OutputWriter> getWriters() {
+	public CaseInsensitiveConcurrentHashMap<String,OutputWriter> getWriters() {
 		return _writers;
 	}
 
