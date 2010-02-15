@@ -160,7 +160,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 					FileHandle sfvFileEntry = iter.next();
 
 					if (!sfvFileEntry.equals(fileevent.getTransferFile()) && sfvFileEntry.getUsername().equals(username)
-							&& sfvFileEntry.getXfertime() >= 0) {
+							&& sfvFileEntry.getXfertime() > 0) {
 						break;
 					}
 

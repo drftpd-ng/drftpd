@@ -155,7 +155,7 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 					FileHandle zipFileEntry = iter.next();
 
 					if (!zipFileEntry.equals(fileevent.getTransferFile()) && zipFileEntry.getUsername().equals(username)
-							&& zipFileEntry.getXfertime() != -1) {
+							&& zipFileEntry.getXfertime() > 0) {
 						break;
 					}
 
