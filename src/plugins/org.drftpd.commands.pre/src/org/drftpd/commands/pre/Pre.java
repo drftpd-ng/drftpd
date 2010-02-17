@@ -19,7 +19,7 @@ package org.drftpd.commands.pre;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -106,13 +106,13 @@ public class Pre extends CommandInterface {
 		CommandResponse response = new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
 		
 		//AWARD CREDITS
-        Hashtable<User,Long> awards = new Hashtable<User,Long>();
+        HashMap<User,Long> awards = new HashMap<User,Long>();
 		preAwardCredits(preDir, awards);
 
-        for (Object entry : awards.entrySet()) {
-            User owner = (User) ((Map.Entry) entry).getKey();
+        for (Map.Entry<User,Long> entry : awards.entrySet()) {
+            User owner = entry.getKey();
             if (StatsManager.getStatsManager().getCreditCheckRatio(preDir, owner) == 0) {
-                Long award = (Long) ((Map.Entry) entry).getValue();
+                Long award = entry.getValue();
                 owner.updateCredits(award);
                 response.addComment("Awarded " + Bytes.formatBytes(award) + " to " + owner.getName());
             }
@@ -166,7 +166,7 @@ public class Pre extends CommandInterface {
 		}
     }
 
-	private void preAwardCredits(DirectoryHandle preDir, Hashtable<User,Long> awards) {
+	private void preAwardCredits(DirectoryHandle preDir, HashMap<User,Long> awards) {
 		try {
 	        for (InodeHandle file : preDir.getInodeHandlesUnchecked()) {
 	            if (file.isFile()) {
