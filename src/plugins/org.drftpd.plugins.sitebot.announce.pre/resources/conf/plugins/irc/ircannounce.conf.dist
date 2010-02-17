@@ -1,0 +1,7 @@
+# To specify where the pre announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#pre.path.1=/path/subpath/*
+#pre.path.1.destination=public
+#pre.section.1=*
+#pre.section.1.destination=public
+

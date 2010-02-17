@@ -1,0 +1,8 @@
+SITE PRE {
+plugin org.drftpd.commands.pre
+class Pre
+method doSITE_PRE
+perms *
+help Moves dir to specified section
+help.specific ${command} <dir> <section>
+}
