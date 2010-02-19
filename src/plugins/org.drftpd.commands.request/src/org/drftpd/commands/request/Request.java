@@ -22,6 +22,8 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -29,6 +31,7 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.RequestEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.Session;
@@ -45,6 +48,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class Request extends CommandInterface {
 	public static final Key<Integer> REQUESTSFILLED = new Key<Integer>(Request.class,	"requestsFilled");
 	public static final Key<Integer> REQUESTS = new Key<Integer>(Request.class, "requests");
+	public static final Key<Integer> WEEKREQS = new Key<Integer>(Request.class, "weekReqs");
 	
 	private static final Logger logger = Logger.getLogger(Request.class);
 
@@ -59,6 +63,10 @@ public class Request extends CommandInterface {
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
+
+		// Subscribe to events
+		AnnotationProcessor.process(this);
+		
     	_bundle = cManager.getResourceBundle();
     	_keyPrefix = this.getClass().getName()+".";
     	
@@ -68,10 +76,10 @@ public class Request extends CommandInterface {
     }
 
 	/**
-	 * Reads 'conf/plugins/requests.conf'
+	 * Reads 'conf/plugins/request.conf'
 	 */
 	private void readConfig() {
-		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("requests");
+		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("request");
 		
 		_requestPath = props.getProperty("request.dirpath", "/requests/");
 		_createRequestPath = Boolean.parseBoolean(props.getProperty("request.createpath", "false"));
@@ -99,7 +107,7 @@ public class Request extends CommandInterface {
 	
 	/**
 	 * If the commands has a 'request.dirpath' set we will use this one
-	 * otherwise we will use the fallback/default path set in 'conf/plugins/requests.conf'
+	 * otherwise we will use the fallback/default path set in 'conf/plugins/request.conf'
 	 * 
 	 * This allows multiple request dirs.
 	 * @param request
@@ -153,8 +161,6 @@ public class Request extends CommandInterface {
 
 					GlobalContext.getEventService().publishAsync(new RequestEvent("reqfilled", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 
-					// TODO PostHook to increment REQFILLED
-
 					if (session instanceof BaseFtpConnection) {
 						return new CommandResponse(200, session.jprintf(_bundle, _keyPrefix+"reqfilled.success", env, request.getUser()));
 					}
@@ -178,7 +184,7 @@ public class Request extends CommandInterface {
 
 		User user = session.getUserNull(request.getUser());
 		String requestName = request.getArgument().trim();
-		String createdDirName = _requestPrefix + user.getName() +	"-" + requestName;
+		String createdDirName = _requestPrefix + user.getName() + "-" + requestName;
 		DirectoryHandle requestDir = getRequestDirectory(request);
 		
 		ReplacerEnvironment env = new ReplacerEnvironment();
@@ -195,13 +201,12 @@ public class Request extends CommandInterface {
 			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"request.error", env, user.getName()));
 		}
 		
-		// TODO Post Hook to increment request number
-		
 		GlobalContext.getEventService().publishAsync(new RequestEvent("request", requestDir, user, requestName));
-		
+
 		if (session instanceof BaseFtpConnection) {
 			return new CommandResponse(257, session.jprintf(_bundle, _keyPrefix+"request.success", env, user.getName()));
 		}
+		
 		// Return ok status to IRC so we know the command was successful
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
@@ -286,22 +291,19 @@ public class Request extends CommandInterface {
 						
 						GlobalContext.getEventService().publishAsync(new RequestEvent("reqdel", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 						
-						// TODO decrement the weekly request amount? (not sure if wanted, make configurable?)
-						
 						break;
 					} else {
-						response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
-						break;
+						return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
 					}
 				}
 			}
 			
 			if (requestNotFound) {
-				response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.notfound", env, request.getUser()));
+				return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.notfound", env, request.getUser()));
 			}
 			
 		} catch (FileNotFoundException e) {
-			response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.root.notfound", env, request.getUser()));
+			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.root.notfound", env, request.getUser()));
 		}
 		
 		return response;
@@ -330,6 +332,11 @@ public class Request extends CommandInterface {
 		public String getRequestName() {
 			return _requestName;
 		}
+	}
+
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		readConfig();
 	}
 
 }

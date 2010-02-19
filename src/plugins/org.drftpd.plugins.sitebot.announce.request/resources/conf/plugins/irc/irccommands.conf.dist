@@ -34,12 +34,12 @@ reqdel {
 plugin org.drftpd.commands.request
 class Request
 method doSITE_REQDELETE
-perms *
+perms =request
 help Deletes a request
 help.specific ${command} <nameofrequest>
 input all
 output source
 
 # you can only delete your own without deleteOthers
-deleteOthers =siteop
+request.deleteOthers =siteop
 }

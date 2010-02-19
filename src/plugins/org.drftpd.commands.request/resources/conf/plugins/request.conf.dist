@@ -4,11 +4,14 @@ request.dirpath=/requests
 # Creates 'request.dirpath' if it does not exist.
 request.createpath=true
 
-# Max allowed requests/week
+# Max allowed requests/week (0=unlimited)
 request.weekmax=2
 # Users exempt from the weekmax rule
 request.weekexempt=
+# Decrease the usage of the weekly allotment when reqdel
+request.weekdecrease=false
 
 # Customize the directories prefix
 reqfilled.prefix=FILLED-for.
 request.prefix=REQUEST-by.
+

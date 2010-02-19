@@ -28,4 +28,43 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PreHook" id="doSITE_REQDELPerm">
+		<parameter id="ParentMethod" value="doSITE_REQDELETE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PreHook" id="doSITE_REQUESTSPerm">
+		<parameter id="ParentMethod" value="doSITE_REQUESTS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PreHook" id="RequestWklyAllotmentPreCheck">
+		<parameter id="ParentMethod" value="doSITE_REQUEST" />
+		<parameter id="HookClass" value="org.drftpd.commands.request.RequestPreHook" />
+		<parameter id="HookMethod" value="doWklyAllotmentPreCheck" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PostHook" id="REQUESTIncrement">
+		<parameter id="ParentMethod" value="doSITE_REQUEST" />
+		<parameter id="HookClass" value="org.drftpd.commands.request.RequestPostHook" />
+		<parameter id="HookMethod" value="doREQUESTIncrement" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PostHook" id="REQFILLEDIncrement">
+		<parameter id="ParentMethod" value="doSITE_REQFILLED" />
+		<parameter id="HookClass" value="org.drftpd.commands.request.RequestPostHook" />
+		<parameter id="HookMethod" value="doREQFILLEDIncrement" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.request" point-id="PostHook" id="doWklyAllotmentDecrease">
+		<parameter id="ParentMethod" value="doSITE_REQDELETE" />
+		<parameter id="HookClass" value="org.drftpd.commands.request.RequestPostHook" />
+		<parameter id="HookMethod" value="doWklyAllotmentDecrease" />
+		<parameter id="Priority" value="10" />
+	</extension>
+	<extension plugin-id="master" point-id="PostUserResetHook" id="RequestResetWklyAllotment">
+		<parameter id="Class" value="org.drftpd.commands.request.RequestUserResetHook"/>
+	</extension>
 </plugin>
