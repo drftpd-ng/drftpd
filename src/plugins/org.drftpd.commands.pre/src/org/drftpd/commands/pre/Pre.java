@@ -71,7 +71,7 @@ public class Pre extends CommandInterface {
 		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(args[1]);
 
         if (section.getName().equals("")) {
-            return new CommandResponse(200, "Invalid section, see SITE SECTIONS for a list of available sections");
+            return new CommandResponse(500, "Invalid section, see SITE SECTIONS for a list of available sections");
         }
 
 		User user = request.getSession().getUserNull(request.getUser());
@@ -102,7 +102,11 @@ public class Pre extends CommandInterface {
 		}
 		
 		DirectoryHandle toInode = new DirectoryHandle(section.getCurrentDirectory().getPath() + VirtualFileSystem.separator + preDir.getName());
-		
+
+		if (toInode.exists()) {
+			return new CommandResponse(500, "Directory already exist in target section");
+		}
+
 		CommandResponse response = new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
 		
 		//AWARD CREDITS
