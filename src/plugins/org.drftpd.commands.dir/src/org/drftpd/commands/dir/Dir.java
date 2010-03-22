@@ -248,7 +248,7 @@ public class Dir extends CommandInterface {
 		}
 
 		Session session = request.getSession();
-		String path = request.getArgument();
+		String path = VirtualFileSystem.fixPath(request.getArgument());
 		DirectoryHandle fakeDirectory = request.getCurrentDirectory().getNonExistentDirectoryHandle(path);
 		String dirName = fakeDirectory.getName();
 
