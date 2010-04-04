@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
@@ -62,6 +63,12 @@ import org.drftpd.slave.async.AsyncResponseTransferStatus;
  */
 public class BasicHandler extends AbstractHandler {
 	private static final Logger logger = Logger.getLogger(BasicHandler.class);
+
+	// The following variables are static as they are used to signal between
+	// remerging and the pause/resume functions, due to the way the handler
+	// map works these are run against separate object instances.
+	private static AtomicBoolean remergePaused = new AtomicBoolean();
+	private static Object remergeWaitObj = new Object();
 			
 	public BasicHandler(SlaveProtocolCentral central) {
 		super(central);
@@ -190,6 +197,19 @@ public class BasicHandler extends AbstractHandler {
 		}
 	}
 
+	public AsyncResponse handleRemergePause(AsyncCommandArgument ac) {
+		remergePaused.set(true);
+		return new AsyncResponse(ac.getIndex());
+	}
+
+	public AsyncResponse handleRemergeResume(AsyncCommandArgument ac) {
+		remergePaused.set(false);
+		synchronized(remergeWaitObj) {
+			remergeWaitObj.notifyAll();
+		}
+		return new AsyncResponse(ac.getIndex());
+	}
+
 	public AsyncResponse handleRemerge(AsyncCommandArgument ac) {
 		try {
 			handleRemergeRecursive2(getSlaveObject().getRoots(), ac.getArgs());
@@ -204,6 +224,16 @@ public class BasicHandler extends AbstractHandler {
 
 	private void handleRemergeRecursive2(RootCollection rootCollection,
 			String path) {
+		while (remergePaused.get()) {
+			synchronized(remergeWaitObj) {
+				try {
+					remergeWaitObj.wait();
+				} catch (InterruptedException e) {
+					// Either we have been woken properly in which case we will exit the
+					// loop or we have not in which case we will wait again.
+				}
+			}
+		}
 		TreeSet<String> inodes = rootCollection.getLocalInodes(path);
 		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
 

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
@@ -42,12 +43,14 @@ public class CommitManager {
 
 	private ConcurrentHashMap<Commitable, Date> _commitMap = null;
 	private boolean _isStarted = false;
+	private AtomicInteger _queueSize;
 
 	/**
 	 * Private constructor in order to make this class a Singleton.
 	 */
 	private CommitManager() {
 		_commitMap = new ConcurrentHashMap<Commitable, Date>();
+		_queueSize = new AtomicInteger();
 	}
 
 	/**
@@ -84,6 +87,7 @@ public class CommitManager {
 			// object already queued to write
 		}
 		_commitMap.put(object, new Date());
+		_queueSize.incrementAndGet();
 	}
 	
 
@@ -103,6 +107,14 @@ public class CommitManager {
 		return _commitMap.containsKey(object);
 	}
 
+	/**
+	 * 
+	 * @return the number of outstanding objects to commit.
+	 */
+	public int getQueueSize() {
+		return _queueSize.get();
+	}
+
 	private void processAllLoop() {
 		while (true) {
 		long time = System.currentTimeMillis() - 10000;
@@ -117,6 +129,7 @@ public class CommitManager {
 								+ entry.getKey().descriptiveName(), e);
 					}
 					iter.remove();
+					_queueSize.decrementAndGet();
 				}
 			}
 			

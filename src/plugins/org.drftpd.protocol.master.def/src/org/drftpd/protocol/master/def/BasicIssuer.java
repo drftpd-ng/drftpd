@@ -149,6 +149,20 @@ public class BasicIssuer extends AbstractBasicIssuer {
 		return index;
 	}
 
+	public String issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+		String index = rslave.fetchIndex();
+		rslave.sendCommand(new AsyncCommand(index, "remergePause"));
+
+		return index;
+	}
+
+	public String issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+		String index = rslave.fetchIndex();
+		rslave.sendCommand(new AsyncCommand(index, "remergeResume"));
+
+		return index;
+	}
+
 	@Override
 	public String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();

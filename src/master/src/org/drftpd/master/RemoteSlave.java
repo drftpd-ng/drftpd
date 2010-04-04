@@ -41,6 +41,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
@@ -129,12 +130,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private transient HashMap<TransferIndex, RemoteTransfer> _transfers;
 
+	private transient AtomicBoolean _remergePaused;
+
 	public RemoteSlave(String name) {
 		_name = name;
 		_keysAndValues = new Properties();
 		_transientKeyedMap = new KeyedMap<Key<?>, Object>();
 		_ipMasks = new HostMaskCollection();
 		_renameQueue = new LinkedList<QueuedOperation>();
+		_remergePaused = new AtomicBoolean();
 	}
 	
 	public static final Key<Boolean> SSL = new Key<Boolean>(RemoteSlave.class, "ssl");
@@ -394,6 +398,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 		getGlobalContext().getSlaveManager().putRemergeQueue(
 				new RemergeMessage(this));
+		if (_remergePaused.get()) {
+			logger.debug("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
+			SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
+			_remergePaused.set(false);
+		}
 		setAvailable(true);
 		logger.info("Slave added: '" + getName() + "' status: " + _status);
 		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
@@ -772,6 +781,27 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 							+ (System.currentTimeMillis() - _lastResponseReceived)
 							+ " milliseconds");
 					throw new SlaveUnavailableException();
+				}
+
+				if (isOnline() && !isAvailable()) {
+					int queueSize = CommitManager.getCommitManager().getQueueSize();
+					if (_remergePaused.get()) {
+						// Do we need to resume
+						if (queueSize <= Integer.parseInt(GlobalContext.getConfig()
+								.getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
+							SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
+							_remergePaused.set(false);
+							logger.debug("Issued remerge resume to slave, current commit queue is " + queueSize);
+						}
+					} else {
+						// Do we need to pause
+						if (queueSize > Integer.parseInt(GlobalContext.getConfig()
+								.getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
+							SlaveManager.getBasicIssuer().issueRemergePauseToSlave(this);
+							_remergePaused.set(true);
+							logger.debug("Issued remerge pause to slave, current commit queue is " + queueSize);
+						}
+					}
 				}
 
 				if (ar == null) {

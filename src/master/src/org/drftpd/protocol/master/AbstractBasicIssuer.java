@@ -24,7 +24,7 @@ import org.drftpd.slave.TransferIndex;
 /**
  * In order to Master be able to scope the BasicIssuer, this abstract class was need so
  * we could instead of referecing everything to the BasicIssuer, which is out of master's scope,
- * we are referecing to this AbstractBasicIssuer which is, later on, mapped to BasicIssuer instance.
+ * we are referencing to this AbstractBasicIssuer which is, later on, mapped to a BasicIssuer instance.
  * @author fr0w
  * @version $Id$
  */
@@ -59,6 +59,10 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
 			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException;
 
 	public abstract String issueRemergeToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException;
-	
+
+	public abstract String issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
+
+	public abstract String issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
+
 	public abstract String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException;
 }

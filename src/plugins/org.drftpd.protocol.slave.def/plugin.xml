@@ -23,7 +23,19 @@
 		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
 		<parameter id="Method" value="handleRemerge" />
 	</extension>
-	
+
+	<extension plugin-id="slave" point-id="Handler" id="RemergePauseHandler">
+		<parameter id="Name" value="remergePause" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleRemergePause" />
+	</extension>
+
+	<extension plugin-id="slave" point-id="Handler" id="RemergeResumeHandler">
+		<parameter id="Name" value="remergeResume" />
+		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
+		<parameter id="Method" value="handleRemergeResume" />
+	</extension>
+
 	<extension plugin-id="slave" point-id="Handler" id="ChecksumHandler">
 		<parameter id="Name" value="checksum" />
 		<parameter id="Class" value="org.drftpd.protocol.slave.def.BasicHandler" />
