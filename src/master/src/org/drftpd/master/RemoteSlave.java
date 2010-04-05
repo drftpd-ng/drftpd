@@ -1133,6 +1133,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				throw new RuntimeException(e1);
 			}
 			out.writeObject(this);
+			logger.debug("Wrote slavefile for " + this.getName());
 		} catch (IOException ex) {
 			throw new RuntimeException("Error writing slavefile for "
 					+ this.getName() + ": " + ex.getMessage(), ex);

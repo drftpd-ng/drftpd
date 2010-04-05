@@ -259,6 +259,7 @@ public class GlobalContext {
 	 */
 	public void shutdown(String message) {
 		_shutdownMessage = message;
+		CommitManager.getCommitManager().enableQueueDrain();
 		getEventService().publish(new MessageEvent("SHUTDOWN", message));
 		getConnectionManager().shutdownPrivate(message);
 		new Thread(new Shutdown()).start();
@@ -268,6 +269,14 @@ public class GlobalContext {
 		public void run() {
 			while(GlobalContext.getConnectionManager().getConnections().size() > 0) {
 				logger.info("Waiting for connections to be shutdown...");
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+			}
+			while (CommitManager.getCommitManager().getQueueSize() > 0) {
+				logger.info("Waiting for queued commits to be drained - " + 
+						CommitManager.getCommitManager().getQueueSize() + " remaining");
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {

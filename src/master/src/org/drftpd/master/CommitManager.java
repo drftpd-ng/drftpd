@@ -44,6 +44,8 @@ public class CommitManager {
 	private ConcurrentHashMap<Commitable, Date> _commitMap = null;
 	private boolean _isStarted = false;
 	private AtomicInteger _queueSize;
+	private volatile boolean _drainQueue = false;
+	private Thread _commitThread;
 
 	/**
 	 * Private constructor in order to make this class a Singleton.
@@ -73,7 +75,8 @@ public class CommitManager {
 		}
 		
 		_isStarted = true;
-		new Thread(new CommitHandler()).start();
+		_commitThread = new Thread(new CommitHandler());
+		_commitThread.start();
 	}
 
 	/**
@@ -115,13 +118,26 @@ public class CommitManager {
 		return _queueSize.get();
 	}
 
+	/**
+	 * Instructs the commitmanager to write all queued items regardless of age, this cannot
+	 * be undone and is used only when the process enters shutdown mode.
+	 */
+	public void enableQueueDrain() {
+		_drainQueue = true;
+		// Wakeup the commit thread incase it is sleeping
+		if (_commitThread != null) {
+			_commitThread.interrupt();
+		}
+		return;
+	}
+
 	private void processAllLoop() {
 		while (true) {
-		long time = System.currentTimeMillis() - 10000;
+			long time = System.currentTimeMillis() - 10000;
 			for (Iterator<Entry<Commitable, Date>> iter = _commitMap.entrySet()
 					.iterator(); iter.hasNext();) {
 				Entry<Commitable, Date> entry = iter.next();
-				if (entry.getValue().getTime() < time) {
+				if (entry.getValue().getTime() < time || _drainQueue) {
 					try {
 						entry.getKey().writeToDisk();
 					} catch (IOException e) {

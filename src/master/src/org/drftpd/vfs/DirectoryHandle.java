@@ -495,10 +495,11 @@ public class DirectoryHandle extends InodeHandle implements
 					} catch (NoAvailableSlaveException e) {
 						destinationCRC = 0L;
 					}
-*/					if (source.length() != destinationFile.getSize()) {
+*/					
+					Set<RemoteSlave> rslaves = destinationFile.getSlaves();
+					if (source.length() != destinationFile.getSize()) {
 //							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
 						// handle collision
-						Set<RemoteSlave> rslaves = destinationFile.getSlaves();
 						if (rslaves.contains(rslave) && rslaves.size() == 1) {
 							// size of the file has changed, but since this is the only slave with the file, just change the size
 							destinationFile.setSize(source.length());
@@ -515,13 +516,15 @@ public class DirectoryHandle extends InodeHandle implements
 									+ ") collided with a file on the master");
 						}
 					} else {
-						destinationFile.addSlave(rslave);
+						if (!rslaves.contains(rslave)) {
+							destinationFile.addSlave(rslave);
+						}
 					}
 				} else if (source.isDirectory() && destination.isDirectory()) {
 					// this is good, do nothing other than take up this case
-					logger.debug("In remerge, directories were equal!");
+					logger.debug("In remerge, directories were equal! (" + destination.getPath() + ")");
 				} else {
-					// we have a directory/name collission, let's find which one
+					// we have a directory/name collision, let's find which one
 					// :)
 					if (source.isDirectory()) { // & destination.isFile()
 						// we don't care about directories on the slaves, let's

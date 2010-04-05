@@ -20,6 +20,7 @@ package org.drftpd.usermanager.javabeans;
 import java.beans.XMLEncoder;
 import java.io.IOException;
 
+import org.apache.log4j.Logger;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.master.CommitManager;
@@ -33,6 +34,8 @@ import org.drftpd.util.CommonPluginUtils;
  * @version $Id$
  */
 public class BeanUser extends AbstractUser {
+
+	private static final Logger logger = Logger.getLogger(BeanUser.class);
 
 	private BeanUserManager _um;
 
@@ -108,6 +111,7 @@ public class BeanUser extends AbstractUser {
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			out.writeObject(this);
 			Thread.currentThread().setContextClassLoader(prevCL);
+			logger.debug("Wrote userfile for " + this.getName());
 		} finally {
 			if (out != null)
 				out.close();
