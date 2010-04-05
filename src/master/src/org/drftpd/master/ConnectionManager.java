@@ -44,6 +44,7 @@ import org.drftpd.commands.UserManagement;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+import org.tanukisoftware.wrapper.WrapperManager;
 
 /**
  * @version $Id$
@@ -139,7 +140,7 @@ public class ConnectionManager {
 		} catch (Throwable th) {
 			th.printStackTrace();
 			logger.error("", th);
-			System.exit(0);
+			WrapperManager.stop(0);
 
 			return;
 		}

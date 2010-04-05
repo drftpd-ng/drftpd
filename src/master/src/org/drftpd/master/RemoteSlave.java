@@ -1066,7 +1066,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	public void shutdown() {
 		try {
-			sendCommand(new AsyncCommand("shutdown", "shutdown gracefully"));
+			sendCommand(new AsyncCommand("shutdown", "shutdown"));
 			setOfflineReal("shutdown gracefully");
 		} catch (SlaveUnavailableException e) {
 		}

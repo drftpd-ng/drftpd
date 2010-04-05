@@ -53,6 +53,7 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSSLCheck;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.tanukisoftware.wrapper.WrapperManager;
 
 /**
  * Basic operations handling. 
@@ -337,7 +338,7 @@ public class BasicHandler extends AbstractHandler {
 	
 	public AsyncResponse handleShutdown(AsyncCommandArgument ac) {
 		logger.info("The master has requested that I shutdown");
-		System.exit(0);
+		WrapperManager.stop(0);
 		return null;
 	}
 	

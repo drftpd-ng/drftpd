@@ -26,8 +26,7 @@ wrapper.java.classpath.6=lib/drftpd-jpf-3.0.0.jar
 #wrapper.java.classpath.3=classes/
 
 
-# Java Library Path (location of Wrapper.DLL or libwrapper.so
-# and libFileSystem.so FileSystem.dll)
+# Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib
 
 # Java Additional Parameters
@@ -41,7 +40,7 @@ wrapper.java.additional.4=-XX:+UnsyncloadClass
 #wrapper.java.additional.5=-server
 
 # Initial Java Heap Size (in MB)
-wrapper.java.initmemory=3
+wrapper.java.initmemory=16
 
 # Maximum Java Heap Size (in MB)
 wrapper.java.maxmemory=128

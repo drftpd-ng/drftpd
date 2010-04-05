@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands.request;
 
-import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;

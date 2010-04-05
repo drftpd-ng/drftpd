@@ -60,6 +60,7 @@ import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.IndexEngineInterface;
+import org.tanukisoftware.wrapper.WrapperManager;
 
 /**
  * @author mog
@@ -273,7 +274,7 @@ public class GlobalContext {
 				}
 			}
 			logger.info("Shutdown complete, exiting");
-			System.exit(0);
+			WrapperManager.stop(0);
 		}
 	}
 
