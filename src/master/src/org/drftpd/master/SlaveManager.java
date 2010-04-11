@@ -651,6 +651,7 @@ class RemergeThread extends Thread {
 			}
 
 			if (msg.isCompleted()) {
+				msg.getRslave().makeAvailableAfterRemerge();
 				continue;
 			}
 

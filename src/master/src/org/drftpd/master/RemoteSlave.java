@@ -435,9 +435,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
 			_remergePaused.set(false);
 		}
-		setAvailable(true);
-		logger.info("Slave added: '" + getName() + "' status: " + _status);
-		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
 	}
 
 	/**
@@ -521,6 +518,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	public synchronized void setAvailable(boolean available) {
 		_isAvailable = available;
+	}
+
+	protected void makeAvailableAfterRemerge() {
+		setAvailable(true);
+		logger.info("Slave added: '" + getName() + "' status: " + _status);
+		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
 	}
 
 	public final void setLastDirection(char direction, long l) {
