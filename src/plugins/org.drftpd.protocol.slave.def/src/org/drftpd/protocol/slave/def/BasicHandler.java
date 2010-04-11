@@ -213,7 +213,17 @@ public class BasicHandler extends AbstractHandler {
 
 	public AsyncResponse handleRemerge(AsyncCommandArgument ac) {
 		try {
-			handleRemergeRecursive2(getSlaveObject().getRoots(), ac.getArgs());
+			String[] argsArray = ac.getArgsArray();
+			long skipAgeCutoff = 0L;
+			boolean partialRemerge = Boolean.parseBoolean(argsArray[1]);
+			if (partialRemerge && !getSlaveObject().ignorePartialRemerge()) {
+				skipAgeCutoff = Long.parseLong(argsArray[2]);
+				long masterTime = Long.parseLong(argsArray[3]);
+				if (skipAgeCutoff != Long.MIN_VALUE) {
+					skipAgeCutoff += System.currentTimeMillis() - masterTime;
+				}
+			}
+			handleRemergeRecursive2(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
 
 			return new AsyncResponse(ac.getIndex());
 		} catch (Throwable e) {
@@ -224,7 +234,7 @@ public class BasicHandler extends AbstractHandler {
 	}
 
 	private void handleRemergeRecursive2(RootCollection rootCollection,
-			String path) {
+			String path, boolean partialRemerge, long skipAgeCutoff) {
 		while (remergePaused.get()) {
 			synchronized(remergeWaitObj) {
 				try {
@@ -238,6 +248,12 @@ public class BasicHandler extends AbstractHandler {
 		TreeSet<String> inodes = rootCollection.getLocalInodes(path);
 		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
 
+		boolean inodesModified = false;
+		// Need to check the last modified of the parent itself to detect where
+		// files have been deleted but none changed or added
+		if (partialRemerge && rootCollection.getLastModifiedForPath(path) > skipAgeCutoff) {
+			inodesModified = true;
+		}
 		for (String inode : inodes) {
 			String fullPath = path + "/" + inode;
 			PhysicalFile file;
@@ -264,13 +280,20 @@ public class BasicHandler extends AbstractHandler {
 								+ fullPath + " -- these are ignored by drftpd");
 				continue;
 			}
+			if (partialRemerge && file.lastModified() > skipAgeCutoff) {
+				inodesModified = true;
+			}
 			if (file.isDirectory()) {
-				handleRemergeRecursive2(rootCollection, fullPath);
+				handleRemergeRecursive2(rootCollection, fullPath, partialRemerge, skipAgeCutoff);
 			}
 			fileList.add(new LightRemoteInode(file));
 		}
-		sendResponse(new AsyncResponseRemerge(path, fileList));
-		logger.debug("Sending " + path + " to the master");
+		if (!partialRemerge || inodesModified) {
+			sendResponse(new AsyncResponseRemerge(path, fileList));
+			logger.debug("Sending " + path + " to the master");
+		} else {
+			logger.debug("Skipping send of " + path + " as no files changed since last merge");
+		}
 	}
 	
 	public AsyncResponse handleRename(AsyncCommandArgument ac) {

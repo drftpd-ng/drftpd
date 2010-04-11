@@ -1,3 +1,4 @@
+# $Id$
 #######################
 ### Master settings ###
 #######################
@@ -65,3 +66,12 @@ indexingengine=org.drftpd.vfs.index.lucene
 # unless you know what you are doing
 remerge.pause.threshold=250
 remerge.resume.threshold=50
+
+# Slave partial remerge functionality
+# There are three possible settings for this mode:
+# off - a full remerge will be performed on connect
+# connect - any files newer than the last connect remerge for
+#           the slave will be remerged
+# disconnect - any files newer than the last time the Slave
+#              disconnected will be remerged (CURRENTLY BROKEN)
+partial.remerge.mode=off

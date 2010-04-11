@@ -65,6 +65,17 @@ public class RootCollection {
 		return files;
 	}
 
+	public long getLastModifiedForPath(String path) {
+		long lastModified = Long.MIN_VALUE;
+		for (Root root : _roots) {
+			long rootLastModified = root.getFile(path).lastModified();
+			if (rootLastModified > lastModified) {
+				lastModified = rootLastModified;
+			}
+		}
+		return lastModified;
+	}
+
 	public Root getARoot() {
 		long mostFree = 0;
 		Root mostFreeRoot = null;

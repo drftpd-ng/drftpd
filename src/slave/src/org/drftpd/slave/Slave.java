@@ -110,6 +110,8 @@ public class Slave {
 	
 	private DiskSelectionInterface _diskSelection = null;
 
+	private boolean _ignorePartialRemerge;
+
 	protected Slave() {
 	}
 
@@ -210,6 +212,8 @@ public class Slave {
 		} catch (NumberFormatException e) {
 			_portRange = new PortRange(_bufferSize);
 		}
+
+		_ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
 	}
 	
 	private void loadDiskSelection(Properties cfg) {
@@ -623,5 +627,9 @@ public class Slave {
 	
 	public SlaveProtocolCentral getProtocolCentral() {
 		return _central;
+	}
+
+	public boolean ignorePartialRemerge() {
+		return _ignorePartialRemerge;
 	}
 }

@@ -1,3 +1,4 @@
+# $Id$
 ######################
 ### Slave settings ###
 ######################
@@ -56,3 +57,7 @@ diskselection=org.drftpd.slave.diskselection.filter
 #cipher.9=SSL_RSA_WITH_NULL_MD5
 #cipher.10=SSL_RSA_WITH_NULL_SHA
 
+# Setting this to true will make this slave perform
+# a full remerge when connecting to a master irrespective
+# of any partial remerge settings on the master
+ignore.partialremerge=false

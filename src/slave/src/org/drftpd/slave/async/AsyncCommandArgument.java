@@ -28,11 +28,17 @@ import java.io.Serializable;
 public class AsyncCommandArgument implements Serializable {
 	private static final long serialVersionUID = 2937803123798047158L;
 	
-	protected String _args;
+	protected String[] _args;
 	protected String _name;
 	protected String _index;
 
 	public AsyncCommandArgument(String index, String name, String args) {
+		_args = new String[]{args};
+		_index = index;
+		_name = name;
+	}
+
+	public AsyncCommandArgument(String index, String name, String[] args) {
 		_args = args;
 		_index = index;
 		_name = name;
@@ -47,11 +53,27 @@ public class AsyncCommandArgument implements Serializable {
 	}
 	
 	public String getArgs() {
+		return _args[0];
+	}
+
+	public String[] getArgsArray() {
 		return _args;
 	}
 
 	public String toString() {
-		return getClass().getName() + "[index=" + getIndex() + ",name="
-				+ getName() + ",args=" + getArgs() + "]";
+		StringBuilder output = new StringBuilder(getClass().getName());
+		output.append("[index=");
+		output.append(_index);
+		output.append(",name=");
+		output.append(_name);
+		output.append(",args=");
+		for (int i = 0; i < _args.length; i++) {
+			output.append(_args[i]);
+			if (i < _args.length - 1) {
+				output.append(",");
+			}
+		}
+		output.append("]");
+		return output.toString();
 	}
 }

@@ -142,9 +142,11 @@ public class BasicIssuer extends AbstractBasicIssuer {
 		return index;
 	}
 
-	public String issueRemergeToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
+	public String issueRemergeToSlave(RemoteSlave rslave, String path, boolean partialRemerge, long skipAgeCutoff, long masterTime)
+		throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "remerge", path));
+		rslave.sendCommand(new AsyncCommandArgument(index, "remerge", new String[]{path, 
+				Boolean.toString(partialRemerge), Long.toString(skipAgeCutoff), Long.toString(masterTime)}));
 
 		return index;
 	}

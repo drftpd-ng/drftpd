@@ -244,7 +244,7 @@ public class SlaveManagement extends CommandInterface {
 
 		try { 
 			rslave.fetchResponse(SlaveManager.getBasicIssuer().issueRemergeToSlave(rslave, 
-					request.getCurrentDirectory().getPath()), 0); 
+					request.getCurrentDirectory().getPath(), false, 0L, 0L), 0); 
 		} catch (RemoteIOException e) { 
 			rslave.setOffline("IOException during remerge()"); 
 

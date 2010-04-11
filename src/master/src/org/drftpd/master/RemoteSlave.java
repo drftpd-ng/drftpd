@@ -388,13 +388,45 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		String checkSSLIndex = SlaveManager.getBasicIssuer().issueCheckSSL(this);
 		getTransientKeyedMap().setObject(SSL, fetchCheckSSLFromIndex(checkSSLIndex));
 
-		String remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/");
+		long skipAgeCutoff = 0L;
+		
+		String remergeMode = GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode");
+		boolean partialRemerge = false;
+		if (remergeMode == null) {
+			logger.error("Slave partial remerge undefined in master.conf, defaulting to \"off\"");
+		} else {
+			if (remergeMode.equalsIgnoreCase("connect")) {
+				try {
+					skipAgeCutoff = Long.valueOf(getProperty("lastConnect"));
+					partialRemerge = true;
+				} catch (NumberFormatException e) {
+					logger.warn("Slave partial remerge mode set to \"off\" as lastConnect time is undefined, this may " +
+							" resolve itself automatically on next slave connection");
+				}
+			} else if (remergeMode.equalsIgnoreCase("disconnect")) {
+				try {
+					skipAgeCutoff = Long.valueOf(getProperty("lastOnline"));
+					partialRemerge = true;
+				} catch (NumberFormatException e) {
+					logger.warn("Slave partial remerge mode set to \"off\" as lastOnline time is undefined, this may " +
+							" resolve itself automatically on next slave connection");
+				}
+			}
+		}
+		String remergeIndex;
+		if (partialRemerge) {
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", true, skipAgeCutoff,
+					System.currentTimeMillis());
+		} else {
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L);
+		}
 
 		try {
 			fetchResponse(remergeIndex, 0);
 		} catch (RemoteIOException e) {
 			throw new IOException(e.getMessage());
 		}
+		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
 
 		getGlobalContext().getSlaveManager().putRemergeQueue(
 				new RemergeMessage(this));
