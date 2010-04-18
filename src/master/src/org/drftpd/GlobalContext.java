@@ -266,7 +266,9 @@ public class GlobalContext {
 	}
 
 	static class Shutdown implements Runnable {
+
 		public void run() {
+			Thread.currentThread().setName("Shutdown Thread");
 			while(GlobalContext.getConnectionManager().getConnections().size() > 0) {
 				logger.info("Waiting for connections to be shutdown...");
 				try {

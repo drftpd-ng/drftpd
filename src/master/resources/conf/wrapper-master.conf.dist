@@ -1,3 +1,4 @@
+# $Id$
 #********************************************************************
 # Wrapper Properties
 #********************************************************************
@@ -26,7 +27,7 @@ wrapper.java.classpath.6=lib/drftpd-jpf-3.0.0.jar
 wrapper.java.library.path.1=lib
 
 # Java Additional Parameters
-wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-default.properties
+wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-master.properties
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-master.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
@@ -65,7 +66,7 @@ wrapper.console.format=PM
 wrapper.console.loglevel=INFO
 
 # Log file to use for wrapper output logging.
-wrapper.logfile=logs/wrapper.log
+wrapper.logfile=logs/wrapper-master.log
 
 # Format of output for the log file.  (See docs for formats)
 wrapper.logfile.format=LPTM

@@ -252,7 +252,9 @@ public class Slave {
 	public static void boot() throws Exception {
 		System.out.println("DrFTPD " + CommonPluginUtils.getPluginVersionForObject(Slave.class)
 				+ " Slave starting, further logging will be done through log4j");
-		
+
+		Thread.currentThread().setName("Slave Main Thread");
+
 		Properties p = new Properties();
 		FileInputStream fis = new FileInputStream("slave.conf");
 		p.load(fis);

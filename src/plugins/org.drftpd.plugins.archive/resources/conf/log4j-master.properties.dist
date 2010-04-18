@@ -1,0 +1,4 @@
+# $id$
+log4j.logger.org.drftpd.plugins.archive.Archive=DEBUG, mirroring
+log4j.logger.org.drftpd.plugins.archive.commands.ArchiveCommandHandler=DEBUG, mirroring
+log4j.additivity.org.drftpd.plugins.archive=false

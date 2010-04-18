@@ -90,7 +90,7 @@ public class ConnectionManager {
 		System.out.println("Further logging will be done using (mostly) log4j, check logs/");
 		// Set current thread name to make it clear in logfiles what is coming from the main master process 
 		// instead of being named after the wrapper
-		Thread.currentThread().setName("Master Thread");
+		Thread.currentThread().setName("Master Main Thread");
 
 		try {
 			logger.info("Starting ConnectionManager");
