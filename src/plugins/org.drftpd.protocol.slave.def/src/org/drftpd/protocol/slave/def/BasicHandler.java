@@ -174,13 +174,12 @@ public class BasicHandler extends AbstractHandler {
 	}
 
 	public AsyncResponse handleReceive(AsyncCommandArgument ac) {
-		StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
-		char type = st.nextToken().charAt(0);
-		long position = Long.parseLong(st.nextToken());
-		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st
-				.nextToken()));
-		String inetAddress = st.nextToken();
-		String path = mapPathToRenameQueue(st.nextToken());
+		String[] args = ac.getArgs().split(",", 5);
+		char type = args[0].charAt(0);
+		long position = Long.parseLong(args[1]);
+		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(args[2]));
+		String inetAddress = args[3];
+		String path = mapPathToRenameQueue(args[4]);
 		String fileName = path.substring(path.lastIndexOf("/") + 1);
 		String dirName = path.substring(0, path.lastIndexOf("/"));
 		Transfer t = getSlaveObject().getTransfer(transferIndex);
@@ -328,15 +327,14 @@ public class BasicHandler extends AbstractHandler {
 	}
 
 	public AsyncResponse handleSend(AsyncCommandArgument ac) {
-		StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
-		char type = st.nextToken().charAt(0);
-		long position = Long.parseLong(st.nextToken());
-		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(st
-				.nextToken()));
-		String inetAddress = st.nextToken();
-		String path = mapPathToRenameQueue(st.nextToken());
+		String[] args = ac.getArgs().split(",", 5);
+		char type = args[0].charAt(0);
+		long position = Long.parseLong(args[1]);
+		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(args[2]));
+		String inetAddress = args[3];
+		String path = mapPathToRenameQueue(args[4]);
 		Transfer t = getSlaveObject().getTransfer(transferIndex);
-		sendResponse(new AsyncResponse(ac.getIndex())); // return
+		sendResponse(new AsyncResponse(ac.getIndex()));
 
 		// calling thread on master
 		try {
