@@ -343,7 +343,7 @@ public class ListHandler extends CommandInterface {
 				}
 
 				try {
-					if (isFileHandle && file.getCheckSum() != 0 && file.getSize() != 0L) {
+					if (isFileHandle && file.getCheckSum() != 0) {
 						output.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
 					}
 				} catch (NoAvailableSlaveException e) {
