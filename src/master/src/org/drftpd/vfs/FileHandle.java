@@ -146,7 +146,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	public long getCheckSum() throws NoAvailableSlaveException,
 			FileNotFoundException {
 		long checksum = getInode().getChecksum();
-		if (checksum == 0L) {
+		if (checksum == 0L && getInode().getSize() != 0L) {
 			while (true) {
 				RemoteSlave rslave = getASlaveForFunction();
 				try {
