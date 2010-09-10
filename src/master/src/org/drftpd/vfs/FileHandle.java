@@ -147,6 +147,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 			FileNotFoundException {
 		long checksum = getInode().getChecksum();
 		if (checksum == 0L && getInode().getSize() != 0L) {
+			logger.debug("Retrieving slave checksum for " + getInode().getPath() + ", VFS checksum " + checksum + ", size " + getInode().getSize());
 			while (true) {
 				RemoteSlave rslave = getASlaveForFunction();
 				try {
