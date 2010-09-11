@@ -146,8 +146,21 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	public long getCheckSum() throws NoAvailableSlaveException,
 			FileNotFoundException {
 		long checksum = getInode().getChecksum();
-		if (checksum == 0L && getInode().getSize() != 0L) {
-			logger.debug("Retrieving slave checksum for " + getInode().getPath() + ", VFS checksum " + checksum + ", size " + getInode().getSize());
+		if (checksum == 0L) {
+			return getCheckSumFromSlave();
+		}
+		return checksum;
+	}
+
+	/**
+	 * @return the CRC32 of the file ignoring the cached value.
+	 * @throws FileNotFoundException if there's no such file.
+	 * @throws NoAvailableSlaveException if there's no available slave.
+	 */
+	public long getCheckSumFromSlave() throws NoAvailableSlaveException,
+			FileNotFoundException {
+		long checksum = 0L;
+		if (getInode().getSize() != 0L) {
 			while (true) {
 				RemoteSlave rslave = getASlaveForFunction();
 				try {
@@ -162,28 +175,6 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 			}
 		}
 		return checksum;
-	}
-
-	/**
-	 * @return the CRC32 of the file ignoring the cached value.
-	 * @throws FileNotFoundException if there's no such file.
-	 * @throws NoAvailableSlaveException if there's no available slave.
-	 */
-	public long getCheckSumFromSlave() throws NoAvailableSlaveException,
-			FileNotFoundException {
-		long checksum = 0L;
-		while (true) {
-			RemoteSlave rslave = getASlaveForFunction();
-			try {
-				checksum = rslave.getCheckSumForPath(getPath());
-				getInode().setChecksum(checksum);
-				return checksum;
-			} catch (IOException e) {
-				rslave.setOffline(e);
-			} catch (SlaveUnavailableException e) {
-				continue;
-			}
-		}
 	}
 
 	/**
