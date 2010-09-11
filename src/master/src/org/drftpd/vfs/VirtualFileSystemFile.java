@@ -115,12 +115,15 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * @param rslave
 	 */
 	public void addSlave(String rslave) {
+		boolean added;
 		synchronized (_slaves) {
-			_slaves.add(rslave);
+			added = _slaves.add(rslave);
 		}
-		commit();
+		if (added) {
+			commit();
 		
-		getVFS().notifySlavesChanged(this, _slaves);
+			getVFS().notifySlavesChanged(this, _slaves);
+		}
 	}
 
 	/**
@@ -143,13 +146,14 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 */
 	public void removeSlave(String rslave) {
 		boolean isEmpty;
+		boolean removed;
 		synchronized (_slaves) {
-			_slaves.remove(rslave);
+			removed = _slaves.remove(rslave);
 			isEmpty = _slaves.isEmpty();
 		}		
 		if (isEmpty) {
 			delete();
-		} else {
+		} else if (removed) {
 			commit();
 			
 			getVFS().notifySlavesChanged(this, _slaves);
