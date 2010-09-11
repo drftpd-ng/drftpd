@@ -496,10 +496,11 @@ public class DirectoryHandle extends InodeHandle implements
 						destinationCRC = 0L;
 					}
 */					
-					Set<RemoteSlave> rslaves = destinationFile.getSlaves();
+					
 					if (source.length() != destinationFile.getSize()) {
 //							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
 						// handle collision
+						Set<RemoteSlave> rslaves = destinationFile.getSlaves();
 						if (rslaves.contains(rslave) && rslaves.size() == 1) {
 							// size of the file has changed, but since this is the only slave with the file, just change the size
 							destinationFile.setSize(source.length());
@@ -516,9 +517,7 @@ public class DirectoryHandle extends InodeHandle implements
 									+ ") collided with a file on the master");
 						}
 					} else {
-						if (!rslaves.contains(rslave)) {
-							destinationFile.addSlave(rslave);
-						}
+						destinationFile.addSlave(rslave);
 					}
 				} else if (source.isDirectory() && destination.isDirectory()) {
 					// this is good, do nothing other than take up this case

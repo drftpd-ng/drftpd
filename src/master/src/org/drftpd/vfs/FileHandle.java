@@ -121,7 +121,9 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 */
 	public void removeSlave(RemoteSlave sourceSlave)
 			throws FileNotFoundException {
-		getInode().removeSlave(sourceSlave.getName());
+		if (getSlaves().contains(sourceSlave)) {
+			getInode().removeSlave(sourceSlave.getName());
+		}
 	}
 
 	/**
@@ -193,7 +195,9 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 */
 	public void addSlave(RemoteSlave destinationSlave)
 			throws FileNotFoundException {
-		getInode().addSlave(destinationSlave.getName());
+		if (!getSlaves().contains(destinationSlave)) {
+			getInode().addSlave(destinationSlave.getName());
+		}
 	}
 
 	/**
