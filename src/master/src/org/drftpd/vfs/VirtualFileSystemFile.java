@@ -119,11 +119,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		synchronized (_slaves) {
 			added = _slaves.add(rslave);
 		}
-		if (added) {
+		//if (added) {
 			commit();
 		
 			getVFS().notifySlavesChanged(this, _slaves);
-		}
+		//}
 	}
 
 	/**
@@ -153,7 +153,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		}		
 		if (isEmpty) {
 			delete();
-		} else if (removed) {
+		//} else if (removed) {
+		} else {
 			commit();
 			
 			getVFS().notifySlavesChanged(this, _slaves);
