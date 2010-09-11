@@ -214,8 +214,8 @@ public class BasicHandler extends AbstractHandler {
 		try {
 			String[] argsArray = ac.getArgsArray();
 			long skipAgeCutoff = 0L;
-			boolean partialRemerge = Boolean.parseBoolean(argsArray[1]);
-			if (partialRemerge && !getSlaveObject().ignorePartialRemerge()) {
+			boolean partialRemerge = Boolean.parseBoolean(argsArray[1]) && !getSlaveObject().ignorePartialRemerge();
+			if (partialRemerge) {
 				skipAgeCutoff = Long.parseLong(argsArray[2]);
 				long masterTime = Long.parseLong(argsArray[3]);
 				if (skipAgeCutoff != Long.MIN_VALUE) {
