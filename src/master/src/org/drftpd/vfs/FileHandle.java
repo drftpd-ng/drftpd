@@ -113,7 +113,6 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	public void setCheckSum(long checksum) throws FileNotFoundException {
 		VirtualFileSystemFile file = getInode();
 		file.setChecksum(checksum);
-		file.commit();
 	}
 
 	/**
@@ -160,12 +159,12 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	public long getCheckSumFromSlave() throws NoAvailableSlaveException,
 			FileNotFoundException {
 		long checksum = 0L;
-		if (getInode().getSize() != 0L) {
+		if (getSize() != 0L) {
 			while (true) {
 				RemoteSlave rslave = getASlaveForFunction();
 				try {
 					checksum = rslave.getCheckSumForPath(getPath());
-					getInode().setChecksum(checksum);
+					setCheckSum(checksum);
 					return checksum;
 				} catch (IOException e) {
 					rslave.setOffline(e);
