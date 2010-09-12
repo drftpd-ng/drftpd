@@ -61,6 +61,11 @@ public class ID3Parser extends RandomAccessFile {
 			_id3tag = new ID3Tag();
 			_id3tag = readID3v1Tag(_id3tag);
 		}
+		try {
+			this.close();
+		} catch (IOException e) {
+			// Do nothing, probably file already closed
+		}
 	}
 
 	public ID3Tag getID3Tag() {
