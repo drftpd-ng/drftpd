@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -221,6 +222,10 @@ public class BasicHandler extends AbstractHandler {
 				if (skipAgeCutoff != Long.MIN_VALUE) {
 					skipAgeCutoff += System.currentTimeMillis() - masterTime;
 				}
+				Date cutoffDate = new Date(skipAgeCutoff);
+				logger.info("Partial remerge enabled, skipping all files last modified before " + cutoffDate.toString());
+			} else {
+				logger.info("Partial remerge disabled, performing full remerge");
 			}
 			handleRemergeRecursive2(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
 
