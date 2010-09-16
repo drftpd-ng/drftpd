@@ -632,6 +632,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_transfers = new HashMap<TransferIndex, RemoteTransfer>();
 		_errors = 0;
 		_lastNetworkError = System.currentTimeMillis();
+		_initRemergeCompleted = false;
 		
 		try {
 			GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().handshakeWithSlave(this);
