@@ -973,6 +973,7 @@ public class DataConnectionHandler extends CommandInterface {
 			}
 
 			TransferStatus status = null;
+			CommandResponse response = null;
 
 			//transfer
 			try {
@@ -1016,10 +1017,9 @@ public class DataConnectionHandler extends CommandInterface {
 					throw new RuntimeException();
 				}
 				if (conn.isAborted()) {
-					return new CommandResponse(226,"Transfer aborted");
+					response = new CommandResponse(226,"Transfer aborted");
 				}
 			} catch (IOException ex) {          	                
-				CommandResponse response = null;
 				boolean fxpDenied = false;
 
 				if (ex instanceof TransferFailedException) {
@@ -1056,7 +1056,6 @@ public class DataConnectionHandler extends CommandInterface {
 				return response;
 			} catch (SlaveUnavailableException e) {
 				logger.debug("", e);
-				CommandResponse response = null;
 
 				if (isStor) {
 					try {
@@ -1078,14 +1077,16 @@ public class DataConnectionHandler extends CommandInterface {
 				return response;
 			}
 
-			env = new ReplacerEnvironment();
-			env.add("bytes", Bytes.formatBytes(status.getTransfered()));
-			env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
-			env.add("seconds", "" + (status.getElapsed() / 1000F));
-			env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
+			if (!conn.isAborted()) {
+				env = new ReplacerEnvironment();
+				env.add("bytes", Bytes.formatBytes(status.getTransfered()));
+				env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
+				env.add("seconds", "" + (status.getElapsed() / 1000F));
+				env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
-			CommandResponse response = new CommandResponse(226, conn.jprintf(_bundle,
-					_keyPrefix+"transfer.complete", env, request.getUser()));
+				response = new CommandResponse(226, conn.jprintf(_bundle,
+						_keyPrefix+"transfer.complete", env, request.getUser()));
+			}
 
 			response.setObject(CHECKSUM,status.getChecksum());
 			response.setObject(TRANSFER_FILE,ts.getTransferFile());
@@ -1109,11 +1110,13 @@ public class DataConnectionHandler extends CommandInterface {
 				}
 			}
 
-			// Dispatch for both STOR and RETR
-			GlobalContext.getEventService().publishAsync(
-					new TransferEvent(conn, eventType, ts.getTransferFile(),
-							conn.getClientAddress(), ts.getTransferSlave(), ts
-							.getAddress().getAddress(), ts.getType()));
+			if (!conn.isAborted()) {
+				// Dispatch for both STOR and RETR
+				GlobalContext.getEventService().publishAsync(
+						new TransferEvent(conn, eventType, ts.getTransferFile(),
+								conn.getClientAddress(), ts.getTransferSlave(), ts
+								.getAddress().getAddress(), ts.getType()));
+			}
 			return response;
 		} finally {
 			reset(conn);
