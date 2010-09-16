@@ -131,6 +131,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private transient HashMap<TransferIndex, RemoteTransfer> _transfers;
 
 	private transient AtomicBoolean _remergePaused;
+	
+	private transient boolean _initRemergeCompleted;
 
 	public RemoteSlave(String name) {
 		_name = name;
@@ -430,6 +432,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 		getGlobalContext().getSlaveManager().putRemergeQueue(
 				new RemergeMessage(this));
+		_initRemergeCompleted = true;
 		if (_remergePaused.get()) {
 			logger.debug("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
 			SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
@@ -818,7 +821,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					throw new SlaveUnavailableException();
 				}
 
-				if (isOnline() && !isAvailable()) {
+				if (isOnline() && !isAvailable() && !_initRemergeCompleted) {
 					int queueSize = CommitManager.getCommitManager().getQueueSize();
 					if (_remergePaused.get()) {
 						// Do we need to resume
