@@ -18,6 +18,7 @@
 package org.drftpd.commands.indexmanager;
 
 import java.io.FileNotFoundException;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Map.Entry;
 
@@ -28,8 +29,6 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.usermanager.User;
-import org.drftpd.util.ExtendedPropertyResourceBundle;
-import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
@@ -46,7 +45,7 @@ public class IndexManager extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(IndexManager.class);
 	
 
-	private ExtendedPropertyResourceBundle _bundle;
+	private ResourceBundle _bundle;
 	private String _keyPrefix;
 	
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
@@ -80,7 +79,7 @@ public class IndexManager extends CommandInterface {
 			for (Entry<String,String> entry : ie.getStatus().entrySet()) {
 				env.add("key", entry.getKey());
 				env.add("value", entry.getValue());
-				response.addComment(ReplacerUtils.jprintf(_keyPrefix+"indexstatus", env, _bundle));
+				response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"indexstatus", env, request.getUser()));
 			}
 		} else {
 			response.addComment("Entries in the index: " + ie.getStatus().get("inodes"));
