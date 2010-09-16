@@ -22,6 +22,6 @@ perms =siteop
 SITE INDEXSTATUS {
 plugin org.drftpd.commands.indexmanager
 class IndexManager
-method doSearchDir
-perms =doIndexStatus
+method doIndexStatus
+perms =siteop
 }
