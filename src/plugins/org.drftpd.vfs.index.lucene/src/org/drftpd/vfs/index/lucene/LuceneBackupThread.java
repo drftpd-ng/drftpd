@@ -57,7 +57,7 @@ public class LuceneBackupThread  extends Thread {
 
 	public void run() {
 		String[] backups;
-		int x = 0;
+		int x;
 
 		while (true) {
 			if (_stop) {
@@ -92,7 +92,7 @@ public class LuceneBackupThread  extends Thread {
 					}
 
 					// creating the destination directory.
-					FSDirectory bkpDirectory = FSDirectory.getDirectory(f);
+					FSDirectory bkpDirectory = FSDirectory.open(f);
 
 					Directory.copy(_engine.getStorage(), bkpDirectory, false);
 					logger.debug("A backup of the index was created successfully.");

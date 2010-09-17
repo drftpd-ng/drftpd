@@ -18,6 +18,7 @@
 
 package org.drftpd.vfs.index.lucene;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
@@ -32,7 +33,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.Token;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -107,7 +108,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private IndexSearcher _iSearcher;
 
 	private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
-	private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));;
+	private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
 	
 	private static final Term TERM_NAME = new Term("name", "");
 	private static final Term TERM_PARENT = new Term("parentPath", "");
@@ -164,9 +165,9 @@ public class LuceneEngine implements IndexEngineInterface {
 	private void openStreams() throws IndexException {
 		try {
 			if (_nativeLocking) {
-				_storage = FSDirectory.getDirectory(INDEX_DIR, new NativeFSLockFactory(INDEX_DIR));
+				_storage = FSDirectory.open(new File(INDEX_DIR), new NativeFSLockFactory(INDEX_DIR));
 			} else {
-				_storage = FSDirectory.getDirectory(INDEX_DIR);
+				_storage = FSDirectory.open(new File(INDEX_DIR));
 			}
 
 			_iWriter = new IndexWriter(_storage, ANALYZER, MaxFieldLength.UNLIMITED);
@@ -256,7 +257,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			if (inodeType == InodeType.FILE) {
 				StringBuffer sb = new StringBuffer();
 				for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
-					sb.append(slaveName+",");				
+					sb.append(slaveName).append(",");
 				}
 				
 				FIELD_SLAVES.setValue(sb.toString());
@@ -459,26 +460,22 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 	private Query analyzePath(String name) {
 		TokenStream ts = ANALYZER.tokenStream("name", new StringReader(name));
-		Token token = new Token();
 
 		BooleanQuery bQuery = new BooleanQuery();
-		WildcardQuery wQuery = null;
+		WildcardQuery wQuery;
 
 		Set<String> tokens = new HashSet<String>(); // avoids repeated terms.
 
-		while (true) {
-			try {
-				token = ts.next(token);
-			} catch (IOException e) {
-				token = null;
-				break;
+		TermAttribute termAtt = ts.getAttribute(TermAttribute.class);
+
+		try {
+			while (ts.incrementToken()) {
+				tokens.add(new String(termAtt.termBuffer(), 0, termAtt.termLength()));
 			}
-			
-			if (token == null) {
-				break;
-			}
-			
-			tokens.add(new String(token.termBuffer(), 0, token.termLength()));
+			ts.end();
+			ts.close();
+		} catch (IOException e) {
+			// log error?
 		}
 
 		for (String text : tokens) {
@@ -522,9 +519,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		status.put("ram usage", Bytes.formatBytes(_iWriter.ramSizeInBytes()));
 
 		long size = 0L;
-		String[] paths = null;
+		String[] paths;
 		try {
-			paths = _storage.list();
+			paths = _storage.listAll();
 			for (String path : paths) {
 				size += new PhysicalFile(INDEX_DIR + "/" + path).length();
 			}

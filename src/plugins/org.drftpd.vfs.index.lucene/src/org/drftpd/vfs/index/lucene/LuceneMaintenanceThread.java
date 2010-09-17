@@ -83,7 +83,6 @@ public class LuceneMaintenanceThread extends Thread {
 					wait(_minDelay);
 				}
 			} catch (InterruptedException e) {
-				continue;
 			} catch (CorruptIndexException e) {
 				throw new IllegalStateException("Corrupt index, couldn't run periodical maintenance, that's bad!", e);
 			} catch (IOException e) {
