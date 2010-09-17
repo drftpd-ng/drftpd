@@ -105,7 +105,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private Directory _storage;
 	private IndexWriter _iWriter;
-	private IndexSearcher _iSearcher;
+	//private IndexSearcher _iSearcher;
 
 	private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
 	private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
@@ -171,7 +171,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			_iWriter = new IndexWriter(_storage, ANALYZER, MaxFieldLength.UNLIMITED);
-			_iSearcher = new IndexSearcher(_storage);
+			//_iSearcher = new IndexSearcher(_storage);
 
 			_iWriter.setMaxBufferedDocs(_maxDocsBuffer);
 			_iWriter.setRAMBufferSizeMB(_maxRAMBufferSize);
@@ -211,8 +211,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 	private void closeAll() {
 		try {
-			if (_iSearcher != null)
-				_iSearcher.close();
+			//if (_iSearcher != null)
+			//	_iSearcher.close();
 			if (_iWriter != null)
 				_iWriter.close();
 			if (_storage != null)
@@ -221,7 +221,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			logger.error(e, e);
 		}
 
-		_iSearcher = null;
+		//_iSearcher = null;
 		_iWriter = null;
 		_storage = null;
 	}
@@ -388,11 +388,11 @@ public class LuceneEngine implements IndexEngineInterface {
 		
 		commit(); // commit the writer so that the searcher can see the new stuff.
 		
-		try {
+		/*try {
 			refreshSearcher();
 		} catch (Exception e) {
 			throw new IndexException(e);
-		}
+		}*/
 	}
 
 	/* {@inheritDoc} */
@@ -410,6 +410,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 *            If you are searching for a File, Dir or both.
 	 */
 	public Set<String> findInode(DirectoryHandle startNode, String text, InodeType inodeType) throws IndexException {
+		IndexSearcher iSearcher = null;
 		try {
 			Set<String> inodes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
@@ -437,11 +438,12 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(QUERY_FILE, Occur.MUST);
 			}
 
-			TopDocs topDocs = _iSearcher.search(query, _maxHitsNumber);
+			iSearcher = new IndexSearcher(_iWriter.getReader());
+			TopDocs topDocs = iSearcher.search(query, _maxHitsNumber);
 			logger.debug("Query: " + query);
 
 			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-				Document doc = _iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
 				inodes.add(doc.getFieldable("fullPath").stringValue());
 			}
 
@@ -450,6 +452,19 @@ public class LuceneEngine implements IndexEngineInterface {
 			throw new IndexException("Unable to search the index", e);
 		} catch (IOException e) {
 			throw new IndexException("Unable to search the index", e);
+		} finally {
+			if (iSearcher != null) {
+				try {
+					iSearcher.close();
+				} catch (IOException e) {
+					logger.debug("IOException closing IndexSearcher", e);
+				}
+				try {
+					_iWriter.getReader().close();
+				} catch (IOException e) {
+					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
+				}
+			}
 		}
 	}
 
@@ -541,7 +556,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		return _iWriter;
 	}
 	
-	public void refreshSearcher() throws CorruptIndexException, IOException {
+	/*public void refreshSearcher() throws CorruptIndexException, IOException {
 		IndexSearcher newSearcher = new IndexSearcher(_storage);
 		IndexSearcher oldSearcher = _iSearcher;
 		
@@ -555,7 +570,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				// don't care about it
 			}
 		}
-	}
+	}*/
 	
 	/**
 	 * Hook ran by the JVM before shutting down itself completely. This hook

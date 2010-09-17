@@ -68,7 +68,7 @@ public class LuceneMaintenanceThread extends Thread {
 					logger.debug("Index was optimized successfully.");
 				}
 
-				if (_currentTime >= _lastSearcherCreation + _updateSearcherInterval) {
+				/*if (_currentTime >= _lastSearcherCreation + _updateSearcherInterval) {
 					logger.debug("Creating a new IndexSearcher.");
 
 					_engine.refreshSearcher();
@@ -76,7 +76,7 @@ public class LuceneMaintenanceThread extends Thread {
 					updateSearcherCreationTime();
 
 					logger.debug("Search engine updated successfully.");
-				}
+				}*/
 
 				// obtaining the object monitor's.
 				synchronized (this) {
