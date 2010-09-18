@@ -78,8 +78,7 @@
 				target="${build.javac}"
 				debug="${build.debug}"
 				optimize="${build.optimize}"
-				includeAntRuntime="false">
-			</javac>
+				includeAntRuntime="false" />
 			<copy todir="${compile.dest}">
 				<fileset dir="${basedir}/src">
 					<include name="**/*.properties" />
