@@ -71,7 +71,8 @@
 			excludes=""
 			target="${build.javac}"
 			debug="${build.debug}"
-			optimize="${build.optimize}" />
+			optimize="${build.optimize}"
+			includeAntRuntime="false" />
 		<copy todir="${tools.dest}">
 			<fileset dir="${tools.src}" includes="**/*.properties" />
 		</copy>
