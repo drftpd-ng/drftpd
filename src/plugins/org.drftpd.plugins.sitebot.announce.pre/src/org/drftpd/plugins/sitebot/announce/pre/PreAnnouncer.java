@@ -59,6 +59,10 @@ public class PreAnnouncer implements AnnounceInterface {
 	public String[] getEventTypes() {
 		return new String[] { "pre" };
 	}
+	
+	public void setResourceBundle(ResourceBundle bundle) {
+		_bundle = bundle;
+	}
 
     @EventSubscriber
 	public void onPreEvent(PreEvent event) {

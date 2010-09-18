@@ -2962,6 +2962,11 @@ public class SiteBot implements ReplyConstants, Runnable {
 			}
 		}
 		_announceConfig.reload();
+		
+		// Ensure that all announcers pickup any changes to the theme files
+		for (AnnounceInterface announcer : _announcers) {
+			announcer.setResourceBundle(_commandManager.getResourceBundle());
+		}
 	}
 
 	@EventSubscriber

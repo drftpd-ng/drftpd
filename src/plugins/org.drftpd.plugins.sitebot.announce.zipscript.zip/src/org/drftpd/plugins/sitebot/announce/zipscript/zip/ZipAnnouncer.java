@@ -88,6 +88,10 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 		String[] types = {"pre","store.complete","store.first","store.halfway","store.race"};
 		return types;
 	}
+	
+	public void setResourceBundle(ResourceBundle bundle) {
+		_bundle = bundle;
+	}
 
 	@EventSubscriber
 	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {

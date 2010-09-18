@@ -59,6 +59,10 @@ public class RequestAnnouncer implements AnnounceInterface {
 	public String[] getEventTypes() {
 		return new String[] { "request", "reqfilled", "reqdel" };
 	}
+	
+	public void setResourceBundle(ResourceBundle bundle) {
+		_bundle = bundle;
+	}
 
 	@EventSubscriber
 	public void onRequestEvent(RequestEvent event) {

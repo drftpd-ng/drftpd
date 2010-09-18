@@ -73,6 +73,10 @@ public class BasicAnnouncer implements AnnounceInterface {
 				"delslave","store","invite"};
 		return types;
 	}
+	
+	public void setResourceBundle(ResourceBundle bundle) {
+		_bundle = bundle;
+	}
 
 	@EventSubscriber
 	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {

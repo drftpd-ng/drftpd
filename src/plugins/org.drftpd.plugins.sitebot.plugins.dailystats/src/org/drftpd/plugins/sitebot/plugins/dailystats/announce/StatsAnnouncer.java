@@ -62,6 +62,10 @@ public class StatsAnnouncer implements AnnounceInterface {
 		String[] types = {"dailystats"};
 		return types;
 	}
+	
+	public void setResourceBundle(ResourceBundle bundle) {
+		_bundle = bundle;
+	}
 
 	@EventSubscriber
 	public void onStatsEvent(StatsEvent event) {

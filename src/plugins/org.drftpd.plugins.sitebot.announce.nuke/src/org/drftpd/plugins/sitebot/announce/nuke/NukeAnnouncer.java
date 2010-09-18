@@ -65,6 +65,10 @@ public class NukeAnnouncer implements AnnounceInterface {
 	public String[] getEventTypes() {
 		return new String[] { "nuke", "unnuke" };
 	}
+	
+	public void setResourceBundle(ResourceBundle bundle) {
+		_bundle = bundle;
+	}
 
 	@EventSubscriber
 	public void onNukeEvent(NukeEvent event) {

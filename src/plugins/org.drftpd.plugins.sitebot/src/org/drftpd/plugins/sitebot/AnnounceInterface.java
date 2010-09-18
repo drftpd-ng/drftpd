@@ -32,4 +32,6 @@ public interface AnnounceInterface {
 	public void stop();
 
 	public String[] getEventTypes();
+	
+	public void setResourceBundle(ResourceBundle bundle);
 }

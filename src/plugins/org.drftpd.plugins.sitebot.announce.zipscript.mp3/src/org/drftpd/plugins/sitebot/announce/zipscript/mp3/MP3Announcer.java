@@ -62,6 +62,10 @@ public class MP3Announcer implements AnnounceInterface {
 		String[] types = {"mp3"};
 		return types;
 	}
+	
+	public void setResourceBundle(ResourceBundle bundle) {
+		_bundle = bundle;
+	}
 
 	@EventSubscriber
 	public void onMP3Event(MP3Event event) {
