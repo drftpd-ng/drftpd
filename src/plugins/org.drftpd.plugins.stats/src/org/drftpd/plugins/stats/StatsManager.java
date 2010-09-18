@@ -64,7 +64,7 @@ public class StatsManager implements PluginInterface {
 	}
 
 	public void stopPlugin(String reason) {
-		GlobalContext.getEventService().unsubscribe(UserEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 		logger.debug("Unloaded the Stats plugin successfully");
 	}
 

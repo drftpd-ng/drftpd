@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.permissions.fxp"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.permissions.fxp" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

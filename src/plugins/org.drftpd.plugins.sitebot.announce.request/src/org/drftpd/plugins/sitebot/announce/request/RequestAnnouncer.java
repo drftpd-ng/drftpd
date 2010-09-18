@@ -21,7 +21,6 @@ import java.util.StringTokenizer;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.GlobalContext;
 import org.drftpd.event.RequestEvent;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
@@ -53,7 +52,7 @@ public class RequestAnnouncer implements AnnounceInterface {
 
 	public void stop() {
 		// The plugin is unloading so stop asking for events
-		GlobalContext.getEventService().unsubscribe(RequestEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 	}
 
 	public String[] getEventTypes() {

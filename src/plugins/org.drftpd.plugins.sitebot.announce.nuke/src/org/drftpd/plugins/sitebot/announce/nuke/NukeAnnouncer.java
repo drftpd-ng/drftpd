@@ -59,7 +59,7 @@ public class NukeAnnouncer implements AnnounceInterface {
 
 	public void stop() {
 		// The plugin is unloading so stop asking for events
-		GlobalContext.getEventService().unsubscribe(NukeEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 	}
 
 	public String[] getEventTypes() {

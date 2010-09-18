@@ -189,7 +189,7 @@ public class Archive implements PluginInterface {
 			_runHandler.cancel();
 			GlobalContext.getGlobalContext().getTimer().purge();
 		}
-		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 		logger.info("Archive plugin unloaded successfully");
 	}
 }

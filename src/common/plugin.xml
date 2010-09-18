@@ -28,10 +28,10 @@
 		<library id="common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="junit" path="../../lib/junit-4.6.jar" type="code">
+		<library id="junit" path="../../lib/junit-4.8.2.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="log4j" path="../../lib/log4j-1.2.15.jar" type="code">
+		<library id="log4j" path="../../lib/log4j-1.2.16.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="oro" path="../../lib/jakarta-oro-2.0.8.jar" type="code">
@@ -49,10 +49,7 @@
 		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.0.0.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="google-collections" path="../../lib/google-collect-1.0-rc2.jar" type="code">
-			<export prefix="*" />
-		</library>
-		<library id="commons-lang" path="../../lib/commons-lang-2.4.jar" type="code">
+		<library id="commons-lang" path="../../lib/commons-lang-2.5.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

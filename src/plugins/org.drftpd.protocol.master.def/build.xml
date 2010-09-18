@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.protocol.master.def"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.protocol.master.def" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

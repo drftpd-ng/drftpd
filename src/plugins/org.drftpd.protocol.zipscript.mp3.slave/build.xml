@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.protocol.zipscript.mp3.slave"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.protocol.zipscript.mp3.slave" />
 	<property name="plugin.family" value="plugins/slave" />
 	<target name="build">
 		<buildplugin />

@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.commands.usermanagement"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.commands.usermanagement" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

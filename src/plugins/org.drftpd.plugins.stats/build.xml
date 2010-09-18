@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.plugins.stats"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.plugins.stats" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

@@ -327,7 +327,7 @@ public class JobManager implements PluginInterface {
 				_queuedJobSet.clear();
 			}
 		}
-		GlobalContext.getEventService().unsubscribe(ReloadEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 		logger.info("JobManager plugin unloaded successfully");
 	}
 

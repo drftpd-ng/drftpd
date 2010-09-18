@@ -33,7 +33,7 @@ import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 
 import sun.misc.BASE64Encoder;
-import de.schlichtherle.io.archive.zip.Zip32InputArchive;
+import de.schlichtherle.io.archive.zip.ZipInputArchive;
 import de.schlichtherle.io.rof.SimpleReadOnlyFile;
 import de.schlichtherle.util.zip.ZipEntry;
 
@@ -64,7 +64,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 		SimpleReadOnlyFile zipFile = null;
 		try {
 			zipFile = new SimpleReadOnlyFile(slave.getRoots().getFile(path));
-			Zip32InputArchive zipArchive = new Zip32InputArchive(zipFile,"UTF-8",true,false);
+			ZipInputArchive zipArchive = new ZipInputArchive(zipFile,"UTF-8",true,false);
 			for (Enumeration<?> zipEntries = zipArchive.getArchiveEntries();zipEntries.hasMoreElements();) {
 				ZipEntry zipEntry = (ZipEntry)zipEntries.nextElement();
 				entryStream = zipArchive.getCheckedInputStream(zipEntry);
@@ -92,10 +92,10 @@ public class ZipscriptZipHandler extends AbstractHandler {
 	private DizInfo getDizInfo(Slave slave, String path) {
 		DizInfo dizInfo = new DizInfo();
 		InputStream entryStream = null;
-		Zip32InputArchive zipFile = null;
+		ZipInputArchive zipFile = null;
 		try {
 			File file = slave.getRoots().getFile(path);
-			zipFile = new Zip32InputArchive(new SimpleReadOnlyFile(file),"UTF-8",true,false);
+			zipFile = new ZipInputArchive(new SimpleReadOnlyFile(file),"UTF-8",true,false);
 			for (Enumeration<?> zipEntries = zipFile.getArchiveEntries();zipEntries.hasMoreElements();) {
 				ZipEntry zipEntry = (ZipEntry)zipEntries.nextElement();
 				if (zipEntry.getName().toLowerCase().equals("file_id.diz")) {

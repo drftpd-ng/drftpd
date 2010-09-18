@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="slave"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/slave" />
 	<property name="plugin.family" value="core" />
 	<target name="build">
 		<buildplugin />

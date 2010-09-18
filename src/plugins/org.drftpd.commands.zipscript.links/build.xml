@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.commands.zipscript.links"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.commands.zipscript.links" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

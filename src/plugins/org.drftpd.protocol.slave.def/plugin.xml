@@ -16,6 +16,7 @@
 	</requires>
 	<runtime>
 		<library id="org.drftpd.protocol.slave.def" path="classes/" type="code" />
+		<library id="wrapper" path="../../../lib/wrapper.jar" type="code" />
 	</runtime>
 
 	<extension plugin-id="slave" point-id="Handler" id="RemergeHandler">

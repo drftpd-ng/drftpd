@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.protocol.zipscript.zip.common"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.protocol.zipscript.zip.common" />
 	<property name="plugin.family" value="plugins/common" />
 	<target name="build">
 		<buildplugin />

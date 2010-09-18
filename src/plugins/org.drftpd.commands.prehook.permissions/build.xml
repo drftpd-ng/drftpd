@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.commands.prehook.permissions"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.commands.prehook.permissions" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

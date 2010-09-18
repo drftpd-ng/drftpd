@@ -9,7 +9,7 @@ slave.name=drftpd
 #root to serve contents from, is automatically created
 slave.root.1=site
 #you can use several roots for striping files across
-#several harddrives without using RAID or similair.
+#several harddrives without using RAID or similar.
 #slave.root.2=d:/
 
 # Master host/ip

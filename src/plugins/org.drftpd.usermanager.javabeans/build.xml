@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.usermanager.javabeans"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.usermanager.javabeans" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

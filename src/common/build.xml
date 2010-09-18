@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="common"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/common" />
 	<property name="plugin.family" value="core" />
 	<target name="build">
 		<buildplugin />

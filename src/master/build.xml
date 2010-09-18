@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="master"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/master" />
 	<property name="plugin.family" value="core" />
 	<target name="build">
 		<property name="compile.excludes" value="**/DummySlaveSel*,**/*Test*" />

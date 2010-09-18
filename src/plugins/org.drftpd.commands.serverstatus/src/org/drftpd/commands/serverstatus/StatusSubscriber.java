@@ -2,7 +2,6 @@ package org.drftpd.commands.serverstatus;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.SlaveEvent;
@@ -50,8 +49,7 @@ public class StatusSubscriber {
 			int pointIndex = pluginExtension.lastIndexOf("@");
 			String pluginName = pluginExtension.substring(0, pointIndex);
 			if (pluginName.equals(currentPlugin)) {
-				GlobalContext.getEventService().unsubscribe(SlaveEvent.class, this);
-				GlobalContext.getEventService().unsubscribe(UnloadPluginEvent.class, this);
+				AnnotationProcessor.unprocess(this);
 				nullify();
 				return;
 			}

@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.sections.def"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.sections.def" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

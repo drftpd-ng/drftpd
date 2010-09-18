@@ -217,7 +217,6 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 	}
 
 	public void unload() {
-		GlobalContext.getEventService().unsubscribe(UnloadPluginEvent.class, this);
-		GlobalContext.getEventService().unsubscribe(LoadPluginEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 	}
 }

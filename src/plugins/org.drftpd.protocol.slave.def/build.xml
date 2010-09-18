@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.protocol.slave.def"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.protocol.slave.def" />
 	<property name="plugin.family" value="plugins/slave" />
 	<target name="build">
 		<buildplugin />

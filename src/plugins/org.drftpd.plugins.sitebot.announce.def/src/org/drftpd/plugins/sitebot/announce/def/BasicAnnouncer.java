@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.GlobalContext;
 import org.drftpd.commands.slavemanagement.SlaveManagement;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.SlaveEvent;
@@ -63,9 +62,7 @@ public class BasicAnnouncer implements AnnounceInterface {
 	}
 
 	public void stop() {
-		GlobalContext.getEventService().unsubscribe(DirectoryFtpEvent.class, this);
-		GlobalContext.getEventService().unsubscribe(InviteEvent.class, this);
-		GlobalContext.getEventService().unsubscribe(SlaveEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 	}
 
 	public String[] getEventTypes() {

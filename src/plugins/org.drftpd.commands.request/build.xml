@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.commands.request"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.commands.request" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

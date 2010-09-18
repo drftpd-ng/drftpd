@@ -113,6 +113,9 @@ public class PluginBuilder {
 			buildTarget.setName("build");
 			_antBuilder.addConfiguredTarget(buildTarget);
 		}
+		
+		// Set root dir of the build
+		_builderProject.setProperty("buildroot", System.getProperty("user.dir"));
 
 		// Final setup of ant builder
 		_antBuilder.setProject(_builderProject);

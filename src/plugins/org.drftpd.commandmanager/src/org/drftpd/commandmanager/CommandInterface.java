@@ -251,6 +251,6 @@ public abstract class CommandInterface {
 	 * required at this point.
 	 */
 	protected void unload() {
-		GlobalContext.getEventService().unsubscribe(UnloadPluginEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 	}
 }

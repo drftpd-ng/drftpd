@@ -2,7 +2,6 @@
 <!-- $Id$ -->
 <project name="org.drftpd.vfs.perms.regex"
          default="build">
-	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.vfs.perms.regex" />
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

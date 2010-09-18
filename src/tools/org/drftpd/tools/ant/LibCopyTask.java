@@ -54,7 +54,7 @@ public class LibCopyTask extends Task {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void execute() throws BuildException {
-		_distDir = getProject().getProperty("basedir");
+		_distDir = getProject().getProperty("buildroot");
 		_installDir = getProject().getProperty("installdir");
 		// See if this is a slave plugin
 		_slavePlugin = getProject().getProperty("slave.plugin").equalsIgnoreCase("true");
@@ -68,7 +68,7 @@ public class LibCopyTask extends Task {
 			if (lib.getPath().equalsIgnoreCase("classes/")) {
 				continue;
 			}
-			File initial = new File(getProject().getProperty("plugin.base"),lib.getPath());
+			File initial = new File(getProject().getProperty("basedir"),lib.getPath());
 			try {
 				File actual = initial.getCanonicalFile();
 				if (actual.exists()) {

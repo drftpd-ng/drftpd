@@ -81,7 +81,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 	}
 
 	public void stop() {
-		GlobalContext.getEventService().unsubscribe(DirectoryFtpEvent.class, this);
+		AnnotationProcessor.unprocess(this);
 	}
 
 	public String[] getEventTypes() {

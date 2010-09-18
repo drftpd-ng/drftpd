@@ -26,7 +26,7 @@
 	<!-- define common macros for build and clean targets -->
 	<macrodef name="buildplugin">
 		<sequential>
-			<jpf-info manifest="${plugin.base}/plugin.xml"
+			<jpf-info manifest="${basedir}/plugin.xml"
 						propertyid="plugin.id"
 						propertyversion="plugin.version" />
 			<property name="plugin.home" value="${installdir}/${plugin.family}/${plugin.id}" />
@@ -41,23 +41,24 @@
 			</if>
 			<resourcetask
 				basedir="${installdir}"
-				resourcedir="${plugin.base}/resources" />
+				resourcedir="${basedir}/resources" />
 			<themetask
 				basedir="${installdir}"
-				plugindir="${plugin.base}/src" />
-			<property name="build.dir" value="${basedir}/build/${plugin.family}/${plugin.id}" />
+				plugindir="${basedir}/src" />
+			<property name="build.dir" value="${buildroot}/build/${plugin.family}/${plugin.id}" />
 			<mkdir dir="${build.dir}" />
-			<copy file="${plugin.base}/plugin.xml" todir="${build.dir}" />
+			<copy file="${basedir}/plugin.xml" todir="${build.dir}" />
 			<replaceregexp file="${build.dir}/plugin.xml"
-				match="(library\x20id.*?)(\.\.\/){2,}(lib\/.*\.jar)"
-				replace="\1..\/..\/..\/\3"
+				match="(library\x20id.*?path=&quot;)(\.\.\/)(.*?lib\/.*\.jar)"
+				replace="\1..\/..\/\3"
 				byline="true" />
 			<jpf-path
-				basedir="${basedir}"
+				basedir="${buildroot}"
 				pathid="plugin.classpath"
 				pluginid="${plugin.id}"
 				includes="build/core/*/plugin.xml,build/plugins/*/*/plugin.xml"
 				verbose="${build.verbose}" />
+			<copy file="${build.dir}/plugin.xml" tofile="${build.dir}/plugin.xml.bak" />
 			<if>
 				<equals arg1="${devmode}" arg2="false" />
 				<then>
@@ -70,16 +71,17 @@
 			<property name="compile.dest" value="${build.dir}/classes" />
 			<mkdir dir="${compile.dest}" />
 			<javac destdir="${compile.dest}"
-				srcdir="${plugin.base}/src"
+				srcdir="${basedir}/src"
 				classpathref="plugin.classpath"
 				excludes="${compile.excludes}"
 				source="${build.javac}"
 				target="${build.javac}"
 				debug="${build.debug}"
-				optimize="${build.optimize}">
+				optimize="${build.optimize}"
+				includeAntRuntime="false">
 			</javac>
 			<copy todir="${compile.dest}">
-				<fileset dir="${plugin.base}/src">
+				<fileset dir="${basedir}/src">
 					<include name="**/*.properties" />
 					<exclude name="**/*.*.properties" />
 				</fileset>
@@ -124,22 +126,20 @@
 						includes="*.jar,plugin.xml" />
 				</else>
 			</if>
-			<replaceregexp file="${build.dir}/plugin.xml"
-				match="(library\x20id.*?)(\.\.\/){2,}(lib\/.*\.jar)"
-				replace="\1..\/..\/..\/\3"
-				byline="true" />
+			<copy file="${build.dir}/plugin.xml.bak" tofile="${build.dir}/plugin.xml" overwrite="true" />
+			<delete file="${build.dir}/plugin.xml.bak" />
 		</sequential>
 	</macrodef>
 	<macrodef name="cleanplugin">
 		<sequential>
-			<jpf-info manifest="${plugin.base}/plugin.xml"
+			<jpf-info manifest="${basedir}/plugin.xml"
 				propertyid="plugin.id"
 				propertyversion="plugin.version" />
 			<property name="plugin.home" value="${installdir}/${plugin.family}/${plugin.id}" />
 			<echo>Cleaning ${plugin.id} plug-in</echo>
 
 			<!-- clean any existing build files -->
-			<delete dir="${basedir}/build/${plugin.family}/${plugin.id}" />
+			<delete dir="${buildroot}/build/${plugin.family}/${plugin.id}" />
 
 			<!-- to be safe clean out any existing installed copy also -->
 			<delete dir="${plugin.home}" />
