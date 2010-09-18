@@ -43,7 +43,7 @@ import de.schlichtherle.util.zip.ZipEntry;
  * @version $Id$
  */
 public class ZipscriptZipHandler extends AbstractHandler {
-
+			
 	public ZipscriptZipHandler(SlaveProtocolCentral central) {
 		super(central);
 	}
@@ -61,13 +61,13 @@ public class ZipscriptZipHandler extends AbstractHandler {
 	private boolean checkZipFile(Slave slave, String path) {
 		boolean integrityOk = true;
 		InputStream entryStream = null;
-		Zip32InputArchive zipFile = null;
+		SimpleReadOnlyFile zipFile = null;
 		try {
-			File file = slave.getRoots().getFile(path);
-			zipFile = new Zip32InputArchive(new SimpleReadOnlyFile(file),"UTF-8",true,false);
-			for (Enumeration<?> zipEntries = zipFile.getArchiveEntries();zipEntries.hasMoreElements();) {
+			zipFile = new SimpleReadOnlyFile(slave.getRoots().getFile(path));
+			Zip32InputArchive zipArchive = new Zip32InputArchive(zipFile,"UTF-8",true,false);
+			for (Enumeration<?> zipEntries = zipArchive.getArchiveEntries();zipEntries.hasMoreElements();) {
 				ZipEntry zipEntry = (ZipEntry)zipEntries.nextElement();
-				entryStream = zipFile.getCheckedInputStream(zipEntry);
+				entryStream = zipArchive.getCheckedInputStream(zipEntry);
 				byte[] buff = new byte[65536];
 				while (entryStream.read(buff) != -1) {
 					// do nothing, we are only checking for crc
