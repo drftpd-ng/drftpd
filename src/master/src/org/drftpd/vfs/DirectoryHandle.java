@@ -372,7 +372,6 @@ public class DirectoryHandle extends InodeHandle implements
 		try {
 			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
 		} catch (FileNotFoundException e) {
-			logger.debug("FileNotFoundException during remerge", e);
 			// create directory for merging
 			getParent().createDirectoryRecursive(getName());
 			
@@ -521,7 +520,6 @@ public class DirectoryHandle extends InodeHandle implements
 					}
 				} else if (source.isDirectory() && destination.isDirectory()) {
 					// this is good, do nothing other than take up this case
-					logger.debug("In remerge, directories were equal! (" + destination.getPath() + ")");
 				} else {
 					// we have a directory/name collision, let's find which one
 					// :)
