@@ -98,7 +98,7 @@ public class Trial extends FtpListener {
 	public static Calendar getCalendarForEndOfBonus(User user, int period) {
 		Calendar cal = Calendar.getInstance();
 		try {
-			cal.setTime((Date) user.getKeyedMap().getObject(
+			cal.setTime(user.getKeyedMap().getObject(
 					UserManagement.CREATED));
 		} catch (KeyNotFoundException e) {
 			throw new IllegalArgumentException("User has no created");
@@ -114,7 +114,7 @@ public class Trial extends FtpListener {
 	public static Calendar getCalendarForEndOfFirstPeriod(User user, int period) {
 		Calendar cal = Calendar.getInstance();
 		try {
-			cal.setTime((Date) user.getKeyedMap().getObject(
+			cal.setTime(user.getKeyedMap().getObject(
 					UserManagement.CREATED));
 		} catch (KeyNotFoundException e) {
 			throw new IllegalArgumentException("User has no created info");

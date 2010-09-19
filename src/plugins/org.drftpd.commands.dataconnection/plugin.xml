@@ -85,4 +85,16 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="doSTORTransferEvent">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.dataconnection.hooks.DataConnectionPostHooks" />
+		<parameter id="HookMethod" value="doTransferEvent" />
+		<parameter id="Priority" value="9999999" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="doRETRTransferEvent">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.commands.dataconnection.hooks.DataConnectionPostHooks" />
+		<parameter id="HookMethod" value="doTransferEvent" />
+		<parameter id="Priority" value="9999999" />
+	</extension>
 </plugin>

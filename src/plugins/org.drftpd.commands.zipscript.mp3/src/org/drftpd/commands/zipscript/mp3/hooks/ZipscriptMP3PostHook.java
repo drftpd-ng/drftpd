@@ -73,7 +73,7 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 		}
 		FileHandle transferFile;
 		try {
-			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
+			transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
 			if (transferFile.getName().toLowerCase().endsWith(".mp3")) {
 				addMP3Info(request, response, transferFile, true);
 			}
@@ -90,7 +90,7 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 		}
 		String deleFileName;
 		try {
-			deleFileName =  (String) response.getObject(Dir.FILENAME);
+			deleFileName = response.getObject(Dir.FILENAME);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;

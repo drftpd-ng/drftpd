@@ -85,7 +85,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		if (cfg.getProperty("stor.zip.integrity.check.enabled").equalsIgnoreCase("true")) {
 			FileHandle transferFile;
 			try {
-				transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
+				transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
 			} catch (KeyNotFoundException e) {
 				// We don't have a file, we shouldn't have ended up here but return anyway
 				return;
@@ -179,7 +179,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		}
 		String deleFileName;
 		try {
-			deleFileName =  (String) response.getObject(Dir.FILENAME);
+			deleFileName = response.getObject(Dir.FILENAME);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;

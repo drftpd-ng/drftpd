@@ -59,7 +59,7 @@ public class LinksPostHook implements PostHookInterface {
 		}
 		FileHandle transferFile;
 		try {
-			transferFile =  (FileHandle) response.getObject(DataConnectionHandler.TRANSFER_FILE);
+			transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
@@ -96,7 +96,7 @@ public class LinksPostHook implements PostHookInterface {
 		}
 		String deleFileName;
 		try {
-			deleFileName =  (String) response.getObject(Dir.FILENAME);
+			deleFileName = response.getObject(Dir.FILENAME);
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;

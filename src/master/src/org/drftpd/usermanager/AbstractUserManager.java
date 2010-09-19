@@ -198,8 +198,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public User getUserByIdent(String ident, String botName) throws NoSuchUserException {
 		for (User user : getAllUsers()) {
 			try {
-				String uidentList = (String) user.getKeyedMap().getObject(
-						UserManagement.IRCIDENT);
+				String uidentList = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
 				String[] identArray = uidentList.split(",");
 				for (int i = 0; i < identArray.length;i++) {
 					if (identArray[i].startsWith(botName)) {

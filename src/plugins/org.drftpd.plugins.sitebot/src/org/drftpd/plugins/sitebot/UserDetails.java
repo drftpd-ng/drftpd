@@ -129,7 +129,7 @@ public class UserDetails {
 				setUserBlowKey(user);
 			} else {
 				try {
-					String userKeysString = (String)user.getKeyedMap().getObject(BLOWKEY);
+					String userKeysString = user.getKeyedMap().getObject(BLOWKEY);
 					String[] userKeys = userKeysString.split(",");
 					String userKey = "";
 					for (int i = 0; i < userKeys.length;i++) {
@@ -160,7 +160,7 @@ public class UserDetails {
 	private void setUserBlowKey(User user) {
 		String userKeysString = "";
 		try {
-			userKeysString = (String)user.getKeyedMap().getObject(BLOWKEY);
+			userKeysString = user.getKeyedMap().getObject(BLOWKEY);
 		}
 		catch (KeyNotFoundException e1) {
 			// Means this user has never set a blowfish key, is safe to proceed
@@ -216,7 +216,7 @@ public class UserDetails {
 			return;
 		}
 		try {
-			existIdentString = (String)user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+			existIdentString = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
 		} catch (KeyNotFoundException e) {
 			// Means no existing idents at all, safe to proceed
 		}

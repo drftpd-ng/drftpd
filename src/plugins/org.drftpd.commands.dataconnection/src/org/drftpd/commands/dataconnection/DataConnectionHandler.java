@@ -39,7 +39,6 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SSLUnavailableException;
@@ -75,6 +74,13 @@ public class DataConnectionHandler extends CommandInterface {
 	public static final Key<Long> CHECKSUM = new Key<Long>(DataConnectionHandler.class, "checksum");
 
 	public static final Key<FileHandle> TRANSFER_FILE = new Key<FileHandle>(DataConnectionHandler.class, "transfer_file");
+	
+	public static final Key<RemoteSlave> TRANSFER_SLAVE = new Key<RemoteSlave>(DataConnectionHandler.class, "transfer_slave");
+	
+	public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS = 
+		new Key<InetAddress>(DataConnectionHandler.class, "transfer_slave_inetAddress");
+	
+	public static final Key<Character> TRANSFER_TYPE = new Key<Character>(DataConnectionHandler.class, "transfer_type");
 
 	public static final Key<String> INET_ADDRESS = new Key<String>(DataConnectionHandler.class, "inetAddress");
 
@@ -778,7 +784,6 @@ public class DataConnectionHandler extends CommandInterface {
 			boolean isRetr = cmd.equalsIgnoreCase("RETR");
 			boolean isAppe = cmd.equalsIgnoreCase("APPE");
 			boolean isStou = cmd.equalsIgnoreCase("STOU");
-			String eventType = isRetr ? "RETR" : "STOR";
 
 			if (isAppe || isStou) {
 				return StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
@@ -1090,6 +1095,9 @@ public class DataConnectionHandler extends CommandInterface {
 
 			response.setObject(CHECKSUM,status.getChecksum());
 			response.setObject(TRANSFER_FILE,ts.getTransferFile());
+			response.setObject(TRANSFER_SLAVE,ts.getTransferSlave());
+			response.setObject(TRANSFER_SLAVE_INET_ADDRESS, ts.getAddress().getAddress());
+			response.setObject(TRANSFER_TYPE, ts.getType());
 			response.setObject(XFER_STATUS, status);
 
 			if (isStor) {
@@ -1110,13 +1118,6 @@ public class DataConnectionHandler extends CommandInterface {
 				}
 			}
 
-			if (!conn.isAborted()) {
-				// Dispatch for both STOR and RETR
-				GlobalContext.getEventService().publishAsync(
-						new TransferEvent(conn, eventType, ts.getTransferFile(),
-								conn.getClientAddress(), ts.getTransferSlave(), ts
-								.getAddress().getAddress(), ts.getType()));
-			}
 			return response;
 		} finally {
 			reset(conn);

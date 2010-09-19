@@ -151,7 +151,7 @@ public class SiteBotManagement extends CommandInterface {
 		}
 		String userKeysString = "";
 		try {
-			userKeysString = (String)user.getKeyedMap().getObject(UserDetails.BLOWKEY);
+			userKeysString = user.getKeyedMap().getObject(UserDetails.BLOWKEY);
 		}
 		catch (KeyNotFoundException e1) {
 			// Means this user has never set a blowfish key, is safe to proceed

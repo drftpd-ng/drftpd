@@ -37,7 +37,7 @@ public class BeanUser extends AbstractUser {
 
 	private static final Logger logger = Logger.getLogger(BeanUser.class);
 
-	private BeanUserManager _um;
+	private transient BeanUserManager _um;
 
 	private String _password = "";
 

@@ -87,7 +87,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	public TransferState getTransferState() {
 		TransferState ts;
 		try {
-			ts = (TransferState) getObject(TransferState.TRANSFERSTATE);
+			ts = getObject(TransferState.TRANSFERSTATE);
 		} catch (KeyNotFoundException e) {
 			ts = new TransferState();
 			setObject(TransferState.TRANSFERSTATE,ts);

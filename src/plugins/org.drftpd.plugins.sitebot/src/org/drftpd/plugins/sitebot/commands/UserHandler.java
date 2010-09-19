@@ -68,7 +68,7 @@ public class UserHandler extends CommandInterface {
 			String ident = commSession.getIdent();
 			String existIdentString = "";
 			try {
-				existIdentString = (String)user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+				existIdentString = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
 			} catch (KeyNotFoundException e) {
 				// Means no existing idents at all, safe to proceed
 			}
@@ -134,7 +134,7 @@ public class UserHandler extends CommandInterface {
 			String ident = session.getIdent();
 			String existIdentString = "";
 			try {
-				existIdentString = (String)user.getKeyedMap().getObject(UserManagement.IRCIDENT);
+				existIdentString = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
 			} catch (KeyNotFoundException e) {
 				// Means no existing idents at all, safe to proceed
 			}
