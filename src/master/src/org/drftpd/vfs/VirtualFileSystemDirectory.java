@@ -229,6 +229,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			inode = sf.get();
 		}
 		if (inode == null) {
+			// The next line is so that we load the file from disk using the casing of the name
+			// stored against the parent directory not the casing passed by the caller
+			name = _files.ceilingKey(name);
 			inode = getVFS().loadInode(
 					getPath() + VirtualFileSystem.separator + name);
 			inode.setParent(this);
