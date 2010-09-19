@@ -99,7 +99,11 @@ public class CommitManager {
 	 * @return true if the object was removed from the CommitQueue, false otherwise.
 	 */
 	public boolean remove(Commitable object) {
-		return _commitMap.remove(object) != null;
+		boolean removed = _commitMap.remove(object) != null;
+		if (removed) {
+			_queueSize.decrementAndGet();
+		}
+		return removed;
 	}
 	
 	/**
