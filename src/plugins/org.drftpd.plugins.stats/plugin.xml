@@ -2,6 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.plugins.stats" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides Statistic modifications on a per user/per directory commands.  
+(nonstatsup/nonstatsdn/creditloss/creditcheck)</doc-text>
+	</doc>
 	<attributes>
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="false" />

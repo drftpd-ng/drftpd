@@ -2,6 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.plugins.jobmanager" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides Job Managing commands.  (Used for behind the scenes functions. ie Archive Plugin)  
+(SITE ADDJOB/LISTJOBS/REMOVEJOB/STARTJOBS/STOPJOBS)</doc-text>
+	</doc>
 	<attributes>
 		<attribute id="DenyUnload" value="false" />
 		<attribute id="DefaultBuild" value="true" />

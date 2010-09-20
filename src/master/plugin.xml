@@ -3,7 +3,7 @@
 <!-- $Id$ -->
 <plugin id="master" version="3.0.0" class="org.drftpd.master.Boot">
 	<doc>
-		<doc-text>This is the main MASTER process to which FTP clients connect.</doc-text>
+		<doc-text>(Required) - This is the main MASTER process to which FTP clients connect.</doc-text>
 	</doc>
 	<attributes>
 		<attribute id="DenyUnload" value="true" />

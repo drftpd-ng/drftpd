@@ -2,6 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.plugins.sitebot.announce.nuke" version="3.0.0">
+	<doc>
+		<doc-text>(Sitebot) - This plugin provides Nuke announcements for Sitebot</doc-text>
+	</doc>
+
 	<requires>
 		<import plugin-id="org.drftpd.commands.nuke" />
 		<import plugin-id="org.drftpd.plugins.sitebot" />

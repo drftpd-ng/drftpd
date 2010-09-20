@@ -2,6 +2,9 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.plugins.sitebot.announce.zipscript.zip" version="3.0.0">
+	<doc>
+		<doc-text>(Sitebot) - This plugin provides Zipscript(.zip/DIZ) announcements for Sitebot</doc-text>
+	</doc>
 	<requires>
 		<import plugin-id="org.drftpd.commands.zipscript.zip" />
 		<import plugin-id="org.drftpd.plugins.sitebot" />

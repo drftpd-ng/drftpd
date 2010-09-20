@@ -2,7 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.commands.pre" version="3.0.0">
 	<doc>
-		<doc-text> This plugin provides PRE functionality.</doc-text>
+		<doc-text> This plugin provides PRE capability. (SITE PRE)</doc-text>
 	</doc>
     <attributes>
 		<attribute id="DefaultBuild" value="true" />

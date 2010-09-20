@@ -2,6 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commandmanager" version="3.0.0">
+	<doc>
+		<doc-text>(Required) - This plugin provides the Command Manager Interface.  
+It allows other plugins to create commands within the FTPD</doc-text>  
+	</doc>
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />

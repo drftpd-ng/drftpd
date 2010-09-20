@@ -2,6 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.login" version="3.0.0">
+	<doc>
+		<doc-text>(Required) - This plugin provides Login commands.   
+(IDNT/USER/PASS/QUIT)</doc-text>
+	</doc>	
 	<attributes>
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />

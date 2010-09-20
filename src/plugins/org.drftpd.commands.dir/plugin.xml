@@ -2,6 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.dir" version="3.0.0">
+	<doc>
+		<doc-text>(Required) - This plugin provides Directory commands.   
+(CDUP/CWD/MKD/PWD/RMD/RNFR/RNTO/DELE/XCRC/MDTM/SIZE | SITE WIPE/CHOWN/LINK/FIXSIZE)</doc-text>
+	</doc>
 	<attributes>
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />

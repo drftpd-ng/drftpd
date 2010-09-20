@@ -2,6 +2,10 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.usermanagement" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides User Management commands, including a default user profile.  
+(SITE ADDIP/ADDUSER/CHANGE/CHGRP/CHPASS/DEBUG/DELIP/DELUSER/GADDUSER/GINFO/GIVE/GROUP/GROUPS/GRPREN/KICK/PASSWD/PURGE/READD/RENUSER/SEEN/TAGLINE/TAKE/USER/USERS/WHO/SWHO/BAN/UNBAN/BANS)</doc-text>
+	</doc>
 	<attributes>
 		<attribute id="DefaultBuild" value="true" />
 	</attributes>

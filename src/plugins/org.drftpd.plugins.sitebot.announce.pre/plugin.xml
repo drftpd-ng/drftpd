@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <plugin id="org.drftpd.plugins.sitebot.announce.pre" version="3.0.0">
+	<doc>
+		<doc-text>(Sitebot) - This plugin provides Pre announcements for Sitebot</doc-text>
+	</doc>
+
 	<requires>
 		<import plugin-id="org.drftpd.commands.pre" />
 		<import plugin-id="org.drftpd.plugins.sitebot" />

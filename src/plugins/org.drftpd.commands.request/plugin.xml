@@ -2,6 +2,11 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
 <plugin id="org.drftpd.commands.request" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides Request capability.  
+(SITE REQUEST/REQFILLED/REQDELETE/REQUESTS) - 
+This also has a WeekMax per user/group setting built in.</doc-text>
+	</doc>
 	<requires>
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />

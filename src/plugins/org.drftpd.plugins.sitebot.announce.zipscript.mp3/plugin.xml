@@ -3,10 +3,9 @@
 <!-- $Id$ -->
 <plugin id="org.drftpd.plugins.sitebot.announce.zipscript.mp3" version="3.0.0">
 	<doc>
-		<doc-text>This plugin provides IRC announcements concerning MP3 uploads. Information such as
-bitrate, runtime and information from the ID3 tag are available for announcements. The standard sitebot
-plugin as well as the MP3 zipscript plugins are required by this plugin.</doc-text>
+		<doc-text>(Sitebot) - This plugin provides Zipscript(.mp3/ID3) announcements for Sitebot</doc-text>
 	</doc>
+	
 	<requires>
 		<import plugin-id="org.drftpd.commands.zipscript.mp3" />
 		<import plugin-id="org.drftpd.plugins.sitebot" />
