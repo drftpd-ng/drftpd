@@ -56,3 +56,25 @@ denydatauncrypted       !*
 
 #hide ips in logs?
 hide_ips false
+
+
+################################################################################
+# The following will only work if 'org.drftpd.vfs.perms.regex' plugin is enabled
+#
+#   These are Regex Implementations of user permissions on the site 
+#
+#   makedirex   - Create Directory Permission
+#   uploadex    - Upload Permission
+#   downloadex  - Download Permission
+#   deleteex    - Delete Permission
+#   deleteownex - Delete Own Permission
+#   renameex    - Rename Permission
+#   renameownex - Rename Own Permission
+#   privpathex  - Private Path Permission
+#
+#	Examples:
+#
+#	makedirex /SECTION1/* .*(sectionkeyword1|sectionkeyword2).* !*
+#	uploadex * .*(sitekeyword1|sitekeyword2).* !*
+#
+################################################################################
