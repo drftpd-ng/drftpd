@@ -205,6 +205,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		}
 		String fileString = "rename(" + this + ")";
 		_parent.removeChild(this);
+		InodeHandle source = VFSUtils.getInodeHandleFor(this);
 		try {			
 			VirtualFileSystem.getVirtualFileSystem().renameInode(
 					this.getPath(),
@@ -230,6 +231,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		_parent.addChild(this);
 		fileString = fileString + ",(" + this + ")";
 		logger.info(fileString);
+		getVFS().notifyInodeRenamed(source,this);
 	}
 
 	/**

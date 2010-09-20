@@ -409,7 +409,7 @@ public class VirtualFileSystem {
 		publishAsyncEvent(new VirtualFileSystemSlaveEvent(inode, slaves));
 	}
 	
-	protected void notifyInodeRenamed(VirtualFileSystemInode source, VirtualFileSystemInode destination) {
+	protected void notifyInodeRenamed(InodeHandle source, VirtualFileSystemInode destination) {
 		logger.debug("Notifying that " + source.getPath() + " has been renamed to " + destination.getPath());
 
 		publishAsyncEvent(new VirtualFileSystemRenameEvent(source, destination));

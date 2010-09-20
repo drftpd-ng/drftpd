@@ -93,7 +93,7 @@ public class IndexingVirtualFileSystemListener {
 	/**
 	 * Changing the slave set's and the ownership represents the same operation on the index,
 	 * so this place is used to avoid code repetition.
-	 * @param path
+	 * @param inode
 	 */
 	protected void inodeUpdated(InodeHandle inode) {
 		try {
@@ -111,8 +111,11 @@ public class IndexingVirtualFileSystemListener {
 	public void inodeRenamed(VirtualFileSystemRenameEvent event) {
 		if (bypassEvent(event))
 			return;
-		
-		// TODO support renames.
+		try {
+			getIndexEngine().renameInode(event.getSource(), event.getInode());
+		} catch (IndexException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
+		}
 	}
 	
 	/**

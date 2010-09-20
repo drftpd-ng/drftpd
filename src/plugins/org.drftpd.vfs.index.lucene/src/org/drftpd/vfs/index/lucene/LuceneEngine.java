@@ -245,7 +245,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private synchronized Document makeDocumentFromInode(InodeHandle inode) throws FileNotFoundException {
 		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
 
-		// locking the document so that noone touches it.
+		// locking the document so that none touches it.
 		synchronized (INDEX_DOCUMENT) {
 			FIELD_NAME.setValue(inode.getName());
 			FIELD_PARENT_PATH.setValue(inode.getParent().getPath());
@@ -315,9 +315,9 @@ public class LuceneEngine implements IndexEngineInterface {
 			Query query = makeQueryFromInode(inode);
 			_iWriter.deleteDocuments(query);
 		} catch (CorruptIndexException e) {
-			throw new IndexException("Unable to delete " + inode.getPath() + " to the index", e);
+			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
 		} catch (IOException e) {
-			throw new IndexException("Unable to delete " + inode.getPath() + " to the index", e);
+			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
 		}
 	}
 
@@ -326,17 +326,27 @@ public class LuceneEngine implements IndexEngineInterface {
 		try {
 			_iWriter.updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
 		} catch (CorruptIndexException e) {
-			throw new IndexException("Unable to update " + inode.getPath() + " to the index", e);
+			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		} catch (FileNotFoundException e) {
 			logger.error("The inode was here but now it isn't!", e);
 		} catch (IOException e) {
-			throw new IndexException("Unable to update " + inode.getPath() + " to the index", e);
+			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		}
 	}
 	
 	/* {@inheritDoc} */
 	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException {
-		//TODO
+		try {
+			_iWriter.updateDocument(makeFullPathTermFromInode(fromInode), makeDocumentFromInode(toInode));
+		} catch (CorruptIndexException e) {
+			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
+					toInode.getPath() + " in the index", e);
+		} catch (FileNotFoundException e) {
+			logger.error("The inode was here but now it isn't!", e);
+		} catch (IOException e) {
+			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
+					toInode.getPath() + " in the index", e);
+		}
 	}
 
 	/**

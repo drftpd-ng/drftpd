@@ -28,19 +28,19 @@ import org.drftpd.vfs.VirtualFileSystemInode;
  */
 public class VirtualFileSystemRenameEvent extends VirtualFileSystemEvent {
 
-	private InodeHandle _destination;
+	private InodeHandle _source;
 	
-	public VirtualFileSystemRenameEvent(VirtualFileSystemInode inode, VirtualFileSystemInode destination) {
-		super(inode);
+	public VirtualFileSystemRenameEvent(InodeHandle source, VirtualFileSystemInode destination) {
+		super(destination);
 		
-		_destination = VFSUtils.getInodeHandleFor(destination);
+		_source = source;
 	}
 	
 	/**
 	 * @return where the file is being renamed to.
 	 */
-	public InodeHandle getDestination() {
-		return _destination;
+	public InodeHandle getSource() {
+		return _source;
 	}
 
 }
