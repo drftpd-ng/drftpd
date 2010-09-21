@@ -44,6 +44,7 @@ import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -248,8 +249,11 @@ public class LuceneEngine implements IndexEngineInterface {
 		// locking the document so that none touches it.
 		synchronized (INDEX_DOCUMENT) {
 			FIELD_NAME.setValue(inode.getName());
-			FIELD_PARENT_PATH.setValue(inode.getParent().getPath());
-			FIELD_FULL_PATH.setValue(inode.getPath());
+			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
+			if (inode.isDirectory())
+				FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
+			else
+				FIELD_FULL_PATH.setValue(inode.getPath());
 			FIELD_OWNER.setValue(inode.getUsername());
 			FIELD_GROUP.setValue(inode.getGroup());
 			FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
@@ -272,11 +276,21 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 	
 	private Term makeFullPathTermFromInode(InodeHandle inode) {
-		return TERM_FULL.createTerm(inode.getPath());
+		if (inode.isDirectory())
+			return TERM_FULL.createTerm(inode.getPath() + VirtualFileSystem.separator);
+		else
+			return TERM_FULL.createTerm(inode.getPath());
+	}
+
+	private Term makeFullPathTermFromString(String path) {
+		return TERM_FULL.createTerm(path);
 	}
 	
 	private Term makeParentPathTermFromInode(InodeHandle inode) {
-		return TERM_PARENT.createTerm(inode.getPath());
+		if (inode.isDirectory())
+			return TERM_PARENT.createTerm(inode.getPath() + VirtualFileSystem.separator);
+		else
+			return TERM_PARENT.createTerm(inode.getPath());
 	}
 
 	/**
@@ -336,8 +350,27 @@ public class LuceneEngine implements IndexEngineInterface {
 	
 	/* {@inheritDoc} */
 	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException {
+		IndexSearcher iSearcher = null;
 		try {
-			_iWriter.updateDocument(makeFullPathTermFromInode(fromInode), makeDocumentFromInode(toInode));
+			if (toInode.isDirectory()) {
+				PrefixQuery prefixQuery = new PrefixQuery(makeFullPathTermFromInode(fromInode));
+
+				iSearcher = new IndexSearcher(_iWriter.getReader());
+
+				TopDocs topDocs = iSearcher.search(prefixQuery, Integer.MAX_VALUE);
+
+				for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+					Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+
+					String oldPath = doc.getFieldable("fullPath").stringValue();
+					String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
+
+					_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromInode(
+							GlobalContext.getGlobalContext().getRoot().getInodeHandleUnchecked(newPath)));
+				}
+			} else {
+				_iWriter.updateDocument(makeFullPathTermFromInode(fromInode), makeDocumentFromInode(toInode));
+			}
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
 					toInode.getPath() + " in the index", e);
@@ -346,6 +379,21 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (IOException e) {
 			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
 					toInode.getPath() + " in the index", e);
+		} catch (IndexOutOfBoundsException e) {
+			throw new IndexException("Child path shorter than parent, should not be possible", e);
+		} finally {
+			if (iSearcher != null) {
+				try {
+					iSearcher.close();
+				} catch (IOException e) {
+					logger.debug("IOException closing IndexSearcher", e);
+				}
+				try {
+					_iWriter.getReader().close();
+				} catch (IOException e) {
+					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
+				}
+			}
 		}
 	}
 
@@ -427,7 +475,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			BooleanQuery query = new BooleanQuery();
 
 			if (!startNode.getPath().equals(VirtualFileSystem.separator)) {
-				TermQuery parentQuery = new TermQuery(makeParentPathTermFromInode(startNode));
+				PrefixQuery parentQuery = new PrefixQuery(makeParentPathTermFromInode(startNode));
 				query.add(parentQuery, Occur.MUST);
 			}
 			
