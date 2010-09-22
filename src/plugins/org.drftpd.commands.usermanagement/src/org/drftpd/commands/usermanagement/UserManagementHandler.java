@@ -1472,7 +1472,8 @@ public class UserManagementHandler extends CommandInterface {
 		for (BaseFtpConnection conn2 : conns) {
 
 			try {
-				if (conn2.getUser().getName().equals(username)) {
+				if (username.equals("*") || username.equalsIgnoreCase("all") ||
+						conn2.getUser().getName().equals(username)) {
 					conn2.stop(message);
 				}
 			} catch (NoSuchUserException e) {
