@@ -27,25 +27,25 @@
 	</extension>
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="SiteBotHandler" />
 
-	<extension plugin-id="org.drftpd.plugins.sitebot.commands" point-id="PreHook" id="doSITE_INVITEPerm">
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="PreHook" id="doSITE_INVITEPerm">
 		<parameter id="ParentMethod" value="doSITE_INVITE" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.plugins.sitebot.commands" point-id="PreHook" id="doSITE_BLOWFISHPerm">
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="PreHook" id="doSITE_BLOWFISHPerm">
 		<parameter id="ParentMethod" value="doSITE_BLOWFISH" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.plugins.sitebot.commands" point-id="PreHook" id="doSITE_SETBLOWFISHPerm">
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="PreHook" id="doSITE_SETBLOWFISHPerm">
 		<parameter id="ParentMethod" value="doSITE_SETBLOWFISH" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.plugins.sitebot.commands" point-id="PreHook" id="doSITE_IRCPerm">
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="PreHook" id="doSITE_IRCPerm">
 		<parameter id="ParentMethod" value="doSITE_IRC" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
