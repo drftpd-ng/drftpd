@@ -12,7 +12,7 @@
 #
 #	Examples:
 #
-#	makedirex /SECTION1/* .*(sectionkeyword1|sectionkeyword2).* !*
-#	uploadex * .*(sitekeyword1|sitekeyword2).* !*
+#	makedirex ^/SECTION1/.*(sectionkeyword1|sectionkeyword2).*$ !*
+#	uploadex ^.*(sitekeyword1|sitekeyword2).*$ !*
 #
 ################################################################################
