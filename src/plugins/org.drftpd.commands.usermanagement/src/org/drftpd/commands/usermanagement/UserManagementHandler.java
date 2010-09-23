@@ -997,7 +997,6 @@ public class UserManagementHandler extends CommandInterface {
 	 * USAGE: site delip <user><ident@ip>...
 	 *
 	 * @param request
-	 * @param out
 	 * @throws ImproperUsageException
 	 */
 	public CommandResponse doSITE_DELIP(CommandRequest request)
@@ -1472,9 +1471,39 @@ public class UserManagementHandler extends CommandInterface {
 		for (BaseFtpConnection conn2 : conns) {
 
 			try {
-				if (username.equals("*") || username.equalsIgnoreCase("all") ||
-						conn2.getUser().getName().equals(username)) {
+				if (conn2.getUser().getName().equals(username)) {
 					conn2.stop(message);
+				}
+			} catch (NoSuchUserException e) {
+			}
+		}
+
+		return response;
+	}
+
+	public CommandResponse doSITE_KICKALL(CommandRequest request) {
+
+		Session session = request.getSession();
+		if (!session.getUserNull(request.getUser()).isAdmin()) {
+			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+		}
+
+		String kicker = session.getUserNull(request.getUser()).getName();
+
+		String message = "Kicked by " + kicker;
+
+		if (request.hasArgument()) {
+			message = request.getArgument();
+		}
+
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
+				GlobalContext.getConnectionManager().getConnections());
+
+		for (BaseFtpConnection conn : conns) {
+			try {
+				if (!conn.getUser().getName().equals(kicker)) {
+					conn.stop(message);
 				}
 			} catch (NoSuchUserException e) {
 			}

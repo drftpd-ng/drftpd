@@ -76,6 +76,12 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_KICKALLPerm">
+		<parameter id="ParentMethod" value="doSITE_KICKALL" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
 	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_USERSPerm">
 		<parameter id="ParentMethod" value="doSITE_USERS" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />

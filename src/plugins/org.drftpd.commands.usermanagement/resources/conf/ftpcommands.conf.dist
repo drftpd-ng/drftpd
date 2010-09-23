@@ -132,7 +132,16 @@ class UserManagementHandler
 method doSITE_KICK
 perms *
 help Kick a users current connections to the site
-help.specific ${command} <user>
+help.specific ${command} <user> [message]
+}
+
+SITE KICKALL {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_KICKALL
+perms *
+help Kick all users current connections to the site
+help.specific ${command} [message]
 }
 
 SITE PASSWD {
