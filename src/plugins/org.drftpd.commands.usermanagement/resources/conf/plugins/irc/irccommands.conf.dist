@@ -1,22 +1,26 @@
-SITE ADDIP {
+addip {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_ADDIP
 perms =gadmin =siteop
 help Add a new mask to a user
 help.specific ${command} <username> <ident@ip>
+input all
+output source
 }
 
-SITE ADDUSER {
+adduser {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_ADDUSER
 perms =gadmin =siteop
 help Add a new user
 help.specific ${command} <user> <password> [<ident@ip#1> ...]
+input all
+output source
 }
 
-SITE CHANGE {
+change {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_CHANGE
@@ -26,80 +30,88 @@ help.specific ${command} <username> <field> <value>
 help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
 help.specific num_logins # [opt perIP], comment, group_ratio #min #max
 help.specific group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
+input all
+output source
 }
 
-SITE CHGRP {
+chgrp {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_CHGRP
 perms =siteop
 help Change secondary groups for a user
 help.specific ${command} <user> <group> [<group> ...]
+input all
+output source
 }
 
-SITE CHPASS {
+chpass {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_CHPASS
 perms =siteop
 help Change password for a user
 help.specific ${command} <user> <password>
+input all
+output source
 }
 
-SITE DEBUG {
-plugin org.drftpd.commands.usermanagement
-class UserManagementHandler
-method doSITE_DEBUG
-perms *
-help Allows you to see stacktraces on command errors
-}
-
-SITE DELIP {
+delip {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_DELIP
 perms =gadmin =siteop
 help Remove a mask from a user
 help.specific ${command} <user> <ident@ip> ...
+input all
+output source
 }
 
-SITE DELUSER {
+deluser {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_DELUSER
 perms =gadmin =siteop
 help Delete a user
 help.specific ${command} <user> [reason]
+input all
+output source
 }
 
-SITE GADDUSER {
+gadduser {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GADDUSER
 perms =gadmin =siteop
 help Add a new user to the specified group
 help.specific ${command} <group> <user> <password> [<ident@ip#1 ..]
+input all
+output source
 }
 
-SITE GINFO {
+ginfo {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GINFO
 perms =gadmin =siteop
 help Show information on a group
 help.specific ${command} <group>
+input all
+output source
 }
 
-SITE GIVE {
+give {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GIVE
 perms *
 help Give a user credits
 help.specific ${command} <user> <bytes>
+input all
+output source
 }
 
-SITE GROUP {
+group {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GROUP
@@ -107,161 +119,168 @@ perms =siteop
 help Change parameters for a group
 help.specific ${command} <group> <field> <value>
 help.specific Valid fields: ratio, num_logins # [opt perIP], max_sim #dn #up
+input all
+output source
 }
 
-SITE GROUPS {
+groups {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GROUPS
 perms =siteop
 help Lists the groups on the site
+input all
+output source
 }
 
-SITE GRPREN {
+grpren {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GRPREN
 perms =siteop
 help Rename a group
 help.specific ${command} <oldgroup> <newgroup>
+input all
+output source
 }
 
-SITE KICK {
+kick {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_KICK
 perms =siteop
 help Kick a users current connections to the site
 help.specific ${command} <user> [message]
+input all
+output source
 }
 
-SITE KICKALL {
+kickall {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_KICKALL
 perms =siteop
 help Kick all users current connections to the site
 help.specific ${command} [message]
+input all
+output source
 }
 
-SITE PASSWD {
-plugin org.drftpd.commands.usermanagement
-class UserManagementHandler
-method doSITE_PASSWD
-perms *
-help Change your password
-help.specific ${command} <password>
-}
-
-SITE PURGE {
+purge {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_PURGE
 perms =gadmin =siteop
 help Permanently remove a user from the site
 help.specific ${command} <username>
+input all
+output source
 }
 
-SITE READD {
+readd {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_READD
 perms =gadmin =siteop
 help Readd a deleted user
 help.specific ${command} <user>
+input all
+output source
 }
 
-SITE RENUSER {
+renuser {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_RENUSER
 perms =siteop
 help Rename a user
 help.specific ${command} <old_username> <new_username>
+input all
+output source
 }
 
-SITE SEEN {
+seen {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_SEEN
 perms *
 help Show when a user last connected
 help.specific ${command} <user>
+input all
+output source
 }
 
-SITE TAGLINE {
+tagline {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_TAGLINE
 perms *
 help Change your tagline
 help.specific ${command} <tagline>
+input all
+output source
 }
 
-SITE TAKE {
+take {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_TAKE
 perms =siteop
 help Remove credits from a user
 help.specific ${command} <user> <bytes>
+input all
+output source
 }
 
-SITE USER {
+user {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_USER
-perms =gadmin =siteop
+perms =siteop
 help Show details for a user
 help.specific ${command} <user>
+input all
+output source
 }
 
-SITE USERS {
+users {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_USERS
 perms =siteop
 help List all usernames added to the site
+input all
+output source
 }
 
-SITE WHO {
-plugin org.drftpd.commands.usermanagement
-class UserManagementHandler
-method doSITE_WHO
-perms =siteop
-help Show who's online
-}
-
-SITE SWHO {
-plugin org.drftpd.commands.usermanagement
-class UserManagementHandler
-method doSITE_SWHO
-perms =siteop
-help Show who's online
-}
-
-SITE BAN {
+ban {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_BAN
 perms =ban =siteop
 help Ban a user from logging onto the site for a specified amount of time.
 help.specific ${command} <user> <minutes> [reason]
+input all
+output source
 }
 
-SITE UNBAN {
+unban {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_UNBAN
 perms =ban =siteop
 help Removes a ban for the specified user.
 help.specific ${command} <user>
+input all
+output source
 }
 
-SITE BANS {
+bans {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_BANS
 perms =ban =siteop
 help List the current users banned on the site.
+input all
+output source
 }

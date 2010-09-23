@@ -81,17 +81,13 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_ADDIP(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (session.getUserNull(request.getUser()).isAdmin() && session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 
 		String[] args = request.getArgument().split(" ");
 
+		Session session = request.getSession();
 		if (args.length < 2) {
 			return new CommandResponse(501, session.jprintf(_bundle,
 					_keyPrefix+"addip.specify", request.getUser()));
@@ -446,11 +442,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_CHANGE(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -485,6 +476,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		String command = arguments.nextToken().toLowerCase();
 
+		Session session = request.getSession();
 		if (session.getUserNull(request.getUser()).isGroupAdmin() && !command.equals("ratio")) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
@@ -886,11 +878,6 @@ public class UserManagementHandler extends CommandInterface {
 	 */
 	public CommandResponse doSITE_CHGRP(CommandRequest request) throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -916,6 +903,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
+		Session session = request.getSession();
 		for (int i = 1; i < args.length; i++) {
 			String string = args[i];
 
@@ -960,11 +948,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_CHPASS(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -975,6 +958,7 @@ public class UserManagementHandler extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
+		Session session = request.getSession();
 		try {
 			User myUser = GlobalContext.getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
@@ -1002,11 +986,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_DELIP(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1030,6 +1009,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "IO error: " + e.getMessage());
 		}
 
+		Session session = request.getSession();
 		if (session.getUserNull(request.getUser()).isGroupAdmin()
 				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -1060,13 +1040,8 @@ public class UserManagementHandler extends CommandInterface {
 
 	public CommandResponse doSITE_DELUSER(CommandRequest request) throws ImproperUsageException {
 
-		Session session = request.getSession();
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
-		}
-
-		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
 		StringTokenizer st = new StringTokenizer(request.getArgument());
@@ -1082,6 +1057,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
 		}
 
+		Session session = request.getSession();
 		if (session.getUserNull(request.getUser()).isGroupAdmin()
 				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -1103,18 +1079,14 @@ public class UserManagementHandler extends CommandInterface {
 
 	public CommandResponse doSITE_GINFO(CommandRequest request)
 			throws ImproperUsageException {
-		Session session = request.getSession();
-		// security
-		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-		// syntax
+
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 		// gadmin
 		String group = request.getArgument();
 
+		Session session = request.getSession();
 		if (session.getUserNull(request.getUser()).isGroupAdmin()
 				&& !session.getUserNull(request.getUser()).getGroup().equals(group)) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -1286,10 +1258,6 @@ public class UserManagementHandler extends CommandInterface {
 		int numLogin = 0, numLoginIP = 0, maxUp = 0, maxDn = 0;
 		String opt, group;
 
-		if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1381,10 +1349,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_GRPREN(CommandRequest request)
 			throws ImproperUsageException {
 
-		if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1443,15 +1407,11 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_KICK(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
 
+		Session session = request.getSession();
 		String arg = request.getArgument();
 		int pos = arg.indexOf(' ');
 		String username;
@@ -1484,10 +1444,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_KICKALL(CommandRequest request) {
 
 		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		String kicker = session.getUserNull(request.getUser()).getName();
 
 		String message = "Kicked by " + kicker;
@@ -1530,11 +1486,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_PURGE(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1555,6 +1506,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "User isn't deleted");
 		}
 
+		Session session = request.getSession();
 		if (session.getUserNull(request.getUser()).isGroupAdmin()
 				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -1568,11 +1520,6 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_READD(CommandRequest request) throws ImproperUsageException {
-
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
 
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
@@ -1589,6 +1536,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "IO error: " + e.getMessage());
 		}
 
+		Session session = request.getSession();
 		if (session.getUserNull(request.getUser()).isGroupAdmin()
 				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
@@ -1609,11 +1557,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_RENUSER(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1624,6 +1567,7 @@ public class UserManagementHandler extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
+		Session session = request.getSession();
 		try {
 			User myUser = GlobalContext.getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
@@ -1782,11 +1726,6 @@ public class UserManagementHandler extends CommandInterface {
 	 */
 	public CommandResponse doSITE_USER(CommandRequest request) throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!session.getUserNull(request.getUser()).isAdmin() && !session.getUserNull(request.getUser()).isGroupAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1807,6 +1746,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, "Userfile error: " + ex.getMessage());
 		}
 
+		Session session = request.getSession();
 		if (session.getUserNull(request.getUser()).isGroupAdmin()
 				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -1846,10 +1786,6 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSITE_USERS(CommandRequest request) {
-
-		if (!request.getSession().getUserNull(request.getUser()).isAdmin()) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
 
 		CommandResponse response = new CommandResponse(200);
 		Collection<User> myUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsers();

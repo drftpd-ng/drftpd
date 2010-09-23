@@ -1,10 +1,11 @@
 # is displayed as the site tagline on first connection
-#login_prompt DrFTPD 2.1-dev http://drftpd.org
+# leave it alone and you will see the version following by link
+#login_prompt DrFTPD 3.0.0 http://drftpd.org
 
 # Max number of connections
 #max_users <max_unexempted> <max_exempted>
-max_users	100	0
-exempt =exempt
+max_users	100	10
+exempt =exempt =siteop
 
 # FUNCTION       | PATH     | GROUP
 # * = only wildcard recognized
