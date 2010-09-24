@@ -23,13 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -37,6 +31,7 @@ import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -93,13 +88,21 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastmodified", Field.Store.YES, Boolean.TRUE);
+	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.YES, Boolean.TRUE);
 	
 	private static final Field[] FIELDS = new Field[] {
 		FIELD_NAME, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
 	};
+	private static final NumericField[] NUMERICFIELDS = new NumericField[] {
+		FIELD_LASTMODIFIED, FIELD_SIZE
+	};
 	
 	static {
 		for (Field field : FIELDS) {
+			INDEX_DOCUMENT.add(field);
+		}
+		for (NumericField field : NUMERICFIELDS) {
 			INDEX_DOCUMENT.add(field);
 		}
 	}
@@ -114,6 +117,10 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Term TERM_NAME = new Term("name", "");
 	private static final Term TERM_PARENT = new Term("parentPath", "");
 	private static final Term TERM_FULL = new Term("fullPath", "");
+
+	private static final Term TERM_OWNER = new Term("owner", "");
+	private static final Term TERM_GROUP = new Term("group", "");
+	private static final Term TERM_SLAVES = new Term("slaves", "");
 
 	private int _maxHitsNumber;
 	private int _maxDocsBuffer;
@@ -266,6 +273,9 @@ public class LuceneEngine implements IndexEngineInterface {
 				
 				FIELD_SLAVES.setValue(sb.toString());
 			}
+
+			FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
+			FIELD_SIZE.setLongValue(inode.getSize());
 		}
 		
 		return INDEX_DOCUMENT;
@@ -291,6 +301,14 @@ public class LuceneEngine implements IndexEngineInterface {
 			return TERM_PARENT.createTerm(inode.getPath() + VirtualFileSystem.separator);
 		else
 			return TERM_PARENT.createTerm(inode.getPath());
+	}
+
+	private TermQuery makeOwnerTermQueryFromString(String owner) {
+		return new TermQuery(TERM_OWNER.createTerm(owner));
+	}
+
+	private TermQuery makeGroupTermQueryFromString(String group) {
+		return new TermQuery(TERM_GROUP.createTerm(group));
 	}
 
 	/**
@@ -454,9 +472,78 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/* {@inheritDoc} */
-	public Set<String> advancedFind(AdvancedSearchParams params) throws IndexException {
-		// TODO Auto-generated method stub
-		return null;
+	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params) throws IndexException {
+		IndexSearcher iSearcher = null;
+		try {
+			Map<String,String> inodes = new TreeMap<String,String>();
+
+			BooleanQuery query = new BooleanQuery();
+
+			if (!startNode.getPath().equals(VirtualFileSystem.separator)) {
+				PrefixQuery parentQuery = new PrefixQuery(makeParentPathTermFromInode(startNode));
+				query.add(parentQuery, Occur.MUST);
+			}
+
+			if (params.getInodeType() == InodeType.ANY) {
+				query.add(QUERY_DIRECTORY, Occur.SHOULD);
+				query.add(QUERY_FILE, Occur.SHOULD);
+			} else if (params.getInodeType() == InodeType.DIRECTORY) {
+				query.add(QUERY_DIRECTORY, Occur.MUST);
+			} else if (params.getInodeType() == InodeType.FILE) {
+				query.add(QUERY_FILE, Occur.MUST);
+			}
+
+			String owner = params.getOwner();
+			String group = params.getGroup();
+			if (!owner.equals("*")) {
+				query.add(makeOwnerTermQueryFromString(owner), Occur.MUST);
+			}
+			if (!group.equals("*")) {
+				query.add(makeGroupTermQueryFromString(group), Occur.MUST);
+			}
+
+			if (!params.getSlaves().isEmpty()) {
+				StringBuffer sb = new StringBuffer();
+				for (String slaveName : params.getSlaves()) {
+					sb.append(slaveName).append(" ");
+				}
+				Query slaveQuery = analyze("slaves", sb.toString().trim());
+				query.add(slaveQuery, Occur.MUST);
+			}
+
+			if (!params.getName().isEmpty()) {
+				Query nameQuery = analyze("name", params.getName());
+				query.add(nameQuery, Occur.MUST);
+			}
+
+			iSearcher = new IndexSearcher(_iWriter.getReader());
+			TopDocs topDocs = iSearcher.search(query, _maxHitsNumber);
+			logger.debug("Query: " + query);
+
+			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+				inodes.put(doc.getFieldable("fullPath").stringValue(), doc.getFieldable("type").stringValue());
+			}
+
+			return inodes;
+		} catch (CorruptIndexException e) {
+			throw new IndexException("Unable to search the index", e);
+		} catch (IOException e) {
+			throw new IndexException("Unable to search the index", e);
+		} finally {
+			if (iSearcher != null) {
+				try {
+					iSearcher.close();
+				} catch (IOException e) {
+					logger.debug("IOException closing IndexSearcher", e);
+				}
+				try {
+					_iWriter.getReader().close();
+				} catch (IOException e) {
+					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
+				}
+			}
+		}
 	}
 
 	/**
@@ -479,8 +566,8 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(parentQuery, Occur.MUST);
 			}
 			
-			Query pathQuery = analyzePath(text);
-			query.add(pathQuery, Occur.MUST);
+			Query nameQuery = analyze("name", text);
+			query.add(nameQuery, Occur.MUST);
 
 			if (inodeType == InodeType.ANY) {
 				/*
@@ -531,8 +618,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * 
 	 * @param name
 	 */
-	private Query analyzePath(String name) {
-		TokenStream ts = ANALYZER.tokenStream("name", new StringReader(name));
+	private Query analyze(String field, String name) {
+		TokenStream ts = ANALYZER.tokenStream(field, new StringReader(name));
 
 		BooleanQuery bQuery = new BooleanQuery();
 		WildcardQuery wQuery;
