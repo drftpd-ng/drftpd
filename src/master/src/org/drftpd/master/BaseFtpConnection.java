@@ -498,9 +498,14 @@ public class BaseFtpConnection extends Session implements Runnable {
 		List<BaseFtpConnection> list = GlobalContext.getConnectionManager().getConnections();
 		synchronized (list) {
 			List<BaseFtpConnection> conns = Collections.unmodifiableList(list);
-			for (BaseFtpConnection conn : conns)
-				if (conn.getUsername().equals(oldUsername))
+			for (BaseFtpConnection conn : conns) {
+				if (conn.getUsername() == null) {
+					// User authentication not completed yet for this connection
+					continue;
+				} else if (conn.getUsername().equals(oldUsername)) {
 					conn.setUser(newUsername);
+				}
+			}
 		}
 	}
 
