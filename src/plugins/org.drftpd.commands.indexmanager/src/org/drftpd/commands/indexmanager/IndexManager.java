@@ -18,20 +18,17 @@
 package org.drftpd.commands.indexmanager;
 
 import java.io.FileNotFoundException;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
@@ -93,7 +90,7 @@ public class IndexManager extends CommandInterface {
 		User user = request.getSession().getUserNull(request.getUser());
 
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
-		Set<String> inodes = null;
+		Set<String> inodes;
 
 		try {
 			InodeType inodeType = isDir ? InodeType.DIRECTORY : InodeType.FILE;
@@ -102,7 +99,7 @@ public class IndexManager extends CommandInterface {
 			return new CommandResponse(550, e.getMessage());
 		}
 		
-		InodeHandle inode = null;
+		InodeHandle inode;
 		for (String path : inodes) {
 			try {
 				inode = isDir ? new DirectoryHandle(path) : new FileHandle(path);
@@ -111,7 +108,6 @@ public class IndexManager extends CommandInterface {
 				}
 			} catch (FileNotFoundException e) {
 				logger.warn("Index contained an unexistent inode: " + path);
-				continue;
 			}
 		}
 
@@ -124,5 +120,102 @@ public class IndexManager extends CommandInterface {
 
 	public CommandResponse doSearchFile(CommandRequest request) {
 		return doSearchIndex(request, false);
+	}
+
+	public CommandResponse doAdvSearch(CommandRequest request) throws ImproperUsageException {
+
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+
+		CommandResponse response = new CommandResponse(200, "Search complete");
+
+		AdvancedSearchParams params = new AdvancedSearchParams();
+
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+
+		while(st.hasMoreTokens()) {
+			String option = st.nextToken();
+
+			if (!st.hasMoreTokens()) {
+				throw new ImproperUsageException();
+			} else if (option.equalsIgnoreCase("-type")) {
+				String type = st.nextToken();
+				if (type.equalsIgnoreCase("f") || type.equalsIgnoreCase("file")) {
+					params.setInodeType(InodeType.FILE);
+				} else if (type.equalsIgnoreCase("d") || type.equalsIgnoreCase("dir")) {
+					params.setInodeType(InodeType.DIRECTORY);
+				} else {
+					throw new ImproperUsageException();
+				}
+			} else if (option.equalsIgnoreCase("-user")) {
+				params.setOwner(st.nextToken());
+			} else if (option.equalsIgnoreCase("-group")) {
+				params.setGroup(st.nextToken());
+			} else if (option.equalsIgnoreCase("-slaves")) {
+				HashSet<String> slaves = new HashSet<String>(Arrays.asList(st.nextToken().split(",")));
+				params.setSlaves(slaves);
+			} else if (option.equalsIgnoreCase("-age")) {
+				try {
+					long minAge = Long.parseLong(st.nextToken());
+					long maxAge = Long.parseLong(st.nextToken());
+					if (minAge >= maxAge) {
+						throw new ImproperUsageException("Age range invalid, min value higher or same as max");
+					}
+					params.setMinAge(Long.parseLong(st.nextToken()));
+					params.setMaxAge(Long.parseLong(st.nextToken()));
+				} catch (NumberFormatException e) {
+					throw new ImproperUsageException(e);
+				} catch (NoSuchElementException e) {
+					throw new ImproperUsageException("You must specify a range for the age, both min and max", e);
+				}
+			} else if (option.equalsIgnoreCase("-size")) {
+				try {
+					long minSize = Long.parseLong(st.nextToken());
+					long maxSize = Long.parseLong(st.nextToken());
+					if (minSize >= maxSize) {
+						throw new ImproperUsageException("Size range invalid, min value higher or same as max");
+					}
+					params.setMinSize(Long.parseLong(st.nextToken()));
+					params.setMaxSize(Long.parseLong(st.nextToken()));
+				} catch (NumberFormatException e) {
+					throw new ImproperUsageException(e);
+				} catch (NoSuchElementException e) {
+					throw new ImproperUsageException("You must specify a range for the size, both min and max", e);
+				}
+			} else if (option.equalsIgnoreCase("-name")) {
+				StringBuilder nameQuery = new StringBuilder();
+				while(st.hasMoreTokens()) {
+					nameQuery.append(st.nextToken()).append(" ");
+				}
+				params.setName(nameQuery.toString().trim());
+			}
+		}
+
+		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
+		Map<String,String> inodes;
+
+		try {
+			inodes = ie.advancedFind(request.getCurrentDirectory(), params);
+		} catch (IndexException e) {
+			return new CommandResponse(550, e.getMessage());
+		}
+
+		User user = request.getSession().getUserNull(request.getUser());
+
+		InodeHandle inode;
+		for (Entry<String,String> item : inodes.entrySet()) {
+			try {
+				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey()) :
+						new FileHandle(item.getKey());
+				if (!inode.isHidden(user)) {
+					response.addComment(inode.getPath());
+				}
+			} catch (FileNotFoundException e) {
+				logger.warn("Index contained an unexistent inode: " + item.getKey());
+			}
+		}
+
+		return response;
 	}
 }

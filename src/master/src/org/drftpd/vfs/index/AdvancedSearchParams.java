@@ -30,15 +30,24 @@ public class AdvancedSearchParams {
 		DIRECTORY, FILE, ANY
 	}
 
+	private String _name = "";
 	private InodeType _inodeType = InodeType.ANY;
 	private Set<String> _slaves = Collections.emptySet();
 	private String _user = "*";
 	private String _group = "*";
+	private long _minAge = 0L;
+	private long _maxAge = 0L;
+	private long _minSize = 0L;
+	private long _maxSize = 0L;
 
 	public AdvancedSearchParams() {
 		
 	}
-	
+
+	public void setName(String name) {
+		_name = name;
+	}
+
 	public void setInodeType(InodeType type) {
 		_inodeType = type;
 	}
@@ -53,6 +62,26 @@ public class AdvancedSearchParams {
 	
 	public void setGroup(String group) {
 		_group = group;
+	}
+
+	public void setMinAge(long minAge) {
+		_minAge = minAge;
+	}
+
+	public void setMaxAge(long maxAge) {
+		_maxAge = maxAge;
+	}
+
+	public void setMinSize(long minSize) {
+		_minSize = minSize;
+	}
+
+	public void setMaxSize(long maxSize) {
+		_maxSize = maxSize;
+	}
+
+	public String getName() {
+		return _name;
 	}
 	
 	public InodeType getInodeType() {
@@ -69,5 +98,21 @@ public class AdvancedSearchParams {
 	
 	public String getGroup() {
 		return _group;
+	}
+
+	public long getMinAge() {
+		return _minAge;
+	}
+
+	public long getMaxAge() {
+		return _maxAge;
+	}
+
+	public long getMinSize() {
+		return _minSize;
+	}
+
+	public long getMaxSize() {
+		return _maxSize;
 	}
 }

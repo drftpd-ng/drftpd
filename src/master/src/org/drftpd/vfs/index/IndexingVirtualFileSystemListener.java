@@ -22,12 +22,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.event.VirtualFileSystemEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
-import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
-import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
+import org.drftpd.vfs.event.*;
 
 /**
  * This VFS listener is responsible to notify the {@link IndexEngineInterface} that some
@@ -87,6 +82,30 @@ public class IndexingVirtualFileSystemListener {
 		if (bypassEvent(event))
 			return;
 		
+		inodeUpdated(event.getInode());
+	}
+
+	/**
+	 * Method called whenever the size of the given inode is changed
+	 * @param event
+	 */
+	@EventSubscriber
+	public void sizeChanged(VirtualFileSystemSizeEvent event) {
+		if (bypassEvent(event))
+			return;
+
+		inodeUpdated(event.getInode());
+	}
+
+	/**
+	 * Method called whenever the last modified timestamp of the given inode is changed
+	 * @param event
+	 */
+	@EventSubscriber
+	public void lastModifiedChanged(VirtualFileSystemLastModifiedEvent event) {
+		if (bypassEvent(event))
+			return;
+
 		inodeUpdated(event.getInode());
 	}
 	

@@ -223,6 +223,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 			_size = size;
 			getParent().addSize(_size);
 		}
+		//getVFS().notifySizeChanged(this,_size);
 	}
 
 	public boolean isUploading() {

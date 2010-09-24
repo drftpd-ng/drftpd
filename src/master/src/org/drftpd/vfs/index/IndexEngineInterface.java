@@ -97,5 +97,5 @@ public interface IndexEngineInterface {
 	public Map<String, String> getStatus();
 	
 	public Set<String> findInode(DirectoryHandle startNode, String text, InodeType inodeType) throws IndexException;
-	public Set<String> advancedFind(AdvancedSearchParams params) throws IndexException;
+	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params) throws IndexException;
 }

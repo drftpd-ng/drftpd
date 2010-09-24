@@ -35,12 +35,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.vfs.event.VirtualFileSystemEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
-import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
-import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
+import org.drftpd.vfs.event.*;
 
 public class VirtualFileSystem {
 
@@ -425,6 +420,18 @@ public class VirtualFileSystem {
 		logger.debug("Notifying that " + inode.getPath() + " has been deleted");
 
 		publishAsyncEvent(new VirtualFileSystemInodeDeletedEvent(inode));
+	}
+
+	protected void notifySizeChanged(VirtualFileSystemInode inode, long size) {
+		logger.debug("Notifying that the size of " + inode.getPath() + " has changed to: " + size);
+
+		publishAsyncEvent(new VirtualFileSystemSizeEvent(inode, size));
+	}
+
+	protected void notifyLastModifiedChanged(VirtualFileSystemInode inode, long lastmodified) {
+		logger.debug("Notifying that the last modified timestamp of " + inode.getPath() + " has changed to: " + lastmodified);
+
+		publishAsyncEvent(new VirtualFileSystemLastModifiedEvent(inode, lastmodified));
 	}
 	
 	private void publishAsyncEvent(VirtualFileSystemEvent event) {

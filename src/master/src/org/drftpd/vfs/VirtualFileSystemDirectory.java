@@ -71,6 +71,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		_size = getSize() + l;
 		getParent().addSize(l);
 		commit();
+		//getVFS().notifySizeChanged(this,_size);
 	}
 
 	/**
@@ -302,6 +303,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	@Override
 	public void setSize(long l) {
 		_size = l;
+		//getVFS().notifySizeChanged(this,_size);
 	}
 
 	public synchronized void removeMissingChild(String name) {

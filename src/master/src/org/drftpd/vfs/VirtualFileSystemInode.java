@@ -254,6 +254,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	public void setLastModified(long modified) {
 		_lastModified = modified;
+		//getVFS().notifyLastModifiedChanged(this,_lastModified);
 	}
 
 	/**
