@@ -1,0 +1,55 @@
+# $Id$
+rebuildindex {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doRebuildIndex
+perms =siteop
+input all
+output source
+}
+
+searchfile {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doSearchFile
+perms *
+input all
+output source
+}
+
+searchdir {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doSearchDir
+perms *
+input all
+output source
+}
+
+advsearch {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doAdvSearch
+perms *
+help Searches for files and diretories in the index w/ advanced filters.
+help.specific ${command} <options>
+help.specific Options: -user <user> -group <group>
+help.specific Options: -type <f/file|d/dir> -slaves <slave[,slave,..]>
+help.specific Options: -age <start date> <end date>
+help.specific Valid format: yyyy.MM.dd OR yyyy.MM.dd.HH.mm.ss, Example: 2010.01.29.08.36.33
+help.specific Options: -size <min size> <max size>
+help.specific Options: -name <word> [word ..]
+help.specific Name MUST be the last option in the command.
+help.specific Multipe options are allowed. If multiple options are given a file/dir must match all options.
+input all
+output source
+}
+
+indexstatus {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doIndexStatus
+perms =siteop
+input all
+output source
+}
