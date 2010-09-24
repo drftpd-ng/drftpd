@@ -128,12 +128,8 @@ public class BaseFtpConnection extends Session implements Runnable {
 	protected BaseFtpConnection() {
 	}
 
-	public BaseFtpConnection(Socket soc) throws IOException {
-		_commandManager = GlobalContext.getConnectionManager().getCommandManager();
-		setCommands(GlobalContext.getConnectionManager().getCommands());
+	public BaseFtpConnection(Socket soc) {
 		setControlSocket(soc);
-		_lastActive = System.currentTimeMillis();
-		setCurrentDirectory(getGlobalContext().getRoot());
 	}
 
 	/**
@@ -236,6 +232,10 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * Server one FTP connection.
 	 */
 	public void run() {
+		_commandManager = GlobalContext.getConnectionManager().getCommandManager();
+		setCommands(GlobalContext.getConnectionManager().getCommands());
+		_lastActive = System.currentTimeMillis();
+		setCurrentDirectory(getGlobalContext().getRoot());
 		_thread = Thread.currentThread();
 		GlobalContext.getConnectionManager().dumpThreadPool();
 		
@@ -345,16 +345,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		} catch (Exception ex) {
 			logger.log(Level.INFO, "Exception, closing", ex);
 		} finally {
-			try {
-				if (_in != null) {
-					_in.close();
-				}
-				if (_out != null) {
-					_out.close();
-				}
-			} catch (Exception ex2) {
-				logger.log(Level.WARN, "Exception closing stream", ex2);
-			}
+			shutdownSocket();
 
 			if (isAuthenticated()) {
 				try {
@@ -535,6 +526,30 @@ public class BaseFtpConnection extends Session implements Runnable {
 		if (getTransferState().abort("Transfer aborted")) {
     		printOutput(new FtpReply(426, "Connection closed; transfer aborted."));
     	}
+	}
+	
+	protected void shutdownSocket() {
+		try {
+			if (_in != null) {
+				_in.close();
+			}
+		} catch (Exception ex) {
+			// Already closed
+		}
+		try {
+			if (_out != null) {
+				_out.close();
+			}
+		} catch (Exception ex) {
+			// Already closed
+		}
+		try {
+			if (_controlSocket != null) {
+				_controlSocket.close();
+			}
+		} catch (Exception ex) {
+			// Already closed
+		}
 	}
 
 	class CommandThread implements Runnable {

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -152,7 +153,7 @@ public class ConnectionManager {
 		int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
 
 		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS, 
-				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
+				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		_pool.allowCoreThreadTimeOut(false);
 		_pool.prestartAllCoreThreads();
 	}
@@ -286,7 +287,13 @@ public class ConnectionManager {
 
 		BaseFtpConnection conn = new BaseFtpConnection(sock);
 		_conns.add(conn);
-		_pool.execute(conn);
+		try {
+			_pool.execute(conn);
+		} catch (RejectedExecutionException e) {
+			conn.printOutput(new FtpReply(421, "Connection closing"));
+			conn.shutdownSocket();
+			_conns.remove(conn);
+		}
 	}
 
 	/**
