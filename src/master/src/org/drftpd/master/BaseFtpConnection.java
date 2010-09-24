@@ -294,7 +294,8 @@ public class BaseFtpConnection extends Session implements Runnable {
 						// user not logged in yet
 					}
 					if (idleTime > 0
-							&& ((System.currentTimeMillis() - _lastActive) / 1000 >= idleTime)) {
+							&& ((System.currentTimeMillis() - _lastActive) / 1000 >= idleTime)
+							&& !isExecuting()) {
 						stop("IdleTimeout");
 						break;
 					}
