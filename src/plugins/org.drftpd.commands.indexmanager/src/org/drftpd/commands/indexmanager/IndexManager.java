@@ -20,9 +20,14 @@ package org.drftpd.commands.indexmanager;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Map;
 import java.util.Map.Entry;
-
+import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;

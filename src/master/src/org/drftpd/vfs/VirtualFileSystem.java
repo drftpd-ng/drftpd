@@ -35,7 +35,14 @@ import org.drftpd.GlobalContext;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.vfs.event.*;
+import org.drftpd.vfs.event.VirtualFileSystemEvent;
+import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
+import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
+import org.drftpd.vfs.event.VirtualFileSystemLastModifiedEvent;
+import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
+import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
+import org.drftpd.vfs.event.VirtualFileSystemSizeEvent;
+import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
 
 public class VirtualFileSystem {
 
