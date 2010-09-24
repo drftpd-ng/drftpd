@@ -18,10 +18,13 @@
 package org.drftpd.commands.indexmanager;
 
 import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
 import org.drftpd.usermanager.User;
@@ -156,28 +159,50 @@ public class IndexManager extends CommandInterface {
 				HashSet<String> slaves = new HashSet<String>(Arrays.asList(st.nextToken().split(",")));
 				params.setSlaves(slaves);
 			} else if (option.equalsIgnoreCase("-age")) {
+				SimpleDateFormat fullDate = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+				SimpleDateFormat shortDate = new SimpleDateFormat("yyyy.MM.dd");
 				try {
-					long minAge = Long.parseLong(st.nextToken());
-					long maxAge = Long.parseLong(st.nextToken());
-					if (minAge >= maxAge) {
+					String from = st.nextToken();
+					String to = st.nextToken();
+
+					long minAge;
+					long maxAge;
+
+					if (from.length() == 10)
+						minAge = shortDate.parse(from).getTime();
+					else if (from.length() == 19)
+						minAge = fullDate.parse(from).getTime();
+					else
+						throw new ImproperUsageException("Invalid dateformat for min age in index search.");
+
+					if (to.length() == 10)
+						maxAge = shortDate.parse(to).getTime();
+					else if (to.length() == 19)
+						maxAge = fullDate.parse(to).getTime();
+					else
+						throw new ImproperUsageException("Invalid dateformat for max age in index search.");
+
+					if (minAge >= maxAge)
 						throw new ImproperUsageException("Age range invalid, min value higher or same as max");
-					}
-					params.setMinAge(Long.parseLong(st.nextToken()));
-					params.setMaxAge(Long.parseLong(st.nextToken()));
+
+					params.setMinAge(minAge);
+					params.setMaxAge(maxAge);
 				} catch (NumberFormatException e) {
 					throw new ImproperUsageException(e);
 				} catch (NoSuchElementException e) {
 					throw new ImproperUsageException("You must specify a range for the age, both min and max", e);
+				}  catch (ParseException e) {
+					throw new ImproperUsageException("Invalid dateformat", e);
 				}
 			} else if (option.equalsIgnoreCase("-size")) {
 				try {
-					long minSize = Long.parseLong(st.nextToken());
-					long maxSize = Long.parseLong(st.nextToken());
+					long minSize = Bytes.parseBytes(st.nextToken());
+					long maxSize = Bytes.parseBytes(st.nextToken());
 					if (minSize >= maxSize) {
 						throw new ImproperUsageException("Size range invalid, min value higher or same as max");
 					}
-					params.setMinSize(Long.parseLong(st.nextToken()));
-					params.setMaxSize(Long.parseLong(st.nextToken()));
+					params.setMinSize(minSize);
+					params.setMaxSize(maxSize);
 				} catch (NumberFormatException e) {
 					throw new ImproperUsageException(e);
 				} catch (NoSuchElementException e) {

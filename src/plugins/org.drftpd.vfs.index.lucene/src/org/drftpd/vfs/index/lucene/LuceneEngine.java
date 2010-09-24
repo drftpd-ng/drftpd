@@ -36,14 +36,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -507,12 +500,24 @@ public class LuceneEngine implements IndexEngineInterface {
 				for (String slaveName : params.getSlaves()) {
 					sb.append(slaveName).append(" ");
 				}
-				Query slaveQuery = analyze("slaves", sb.toString().trim());
+				Query slaveQuery = analyze("slaves", TERM_SLAVES, sb.toString().trim());
 				query.add(slaveQuery, Occur.MUST);
 			}
 
+			if (params.getMinAge() != 0L || params.getMaxAge() != 0L) {
+				Query ageQuery = NumericRangeQuery.newLongRange("lastmodified",
+						params.getMinAge(), params.getMaxAge(), true, true);
+				query.add(ageQuery, Occur.MUST);
+			}
+
+			if (params.getMinSize() != 0L || params.getMaxSize() != 0L) {
+				Query sizeQuery = NumericRangeQuery.newLongRange("size",
+						params.getMinSize(), params.getMaxSize(), true, true);
+				query.add(sizeQuery, Occur.MUST);
+			}
+
 			if (!params.getName().isEmpty()) {
-				Query nameQuery = analyze("name", params.getName());
+				Query nameQuery = analyze("name", TERM_NAME, params.getName());
 				query.add(nameQuery, Occur.MUST);
 			}
 
@@ -566,7 +571,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(parentQuery, Occur.MUST);
 			}
 			
-			Query nameQuery = analyze("name", text);
+			Query nameQuery = analyze("name", TERM_NAME, text);
 			query.add(nameQuery, Occur.MUST);
 
 			if (inodeType == InodeType.ANY) {
@@ -618,7 +623,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * 
 	 * @param name
 	 */
-	private Query analyze(String field, String name) {
+	private Query analyze(String field, Term term, String name) {
 		TokenStream ts = ANALYZER.tokenStream(field, new StringReader(name));
 
 		BooleanQuery bQuery = new BooleanQuery();
@@ -639,7 +644,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 
 		for (String text : tokens) {
-			wQuery = new WildcardQuery(TERM_NAME.createTerm(text));
+			wQuery = new WildcardQuery(term.createTerm(text));
 			bQuery.add(wQuery, Occur.MUST);
 		}
 

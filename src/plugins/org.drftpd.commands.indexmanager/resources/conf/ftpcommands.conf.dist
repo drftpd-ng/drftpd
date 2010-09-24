@@ -9,14 +9,14 @@ SITE SEARCHFILE {
 plugin org.drftpd.commands.indexmanager
 class IndexManager
 method doSearchFile
-perms =siteop
+perms *
 }
 
 SITE SEARCHDIR {
 plugin org.drftpd.commands.indexmanager
 class IndexManager
 method doSearchDir
-perms =siteop
+perms *
 }
 
 SITE ADVSEARCH {
@@ -28,7 +28,8 @@ help Searches for files and diretories in the index w/ advanced filters.
 help.specific ${command} <options>
 help.specific Options: -user <user> -group <group>
 help.specific Options: -type <f/file|d/dir> -slaves <slave[,slave,..]>
-help.specific Options: -age <start timestamp> <end timestamp>
+help.specific Options: -age <start date> <end date>
+help.specific Valid format: yyyy.MM.dd OR yyyy.MM.dd.HH.mm.ss, Example: 2010.01.29.08.36.33
 help.specific Options: -size <min size> <max size>
 help.specific Options: -name <word> [word ..]
 help.specific Name MUST be the last option in the command.
