@@ -2034,6 +2034,47 @@ public class UserManagementHandler extends CommandInterface {
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
+	public CommandResponse doSITE_BANALL(CommandRequest request)
+			throws ImproperUsageException {
+
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+
+		long banTime;
+		try {
+			banTime = Long.parseLong(st.nextToken());
+		} catch (NumberFormatException e) {
+			logger.warn("", e);
+			return new CommandResponse(200, e.getMessage());
+		}
+
+		String executioner = request.getUser();
+
+		String banMsg;
+		if (st.hasMoreTokens()) {
+			banMsg = "[" + executioner + "]";
+			while (st.hasMoreTokens())
+				banMsg += " " + st.nextToken();
+		} else {
+			banMsg = "Banned by " + executioner + " for "
+					+ banTime + "m";
+		}
+
+		for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
+			if (user.getName().equals(executioner))
+				continue;
+			user.getKeyedMap().setObject(UserManagement.BAN_TIME,
+				new Date(System.currentTimeMillis() + (banTime * 60000)));
+			user.getKeyedMap().setObject(UserManagement.BAN_REASON, banMsg);
+			user.commit();
+		}
+
+		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+	}
+
 	public CommandResponse doSITE_UNBAN(CommandRequest request)
 			throws ImproperUsageException {
 
@@ -2060,6 +2101,17 @@ public class UserManagementHandler extends CommandInterface {
 		myUser.getKeyedMap().setObject(UserManagement.BAN_REASON, "");
 
 		myUser.commit();
+
+		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+	}
+
+	public CommandResponse doSITE_UNBANALL(CommandRequest request) {
+
+		for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
+			user.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
+			user.getKeyedMap().setObject(UserManagement.BAN_REASON, "");
+			user.commit();
+		}
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}

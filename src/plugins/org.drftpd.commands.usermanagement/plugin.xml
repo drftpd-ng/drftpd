@@ -4,7 +4,7 @@
 <plugin id="org.drftpd.commands.usermanagement" version="3.0.0">
 	<doc>
 		<doc-text>This plugin provides User Management commands, including a default user profile.  
-(SITE ADDIP/ADDUSER/CHANGE/CHGRP/CHPASS/DEBUG/DELIP/DELUSER/GADDUSER/GINFO/GIVE/GROUP/GROUPS/GRPREN/KICK/PASSWD/PURGE/READD/RENUSER/SEEN/TAGLINE/TAKE/USER/USERS/WHO/SWHO/BAN/UNBAN/BANS)</doc-text>
+(SITE ADDIP/ADDUSER/CHANGE/CHGRP/CHPASS/DEBUG/DELIP/DELUSER/GADDUSER/GINFO/GIVE/GROUP/GROUPS/GRPREN/KICK/KICKALL/PASSWD/PURGE/READD/RENUSER/SEEN/TAGLINE/TAKE/USER/USERS/WHO/SWHO/BAN/BANALL/UNBAN/UNBANALL/BANS)</doc-text>
 	</doc>
 	<attributes>
 		<attribute id="DefaultBuild" value="true" />
@@ -124,6 +124,12 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_UNBANALLPerm">
+		<parameter id="ParentMethod" value="doSITE_UNBANALL" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
 	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_DEBUGPerm">
 		<parameter id="ParentMethod" value="doSITE_DEBUG" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
@@ -168,6 +174,12 @@
 	</extension>
 	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_BANPerm">
 		<parameter id="ParentMethod" value="doSITE_BAN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_BANALLPerm">
+		<parameter id="ParentMethod" value="doSITE_BANALL" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
