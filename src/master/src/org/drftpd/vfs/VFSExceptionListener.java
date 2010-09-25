@@ -18,6 +18,7 @@
 package org.drftpd.vfs;
 
 import java.beans.ExceptionListener;
+import java.lang.reflect.InvocationTargetException;
 
 import org.apache.log4j.Logger;
 
@@ -36,7 +37,7 @@ public class VFSExceptionListener implements ExceptionListener {
 		} else if (arg0 instanceof NullPointerException) {
 			// suppress this as will be thrown by deserializing plugin metadata which is no longer needed
 		} else {
-			logger.error("ExceptionListener throwing", arg0);
+			logger.error("ExceptionListener throwing", arg0.getCause());
 		}
 	}
 }

@@ -31,13 +31,8 @@ import org.drftpd.GlobalContext;
 public class LuceneMaintenanceThread extends Thread {
 	private static final Logger logger = Logger.getLogger(LuceneMaintenanceThread.class);
 
-	private long _currentTime;
-	private int _minDelay;
-
 	private int _optimizeInterval;
-	private int _updateSearcherInterval;
 	private long _lastOptimization;
-	private long _lastSearcherCreation;
 	
 	private boolean _stop;
 	
@@ -48,19 +43,18 @@ public class LuceneMaintenanceThread extends Thread {
 		_engine = (LuceneEngine) GlobalContext.getGlobalContext().getIndexEngine();
 		
 		_lastOptimization = System.currentTimeMillis();
-		_lastSearcherCreation = System.currentTimeMillis();
 	}
 
 	public void run() {
 		while (true) {
-			_currentTime = System.currentTimeMillis();
+			long currentTime = System.currentTimeMillis();
 
 			try {
 				if (_stop) {
 					break;
 				}
 
-				if (_currentTime >= _lastOptimization + _optimizeInterval) {
+				if (currentTime >= _lastOptimization + _optimizeInterval) {
 					_engine.getWriter().optimize();
 					_engine.getWriter().commit();
 					updateLastOptimizationTime();
@@ -68,19 +62,9 @@ public class LuceneMaintenanceThread extends Thread {
 					logger.debug("Index was optimized successfully.");
 				}
 
-				/*if (_currentTime >= _lastSearcherCreation + _updateSearcherInterval) {
-					logger.debug("Creating a new IndexSearcher.");
-
-					_engine.refreshSearcher();
-
-					updateSearcherCreationTime();
-
-					logger.debug("Search engine updated successfully.");
-				}*/
-
 				// obtaining the object monitor's.
 				synchronized (this) {
-					wait(_minDelay);
+					wait(_optimizeInterval);
 				}
 			} catch (InterruptedException e) {
 			} catch (CorruptIndexException e) {
@@ -98,20 +82,6 @@ public class LuceneMaintenanceThread extends Thread {
 	 */
 	protected void stopMaintenance() {
 		_stop = true;
-	}
-	
-	/**
-	 * Updates the searcher creation time.
-	 */
-	protected void updateSearcherCreationTime() {
-		_lastSearcherCreation = System.currentTimeMillis();
-	}
-	
-	/**
-	 * @return the last time the search engine was updated.
-	 */
-	protected long getSearcherCreationTime() {
-		return _lastSearcherCreation;
 	}
 	
 	/**
@@ -134,19 +104,5 @@ public class LuceneMaintenanceThread extends Thread {
 	 */
 	protected void setOptimizationInterval(int interval) {
 		_optimizeInterval = interval;
-		updateMinimumDelay();
-	}
-
-	/**
-	 * Sets how frequently the search engine is updated.
-	 * @param interval
-	 */
-	protected void setSearcherCreationInterval(int interval) {
-		_updateSearcherInterval = interval;
-		updateMinimumDelay();
-	}
-	
-	private void updateMinimumDelay() {
-		_minDelay = Math.min(_optimizeInterval, _updateSearcherInterval);		
 	}
 }

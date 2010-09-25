@@ -31,6 +31,7 @@ public class AdvancedSearchParams {
 	}
 
 	private String _name = "";
+	private String _fullname = "";
 	private InodeType _inodeType = InodeType.ANY;
 	private Set<String> _slaves = Collections.emptySet();
 	private String _user = "*";
@@ -39,6 +40,8 @@ public class AdvancedSearchParams {
 	private long _maxAge = 0L;
 	private long _minSize = 0L;
 	private long _maxSize = 0L;
+	private String _sortField = "";
+	private boolean _sortOrder = false;
 
 	public AdvancedSearchParams() {
 		
@@ -46,6 +49,10 @@ public class AdvancedSearchParams {
 
 	public void setName(String name) {
 		_name = name;
+	}
+
+	public void setFullName(String fullname) {
+		_fullname = fullname;
 	}
 
 	public void setInodeType(InodeType type) {
@@ -80,8 +87,20 @@ public class AdvancedSearchParams {
 		_maxSize = maxSize;
 	}
 
+	public void setSortField(String sortField) {
+		_sortField = sortField;
+	}
+
+	public void setSortOrder(boolean sortOrder) {
+		_sortOrder = sortOrder;
+	}
+
 	public String getName() {
 		return _name;
+	}
+
+	public String getFullName() {
+		return _fullname;
 	}
 	
 	public InodeType getInodeType() {
@@ -114,5 +133,13 @@ public class AdvancedSearchParams {
 
 	public long getMaxSize() {
 		return _maxSize;
+	}
+
+	public String getSortField() {
+		return _sortField;
+	}
+
+	public boolean getSortOrder() {
+		return _sortOrder;
 	}
 }

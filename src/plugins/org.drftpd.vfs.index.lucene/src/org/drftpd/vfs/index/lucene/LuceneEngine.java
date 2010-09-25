@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
@@ -50,8 +50,11 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -90,6 +93,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Document INDEX_DOCUMENT = new Document();
 	
 	private static final Field FIELD_NAME = new Field("name", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final Field FIELD_FULL_NAME = new Field("fullname", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_FULL_PATH = new Field("fullPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
@@ -100,7 +104,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.YES, Boolean.TRUE);
 	
 	private static final Field[] FIELDS = new Field[] {
-		FIELD_NAME, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
+		FIELD_NAME, FIELD_FULL_NAME, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
 	};
 	private static final NumericField[] NUMERICFIELDS = new NumericField[] {
 		FIELD_LASTMODIFIED, FIELD_SIZE
@@ -117,18 +121,20 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private Directory _storage;
 	private IndexWriter _iWriter;
-	//private IndexSearcher _iSearcher;
 
 	private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
 	private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
 	
 	private static final Term TERM_NAME = new Term("name", "");
+	private static final Term TERM_FULL_NAME = new Term("fullname", "");
 	private static final Term TERM_PARENT = new Term("parentPath", "");
 	private static final Term TERM_FULL = new Term("fullPath", "");
 
 	private static final Term TERM_OWNER = new Term("owner", "");
 	private static final Term TERM_GROUP = new Term("group", "");
 	private static final Term TERM_SLAVES = new Term("slaves", "");
+
+	private Sort SORT = new Sort();
 
 	private int _maxHitsNumber;
 	private int _maxDocsBuffer;
@@ -187,7 +193,6 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			_iWriter = new IndexWriter(_storage, ANALYZER, MaxFieldLength.UNLIMITED);
-			//_iSearcher = new IndexSearcher(_storage);
 
 			_iWriter.setMaxBufferedDocs(_maxDocsBuffer);
 			_iWriter.setRAMBufferSizeMB(_maxRAMBufferSize);
@@ -211,9 +216,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		// in minutes, convert'em!
 		int optimizeInterval = Integer.parseInt(cfg.getProperty("optimize_interval", "15")) * 60 * 1000;
-		int updateSearcherInterval = Integer.parseInt(cfg.getProperty("searchupdate_interval", "15")) * 60 * 1000;
 		_maintenanceThread.setOptimizationInterval(optimizeInterval);
-		_maintenanceThread.setSearcherCreationInterval(updateSearcherInterval);
 		
 		// in minutes, convert it!
 		int interval = Integer.parseInt(cfg.getProperty("backup_interval", "120")) * 60 * 1000;
@@ -227,8 +230,6 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 	private void closeAll() {
 		try {
-			//if (_iSearcher != null)
-			//	_iSearcher.close();
 			if (_iWriter != null)
 				_iWriter.close();
 			if (_storage != null)
@@ -237,7 +238,6 @@ public class LuceneEngine implements IndexEngineInterface {
 			logger.error(e, e);
 		}
 
-		//_iSearcher = null;
 		_iWriter = null;
 		_storage = null;
 	}
@@ -246,13 +246,15 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * Shortcut to create Lucene Document from the Inode's data. The fields that
 	 * are stored in the index are:
 	 * <ul>
-	 * <li>name - the name of the inode</li>
-	 * <li>parentPath - the full path of the parent inode</li>
-	 * <li>fullPath - the full path of the inode</li>
+	 * <li>name - The name of the inode</li>
+	 * <li>parentPath - The full path of the parent inode</li>
+	 * <li>fullPath - The full path of the inode</li>
 	 * <li>owner - The user who owns the file</li>
 	 * <li>group - The group of the user who owns the file</li>
 	 * <li>type - File or Directory</li>
 	 * <li>slaves - If the inode is a file, then the slaves are stored</li>
+	 * <li>lastmodified - Timestamp of when the inode was last modified</li>
+	 * <li>size - The size of the inode</li>
 	 * </ul>
 	 * 
 	 * @param inode
@@ -264,6 +266,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		// locking the document so that none touches it.
 		synchronized (INDEX_DOCUMENT) {
 			FIELD_NAME.setValue(inode.getName());
+			FIELD_FULL_NAME.setValue(inode.getName());
 			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
 			if (inode.isDirectory())
 				FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
@@ -311,12 +314,25 @@ public class LuceneEngine implements IndexEngineInterface {
 			return TERM_PARENT.createTerm(inode.getPath());
 	}
 
+	private TermQuery makeFullNameTermQueryFromString(String name) {
+		return new TermQuery(TERM_FULL_NAME.createTerm(name));
+	}
+
 	private TermQuery makeOwnerTermQueryFromString(String owner) {
 		return new TermQuery(TERM_OWNER.createTerm(owner));
 	}
 
 	private TermQuery makeGroupTermQueryFromString(String group) {
 		return new TermQuery(TERM_GROUP.createTerm(group));
+	}
+	
+	private void setSortField(boolean order) {
+		SORT.setSort(new SortField("fullPath", SortField.STRING, order));
+	}
+
+	private void setSortField(String field, int type, boolean order) {
+		SORT.setSort(new SortField(field, type, order),
+				new SortField("fullPath", SortField.STRING));
 	}
 
 	/**
@@ -325,13 +341,13 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 	private Query makeQueryFromInode(InodeHandle inode) {
 		BooleanQuery query = new BooleanQuery();
-		
+
 		TermQuery parentQuery = new TermQuery(makeParentPathTermFromInode(inode.getParent()));
 		TermQuery inodeQuery = new TermQuery(makeNameTermFromInode(inode));
-		
+
 		query.add(parentQuery, Occur.MUST);
 		query.add(inodeQuery, Occur.MUST);
-		
+
 		return query;
 	}
 
@@ -352,8 +368,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	/* {@inheritDoc} */
 	public void deleteInode(InodeHandle inode) throws IndexException {
 		try {
-			Query query = makeQueryFromInode(inode);
-			_iWriter.deleteDocuments(query);
+			//Query query = makeQueryFromInode(inode);
+			_iWriter.deleteDocuments(makeFullPathTermFromInode(inode));
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
 		} catch (IOException e) {
@@ -471,19 +487,18 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 		
 		commit(); // commit the writer so that the searcher can see the new stuff.
-		
-		/*try {
-			refreshSearcher();
-		} catch (Exception e) {
-			throw new IndexException(e);
-		}*/
 	}
 
-	/* {@inheritDoc} */
+	/**
+	 * @param startNode
+	 *            The dir where the search will begin.
+	 * @param params
+	 *            Search options.
+	 */
 	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params) throws IndexException {
 		IndexSearcher iSearcher = null;
 		try {
-			Map<String,String> inodes = new TreeMap<String,String>();
+			Map<String,String> inodes = new LinkedHashMap<String,String>();
 
 			BooleanQuery query = new BooleanQuery();
 
@@ -493,21 +508,24 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			if (params.getInodeType() == InodeType.ANY) {
-				query.add(QUERY_DIRECTORY, Occur.SHOULD);
-				query.add(QUERY_FILE, Occur.SHOULD);
+				/*
+				 * The following isnt needed, we simply ignore search for this
+				 * field.
+				 *
+				 * query.add(QUERY_DIRECTORY, Occur.SHOULD);
+				 * query.add(QUERY_FILE, Occur.SHOULD);
+				 */
 			} else if (params.getInodeType() == InodeType.DIRECTORY) {
 				query.add(QUERY_DIRECTORY, Occur.MUST);
 			} else if (params.getInodeType() == InodeType.FILE) {
 				query.add(QUERY_FILE, Occur.MUST);
 			}
 
-			String owner = params.getOwner();
-			String group = params.getGroup();
-			if (!owner.equals("*")) {
-				query.add(makeOwnerTermQueryFromString(owner), Occur.MUST);
+			if (!params.getOwner().equals("*")) {
+				query.add(makeOwnerTermQueryFromString(params.getOwner()), Occur.MUST);
 			}
-			if (!group.equals("*")) {
-				query.add(makeGroupTermQueryFromString(group), Occur.MUST);
+			if (!params.getGroup().equals("*")) {
+				query.add(makeGroupTermQueryFromString(params.getGroup()), Occur.MUST);
 			}
 
 			if (!params.getSlaves().isEmpty()) {
@@ -531,16 +549,30 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(sizeQuery, Occur.MUST);
 			}
 
-			if (!params.getName().isEmpty()) {
+			if (!params.getFullName().isEmpty()) {
+				query.add(makeFullNameTermQueryFromString(params.getFullName()), Occur.MUST);
+			} else if (!params.getName().isEmpty()) {
 				Query nameQuery = analyze("name", TERM_NAME, params.getName());
 				query.add(nameQuery, Occur.MUST);
 			}
 
+			if (params.getSortField().equalsIgnoreCase("lastmodified") ||
+					params.getSortField().equalsIgnoreCase("size")) {
+				setSortField(params.getSortField(), SortField.LONG, params.getSortOrder());
+			} else if (params.getSortField().equalsIgnoreCase("parentPath") ||
+					params.getSortField().equalsIgnoreCase("owner") ||
+					params.getSortField().equalsIgnoreCase("group") ||
+					params.getSortField().equalsIgnoreCase("type")) {
+				setSortField(params.getSortField(), SortField.STRING, params.getSortOrder());
+			} else {
+				setSortField(params.getSortOrder());
+			}
+
 			iSearcher = new IndexSearcher(_iWriter.getReader());
-			TopDocs topDocs = iSearcher.search(query, _maxHitsNumber);
+			TopFieldDocs topFieldDocs = iSearcher.search(query, null, _maxHitsNumber, SORT);
 			logger.debug("Query: " + query);
 
-			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+			for (ScoreDoc scoreDoc : topFieldDocs.scoreDocs) {
 				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
 				inodes.put(doc.getFieldable("fullPath").stringValue(), doc.getFieldable("type").stringValue());
 			}
@@ -636,7 +668,10 @@ public class LuceneEngine implements IndexEngineInterface {
 	/**
 	 * Parses the inode name removing unwanted chars from it.
 	 * 
+	 * @param field
+	 * @param term
 	 * @param name
+	 * @return Query
 	 */
 	private Query analyze(String field, Term term, String name) {
 		TokenStream ts = ANALYZER.tokenStream(field, new StringReader(name));
@@ -686,7 +721,6 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
 		String lastOp = df.format(new Date(_maintenanceThread.getLastOptimizationTime()));
-		String lastSearch = df.format(new Date(_maintenanceThread.getSearcherCreationTime()));
 		String lastBackup = df.format(new Date(_backupThread.getLastBackup()));
 
 		status.put("inodes", String.valueOf(_iWriter.maxDoc()));
@@ -694,7 +728,6 @@ public class LuceneEngine implements IndexEngineInterface {
 		status.put("max hits", String.valueOf(_maxHitsNumber));
 		status.put("last optimization", lastOp);
 		status.put("last backup", lastBackup);
-		status.put("last search engine update", lastSearch);
 		status.put("cached inodes", String.valueOf(_iWriter.numRamDocs()));
 		status.put("ram usage", Bytes.formatBytes(_iWriter.ramSizeInBytes()));
 
@@ -720,22 +753,6 @@ public class LuceneEngine implements IndexEngineInterface {
 	protected IndexWriter getWriter() {
 		return _iWriter;
 	}
-	
-	/*public void refreshSearcher() throws CorruptIndexException, IOException {
-		IndexSearcher newSearcher = new IndexSearcher(_storage);
-		IndexSearcher oldSearcher = _iSearcher;
-		
-		// locking here so nobody can touch it for now.
-		synchronized (oldSearcher) {
-			_iSearcher = newSearcher;
-			
-			try {
-				oldSearcher.close();
-			} catch (IOException e) {
-				// don't care about it
-			}
-		}
-	}*/
 	
 	/**
 	 * Hook ran by the JVM before shutting down itself completely. This hook

@@ -27,22 +27,8 @@
 		<parameter id="Priority" value="1" />
 	</extension>
 	
-	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doSearchFilePerm">
-		<parameter id="ParentMethod" value="doSearchFile" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
-		<parameter id="HookMethod" value="doPermissionCheck" />
-		<parameter id="Priority" value="1" />
-	</extension>
-	
-	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doSearchDirPerm">
-		<parameter id="ParentMethod" value="doSearchDir" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
-		<parameter id="HookMethod" value="doPermissionCheck" />
-		<parameter id="Priority" value="1" />
-	</extension>
-
-	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doAdvSearchPerm">
-		<parameter id="ParentMethod" value="doAdvSearch" />
+	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doSearchPerm">
+		<parameter id="ParentMethod" value="doSearch" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />

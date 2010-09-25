@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
-<plugin id="org.drftpd.commands.search" version="3.0.0">
+<plugin id="org.drftpd.commands.find" version="3.0.0">
 	<doc>
-		<doc-text>This plugin provides Search Commands.  
-(SITE SEARCH/DUPE/FIND)</doc-text>
+		<doc-text>This plugin provides find command.
+(SITE FIND)</doc-text>
 	</doc>
 	<requires>
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
@@ -12,12 +12,19 @@
 		<import plugin-id="org.drftpd.plugins.jobmanager" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.search" path="classes/" type="code">
+		<library id="org.drftpd.commands.find" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
 	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
 	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
 
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="SearchHandler" />
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="FindHandler" />
+
+	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doFindPerm">
+		<parameter id="ParentMethod" value="doFIND" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
 </plugin>

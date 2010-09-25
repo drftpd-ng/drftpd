@@ -31,7 +31,12 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
+import org.drftpd.commandmanager.CommandInterface;
+import org.drftpd.commandmanager.CommandRequest;
+import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.ImproperUsageException;
+import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
@@ -93,50 +98,11 @@ public class IndexManager extends CommandInterface {
 		return response;
 	}
 
-	public CommandResponse doSearchIndex(CommandRequest request, boolean isDir) {
-		CommandResponse response = new CommandResponse(200, "Search complete");
-		User user = request.getSession().getUserNull(request.getUser());
-
-		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
-		Set<String> inodes;
-
-		try {
-			InodeType inodeType = isDir ? InodeType.DIRECTORY : InodeType.FILE;
-			inodes = ie.findInode(request.getCurrentDirectory(), request.getArgument(), inodeType);			
-		} catch (IndexException e) {
-			return new CommandResponse(550, e.getMessage());
-		}
-		
-		InodeHandle inode;
-		for (String path : inodes) {
-			try {
-				inode = isDir ? new DirectoryHandle(path) : new FileHandle(path);
-				if (!inode.isHidden(user)) {
-					response.addComment(inode.getPath());
-				}
-			} catch (FileNotFoundException e) {
-				logger.warn("Index contained an unexistent inode: " + path);
-			}
-		}
-
-		return response;
-	}
-
-	public CommandResponse doSearchDir(CommandRequest request) {
-		return doSearchIndex(request, true);
-	}
-
-	public CommandResponse doSearchFile(CommandRequest request) {
-		return doSearchIndex(request, false);
-	}
-
-	public CommandResponse doAdvSearch(CommandRequest request) throws ImproperUsageException {
+	public CommandResponse doSearch(CommandRequest request) throws ImproperUsageException {
 
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
-
-		CommandResponse response = new CommandResponse(200, "Search complete");
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
@@ -213,12 +179,26 @@ public class IndexManager extends CommandInterface {
 				} catch (NoSuchElementException e) {
 					throw new ImproperUsageException("You must specify a range for the size, both min and max", e);
 				}
+			} else if (option.equalsIgnoreCase("-sort")) {
+				String field = st.nextToken();
+				params.setSortField(field);
+				if (!st.hasMoreTokens()) {
+					throw new ImproperUsageException("You must specify both field and sort order");
+				}
+				String order = st.nextToken();
+				if (order.equalsIgnoreCase("asc")) {
+					params.setSortOrder(false);
+				} else {
+					params.setSortOrder(true);
+				}
 			} else if (option.equalsIgnoreCase("-name")) {
 				StringBuilder nameQuery = new StringBuilder();
 				while(st.hasMoreTokens()) {
 					nameQuery.append(st.nextToken()).append(" ");
 				}
 				params.setName(nameQuery.toString().trim());
+			}  else if (option.equalsIgnoreCase("-fullname")) {
+				params.setFullName(st.nextToken());
 			}
 		}
 
@@ -231,7 +211,15 @@ public class IndexManager extends CommandInterface {
 			return new CommandResponse(550, e.getMessage());
 		}
 
+		ReplacerEnvironment env = new ReplacerEnvironment();
+
 		User user = request.getSession().getUserNull(request.getUser());
+
+		Session session = request.getSession();
+
+		CommandResponse response = new CommandResponse(200, "Search complete");
+
+		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
 
 		InodeHandle inode;
 		for (Entry<String,String> item : inodes.entrySet()) {
@@ -239,7 +227,12 @@ public class IndexManager extends CommandInterface {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey()) :
 						new FileHandle(item.getKey());
 				if (!inode.isHidden(user)) {
-					response.addComment(inode.getPath());
+					env.add("name", inode.getName());
+					env.add("path", inode.getPath());
+					env.add("owner", inode.getUsername());
+					env.add("group", inode.getGroup());
+					env.add("size", Bytes.formatBytes(inode.getSize()));
+					response.addComment(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
 				}
 			} catch (FileNotFoundException e) {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());

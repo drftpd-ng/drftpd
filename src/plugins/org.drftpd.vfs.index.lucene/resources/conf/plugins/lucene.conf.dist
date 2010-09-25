@@ -30,15 +30,6 @@ maxdocs_buffer=60
 # This value represents an amount in minutes.
 optimize_interval=15
 
-# Changes to the Index do not reflect in the search engine until it is updated
-# but updating the search engine might be expensive so you must choose
-# if you want a very up-to-date engine that eats lots of resources or you choose
-# to have a not-so-up-to-date engine that is lighter.
-# 
-# More info: http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
-# This value represents an amount in minutes.
-searchupdate_interval=15
-
 # *ADVANCED SETTING* Use native file locking.
 # Networked FileSystems usually doesn't deal very well if this, so disable it, if you are using one of them.
 #

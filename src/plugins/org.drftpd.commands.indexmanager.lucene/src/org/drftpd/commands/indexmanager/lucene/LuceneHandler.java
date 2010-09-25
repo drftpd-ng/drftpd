@@ -44,19 +44,8 @@ public class LuceneHandler extends CommandInterface {
 		try {
 			ie.commit();
 			
-			//ie.refreshSearcher();
 			return new CommandResponse(200, "Searcher updated!");
-		}/* catch (CorruptIndexException e) {
-			logger.error("Index is corrupted, unable to refresh searcher", e);
-			
-			// TODO what code should I use here?
-			return new CommandResponse(500, "Unable to refresh searcher. Check your logs.");
-		} catch (IOException e) {
-			logger.error("I/O error while refreshing the searcher", e);
-			
-			// TODO what code should I use here?
-			return new CommandResponse(500, "Unable to refresh searcher. Check your logs.");
-		}*/ catch (IndexException e) {
+		} catch (IndexException e) {
 			logger.error("Index is corrupted, unable to refresh searcher", e);
 			
 			// TODO what code should I use here?
