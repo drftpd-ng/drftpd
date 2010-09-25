@@ -30,6 +30,7 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
@@ -82,6 +83,8 @@ public class Transfer {
 
 	private String _pathForUpload = null;
 
+	private static final Logger logger = Logger.getLogger(Transfer.class);
+
 	/**
 	 * Start undefined transfer.
 	 */
@@ -120,6 +123,7 @@ public class Transfer {
 			}
 			if (_direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 				if (_file != null) {
+					logger.debug("Received abort, deleting uploaded file "+_file.getPath());
 					_file.delete();
 				}
 			}
