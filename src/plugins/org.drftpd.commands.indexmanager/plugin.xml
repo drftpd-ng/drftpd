@@ -27,8 +27,8 @@
 		<parameter id="Priority" value="1" />
 	</extension>
 	
-	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doSearchPerm">
-		<parameter id="ParentMethod" value="doSearch" />
+	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doIndexStatusPerm">
+		<parameter id="ParentMethod" value="doIndexStatus" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />

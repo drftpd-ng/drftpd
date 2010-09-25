@@ -1,8 +1,8 @@
 # $Id$
-SITE SUPERSEARCH {
-plugin org.drftpd.commands.find
-class Search
-method doSuperSearch
+supersearch {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doSearch
 perms *
 help Searches for files and diretories in the index w/ advanced filters.
 help.specific ${command} <options>
@@ -17,27 +17,33 @@ help.specific Options: -fullname <name>
 help.specific Options: -name <word> [word ..]
 help.specific Name MUST be the last option in the command.
 help.specific Multipe options are allowed. If multiple options are given a file/dir must match all options.
+input all
+output source
 }
 
-SITE SEARCH {
+search {
 plugin org.drftpd.commands.find
 class Search
 method doSearch
 perms *
 help Searches for files and diretories using wildcards.
 help.specific ${command} <word> [word ..]
+input all
+output source
 }
 
-SITE DUPE {
+dupe {
 plugin org.drftpd.commands.find
 class Search
 method doDupe
 perms *
 help Searches for files and diretories using exact name match.
 help.specific ${command} <name>
+input all
+output source
 }
 
-SITE FIND {
+find {
 plugin org.drftpd.commands.find
 class Find
 method doFIND
@@ -63,4 +69,6 @@ help.specific #t - last modified
 help.specific #h - parent
 help.specific Example: SITE FIND -action printf(filename: #f size: #s)
 help.specific Multipe options and actions are allowed. If multiple options are given a file must match all options for action to be taken
+input all
+output source
 }

@@ -21,8 +21,26 @@
 
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="FindHandler" />
 
-	<extension plugin-id="org.drftpd.commands.indexmanager" point-id="PreHook" id="doFindPerm">
+	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doFindPerm">
 		<parameter id="ParentMethod" value="doFIND" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doSearchPerm">
+		<parameter id="ParentMethod" value="doSearch" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doSuperSearchPerm">
+		<parameter id="ParentMethod" value="doSuperSearch" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doDupePerm">
+		<parameter id="ParentMethod" value="doDupe" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
