@@ -1,8 +1,8 @@
 # $Id$
 supersearch {
-plugin org.drftpd.commands.indexmanager
-class IndexManager
-method doSearch
+plugin org.drftpd.commands.find
+class Search
+method doSuperSearch
 perms *
 help Searches for files and diretories in the index w/ advanced filters.
 help.specific ${command} <options>
