@@ -17,9 +17,11 @@
  */
 package org.drftpd.master;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
+import org.apache.log4j.Logger;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -36,6 +38,8 @@ import org.drftpd.vfs.TransferPointer;
  * All calls to this class should be made through the TransferState object
  */
 public class RemoteTransfer {
+	private static final Logger logger = Logger.getLogger(RemoteTransfer.class);
+
 	private InetSocketAddress _address;
 
 	private TransferIndex _transferIndex;
@@ -63,6 +67,13 @@ public class RemoteTransfer {
 			_status = ts;
 		}
 		if (_status.isFinished()) {
+			if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+				try {
+					_pointer.unlinkPointer(_path, this);
+				} catch (FileNotFoundException e) {
+					// Ignore, file could have been deleted whilst the update was in transit
+				}
+			}
 			_pointer = null;
 		}
 	}
@@ -138,6 +149,15 @@ public class RemoteTransfer {
 				SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
 			} catch (SlaveUnavailableException e) {
 				_status = new TransferStatus(getTransferIndex(), e);
+			} finally {
+				if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+					try {
+						_pointer.unlinkPointer(_path, this);
+					} catch (FileNotFoundException e) {
+						// Shouldn't happen as this gets called before a delete is finished
+						logger.warn("File linked to transfer pointer has disappeared",e);
+					}
+				}
 				_pointer = null;
 			}
 		}

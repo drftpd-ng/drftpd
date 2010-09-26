@@ -83,18 +83,20 @@ public class ZipscriptVFSDataMP3 {
 		} else if (_inode instanceof FileHandle) {
 			FileHandle file = (FileHandle) _inode;
 			MP3Info mp3info = null;
-			for (int i = 0; i < 5; i++) {
-				RemoteSlave rslave = file.getASlaveForFunction();
-				String index;
-				try {
-					index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
-					mp3info = fetchMP3InfoFromIndex(rslave, index);
-					break;
-				} catch (SlaveUnavailableException e) {
-					// okay, it went offline while trying, continue
-					continue;
-				} catch (RemoteIOException e) {
-					throw new IOException(e.getMessage());
+			if (file.getSize() > 0 && file.getXfertime() != -1) {
+				for (int i = 0; i < 5; i++) {
+					RemoteSlave rslave = file.getASlaveForFunction();
+					String index;
+					try {
+						index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
+						mp3info = fetchMP3InfoFromIndex(rslave, index);
+						break;
+					} catch (SlaveUnavailableException e) {
+						// okay, it went offline while trying, continue
+						continue;
+					} catch (RemoteIOException e) {
+						throw new IOException(e.getMessage());
+					}
 				}
 			}
 			if (mp3info == null) {

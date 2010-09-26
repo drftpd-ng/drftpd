@@ -55,16 +55,12 @@ public class Wrapper {
 				// Not an issue we'll just retry
 			}
 		} while (input != null && !input.equalsIgnoreCase("y") && !input.equalsIgnoreCase("n"));
-		if (input == null) {
-			System.exit(0);
-		} else {
-			if (input.equalsIgnoreCase("y")) {
-				SwingInstaller installer = new SwingInstaller(parser.getRegistry(),config);
-				installer.setVisible(true);
-			} else if (input.equalsIgnoreCase("n")) {
-				ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry(),config);
-				installer.show();
-			}
+		if (input.equalsIgnoreCase("y")) {
+			SwingInstaller installer = new SwingInstaller(parser.getRegistry(),config);
+			installer.setVisible(true);
+		} else if (input.equalsIgnoreCase("n")) {
+			ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry(),config);
+			installer.show();
 		}
 	}
 }

@@ -20,6 +20,7 @@
  */
 package org.drftpd.master;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -301,9 +302,17 @@ public class TransferState {
 	 */
 	public synchronized boolean abort(String reason) {
 		RemoteTransfer rt = getTransfer();
-		_transfer = null;
 		if (rt != null) {
 			rt.abort(reason);
+			if (rt.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD &&
+					Boolean.parseBoolean(GlobalContext.getConfig().getMainProperties()
+							.getProperty("delete.upload.on.abort", "false"))) {
+				try {
+					_transferFile.deleteUnchecked();
+				} catch (FileNotFoundException e) {
+					// This is fine as we wanted to delete it anyway
+				}
+			}
 			return true;
 		}
 		return false;

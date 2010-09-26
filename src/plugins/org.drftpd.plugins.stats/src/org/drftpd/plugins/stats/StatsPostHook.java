@@ -17,9 +17,6 @@
  */
 package org.drftpd.plugins.stats;
 
-import java.io.FileNotFoundException;
-
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -27,100 +24,75 @@ import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
-import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.FileHandle;
 
 /**
  * @author fr0w
  * @version $Id$
  */
 public class StatsPostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(StatsPostHook.class);
 
 	public void initialize(StandardCommandManager manager) {
 	}
 
 	public void doRETRPostHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// Transfer failed, abort update
-			return;
-		}
-		BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-		DirectoryHandle dir = conn.getCurrentDirectory();
-		User user = conn.getUserNull(request.getUser());
+		DirectoryHandle dir = response.getCurrentDirectory();
+		User user = request.getSession().getUserNull(request.getUser());
 
-		// creditloss routine.
-		try {
+		TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
+		if (status != null) {
+			// creditloss routine.
 			float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
-			long fileSize = dir.getFileUnchecked(request.getArgument()).getSize();
-			long creditsLoss = (long) ratio * fileSize;
-		
+			long transferredSize = status.getTransfered();
+			long creditsLoss = (long) ratio * transferredSize;
 			user.updateCredits(-creditsLoss);
-		} catch (FileNotFoundException e) {
-			logger.debug("The file was just here, but it isn't anymore!", e);
-		} catch (ObjectNotValidException e) {
-			logger.error(e, e);
-		}
-
-		// nostatdn routine.
-		if (!GlobalContext.getConfig().checkPathPermission("nostatsdn", user, dir)) {
-			TransferStatus status = (TransferStatus) response.getObject(DataConnectionHandler.XFER_STATUS, null);
-			if (status != null) {
+			
+			// nostatdn routine.
+			if (!GlobalContext.getConfig().checkPathPermission("nostatsdn", user, dir)) {
 				user.updateDownloadedBytes(status.getTransfered());
 				user.updateDownloadedTime(status.getElapsed());
 				user.updateDownloadedFiles(1);
 			}
+			
+			user.commit();
 		}
-		
-		user.commit();
 	}
 	
 	public void doSTORPostHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// Transfer failed, abort update
-			return;
-		}
-		BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-		DirectoryHandle dir = conn.getCurrentDirectory();
-		User user = conn.getUserNull(request.getUser());
+		DirectoryHandle dir = response.getCurrentDirectory();
+		User user = request.getSession().getUserNull(request.getUser());
 
-		// creditcheck routine.
-		try {
+		TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
+		FileHandle transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE, null);
+		if (status != null && transferFile != null && transferFile.exists()) {
+			// creditcheck routine.
 			float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
-			long fileSize = dir.getFileUnchecked(request.getArgument()).getSize();
-			long creditsCheck = (long) ratio * fileSize;
-		
+			long transferredSize = status.getTransfered();
+			long creditsCheck = (long) ratio * transferredSize;
 			user.updateCredits(creditsCheck);
-		} catch (FileNotFoundException e) {
-			logger.debug("The file was just here, but it isn't anymore!", e);
-		} catch (ObjectNotValidException e) {
-			logger.error(e, e);
-		}
-
-		// nostatup routine.
-		if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
-			TransferStatus status = (TransferStatus) response.getObject(DataConnectionHandler.XFER_STATUS, null);
-			if (status != null) {
-				conn.getUserNull().updateUploadedBytes(status.getTransfered());
-				conn.getUserNull().updateUploadedTime(status.getElapsed());
-				conn.getUserNull().updateUploadedFiles(1);
+			
+			// nostatdn routine.
+			if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
+				user.updateUploadedBytes(status.getTransfered());
+				user.updateUploadedTime(status.getElapsed());
+				user.updateUploadedFiles(1);
 			}
+			
+			user.commit();
 		}
-		
-		user.commit();
 	}
 	
 	public void doDELEPostHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
-			// Transfer failed, abort update
+			// Delete failed, abort update
 			return;
 		}
-		String userName = (String) response.getObject(Dir.USERNAME, null);
+		String userName = response.getObject(Dir.USERNAME, null);
 		long fileSize  = response.getObject(Dir.FILESIZE, 0L);
 
 		try {
@@ -130,12 +102,13 @@ public class StatsPostHook implements PostHookInterface {
 			// updating credits
 			float ratio = StatsManager.getStatsManager().getCreditCheckRatio(dir, user);
 			long creditsCheck = (long) ratio * fileSize;
-			user.updateCredits(creditsCheck);
+			user.updateCredits(-creditsCheck);
 			
 			
 			// updating stats
 			if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
 				user.updateUploadedBytes(-fileSize);
+				// uploaded files/time?
 			}
 
 			user.commit();

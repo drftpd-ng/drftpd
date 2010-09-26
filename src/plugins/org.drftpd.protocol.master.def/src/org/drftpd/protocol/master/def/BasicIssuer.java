@@ -128,8 +128,7 @@ public class BasicIssuer extends AbstractBasicIssuer {
 			reason = "null";
 		}
 		rslave.sendCommand(new AsyncCommandArgument("abort", "abort", transferIndex
-				.toString()
-				+ "," + reason));
+				.toString() + "," + reason));
 	}
 
 

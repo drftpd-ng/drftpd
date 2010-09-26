@@ -71,7 +71,7 @@ public class ZipscriptVFSDataSFV {
 		}
 
 		for (FileHandle file : _dir.getFilesUnchecked()) {
-			if (file.getName().toLowerCase().endsWith(".sfv")) {
+			if (file.getSize() > 0 && file.getXfertime() != -1 && file.getName().toLowerCase().endsWith(".sfv")) {
 				for (int i = 0; i < 5; i++) {
 					SFVInfo info = null;
 					RemoteSlave rslave = file.getASlaveForFunction();

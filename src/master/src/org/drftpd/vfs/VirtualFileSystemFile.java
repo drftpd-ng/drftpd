@@ -246,6 +246,18 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		}
 	}
 	
+	public void removeUpload(RemoteTransfer transfer) {
+		synchronized (_uploads) {
+			_uploads.remove(transfer);
+		}
+	}
+	
+	public void removeDownload(RemoteTransfer transfer) {
+		synchronized (_downloads) {
+			_downloads.remove(transfer);
+		}
+	}
+	
 	protected void abortTransfers(String reason) {
 		abortUploads(reason);
 		abortDownloads(reason);

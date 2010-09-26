@@ -30,7 +30,6 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
-import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
@@ -79,11 +78,7 @@ public class Transfer {
 
 	public static final char TRANSFER_UNKNOWN = 'U';
 
-	private File _file = null;
-
 	private String _pathForUpload = null;
-
-	private static final Logger logger = Logger.getLogger(Transfer.class);
 
 	/**
 	 * Start undefined transfer.
@@ -120,12 +115,6 @@ public class Transfer {
 		} finally {
 			if (_conn != null) {
 				_conn.abort();
-			}
-			if (_direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-				if (_file != null) {
-					logger.debug("Received abort, deleting uploaded file "+_file.getPath());
-					_file.delete();
-				}
 			}
 			if (_sock != null) {
 				try {
@@ -243,7 +232,7 @@ public class Transfer {
 		String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
 		try {
-			_out = new FileOutputStream(_file = new File(root + File.separator
+			_out = new FileOutputStream(new File(root + File.separator
 					+ filename));
 
 			if (_slave.getUploadChecksums()) {
@@ -296,7 +285,7 @@ public class Transfer {
 			throws IOException, TransferDeniedException {
 		try {
 
-			_in = new FileInputStream(_file = new PhysicalFile(_slave.getRoots()
+			_in = new FileInputStream(new PhysicalFile(_slave.getRoots()
 					.getFile(path)));
 
 			if (_slave.getDownloadChecksums()) {

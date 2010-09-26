@@ -19,7 +19,6 @@ package org.drftpd.commands.indexmanager;
 
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
-import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -34,7 +33,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class IndexManager extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(IndexManager.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

@@ -18,7 +18,6 @@
 package org.drftpd.vfs.event;
 
 import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.VFSUtils;
 import org.drftpd.vfs.VirtualFileSystemInode;
 
 /**

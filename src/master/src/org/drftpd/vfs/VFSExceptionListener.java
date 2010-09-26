@@ -36,8 +36,10 @@ public class VFSExceptionListener implements ExceptionListener {
 			// suppress this as will be thrown by deserializing plugin metadata which is no longer needed
 		} else if (arg0 instanceof NullPointerException) {
 			// suppress this as will be thrown by deserializing plugin metadata which is no longer needed
-		} else {
+		} else if (arg0 instanceof InvocationTargetException) {
 			logger.error("ExceptionListener throwing", arg0.getCause());
+		} else {
+			logger.error("ExceptionListener throwing", arg0);
 		}
 	}
 }

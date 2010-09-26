@@ -83,6 +83,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
 		}
+		
 		String transferFileName = transferFile.getName();
 		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
 		logger.debug("Running zipscript on retrieved file " + transferFileName +
@@ -137,6 +138,11 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 			// We don't have a file, we shouldn't have ended up here but return anyway
 			return;
 		}
+		if (!transferFile.exists()) {
+			// No point checking the file as it has already been deleted (i.e. an abort)
+			return;
+		}
+
 		String transferFileName = transferFile.getName();
 		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
 		logger.debug("Running zipscript on stored file " + transferFileName +

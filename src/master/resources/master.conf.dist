@@ -75,3 +75,9 @@ remerge.resume.threshold=50
 # disconnect - any files newer than the last time the Slave
 #              disconnected will be remerged (CURRENTLY BROKEN)
 partial.remerge.mode=off
+
+# Sets whether a partially uploaded file is deleted on the
+# slave if the upload is aborted. Having this set to false
+# does not preclude any post hooks running on the transfer
+# command from deleting the file anyway.
+delete.upload.on.abort=false

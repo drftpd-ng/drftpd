@@ -38,11 +38,10 @@ import org.drftpd.permissions.RatioPathPermission;
 public class StatsHandler extends ConfigHandler {
 	private static final Logger logger = Logger.getLogger(StatsHandler.class);
 	
-	@SuppressWarnings("unchecked")
-	private void handleRatioPathPerm(Key key, StringTokenizer st) {	
+	private void handleRatioPathPerm(Key<ArrayList<RatioPathPermission>> key, StringTokenizer st) {	
 		ConfigInterface cfg = GlobalContext.getConfig();
 		
-		ArrayList<RatioPathPermission> list = (ArrayList<RatioPathPermission>) cfg.getKeyedMap().getObject(key, null);
+		ArrayList<RatioPathPermission> list = cfg.getKeyedMap().getObject(key, null);
 		
 		if (list == null) {
 			list = new ArrayList<RatioPathPermission>();

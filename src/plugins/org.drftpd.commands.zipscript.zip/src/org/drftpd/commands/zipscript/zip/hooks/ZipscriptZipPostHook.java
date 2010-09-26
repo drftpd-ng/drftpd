@@ -90,34 +90,41 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 				// We don't have a file, we shouldn't have ended up here but return anyway
 				return;
 			}
+			if (!transferFile.exists()) {
+				// No point checking the file as it has already been deleted (i.e. an abort)
+				return;
+			}
+
 			String transferFileName = transferFile.getName();
-			if (transferFileName.toLowerCase().endsWith(".zip")) {
-				logger.debug("Running zipscript integrity check on stored file " + transferFileName);
-				try {
-					RemoteSlave rslave = transferFile.getASlaveForFunction();
-					String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
-					boolean ok = getZipIntegrityFromIndex(rslave, index);
-					if (ok) {
-						response.addComment("Zip integrity check OK");
-					} else {
-						response.addComment("Zip integrity check failed, deleting file");
-						try {
-							transferFile.deleteUnchecked();
-						} catch (FileNotFoundException e) {
-							// file disappeared, not a problem as we wanted it gone anyway
+			try {
+				if (transferFile.getSize() > 0 && transferFileName.toLowerCase().endsWith(".zip")) {
+					logger.debug("Running zipscript integrity check on stored file " + transferFileName);
+					try {
+						RemoteSlave rslave = transferFile.getASlaveForFunction();
+						String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
+						boolean ok = getZipIntegrityFromIndex(rslave, index);
+						if (ok) {
+							response.addComment("Zip integrity check OK");
+						} else {
+							response.addComment("Zip integrity check failed, deleting file");
+							try {
+								transferFile.deleteUnchecked();
+							} catch (FileNotFoundException e) {
+								// file disappeared, not a problem as we wanted it gone anyway
+							}
 						}
+					} catch (SlaveUnavailableException e) {
+						// okay, it went offline while trying
+						response.addComment("Slave went offline whilst checking zip integrity");
+					} catch (RemoteIOException e) {
+						response.addComment("Slave encountered an error whilst checking zip integrity");
+						logger.warn("Error encountered whilst checking zip integrity",e);
+					} catch (NoAvailableSlaveException e) {
+						response.addComment("No available slave found to perform zip integrity check");
 					}
-				} catch (SlaveUnavailableException e) {
-					// okay, it went offline while trying
-					response.addComment("Slave went offline whilst checking zip integrity");
-				} catch (RemoteIOException e) {
-					response.addComment("Slave encountered an error whilst checking zip integrity");
-					logger.warn("Error encountered whilst checking zip integrity",e);
-				} catch (NoAvailableSlaveException e) {
-					response.addComment("No available slave found to perform zip integrity check");
-				} catch (FileNotFoundException e) {
-					response.addComment("File has already been deleted, skipping zip integrity check");
 				}
+			} catch (FileNotFoundException e) {
+				response.addComment("File has already been deleted, skipping zip integrity check");
 			}
 		}
 		return;

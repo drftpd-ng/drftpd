@@ -776,15 +776,14 @@ public class DataConnectionHandler extends CommandInterface {
 		}
 
 		User user = request.getSession().getUserNull(request.getUser());
+		String cmd = request.getCommand();
+		char direction = TransferState.getDirectionFromRequest(new FtpRequest(cmd));
+		boolean isStor = cmd.equalsIgnoreCase("STOR");
+		boolean isRetr = cmd.equalsIgnoreCase("RETR");
+		boolean isAppe = cmd.equalsIgnoreCase("APPE");
+		boolean isStou = cmd.equalsIgnoreCase("STOU");
 
 		try {
-			String cmd = request.getCommand();
-			char direction = TransferState.getDirectionFromRequest(new FtpRequest(cmd));
-			boolean isStor = cmd.equalsIgnoreCase("STOR");
-			boolean isRetr = cmd.equalsIgnoreCase("RETR");
-			boolean isAppe = cmd.equalsIgnoreCase("APPE");
-			boolean isStou = cmd.equalsIgnoreCase("STOU");
-
 			if (isAppe || isStou) {
 				return StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
 			}
@@ -979,6 +978,7 @@ public class DataConnectionHandler extends CommandInterface {
 
 			TransferStatus status = null;
 			CommandResponse response = null;
+			boolean transferEnded = false;
 
 			//transfer
 			try {
@@ -988,7 +988,7 @@ public class DataConnectionHandler extends CommandInterface {
 					ts.sendFile(ts.getTransferFile().getPath(), ts.getType(),
 							ts.getResumePosition(), address);
 
-					while (!conn.isAborted()) {
+					while (true) {
 						synchronized(ts) {
 							status = ts.getTransferStatus();
 						}	
@@ -1005,11 +1005,20 @@ public class DataConnectionHandler extends CommandInterface {
 					ts.receiveFile(ts.getTransferFile().getPath(), ts.getType(),
 							ts.getResumePosition(), address);
 
-					while (!conn.isAborted()) {
+					while (true) {
 						synchronized(ts) {
 							status = ts.getTransferStatus();
 						}
-						ts.getTransferFile().setSize(status.getTransfered());
+						try {
+							ts.getTransferFile().setSize(status.getTransfered());
+						} catch (FileNotFoundException e) {
+							// Will happen if aborted and delete on abort set
+							// Check this and rethrow if needed
+							if (!conn.isAborted() || !Boolean.parseBoolean(GlobalContext.getConfig()
+									.getMainProperties().getProperty("delete.upload.on.abort", "false"))) {
+								throw e;
+							}
+						}
 						if (status.isFinished()) {
 							break;
 						}
@@ -1022,16 +1031,18 @@ public class DataConnectionHandler extends CommandInterface {
 					throw new RuntimeException();
 				}
 				if (conn.isAborted()) {
-					response = new CommandResponse(226,"Transfer aborted");
+					if (isStor && Boolean.parseBoolean(
+							GlobalContext.getConfig().getMainProperties().getProperty("delete.upload.on.abort", "false"))) {
+						response = new CommandResponse(226,"Transfer aborted - deleting file");
+					} else {
+						response = new CommandResponse(226,"Transfer aborted");
+					}
 				}
+				transferEnded = true;
 			} catch (IOException ex) {          	                
 				boolean fxpDenied = false;
 
 				if (ex instanceof TransferFailedException) {
-					if (isRetr) {
-						conn.getUserNull().updateCredits(-status.getTransfered());
-					}
-
 					if (ex.getCause() instanceof TransferDeniedException) {
 						fxpDenied = true;
 						response = new CommandResponse(426, "You are not allowed to FXP from here.");
@@ -1057,8 +1068,6 @@ public class DataConnectionHandler extends CommandInterface {
 				}
 
 				response.addComment(ex.getMessage());
-				// reset(); already done in finally block
-				return response;
 			} catch (SlaveUnavailableException e) {
 				logger.debug("", e);
 
@@ -1078,11 +1087,9 @@ public class DataConnectionHandler extends CommandInterface {
 				}
 
 				response.addComment(e.getLocalizedMessage());
-				// reset(); already done in finally block
-				return response;
 			}
 
-			if (!conn.isAborted()) {
+			if (transferEnded && !conn.isAborted()) {
 				env = new ReplacerEnvironment();
 				env.add("bytes", Bytes.formatBytes(status.getTransfered()));
 				env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
@@ -1100,7 +1107,7 @@ public class DataConnectionHandler extends CommandInterface {
 			response.setObject(TRANSFER_TYPE, ts.getType());
 			response.setObject(XFER_STATUS, status);
 
-			if (isStor) {
+			if (isStor && transferEnded) {
 				try {
 					if (ts.getResumePosition() == 0) {
 						ts.getTransferFile().setCheckSum(status.getChecksum());
@@ -1114,12 +1121,20 @@ public class DataConnectionHandler extends CommandInterface {
 					// this is kindof odd
 					// it was a successful transfer, yet the file is gone
 					// lets just return the response
-					return response;
 				}
 			}
 
 			return response;
 		} finally {
+			// A simple catch all to delete any 0-byte uploaded files as these could be left around if
+			// settings like delete on abort are disabled
+			try {
+				if (isStor && ts.getTransferFile() != null && ts.getTransferFile().getSize() == 0L) {
+					ts.getTransferFile().deleteUnchecked();
+				}
+			} catch (FileNotFoundException e) {
+				// File already gone which is fine
+			}
 			reset(conn);
 		}
 	}

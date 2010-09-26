@@ -69,14 +69,14 @@
 		<parameter id="ParentMethod" value="doSTOR" />
 		<parameter id="HookClass" value="org.drftpd.plugins.stats.StatsPostHook" />
 		<parameter id="HookMethod" value="doSTORPostHook" />
-		<parameter id="Priority" value="100" />
+		<parameter id="Priority" value="999999" />
 	</extension>
 	
 	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="StatsDELEPostHook">
 		<parameter id="ParentMethod" value="doDELE" />
 		<parameter id="HookClass" value="org.drftpd.plugins.stats.StatsPostHook" />
 		<parameter id="HookMethod" value="doDELEPostHook" />
-		<parameter id="Priority" value="100" />
+		<parameter id="Priority" value="999999" />
 	</extension>
 	<!-- End of Hooks -->
 	

@@ -17,10 +17,7 @@
  */
 package org.drftpd.commands.indexmanager.lucene;
 
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
-import org.apache.lucene.index.CorruptIndexException;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
