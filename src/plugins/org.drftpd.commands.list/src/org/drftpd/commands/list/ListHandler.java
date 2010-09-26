@@ -325,12 +325,13 @@ public class ListHandler extends CommandInterface {
 
 		for (InodeHandleInterface inode : listElements) {
 			try {
+				StringBuilder line = new StringBuilder();
 				if (inode.isLink()) {
-					output.append("type=OS.unix=slink:" + ((LinkHandle) inode).getTargetString() + ";");
+					line.append("type=OS.unix=slink:" + ((LinkHandle) inode).getTargetString() + ";");
 				} else if (inode.isFile()) {
-					output.append("type=file;");
+					line.append("type=file;");
 				} else if (inode.isDirectory()) {
-					output.append("type=dir;");
+					line.append("type=dir;");
 				} else {
 					throw new RuntimeException("type");
 				}
@@ -344,43 +345,44 @@ public class ListHandler extends CommandInterface {
 
 				try {
 					if (isFileHandle && file.getCheckSum() != 0) {
-						output.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
+						line.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
 					}
 				} catch (NoAvailableSlaveException e) {
 					logger.debug("Unable to fetch checksum for: "+inode.getPath());
 				}
 
-				output.append("size=" + inode.getSize() + ";");
+				line.append("size=" + inode.getSize() + ";");
 				synchronized(MLSTTIME) {
-					output.append("modify=" + MLSTTIME.format(new Date(inode.lastModified())) +";");
+					line.append("modify=" + MLSTTIME.format(new Date(inode.lastModified())) +";");
 				}
 
-				output.append("unix.owner=" + inode.getUsername() + ";");
-				output.append("unix.group=" + inode.getGroup() + ";");
+				line.append("unix.owner=" + inode.getUsername() + ";");
+				line.append("unix.group=" + inode.getGroup() + ";");
 
 				if (isFileHandle) {
 					Iterator<RemoteSlave> iter = file.getSlaves().iterator();
-					output.append("x.slaves=");
+					line.append("x.slaves=");
 
 					if (iter.hasNext()) {
-						output.append(iter.next().getName());
+						line.append(iter.next().getName());
 
 						while (iter.hasNext()) {
-							output.append("," + iter.next().getName());
+							line.append("," + iter.next().getName());
 						}
 					}
 
-					output.append(";");
+					line.append(";");
 				}
 
 				if (isFileHandle && file.getXfertime() != 0) {
-					output.append("x.xfertime=" + file.getXfertime() + ";");
+					line.append("x.xfertime=" + file.getXfertime() + ";");
 				}
 
-				output.append(" " + inode.getName());
-				output.append(NEWLINE);
+				line.append(" " + inode.getName());
+				line.append(NEWLINE);
+				output.append(line.toString());
 			} catch (FileNotFoundException e) {
-				logger.error("The file was there and now it's gone, how?", e);
+				// entry was deleted whilst listing the dir, it will simply be omitted
 			}
 		}
 		return output.toString();
@@ -390,29 +392,35 @@ public class ListHandler extends CommandInterface {
 		StringBuilder output = new StringBuilder();
 
 		for (InodeHandleInterface inode : listElements) {
-			if (inode instanceof FileHandle
-					&& !((FileHandle) inode).isAvailable()) {
-				output.append("----------");
-			} else {
-				addPermission(inode, output);
-			}
+			try {
+				StringBuilder line = new StringBuilder();
+				if (inode instanceof FileHandle
+						&& !((FileHandle) inode).isAvailable()) {
+					line.append("----------");
+				} else {
+					addPermission(inode, line);
+				}
 
-			output.append(DELIM);
-			output.append((inode.isDirectory() ? "3" : "1"));
-			output.append(DELIM);
-			output.append(padToLength(inode.getUsername(), 8));
-			output.append(DELIM);
-			output.append(padToLength(inode.getGroup(), 8));
-			output.append(DELIM);
-			output.append(inode.getSize());
-			output.append(DELIM);
-			output.append(getUnixDate(inode.lastModified(), fulldate));
-			output.append(DELIM);
-			output.append(inode.getName());
-			if (inode.isLink()) {
-				output.append(DELIM + "->" + DELIM + ((LinkHandle)inode).getTargetString());
+				line.append(DELIM);
+				line.append((inode.isDirectory() ? "3" : "1"));
+				line.append(DELIM);
+				line.append(padToLength(inode.getUsername(), 8));
+				line.append(DELIM);
+				line.append(padToLength(inode.getGroup(), 8));
+				line.append(DELIM);
+				line.append(inode.getSize());
+				line.append(DELIM);
+				line.append(getUnixDate(inode.lastModified(), fulldate));
+				line.append(DELIM);
+				line.append(inode.getName());
+				if (inode.isLink()) {
+					line.append(DELIM + "->" + DELIM + ((LinkHandle)inode).getTargetString());
+				}
+				line.append(NEWLINE);
+				output.append(line.toString());
+			} catch (FileNotFoundException e) {
+				// entry was deleted whilst listing the dir, it will simply be omitted
 			}
-			output.append(NEWLINE);
 		}
 		return output.toString();
 	}

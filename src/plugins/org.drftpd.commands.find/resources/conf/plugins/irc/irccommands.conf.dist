@@ -4,7 +4,7 @@ plugin org.drftpd.commands.find
 class Search
 method doSuperSearch
 perms *
-help Searches for files and diretories in the index w/ advanced filters.
+help Searches for files and directories in the index w/ advanced filters.
 help.specific ${command} <options>
 help.specific Options: -user <user> | -group <group>
 help.specific Options: -type <f/file|d/dir> | -slaves <slave[,slave,..]>
@@ -16,7 +16,7 @@ help.specific Valid sort fields: parentPath fullPath(default) owner group type l
 help.specific Options: -fullname <name>
 help.specific Options: -name <word> [word ..]
 help.specific Name MUST be the last option in the command.
-help.specific Multipe options are allowed. If multiple options are given a file/dir must match all options.
+help.specific Multiple options are allowed. If multiple options are given a file/dir must match all options.
 input all
 output source
 }
@@ -26,7 +26,7 @@ plugin org.drftpd.commands.find
 class Search
 method doSearch
 perms *
-help Searches for files and diretories using wildcards.
+help Searches for files and directories using wildcards.
 help.specific ${command} <word> [word ..]
 input all
 output source
@@ -37,7 +37,7 @@ plugin org.drftpd.commands.find
 class Search
 method doDupe
 perms *
-help Searches for files and diretories using exact name match.
+help Searches for files and directories using exact name match.
 help.specific ${command} <name>
 input all
 output source
@@ -51,7 +51,7 @@ perms *
 sendToSlaves =siteop
 deleteFromSlaves =siteop
 wipe =siteop
-help Searches for files and diretories in the filesystem w/ some neat filters and actions.
+help Searches for files and directories in the filesystem w/ some neat filters and actions.
 help.specific ${command} <options> -action <action>
 help.specific Options: -user <user> -group <group> -nogroup -nouser
 help.specific Options: -mtime [-]n -type [f|d] -slave <slave> -size [-]size
@@ -68,7 +68,7 @@ help.specific #x - slave
 help.specific #t - last modified
 help.specific #h - parent
 help.specific Example: SITE FIND -action printf(filename: #f size: #s)
-help.specific Multipe options and actions are allowed. If multiple options are given a file must match all options for action to be taken
+help.specific Multiple options and actions are allowed. If multiple options are given a file must match all options for action to be taken
 input all
 output source
 }
