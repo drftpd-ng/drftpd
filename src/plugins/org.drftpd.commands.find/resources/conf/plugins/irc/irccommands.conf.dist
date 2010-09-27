@@ -4,15 +4,19 @@ plugin org.drftpd.commands.find
 class Search
 method doSuperSearch
 perms *
+limit.default 5
+limit.max 20
 help Searches for files and directories in the index w/ advanced filters.
 help.specific ${command} <options>
 help.specific Options: -user <user> | -group <group>
-help.specific Options: -type <f/file|d/dir> | -slaves <slave[,slave,..]>
+help.specific Options: -f[ile] | -d[ir]
+help.specific Options: -slaves <slave[,slave,..]>
 help.specific Options: -age <start date> <end date>
 help.specific Valid format: yyyy.MM.dd OR yyyy.MM.dd.HH.mm.ss, Example: 2010.01.29.08.36.33
 help.specific Options: -size <min size> <max size>
 help.specific Options: -sort <field> <asc|desc>
 help.specific Valid sort fields: parentPath fullPath(default) owner group type lastmodified size
+help.specific Options: -limit <number>
 help.specific Options: -fullname <name>
 help.specific Options: -name <word> [word ..]
 help.specific Name MUST be the last option in the command.
@@ -26,6 +30,7 @@ plugin org.drftpd.commands.find
 class Search
 method doSearch
 perms *
+limit 5
 help Searches for files and directories using wildcards.
 help.specific ${command} <word> [word ..]
 input all
@@ -37,6 +42,7 @@ plugin org.drftpd.commands.find
 class Search
 method doDupe
 perms *
+limit 5
 help Searches for files and directories using exact name match.
 help.specific ${command} <name>
 input all

@@ -63,6 +63,7 @@ public class Search extends CommandInterface {
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
 		params.setName(request.getArgument());
+		params.setLimit(Integer.parseInt(request.getProperties().getProperty("limit","5")));
 
 		return advSearch(request, params);
 	}
@@ -75,6 +76,7 @@ public class Search extends CommandInterface {
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
 		params.setFullName(request.getArgument());
+		params.setLimit(Integer.parseInt(request.getProperties().getProperty("limit","5")));
 
 		return advSearch(request, params);
 	}
@@ -86,22 +88,20 @@ public class Search extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
+		int limit = Integer.parseInt(request.getProperties().getProperty("limit.default","5"));
+		int maxLimit = Integer.parseInt(request.getProperties().getProperty("limit.max","20"));
+
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 
 		while(st.hasMoreTokens()) {
 			String option = st.nextToken();
 
-			if (!st.hasMoreTokens()) {
+			if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
+				params.setInodeType(AdvancedSearchParams.InodeType.FILE);
+			} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
+				params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+			} else if (!st.hasMoreTokens()) {
 				throw new ImproperUsageException();
-			} else if (option.equalsIgnoreCase("-type")) {
-				String type = st.nextToken();
-				if (type.equalsIgnoreCase("f") || type.equalsIgnoreCase("file")) {
-					params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-				} else if (type.equalsIgnoreCase("d") || type.equalsIgnoreCase("dir")) {
-					params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-				} else {
-					throw new ImproperUsageException();
-				}
 			} else if (option.equalsIgnoreCase("-user")) {
 				params.setOwner(st.nextToken());
 			} else if (option.equalsIgnoreCase("-group")) {
@@ -172,15 +172,25 @@ public class Search extends CommandInterface {
 					params.setSortOrder(true);
 				}
 			} else if (option.equalsIgnoreCase("-name")) {
-				StringBuilder nameQuery = new StringBuilder();
-				while(st.hasMoreTokens()) {
-					nameQuery.append(st.nextToken()).append(" ");
-				}
-				params.setName(nameQuery.toString().trim());
-			}  else if (option.equalsIgnoreCase("-fullname")) {
+				params.setName(st.nextToken(""));
+			} else if (option.equalsIgnoreCase("-fullname")) {
 				params.setFullName(st.nextToken());
+			} else if (option.equalsIgnoreCase("-limit")) {
+				try {
+					int newLimit = Integer.parseInt(st.nextToken());
+					if (newLimit < maxLimit) {
+						limit = newLimit;
+					} else {
+						limit = maxLimit;
+					}
+				} catch (NumberFormatException e) {
+					throw new ImproperUsageException("Limit must be valid number.");
+				}
 			}
 		}
+
+		params.setLimit(limit);
+
 		return advSearch(request, params);
 	}
 

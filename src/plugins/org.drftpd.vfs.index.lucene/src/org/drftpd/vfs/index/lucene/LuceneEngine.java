@@ -335,22 +335,6 @@ public class LuceneEngine implements IndexEngineInterface {
 				new SortField("fullPath", SortField.STRING));
 	}
 
-	/**
-	 * @param inode
-	 * @return a Lucene Query that matches uniquely that Inode.
-	 */
-	private Query makeQueryFromInode(InodeHandle inode) {
-		BooleanQuery query = new BooleanQuery();
-
-		TermQuery parentQuery = new TermQuery(makeParentPathTermFromInode(inode.getParent()));
-		TermQuery inodeQuery = new TermQuery(makeNameTermFromInode(inode));
-
-		query.add(parentQuery, Occur.MUST);
-		query.add(inodeQuery, Occur.MUST);
-
-		return query;
-	}
-
 	/* {@inheritDoc} */
 	public void addInode(InodeHandle inode) throws IndexException {
 		try {
@@ -368,7 +352,6 @@ public class LuceneEngine implements IndexEngineInterface {
 	/* {@inheritDoc} */
 	public void deleteInode(InodeHandle inode) throws IndexException {
 		try {
-			//Query query = makeQueryFromInode(inode);
 			_iWriter.deleteDocuments(makeFullPathTermFromInode(inode));
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
@@ -568,8 +551,14 @@ public class LuceneEngine implements IndexEngineInterface {
 				setSortField(params.getSortOrder());
 			}
 
+			int limit = params.getLimit();
+
+			if (limit == 0) {
+				limit = _maxHitsNumber;
+			}
+
 			iSearcher = new IndexSearcher(_iWriter.getReader());
-			TopFieldDocs topFieldDocs = iSearcher.search(query, null, _maxHitsNumber, SORT);
+			TopFieldDocs topFieldDocs = iSearcher.search(query, null, limit, SORT);
 			logger.debug("Query: " + query);
 
 			for (ScoreDoc scoreDoc : topFieldDocs.scoreDocs) {

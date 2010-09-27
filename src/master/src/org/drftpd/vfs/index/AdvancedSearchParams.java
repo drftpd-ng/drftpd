@@ -42,6 +42,7 @@ public class AdvancedSearchParams {
 	private long _maxSize = 0L;
 	private String _sortField = "";
 	private boolean _sortOrder = false;
+	private int _limit = 0;
 
 	public AdvancedSearchParams() {
 		
@@ -95,6 +96,10 @@ public class AdvancedSearchParams {
 		_sortOrder = sortOrder;
 	}
 
+	public void setLimit(int limit) {
+		_limit = limit;
+	}
+
 	public String getName() {
 		return _name;
 	}
@@ -141,5 +146,9 @@ public class AdvancedSearchParams {
 
 	public boolean getSortOrder() {
 		return _sortOrder;
+	}
+
+	public int getLimit() {
+		return _limit;
 	}
 }
