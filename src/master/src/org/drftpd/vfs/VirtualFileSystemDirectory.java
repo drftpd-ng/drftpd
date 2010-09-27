@@ -205,7 +205,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @return VirtualFileSystemInode object if 'name' exists on the dir.
 	 * @throws FileNotFoundException
 	 */
-	protected synchronized VirtualFileSystemInode getInodeByName(String name)
+	protected VirtualFileSystemInode getInodeByName(String name)
 			throws FileNotFoundException {
 		name = VirtualFileSystem.fixPath(name);
 		if (name.startsWith(VirtualFileSystem.separator)) {
@@ -221,24 +221,26 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		if (name.equals(".")) {
 			return this;
 		}
-		if (!_files.containsKey(name)) {
-			throw new FileNotFoundException("FileNotFound: " + name + " does not exist");
-		}
-		SoftReference<VirtualFileSystemInode> sf = _files.get(name);
 		VirtualFileSystemInode inode = null;
-		if (sf != null) {
-			inode = sf.get();
-		}
-		if (inode == null) {
-			// The next line is so that we load the file from disk using the casing of the name
-			// stored against the parent directory not the casing passed by the caller
-			name = _files.ceilingKey(name);
-			inode = getVFS().loadInode(
-					getPath() + VirtualFileSystem.separator + name);
-			inode.setParent(this);
-			// _files.remove(name);
-			// Map instance replaces what is previously there with put()
-			_files.put(name, new SoftReference<VirtualFileSystemInode>(inode));
+		synchronized (this) {
+			if (!_files.containsKey(name)) {
+				throw new FileNotFoundException("FileNotFound: " + name + " does not exist");
+			}
+			SoftReference<VirtualFileSystemInode> sf = _files.get(name);
+			if (sf != null) {
+				inode = sf.get();
+			}
+			if (inode == null) {
+				// The next line is so that we load the file from disk using the casing of the name
+				// stored against the parent directory not the casing passed by the caller
+				name = _files.ceilingKey(name);
+				inode = getVFS().loadInode(
+						getPath() + VirtualFileSystem.separator + name);
+				inode.setParent(this);
+				// _files.remove(name);
+				// Map instance replaces what is previously there with put()
+				_files.put(name, new SoftReference<VirtualFileSystemInode>(inode));
+			}
 		}
 		return inode;
 	}
