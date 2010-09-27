@@ -30,7 +30,7 @@
 	<!-- Hooks -->
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="DenyDownload">
 		<parameter id="ParentMethod" value="doRETR" />
-		<parameter id="HookClass" value="org.drftpd.permissions.DenyDownload" />
+		<parameter id="HookClass" value="org.drftpd.permissions.denydownload.DenyDownload" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
