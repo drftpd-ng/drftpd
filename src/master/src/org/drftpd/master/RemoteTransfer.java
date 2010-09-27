@@ -68,11 +68,11 @@ public class RemoteTransfer {
 		}
 		if (_status.isFinished()) {
 			if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-				try {
+				/*try {
 					_pointer.unlinkPointer(_path, this);
 				} catch (FileNotFoundException e) {
 					// Ignore, file could have been deleted whilst the update was in transit
-				}
+				}*/
 			}
 			_pointer = null;
 		}
@@ -150,14 +150,14 @@ public class RemoteTransfer {
 			} catch (SlaveUnavailableException e) {
 				_status = new TransferStatus(getTransferIndex(), e);
 			} finally {
-				if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+				/*if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
 					try {
 						_pointer.unlinkPointer(_path, this);
 					} catch (FileNotFoundException e) {
 						// Shouldn't happen as this gets called before a delete is finished
 						logger.warn("File linked to transfer pointer has disappeared",e);
 					}
-				}
+				}*/
 				_pointer = null;
 			}
 		}
