@@ -18,10 +18,23 @@
 package org.drftpd.commands.nuke;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.master.Session;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.index.AdvancedSearchParams;
+import org.drftpd.vfs.index.IndexEngineInterface;
+import org.drftpd.vfs.index.IndexException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * Some nuke misc methods.
@@ -85,5 +98,38 @@ public class NukeUtils {
 				continue;
 			}
 		}
+	}
+
+	public static ArrayList<DirectoryHandle> findNukeDirs(DirectoryHandle currentDir, User user, String name) throws FileNotFoundException {
+		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
+		LinkedHashMap<String,String> inodes;
+
+		AdvancedSearchParams params = new AdvancedSearchParams();
+
+		params.setFullName(name);
+		params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+		params.setSortField("lastmodified");
+		params.setSortOrder(true);
+
+		try {
+			inodes = (LinkedHashMap)ie.advancedFind(currentDir, params);
+		} catch (IndexException e) {
+			throw new FileNotFoundException("Index Exception: "+e.getMessage());
+		}
+
+		ArrayList<DirectoryHandle> dirsToNuke = new ArrayList<DirectoryHandle>();
+
+		for (Map.Entry<String,String> item : inodes.entrySet()) {
+			try {
+				DirectoryHandle inode = new DirectoryHandle(item.getKey());
+				if (!inode.isHidden(user)) {
+					dirsToNuke.add(inode);
+				}
+			} catch (FileNotFoundException e) {
+				throw new FileNotFoundException("Index contained an unexistent inode: " + item.getKey());
+			}
+		}
+
+		return dirsToNuke;
 	}
 }

@@ -53,7 +53,7 @@ public class NukeEvent extends UserEvent {
 		return getNukeData().getAmount();
 	}
 
-	public Map<String, Long> getNukees() {
+	public Map<User, Long> getNukees() {
 		return getNukeData().getNukees();
 	}
 

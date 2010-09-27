@@ -24,9 +24,9 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.Bytes;
+import org.drftpd.commands.UserManagement;
+import org.drftpd.commands.nuke.NukeUtils;
 import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.event.NukeEvent;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
@@ -90,19 +90,14 @@ public class NukeAnnouncer implements AnnounceInterface {
 
 		output.append(ReplacerUtils.jprintf(_keyPrefix+type, env, _bundle));
 
-		for (Map.Entry<String,Long> entry : event.getNukees().entrySet()) {
-			User user;
-			try {
-				user = GlobalContext.getGlobalContext().getUserManager().getUserByName(entry.getKey());
-			} catch (NoSuchUserException e1) {
-				continue;
-			} catch (UserFileException e1) {
-				continue;
-			}
+		for (Map.Entry<User,Long> entry : event.getNukees().entrySet()) {
 			ReplacerEnvironment nukeeenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			nukeeenv.add("user", user.getName());
-			nukeeenv.add("group", user.getGroup());
-			nukeeenv.add("nukedamount", Bytes.formatBytes(entry.getValue()));
+			User nukee = entry.getKey();
+			nukeeenv.add("user", nukee.getName());
+			nukeeenv.add("group", nukee.getGroup());
+			long debt = NukeUtils.calculateNukedAmount(entry.getValue(),
+                    nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), event.getMultiplier());
+			nukeeenv.add("nukedamount", Bytes.formatBytes(debt));
 			output.append(ReplacerUtils.jprintf(_keyPrefix+type+".nukees", nukeeenv, _bundle));
 		}
 

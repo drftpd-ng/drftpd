@@ -17,6 +17,8 @@
  */
 package org.drftpd.commands.nuke;
 
+import org.drftpd.usermanager.User;
+
 import java.util.Map;
 
 /**
@@ -32,7 +34,7 @@ public class NukeData {
 
 	private String _reason;
 
-	private Map<String, Long> _nukees;
+	private Map<User, Long> _nukees;
 
 	private int _multiplier;
 
@@ -62,7 +64,7 @@ public class NukeData {
 	 *            Date of the nuke.
 	 */
 	public NukeData(String user, String path, String reason,
-			Map<String, Long> nukees, int multiplier, long amount, long size,
+			Map<User, Long> nukees, int multiplier, long amount, long size,
 			long time) {
 		_user = user;
 		_path = path;
@@ -91,7 +93,7 @@ public class NukeData {
 	 * @param size
 	 */
 	public NukeData(String user, String path, String reason,
-			Map<String, Long> nukees, int multiplier, long amount, long size) {
+			Map<User, Long> nukees, int multiplier, long amount, long size) {
 		this(user, path, reason, nukees, multiplier, amount, size, System
 				.currentTimeMillis());
 	}
@@ -195,7 +197,7 @@ public class NukeData {
 	/**
 	 * @return the Map of the nuked users.
 	 */
-	public Map<String, Long> getNukees() {
+	public Map<User, Long> getNukees() {
 		return _nukees;
 	}
 
@@ -204,7 +206,7 @@ public class NukeData {
 	 * 
 	 * @param map
 	 */
-	public void setNukees(Map<String, Long> map) {
+	public void setNukees(Map<User, Long> map) {
 		_nukees = map;
 	}
 

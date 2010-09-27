@@ -35,6 +35,7 @@ import org.drftpd.Bytes;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.misc.LRUMap;
+import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 
 /**
@@ -140,10 +141,10 @@ public class NukeBeans {
 	 */
 	public static List<NukedUser> getNukeeList(NukeData nd) {
 		ArrayList<NukedUser> list = new ArrayList<NukedUser>();
-		for (Map.Entry<String,Long> entry : nd.getNukees().entrySet()) {
-			String user = entry.getKey();
+		for (Map.Entry<User,Long> entry : nd.getNukees().entrySet()) {
+			User user = entry.getKey();
 			Long l = entry.getValue();
-			list.add(new NukedUser(user, l.longValue()));
+			list.add(new NukedUser(user.getName(), l.longValue()));
 		}
 		return list;
 	}
@@ -219,7 +220,7 @@ public class NukeBeans {
 	}
 
 	/**
-	 * @param TreeMap
+	 * @param nukes
 	 */
 	public void setLRUMap(LRUMap<String, NukeData> nukes) {
 		_nukes = nukes;
@@ -278,8 +279,8 @@ public class NukeBeans {
 			int multiplier = 3;
 			long nukedAmount = multiplier * size;
 			String reason = "Testing";
-			Map<String, Long> nukees = new Hashtable<String, Long>();
-			nukees.put("test" + String.valueOf(i), nukedAmount);
+			Map<User, Long> nukees = new Hashtable<User, Long>();
+			nukees.put(null, nukedAmount);
 
 			// actual NukeEvent
 			NukeData nd = new NukeData(user, path, reason, nukees, multiplier,

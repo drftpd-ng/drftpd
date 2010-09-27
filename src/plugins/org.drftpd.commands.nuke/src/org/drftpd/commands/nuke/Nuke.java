@@ -19,6 +19,7 @@ package org.drftpd.commands.nuke;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -29,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.Session;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -106,23 +108,60 @@ public class Nuke extends CommandInterface {
             throw new ImproperUsageException();
         }
 
+		Session session = request.getSession();
+
 		int multiplier;
         
         DirectoryHandle currentDir = request.getCurrentDirectory();
-		DirectoryHandle nukeDir;
 		String nukeDirName = st.nextToken();
-        User requestUser = request.getSession().getUserNull(request.getUser());
+        User requestUser = session.getUserNull(request.getUser());
 
 		String nukeDirPath = VirtualFileSystem.fixPath(nukeDirName);
 
 		if (!(nukeDirPath.startsWith(VirtualFileSystem.separator))) {
 			// Not a full path, let's make it one
 			if (request.getCurrentDirectory().isRoot()) {
-				nukeDirPath = VirtualFileSystem.separator + nukeDirPath;
+				// Get dirs from index system
+				ArrayList<DirectoryHandle> dirsToNuke;
+				try {
+					dirsToNuke = NukeUtils.findNukeDirs(currentDir, requestUser, nukeDirPath);
+				} catch (FileNotFoundException e) {
+					logger.warn(e);
+					return new CommandResponse(550, e.getMessage());
+				}
+
+				ReplacerEnvironment env = new ReplacerEnvironment();
+
+				if (dirsToNuke.isEmpty()) {
+					env.add("searchstr", nukeDirPath);
+					return new CommandResponse(550, session.jprintf(_bundle,_keyPrefix+"nuke.search.empty", env, requestUser));
+				}
+
+				CommandResponse response = new CommandResponse(200);
+
+				for (DirectoryHandle nukeDir : dirsToNuke) {
+					try {
+						env.add("name", nukeDir.getName());
+						env.add("path", nukeDir.getPath());
+						env.add("owner", nukeDir.getUsername());
+						env.add("group", nukeDir.getGroup());
+						env.add("size", Bytes.formatBytes(nukeDir.getSize()));
+						response.addComment(session.jprintf(_bundle,_keyPrefix+"nuke.search.item", env, requestUser));
+					} catch (FileNotFoundException e) {
+						logger.warn("Dir deleted after index search?, skip and continue: " + nukeDir.getPath());
+					}
+				}
+
+				response.addComment(session.jprintf(_bundle,_keyPrefix+"nuke.search.end", env, requestUser));
+
+				// Return matching dirs and let user decide what to nuke
+				return response;
 			} else {
 				nukeDirPath = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + nukeDirPath;
 			}
 		}
+
+		DirectoryHandle nukeDir;
 
 		try {
 			nukeDir = request.getCurrentDirectory().getDirectory(nukeDirPath, requestUser);
@@ -230,13 +269,13 @@ public class Nuke extends CommandInterface {
             nukee.getKeyedMap().incrementLong(NUKEDBYTES, debt);
 
             nukee.getKeyedMap().incrementInt(NUKED);
-			nukee.getKeyedMap().setObject(Nuke.LASTNUKED, System.currentTimeMillis());
+			nukee.getKeyedMap().setObject(LASTNUKED, System.currentTimeMillis());
 
             nukee.commit();
 
 			env.add("nukedamount", Bytes.formatBytes(debt));
 
-			nukeeOutput.append(request.getSession().jprintf(_bundle, _keyPrefix+"nuke.nukees", env, nukee));
+			nukeeOutput.append(session.jprintf(_bundle, _keyPrefix+"nuke.nukees", env, nukee));
         }
         
         
@@ -258,9 +297,9 @@ public class Nuke extends CommandInterface {
         	return new CommandResponse(550, toFullPath + " is not a directory");
 		}
 
-		NukeData nd = new NukeData(request.getUser(), nukeDirPath, reason, nukees, multiplier, nukedAmount, nukeDirSize);
+		NukeData nd = new NukeData(request.getUser(), nukeDirPath, reason, nukees2, multiplier, nukedAmount, nukeDirSize);
 
-        NukeEvent nuke = new NukeEvent(request.getSession().getUserNull(request.getUser()), "NUKE", nd);
+        NukeEvent nuke = new NukeEvent(session.getUserNull(request.getUser()), "NUKE", nd);
         
         // adding to the nukelog.
         NukeBeans.getNukeBeans().add(nd);
@@ -277,8 +316,8 @@ public class Nuke extends CommandInterface {
 		env.add("reason", reason);
 		env.add("size", Bytes.formatBytes(nukeDirSize));
 
-		if (request.getSession() instanceof BaseFtpConnection) {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nuke", env, requestUser));
+		if (session instanceof BaseFtpConnection) {
+			response.addComment(session.jprintf(_bundle, _keyPrefix+"nuke", env, requestUser));
 			response.addComment(nukeeOutput);
 		}
 
@@ -333,7 +372,10 @@ public class Nuke extends CommandInterface {
         
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
+		Session session = request.getSession();
+
         DirectoryHandle currentDir = request.getCurrentDirectory();
+		User user = session.getUserNull(request.getUser());
 		String toName = st.nextToken();
 		String toDir;
 		String nukeName;
@@ -347,7 +389,41 @@ public class Nuke extends CommandInterface {
 				nukeName = "[NUKED]-" + toName;
             }
 			if (request.getCurrentDirectory().isRoot()) {
-				toDir = VirtualFileSystem.separator;
+				// Get dirs from index system
+				ArrayList<DirectoryHandle> dirsToNuke;
+				try {
+					dirsToNuke = NukeUtils.findNukeDirs(currentDir, user, nukeName);
+				} catch (FileNotFoundException e) {
+					logger.warn(e);
+					return new CommandResponse(550, e.getMessage());
+				}
+
+				ReplacerEnvironment env = new ReplacerEnvironment();
+
+				if (dirsToNuke.isEmpty()) {
+					env.add("searchstr", nukeName);
+					return new CommandResponse(550, session.jprintf(_bundle,_keyPrefix+"unnuke.search.empty", env, user));
+				}
+
+				CommandResponse response = new CommandResponse(200);
+
+				for (DirectoryHandle nukeDir : dirsToNuke) {
+					try {
+						env.add("name", nukeDir.getName());
+						env.add("path", nukeDir.getPath());
+						env.add("owner", nukeDir.getUsername());
+						env.add("group", nukeDir.getGroup());
+						env.add("size", Bytes.formatBytes(nukeDir.getSize()));
+						response.addComment(session.jprintf(_bundle,_keyPrefix+"unnuke.search.item", env, user));
+					} catch (FileNotFoundException e) {
+						logger.warn("Dir deleted after index search?, skip and continue: " + nukeDir.getPath());
+					}
+				}
+
+				response.addComment(session.jprintf(_bundle,_keyPrefix+"unnuke.search.end", env, user));
+
+				// Return matching dirs and let user decide what to unnuke
+				return response;
 			} else {
 				toDir = currentDir.getPath() + VirtualFileSystem.separator;
 			}
@@ -373,7 +449,6 @@ public class Nuke extends CommandInterface {
         }
 
 		DirectoryHandle nukeDir;
-        User user = request.getSession().getUserNull(request.getUser());
 
         try {
 			nukeDir = currentDir.getDirectory(toDir+nukeName, user);
@@ -447,7 +522,7 @@ public class Nuke extends CommandInterface {
 
 			env.add("nukedamount", Bytes.formatBytes(nukedAmount));
 
-			nukeeOutput.append(request.getSession().jprintf(_bundle, _keyPrefix+"unnuke.nukees", env, nukee));
+			nukeeOutput.append(session.jprintf(_bundle, _keyPrefix+"unnuke.nukees", env, nukee));
         }
 
         try {
@@ -470,7 +545,7 @@ public class Nuke extends CommandInterface {
 		}
         
         nukeData.setReason(reason);
-        NukeEvent nukeEvent = new NukeEvent(request.getSession().getUserNull(request.getUser()), "UNNUKE", nukeData);
+        NukeEvent nukeEvent = new NukeEvent(session.getUserNull(request.getUser()), "UNNUKE", nukeData);
         GlobalContext.getEventService().publishAsync(nukeEvent);
 
 		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
@@ -483,8 +558,8 @@ public class Nuke extends CommandInterface {
 		env.add("reason", reason);
 		env.add("size", Bytes.formatBytes(nukeData.getSize()));
 
-		if (request.getSession() instanceof BaseFtpConnection) {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"unnuke", env, user));
+		if (session instanceof BaseFtpConnection) {
+			response.addComment(session.jprintf(_bundle, _keyPrefix+"unnuke", env, user));
 			response.addComment(nukeeOutput);
 		}
 
