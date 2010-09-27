@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
+<plugin id="org.drftpd.permissions.denydownload" version="3.0.0">
+	<doc>
+		<doc-text> This plugin provides DenyDownload permissions.</doc-text>
+	</doc>
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commands.dataconnection" />
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.permissions.denydownload" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<!-- denydownload directive handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="PreDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="denydownload" />
+	</extension>
+	<!-- End of denydownload directive handler -->
+	
+	<!-- Hooks -->
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="DenyDownload">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.permissions.DenyDownload" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<!-- End of Hooks -->
+	
+</plugin>

@@ -1,0 +1,9 @@
+################################################################################
+#   This is to Deny Download's of files currently being Uploaded 
+#
+#	Examples:
+#
+#	denydownload /PATH* =group -user
+#	denydownload /PATH* *   
+#
+################################################################################
