@@ -156,20 +156,22 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 * @throws FileNotFoundException if there's no such file.
 	 * @throws NoAvailableSlaveException if there's no available slave.
 	 */
-	public synchronized long getCheckSumFromSlave() throws NoAvailableSlaveException,
+	public long getCheckSumFromSlave() throws NoAvailableSlaveException,
 			FileNotFoundException {
 		long checksum = 0L;
 		if (getSize() != 0L) {
 			while (true) {
 				RemoteSlave rslave = getASlaveForFunction();
-				try {
-					checksum = rslave.getCheckSumForPath(getPath());
-					setCheckSum(checksum);
-					return checksum;
-				} catch (IOException e) {
-					rslave.setOffline(e);
-				} catch (SlaveUnavailableException e) {
-					continue;
+				synchronized(getInode()) {
+					try {		
+						checksum = rslave.getCheckSumForPath(getPath());
+						setCheckSum(checksum);
+						return checksum;
+					} catch (IOException e) {
+						rslave.setOffline(e);
+					} catch (SlaveUnavailableException e) {
+						continue;
+					}
 				}
 			}
 		}
@@ -263,11 +265,13 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	}
 
 	@Override
-	public synchronized void deleteUnchecked() throws FileNotFoundException {
-		abortTransfers("File " + getPath() + " is being deleted");
-		for (RemoteSlave rslave : getSlaves()) {
-			rslave.simpleDelete(getPath());
+	public void deleteUnchecked() throws FileNotFoundException {
+		synchronized (getInode()) {
+			abortTransfers("File " + getPath() + " is being deleted");
+			for (RemoteSlave rslave : getSlaves()) {
+				rslave.simpleDelete(getPath());
+			}
+			super.deleteUnchecked();
 		}
-		super.deleteUnchecked();	
 	}
 }
