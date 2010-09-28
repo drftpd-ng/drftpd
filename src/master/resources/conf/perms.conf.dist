@@ -3,18 +3,24 @@
 #login_prompt DrFTPD 3.0.0 http://drftpd.org
 
 # Max number of connections
-#max_users <max_unexempted> <max_exempted>
+# Example:
+#  max_users	<max_logins> <max_exempted>
+#  max_users	100	10
+#  exempt	=siteop
+# Above would allow normal users to connect until there are 100 concurrent users.
+# siteop's would be able to connect until there are 110 concurrent users.
+
 max_users	100	10
-exempt =exempt =siteop
+exempt		=siteop
 
 # FUNCTION       | PATH     | GROUP
 # * = only wildcard recognized
 # = denotes group, - denotes user
 
 # EXAMPLES
-# upload 	* 	=siteop
-# download 	* 	-user1
-# makedir 	/usercanmakedir/* -user1 -user2 =group1
+# upload 		* 	=siteop
+# download 		* 	-user1
+# makedir 		/usercanmakedir/* -user1 -user2 =group1
 upload			*	*
 download		*	*
 

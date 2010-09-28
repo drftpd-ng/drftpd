@@ -66,6 +66,8 @@ public interface ConfigInterface {
 
 	public boolean isLoginAllowed(User user);
 
+	public boolean isLoginExempt(User user);
+
 	public PortRange getPortRange();
 
 	public String getPasvAddress() throws NullPointerException;

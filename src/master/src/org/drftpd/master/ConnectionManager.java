@@ -168,9 +168,9 @@ public class ConnectionManager {
 		int count = GlobalContext.getConfig().getMaxUsersTotal();
 
 		// Math.max if the integer wraps
-		if (GlobalContext.getConfig().checkPermission("exempt", user)) {
+	        if(GlobalContext.getConfig().isLoginExempt(user)) {
 			count = Math.max(count, count + GlobalContext.getConfig().getMaxUsersExempt());
-		}
+        	}
 
 		// not >= because baseconn is already included
 		if (_conns.size() > count) {

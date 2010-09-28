@@ -220,6 +220,8 @@ public class ConfigManager implements ConfigInterface {
 					_hideIps = st.nextToken().equalsIgnoreCase("true") ? true : false;
 				} else if (drct.equals("allow_connections")) {
 					getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
+				} else if (drct.equals("exempt")) {
+					getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
 				} else if (drct.equals("bouncer_ips")) {
 					ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
 					while (st.hasMoreTokens()) {
@@ -345,6 +347,16 @@ public class ConfigManager implements ConfigInterface {
 	
 	public boolean isLoginAllowed(User user) {
 		Permission perm = getPermissionsMap().get("allow_connections");
+		
+		if (perm == null) {
+			return true;
+		} else {
+			return perm.check(user);
+		}
+	}
+
+	public boolean isLoginExempt(User user) {
+		Permission perm = getPermissionsMap().get("exempt");
 		
 		if (perm == null) {
 			return true;
