@@ -266,6 +266,10 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 	public void resetYear(Date d) {
 		// no year option currently
 	}
+	
+    public SimpleDateFormat getDateFormat() {
+    	return _dateFormat;
+    }
 }
 
 /**
