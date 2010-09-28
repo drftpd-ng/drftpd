@@ -10,6 +10,8 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" />
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+		<import plugin-id="org.drftpd.commands.list" exported="true" />
+		<import plugin-id="org.drftpd.commands.nuke.common" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.nuke" path="classes/" type="code">
@@ -18,6 +20,10 @@
 	</runtime>
 	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
 	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
+	<extension plugin-id="org.drftpd.commands.list" point-id="AddElements" id="NukeListElements">
+		<parameter id="Class" value="org.drftpd.commands.nuke.list.NukeList" />
+	</extension>
 
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="NukeHandler" />
 
@@ -41,6 +47,12 @@
 	</extension>
 	<extension plugin-id="org.drftpd.commands.nuke" point-id="PreHook" id="doSITE_NUKESPerm">
 		<parameter id="ParentMethod" value="doSITE_NUKES" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.nuke" point-id="PreHook" id="doSITE_NUKESCLEANPerm">
+		<parameter id="ParentMethod" value="doSITE_NUKESCLEAN" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />

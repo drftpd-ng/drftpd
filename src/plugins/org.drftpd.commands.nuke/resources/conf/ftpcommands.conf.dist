@@ -2,7 +2,8 @@ SITE NUKE {
 plugin org.drftpd.commands.nuke
 class Nuke
 method doSITE_NUKE
-perms =nuke
+perms =nuke =siteop
+search false
 help Nuke a directory.
 help.specific ${command} <directory> <multiplier> <message>
 }
@@ -11,7 +12,8 @@ SITE UNNUKE {
 plugin org.drftpd.commands.nuke
 class Nuke
 method doSITE_UNNUKE
-perms =nuke
+perms =nuke =siteop
+search false
 help Unnuke a directory.
 help.specific ${command} <directory>
 }
@@ -23,4 +25,13 @@ method doSITE_NUKES
 perms *
 help List all nuked directories.
 help.specific ${command} [section]
+}
+
+SITE NUKESCLEAN {
+plugin org.drftpd.commands.nuke
+class Nuke
+method doSITE_NUKESCLEAN
+perms =nuke =siteop
+help Clear nukelog of all invalid nukes.
+help.specific ${command}
 }

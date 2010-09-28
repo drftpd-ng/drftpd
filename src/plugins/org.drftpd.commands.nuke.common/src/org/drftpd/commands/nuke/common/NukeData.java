@@ -15,20 +15,25 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.nuke;
+package org.drftpd.commands.nuke.common;
 
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.User;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
- * Stores data of a nuke.
+ * @author scitz0
  * @author fr0w
- * @version $Id$
+ * @version $id$
  */
-public class NukeData {
+@SuppressWarnings("serial")
+public class NukeData implements Serializable {
 
-	private String _user;
+    public static final Key<NukeData> NUKEDATA = new Key<NukeData>(NukeData.class, "nuke");
+
+    private String _user;
 
 	private String _path;
 
@@ -46,7 +51,7 @@ public class NukeData {
 
 	/**
 	 * Main constructor.
-	 * 
+	 *
 	 * @param user,
 	 *            Username.
 	 * @param path,
@@ -79,11 +84,11 @@ public class NukeData {
 	/**
 	 * This constructor does not need the TIME variable. Simply add the current
 	 * time and try to construct the object with the
-	 * 
+	 *
 	 * <pre>
 	 * Main Constructor
 	 * </pre>.
-	 * 
+	 *
 	 * @param user
 	 * @param path
 	 * @param reason
@@ -107,7 +112,7 @@ public class NukeData {
 
 	/**
 	 * Modifies the user name of who issued the nuke/unnuke command.
-	 * 
+	 *
 	 * @param user
 	 */
 	public void setUser(String user) {
@@ -123,7 +128,7 @@ public class NukeData {
 
 	/**
 	 * Modifies the nuked path.
-	 * 
+	 *
 	 * @param path
 	 */
 	public void setPath(String path) {
@@ -139,7 +144,7 @@ public class NukeData {
 
 	/**
 	 * Modifies the Nuke multiplier.
-	 * 
+	 *
 	 * @param multiplier
 	 */
 	public void setMultiplier(int multiplier) {
@@ -155,7 +160,7 @@ public class NukeData {
 
 	/**
 	 * Modifies the amount of nuked bytes.
-	 * 
+	 *
 	 * @param amount
 	 */
 	public void setAmount(long amount) {
@@ -171,7 +176,7 @@ public class NukeData {
 
 	/**
 	 * Modifies the reason of the Nuke.
-	 * 
+	 *
 	 * @param reason
 	 */
 	public void setReason(String reason) {
@@ -187,7 +192,7 @@ public class NukeData {
 
 	/**
 	 * Modifies the size of the nuked dir.
-	 * 
+	 *
 	 * @param size
 	 */
 	public void setSize(long size) {
@@ -203,7 +208,7 @@ public class NukeData {
 
 	/**
 	 * Modifies the current Map of nuked users.
-	 * 
+	 *
 	 * @param map
 	 */
 	public void setNukees(Map<User, Long> map) {
@@ -219,7 +224,7 @@ public class NukeData {
 
 	/**
 	 * Edit the date of nuke.
-	 * 
+	 *
 	 * @param time
 	 */
 	public void setTime(long time) {

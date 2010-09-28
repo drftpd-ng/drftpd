@@ -23,18 +23,14 @@ import java.util.Hashtable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * Some nuke misc methods.
@@ -121,7 +117,7 @@ public class NukeUtils {
 
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
 			try {
-				DirectoryHandle inode = new DirectoryHandle(item.getKey());
+				DirectoryHandle inode = new DirectoryHandle(VirtualFileSystem.fixPath(item.getKey()));
 				if (!inode.isHidden(user)) {
 					dirsToNuke.add(inode);
 				}

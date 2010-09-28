@@ -20,7 +20,7 @@ package org.drftpd.event;
 
 import java.util.Map;
 
-import org.drftpd.commands.nuke.NukeData;
+import org.drftpd.commands.nuke.common.NukeData;
 import org.drftpd.usermanager.User;
 
 /**
