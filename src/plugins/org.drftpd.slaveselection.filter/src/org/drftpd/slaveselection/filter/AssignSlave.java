@@ -54,13 +54,11 @@ public class AssignSlave {
 			}
 			
 			try {
-				if (ap.getScore() == 0) {
-					//remove
+				if (ap.getScore() == Integer.MIN_VALUE) {
 					sc.removeSlaveFromChart(ap.getRSlave());
-					continue;
-				}
-					
-				sc.addScoreToSlave(ap.getRSlave(), ap.getScore());
+				} else {
+  				sc.addScoreToSlave(ap.getRSlave(), ap.getScore());
+        }
 			} catch (ObjectNotFoundException e) {
 				// slave is not in the scorechart, but that's np.
 			}
@@ -107,7 +105,7 @@ class AssignParser {
 		}
 
 		if (assign.equals("remove")) {
-			_score = 0;
+			_score = Integer.MIN_VALUE;
 			positive = false;
 		} else {
 			_score = Long.parseLong(assign);
