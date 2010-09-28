@@ -20,7 +20,7 @@ who {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_WHO
-perms *
+perms =siteop
 help Show who's online
 input all
 output source
@@ -60,7 +60,7 @@ slave {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSlave
-perms *
+perms =siteop
 help Display a slaves status
 help.specific ${command} <slavename> <more>
 input all
@@ -71,7 +71,7 @@ slaves {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVES
-perms %
+perms =siteop
 help List the status of all slaves
 input all
 output source
@@ -91,7 +91,7 @@ speed {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSpeed
-perms *
+perms %
 help Show the state of the specified users connections
 input all
 output source

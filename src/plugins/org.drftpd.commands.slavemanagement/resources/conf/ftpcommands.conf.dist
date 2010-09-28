@@ -2,7 +2,7 @@ SITE SLAVES {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVES
-perms *
+perms =siteop
 help List the slave added to the site and the status of each.
 help.specific ${command}
 help.specific List the slave added to the site and the status of each.
@@ -32,7 +32,7 @@ SITE SLAVE {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVE
-perms *
+perms =siteop
 help Show or modify information about a specific slave.
 help.specific ${command} <SLAVENAME>
 help.specific Show the stored information set on the specified slave.
@@ -72,7 +72,7 @@ SITE SLAVESELECT {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVESELECT
-perms *
+perms =siteop
 help Gives the value of each slave for your current SlaveSelection config
 help.specific ${command} <TYPE> </FULLPATH>
 help.specific <TYPE> is one of up,down,jobdown,jobup

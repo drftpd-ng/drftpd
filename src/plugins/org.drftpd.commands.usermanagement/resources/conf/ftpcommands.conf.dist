@@ -94,7 +94,7 @@ SITE GIVE {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GIVE
-perms *
+perms =siteop
 help Give a user credits
 help.specific ${command} <user> <bytes>
 }

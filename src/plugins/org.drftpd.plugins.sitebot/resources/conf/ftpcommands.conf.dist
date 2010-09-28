@@ -57,7 +57,7 @@ SITE IRC {
 plugin org.drftpd.plugins.sitebot
 class commands.SiteBotManagement
 method doSITE_IRC
-perms *
+perms =siteop
 help Control the IRC sitebot
 help.specific ${command} connect
 help.specific ${command} <botname> connect

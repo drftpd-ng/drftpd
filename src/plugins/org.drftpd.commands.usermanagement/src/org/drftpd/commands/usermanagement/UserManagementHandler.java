@@ -1188,12 +1188,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_GIVE(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!GlobalContext.getConfig().checkPermission("give",
-				session.getUserNull(request.getUser()))) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1232,6 +1226,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, credits + " is not a positive number.");
 		}
 
+		Session session = request.getSession();
 		if (!session.getUserNull(request.getUser()).isAdmin()) {
 			if (credits > session.getUserNull(request.getUser()).getCredits()) {
 				return new CommandResponse(452,
@@ -1660,12 +1655,6 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_TAKE(CommandRequest request)
 			throws ImproperUsageException {
 
-		Session session = request.getSession();
-		if (!GlobalContext.getConfig().checkPermission("take",
-				session.getUserNull(request.getUser()))) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-		}
-
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
@@ -1680,6 +1669,7 @@ public class UserManagementHandler extends CommandInterface {
 		long credits;
 		String amt = null;
 
+		Session session = request.getSession();
 		try {
 			myUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(
 					st.nextToken());
