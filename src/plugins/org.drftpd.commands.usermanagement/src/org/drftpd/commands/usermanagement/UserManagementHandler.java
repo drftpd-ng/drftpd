@@ -1968,6 +1968,17 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSpeed(CommandRequest request) {
+		if (!request.hasArgument()) {
+			User user;
+			try {
+				user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getUser());
+				request.setArgument(user.getName());
+			} catch (NoSuchUserException e) {
+				// just continue
+			} catch (UserFileException e) {
+				// just continue
+			}
+		}
 		return doListConnections(request, "speed", true, true, true, false, false, false, true);
 	}
 
