@@ -108,7 +108,7 @@ public class StatsPostHook implements PostHookInterface {
 			// updating stats
 			if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
 				user.updateUploadedBytes(-fileSize);
-				// uploaded files/time?
+				// TODO uploaded files/time?
 			}
 
 			user.commit();

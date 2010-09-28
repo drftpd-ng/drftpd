@@ -409,13 +409,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 		_user = user;
 	}
 
-	public void start() {
-		_thread = new Thread(this);
-		_thread.start();
-
-		// start() calls run() and execution will start in the background.
-	}
-
 	/**
 	 * returns a two-line status
 	 */

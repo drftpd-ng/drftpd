@@ -20,7 +20,6 @@ package org.drftpd.commands.nuke;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.drftpd.GlobalContext;
@@ -98,7 +97,7 @@ public class NukeUtils {
 
 	public static ArrayList<DirectoryHandle> findNukeDirs(DirectoryHandle currentDir, User user, String name) throws FileNotFoundException {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
-		LinkedHashMap<String,String> inodes;
+		Map<String,String> inodes;
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
@@ -108,7 +107,7 @@ public class NukeUtils {
 		params.setSortOrder(true);
 
 		try {
-			inodes = (LinkedHashMap)ie.advancedFind(currentDir, params);
+			inodes = ie.advancedFind(currentDir, params);
 		} catch (IndexException e) {
 			throw new FileNotFoundException("Index Exception: "+e.getMessage());
 		}
