@@ -26,7 +26,9 @@ import org.drftpd.GlobalContext;
 import org.drftpd.Bytes;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.commands.nuke.NukeUtils;
+import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.event.NukeEvent;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
@@ -90,9 +92,18 @@ public class NukeAnnouncer implements AnnounceInterface {
 
 		output.append(ReplacerUtils.jprintf(_keyPrefix+type, env, _bundle));
 
-		for (Map.Entry<User,Long> entry : event.getNukees().entrySet()) {
+		for (Map.Entry<String,Long> entry : event.getNukees().entrySet()) {
 			ReplacerEnvironment nukeeenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			User nukee = entry.getKey();
+			User nukee;
+			try {
+				nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(entry.getKey());
+			} catch (NoSuchUserException e1) {
+                // Unable to get user, does not exist.. skip announce for this user
+				continue;
+            } catch (UserFileException e1) {
+                // Error in user file.. skip announce for this user
+				continue;
+            }
 			nukeeenv.add("user", nukee.getName());
 			nukeeenv.add("group", nukee.getGroup());
 			long debt = NukeUtils.calculateNukedAmount(entry.getValue(),

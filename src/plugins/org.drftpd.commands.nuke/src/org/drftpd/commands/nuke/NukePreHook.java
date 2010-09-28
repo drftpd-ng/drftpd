@@ -25,6 +25,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.nuke.common.NukeData;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * Nuke PreHook. 
@@ -36,14 +37,14 @@ public class NukePreHook implements PreHookInterface {
 	}
 	
 	public CommandRequestInterface doNukeCheck(CommandRequest request) {
-		String targetDir = request.getArgument();
+		String targetDir = VirtualFileSystem.fixPath(request.getArgument());
 		DirectoryHandle currentDir = request.getCurrentDirectory();
 		
 		String fullPath = "";
-		if (currentDir.getPath().equals("/")) // no need append the '/'
-			fullPath = currentDir.getPath()+targetDir;
+		if (currentDir.getPath().equals(VirtualFileSystem.separator)) // no need append the '/'
+			fullPath = VirtualFileSystem.separator + targetDir;
 		else
-			fullPath = currentDir.getPath()+"/"+targetDir;
+			fullPath = currentDir.getPath() + VirtualFileSystem.separator + targetDir;
 
 		try {
 			NukeData nd = NukeBeans.getNukeBeans().get(fullPath);

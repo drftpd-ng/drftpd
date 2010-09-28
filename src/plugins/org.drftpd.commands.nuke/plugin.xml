@@ -27,8 +27,14 @@
 
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="NukeHandler" />
 
-	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="NukeCheck">
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="NukeMKDCheck">
 		<parameter id="ParentMethod" value="doMKD" />
+		<parameter id="HookClass" value="org.drftpd.commands.nuke.NukePreHook" />
+		<parameter id="HookMethod" value="doNukeCheck" />
+		<parameter id="Priority" value="1000" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="NukeRNTOCheck">
+		<parameter id="ParentMethod" value="doRNTO" />
 		<parameter id="HookClass" value="org.drftpd.commands.nuke.NukePreHook" />
 		<parameter id="HookMethod" value="doNukeCheck" />
 		<parameter id="Priority" value="1000" />

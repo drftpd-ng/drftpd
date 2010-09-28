@@ -304,8 +304,15 @@ public class Nuke extends CommandInterface {
         	return new CommandResponse(550, toFullPath + " is not a directory");
 		}
 
-		NukeData nd = new NukeData(request.getUser(), nukeDirPath, reason, nukees2, multiplier, nukedAmount, nukeDirSize);
-        
+		NukeData nd = new NukeData();
+        nd.setUser(request.getUser());
+		nd.setPath(nukeDirPath);
+		nd.setReason(reason);
+		nd.setNukees(nukees);
+		nd.setMultiplier(multiplier);
+		nd.setAmount(nukedAmount);
+		nd.setSize(nukeDirSize);
+
         // adding to the nukelog.
         NukeBeans.getNukeBeans().add(nd);
 
@@ -339,6 +346,8 @@ public class Nuke extends CommandInterface {
     public CommandResponse doSITE_NUKES(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
+		ReplacerEnvironment env = new ReplacerEnvironment();
+
 		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(request.getArgument());
 
 		if (request.hasArgument() && section.getName().equalsIgnoreCase("")) {
@@ -346,17 +355,25 @@ public class Nuke extends CommandInterface {
 		}
 
 		if (NukeBeans.getNukeBeans().getAll().isEmpty()) {
-			response.addComment("Nukelog empty.");
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nukes.empty", env, request.getUser()));
 		}
 
         for (NukeData nd : NukeBeans.getNukeBeans().getAll()) {
 			if (nd.getPath().startsWith(request.getArgument(), 1)) {
-				response.addComment(nd.toString());
+				env.add("path", nd.getPath());
+				env.add("multiplier", nd.getMultiplier());
+				env.add("usersnuked", nd.getNukees().size());
+				env.add("size", nd.getSize());
+				env.add("reason", nd.getReason());
+				env.add("amount", nd.getAmount());
+				env.add("nuker", nd.getUser());
+				response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nukes", env, request.getUser()));
 			}
         }
 
 		if (response.getComment().isEmpty()) {
-			response.addComment("Nukelog empty for section " + section.getName() + ".");
+			env.add("section", section.getName());
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nukes.empty.section", env, request.getUser()));
 		}
 
         return response;
@@ -489,7 +506,13 @@ public class Nuke extends CommandInterface {
         try {
 			nukeData = nukeDir.getPluginMetaData(NukeData.NUKEDATA);
         } catch (KeyNotFoundException ex) {
-            return new CommandResponse(500, "Unable to unnuke, dir is not nuked.");
+			// Try to delete from nukelog if its left there for some reason
+			try {
+				NukeBeans.getNukeBeans().remove(toDir+toName);
+			} catch (ObjectNotFoundException e) {
+				return new CommandResponse(500, "Unable to unnuke, dir is not nuked.");
+			}
+            return new CommandResponse(500, toDir+nukeName + " doesnt contain any nukedata and no nukelog for this path was found.");
         } catch (FileNotFoundException ex) {
             return new CommandResponse(550, "Could not find directory: " + nukeDir.getPath());
         }

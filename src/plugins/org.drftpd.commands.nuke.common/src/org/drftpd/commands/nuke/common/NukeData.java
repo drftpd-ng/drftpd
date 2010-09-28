@@ -39,7 +39,7 @@ public class NukeData implements Serializable {
 
 	private String _reason;
 
-	private Map<User, Long> _nukees;
+	private Map<String, Long> _nukees;
 
 	private int _multiplier;
 
@@ -48,60 +48,6 @@ public class NukeData implements Serializable {
 	private long _size;
 
 	private long _time;
-
-	/**
-	 * Main constructor.
-	 *
-	 * @param user,
-	 *            Username.
-	 * @param path,
-	 *            Path of the dir TO BE nuked.
-	 * @param reason,
-	 *            Reason of the nuke/unnuke.
-	 * @param nukees,
-	 *            Map of the nuked users.
-	 * @param multiplier
-	 * @param amount,
-	 *            The total amount of nuked bytes.
-	 * @param size,
-	 *            Size of the nuked dir.
-	 * @param time,
-	 *            Date of the nuke.
-	 */
-	public NukeData(String user, String path, String reason,
-			Map<User, Long> nukees, int multiplier, long amount, long size,
-			long time) {
-		_user = user;
-		_path = path;
-		_reason = reason;
-		_nukees = nukees;
-		_multiplier = multiplier;
-		_amount = amount;
-		_size = size;
-		_time = time;
-	}
-
-	/**
-	 * This constructor does not need the TIME variable. Simply add the current
-	 * time and try to construct the object with the
-	 *
-	 * <pre>
-	 * Main Constructor
-	 * </pre>.
-	 *
-	 * @param user
-	 * @param path
-	 * @param reason
-	 * @param nukees
-	 * @param multiplier
-	 * @param amount
-	 * @param size
-	 */
-	public NukeData(String user, String path, String reason,
-			Map<User, Long> nukees, int multiplier, long amount, long size) {
-		this(user, path, reason, nukees, multiplier, amount, size, System
-				.currentTimeMillis());
-	}
 
 	/**
 	 * @return the username of who issued the nuke/unnuke command.
@@ -202,7 +148,7 @@ public class NukeData implements Serializable {
 	/**
 	 * @return the Map of the nuked users.
 	 */
-	public Map<User, Long> getNukees() {
+	public Map<String, Long> getNukees() {
 		return _nukees;
 	}
 
@@ -211,7 +157,7 @@ public class NukeData implements Serializable {
 	 *
 	 * @param map
 	 */
-	public void setNukees(Map<User, Long> map) {
+	public void setNukees(Map<String, Long> map) {
 		_nukees = map;
 	}
 
@@ -229,16 +175,6 @@ public class NukeData implements Serializable {
 	 */
 	public void setTime(long time) {
 		_time = time;
-	}
-
-	/**
-	 * [NUKE] - Path: /APPS/MICROSOFT.SUCKS - Multiplier: 3 - UsersNuked: 10 -
-	 * Size: 700MB - Reason: no.thx.
-	 */
-	public String toString() {
-		return "[NUKE] - Path: " + getPath() + " - Multiplier: "
-				+ getMultiplier() + " - UsersNuked: " + getNukees().size()
-				+ " - Size: " + getSize() + " - Reason: " + getReason();
 	}
 
 }

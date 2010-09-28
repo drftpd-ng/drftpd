@@ -142,10 +142,10 @@ public class NukeBeans {
 	 */
 	public static List<NukedUser> getNukeeList(NukeData nd) {
 		ArrayList<NukedUser> list = new ArrayList<NukedUser>();
-		for (Map.Entry<User,Long> entry : nd.getNukees().entrySet()) {
-			User user = entry.getKey();
+		for (Map.Entry<String,Long> entry : nd.getNukees().entrySet()) {
+			String user = entry.getKey();
 			Long l = entry.getValue();
-			list.add(new NukedUser(user.getName(), l.longValue()));
+			list.add(new NukedUser(user, l.longValue()));
 		}
 		return list;
 	}
@@ -180,10 +180,6 @@ public class NukeBeans {
 					logger.error(e, e);
 				}
 			});
-			enc.setPersistenceDelegate(NukeData.class,
-					new DefaultPersistenceDelegate(new String[] { "user",
-							"path", "reason", "nukees", "multiplier", "amount",
-							"size", "time" }));
 
 			enc.setPersistenceDelegate(LRUMap.class, new DefaultPersistenceDelegate(new String[] { "maxSize" } ));
 			enc.writeObject(_nukes);
@@ -280,12 +276,18 @@ public class NukeBeans {
 			int multiplier = 3;
 			long nukedAmount = multiplier * size;
 			String reason = "Testing";
-			Map<User, Long> nukees = new Hashtable<User, Long>();
-			nukees.put(null, nukedAmount);
+			Map<String, Long> nukees = new Hashtable<String, Long>();
+			nukees.put("test"+i, nukedAmount);
 
 			// actual NukeEvent
-			NukeData nd = new NukeData(user, path, reason, nukees, multiplier,
-					nukedAmount, size);
+			NukeData nd = new NukeData();
+			nd.setUser(user);
+			nd.setPath(path);
+			nd.setReason(reason);
+			nd.setNukees(nukees);
+			nd.setMultiplier(multiplier);
+			nd.setAmount(nukedAmount);
+			nd.setSize(size);
 
 			// System.out.println(nd.toString());
 			// adding
