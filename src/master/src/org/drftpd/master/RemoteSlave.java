@@ -428,7 +428,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		} catch (RemoteIOException e) {
 			throw new IOException(e.getMessage());
 		}
-		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
 
 		getGlobalContext().getSlaveManager().putRemergeQueue(
 				new RemergeMessage(this));
@@ -524,6 +523,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	protected void makeAvailableAfterRemerge() {
+		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
 		setAvailable(true);
 		logger.info("Slave added: '" + getName() + "' status: " + _status);
 		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
