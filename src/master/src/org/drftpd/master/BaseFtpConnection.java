@@ -458,7 +458,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	}
 
 	public static int countTransfersForUser(User user, char transferDirection) {
-		List<BaseFtpConnection> conns = Collections.unmodifiableList(GlobalContext.getConnectionManager().getConnections());
+		List<BaseFtpConnection> conns = GlobalContext.getConnectionManager().getConnections();
 		
 		int count = 0;
 		for (BaseFtpConnection conn : conns) {
