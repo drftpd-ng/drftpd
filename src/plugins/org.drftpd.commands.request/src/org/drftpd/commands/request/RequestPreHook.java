@@ -25,6 +25,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commands.request.metadata.RequestUserData;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
@@ -47,7 +48,7 @@ public class RequestPreHook implements PreHookInterface {
 
 	public CommandRequestInterface doWklyAllotmentPreCheck(CommandRequest request) {
 		User user = request.getSession().getUserNull(request.getUser());
-		int weekReqs = user.getKeyedMap().getObjectInteger(Request.WEEKREQS);
+		int weekReqs = user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS);
 		if (_weekMax != 0 && weekReqs >= _weekMax && !_weekExempt.check(user)) {
 			// User is not exempted and max number of request this week is made already
 			request.setAllowed(false);

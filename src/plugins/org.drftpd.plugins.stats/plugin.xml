@@ -15,6 +15,7 @@
 		<import plugin-id="org.drftpd.commands.config.hooks" exported="true" />
 		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
 		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.plugins.stats.metadata" exported="true" />
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 	</requires>
 	

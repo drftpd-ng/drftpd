@@ -81,4 +81,3 @@ public class RequestEvent extends Event {
 	}
 
 }
-;

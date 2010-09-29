@@ -32,11 +32,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
-import org.drftpd.commands.nuke.common.NukeData;
+import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.misc.LRUMap;
-import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 
 /**

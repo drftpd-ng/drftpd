@@ -11,6 +11,7 @@ This also has a WeekMax per user/group setting built in.</doc-text>
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+		<import plugin-id="org.drftpd.commands.request.metadata" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.request" path="classes/" type="code">

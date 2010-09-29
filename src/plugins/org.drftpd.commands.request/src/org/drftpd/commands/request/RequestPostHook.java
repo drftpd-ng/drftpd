@@ -24,6 +24,7 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commands.request.metadata.RequestUserData;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.usermanager.User;
 
@@ -48,8 +49,8 @@ public class RequestPostHook implements PostHookInterface {
 			return;
 		}
 		User user = request.getSession().getUserNull(request.getUser());
-		user.getKeyedMap().incrementInt(Request.REQUESTS);
-		user.getKeyedMap().incrementInt(Request.WEEKREQS);
+		user.getKeyedMap().incrementInt(RequestUserData.REQUESTS);
+		user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS);
 		user.commit();
 	}
 
@@ -59,7 +60,7 @@ public class RequestPostHook implements PostHookInterface {
 			return;
 		}
 		User user = request.getSession().getUserNull(request.getUser());
-		user.getKeyedMap().incrementInt(Request.REQUESTSFILLED);
+		user.getKeyedMap().incrementInt(RequestUserData.REQUESTSFILLED);
 		user.commit();
 	}
 
@@ -69,8 +70,8 @@ public class RequestPostHook implements PostHookInterface {
 			return;
 		}
 		User user = request.getSession().getUserNull(request.getUser());
-		if (_decreaseWeekReqs && user.getKeyedMap().getObjectInteger(Request.WEEKREQS) > 0) {
-			user.getKeyedMap().incrementInt(Request.WEEKREQS, -1);
+		if (_decreaseWeekReqs && user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS) > 0) {
+			user.getKeyedMap().incrementInt(RequestUserData.WEEKREQS, -1);
 			user.commit();
 		}
 	}

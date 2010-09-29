@@ -15,32 +15,21 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.permissions;
+package org.drftpd.commands.request.metadata;
 
-import java.util.Collection;
+import org.drftpd.dynamicdata.Key;
 
-import org.apache.oro.text.regex.MalformedPatternException;
+import java.io.Serializable;
 
 /**
- * @author mog
- * @version $Id$
+ * @author scitz0
+ * @version $id$
  */
-public class RatioPathPermission extends GlobPathPermission {
-	private float _ratio;
+@SuppressWarnings("serial")
+public class RequestUserData implements Serializable {
 
-	/**
-	 * @param pattern
-	 * @param ratio
-	 * @param users
-	 * @throws MalformedPatternException 
-	 */
-	public RatioPathPermission(String pattern, float ratio, Collection<String> users)
-			throws MalformedPatternException {
-		super(pattern, users);
-		_ratio = ratio;
-	}
+	public static final Key<Integer> REQUESTSFILLED = new Key<Integer>(RequestUserData.class,	"requestsFilled");
+	public static final Key<Integer> REQUESTS = new Key<Integer>(RequestUserData.class, "requests");
+	public static final Key<Integer> WEEKREQS = new Key<Integer>(RequestUserData.class, "weekReqs");
 
-	public float getRatio() {
-		return _ratio;
-	}
 }

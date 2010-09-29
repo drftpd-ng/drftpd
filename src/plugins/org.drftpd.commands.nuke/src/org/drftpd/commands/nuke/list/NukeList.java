@@ -21,7 +21,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.Bytes;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.nuke.common.NukeData;
+import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;

@@ -15,10 +15,9 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.nuke.common;
+package org.drftpd.commands.nuke.metadata;
 
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.usermanager.User;
 
 import java.io.Serializable;
 import java.util.Map;

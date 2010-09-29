@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.nuke.common;
+package org.drftpd.plugins.stats.metadata;
 
 import org.drftpd.dynamicdata.Key;
 
@@ -26,10 +26,8 @@ import java.io.Serializable;
  * @version $id$
  */
 @SuppressWarnings("serial")
-public class NukeUserData implements Serializable {
+public class StatsUserData implements Serializable {
 
-	public static final Key<Integer> NUKED = new Key<Integer>(NukeUserData.class, "nuked");
-    public static final Key<Long> NUKEDBYTES = new Key<Long>(NukeUserData.class, "nukedBytes");
-    public static final Key<Long> LASTNUKED = new Key<Long>(NukeUserData.class, "lastNuked");
+	public static final Key<Integer> LOGINS = new Key<Integer>(StatsUserData.class, "logins");
 
 }

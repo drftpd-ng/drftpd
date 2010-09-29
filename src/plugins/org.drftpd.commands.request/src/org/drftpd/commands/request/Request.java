@@ -30,7 +30,6 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.RequestEvent;
 import org.drftpd.exceptions.FileExistsException;
@@ -45,11 +44,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author mog
  * @version $Id$
  */
-public class Request extends CommandInterface {
-	public static final Key<Integer> REQUESTSFILLED = new Key<Integer>(Request.class,	"requestsFilled");
-	public static final Key<Integer> REQUESTS = new Key<Integer>(Request.class, "requests");
-	public static final Key<Integer> WEEKREQS = new Key<Integer>(Request.class, "weekReqs");
-	
+public class Request extends CommandInterface {	
 	private static final Logger logger = Logger.getLogger(Request.class);
 
 	private ResourceBundle _bundle;

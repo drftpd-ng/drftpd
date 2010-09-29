@@ -11,7 +11,7 @@
 		<import plugin-id="org.drftpd.commands.dir" />
 		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
 		<import plugin-id="org.drftpd.commands.list" exported="true" />
-		<import plugin-id="org.drftpd.commands.nuke.common" exported="true" />
+		<import plugin-id="org.drftpd.commands.nuke.metadata" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.nuke" path="classes/" type="code">

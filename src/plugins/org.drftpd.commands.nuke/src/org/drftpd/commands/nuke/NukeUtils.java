@@ -86,7 +86,7 @@ public class NukeUtils {
 						total = 0L;
 					}
 
-					total = total.longValue() + inode.getSize();
+					total = total + inode.getSize();
 					nukees.put(owner, total);
 				}
 			} catch (FileNotFoundException e) {

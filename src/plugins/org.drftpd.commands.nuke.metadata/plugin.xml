@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- $Id$ -->
-<plugin id="org.drftpd.commands.nuke.common" version="3.0.0">
+<plugin id="org.drftpd.commands.nuke.metadata" version="3.0.0">
     <attributes>
 		<attribute id="DenyUnload" value="true" />
 	</attributes>
@@ -9,7 +9,7 @@
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.nuke.common" path="classes/" type="code">
+		<library id="org.drftpd.commands.nuke.metadata" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

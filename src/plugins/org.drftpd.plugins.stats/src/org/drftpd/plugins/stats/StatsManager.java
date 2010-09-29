@@ -29,6 +29,7 @@ import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.UserEvent;
 import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.plugins.stats.metadata.StatsUserData;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -39,13 +40,11 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class StatsManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(StatsManager.class);
-	
-    public static final Key<Integer> LOGINS = new Key<Integer>(StatsManager.class, "logins");
-    
-    public static final Key<ArrayList<RatioPathPermission>> CREDITCHECK =
-    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditcheck");
+
+	public static final Key<ArrayList<RatioPathPermission>> CREDITCHECK =
+    	new Key<ArrayList<RatioPathPermission>>(StatsUserData.class, "creditcheck");
     public static final Key<ArrayList<RatioPathPermission>> CREDITLOSS =
-    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditloss");
+    	new Key<ArrayList<RatioPathPermission>>(StatsUserData.class, "creditloss");
 
     public static StatsManager getStatsManager() {
     	for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
@@ -73,7 +72,7 @@ public class StatsManager implements PluginInterface {
 		if (event.getCommand().equalsIgnoreCase("LOGIN")) {
 			User u = event.getUser();
 			u.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date(event.getTime()));
-			u.getKeyedMap().incrementInt(LOGINS);
+			u.getKeyedMap().incrementInt(StatsUserData.LOGINS);
 		}		
 	}
 	

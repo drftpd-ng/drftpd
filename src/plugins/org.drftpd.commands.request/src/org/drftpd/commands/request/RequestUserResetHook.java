@@ -18,6 +18,7 @@
 package org.drftpd.commands.request;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.commands.request.metadata.RequestUserData;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserResetHookInterface;
 
@@ -43,7 +44,7 @@ public class RequestUserResetHook implements UserResetHookInterface {
 	public void resetWeek(Date d) {
 		// Reset users weekly allotment to zero
 		for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsers()) {
-			user.getKeyedMap().setObject(Request.WEEKREQS, 0);
+			user.getKeyedMap().setObject(RequestUserData.WEEKREQS, 0);
 			user.commit();
 		}
 	}

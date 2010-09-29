@@ -29,6 +29,7 @@ import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.permissions.Permission;
 import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.plugins.stats.metadata.StatsUserData;
 
 /**
  * Handles 'creditcheck' and 'creditloss' lines from perms.conf

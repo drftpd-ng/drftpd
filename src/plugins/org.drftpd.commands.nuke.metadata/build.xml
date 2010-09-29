@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
-<project name="org.drftpd.commands.nuke.common"
+<project name="org.drftpd.commands.nuke.metadata"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">

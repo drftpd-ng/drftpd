@@ -22,7 +22,7 @@ import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.nuke.common.NukeData;
+import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
