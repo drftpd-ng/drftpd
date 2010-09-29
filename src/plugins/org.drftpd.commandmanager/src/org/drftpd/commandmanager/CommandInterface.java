@@ -122,8 +122,7 @@ public abstract class CommandInterface {
 				m.invoke(hook.getHookInterfaceInstance(), new Object[] {request, response});
 			}
 			catch (Exception e) {
-				logger.error("Exception while loading/invoking posthook " + m.toString(), e);
-				logger.error("Exception (cause) while loading/invoking posthook " + m.toString(), e.getCause());
+				logger.error("Error while loading/invoking posthook " + m.toString(), e.getCause());
 				/* Not that important, this just means that this post hook
 				 * failed and we'll just move onto the next one
 				 */
@@ -139,8 +138,7 @@ public abstract class CommandInterface {
 				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[] {request});
 			}
 			catch (Exception e) {
-				logger.error("Exception while loading/invoking prehook " + m.toString(), e);
-				logger.error("Exception (cause) while loading/invoking prehook " + m.toString(), e.getCause());
+				logger.error("Error while loading/invoking prehook " + m.toString(), e.getCause());
 				/* Not that important, this just means that this pre hook
 				 * failed and we'll just move onto the next one
 				 */
