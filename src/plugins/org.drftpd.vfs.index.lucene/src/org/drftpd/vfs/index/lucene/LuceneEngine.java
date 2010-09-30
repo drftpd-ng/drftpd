@@ -314,8 +314,8 @@ public class LuceneEngine implements IndexEngineInterface {
 			return TERM_PARENT.createTerm(inode.getPath());
 	}
 
-	private TermQuery makeFullNameTermQueryFromString(String name) {
-		return new TermQuery(TERM_FULL_NAME.createTerm(name));
+	private WildcardQuery makeFullNameWildcardQueryFromString(String name) {
+		return new WildcardQuery(TERM_FULL_NAME.createTerm(name));
 	}
 
 	private TermQuery makeOwnerTermQueryFromString(String owner) {
@@ -533,7 +533,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			if (!params.getFullName().isEmpty()) {
-				query.add(makeFullNameTermQueryFromString(params.getFullName()), Occur.MUST);
+				query.add(makeFullNameWildcardQueryFromString(params.getFullName()), Occur.MUST);
 			} else if (!params.getName().isEmpty()) {
 				Query nameQuery = analyze("name", TERM_NAME, params.getName());
 				query.add(nameQuery, Occur.MUST);
