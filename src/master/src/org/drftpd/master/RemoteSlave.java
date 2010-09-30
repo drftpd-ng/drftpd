@@ -431,6 +431,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 		getGlobalContext().getSlaveManager().putRemergeQueue(
 				new RemergeMessage(this));
+		// TODO move lastConnect time setting to makeAvailableAfterRemerge()
+		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
 		_initRemergeCompleted = true;
 		if (_remergePaused.get()) {
 			logger.debug("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
@@ -523,7 +525,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	protected void makeAvailableAfterRemerge() {
-		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
+		// TODO move lastconnect time set to here
 		setAvailable(true);
 		logger.info("Slave added: '" + getName() + "' status: " + _status);
 		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
