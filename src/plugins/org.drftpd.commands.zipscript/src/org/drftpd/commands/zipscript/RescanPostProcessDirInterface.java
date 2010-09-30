@@ -27,5 +27,5 @@ public interface RescanPostProcessDirInterface {
 
 	public void initialize(StandardCommandManager cManager);
 
-	public void postProcessDir(CommandRequest workingDirReq);
+	public void postProcessDir(CommandRequest workingDirReq, boolean quiet);
 }

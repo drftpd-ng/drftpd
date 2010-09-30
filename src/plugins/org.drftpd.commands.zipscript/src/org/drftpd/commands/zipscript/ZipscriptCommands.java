@@ -132,20 +132,19 @@ public class ZipscriptCommands extends CommandInterface {
 			DirectoryHandle workingDir = dirs.poll();
 			if (recursive) {
 				try {
-					dirs.addAll(workingDir.getDirectories(request.getSession().getUserNull(request.getUser())));
+					dirs.addAll(workingDir.getSortedDirectories(request.getSession().getUserNull(request.getUser())));
 				} catch (FileNotFoundException e1) {
 					session.printOutput(200,"Error recursively listing: "+workingDir.getPath());
 				}
 			}
-			SFVInfo workingSfv;
+			SFVInfo workingSfv = null;
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(workingDir);
+			boolean sfvFound = false;
 			try {
 				workingSfv = sfvData.getSFVInfo();
+				sfvFound = true;
 			} catch (FileNotFoundException e2) {
-				/* No sfv in this dir, silently ignore so not to add 
-				 * useless output in recursive mode
-				 */
-				continue;
+				// Need to carry on anyway but skip sfv checking, this allows any extensions to run
 			} catch (IOException e2) {
 				/* Unable to read sfv in this dir, silently ignore so not to add 
 				 * useless output in recursive mode
@@ -159,61 +158,63 @@ public class ZipscriptCommands extends CommandInterface {
 				continue;
 			}
 			session.printOutput(200,"Rescanning: "+workingDir.getPath());
-			for (Entry<String,Long> sfvEntry : workingSfv.getEntries().entrySet()) {
-				if (session.isAborted()) {
-					break;
-				}
-				FileHandle file = new FileHandle(workingDir.getPath()
-						+VirtualFileSystem.separator+sfvEntry.getKey());
-				Long sfvChecksum = sfvEntry.getValue();
-				Long fileChecksum = 0L;
-				String status;
-				try {
-					if (forceRescan) {
-						fileChecksum = file.getCheckSumFromSlave();
-					} else {
-						fileChecksum = file.getCheckSum();
+			if (sfvFound) {
+				for (Entry<String,Long> sfvEntry : workingSfv.getEntries().entrySet()) {
+					if (session.isAborted()) {
+						break;
 					}
-				} catch (FileNotFoundException e3) {
-					session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
-							" SLAVE: " + file.getName() + " MISSING");
-					continue;
-				} catch (NoAvailableSlaveException e3) {
-					session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
-							" SLAVE: " + file.getName() + " OFFLINE");
-					continue;
-				}
-				if (fileChecksum == 0L) {
-					status = "FAILED - failed to checksum file";
-				} else if (sfvChecksum.longValue() == fileChecksum.longValue()) {
-					if (quiet) {
-						status = "";
-					} else {
-						status = "OK";
+					FileHandle file = new FileHandle(workingDir.getPath()
+							+VirtualFileSystem.separator+sfvEntry.getKey());
+					Long sfvChecksum = sfvEntry.getValue();
+					Long fileChecksum = 0L;
+					String status;
+					try {
+						if (forceRescan) {
+							fileChecksum = file.getCheckSumFromSlave();
+						} else {
+							fileChecksum = file.getCheckSum();
+						}
+					} catch (FileNotFoundException e3) {
+						session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
+								" SLAVE: " + file.getName() + " MISSING");
+						continue;
+					} catch (NoAvailableSlaveException e3) {
+						session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
+								" SLAVE: " + file.getName() + " OFFLINE");
+						continue;
 					}
-				} else {
-					status = "FAILED - checksum mismatch";
-					if (deleteBad) {
-						try {
-							/* TODO if the user is rescanning and cannot delete the file
-							 * what's the real point of rescanning? correct me if i'm wrong (fr0w) */
-							file.deleteUnchecked();
-						} catch (FileNotFoundException e4) {
-							// File already gone, all is good
+					if (fileChecksum == 0L) {
+						status = "FAILED - failed to checksum file";
+					} else if (sfvChecksum.longValue() == fileChecksum.longValue()) {
+						if (quiet) {
+							status = "";
+						} else {
+							status = "OK";
+						}
+					} else {
+						status = "FAILED - checksum mismatch";
+						if (deleteBad) {
+							try {
+								/* TODO if the user is rescanning and cannot delete the file
+								 * what's the real point of rescanning? correct me if i'm wrong (fr0w) */
+								file.deleteUnchecked();
+							} catch (FileNotFoundException e4) {
+								// File already gone, all is good
+							}
 						}
 					}
-				}
-				if (!status.equals("")) {
-					session.printOutput(200,file.getName() + " SFV: " +
-							Checksum.formatChecksum(sfvChecksum) + " SLAVE: " +
-							Checksum.formatChecksum(fileChecksum) + " " + status);
+					if (!status.equals("")) {
+						session.printOutput(200,file.getName() + " SFV: " +
+								Checksum.formatChecksum(sfvChecksum) + " SLAVE: " +
+								Checksum.formatChecksum(fileChecksum) + " " + status);
+					}
 				}
 			}
 			// Run any post processing extensions
 			for (RescanPostProcessDirInterface rescanAddon: _rescanAddons) {
 				CommandRequest workingDirReq = (CommandRequest) request.clone();
 				workingDirReq.setCurrentDirectory(workingDir);
-				rescanAddon.postProcessDir(workingDirReq);
+				rescanAddon.postProcessDir(workingDirReq, quiet);
 			}
 		}
 		return response;

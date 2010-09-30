@@ -20,9 +20,10 @@ package org.drftpd.vfs;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -143,6 +144,7 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	/**
+	 * This method *does* check for hidden paths.
 	 * @return a set containing only the files of this dir.
 	 * (no links or directories included.)
 	 * @throws FileNotFoundException
@@ -151,18 +153,50 @@ public class DirectoryHandle extends InodeHandle implements
 		return getFilesUnchecked(getInodeHandles(user));
 	}
 	
+	/**
+	 * This method *does* check for hidden paths.
+	 * @return a sorted set containing only the files of this dir.
+	 * (no links or directories included.)
+	 * @throws FileNotFoundException
+	 */
+	public Set<FileHandle> getSortedFiles(User user) throws FileNotFoundException {
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
+		Collections.sort(sortedInodes,
+				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		return getFilesUnchecked(sortedInodes);
+	}
+	
+	/**
+	 * This method does not check for hidden paths.
+	 * @return a set containing only the files of this dir.
+	 * (no links or directories included.)
+	 * @throws FileNotFoundException
+	 */
 	public Set<FileHandle> getFilesUnchecked() throws FileNotFoundException {
 		return getFilesUnchecked(getInodeHandlesUnchecked());
 	}
 	
-	private Set<FileHandle> getFilesUnchecked(Set<InodeHandle> inodes) throws FileNotFoundException {
-		Set<FileHandle> set = new HashSet<FileHandle>();
+	/**
+	 * This method does not check for hidden paths.
+	 * @return a sorted set containing only the files of this dir.
+	 * (no links or directories included.)
+	 * @throws FileNotFoundException
+	 */
+	public Set<FileHandle> getSortedFilesUnchecked() throws FileNotFoundException {
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+		Collections.sort(sortedInodes,
+				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		return getFilesUnchecked(sortedInodes);
+	}
+	
+	private Set<FileHandle> getFilesUnchecked(Collection<InodeHandle> inodes) throws FileNotFoundException {
+		Set<FileHandle> set = new LinkedHashSet<FileHandle>();
 		for (InodeHandle handle : getInode().getInodes()) {
 			if (handle instanceof FileHandle) {
 				set.add((FileHandle) handle);
 			}
 		}
-		return (Set<FileHandle>) set;
+		return set;
 	}
 
 	/**.
@@ -172,6 +206,18 @@ public class DirectoryHandle extends InodeHandle implements
 	 */
 	public Set<DirectoryHandle> getDirectories(User user) throws FileNotFoundException {
 		return getDirectoriesUnchecked(getInodeHandles(user));
+	}
+	
+	/**.
+	 * This method *does* check for hiddens paths.
+	 * @return a sorted set containing only the directories of this dir. (no links or files included.)
+	 * @throws FileNotFoundException
+	 */
+	public Set<DirectoryHandle> getSortedDirectories(User user) throws FileNotFoundException {
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
+		Collections.sort(sortedInodes,
+				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		return getDirectoriesUnchecked(sortedInodes);
 	}
 	
 	/**
@@ -184,38 +230,82 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 	
 	/**
-	 * This method iterates through the given Set, removing non-Directory objects.
+	 * This method does not check for hiddens paths.
+	 * @return a sorted set containing only the directories of this dir. (no links or files included.)
+	 * @throws FileNotFoundException
+	 */
+	public Set<DirectoryHandle> getSortedDirectoriesUnchecked() throws FileNotFoundException {
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+		Collections.sort(sortedInodes,
+				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		return getDirectoriesUnchecked(sortedInodes);
+	}
+	
+	/**
+	 * This method iterates through the given Collection, removing non-Directory objects.
 	 * @return a set containing only the directories of this dir. (no links or files included.)
 	 * @throws FileNotFoundException
 	 */
-	private Set<DirectoryHandle> getDirectoriesUnchecked(Set<InodeHandle> inodes)
+	private Set<DirectoryHandle> getDirectoriesUnchecked(Collection<InodeHandle> inodes)
 		throws FileNotFoundException {
-		Set<DirectoryHandle> set = new HashSet<DirectoryHandle>();
+		Set<DirectoryHandle> set = new LinkedHashSet<DirectoryHandle>();
 		
 		for (InodeHandle handle : inodes) {
 			if (handle instanceof DirectoryHandle) {
 				set.add((DirectoryHandle) handle);
 			}
 		}
-		return (Set<DirectoryHandle>) set;
+		return set;
 	}
 
 	/**
+	 * This method *does* check for hiddens paths.
 	 * @return a set containing only the links of this dir.
 	 * (no directories or files included.)
 	 * @throws FileNotFoundException
 	 */
-	
 	public Set<LinkHandle> getLinks(User user) throws FileNotFoundException {
 		return getLinksUnchecked(getInodeHandles(user));
 	}
 	
+	/**
+	 * This method *does* check for hiddens paths.
+	 * @return a sorted set containing only the links of this dir.
+	 * (no directories or files included.)
+	 * @throws FileNotFoundException
+	 */
+	public Set<LinkHandle> getSortedLinks(User user) throws FileNotFoundException {
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
+		Collections.sort(sortedInodes,
+				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		return getLinksUnchecked(sortedInodes);
+	}
+	
+	/**
+	 * This method does not check for hiddens paths.
+	 * @return a set containing only the links of this dir.
+	 * (no directories or files included.)
+	 * @throws FileNotFoundException
+	 */
 	public Set<LinkHandle> getLinksUnchecked() throws FileNotFoundException {
 		return getLinksUnchecked(getInodeHandlesUnchecked());
 	}
 	
-	private Set<LinkHandle> getLinksUnchecked(Set<InodeHandle> inodes) throws FileNotFoundException {
-		Set<LinkHandle> set = new HashSet<LinkHandle>();
+	/**
+	 * This method does not check for hiddens paths.
+	 * @return a sorted set containing only the links of this dir.
+	 * (no directories or files included.)
+	 * @throws FileNotFoundException
+	 */
+	public Set<LinkHandle> getSortedLinksUnchecked() throws FileNotFoundException {
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+		Collections.sort(sortedInodes,
+				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		return getLinksUnchecked(sortedInodes);
+	}
+	
+	private Set<LinkHandle> getLinksUnchecked(Collection<InodeHandle> inodes) throws FileNotFoundException {
+		Set<LinkHandle> set = new LinkedHashSet<LinkHandle>();
 		for (Iterator<InodeHandle> iter = inodes.iterator(); iter
 				.hasNext();) {
 			InodeHandle handle = iter.next();
@@ -223,7 +313,7 @@ public class DirectoryHandle extends InodeHandle implements
 				set.add((LinkHandle) handle);
 			}
 		}
-		return (Set<LinkHandle>) set;
+		return set;
 	}
 	
 	/**
@@ -240,7 +330,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 */
 	private Set<FileHandle> getOfflineFiles() throws FileNotFoundException {
 		Set<FileHandle> allFiles = getFilesUnchecked();
-		Set<FileHandle> offlineFiles = new HashSet<FileHandle>(allFiles.size());
+		Set<FileHandle> offlineFiles = new LinkedHashSet<FileHandle>(allFiles.size());
 		
 		for (FileHandle file : allFiles) {
 			if (!file.isAvailable())

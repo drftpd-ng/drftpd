@@ -42,7 +42,7 @@ public class RescanPostProcessLinks implements RescanPostProcessDirInterface {
 		_bundle = cManager.getResourceBundle();
 	}
 
-	public void postProcessDir(CommandRequest workingDirReq) {
+	public void postProcessDir(CommandRequest workingDirReq, boolean quiet) {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
 		// Check if incomplete links are enabled

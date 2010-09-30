@@ -53,4 +53,7 @@
 	<extension plugin-id="org.drftpd.commands.zipscript" point-id="ListStatusBarProvider" id="ListDizStatusBarProvider">
 		<parameter id="Class" value="org.drftpd.commands.zipscript.zip.list.ZipscriptDizStatusBar" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="RescanPostProcessDir" id="RescanPostProcessZips">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.zip.RescanPostProcessZips" />
+	</extension>
 </plugin>

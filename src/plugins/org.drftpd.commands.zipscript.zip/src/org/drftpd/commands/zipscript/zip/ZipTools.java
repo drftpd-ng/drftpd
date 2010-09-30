@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
+import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 
@@ -82,5 +86,9 @@ public class ZipTools {
 		}
 
 		return getZipTotalBytes(dir) / (totalXfertime / 1000);
+	}
+
+	protected boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+		return ((AsyncResponseZipCRCInfo) rslave.fetchResponse(index)).isOk();
 	}
 }

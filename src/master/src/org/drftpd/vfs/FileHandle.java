@@ -161,8 +161,8 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 		long checksum = 0L;
 		if (getSize() != 0L) {
 			while (true) {
-				RemoteSlave rslave = getASlaveForFunction();
 				synchronized(getInode()) {
+					RemoteSlave rslave = getASlaveForFunction();
 					try {		
 						checksum = rslave.getCheckSumForPath(getPath());
 						setCheckSum(checksum);

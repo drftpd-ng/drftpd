@@ -41,7 +41,6 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
-import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -346,9 +345,5 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		} catch (SlaveUnavailableException e) {
 			//Error fetching SFV, ignore
 		}
-	}
-
-	private boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
-		return ((AsyncResponseZipCRCInfo) rslave.fetchResponse(index)).isOk();
 	}
 }
