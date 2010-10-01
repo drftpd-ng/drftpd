@@ -58,7 +58,7 @@ SITE WIPE {
 plugin org.drftpd.commands.dir
 class Dir
 method doSITE_WIPE
-perms =wipe
+perms =wipe =siteop
 help Deletes files without removing credits.
 help.specific ${command} [-r] <file/dir>
 help.specific Deletes files without removing credits. -r means delete recursively.

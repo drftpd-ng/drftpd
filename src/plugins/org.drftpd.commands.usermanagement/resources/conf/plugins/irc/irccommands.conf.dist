@@ -265,6 +265,17 @@ input all
 output source
 }
 
+banall {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_BANALL
+perms =ban =siteop
+help Ban all users from logging onto the site for a specified amount of time.
+help.specific ${command} <minutes> [reason]
+input all
+output source
+}
+
 unban {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
@@ -272,6 +283,17 @@ method doSITE_UNBAN
 perms =ban =siteop
 help Removes a ban for the specified user.
 help.specific ${command} <user>
+input all
+output source
+}
+
+unbanall {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_UNBANALL
+perms =ban =siteop
+help Removes ban from all users.
+help.specific ${command}
 input all
 output source
 }

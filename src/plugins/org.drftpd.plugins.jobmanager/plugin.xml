@@ -27,4 +27,35 @@
 		<parameter id="Class" value="org.drftpd.plugins.jobmanager.JobManager"/>
 	</extension>
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="JobManagerCommandHandler" />
+
+	<extension plugin-id="org.drftpd.plugins.jobmanager" point-id="PreHook" id="doSITE_ADDJOBPerm">
+		<parameter id="ParentMethod" value="doADDJOB" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.jobmanager" point-id="PreHook" id="doSITE_LISTJOBSPerm">
+		<parameter id="ParentMethod" value="doLISTJOBS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.jobmanager" point-id="PreHook" id="doSITE_REMOVEJOBPerm">
+		<parameter id="ParentMethod" value="doREMOVEJOB" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.jobmanager" point-id="PreHook" id="doSITE_STARTJOBSPerm">
+		<parameter id="ParentMethod" value="doSTARTJOBS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.jobmanager" point-id="PreHook" id="doSITE_STOPJOBSPerm">
+		<parameter id="ParentMethod" value="doSTOPJOBS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
 </plugin>
