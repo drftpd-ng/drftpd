@@ -117,7 +117,7 @@ public class BeanUserManager extends AbstractUserManager {
 	 * Meaning that the userfile does not exists.
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
-	private User loadUser(String userName) throws NoSuchUserException, UserFileException {
+	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
 		XMLDecoder xd = null;
 		try {
 			BeanUser user = null;
