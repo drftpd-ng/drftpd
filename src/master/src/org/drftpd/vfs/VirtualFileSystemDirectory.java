@@ -189,11 +189,11 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				continue;
 			}
 			if (inode.isDirectory()) {
-				set.add(new DirectoryHandle(path + inodeName));
+				set.add(new DirectoryHandle(path + inode.getName()));
 			} else if (inode.isFile()) {
-				set.add(new FileHandle(path + inodeName));
+				set.add(new FileHandle(path + inode.getName()));
 			} else if (inode.isLink()) {
-				set.add(new LinkHandle(path + inodeName));
+				set.add(new LinkHandle(path + inode.getName()));
 			}
 		}
 		return set;
