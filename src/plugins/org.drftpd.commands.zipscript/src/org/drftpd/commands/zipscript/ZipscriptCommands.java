@@ -43,12 +43,13 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.Session;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.vfs.ObjectNotValidException;
 
 /**
  * @author djb61
@@ -86,6 +87,7 @@ public class ZipscriptCommands extends CommandInterface {
 	public CommandResponse doSITE_RESCAN(CommandRequest request) throws ImproperUsageException {
 
 		Session session = request.getSession();
+		User user = session.getUserNull(request.getUser());
 		String startPath = null;
 		boolean recursive = false;
 		boolean forceRescan = false;
@@ -132,7 +134,7 @@ public class ZipscriptCommands extends CommandInterface {
 			DirectoryHandle workingDir = dirs.poll();
 			if (recursive) {
 				try {
-					dirs.addAll(workingDir.getSortedDirectories(request.getSession().getUserNull(request.getUser())));
+					dirs.addAll(workingDir.getSortedDirectories(user));
 				} catch (FileNotFoundException e1) {
 					session.printOutput(200,"Error recursively listing: "+workingDir.getPath());
 				}
@@ -163,12 +165,13 @@ public class ZipscriptCommands extends CommandInterface {
 					if (session.isAborted()) {
 						break;
 					}
-					FileHandle file = new FileHandle(workingDir.getPath()
-							+VirtualFileSystem.separator+sfvEntry.getKey());
+					FileHandle file = null;
 					Long sfvChecksum = sfvEntry.getValue();
+					String sfvEntryName = sfvEntry.getKey();
 					Long fileChecksum = 0L;
 					String status;
 					try {
+						file = workingDir.getFile(sfvEntry.getKey(), user);
 						if (forceRescan) {
 							fileChecksum = file.getCheckSumFromSlave();
 						} else {
@@ -176,12 +179,16 @@ public class ZipscriptCommands extends CommandInterface {
 						}
 					} catch (FileNotFoundException e3) {
 						session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
-								" SLAVE: " + file.getName() + " MISSING");
+								" SLAVE: " + sfvEntryName + " MISSING");
 						continue;
 					} catch (NoAvailableSlaveException e3) {
 						session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
-								" SLAVE: " + file.getName() + " OFFLINE");
+								" SLAVE: " + sfvEntryName + " OFFLINE");
 						continue;
+					} catch (ObjectNotValidException e3) {
+						session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
+								" SLAVE: " + sfvEntryName + " INVALID VFS ENTRY");
+						logger.error("Type error found in VFS, expected file " + sfvEntryName + " and found something else",e3);
 					}
 					if (fileChecksum == 0L) {
 						status = "FAILED - failed to checksum file";
