@@ -72,7 +72,7 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 			env.add("group", user.getGroup());
 			env.add("groups", user.getGroups());
 			env.add("averagespeed", Bytes.formatBytes((user.getDownloadedBytes()+user.getUploadedBytes())
-					/ (user.getDownloadedTime()+user.getUploadedTime()+1)));
+					/ (((user.getDownloadedTime()+user.getUploadedTime())/1000)+1)));
 			env.add("ipmasks", user.getHostMaskCollection().toString());
 			env.add("isbanned",""+ (user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date()).getTime() > System.currentTimeMillis()));
 		}
