@@ -17,11 +17,9 @@
  */
 package org.drftpd.master;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import org.apache.log4j.Logger;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -38,7 +36,6 @@ import org.drftpd.vfs.TransferPointer;
  * All calls to this class should be made through the TransferState object
  */
 public class RemoteTransfer {
-	private static final Logger logger = Logger.getLogger(RemoteTransfer.class);
 
 	private InetSocketAddress _address;
 

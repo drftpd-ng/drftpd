@@ -171,7 +171,7 @@ public class ZipscriptCommands extends CommandInterface {
 					Long fileChecksum = 0L;
 					String status;
 					try {
-						file = workingDir.getFile(sfvEntry.getKey(), user);
+						file = workingDir.getFile(sfvEntryName, user);
 						if (forceRescan) {
 							fileChecksum = file.getCheckSumFromSlave();
 						} else {

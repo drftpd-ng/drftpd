@@ -20,12 +20,9 @@ package org.drftpd.vfs;
 import java.util.TreeMap;
 
 @SuppressWarnings("serial")
-public class CaseInsensitiveTreeMap<K, V> extends TreeMap<K, V> {
+public class CaseInsensitiveTreeMap<K, V> extends TreeMap<String, V> {
 
-	private static CaseInsensitiveComparator<String> comparer = new CaseInsensitiveComparator<String>();
-
-	@SuppressWarnings("unchecked")
 	public CaseInsensitiveTreeMap() {
-		super(comparer);
+		super(String.CASE_INSENSITIVE_ORDER);
 	}
 }

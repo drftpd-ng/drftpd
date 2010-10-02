@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -46,28 +47,13 @@ import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
 
 public class VirtualFileSystem {
 
-	protected static final InodeHandleCaseInsensitiveComparator INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR = new InodeHandleCaseInsensitiveComparator();
+	protected static final InodeHandleCaseInsensitiveComparator INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR = 
+		new InodeHandleCaseInsensitiveComparator();
 
-	@SuppressWarnings("serial")
-	static class InodeHandleCaseInsensitiveComparator extends
-			CaseInsensitiveComparator<InodeHandle> {
+	static class InodeHandleCaseInsensitiveComparator implements Comparator<InodeHandle> {
 
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see org.drftpd.vfs.CaseInsensitiveComparator#compare(java.lang.Object,
-		 *      java.lang.Object)
-		 */
-		@Override
-		public int compare(Object arg0, Object arg1) {
-			if (!(arg0 instanceof InodeHandle)
-					|| !(arg1 instanceof InodeHandle)) {
-				throw new IllegalArgumentException(
-						"Can only compare classes of type InodeHandle");
-			}
-			InodeHandle ih0 = (InodeHandle) arg0;
-			InodeHandle ih1 = (InodeHandle) arg1;
-			return super.compare(ih0.getName(), ih1.getName());
+		public int compare(InodeHandle inode0, InodeHandle inode1) {
+			return String.CASE_INSENSITIVE_ORDER.compare(inode0.getName(), inode1.getName());
 		}
 	}
 
@@ -77,8 +63,7 @@ public class VirtualFileSystem {
 
 	public static final String fileSystemPath = "files";
 
-	private static final Logger logger = Logger
-			.getLogger(VirtualFileSystem.class.getName());
+	private static final Logger logger = Logger.getLogger(VirtualFileSystem.class);
 
 	public static final String separator = "/";
 
