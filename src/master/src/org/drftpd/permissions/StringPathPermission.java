@@ -20,6 +20,7 @@ package org.drftpd.permissions;
 import java.util.Collection;
 
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author mog
@@ -30,7 +31,7 @@ public class StringPathPermission extends PathPermission {
 
 	public StringPathPermission(String path, Collection<String> users) {
 		super(users);
-		_path = path;
+		_path = VirtualFileSystem.fixPath(path);
 	}
 
 	public boolean checkPath(DirectoryHandle path) {
