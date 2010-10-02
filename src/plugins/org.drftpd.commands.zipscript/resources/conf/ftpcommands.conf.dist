@@ -4,10 +4,11 @@ class ZipscriptCommands
 method doSITE_RESCAN
 perms *
 help sfv scans the files in the current directory or a specific directory requested.
-help.specific ${command} [-r] [force] [delete] [quiet] [path]
+help.specific ${command} [-r] [force] [delete] [delete0byte] [quiet] [path]
 help.specific     The -r option recursively scans all directories below the current directory as well.
 help.specific     The force option makes the slave recalculate the checksums.
 help.specific     The delete option removes bad files rather than just reporting them.
+help.specific     The delete0byte option removes any files listed in the SFV which exist but are 0 byte.
 help.specific     The quiet option only prints output for files which aren't good.
 help.specific     Specifying a path will rescan the requested directory instead of the current directory.
 }

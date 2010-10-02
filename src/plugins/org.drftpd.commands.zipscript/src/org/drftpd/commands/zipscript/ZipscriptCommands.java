@@ -92,6 +92,7 @@ public class ZipscriptCommands extends CommandInterface {
 		boolean recursive = false;
 		boolean forceRescan = false;
 		boolean deleteBad = false;
+		boolean deleteZeroByte = false;
 		boolean quiet = false;
 		StringTokenizer args = new StringTokenizer(request.getArgument());
 		while (args.hasMoreTokens()) {
@@ -102,6 +103,8 @@ public class ZipscriptCommands extends CommandInterface {
 				forceRescan = true;
 			} else if (arg.equalsIgnoreCase("delete")) {
 				deleteBad = true;
+			} else if (arg.equalsIgnoreCase("delete0byte")) {
+				deleteZeroByte = true;
 			} else if (arg.equalsIgnoreCase("quiet")) {
 				quiet = true;
 			} else if (arg.startsWith("/")) {
@@ -169,9 +172,11 @@ public class ZipscriptCommands extends CommandInterface {
 					Long sfvChecksum = sfvEntry.getValue();
 					String sfvEntryName = sfvEntry.getKey();
 					Long fileChecksum = 0L;
+					Long fileSize = 0L;
 					String status;
 					try {
 						file = workingDir.getFile(sfvEntryName, user);
+						fileSize = file.getSize();
 						if (forceRescan) {
 							fileChecksum = file.getCheckSumFromSlave();
 						} else {
@@ -189,9 +194,22 @@ public class ZipscriptCommands extends CommandInterface {
 						session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
 								" SLAVE: " + sfvEntryName + " INVALID VFS ENTRY");
 						logger.error("Type error found in VFS, expected file " + sfvEntryName + " and found something else",e3);
+						continue;
 					}
 					if (fileChecksum == 0L) {
-						status = "FAILED - failed to checksum file";
+						if (fileSize == 0L) {
+							status = "ZEROBYTE";
+							if (deleteZeroByte) {
+								try {
+									file.deleteUnchecked();
+									status += " - deleted";
+								} catch (FileNotFoundException e4) {
+									// File already gone, all is good
+								}
+							}
+						} else {
+							status = "FAILED - failed to checksum file";
+						}
 					} else if (sfvChecksum.longValue() == fileChecksum.longValue()) {
 						if (quiet) {
 							status = "";
