@@ -391,37 +391,7 @@ public class DataConnectionHandler extends CommandInterface {
 					conn.getControlSocket().getInetAddress().getHostAddress() +
 			" (usually in firewall settings)");
 		}
-		// get slave from PRET
-		TransferState ts = conn.getTransferState();
-		try {
-			if (ts.isPreTransfer() && !ts.isLocalPreTransfer()) {
-				// do SlaveSelection now since we're using PRET Active transfers
-				char direction = TransferState.getDirectionFromRequest(ts.getPretRequest());
-				if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-					ts.setTransferSlave(conn.getGlobalContext()
-							.getSlaveSelectionManager().getASlave(
-									conn,
-									Transfer.TRANSFER_SENDING_DOWNLOAD,
-									ts.getTransferFile()));
-				} else if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-					ts.setTransferSlave(conn.getGlobalContext()
-							.getSlaveSelectionManager().getASlave(
-									conn,
-									Transfer.TRANSFER_RECEIVING_UPLOAD,
-									ts.getTransferFile()));
-				}
-				response.addComment("Using "
-						+ (ts.isLocalPreTransfer() ? "master" :
-							ts.getTransferSlave().getName()+ ":" + ts.getTransferSlave().getPASVIP())
-							+ " for upcoming transfer");
-			}
-		} catch (SlaveUnavailableException e) {
-			// I don't want to deal with this at the PORT command, let's let it
-			// error at transfer()
-		} catch (NoAvailableSlaveException e) {
-			// I don't want to deal with this at the PORT command, let's let it
-			// error at transfer()
-		}
+
 		return response;
 	}
 
@@ -828,19 +798,6 @@ public class DataConnectionHandler extends CommandInterface {
 				} // else { ts.getTransferFile() is set, this is a PRET action
 			}
 
-			/* check credits
-            if (isRetr) {
-                if ((conn.getUserNull().getKeyedMap().getObjectFloat(
-                        UserManagement.RATIO) != 0)
-                        && (conn.getGlobalContext().getConfig()
-                                .getCreditLossRatio(_transferFile,
-                                        conn.getUserNull()) != 0)
-                        && (conn.getUserNull().getCredits() < _transferFile
-                                .length())) {
-                	// reset(); already done in finally block
-                    return new Reply(550, "Not enough credits.");
-                }
-            }*/
 
 			if (isStor && !ts.isPasv() && !ts.isPreTransfer()) {
 				//setup upload
@@ -890,8 +847,7 @@ public class DataConnectionHandler extends CommandInterface {
 				// reset(); already done in finally block
 			} else if (ts.isPASVUpload()) {
 				// do nothing at this point
-			} else if (!ts.isPreTransfer()) { // && ts.isPort()
-				// is a PORT command with no previous PRET command
+			} else if (ts.isPort()) {
 				try {
 					if (direction == Transfer.TRANSFER_SENDING_DOWNLOAD) {
 						ts.setTransferSlave(conn.getGlobalContext()
@@ -916,10 +872,6 @@ public class DataConnectionHandler extends CommandInterface {
 					// reset(); already done in finally block
 					return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
 				}
-			} else { // ts.isPreTransfer() && ts.isPort()
-				// they issued PRET before PORT
-				// let's honor that SlaveSelection
-				// ts.setTransferSlave() was already called in PRET
 			}
 
 			if (isStor) {

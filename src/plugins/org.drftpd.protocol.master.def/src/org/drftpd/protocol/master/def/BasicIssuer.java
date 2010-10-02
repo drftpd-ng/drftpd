@@ -16,7 +16,6 @@
  */
 package org.drftpd.protocol.master.def;
 
-import org.apache.log4j.Logger;
 import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
@@ -31,7 +30,6 @@ import org.drftpd.slave.async.AsyncCommandArgument;
  * @version $Id$
  */
 public class BasicIssuer extends AbstractBasicIssuer {
-	private static final Logger logger = Logger.getLogger(BasicIssuer.class);
 	public String issueChecksumToSlave(RemoteSlave rslave, String path)	throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
 		rslave.sendCommand(new AsyncCommandArgument(index, "checksum", path));
@@ -89,12 +87,8 @@ public class BasicIssuer extends AbstractBasicIssuer {
 	}
 
 	public String issuePingToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		logger.debug("Fetching index to issue ping");
 		String index = rslave.fetchIndex();
-		AsyncCommand ar = new AsyncCommand(index, "ping");
-		logger.debug("About to issue ping command to slave " + ar);
 		rslave.sendCommand(new AsyncCommand(index, "ping"));
-		logger.debug("Successfully issued ping command to slave" + ar);
 
 		return index;
 	}
