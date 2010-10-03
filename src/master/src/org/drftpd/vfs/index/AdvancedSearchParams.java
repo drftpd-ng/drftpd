@@ -32,6 +32,7 @@ public class AdvancedSearchParams {
 
 	private String _name = "";
 	private String _fullname = "";
+	private String _endsWith = "";
 	private InodeType _inodeType = InodeType.ANY;
 	private Set<String> _slaves = Collections.emptySet();
 	private String _user = "*";
@@ -54,6 +55,10 @@ public class AdvancedSearchParams {
 
 	public void setFullName(String fullname) {
 		_fullname = fullname;
+	}
+
+	public void setEndsWith(String endsWith) {
+		_endsWith = endsWith;
 	}
 
 	public void setInodeType(InodeType type) {
@@ -106,6 +111,10 @@ public class AdvancedSearchParams {
 
 	public String getFullName() {
 		return _fullname;
+	}
+
+	public String getEndsWith() {
+		return _endsWith;
 	}
 	
 	public InodeType getInodeType() {

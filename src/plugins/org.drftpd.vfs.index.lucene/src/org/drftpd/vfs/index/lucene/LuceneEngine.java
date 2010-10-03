@@ -93,18 +93,19 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Document INDEX_DOCUMENT = new Document();
 	
 	private static final Field FIELD_NAME = new Field("name", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_FULL_NAME = new Field("fullname", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_FULL_NAME = new Field("fullName", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_FULL_NAME_REVERSE = new Field("fullNameReverse", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_FULL_PATH = new Field("fullPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastmodified", Field.Store.YES, Boolean.TRUE);
+	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.YES, Boolean.TRUE);
 	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.YES, Boolean.TRUE);
 	
 	private static final Field[] FIELDS = new Field[] {
-		FIELD_NAME, FIELD_FULL_NAME, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
+		FIELD_NAME, FIELD_FULL_NAME, FIELD_FULL_NAME_REVERSE, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
 	};
 	private static final NumericField[] NUMERICFIELDS = new NumericField[] {
 		FIELD_LASTMODIFIED, FIELD_SIZE
@@ -126,7 +127,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
 	
 	private static final Term TERM_NAME = new Term("name", "");
-	private static final Term TERM_FULL_NAME = new Term("fullname", "");
+	private static final Term TERM_FULL_NAME = new Term("fullName", "");
+	private static final Term TERM_FULL_NAME_REVERSE = new Term("fullNameReverse", "");
 	private static final Term TERM_PARENT = new Term("parentPath", "");
 	private static final Term TERM_FULL = new Term("fullPath", "");
 
@@ -247,13 +249,15 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * are stored in the index are:
 	 * <ul>
 	 * <li>name - The name of the inode</li>
+	 * <li>fullName - The full name of the inode</li>
+	 * <li>fullNameReverse - The full name of the inode in reverse order</li>
 	 * <li>parentPath - The full path of the parent inode</li>
 	 * <li>fullPath - The full path of the inode</li>
 	 * <li>owner - The user who owns the file</li>
 	 * <li>group - The group of the user who owns the file</li>
 	 * <li>type - File or Directory</li>
 	 * <li>slaves - If the inode is a file, then the slaves are stored</li>
-	 * <li>lastmodified - Timestamp of when the inode was last modified</li>
+	 * <li>lastModified - Timestamp of when the inode was last modified</li>
 	 * <li>size - The size of the inode</li>
 	 * </ul>
 	 * 
@@ -267,6 +271,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		synchronized (INDEX_DOCUMENT) {
 			FIELD_NAME.setValue(inode.getName());
 			FIELD_FULL_NAME.setValue(inode.getName());
+			FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
 			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
 			if (inode.isDirectory())
 				FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
@@ -291,10 +296,6 @@ public class LuceneEngine implements IndexEngineInterface {
 		
 		return INDEX_DOCUMENT;
 	}
-
-	private Term makeNameTermFromInode(InodeHandle inode) {
-		return TERM_NAME.createTerm(inode.getName());
-	}
 	
 	private Term makeFullPathTermFromInode(InodeHandle inode) {
 		if (inode.isDirectory())
@@ -316,6 +317,11 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private WildcardQuery makeFullNameWildcardQueryFromString(String name) {
 		return new WildcardQuery(TERM_FULL_NAME.createTerm(name));
+	}
+
+	private PrefixQuery makeFullNameReversePrefixQueryFromString(String name) {
+		name = new StringBuilder(name).reverse().toString();
+		return new PrefixQuery(TERM_FULL_NAME_REVERSE.createTerm(name));
 	}
 
 	private TermQuery makeOwnerTermQueryFromString(String owner) {
@@ -478,7 +484,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @param params
 	 *            Search options.
 	 */
-	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params) throws IndexException {
+	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params)
+			throws IndexException, IllegalArgumentException {
 		IndexSearcher iSearcher = null;
 		try {
 			Map<String,String> inodes = new LinkedHashMap<String,String>();
@@ -521,7 +528,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			if (params.getMinAge() != 0L || params.getMaxAge() != 0L) {
-				Query ageQuery = NumericRangeQuery.newLongRange("lastmodified",
+				Query ageQuery = NumericRangeQuery.newLongRange("lastModified",
 						params.getMinAge(), params.getMaxAge(), true, true);
 				query.add(ageQuery, Occur.MUST);
 			}
@@ -532,14 +539,21 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(sizeQuery, Occur.MUST);
 			}
 
-			if (!params.getFullName().isEmpty()) {
-				query.add(makeFullNameWildcardQueryFromString(params.getFullName()), Occur.MUST);
-			} else if (!params.getName().isEmpty()) {
+			if (!params.getName().isEmpty()) {
 				Query nameQuery = analyze("name", TERM_NAME, params.getName());
 				query.add(nameQuery, Occur.MUST);
+			} else if (!params.getFullName().isEmpty()) {
+				int wc1 = params.getFullName().indexOf("*");
+				int wc2 = params.getFullName().indexOf("?");
+				if ((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3)) {
+					throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
+				}
+				query.add(makeFullNameWildcardQueryFromString(params.getFullName()), Occur.MUST);
+			} else if (!params.getEndsWith().isEmpty()) {
+				query.add(makeFullNameReversePrefixQueryFromString(params.getEndsWith()), Occur.MUST);
 			}
 
-			if (params.getSortField().equalsIgnoreCase("lastmodified") ||
+			if (params.getSortField().equalsIgnoreCase("lastModified") ||
 					params.getSortField().equalsIgnoreCase("size")) {
 				setSortField(params.getSortField(), SortField.LONG, params.getSortOrder());
 			} else if (params.getSortField().equalsIgnoreCase("parentPath") ||

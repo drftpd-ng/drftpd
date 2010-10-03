@@ -175,6 +175,8 @@ public class Search extends CommandInterface {
 				params.setName(st.nextToken(""));
 			} else if (option.equalsIgnoreCase("-fullname")) {
 				params.setFullName(st.nextToken());
+			} else if (option.equalsIgnoreCase("-endswith")) {
+				params.setEndsWith(st.nextToken());
 			} else if (option.equalsIgnoreCase("-limit")) {
 				try {
 					int newLimit = Integer.parseInt(st.nextToken());
@@ -201,6 +203,8 @@ public class Search extends CommandInterface {
 		try {
 			inodes = ie.advancedFind(request.getCurrentDirectory(), params);
 		} catch (IndexException e) {
+			return new CommandResponse(550, e.getMessage());
+		} catch (IllegalArgumentException e) {
 			return new CommandResponse(550, e.getMessage());
 		}
 

@@ -17,9 +17,11 @@ help.specific Options: -size <min size> <max size>
 help.specific Options: -sort <field> <asc|desc>
 help.specific Valid sort fields: parentPath fullPath(default) owner group type lastmodified size
 help.specific Options: -limit <number>
-help.specific Options: -fullname <name>
 help.specific Options: -name <word> [word ..]
 help.specific Name MUST be the last option in the command.
+help.specific Options: -fullname <name>
+help.specific Wildcards(* and ?) available but not within the first three chars.
+help.specific Options: -endswith <name>
 help.specific Multiple options are allowed. If multiple options are given a file/dir must match all options.
 input all
 output source
