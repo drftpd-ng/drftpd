@@ -1968,16 +1968,20 @@ public class UserManagementHandler extends CommandInterface {
 	}
 
 	public CommandResponse doSpeed(CommandRequest request) {
+		String userName = "";
 		if (!request.hasArgument()) {
-			User user;
-			try {
-				user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getUser());
-				request.setArgument(user.getName());
-			} catch (NoSuchUserException e) {
-				// just continue
-			} catch (UserFileException e) {
-				// just continue
-			}
+			userName = request.getUser();
+			request.setArgument(userName);
+		} else {
+			userName = request.getArgument();
+		}
+		User user;
+		try {
+			user = GlobalContext.getGlobalContext().getUserManager().getUserByName(userName);
+		} catch (NoSuchUserException e) {
+			return new CommandResponse(501, "Invalid username!");
+		} catch (UserFileException e) {
+			return new CommandResponse(500, "User file corrupt: " + e.getMessage());
 		}
 		return doListConnections(request, "speed", true, true, true, false, false, false, true);
 	}
