@@ -2814,7 +2814,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 						cmdOutputs.add(getUserDetails(sender,ident).getOutputWriter());
 					}
 				} else if (token.startsWith("#")) {
-					cmdOutputs.add(_writers.get(token));
+					if (_writers.containsKey(token)) {
+						cmdOutputs.add(_writers.get(token));
+					}
 				}
 			}
 			// Check if we found valid outputs and if so proceed
