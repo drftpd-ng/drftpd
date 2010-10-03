@@ -92,8 +92,14 @@ public class StatsPostHook implements PostHookInterface {
 			// Delete failed, abort update
 			return;
 		}
+
+		if (!response.getObjectBoolean(Dir.ISFILE)) {
+			return;
+		}
+
 		String userName = response.getObject(Dir.USERNAME, null);
-		long fileSize  = response.getObject(Dir.FILESIZE, 0L);
+		long fileSize  = response.getObjectLong(Dir.FILESIZE);
+		long xferTime = response.getObjectLong(Dir.XFERTIME);
 
 		try {
 			DirectoryHandle dir = request.getCurrentDirectory();
@@ -108,7 +114,8 @@ public class StatsPostHook implements PostHookInterface {
 			// updating stats
 			if (!GlobalContext.getConfig().checkPathPermission("nostatsup", user, dir)) {
 				user.updateUploadedBytes(-fileSize);
-				// TODO uploaded files/time?
+				user.updateUploadedFiles(-1);
+				user.updateUploadedTime(-xferTime);
 			}
 
 			user.commit();

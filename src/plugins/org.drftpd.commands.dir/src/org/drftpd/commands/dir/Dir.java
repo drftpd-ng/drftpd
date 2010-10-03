@@ -66,6 +66,8 @@ public class Dir extends CommandInterface {
 	public static final Key<String> USERNAME = new Key<String>(Dir.class, "username");
 	public static final Key<Long> FILESIZE = new Key<Long>(Dir.class, "fileSize");
 	public static final Key<String> FILENAME = new Key<String>(Dir.class, "fileName");
+	public static final Key<Boolean> ISFILE = new Key<Boolean>(Dir.class, "isFile");
+	public static final Key<Long> XFERTIME = new Key<Long>(Dir.class, "xferTime");
 
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>
@@ -127,6 +129,8 @@ public class Dir extends CommandInterface {
 		response.setObject(FILENAME, victim.getName());
 		response.setObject(FILESIZE, Long.valueOf(victim.getSize()));
 		response.setObject(USERNAME, victim.getUsername());
+		response.setObject(ISFILE, victim.isFile());
+		response.setObject(XFERTIME, victim.isFile() ? ((FileHandle)victim).getXfertime() : 0L);
 	}
 
 	/**
