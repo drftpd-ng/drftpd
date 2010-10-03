@@ -139,45 +139,38 @@ public class TransferStatistics extends CommandInterface  {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		UserManager userman = GlobalContext.getGlobalContext().getUserManager();
-		response.addComment("created: " +
-				user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
-		response.addComment("rank alup: " +
-				UserTransferStats.getStatsPlace("ALUP", user, userman));
-		response.addComment("rank aldn: " +
-				UserTransferStats.getStatsPlace("ALDN", user, userman));
-		response.addComment("rank monthup: " +
-				UserTransferStats.getStatsPlace("MONTHUP", user, userman));
-		response.addComment("rank monthdn: " +
-				UserTransferStats.getStatsPlace("MONTHDN", user, userman));
-		response.addComment("rank wkup: " +
-				UserTransferStats.getStatsPlace("WKUP", user, userman));
-		response.addComment("rank wkdn: " +
-				UserTransferStats.getStatsPlace("WKDN", user, userman));
 
-		//        response.addComment("races won: " + user.getObject2());
-		//        response.addComment("races lost: " + user.getRacesLost());
-		//        response.addComment("races helped: " + user.getRacesParticipated());
-		//        response.addComment("requests made: " + user.getRequests());
-		//        response.addComment("requests filled: " + user.getRequestsFilled());
-		//        response.addComment("nuked " + user.getTimesNuked() + " times for " +
-		//            user.getNukedBytes() + " bytes");
-		response.addComment("        FILES		BYTES");
-		response.addComment("ALUP   " + user.getUploadedFiles() + "	" +
-				Bytes.formatBytes(user.getUploadedBytes()));
-		response.addComment("ALDN   " + user.getDownloadedFiles() + "	" +
-				Bytes.formatBytes(user.getDownloadedBytes()));
-		response.addComment("MNUP   " + user.getUploadedFilesMonth() + "	" +
-				Bytes.formatBytes(user.getUploadedBytesMonth()));
-		response.addComment("MNDN   " + user.getDownloadedFilesMonth() + "	" +
-				Bytes.formatBytes(user.getDownloadedBytesMonth()));
-		response.addComment("WKUP   " + user.getUploadedFilesWeek() + "	" +
-				Bytes.formatBytes(user.getUploadedBytesWeek()));
-		response.addComment("WKDN   " + user.getDownloadedFilesWeek() + "	" +
-				Bytes.formatBytes(user.getDownloadedBytesWeek()));
-		response.addComment("DAYUP   " + user.getUploadedFilesDay() + "     " +
-				Bytes.formatBytes(user.getUploadedBytesDay()));
-		response.addComment("DAYDN   " + user.getDownloadedFilesDay() +
-				"       " + Bytes.formatBytes(user.getDownloadedBytesDay()));
+		ReplacerEnvironment env = new ReplacerEnvironment();
+
+		env.add("created", user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
+		
+		env.add("aluprank", UserTransferStats.getStatsPlace("ALUP", user, userman));
+		env.add("aldnrank", UserTransferStats.getStatsPlace("ALDN", user, userman));
+		env.add("mnuprank", UserTransferStats.getStatsPlace("MONTHUP", user, userman));
+		env.add("mndnrank", UserTransferStats.getStatsPlace("MONTHDN", user, userman));
+		env.add("wkuprank", UserTransferStats.getStatsPlace("WKUP", user, userman));
+		env.add("wkdnrank", UserTransferStats.getStatsPlace("WKDN", user, userman));
+		env.add("dayuprank", UserTransferStats.getStatsPlace("DAYUP", user, userman));
+		env.add("daydnrank", UserTransferStats.getStatsPlace("DAYDN", user, userman));
+
+		env.add("alupfiles", user.getUploadedFiles());
+		env.add("alupbytes", Bytes.formatBytes(user.getUploadedBytes()));
+		env.add("aldnfiles", user.getDownloadedFiles());
+		env.add("aldnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
+		env.add("mnupfiles", user.getUploadedFilesMonth());
+		env.add("mnupbytes", Bytes.formatBytes(user.getUploadedBytesMonth()));
+		env.add("mndnfiles", user.getDownloadedFilesMonth());
+		env.add("mndnbytes", Bytes.formatBytes(user.getDownloadedBytesMonth()));
+		env.add("wkupfiles", user.getUploadedFilesWeek());
+		env.add("wkupbytes", Bytes.formatBytes(user.getUploadedBytesWeek()));
+		env.add("wkdnfiles", user.getDownloadedFilesWeek());
+		env.add("wkdnbytes", Bytes.formatBytes(user.getDownloadedBytesWeek()));
+		env.add("dayupfiles", user.getUploadedFilesDay());
+		env.add("dayupbytes", Bytes.formatBytes(user.getUploadedBytesDay()));
+		env.add("daydnfiles", user.getDownloadedFilesDay());
+		env.add("daydnbytes", Bytes.formatBytes(user.getDownloadedBytesDay()));
+
+		response.addComment(session.jprintf(_bundle, _keyPrefix + "stats", env,	request.getUser()));
 
 		return response;
 	}
