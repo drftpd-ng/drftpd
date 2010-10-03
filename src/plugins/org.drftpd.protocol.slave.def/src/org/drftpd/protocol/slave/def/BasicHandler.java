@@ -253,9 +253,10 @@ public class BasicHandler extends AbstractHandler {
 		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
 
 		boolean inodesModified = false;
+		long pathLastModified = rootCollection.getLastModifiedForPath(path);
 		// Need to check the last modified of the parent itself to detect where
 		// files have been deleted but none changed or added
-		if (partialRemerge && rootCollection.getLastModifiedForPath(path) > skipAgeCutoff) {
+		if (partialRemerge && pathLastModified > skipAgeCutoff) {
 			inodesModified = true;
 		}
 		for (String inode : inodes) {
@@ -293,7 +294,7 @@ public class BasicHandler extends AbstractHandler {
 			fileList.add(new LightRemoteInode(file));
 		}
 		if (!partialRemerge || inodesModified) {
-			sendResponse(new AsyncResponseRemerge(path, fileList));
+			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
 			logger.debug("Sending " + path + " to the master");
 		} else {
 			logger.debug("Skipping send of " + path + " as no files changed since last merge");

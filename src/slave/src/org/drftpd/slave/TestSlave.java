@@ -144,10 +144,10 @@ public class TestSlave extends Slave {
         	List<LightRemoteInode> mergeFiles = new ArrayList<LightRemoteInode>();
         	
         	mergeFiles.add(new LightRemoteInode("ps2dvd",System.currentTimeMillis(), 0));
-        	sendResponse(new AsyncResponseRemerge("/", mergeFiles));
+        	sendResponse(new AsyncResponseRemerge("/", mergeFiles, System.currentTimeMillis()));
         	mergeFiles.clear();
         	mergeFiles.add(new LightRemoteInode("c4testsagain",System.currentTimeMillis(), 100));
-        	sendResponse(new AsyncResponseRemerge("\\ps2dvd", mergeFiles));
+        	sendResponse(new AsyncResponseRemerge("\\ps2dvd", mergeFiles, System.currentTimeMillis()));
         	return new AsyncResponse(ac.getIndex());
         }
 

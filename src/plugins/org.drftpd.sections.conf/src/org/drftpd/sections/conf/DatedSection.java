@@ -153,7 +153,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			logger.debug("Section directory was not found while creating" +
 					"dated directory: " + dateDirName + ", creating it.");
 			try {
-				getBaseDirectory().getParent().createDirectoryRecursive(getBaseDirectory().getName());
+				getBaseDirectory().getParent().createDirectoryRecursive(getBaseDirectory().getName(), true);
 			} catch (FileExistsException e) {
 				// this is good, continue
 			} catch (FileNotFoundException e) {

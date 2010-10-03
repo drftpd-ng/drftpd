@@ -83,7 +83,7 @@ public class PlainSection implements ConfigurableSectionInterface {
 		try {
 			String path = getCurrentDirectory().getPath();
 			DirectoryHandle dir = new DirectoryHandle(VirtualFileSystem.stripLast(path));		
-			dir.createDirectoryRecursive(VirtualFileSystem.getLast(path));
+			dir.createDirectoryRecursive(VirtualFileSystem.getLast(path), true);
 		} catch (FileExistsException e) {
 			// good the file exists, no need to create it.
 		} catch (FileNotFoundException e) {

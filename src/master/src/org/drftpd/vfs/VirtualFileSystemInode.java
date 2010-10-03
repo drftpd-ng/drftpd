@@ -40,7 +40,7 @@ import org.drftpd.master.Commitable;
 public abstract class VirtualFileSystemInode implements Commitable {
 
 	protected static final Logger logger = Logger
-			.getLogger(VirtualFileSystemInode.class.getName());
+			.getLogger(VirtualFileSystemInode.class);
 
 	/**
 	 * @return the VirtualFileSystem instance.
@@ -148,6 +148,12 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		if (getParent() instanceof VirtualFileSystemRoot) {
 			return VirtualFileSystem.separator + getName();
 		}
+		if (getParent() == null) {
+			logger.error("Parent is null");
+		}
+		if (getName() == null) {
+			logger.error("Name is null");
+		}
 		return getParent().getPath() + VirtualFileSystem.separator + getName();
 	}
 
@@ -228,7 +234,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		}
 		_name = VirtualFileSystem.getLast(destination);
 		_parent = destinationDir;
-		_parent.addChild(this);
+		_parent.addChild(this, true);
 		fileString = fileString + ",(" + this + ")";
 		logger.info(fileString);
 		getVFS().notifyInodeRenamed(source,this);

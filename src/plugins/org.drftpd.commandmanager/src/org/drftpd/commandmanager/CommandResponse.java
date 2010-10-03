@@ -21,8 +21,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.vfs.DirectoryHandle;
@@ -33,7 +31,6 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 @SuppressWarnings("serial")
 public class CommandResponse extends KeyedMap<Key<?>, Object> implements CommandResponseInterface {
-	private static final Logger logger = Logger.getLogger(CommandResponse.class);
 	
 	public static final Key<Integer> CODE = new Key<Integer>(CommandResponse.class, "code");
 
@@ -86,7 +83,6 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 				_comments.add(lines[i]);
 			}
 		} else {
-			logger.debug("FTP Response - " + resp);
 			_comments.add(resp);
 		}
 		setObject(CommandResponse.COMMENT, _comments);

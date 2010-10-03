@@ -24,7 +24,7 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 	}
 
 	public VirtualFileSystemRoot(String user, String group) {
-		super(user, group);
+		super(user, group, true);
 		setName(VirtualFileSystem.separator);
 	}
 

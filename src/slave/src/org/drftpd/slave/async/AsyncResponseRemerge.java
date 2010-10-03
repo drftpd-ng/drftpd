@@ -32,9 +32,11 @@ public class AsyncResponseRemerge extends AsyncResponse {
 	private List<LightRemoteInode> _inodes;
 
 	private String _path;
+	
+	private long _lastModified;
 
 	public AsyncResponseRemerge(String directoryPath,
-			List<LightRemoteInode> inodes) {
+			List<LightRemoteInode> inodes, long lastModified) {
 		super("Remerge");
 		if (File.separatorChar == '\\') { // stupid win32 hack
 			directoryPath = directoryPath.replaceAll("\\\\", "/");
@@ -48,6 +50,7 @@ public class AsyncResponseRemerge extends AsyncResponse {
 		}
 		_path = directoryPath;
 		_inodes = inodes;
+		_lastModified = lastModified;
 	}
 
 	public String getPath() {
@@ -56,6 +59,10 @@ public class AsyncResponseRemerge extends AsyncResponse {
 
 	public List<LightRemoteInode> getFiles() {
 		return Collections.unmodifiableList(_inodes);
+	}
+	
+	public long getLastModified() {
+		return _lastModified;
 	}
 
 	public String toString() {

@@ -91,7 +91,7 @@ public class Request extends CommandInterface {
 
     	if (_createRequestPath && !requestDir.exists()) {
     		try {
-				requestDir.getParent().createDirectoryRecursive(requestDir.getName());
+				requestDir.getParent().createDirectoryRecursive(requestDir.getName(), true);
 			} catch (FileExistsException e) {
 				logger.error("Tried to create a directory that already exists during request plugin initialization.", e);
 			} catch (FileNotFoundException e) {

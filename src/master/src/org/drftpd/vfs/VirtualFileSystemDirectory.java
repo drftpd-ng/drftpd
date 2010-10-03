@@ -44,23 +44,31 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	protected static final Collection<String> transientListDirectory = Arrays
 			.asList(new String[] { "name", "parent", "files"});
 
-	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = null;
+	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = 
+		new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
+
+	private transient boolean _transientLastModified;
 
 	protected long _size = 0;
 
 	public VirtualFileSystemDirectory(String user, String group) {
 		super(user, group);
-		_files = new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
+	}
+	
+	protected VirtualFileSystemDirectory(String user, String group, boolean transientLastModified) {
+		super(user,group);
+		_transientLastModified = transientLastModified;
 	}
 	
 	/**
 	 * Add another inode to the directory tree.
 	 * @param inode
 	 */
-	protected synchronized void addChild(VirtualFileSystemInode inode) {
+	protected synchronized void addChild(VirtualFileSystemInode inode, boolean updateLastModified) {
 		_files.put(inode.getName(), new SoftReference<VirtualFileSystemInode>(
 				inode));
-		if (getLastModified() < inode.getLastModified()) {
+		if (updateLastModified && 
+				(getLastModified() < inode.getLastModified() || _transientLastModified)) {
 			setLastModified(inode.getLastModified());
 		}
 		addSize(inode.getSize());
@@ -83,16 +91,27 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 */
 	public synchronized void createDirectory(String name, String user,
 			String group) throws FileExistsException {
+		createDirectory(name, user, group, false);
+	}
+	
+	/**
+	 * Create a directory inside the current Directory.
+	 * @param name
+	 * @param user
+	 * @param group
+	 * @param transientLastModified
+	 * @throws FileExistsException if this directory already exists.
+	 */
+	protected synchronized void createDirectory(String name, String user,
+			String group, boolean transientLastModified) throws FileExistsException {
 		if (_files.containsKey(name)) {
 			throw new FileExistsException("An object named " + name
 					+ " already exists in " + getPath());
 		}
-		VirtualFileSystemDirectory inode = createDirectoryRaw(name, user, group);
+		VirtualFileSystemDirectory inode = createDirectoryRaw(name, user, group, transientLastModified);
 		
 		getVFS().notifyInodeCreated(inode);
 	}
-	
-	
 
 	/**
 	 * Do not use this method unless you REALLY know what you're doing. This
@@ -102,14 +121,31 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @param name
 	 * @param user
 	 * @param group
+	 * @return the created directory
 	 */
 	protected VirtualFileSystemDirectory createDirectoryRaw(String name, String user, String group) {
+		return createDirectoryRaw(name, user, group, false);
+	}
+	
+	/**
+	 * Do not use this method unless you REALLY know what you're doing. This
+	 * method should only be used in two cases, in the createDirectory(string,
+	 * string, string) method of this class and in VirtualFileSystem.loadInode()
+	 * 
+	 * @param name
+	 * @param user
+	 * @param group
+	 * @param transientLastModified
+	 * @return the created directory
+	 */
+	protected VirtualFileSystemDirectory createDirectoryRaw(String name, String user,
+			String group, boolean transientLastModified) {
 		VirtualFileSystemDirectory inode = new VirtualFileSystemDirectory(user,
-				group);
+				group, transientLastModified);
 		inode.setName(name);
 		inode.setParent(this);
 		inode.commit();
-		addChild(inode);
+		addChild(inode, !transientLastModified);
 		logger.info("createDirectory(" + inode + ")");
 		
 		return inode;
@@ -125,6 +161,21 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 */
 	public synchronized void createFile(String name, String user, String group,
 			String initialSlave) throws FileExistsException {
+		createFile(name, user, group, initialSlave, 0L, false);
+	}
+
+	/**
+	 * Create a file inside the current directory.
+	 * @param name
+	 * @param user
+	 * @param group
+	 * @param initialSlave
+	 * @param lastModified
+	 * @param setLastModified
+	 * @throws FileExistsException if this file already exists.
+	 */
+	protected synchronized void createFile(String name, String user, String group,
+			String initialSlave, long lastModified, boolean setLastModified) throws FileExistsException {
 		if (_files.containsKey(name)) {
 			throw new FileExistsException(name + " already exists");
 		}
@@ -132,8 +183,11 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				0, initialSlave);
 		inode.setName(name);
 		inode.setParent(this);
+		if (setLastModified) {
+			inode.setLastModified(lastModified);
+		}
 		inode.commit();
-		addChild(inode);
+		addChild(inode, true);
 		commit();
 		logger.info("createFile(" + inode + ")");
 		
@@ -158,7 +212,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.setName(name);
 		inode.setParent(this);
 		inode.commit();
-		addChild(inode);
+		addChild(inode, true);
 		commit();
 		logger.info("createLink(" + inode + ")");
 		
@@ -312,6 +366,18 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		if (_files.remove(name) != null) {
 			setLastModified(System.currentTimeMillis());
 			commit();
+		}
+	}
+
+	@Override
+	public void setLastModified(long modified) {
+		_transientLastModified = false;
+		super.setLastModified(modified);
+	}
+	
+	protected synchronized void compareAndUpdateLastModified(long lastModified) {
+		if (getLastModified() < lastModified || _transientLastModified) {
+			setLastModified(lastModified);
 		}
 	}
 }

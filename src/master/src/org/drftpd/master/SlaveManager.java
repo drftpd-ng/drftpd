@@ -658,7 +658,7 @@ class RemergeThread extends Thread {
 			DirectoryHandle dir = new DirectoryHandle(msg.getDirectory());
 
 			try {
-				dir.remerge(msg.getFiles(), msg.getRslave());
+				dir.remerge(msg.getFiles(), msg.getRslave(), msg.getLastModified());
 			} catch (IOException e2) {
 				logger.error("IOException during remerge", e2);
 				msg.getRslave().setOffline("IOException during remerge");

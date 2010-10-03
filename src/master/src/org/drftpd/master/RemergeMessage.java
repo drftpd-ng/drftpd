@@ -56,4 +56,8 @@ public class RemergeMessage {
 	public List<LightRemoteInode> getFiles() {
 		return _response.getFiles();
 	}
+
+	public long getLastModified() {
+		return _response.getLastModified();
+	}
 }
