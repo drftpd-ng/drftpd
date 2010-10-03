@@ -116,6 +116,10 @@ public class DataConnectionHandler extends CommandInterface {
 			conn.setControlSocket(s2);
 			s2.setUseClientMode(false);
 			s2.setSoTimeout(10000);
+			String[] cipherSuites = GlobalContext.getConfig().getCipherSuites();
+			if (cipherSuites != null && cipherSuites.length > 0) {
+				s2.setEnabledCipherSuites(GlobalContext.getConfig().getCipherSuites());
+			}
 			s2.startHandshake();
 			conn.authDone();
 		} catch (IOException e) {

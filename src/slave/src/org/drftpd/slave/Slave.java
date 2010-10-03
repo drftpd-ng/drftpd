@@ -150,10 +150,7 @@ public class Slave {
 		if (cipherSuites.size() == 0) {
 			_cipherSuites = null;
 		} else {
-			_cipherSuites = new String[cipherSuites.size()];
-			for (int x = 0; x < _cipherSuites.length; x++) {
-				_cipherSuites[x] = cipherSuites.get(x);
-			}
+			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
 		}
 
 		_sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");

@@ -77,6 +77,8 @@ public class ConfigManager implements ConfigInterface {
 	private int _maxUsersTotal = Integer.MAX_VALUE;
 	private int _maxUsersExempt = 0;
 	
+	private String[] _cipherSuites = null;
+	
 	/**
 	 * Reload all VFSPermHandlers and ConfigHandlers.
 	 * Also re-read the config files.
@@ -85,6 +87,7 @@ public class ConfigManager implements ConfigInterface {
 		loadVFSPermissions();
 		loadConfigHandlers();
 		loadMainProperties();
+		parseCipherSuites();
 		
 		initializeKeyedMap();
 		
@@ -158,6 +161,23 @@ public class ConfigManager implements ConfigInterface {
 		}
 	}
 	
+	private void parseCipherSuites() {
+		ArrayList<String> cipherSuites = new ArrayList<String>();
+		for (int x = 1;; x++) {
+			String cipherSuite = _mainCfg.getProperty("cipher." + x);
+			if (cipherSuite != null) {
+				cipherSuites.add(cipherSuite);
+			} else {
+				break;
+			}
+		}
+		if (cipherSuites.size() == 0) {
+			_cipherSuites = null;
+		} else {
+			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
+		}
+	}
+	
 	/**
 	 * Initializes the KeyedMap.
 	 * @see #getKeyedMap()
@@ -228,8 +248,7 @@ public class ConfigManager implements ConfigInterface {
 						ips.add(InetAddress.getByName(st.nextToken()));
 					}
 					_bouncerIps = ips;
-				} // TODO cipher suites.
-				else {
+				} else {
 					handleLine(drct, st);
 				}			
 			}
@@ -366,7 +385,6 @@ public class ConfigManager implements ConfigInterface {
 	}
 
 	public String[] getCipherSuites() {
-		// TODO Auto-generated method stub
-		return null;
+		return _cipherSuites;
 	}
 }
