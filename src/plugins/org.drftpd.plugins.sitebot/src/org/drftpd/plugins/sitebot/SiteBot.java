@@ -3033,6 +3033,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	protected void terminate(String reason) {
 		_isTerminated = true;
 		quitServer(reason);
+		_pool.shutdown();
 		dispose();
 	}
 
