@@ -75,7 +75,8 @@ public class Search extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		params.setFullName(request.getArgument());
+		params.setName(request.getArgument());
+		params.setExact(true);
 		params.setLimit(Integer.parseInt(request.getProperties().getProperty("limit","5")));
 
 		return advSearch(request, params);
@@ -172,9 +173,9 @@ public class Search extends CommandInterface {
 					params.setSortOrder(true);
 				}
 			} else if (option.equalsIgnoreCase("-name")) {
-				params.setName(st.nextToken(""));
-			} else if (option.equalsIgnoreCase("-fullname")) {
-				params.setFullName(st.nextToken());
+				params.setName(st.nextToken("").trim());
+			} else if (option.equalsIgnoreCase("-exact")) {
+				params.setExact(true);
 			} else if (option.equalsIgnoreCase("-endswith")) {
 				params.setEndsWith(st.nextToken());
 			} else if (option.equalsIgnoreCase("-limit")) {
@@ -203,8 +204,10 @@ public class Search extends CommandInterface {
 		try {
 			inodes = ie.advancedFind(request.getCurrentDirectory(), params);
 		} catch (IndexException e) {
+			logger.error(e.getMessage());
 			return new CommandResponse(550, e.getMessage());
 		} catch (IllegalArgumentException e) {
+			logger.info(e.getMessage());
 			return new CommandResponse(550, e.getMessage());
 		}
 

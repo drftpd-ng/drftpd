@@ -546,15 +546,17 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			if (!params.getName().isEmpty()) {
-				Query nameQuery = analyze("name", TERM_NAME, params.getName());
-				query.add(nameQuery, Occur.MUST);
-			} else if (!params.getFullName().isEmpty()) {
-				int wc1 = params.getFullName().indexOf("*");
-				int wc2 = params.getFullName().indexOf("?");
-				if ((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3)) {
-					throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
+				if (params.getExact()) {
+					int wc1 = params.getName().indexOf("*");
+					int wc2 = params.getName().indexOf("?");
+					if ((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3)) {
+						throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
+					}
+					query.add(makeFullNameWildcardQueryFromString(params.getName()), Occur.MUST);
+				} else {
+					Query nameQuery = analyze("name", TERM_NAME, params.getName());
+					query.add(nameQuery, Occur.MUST);
 				}
-				query.add(makeFullNameWildcardQueryFromString(params.getFullName()), Occur.MUST);
 			} else if (!params.getEndsWith().isEmpty()) {
 				query.add(makeFullNameReversePrefixQueryFromString(params.getEndsWith()), Occur.MUST);
 			}

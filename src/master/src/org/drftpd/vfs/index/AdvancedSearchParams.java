@@ -31,7 +31,7 @@ public class AdvancedSearchParams {
 	}
 
 	private String _name = "";
-	private String _fullname = "";
+	private boolean _exact = false;
 	private String _endsWith = "";
 	private InodeType _inodeType = InodeType.ANY;
 	private Set<String> _slaves = Collections.emptySet();
@@ -53,8 +53,8 @@ public class AdvancedSearchParams {
 		_name = name;
 	}
 
-	public void setFullName(String fullname) {
-		_fullname = fullname;
+	public void setExact(boolean exact) {
+		_exact = exact;
 	}
 
 	public void setEndsWith(String endsWith) {
@@ -109,8 +109,8 @@ public class AdvancedSearchParams {
 		return _name;
 	}
 
-	public String getFullName() {
-		return _fullname;
+	public boolean getExact() {
+		return _exact;
 	}
 
 	public String getEndsWith() {
