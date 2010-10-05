@@ -40,6 +40,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
@@ -611,6 +612,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 */
 	public Set<String> findInode(DirectoryHandle startNode, String text, InodeType inodeType) throws IndexException {
 		IndexSearcher iSearcher = null;
+		IndexReader iReader = null;
 		try {
 			Set<String> inodes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
 
@@ -638,7 +640,8 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(QUERY_FILE, Occur.MUST);
 			}
 
-			iSearcher = new IndexSearcher(_iWriter.getReader());
+			iReader = _iWriter.getReader();
+			iSearcher = new IndexSearcher(iReader);
 			TopDocs topDocs = iSearcher.search(query, _maxHitsNumber);
 			logger.debug("Query: " + query);
 
@@ -659,8 +662,10 @@ public class LuceneEngine implements IndexEngineInterface {
 				} catch (IOException e) {
 					logger.debug("IOException closing IndexSearcher", e);
 				}
+			}
+			if (iReader != null) {
 				try {
-					_iWriter.getReader().close();
+					iReader.close();
 				} catch (IOException e) {
 					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
 				}
