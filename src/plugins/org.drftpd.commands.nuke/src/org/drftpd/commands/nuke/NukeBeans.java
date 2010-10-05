@@ -145,7 +145,7 @@ public class NukeBeans {
 		for (Map.Entry<String,Long> entry : nd.getNukees().entrySet()) {
 			String user = entry.getKey();
 			Long l = entry.getValue();
-			list.add(new NukedUser(user, l.longValue()));
+			list.add(new NukedUser(user, l));
 		}
 		return list;
 	}

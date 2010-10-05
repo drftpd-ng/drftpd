@@ -383,11 +383,13 @@ public class LuceneEngine implements IndexEngineInterface {
 	/* {@inheritDoc} */
 	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException {
 		IndexSearcher iSearcher = null;
+		IndexReader iReader = null;
 		try {
 			if (toInode.isDirectory()) {
 				PrefixQuery prefixQuery = new PrefixQuery(makeFullPathTermFromInode(fromInode));
 
-				iSearcher = new IndexSearcher(_iWriter.getReader());
+				iReader = _iWriter.getReader();
+				iSearcher = new IndexSearcher(iReader);
 
 				TopDocs topDocs = iSearcher.search(prefixQuery, Integer.MAX_VALUE);
 
@@ -420,8 +422,10 @@ public class LuceneEngine implements IndexEngineInterface {
 				} catch (IOException e) {
 					logger.debug("IOException closing IndexSearcher", e);
 				}
+			}
+			if (iReader != null) {
 				try {
-					_iWriter.getReader().close();
+					iReader.close();
 				} catch (IOException e) {
 					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
 				}
@@ -488,6 +492,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params)
 			throws IndexException, IllegalArgumentException {
 		IndexSearcher iSearcher = null;
+		IndexReader iReader = null;
 		try {
 			Map<String,String> inodes = new LinkedHashMap<String,String>();
 
@@ -572,7 +577,8 @@ public class LuceneEngine implements IndexEngineInterface {
 				limit = _maxHitsNumber;
 			}
 
-			iSearcher = new IndexSearcher(_iWriter.getReader());
+			iReader = _iWriter.getReader();
+			iSearcher = new IndexSearcher(iReader);
 			TopFieldDocs topFieldDocs = iSearcher.search(query, null, limit, SORT);
 			logger.debug("Query: " + query);
 
@@ -593,8 +599,10 @@ public class LuceneEngine implements IndexEngineInterface {
 				} catch (IOException e) {
 					logger.debug("IOException closing IndexSearcher", e);
 				}
+			}
+			if (iReader != null) {
 				try {
-					_iWriter.getReader().close();
+					iReader.close();
 				} catch (IOException e) {
 					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
 				}
