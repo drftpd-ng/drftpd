@@ -37,6 +37,7 @@ import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.misc.LRUMap;
 import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * NukeBeans handles the logging of nukes. Using a TreeMap, it sorts all nukes
@@ -160,6 +161,19 @@ public class NukeBeans {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * @param name
+	 * @return true if the given name is in the nukelog or false if it isnt.
+	 */
+	public synchronized NukeData findName(String name) {
+		for (NukeData nd : getAll()) {
+			if (VirtualFileSystem.getLast(nd.getPath()).equals(name)) {
+				return nd;
+			}
+		}
+		return null;
 	}
 
 	/**
