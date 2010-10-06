@@ -1,0 +1,12 @@
+################################################################################
+#   This is to DupeCheck of files/directory's currently being Uploaded
+#
+#	DupeCheck Permissions located in perms.conf
+#
+#	type = (1=files only) (2=dirs only) (3=both) (0=off)
+#	exempt = Regex represention of exempt files/folders
+#		Example:  ^(sample|subs|cd[1-9]|dis[c|k][1-9])$
+#
+################################################################################
+type=3
+exempt=^(sample|subs|cd[1-9]|dis[c|k][1-9])$

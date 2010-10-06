@@ -1,0 +1,8 @@
+SITE UNDUPE {
+plugin org.drftpd.plugins.dupecheck
+class DupeCheckCommands
+method doSITE_UNDUPE
+perms =siteop
+help UnDupe a File/Directory
+help.specific ${command} <directory/file>
+}

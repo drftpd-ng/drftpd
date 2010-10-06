@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
+<plugin id="org.drftpd.plugins.dupecheck" version="3.0.0">
+	<doc>
+		<doc-text> This plugin provides DupeCheck capability.</doc-text>
+	</doc>
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" />
+		<import plugin-id="org.drftpd.commands.dir" />
+		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+		<import plugin-id="org.drftpd.plugins.dupecheck.metadata" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.dupecheck" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="UnDupeHandler" />
+	
+	<!-- DupeCheck directive handler -->
+	<extension plugin-id="master" point-id="ConfigHandler" id="PreDirective">
+	    <parameter id="Class" value="org.drftpd.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="dupecheck" />
+	</extension>
+	<!-- End of - DupeCheck directive handler -->
+	
+	<!-- Hooks -->
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="DupeCheckSTOR">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.dupecheck.DupeCheckHooks" />
+		<parameter id="HookMethod" value="doDupeCheckSTOR" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="DupeCheckMKD">
+		<parameter id="ParentMethod" value="doMKD" />
+		<parameter id="HookClass" value="org.drftpd.plugins.dupecheck.DupeCheckHooks" />
+		<parameter id="HookMethod" value="doDupeCheckMKD" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<!-- End of Hooks -->
+	
+	<!-- Commands -->
+	<extension plugin-id="org.drftpd.plugins.dupecheck" point-id="PreHook" id="doSITE_UNDUPEPerm">
+		<parameter id="ParentMethod" value="doSITE_UNDUPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<!-- End of Commands -->
+	
+	
+</plugin>

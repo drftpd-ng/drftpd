@@ -1,0 +1,11 @@
+################################################################################
+#   This is to DupeCheck of files/directory's currently being Uploaded
+#
+#	DupeCheck Options located in 'dupecheck.conf'
+#
+#	Examples:
+#
+#	dupecheck /PATH* =group -user
+#	dupecheck /PATH* *   
+#
+################################################################################
