@@ -64,7 +64,7 @@ public class StatsPostHook implements PostHookInterface {
 	}
 	
 	public void doSTORPostHook(CommandRequest request, CommandResponse response) {
-		DirectoryHandle dir = response.getCurrentDirectory();
+		DirectoryHandle dir = request.getCurrentDirectory();
 		User user = request.getSession().getUserNull(request.getUser());
 
 		TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);

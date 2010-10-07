@@ -42,9 +42,9 @@ public class StatsManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(StatsManager.class);
 
 	public static final Key<ArrayList<RatioPathPermission>> CREDITCHECK =
-    	new Key<ArrayList<RatioPathPermission>>(StatsUserData.class, "creditcheck");
+    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditcheck");
     public static final Key<ArrayList<RatioPathPermission>> CREDITLOSS =
-    	new Key<ArrayList<RatioPathPermission>>(StatsUserData.class, "creditloss");
+    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditloss");
 
     public static StatsManager getStatsManager() {
     	for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
