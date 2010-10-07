@@ -773,7 +773,7 @@ public class DirectoryHandle extends InodeHandle implements
 		
 		checkHiddenPath(newDir, user);
 		
-		if (!getVFSPermissions().checkPathPermission("makedir", user, newDir)) {
+		if (!getVFSPermissions().checkPathPermission("makedir", user, newDir.getPath())) {
 			throw new PermissionDeniedException("You are not allowed to create a directory at "+ newDir.getParent());
 		}
 		
@@ -843,7 +843,7 @@ public class DirectoryHandle extends InodeHandle implements
 		
 		checkHiddenPath(this, user);
 		
-		if (!getVFSPermissions().checkPathPermission("upload", user, this)) {
+		if (!getVFSPermissions().checkPathPermission("upload", user, this.getPath().concat("/").concat(name))) {
 			throw new PermissionDeniedException("You are not allowed to upload to "+ getParent());
 		}
 		

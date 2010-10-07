@@ -66,7 +66,7 @@ public class DefaultConfigPreHook implements PreHookInterface {
 		DirectoryHandle fromDir = request.getCurrentDirectory();		
 		VFSPermissions vfsPerms = GlobalContext.getConfig().getVFSPermissions();
 		
-		if (!vfsPerms.checkPathPermission("download", request.getSession().getUserNull(request.getUser()), fromDir)) {
+		if (!vfsPerms.checkPathPermission("download", request.getSession().getUserNull(request.getUser()), fromDir.getPath().concat("/").concat(request.getArgument()))) {
 			request.setAllowed(false);
 			request.setDeniedResponse(StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED"));
 		}

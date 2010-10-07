@@ -44,7 +44,7 @@ public class DefaultConfigPostHook implements PostHookInterface {
 		}
 		
 		for (MessagePathPermission perm : msgPath) {
-			if (perm.checkPath(response.getCurrentDirectory())) {
+			if (perm.checkPath(response.getCurrentDirectory().getPath().concat("/"))) {
 				if (perm.check(request.getSession().getUserNull(request.getUser()))) {
 					for (String line : perm.getMessage()) {
 						response.addComment(line);

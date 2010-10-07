@@ -19,8 +19,6 @@ package org.drftpd.permissions;
 
 import java.util.Collection;
 
-import org.drftpd.vfs.DirectoryHandle;
-
 /**
  * @author mog
  * @version $Id$
@@ -30,5 +28,5 @@ public abstract class PathPermission extends Permission {
 		super(users);
 	}
 
-	public abstract boolean checkPath(DirectoryHandle path);
+	public abstract boolean checkPath(String path);
 }

@@ -66,17 +66,21 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		}
 		
 		DirectoryHandle dir = null;
+		String filename="";
 		if (this instanceof DirectoryHandle) {
 			dir = (DirectoryHandle) this;
 		} else {
 			dir = this.getParent();
+			if (this.getName() != null) {
+				filename = "/" + this.getName();
+			}
 		}
 		
 		checkHiddenPath(this, user);
 		
 		boolean allowed = false;
 		if (user.getName().equals(getUsername())) {
-			if (!getVFSPermissions().checkPathPermission("deleteown", user, dir)) {
+			if (!getVFSPermissions().checkPathPermission("deleteown", user, dir.getPath().concat(filename))) {
 				// the user owns the file althought it doesnt have enough perms to delete it.
 				throw new PermissionDeniedException("You are not allowed to delete "+getPath());
 			} else {
@@ -87,7 +91,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 			}
 		}
 
-		if (!allowed && !getVFSPermissions().checkPathPermission("delete", user, dir)) {
+		if (!allowed && !getVFSPermissions().checkPathPermission("delete", user, dir.getPath().concat(filename))) {
 			throw new PermissionDeniedException("You are not allowed to delete "+getPath());
 		}
 		
@@ -238,10 +242,14 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		}
 		
 		DirectoryHandle dir = null;
+		String filename = "";
 		if (this instanceof DirectoryHandle) {
 			dir = (DirectoryHandle) this;
 		} else {
 			dir = this.getParent();
+			if (this.getName() != null) {
+				filename = "/" + this.getName();
+			}
 		}
 		
 		checkHiddenPath(this, user); // checking the current inode.
@@ -249,7 +257,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		
 		boolean allowed = false;
 		if (user.getName().equals(getUsername())) {
-			if (!getVFSPermissions().checkPathPermission("renameown", user, dir)) {
+			if (!getVFSPermissions().checkPathPermission("renameown", user, dir.getPath().concat(filename))) {
 				// the user owns the file althought it doesnt have enough perms to rename it.
 				throw new PermissionDeniedException("You are not allowed to rename "+getPath());
 			} else {
@@ -260,7 +268,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 			}
 		}
 
-		if (!allowed && !getVFSPermissions().checkPathPermission("rename", user, dir)) {
+		if (!allowed && !getVFSPermissions().checkPathPermission("rename", user, dir.getPath().concat(filename))) {
 			throw new PermissionDeniedException("You are not allowed to rename "+getPath());
 		}
 		
@@ -335,7 +343,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		
 		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle) inode : inode.getParent();
 		
-		if (getVFSPermissions().checkPathPermission("privpath", user, dir, false, true)) {
+		if (getVFSPermissions().checkPathPermission("privpath", user, dir.getPath(), false, true)) {
 			// this has to mirror what is said in
 			// VirtualFileSystemDirectory.getInodeByName()
 			throw new FileNotFoundException("FileNotFound: " + inode.getName()

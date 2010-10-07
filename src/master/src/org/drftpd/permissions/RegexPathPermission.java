@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.drftpd.vfs.DirectoryHandle;
-
 public class RegexPathPermission extends PathPermission {
     private Pattern _pat;
 
@@ -14,8 +12,8 @@ public class RegexPathPermission extends PathPermission {
         _pat = pat;
     }
 
-	public boolean checkPath(DirectoryHandle path) {
-		Matcher m = _pat.matcher(path.getPath());
+	public boolean checkPath(String path) {
+		Matcher m = _pat.matcher(path);
 		return m.find();
 	}
 	
