@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.drftpd.vfs.InodeHandle;
+
 public class RegexPathPermission extends PathPermission {
     private Pattern _pat;
 
@@ -12,8 +14,8 @@ public class RegexPathPermission extends PathPermission {
         _pat = pat;
     }
 
-	public boolean checkPath(String path) {
-		Matcher m = _pat.matcher(path);
+	public boolean checkPath(InodeHandle inode) {
+		Matcher m = _pat.matcher(inode.getPath());
 		return m.find();
 	}
 	

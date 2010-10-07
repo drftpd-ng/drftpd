@@ -31,7 +31,6 @@ import org.drftpd.commands.usermanagement.UserManagementHandler;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.config.ConfigInterface;
-import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.perms.VFSPermissions;
 
 /**
@@ -63,10 +62,9 @@ public class DefaultConfigPreHook implements PreHookInterface {
 	}
 	
 	public CommandRequestInterface checkDownloadPermsHook(CommandRequest request) {
-		DirectoryHandle fromDir = request.getCurrentDirectory();		
 		VFSPermissions vfsPerms = GlobalContext.getConfig().getVFSPermissions();
 		
-		if (!vfsPerms.checkPathPermission("download", request.getSession().getUserNull(request.getUser()), fromDir.getPath().concat("/").concat(request.getArgument()))) {
+		if (!vfsPerms.checkPathPermission("download", request.getSession().getUserNull(request.getUser()), request.getCurrentDirectory().getNonExistentFileHandle(request.getArgument()))) {
 			request.setAllowed(false);
 			request.setDeniedResponse(StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED"));
 		}

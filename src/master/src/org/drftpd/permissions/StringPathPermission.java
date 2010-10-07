@@ -19,6 +19,7 @@ package org.drftpd.permissions;
 
 import java.util.Collection;
 
+import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 
 /**
@@ -33,7 +34,7 @@ public class StringPathPermission extends PathPermission {
 		_path = VirtualFileSystem.fixPath(path);
 	}
 
-	public boolean checkPath(String path) {
-		return path.startsWith(_path);
+	public boolean checkPath(InodeHandle inode) {
+		return inode.getPath().startsWith(_path);
 	}
 }

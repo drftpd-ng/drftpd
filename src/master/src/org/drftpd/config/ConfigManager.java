@@ -308,7 +308,7 @@ public class ConfigManager implements ConfigInterface {
 		
 		if (perms != null && !perms.isEmpty()) {
 			for (PathPermission perm : perms) {
-				if (perm.checkPath(path.getPath().concat("/"))) {
+				if (perm.checkPath(path)) {
 					return perm.check(user);
 				}
 			}
