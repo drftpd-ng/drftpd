@@ -324,7 +324,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 				// execute command
 				_pool.execute(new CommandThread(_request, this));
 				if (_request.getCommand().equalsIgnoreCase("AUTH")) {
-					while(!_authDone) {
+					while(!_authDone && !_stopRequest) {
 						Thread.sleep(100);
 					}
 				}
