@@ -112,9 +112,8 @@ public class Request extends CommandInterface {
 		String requestDirProp = request.getProperties().getProperty("request.dirpath");
 		if (requestDirProp == null) {
 			return new DirectoryHandle(_requestPath);
-		} else {
-			return new DirectoryHandle(requestDirProp);
 		}
+		return new DirectoryHandle(requestDirProp);
 	}
 
 	public CommandResponse doSITE_REQFILLED(CommandRequest request) throws ImproperUsageException {
@@ -287,9 +286,8 @@ public class Request extends CommandInterface {
 						GlobalContext.getEventService().publishAsync(new RequestEvent("reqdel", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 						
 						break;
-					} else {
-						return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
 					}
+					return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
 				}
 			}
 			

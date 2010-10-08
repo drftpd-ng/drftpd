@@ -124,10 +124,8 @@ public class InputThread extends Thread {
 
 						}
 					}
-					if (line == null) {
-						// The server must have disconnected us.
-						running = false;
-					}
+					// The server must have disconnected us.
+					running = false;
 				}
 				catch (InterruptedIOException iioe) {
 					// This will happen if we haven't received anything from the server for a while.

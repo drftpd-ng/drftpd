@@ -33,8 +33,8 @@ public class SimpleSearchFieldSelector implements FieldSelector {
 	public FieldSelectorResult accept(String fieldName) {
 		if (fieldName.equals("name") || fieldName.equals("fullPath")) {
 			return FieldSelectorResult.LOAD;
-		} else {
-			return FieldSelectorResult.LAZY_LOAD;
 		}
+		
+		return FieldSelectorResult.LAZY_LOAD;
 	}
 }

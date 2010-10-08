@@ -46,7 +46,7 @@ public class ZipscriptVFSDataZip {
 		_dir = dir;
 	}
 
-	public DizInfo getDizInfo() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	public DizInfo getDizInfo() throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		try {
 			DizInfo dizInfo = getDizInfoFromInode(_dir);
 			return dizInfo;
@@ -82,7 +82,7 @@ public class ZipscriptVFSDataZip {
 		throw new FileNotFoundException("No usable zip files found in directory");
 	}
 
-	public DizStatus getDizStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	public DizStatus getDizStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		int offline = 0;
 		int present = 0;
 		DizInfo dizInfo = getDizInfo();

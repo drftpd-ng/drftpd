@@ -148,8 +148,6 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 				//Error fetching .diz, ignore
 			} catch (NoAvailableSlaveException e) {
 				//Error fetching .diz, ignore
-			} catch (SlaveUnavailableException e) {
-				//Error fetching .diz, ignore
 			}
 		}
 	}
@@ -341,8 +339,6 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		} catch (IOException e) {
 			//Error fetching SFV, ignore
 		} catch (NoAvailableSlaveException e) {
-			//Error fetching SFV, ignore
-		} catch (SlaveUnavailableException e) {
 			//Error fetching SFV, ignore
 		}
 	}

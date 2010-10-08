@@ -258,12 +258,10 @@ public class ListHandler extends CommandInterface {
 				}
 				if (isStat || isMlst)
 					return response;
-				else {
-					os.close();
-					response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
-					response.addComment(conn.status());
-					return response;
-				}
+				os.close();
+				response = StandardCommandManager.genericResponse("RESPONSE_226_CLOSING_DATA_CONNECTION");
+				response.addComment(conn.status());
+				return response;
 			} catch (IOException ex) {
 				logger.warn(ex);
 				return new CommandResponse(450, ex.getMessage());
@@ -388,7 +386,7 @@ public class ListHandler extends CommandInterface {
 		return output.toString();
 	}
 
-	private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate) throws FileNotFoundException {
+	private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate) {
 		StringBuilder output = new StringBuilder();
 
 		for (InodeHandleInterface inode : listElements) {

@@ -264,7 +264,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				break;
 			}
 			Long key = iter.next();
-			RemoteSlave rslave = (RemoteSlave) map.get(key);
+			RemoteSlave rslave = map.get(key);
 			returnMe.add(rslave);
 		}
 
@@ -662,9 +662,6 @@ class RemergeThread extends Thread {
 			} catch (IOException e2) {
 				logger.error("IOException during remerge", e2);
 				msg.getRslave().setOffline("IOException during remerge");
-			} catch (SlaveUnavailableException e) {
-				logger.error("SlaveUnavailableException during remerge", e);
-				msg.getRslave().setOffline("SlaveUnavailableException during remerge");
 			}
 		}
 	}

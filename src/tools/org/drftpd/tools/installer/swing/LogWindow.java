@@ -147,9 +147,9 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 		int result = userFileChooser.showOpenDialog(this);
 		if (result == JFileChooser.APPROVE_OPTION) {
 			return userFileChooser.getSelectedFile().getPath();
-		} else {
-			return null;
 		}
+		
+		return null;
 	}
 
 	public void setProgress(int pluginsDone) {

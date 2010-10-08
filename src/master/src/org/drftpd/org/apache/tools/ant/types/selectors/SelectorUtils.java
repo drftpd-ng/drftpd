@@ -207,13 +207,12 @@ public final class SelectorUtils {
 				}
 			}
 			return true;
-		} else {
-			if (patIdxStart > patIdxEnd) {
-				// String not exhausted, but pattern is. Failure.
-				patDirs = null;
-				strDirs = null;
-				return false;
-			}
+		}
+		if (patIdxStart > patIdxEnd) {
+			// String not exhausted, but pattern is. Failure.
+			patDirs = null;
+			strDirs = null;
+			return false;
 		}
 
 		// up to last '**'

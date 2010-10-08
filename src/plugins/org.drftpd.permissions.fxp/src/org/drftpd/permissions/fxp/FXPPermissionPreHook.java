@@ -54,7 +54,7 @@ public class FXPPermissionPreHook implements PreHookInterface {
 		if (config.checkPathPermission(directive, request.getSession().getUserNull(request.getUser()), fromDir)) {
 			// denied to make fxp.
 			// let's set the ip that is going to be sent to the slave.
-			InetAddress inetAdd = (InetAddress) request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
+			InetAddress inetAdd = request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
 			mask = "*@"+inetAdd.getHostAddress();						
 		}
 		

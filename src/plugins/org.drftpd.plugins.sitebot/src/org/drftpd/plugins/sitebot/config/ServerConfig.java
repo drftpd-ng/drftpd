@@ -61,8 +61,7 @@ public class ServerConfig {
 	public SocketFactory getSocketFactory() {
 		if (_ssl) {
 			return new SiteBotSSLSocketFactory(_trustManager);
-		} else {
-			return null;
 		}
+		return null;
 	}
 }

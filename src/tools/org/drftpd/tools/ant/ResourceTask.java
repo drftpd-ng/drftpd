@@ -85,7 +85,7 @@ public class ResourceTask extends Task {
 		_installedConfs = (ArrayList<String>)getProject().getReference("installed.confs");
 		findResources(_resourceDir);
 		if (_slavePlugin && !_filePatterns.isEmpty()) {
-			String[] patterns = (String[])_filePatterns.toArray(new String[_filePatterns.size()]);
+			String[] patterns = _filePatterns.toArray(new String[_filePatterns.size()]);
 			slaveFiles.appendIncludes(patterns);
 		}
 	}

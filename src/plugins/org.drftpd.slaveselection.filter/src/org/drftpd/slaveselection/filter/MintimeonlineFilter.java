@@ -50,8 +50,7 @@ public class MintimeonlineFilter extends Filter {
 	}
 
 	protected void process(ScoreChart scorechart, User user, InetAddress peer,
-			char direction, InodeHandleInterface dir, long currentTime)
-			throws NoAvailableSlaveException {
+			char direction, InodeHandleInterface dir, long currentTime) {
 		
 		for (SlaveScore score : scorechart.getSlaveScores()) {
 			long lastTransfer = currentTime	- score.getRSlave().getLastTransferForDirection(direction);

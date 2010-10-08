@@ -85,7 +85,7 @@ public class SlavetopFilter extends Filter {
         for (FileHandle file : files) {
         	try {
 				for (RemoteSlave rslave : file.getSlaves()) {
-					ScoreChart.SlaveScore score = (SlaveScore) slavesmap.get(rslave);
+					ScoreChart.SlaveScore score = slavesmap.get(rslave);
 				    if (score == null) {
 				    	// the slave was already removed from SlaveSelection
 				        continue;

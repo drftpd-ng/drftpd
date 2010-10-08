@@ -92,15 +92,13 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 		return true;
 	}
 
-	public InodeHandle getTargetInode(User user) throws FileNotFoundException,
-			ObjectNotValidException {
+	public InodeHandle getTargetInode(User user) throws FileNotFoundException {
 		InodeHandle inode = getTargetInodeUnchecked();
 		checkHiddenPath(inode, user);
 		return inode;
 	}
 
-	public InodeHandle getTargetInodeUnchecked() throws FileNotFoundException,
-			ObjectNotValidException {
+	public InodeHandle getTargetInodeUnchecked() throws FileNotFoundException {
 		return getParent().getInodeHandleUnchecked(getInode().getLinkPath());
 	}
 

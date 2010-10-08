@@ -49,7 +49,7 @@ public class DefaultConfigHandler extends ConfigHandler {
 		addPermission(directive, new Permission(Permission.makeUsers(st)));
 	}
 	
-	public void handleMsgPath(String directive, StringTokenizer st) throws MalformedPatternException {
+	public void handleMsgPath(String directive, StringTokenizer st) {
 		String pattern = st.nextToken();
 		String messageFile = st.nextToken();
 		

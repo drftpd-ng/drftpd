@@ -53,16 +53,14 @@ public class NukeUtils {
                                                 int multiplier) {
             if (size != 0 && ratio != 0 && multiplier != 0) {
                 return (long) ((size * ratio) + (size * (multiplier - 1)));
-            } else {
+            } 
+            /* If size is 0 then there are no nuked bytes.  If ratio is 0
+             * then this user should not lose credits because they do not
+             * earn credits by uploading files.  If multiplier is 0 then
+             * this user is exempt from losing credits due to this nuke.
+             */
 
-                /* If size is 0 then there are no nuked bytes.  If ratio is 0
-                 * then this user should not lose credits because they do not
-                 * earn credits by uploading files.  If multiplier is 0 then
-                 * this user is exempt from losing credits due to this nuke.
-                 */
-
-                return 0L;
-            }
+            return 0L;
 	}
 
 	public static void nukeRemoveCredits(DirectoryHandle nukeDir,

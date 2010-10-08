@@ -187,7 +187,7 @@ public final class Bitstream implements BitstreamErrors {
 		if ( (id3header[0]=='I') && (id3header[1]=='D') && (id3header[2]=='3')) {
 			in.read(id3header,0,3);
 			in.read(id3header,0,4);
-			size = (int) (id3header[0] << 21) + (id3header[1] << 14) + (id3header[2] << 7) + (id3header[3]);
+			size = (id3header[0] << 21) + (id3header[1] << 14) + (id3header[2] << 7) + (id3header[3]);
 		}
 		return (size+10);
 	}
@@ -197,11 +197,12 @@ public final class Bitstream implements BitstreamErrors {
 	 * @return ID3v2 InputStream or null if ID3v2 frames are not available.
 	 */
 	public InputStream getRawID3v2() {
-		if (rawid3v2 == null) return null;
-		else {
-			ByteArrayInputStream bain = new ByteArrayInputStream(rawid3v2);		
-			return bain;
+		if (rawid3v2 == null) {
+			return null;
 		}
+		ByteArrayInputStream bain = new ByteArrayInputStream(rawid3v2);
+		
+		return bain;
 	}
 
 	/**
@@ -417,7 +418,7 @@ public final class Bitstream implements BitstreamErrors {
 	/**
 	 * Parses the data previously read with read_frame_data().
 	 */
-	void parse_frame() throws BitstreamException {
+	void parse_frame() {
 		// Convert Bytes read to int
 		int	b=0;
 		byte[] byteread = frame_bytes;

@@ -135,13 +135,12 @@ public class LibCopyTask extends Task {
 		if (targetFile.exists()) {
 			log(targetFile.getPath()+" already exists, skipping libcopy",Project.MSG_INFO);
 			return targetFile;
-		} else {
-			// make sure target dir exists
-			if (!targetFile.getParentFile().exists()) {
-				if (!targetFile.getParentFile().mkdirs()) {
-					log("Unable to create target dir tree for "+targetFile.getPath(),Project.MSG_ERR);
-					throw new IOException();
-				}
+		}
+		// make sure target dir exists
+		if (!targetFile.getParentFile().exists()) {
+			if (!targetFile.getParentFile().mkdirs()) {
+				log("Unable to create target dir tree for "+targetFile.getPath(),Project.MSG_ERR);
+				throw new IOException();
 			}
 		}
 		FileInputStream fis = null;

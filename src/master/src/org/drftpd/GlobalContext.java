@@ -104,7 +104,7 @@ public class GlobalContext {
 
 	public static final String VERSION = "DrFTPD " + CommonPluginUtils.getPluginVersionForObject(GlobalContext.class);
 
-	public void reloadFtpConfig() throws IOException {
+	public void reloadFtpConfig() {
 		_config.reload();
 	}
 

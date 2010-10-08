@@ -45,9 +45,7 @@ public class MessagePathPermission extends StringPathPermission {
 				_message.add(line);
 			}
 		} finally {
-			if (in != null) {
-				in.close();
-			}
+			in.close();
 		}
 
 		_message.trimToSize();

@@ -193,14 +193,13 @@ public class VFSPermissions {
 				continue;
 			}
 			
-			if (perms != null && !perms.isEmpty()) {
+			if (!perms.isEmpty()) {
 				for (PathPermission perm : perms) {
 					if (perm.checkPath(inode)) {
 						if (invertUserSemantic) {
 							return !perm.check(user);
-						} else {
-							return perm.check(user);
 						}
+						return perm.check(user);
 					}
 				}
 			}

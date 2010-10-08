@@ -369,9 +369,8 @@ public class ConfigManager implements ConfigInterface {
 		
 		if (perm == null) {
 			return true;
-		} else {
-			return perm.check(user);
 		}
+		return perm.check(user);
 	}
 
 	public boolean isLoginExempt(User user) {
@@ -379,9 +378,8 @@ public class ConfigManager implements ConfigInterface {
 		
 		if (perm == null) {
 			return true;
-		} else {
-			return perm.check(user);
 		}
+		return perm.check(user);
 	}
 
 	public String[] getCipherSuites() {

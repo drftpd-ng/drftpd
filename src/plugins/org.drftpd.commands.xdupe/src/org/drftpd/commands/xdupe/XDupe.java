@@ -23,24 +23,22 @@ public class XDupe extends CommandInterface {
 		if (!request.hasArgument()) {
 			if (xDupe == 0) {
 				return new CommandResponse(200, "Extended dupe mode is disabled.");
-			} else {
-				return new CommandResponse(200, "Extended dupe mode " + xDupe + " is enabled.");
 			}
-		} else {
-			int myXdupe;
-			
-			try {
-				myXdupe = Integer.parseInt(request.getArgument());
-			} catch (NumberFormatException ex) {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			}
-
-			if (myXdupe < 0 || myXdupe > 4) {
-				return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-			}
-
-			request.getSession().setObject(XDUPE, myXdupe);
-			return new CommandResponse(200, "Activated extended dupe mode " + myXdupe + ".");
+			return new CommandResponse(200, "Extended dupe mode " + xDupe + " is enabled.");
 		}
+		int myXdupe;
+		
+		try {
+			myXdupe = Integer.parseInt(request.getArgument());
+		} catch (NumberFormatException ex) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
+
+		if (myXdupe < 0 || myXdupe > 4) {
+			return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+		}
+
+		request.getSession().setObject(XDUPE, myXdupe);
+		return new CommandResponse(200, "Activated extended dupe mode " + myXdupe + ".");
 	}
 }

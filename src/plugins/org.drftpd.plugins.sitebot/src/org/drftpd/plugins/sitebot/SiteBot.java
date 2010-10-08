@@ -822,9 +822,6 @@ public class SiteBot implements ReplyConstants, Runnable {
 						// Return from the method.
 						return;
 					}
-					else {
-						// This is server response.
-					}
 				}
 				else {
 					// We don't know what this line means.
@@ -840,9 +837,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 		if (sourceNick.startsWith(":")) {
 			sourceNick = sourceNick.substring(1);
 		}
-		if (target == null) {
-			target = tokenizer.nextToken();
-		}
+		target = tokenizer.nextToken();
+
 		if (target.startsWith(":")) {
 			target = target.substring(1);
 		}
@@ -998,11 +994,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 					" ,the bot will not join this channel");
 					break;
 				}
-				else {
-					Blowfish cipher = new Blowfish(chan.getBlowKey());
-					_ciphers.put(chan.getName(), cipher);
-					_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),cipher,true));
-				}
+				Blowfish cipher = new Blowfish(chan.getBlowKey());
+				_ciphers.put(chan.getName(), cipher);
+				_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),cipher,true));
 			}
 			else {
 				_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),null,false));
@@ -1098,7 +1092,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 				// Stick with the default value of zero.
 			}
 
-			String topic = (String) _topics.get(channel);
+			String topic = _topics.get(channel);
 			_topics.remove(channel);
 
 			this.onTopic(channel, topic, setBy, date, false);
@@ -1116,10 +1110,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 					char first = nick.charAt(0);
 					if (first >= 0x41 && first <= 0x7D) {
 						break;
-					} else {
-						prefixBuilder.append(first);
-						nick = nick.substring(1);
 					}
+					prefixBuilder.append(first);
+					nick = nick.substring(1);
 				}
 				this.addUser(channel, new IrcUser(prefixBuilder.toString(), nick));
 			}
@@ -1553,7 +1546,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 				if (atPos == '+' || atPos == '-') {
 					pn = atPos;
 				} else if (_userPrefixes.containsKey(atPos + "")) {
-					this.updateUser(channel, pn, (String) _userPrefixes.get(atPos + ""), params[p]);
+					this.updateUser(channel, pn, _userPrefixes.get(atPos + ""), params[p]);
 					// now deal with the known(standard) user modes
 					if (atPos == 'o') {
 						if (pn == '+') {

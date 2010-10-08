@@ -560,9 +560,8 @@ public class BaseFtpConnection extends Session implements Runnable {
 		public void run() {
 			if (_commandCount.get() > 0 && !_ftpRequest.getCommand().equalsIgnoreCase("ABOR")) {
 				return;
-			} else {
-				_commandCount.incrementAndGet();
 			}
+			_commandCount.incrementAndGet();
 			clearAborted();
 			CommandRequestInterface cmdRequest = _commandManager.newRequest(
 					_ftpRequest.getCommand(), _ftpRequest.getArgument(),

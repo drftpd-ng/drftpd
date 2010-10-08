@@ -481,7 +481,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					fetchResponse(SlaveManager.getBasicIssuer().issueDeleteToSlave(this, sourceFile), 300000);
 				} catch (RemoteIOException e) {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
-						throw (IOException) e.getCause();
+						throw e.getCause();
 					}
 				} finally {
 					iter.remove();
@@ -497,7 +497,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 							fileName));
 				} catch (RemoteIOException e) {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
-						throw (IOException) e.getCause();
+						throw e.getCause();
 					}
 				} finally {
 					iter.remove();
@@ -614,7 +614,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public synchronized void connect(Socket socket, ObjectInputStream in,
-			ObjectOutputStream out) throws IOException {
+			ObjectOutputStream out) {
 		_socket = socket;
 		_sout = out;
 		_sin = in;

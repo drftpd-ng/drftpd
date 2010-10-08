@@ -35,11 +35,11 @@ public class CaseInsensitiveConcurrentHashMap<K, V> extends ConcurrentHashMap<K,
 	}
 
 	public V get(String arg0) {
-		return (V) super.get(arg0.toLowerCase());
+		return super.get(arg0.toLowerCase());
 	}
 
 	@SuppressWarnings("unchecked")
 	public V put(K arg0, V arg1) {
-		return (V) super.put(((K) ((String) arg0).toLowerCase()), arg1);
+		return super.put(((K) ((String) arg0).toLowerCase()), arg1);
 	}
 }

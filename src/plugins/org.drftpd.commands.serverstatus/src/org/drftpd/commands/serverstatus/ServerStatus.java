@@ -113,9 +113,8 @@ public class ServerStatus extends CommandInterface {
         	long uptime = System.currentTimeMillis() - connectTime;
         	env.add("uptime", Time.formatTime(uptime));	
     		return session.jprintf(_bundle, env, _keyPrefix+"slave.uptime");
-        } else {
-        	return session.jprintf(_bundle, env, _keyPrefix+"slave.offline");
         }
+		return session.jprintf(_bundle, env, _keyPrefix+"slave.offline");
 	}
 	
 	public CommandResponse doStatus(CommandRequest request) throws ImproperUsageException {

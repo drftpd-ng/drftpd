@@ -203,11 +203,10 @@ public class UserHandler extends CommandInterface {
 			GlobalContext.getEventService().publish(
 					new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
 			return new CommandResponse(200, "Inviting "+nickname+" with bot "+botname);
-		} else {
-			logger.info("Inviting "+request.getUser()+ " with nickname "+nickname);
-			GlobalContext.getEventService().publish(
-					new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
-			return new CommandResponse(200, "Inviting "+nickname);
 		}
+		logger.info("Inviting "+request.getUser()+ " with nickname "+nickname);
+		GlobalContext.getEventService().publish(
+				new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
+		return new CommandResponse(200, "Inviting "+nickname);
 	}
 }

@@ -25,7 +25,6 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.SlaveStatus;
@@ -56,8 +55,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         junit.textui.TestRunner.run(MaxbandwidthFilterTest.class);
     }
 
-    public void testSimple()
-        throws ObjectNotFoundException, NoAvailableSlaveException {
+    public void testSimple() throws NoAvailableSlaveException {
         Properties p = new Properties();
         p.put("1.maxbandwidth", "800kb");
 

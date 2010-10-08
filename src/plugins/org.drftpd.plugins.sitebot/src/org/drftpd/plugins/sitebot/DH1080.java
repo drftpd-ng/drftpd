@@ -82,11 +82,9 @@ public class DH1080 {
 		if ((big.bitLength() % 8) != 0) {
 			return bigBytes;
 		}
-		else {
-			byte[] smallerBytes = new byte[big.bitLength() / 8];
-			System.arraycopy(bigBytes, 1, smallerBytes, 0, smallerBytes.length);
-			return smallerBytes;
-		}
+		byte[] smallerBytes = new byte[big.bitLength() / 8];
+		System.arraycopy(bigBytes, 1, smallerBytes, 0, smallerBytes.length);
+		return smallerBytes;
 	}
 
 	/** This is an alternate base64 decoder, this is required as
@@ -168,7 +166,7 @@ public class DH1080 {
 			if ((input[(i>>3)]&m) != 0) {
 				t|=1;
 			}
-			if (((int)(m>>=1)) == 0) {
+			if ((m>>=1) == 0) {
 				m=0x80;
 			}
 			if (((i+1)%6) == 0) {
@@ -179,7 +177,7 @@ public class DH1080 {
 		}
 		m=(char)(5-(i%6));
 		t<<=m;
-		if (((int)m) != 0) {
+		if (m != 0) {
 			outputBuilder.append(B64.charAt(t));
 		}
 		return outputBuilder.toString();

@@ -412,9 +412,8 @@ public class Job {
 					destSlave.simpleDelete(getFile().getPath());
 				}
 				return;
-			} else {
-				logger.error("Error on slave during slave2slave transfer", e);
 			}
+			logger.error("Error on slave during slave2slave transfer", e);
 			destSlave.simpleDelete(getFile().getPath());
 		} catch (SourceSlaveException e) {
 			if (e.getCause() instanceof FileNotFoundException) {
@@ -424,9 +423,8 @@ public class Job {
 						e);
 				getFile().removeSlave(sourceSlave);
 				return;
-			} else {
-				logger.error("Error on slave during slave2slave transfer", e);
 			}
+			logger.error("Error on slave during slave2slave transfer", e);
 		} catch (SlaveException e) {
 			throw new RuntimeException(
 					"SlaveException was not of type DestinationSlaveException or SourceSlaveException");

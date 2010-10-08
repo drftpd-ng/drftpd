@@ -170,7 +170,7 @@ public class RemoteTransfer {
 		try {
 			_rslave.fetchResponse(index);
 		} catch (RemoteIOException e) {
-			throw (IOException) e.getCause();
+			throw e.getCause();
 		}
 		_pointer = new TransferPointer(_path, this);
 	}
@@ -183,7 +183,7 @@ public class RemoteTransfer {
 		try {
 			_rslave.fetchResponse(index);
 		} catch (RemoteIOException e) {
-			throw (IOException) e.getCause();
+			throw e.getCause();
 		}
 		_pointer = new TransferPointer(_path, this);
 	}

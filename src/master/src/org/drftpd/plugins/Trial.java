@@ -18,7 +18,6 @@
 package org.drftpd.plugins;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,7 +53,7 @@ public class Trial extends FtpListener {
 
 	private ArrayList<Limit> _limits;
 
-	public Trial() throws FileNotFoundException, IOException {
+	public Trial() {
 		super();
 	}
 

@@ -71,7 +71,7 @@ public class AssignRoot {
 			if (a.allAssigned())
 				return true;
 			
-			int i = (int) a.getRoot();
+			int i = a.getRoot();
 			Root o = filter.getRootList().get(i-1);
 			if (o.equals(root)) {
 				return true;

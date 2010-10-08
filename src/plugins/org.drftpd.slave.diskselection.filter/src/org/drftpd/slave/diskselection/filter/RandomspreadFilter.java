@@ -40,7 +40,7 @@ public class RandomspreadFilter extends DiskFilter {
 
 	public void process(ScoreChart sc, String path) {
 		int i = _rand.nextInt(getRootList().size());
-		Root root = (Root) getRootList().get(i);
+		Root root = getRootList().get(i);
 		sc.addScore(root, 1);
 	}
 }

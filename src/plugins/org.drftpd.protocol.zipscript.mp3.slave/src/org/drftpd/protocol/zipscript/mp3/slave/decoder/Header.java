@@ -327,8 +327,10 @@ public final class Header {
 	 * Returns Protection bit.
 	 */
 	public boolean checksums() {
-		if (h_protection_bit == 0) return true;
-		else return false;
+		if (h_protection_bit == 0) {
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -382,8 +384,10 @@ public final class Header {
 	 * Returns Layer III Padding bit.
 	 */
 	public boolean padding() {
-		if (h_padding_bit == 0) return false;
-		else return true;
+		if (h_padding_bit == 0) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
@@ -470,11 +474,13 @@ public final class Header {
 	 * @return number of frames
 	 */
 	public int max_number_of_frames(int streamsize) {
-		if (h_vbr == true) return h_vbr_frames;
-		else {
-			if ((framesize + 4 - h_padding_bit) == 0) return 0;
-			else return(streamsize / (framesize + 4 - h_padding_bit));
+		if (h_vbr == true) {
+			return h_vbr_frames;
 		}
+		if ((framesize + 4 - h_padding_bit) == 0) {
+			return 0;
+		}
+		return(streamsize / (framesize + 4 - h_padding_bit));
 	}
 
 	/**
@@ -483,11 +489,13 @@ public final class Header {
 	 * @return number of frames
 	 */
 	public int min_number_of_frames(int streamsize) {
-		if (h_vbr == true) return h_vbr_frames;
-		else {
-			if ((framesize + 5 - h_padding_bit) == 0) return 0;
-			else return(streamsize / (framesize + 5 - h_padding_bit));
+		if (h_vbr == true) {
+			return h_vbr_frames;
 		}
+		if ((framesize + 5 - h_padding_bit) == 0) {
+			return 0;
+		}
+		return(streamsize / (framesize + 5 - h_padding_bit));
 	}
 
 
@@ -501,12 +509,10 @@ public final class Header {
 			if ((h_version == MPEG2_LSF) || (h_version == MPEG25_LSF)) tpf /= 2;
 			return ((float) (tpf * 1000));
 		}
-		else {
-			float ms_per_frame_array[][] = {{8.707483f,  8.0f, 12.0f},
-					{26.12245f, 24.0f, 36.0f},
-					{26.12245f, 24.0f, 36.0f}};
-			return(ms_per_frame_array[h_layer-1][h_sample_frequency]);
-		}
+		float ms_per_frame_array[][] = {{8.707483f,  8.0f, 12.0f},
+				{26.12245f, 24.0f, 36.0f},
+				{26.12245f, 24.0f, 36.0f}};
+		return(ms_per_frame_array[h_layer-1][h_sample_frequency]);
 	}
 
 	/**
@@ -590,7 +596,7 @@ public final class Header {
 		if (h_vbr == true) {
 			return Integer.toString(bitrate()/1000)+" kb/s";		
 		}
-		else return bitrate_str[h_version][h_layer - 1][h_bitrate_index];
+		return bitrate_str[h_version][h_layer - 1][h_bitrate_index];
 	}
 
 	/**
@@ -601,7 +607,7 @@ public final class Header {
 		if (h_vbr == true) {
 			return ((int) ((h_vbr_bytes * 8) / (ms_per_frame() * h_vbr_frames)))*1000;		
 		}
-		else return bitrates[h_version][h_layer - 1][h_bitrate_index];
+		return bitrates[h_version][h_layer - 1][h_bitrate_index];
 	}
 
 	/**

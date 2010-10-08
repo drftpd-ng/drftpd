@@ -320,7 +320,7 @@ public class Crypt {
 	}
 
 	private static final int byteToUnsigned(byte b) {
-		int value = (int) b;
+		int value = b;
 
 		return ((value >= 0) ? value : (value + 256));
 	}
@@ -518,8 +518,8 @@ public class Crypt {
 		buffer.setCharAt(0, charZero);
 		buffer.setCharAt(1, charOne);
 
-		int Eswap0 = con_salt[(int) charZero];
-		int Eswap1 = con_salt[(int) charOne] << 4;
+		int Eswap0 = con_salt[charZero];
+		int Eswap1 = con_salt[charOne] << 4;
 
 		byte[] key = new byte[8];
 
@@ -527,7 +527,7 @@ public class Crypt {
 			key[i] = (byte) 0;
 
 		for (int i = 0; (i < key.length) && (i < original.length()); i++) {
-			int iChar = (int) original.charAt(i);
+			int iChar = original.charAt(i);
 
 			key[i] = (byte) (iChar << 1);
 		}
@@ -545,7 +545,7 @@ public class Crypt {
 			for (int j = 0, c = 0; j < 6; j++) {
 				c <<= 1;
 
-				if (((int) b[y] & u) != 0) {
+				if ((b[y] & u) != 0) {
 					c |= 1;
 				}
 

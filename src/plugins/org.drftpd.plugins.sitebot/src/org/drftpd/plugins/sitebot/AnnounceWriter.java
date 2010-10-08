@@ -54,10 +54,9 @@ public class AnnounceWriter {
 		if (_sectionName.equals("*")) {
 			// This is a catchall for sections so must be true
 			return true;
-		} else {
-			return _sectionName.equalsIgnoreCase(GlobalContext.getGlobalContext()
-					.getSectionManager().lookup(dir).getName());
 		}
+		return _sectionName.equalsIgnoreCase(GlobalContext.getGlobalContext()
+				.getSectionManager().lookup(dir).getName());
 	}
 
 	public String getSectionName(DirectoryHandle dir) {
@@ -65,18 +64,14 @@ public class AnnounceWriter {
 			if (dir.getParent().isRoot()) {
 				return "/";
 			}
-			else {
-				SectionInterface section = 
-					GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-				if (section.getCurrentDirectory().isRoot()) {
-					return "/";
-				} else {
-					return section.getName();
-				}
+			SectionInterface section = 
+				GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+			if (section.getCurrentDirectory().isRoot()) {
+				return "/";
 			}
-		} else {
-			return _sectionName;
+			return section.getName();
 		}
+		return _sectionName;
 	}
 
 	public String getPath(DirectoryHandle dir) {
@@ -84,21 +79,17 @@ public class AnnounceWriter {
 			// Here we need to rewrite the path to make it relative
 			// to the pseudo section
 			return dir.getPath().substring(_matcher.getPathSuffix().length()+1);
-		} else {
-			// Return path relative to section
-			// Special case to handle directories in the root
-			if (dir.getParent().isRoot()) {
-				return dir.getPath().substring(1);
-			}
-			else {
-				DirectoryHandle sectionBase = 
-					GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getBaseDirectory();
-				if (sectionBase.isRoot()) {
-					return dir.getPath().substring(1);
-				} else {
-					return dir.getPath().substring(sectionBase.getPath().length()+1);
-				}
-			}
 		}
+		// Return path relative to section
+		// Special case to handle directories in the root
+		if (dir.getParent().isRoot()) {
+			return dir.getPath().substring(1);
+		}
+		DirectoryHandle sectionBase = 
+			GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getBaseDirectory();
+		if (sectionBase.isRoot()) {
+			return dir.getPath().substring(1);
+		}
+		return dir.getPath().substring(sectionBase.getPath().length()+1);
 	}
 }

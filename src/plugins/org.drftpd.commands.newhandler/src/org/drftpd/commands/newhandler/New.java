@@ -95,13 +95,12 @@ public class New extends CommandInterface {
 					}
 
 					break; // nothing else to do.
-				} else {
-					specificSection = sectionManager.getSection(parm);
-					if (specificSection.getName().equals("")) // not a valid section.
-						return new CommandResponse(501, "Invalid/Non-Existant section"); 
-					else // valid section.
-						sections.put(specificSection.getName(), specificSection);
 				}
+				specificSection = sectionManager.getSection(parm);
+				if (specificSection.getName().equals("")) { // not a valid section.
+					return new CommandResponse(501, "Invalid/Non-Existant section");
+				}
+				sections.put(specificSection.getName(), specificSection);
 			}
 		} else {
 			// no param found. setting default values.

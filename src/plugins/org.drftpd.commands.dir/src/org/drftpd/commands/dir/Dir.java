@@ -83,12 +83,11 @@ public class Dir extends CommandInterface {
 		if (request.getCurrentDirectory().isRoot()) {
 			return new CommandResponse(250,
 				"Directory remains " + request.getCurrentDirectory().getPath());
-		} else {
-			DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
-			return new CommandResponse(250,
-				"Directory changed to " + newCurrentDirectory.getPath(),
-				newCurrentDirectory, request.getUser());
 		}
+		DirectoryHandle newCurrentDirectory = request.getCurrentDirectory().getParent();
+		return new CommandResponse(250,
+			"Directory changed to " + newCurrentDirectory.getPath(),
+			newCurrentDirectory, request.getUser());
 	}
 
 	/**

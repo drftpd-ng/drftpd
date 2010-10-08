@@ -62,9 +62,9 @@ public class UserFileConverter {
 		if (userFiles.length == 0) {
 			System.out.println("Skipping user conversion as selected dir contains 0 user files");
 			return;
-		} else {
-			System.out.println("Converting "+userFiles.length+" user files");
 		}
+		
+		System.out.println("Converting "+userFiles.length+" user files");
 		File outputDir = new File(_installDir+File.separator+"users"+File.separator+"javabeans");
 		if (!outputDir.exists()) {
 			if (!outputDir.mkdirs()) {

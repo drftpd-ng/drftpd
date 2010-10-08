@@ -30,7 +30,6 @@ import org.drftpd.commands.zipscript.zip.DizStatus;
 import org.drftpd.commands.zipscript.zip.ZipTools;
 import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -79,8 +78,6 @@ public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStat
 			} catch (IOException e) {
 				// Error fetching diz info, ignore
 			} catch (NoAvailableSlaveException e) {
-				// Error fetching diz info, ignore
-			} catch (SlaveUnavailableException e) {
 				// Error fetching diz info, ignore
 			}
 		}

@@ -48,7 +48,7 @@ public class ZipscriptVFSDataMP3 {
 		_setDir = false;
 	}
 
-	public MP3Info getMP3Info() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	public MP3Info getMP3Info() throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		try {
 			MP3Info mp3info = getMP3InfoFromInode(_inode);
 			return mp3info;
@@ -101,9 +101,8 @@ public class ZipscriptVFSDataMP3 {
 			}
 			if (mp3info == null) {
 				throw new FileNotFoundException("Unable to obtain info for MP3 file");
-			} else {
-				_inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
 			}
+			_inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
 			// Update mp3info on parent directory inode
 			DirectoryHandle dir = file.getParent();
 			synchronized(dir) {

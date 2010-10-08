@@ -38,7 +38,6 @@ import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.plugins.sitebot.AnnounceInterface;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.OutputWriter;
@@ -121,9 +120,6 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 			", can't publish race info");
 			return;
 		} catch (NoAvailableSlaveException e) {
-			logger.info("No available slave for .diz");
-			return;
-		} catch (SlaveUnavailableException e) {
 			logger.info("No available slave for .diz");
 			return;
 		}
@@ -335,8 +331,6 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 			// SFV deleted?
 		} catch (IOException e) {
 			// SFV not readable
-		} catch (SlaveUnavailableException e) {
-			// Slave with sfv is offline
 		}
 	}
 

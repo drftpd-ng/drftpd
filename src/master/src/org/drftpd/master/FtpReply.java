@@ -107,7 +107,7 @@ public class FtpReply {
 		}
 
 		for (Iterator<String> iter = _lines.iterator(); iter.hasNext();) {
-			String comment = (String) iter.next();
+			String comment = iter.next();
 
 			if (!iter.hasNext() && (_message == null)) {
 				sb.append(_code + "  " + comment + "\r\n");

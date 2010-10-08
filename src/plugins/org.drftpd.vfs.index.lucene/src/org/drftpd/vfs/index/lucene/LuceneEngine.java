@@ -299,10 +299,11 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 	
 	private Term makeFullPathTermFromInode(InodeHandle inode) {
-		if (inode.isDirectory())
+		if (inode.isDirectory()) {
 			return TERM_FULL.createTerm(inode.getPath() + VirtualFileSystem.separator);
-		else
-			return TERM_FULL.createTerm(inode.getPath());
+		}
+		
+		return TERM_FULL.createTerm(inode.getPath());
 	}
 
 	private Term makeFullPathTermFromString(String path) {
@@ -310,10 +311,11 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 	
 	private Term makeParentPathTermFromInode(InodeHandle inode) {
-		if (inode.isDirectory())
+		if (inode.isDirectory()) {
 			return TERM_PARENT.createTerm(inode.getPath() + VirtualFileSystem.separator);
-		else
-			return TERM_PARENT.createTerm(inode.getPath());
+		}
+		
+		return TERM_PARENT.createTerm(inode.getPath());
 	}
 
 	private WildcardQuery makeFullNameWildcardQueryFromString(String name) {

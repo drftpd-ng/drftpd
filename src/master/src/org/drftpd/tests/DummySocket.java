@@ -42,36 +42,33 @@ public class DummySocket extends Socket {
     public DummySocket() {
     }
 
-    public DummySocket(SocketImpl impl) throws SocketException {
+    public DummySocket(SocketImpl impl) {
         throw new UnsupportedOperationException();
     }
 
-    public DummySocket(String host, int port)
-        throws UnknownHostException, IOException {
+    public DummySocket(String host, int port) {
         throw new UnsupportedOperationException();
     }
 
-    public DummySocket(InetAddress address, int port) throws IOException {
+    public DummySocket(InetAddress address, int port) {
         throw new UnsupportedOperationException();
     }
 
     public DummySocket(String host, int port, InetAddress localAddr,
-        int localPort) throws IOException {
+        int localPort) {
         throw new UnsupportedOperationException();
     }
 
     public DummySocket(InetAddress address, int port, InetAddress localAddr,
-        int localPort) throws IOException {
+        int localPort) {
         throw new UnsupportedOperationException();
     }
 
-    public DummySocket(String host, int port, boolean stream)
-        throws IOException {
+    public DummySocket(String host, int port, boolean stream) {
         throw new UnsupportedOperationException();
     }
 
-    public DummySocket(InetAddress host, int port, boolean stream)
-        throws IOException {
+    public DummySocket(InetAddress host, int port, boolean stream) {
         throw new UnsupportedOperationException();
     }
 

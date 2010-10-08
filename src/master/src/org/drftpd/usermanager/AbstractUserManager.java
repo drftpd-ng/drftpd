@@ -66,7 +66,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 	protected abstract File getUserpathFile();
 
-	protected void createSiteopUser() throws UserFileException {
+	protected void createSiteopUser() {
 		User user = createUser("drftpd");
 		user.setGroup("drftpd");
 		user.setPassword("drftpd");

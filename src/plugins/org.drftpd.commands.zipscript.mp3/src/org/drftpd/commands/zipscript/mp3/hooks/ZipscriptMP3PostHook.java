@@ -32,7 +32,6 @@ import org.drftpd.commands.zipscript.mp3.event.MP3Event;
 import org.drftpd.commands.zipscript.mp3.vfs.ZipscriptVFSDataMP3;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
 import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
 import org.drftpd.vfs.FileHandle;
@@ -170,8 +169,6 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 		} catch (IOException e) {
 			// Error fetching mp3 info, ignore
 		} catch (NoAvailableSlaveException e) {
-			// Error fetching mp3 info, ignore
-		} catch (SlaveUnavailableException e) {
 			// Error fetching mp3 info, ignore
 		}
 	}

@@ -144,16 +144,14 @@ public class AnnounceConfig {
 			if (token.equalsIgnoreCase("null")) {
 				writers.add(new NullOutputWriter());
 				break;
-			} else {
-				if (token.equalsIgnoreCase("public")) {
-					writers.addAll(0,_bot.getWriters().values());
-					break;
-				} else {
-					OutputWriter writer = _bot.getWriters().get(token);
-					if (writer != null) {
-						writers.add(writer);
-					}
-				}
+			}
+			if (token.equalsIgnoreCase("public")) {
+				writers.addAll(0,_bot.getWriters().values());
+				break;
+			}
+			OutputWriter writer = _bot.getWriters().get(token);
+			if (writer != null) {
+				writers.add(writer);
 			}
 		}
 		return writers;

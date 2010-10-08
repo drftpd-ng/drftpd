@@ -41,6 +41,7 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author mog
  * @version $Id$
  */
+@SuppressWarnings("serial")
 public class DummyBaseFtpConnection extends BaseFtpConnection {
     private InetAddress _clientAddress;
     private StringWriter _out2;
@@ -137,6 +138,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
     /**
      * @deprecated
      */
+    @Deprecated
     public void reset() {
         throw new UnsupportedOperationException();
     }

@@ -110,7 +110,7 @@ public class LightRemoteInode implements Serializable, InodeHandleInterface {
 		return _filename;
 	}
 
-	public boolean isAvailable() throws FileNotFoundException {
+	public boolean isAvailable() {
 		return true;
 	}
 

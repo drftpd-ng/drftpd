@@ -27,7 +27,6 @@ import org.drftpd.commands.zipscript.list.NoEntryAvailableException;
 import org.drftpd.commands.zipscript.list.ZipscriptListStatusBarInterface;
 import org.drftpd.commands.zipscript.mp3.vfs.ZipscriptVFSDataMP3;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
 import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
 import org.drftpd.vfs.DirectoryHandle;
@@ -68,8 +67,6 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
 			} catch (IOException e) {
 				// Error fetching mp3 info, ignore
 			} catch (NoAvailableSlaveException e) {
-				// Error fetching mp3 info, ignore
-			} catch (SlaveUnavailableException e) {
 				// Error fetching mp3 info, ignore
 			}
 		}

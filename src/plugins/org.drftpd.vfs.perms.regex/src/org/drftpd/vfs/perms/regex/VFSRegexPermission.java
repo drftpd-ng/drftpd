@@ -20,7 +20,6 @@ package org.drftpd.vfs.perms.regex;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.permissions.Permission;
 import org.drftpd.permissions.RegexPathPermission;
 import org.drftpd.vfs.perms.VFSPermHandler;
@@ -31,7 +30,7 @@ import org.drftpd.vfs.perms.VFSPermHandler;
  * @version $Id$
  */
 public class VFSRegexPermission extends VFSPermHandler {	
-	public void handle(String directive, StringTokenizer st) throws MalformedPatternException {
+	public void handle(String directive, StringTokenizer st) {
 		Pattern p = Pattern.compile(st.nextToken(), Pattern.CASE_INSENSITIVE);
 		addPermission(directive, new RegexPathPermission(p, Permission.makeUsers(st)));
 	}	

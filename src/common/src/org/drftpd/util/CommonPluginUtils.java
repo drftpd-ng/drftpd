@@ -509,9 +509,8 @@ public class CommonPluginUtils {
 							plugin.getParameter(classParamName).valueAsString());
 					if (constructorSig == null) {
 						return pluginCls.newInstance();
-					} else {
-						return pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 					}
+					return pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 				}
 			} catch (ClassNotFoundException e) {
 				if (logError) {
@@ -1096,9 +1095,8 @@ public class CommonPluginUtils {
 							}
 							if (failOnError) {
 								throw e;
-							} else {
-								continue;
 							}
+							continue;
 						}
 					}
 				} else {

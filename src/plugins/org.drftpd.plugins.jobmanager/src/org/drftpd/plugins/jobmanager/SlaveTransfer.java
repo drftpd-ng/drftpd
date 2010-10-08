@@ -176,9 +176,8 @@ public class SlaveTransfer {
 				|| _destTransfer.getChecksum() == 0
 				|| _srcTransfer.getChecksum() == 0) {
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	/**

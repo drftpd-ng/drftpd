@@ -118,7 +118,7 @@ public class FilterChain {
 
 			try {
 				Class<Filter> clazz = _filtersMap.get(filterName);
-				Filter filter = (Filter) clazz.getConstructor(SIG).newInstance(new Object[] { Integer.valueOf(i), p });
+				Filter filter = clazz.getConstructor(SIG).newInstance(new Object[] { Integer.valueOf(i), p });
 				filters.add(filter);
 			} catch (Exception e) {
 				throw new FatalException(i + ".filter = " + filterName, e);

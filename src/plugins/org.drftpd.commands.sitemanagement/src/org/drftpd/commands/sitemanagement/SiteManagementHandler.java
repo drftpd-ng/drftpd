@@ -355,9 +355,8 @@ public class SiteManagementHandler extends CommandInterface {
 		}
 		if (response.getCode() == 200) {
 			return new CommandResponse(200, "Successfully reloaded plugin");
-		} else {
-			return response;
 		}
+		return response;
 	}
 
 	private List<PluginDescriptor> getPluginsToUnload(PluginDescriptor unloadingPlugin, PluginRegistry registry) {

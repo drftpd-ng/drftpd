@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
@@ -304,7 +303,7 @@ public class DirectoryHandle extends InodeHandle implements
 		return getLinksUnchecked(sortedInodes);
 	}
 	
-	private Set<LinkHandle> getLinksUnchecked(Collection<InodeHandle> inodes) throws FileNotFoundException {
+	private Set<LinkHandle> getLinksUnchecked(Collection<InodeHandle> inodes) {
 		Set<LinkHandle> set = new LinkedHashSet<LinkHandle>();
 		for (Iterator<InodeHandle> iter = inodes.iterator(); iter
 				.hasNext();) {
@@ -440,7 +439,7 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	private void createRemergedFile(LightRemoteInode lrf, RemoteSlave rslave,
-			boolean collision) throws IOException, SlaveUnavailableException {
+			boolean collision) throws IOException {
 		String name = lrf.getName();
 		if (collision) {
 			name = lrf.getName() + ".collision." + rslave.getName();
@@ -455,7 +454,7 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	public void remerge(List<LightRemoteInode> files, RemoteSlave rslave, long lastModified)
-			throws IOException, SlaveUnavailableException {
+			throws IOException {
 		Iterator<LightRemoteInode> sourceIter = files.iterator();
 		// source comes pre-sorted from the slave
 		List<InodeHandle> destinationList = null;
