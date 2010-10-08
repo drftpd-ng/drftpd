@@ -72,12 +72,11 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 			if (!getVFSPermissions().checkPathPermission("deleteown", user, this)) {
 				// the user owns the file althought it doesnt have enough perms to delete it.
 				throw new PermissionDeniedException("You are not allowed to delete "+getPath());
-			} else {
-				// the user owns the file and has enough perms to delete it.
-				
-				// deleteown > delete
-				allowed = true; 
 			}
+			// the user owns the file and has enough perms to delete it.
+
+			// deleteown > delete
+			allowed = true; 
 		}
 
 		if (!allowed && !getVFSPermissions().checkPathPermission("delete", user, this)) {
@@ -238,12 +237,11 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 			if (!getVFSPermissions().checkPathPermission("renameown", user, this)) {
 				// the user owns the file althought it doesnt have enough perms to rename it.
 				throw new PermissionDeniedException("You are not allowed to rename "+getPath());
-			} else {
-				// the user owns the file and has enough perms to rename it.
-				
-				// renameown > rename
-				allowed = true; 
 			}
+			// the user owns the file and has enough perms to rename it.
+
+			// renameown > rename
+			allowed = true; 
 		}
 
 		if (!allowed && !getVFSPermissions().checkPathPermission("rename", user, this)) {
@@ -443,13 +441,16 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 * @param  key
 	 *         The key which was used when storing the data in the map
 	 * 
+	 * @param  clazz
+	 *         A class representing the type of the object to return
+	 * 
 	 * @return  The data which was stored against the key or <tt>null</tt> if the map contained
 	 *          no entry for the key
 	 *
 	 * @throws  FileNotFoundException
 	 *          If the inode for this handle does not exist
 	 */
-	public <T> T removeUntypedPluginMetaData(String key) throws FileNotFoundException {
+	public <T> T removeUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
 		return getInode().<T>removeUntypedPluginMetaData(key);
 	}
 
@@ -458,6 +459,9 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 * 
 	 * @param  key
 	 *         The key which was used when storing the data in the map
+	 *         
+	 * @param  clazz
+	 *         A class representing the type of the object to return
 	 * 
 	 * @return  The data which was stored against the key or <tt>null</tt> if the map contained
 	 *          no entry for the provided key
@@ -465,7 +469,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 * @throws  FileNotFoundException
 	 *          If the inode for this handle does not exist
 	 */
-	public <T> T getUntypedPluginMetaData(String key) throws FileNotFoundException {
+	public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
 		return getInode().<T>getUntypedPluginMetaData(key);
 	}
 }
