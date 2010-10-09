@@ -129,7 +129,7 @@ public class FilterChain {
 		_filters = filters;
 	}
 
-	public GlobalContext getGlobalContext() {
+	public static GlobalContext getGlobalContext() {
 		return GlobalContext.getGlobalContext();
 	}
 }

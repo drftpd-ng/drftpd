@@ -54,11 +54,11 @@ public class AssignSlave {
 			}
 			
 			try {
-				if (ap.getScore() == Integer.MIN_VALUE) {
+				if (ap.isRemoved()) {
 					sc.removeSlaveFromChart(ap.getRSlave());
 				} else {
-  				sc.addScoreToSlave(ap.getRSlave(), ap.getScore());
-        }
+					sc.addScoreToSlave(ap.getRSlave(), ap.getScore());
+				}
 			} catch (ObjectNotFoundException e) {
 				// slave is not in the scorechart, but that's np.
 			}
@@ -72,6 +72,8 @@ class AssignParser {
 	private RemoteSlave _rslave;
 	
 	private boolean _all = false;
+	
+	private boolean _removed = false;
 
 	public AssignParser(String s) throws ObjectNotFoundException{
 		boolean positive;
@@ -101,11 +103,12 @@ class AssignParser {
 		try {
 			_rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 		} catch (ObjectNotFoundException e) {
-			throw new ObjectNotFoundException(slavename + "does not exist.", e);
+			throw new ObjectNotFoundException(slavename + " does not exist.", e);
 		}
 
 		if (assign.equals("remove")) {
 			_score = Integer.MIN_VALUE;
+			_removed = true;
 			positive = false;
 		} else {
 			_score = Long.parseLong(assign);
@@ -113,6 +116,10 @@ class AssignParser {
 				_score = -_score;
 			}
 		}
+	}
+	
+	public boolean isRemoved() {
+		return _removed;
 	}
 
 	public RemoteSlave getRSlave() {
