@@ -525,8 +525,9 @@ public class DirectoryHandle extends InodeHandle implements
 						createRemergedFile(source, rslave, false);
 					} else {
 						throw new IOException(
-								source
-										+ ".isDirectory() -- this shouldn't happen, this directory should already be created through a previous remerge process");
+								source.getName()
+										+ " from slave " + rslave.getName() +
+										" isDirectory() -- this shouldn't happen, this directory should already be created through a previous remerge process");
 					}
 					if (sourceIter.hasNext()) {
 						source = sourceIter.next();
