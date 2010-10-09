@@ -986,12 +986,13 @@ public class DataConnectionHandler extends CommandInterface {
 				} else {
 					throw new RuntimeException();
 				}
-				if (conn.isAborted()) {
-					if (isStor && Boolean.parseBoolean(
-							GlobalContext.getConfig().getMainProperties().getProperty("delete.upload.on.abort", "false"))) {
-						response = new CommandResponse(226,"Transfer aborted - deleting file");
-					} else {
-						response = new CommandResponse(226,"Transfer aborted");
+				if (isStor && conn.isAborted()) {
+					if (isStor) {
+						if (ts.getTransferFile().exists()) {
+							response = new CommandResponse(226,"Transfer aborted");
+						} else {
+							response = new CommandResponse(226,"Transfer aborted - deleting file");
+						}
 					}
 				}
 				transferEnded = true;
@@ -1003,43 +1004,30 @@ public class DataConnectionHandler extends CommandInterface {
 						fxpDenied = true;
 						response = new CommandResponse(426, "You are not allowed to FXP from here.");
 					}
-				} else {
-					logger.debug(ex, ex);
+				}
+
+				if (!fxpDenied) {
+					logger.debug("IOException during transfer", ex);
+					response = new CommandResponse(426, "Transfer failed");
 				}
 
 				if (isStor) {
-					try {
-						ts.getTransferFile().deleteUnchecked();
-					} catch (FileNotFoundException e) {
-						// ahh, great! :)
-					}
-
-					if (!fxpDenied) {
-						logger.error("IOException during transfer, deleting file", ex);
+					conn.abortCommand();
+					if (!fxpDenied && !ts.getTransferFile().exists()) {
 						response = new CommandResponse(426, "Transfer failed, deleting file");
 					}
-				} else if (!fxpDenied) {
-					logger.error("IOException during transfer", ex);
-					response = new CommandResponse(426, ex.getMessage());
 				}
 
 				response.addComment(ex.getMessage());
 			} catch (SlaveUnavailableException e) {
-				logger.debug("", e);
+				logger.error("Slave went offline during transfer", e);
+				response = new CommandResponse(426,	"Slave went offline during transfer");
 
 				if (isStor) {
-					try {
-						ts.getTransferFile().deleteUnchecked();
-					} catch (FileNotFoundException e1) {
-						// ahh, great! :)
+					conn.abortCommand();
+					if (!ts.getTransferFile().exists()) {
+						response = new CommandResponse(426, "Slave went offline during transfer, deleting file");
 					}
-					logger.error("Slave went offline during transfer, deleting file", e);
-					response = new CommandResponse(426,
-					"Slave went offline during transfer, deleting file");
-				} else {
-					logger.error("Slave went offline during transfer", e);
-					response = new CommandResponse(426,
-					"Slave went offline during transfer");
 				}
 
 				response.addComment(e.getLocalizedMessage());
