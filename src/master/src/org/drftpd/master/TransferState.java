@@ -304,7 +304,7 @@ public class TransferState {
 		RemoteTransfer rt = getTransfer();
 		if (rt != null) {
 			rt.abort(reason);
-			if (rt.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD &&
+			if (_transferFile != null && rt.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD &&
 					Boolean.parseBoolean(GlobalContext.getConfig().getMainProperties()
 							.getProperty("delete.upload.on.abort", "false"))) {
 				try {
