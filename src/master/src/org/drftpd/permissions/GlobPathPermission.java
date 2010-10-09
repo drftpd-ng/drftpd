@@ -44,7 +44,13 @@ public class GlobPathPermission extends PathPermission {
 
 	public boolean checkPath(InodeHandle inode) {
 		Perl5Matcher m = new Perl5Matcher();
-		return m.matches(inode.getPath(), _pat);
+		
+		String path = inode.getPath();
+		if (inode.isDirectory() && !inode.getPath().endsWith("/")) {
+			path = inode.getPath().concat("/");
+		}
+		
+		return m.matches(path, _pat);
 	}
 	
 	public String toString() {
