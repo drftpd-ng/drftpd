@@ -36,7 +36,7 @@ import org.drftpd.vfs.TransferPointer;
  * All calls to this class should be made through the TransferState object
  */
 public class RemoteTransfer {
-
+	
 	private InetSocketAddress _address;
 
 	private TransferIndex _transferIndex;
@@ -60,16 +60,11 @@ public class RemoteTransfer {
 	}
 
 	public void updateTransferStatus(TransferStatus ts) {
-		synchronized (_rslave) {
-			_status = ts;
-		}
+		_status = ts;
+
 		if (_status.isFinished()) {
 			if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-				/*try {
-					_pointer.unlinkPointer(_path, this);
-				} catch (FileNotFoundException e) {
-					// Ignore, file could have been deleted whilst the update was in transit
-				}*/
+				_pointer.unlinkPointer(this);
 			}
 			_pointer = null;
 		}
@@ -137,26 +132,19 @@ public class RemoteTransfer {
 	}
 
 	public void abort(String reason) {
-		synchronized (_rslave) {
-			if (_status.isFinished()) {
-				// no need to abort a transfer that isn't transferring
-				return;
+		if (_status.isFinished()) {
+			// no need to abort a transfer that isn't transferring
+			return;
+		}
+		try {
+			SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
+		} catch (SlaveUnavailableException e) {
+			_status = new TransferStatus(getTransferIndex(), e);
+		} finally {
+			if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+				_pointer.unlinkPointer(this);
 			}
-			try {
-				SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
-			} catch (SlaveUnavailableException e) {
-				_status = new TransferStatus(getTransferIndex(), e);
-			} finally {
-				/*if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-					try {
-						_pointer.unlinkPointer(_path, this);
-					} catch (FileNotFoundException e) {
-						// Shouldn't happen as this gets called before a delete is finished
-						logger.warn("File linked to transfer pointer has disappeared",e);
-					}
-				}*/
-				_pointer = null;
-			}
+			_pointer = null;
 		}
 	}
 	

@@ -31,11 +31,11 @@ import org.drftpd.slave.Transfer;
 public class TransferPointer {
 	private VirtualFileSystemFile _vfsObject = null;
 	
-	protected static final Logger logger = Logger.getLogger(InodeHandle.class.getName());
+	protected static final Logger logger = Logger.getLogger(InodeHandle.class);
 
 	public TransferPointer(String path, RemoteTransfer transfer) throws FileNotFoundException {
 		VirtualFileSystemInode vfsInode = VirtualFileSystem.getVirtualFileSystem().getInodeByPath(path);
-		if (vfsInode instanceof VirtualFileSystemFile) {
+		if (vfsInode.isFile()) {
 			_vfsObject = (VirtualFileSystemFile) vfsInode;
 			if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
 				_vfsObject.addUpload(transfer);
@@ -49,23 +49,14 @@ public class TransferPointer {
 		}
 	}
 	
-	public void unlinkPointer(String path, RemoteTransfer transfer) throws FileNotFoundException {
-		VirtualFileSystemInode vfsInode = VirtualFileSystem.getVirtualFileSystem().getInodeByPath(path);
-		if (vfsInode instanceof VirtualFileSystemFile) {
-			VirtualFileSystemFile vfsUnlinkObject = (VirtualFileSystemFile) vfsInode;
-			if (!vfsUnlinkObject.equals(_vfsObject)) {
-				throw new IllegalArgumentException("Trying to unlink pointer from a different file than it is linked with");
-			}
-			if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
-				vfsUnlinkObject.removeUpload(transfer);
-			} else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-				vfsUnlinkObject.removeDownload(transfer);
-			} else {
-				throw new IllegalArgumentException("Transfer has to have a direction");
-			}
-			_vfsObject = null;
+	public void unlinkPointer(RemoteTransfer transfer) {
+		if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
+			_vfsObject.removeUpload(transfer);
+		} else if (transfer.getTransferDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
+			_vfsObject.removeDownload(transfer);
 		} else {
-			logger.error("This is a bug, report me! -- inconsistent file system", new ObjectNotValidException(path));
+			throw new IllegalArgumentException("Transfer has to have a direction");
 		}
+		_vfsObject = null;
 	}
 }

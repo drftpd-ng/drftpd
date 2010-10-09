@@ -33,14 +33,14 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
-import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.log4j.Logger;
@@ -118,9 +118,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private LinkedList<QueuedOperation> _renameQueue;
 
-	private transient Stack<String> _indexPool;
+	private transient LinkedBlockingDeque<String> _indexPool;
 
-	private transient HashMap<String, AsyncResponse> _indexWithCommands;
+	private transient ConcurrentHashMap<String, AsyncResponse> _indexWithCommands;
 
 	private transient ObjectInputStream _sin;
 
@@ -128,11 +128,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private transient ObjectOutputStream _sout;
 
-	private transient HashMap<TransferIndex, RemoteTransfer> _transfers;
+	private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
 
 	private transient AtomicBoolean _remergePaused;
 	
 	private transient boolean _initRemergeCompleted;
+
+	private transient Object _commandMonitor = new Object();
 
 	public RemoteSlave(String name) {
 		_name = name;
@@ -210,28 +212,20 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void setProperty(String name, String value) {
-		synchronized (_keysAndValues) {
-			_keysAndValues.setProperty(name, value);
-			commit();
-		}
+		_keysAndValues.setProperty(name, value);
+		commit();
 	}
 
 	public String getProperty(String name, String def) {
-		synchronized (_keysAndValues) {
-			return _keysAndValues.getProperty(name, def);
-		}
+		return _keysAndValues.getProperty(name, def);
 	}
 
 	public Properties getProperties() {
-		synchronized (_keysAndValues) {
-			return (Properties) _keysAndValues.clone();
-		}
+		return (Properties) _keysAndValues.clone();
 	}
 	
 	public KeyedMap<Key<?>, Object> getTransientKeyedMap() {
-		synchronized (_transientKeyedMap) {
-			return _transientKeyedMap;
-		}
+		return _transientKeyedMap;
 	}
 
 	/**
@@ -303,7 +297,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 * Returns the RemoteSlave's saved SlaveStatus, can return a status before
 	 * remerge() is completed
 	 */
-	public synchronized SlaveStatus getSlaveStatus()
+	public SlaveStatus getSlaveStatus()
 			throws SlaveUnavailableException {
 		if ((_status == null) || !isOnline()) {
 			throw new SlaveUnavailableException();
@@ -315,32 +309,29 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		long bytesReceived;
 		long bytesSent;
 
-		synchronized (_transfers) {
-			bytesReceived = getReceivedBytes();
-			bytesSent = getSentBytes();
+		bytesReceived = getReceivedBytes();
+		bytesSent = getSentBytes();
 
-			for (Iterator<RemoteTransfer> i = _transfers.values().iterator(); i.hasNext();) {
-				RemoteTransfer transfer = i.next();
-				switch (transfer.getTransferDirection()) {
-				case Transfer.TRANSFER_RECEIVING_UPLOAD:
-					throughputUp += transfer.getXferSpeed();
-					bytesReceived += transfer.getTransfered();
-					transfersUp += 1;
-					break;
+		for (RemoteTransfer transfer : _transfers.values()) {
+			switch (transfer.getTransferDirection()) {
+			case Transfer.TRANSFER_RECEIVING_UPLOAD:
+				throughputUp += transfer.getXferSpeed();
+				bytesReceived += transfer.getTransfered();
+				transfersUp += 1;
+				break;
 
-				case Transfer.TRANSFER_SENDING_DOWNLOAD:
-					throughputDown += transfer.getXferSpeed();
-					transfersDown += 1;
-					bytesSent += transfer.getTransfered();
-					break;
+			case Transfer.TRANSFER_SENDING_DOWNLOAD:
+				throughputDown += transfer.getXferSpeed();
+				transfersDown += 1;
+				bytesSent += transfer.getTransfered();
+				break;
 
-				case Transfer.TRANSFER_UNKNOWN:
-					break;
+			case Transfer.TRANSFER_UNKNOWN:
+				break;
 
-				default:
-					throw new FatalException("unrecognized direction - "
-							+ transfer.getTransferDirection() + " for " + transfer);
-				}
+			default:
+				throw new FatalException("unrecognized direction - "
+						+ transfer.getTransferDirection() + " for " + transfer);
 			}
 		}
 
@@ -360,7 +351,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 * Returns the RemoteSlave's stored SlaveStatus, will not return a status
 	 * before remerge() is completed
 	 */
-	public synchronized SlaveStatus getSlaveStatusAvailable()
+	public SlaveStatus getSlaveStatusAvailable()
 			throws SlaveUnavailableException {
 		if (isAvailable()) {
 			return getSlaveStatus();
@@ -445,7 +436,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 * @return true if the slave has synchronized its filelist since last
 	 *         connect
 	 */
-	public synchronized boolean isAvailable() {
+	public boolean isAvailable() {
 		return _isAvailable;
 	}
 
@@ -520,7 +511,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return ret;
 	}
 
-	public synchronized void setAvailable(boolean available) {
+	public void setAvailable(boolean available) {
 		_isAvailable = available;
 	}
 
@@ -618,7 +609,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_socket = socket;
 		_sout = out;
 		_sin = in;
-		_indexPool = new Stack<String>();
+		if (_indexPool == null) {
+			_indexPool = new LinkedBlockingDeque<String>(256);
+		} else {
+			_indexPool.clear();
+		}
 
 		for (int i = 0; i < 256; i++) {
 			String key = Integer.toHexString(i);
@@ -630,8 +625,18 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			_indexPool.push(key);
 		}
 
-		_indexWithCommands = new HashMap<String, AsyncResponse>();
-		_transfers = new HashMap<TransferIndex, RemoteTransfer>();
+		if (_indexWithCommands == null) {
+			_indexWithCommands = new ConcurrentHashMap<String, AsyncResponse>();
+		} else {
+			_indexWithCommands.clear();
+		}
+		
+		if (_transfers == null) {
+			_transfers = new ConcurrentHashMap<TransferIndex, RemoteTransfer>();
+		} else {
+			_transfers.clear();
+		}
+		
 		_errors = 0;
 		_lastNetworkError = System.currentTimeMillis();
 		_initRemergeCompleted = false;
@@ -668,17 +673,16 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return ((AsyncResponseChecksum) fetchResponse(index)).getChecksum();
 	}
 
-	public synchronized String fetchIndex() throws SlaveUnavailableException {
+	public String fetchIndex() throws SlaveUnavailableException {
+		String index = null;
 		while (isOnline()) {
 			try {
-				return _indexPool.pop();
-			} catch (EmptyStackException e) {
-				logger
-						.error("Too many commands sent, need to wait for the slave to process commands");
-			}
-
-			try {
-				wait();
+				index = _indexPool.poll(1000, TimeUnit.MILLISECONDS);
+				if (index == null) {
+					logger.error("Too many commands sent, need to wait for the slave to process commands");
+				} else {
+					return index;
+				}
 			} catch (InterruptedException e1) {
 			}
 		}
@@ -715,13 +719,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 * returns an AsyncResponse for that index and throws any exceptions thrown
 	 * on the Slave side
 	 */
-	public synchronized AsyncResponse fetchResponse(String index, int wait)
+	public AsyncResponse fetchResponse(String index, int wait)
 			throws SlaveUnavailableException, RemoteIOException {
 		long total = System.currentTimeMillis();
 
 		while (isOnline() && !_indexWithCommands.containsKey(index)) {
 			try {
-				wait(1000);
+				synchronized(_commandMonitor) {
+					_commandMonitor.wait(1000);
+				}
 
 				// will wait a maximum of 1000 milliseconds before waking up
 			} catch (InterruptedException e) {
@@ -740,7 +746,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 		AsyncResponse rar = _indexWithCommands.remove(index);
 		_indexPool.push(index);
-		notifyAll();
 
 		if (rar instanceof AsyncResponseException) {
 			Throwable t = ((AsyncResponseException) rar).getThrowable();
@@ -771,7 +776,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return _socket.getPort();
 	}
 
-	public synchronized boolean isOnline() {
+	public boolean isOnline() {
 		return ((_socket != null) && _socket.isConnected());
 	}
 
@@ -849,52 +854,52 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					continue;
 				}
 
-				synchronized (this) {
-					if (!(ar instanceof AsyncResponseRemerge)
-							&& !(ar instanceof AsyncResponseTransferStatus)) {
-						logger.debug("Received: " + ar);
+				if (!(ar instanceof AsyncResponseRemerge)
+						&& !(ar instanceof AsyncResponseTransferStatus)) {
+					logger.debug("Received: " + ar);
+				}
+
+				if (ar instanceof AsyncResponseTransfer) {
+					AsyncResponseTransfer art = (AsyncResponseTransfer) ar;
+					addTransfer((art.getConnectInfo().getTransferIndex()),
+							new RemoteTransfer(art.getConnectInfo(), this));
+				}
+
+				if (ar.getIndex().equals("Remerge")) {
+					getGlobalContext().getSlaveManager().putRemergeQueue(
+							new RemergeMessage((AsyncResponseRemerge) ar,
+									this));
+				} else if (ar.getIndex().equals("DiskStatus")) {
+					_status = ((AsyncResponseDiskStatus) ar)
+					.getDiskStatus();
+				} else if (ar.getIndex().equals("TransferStatus")) {
+					TransferStatus ats = ((AsyncResponseTransferStatus) ar)
+					.getTransferStatus();
+					RemoteTransfer rt = null;
+
+					try {
+						rt = getTransfer(ats.getTransferIndex());
+					} catch (SlaveUnavailableException e1) {
+
+						// no reason for slave thread to be running if the
+						// slave is not online
+						return;
 					}
 
-					if (ar instanceof AsyncResponseTransfer) {
-						AsyncResponseTransfer art = (AsyncResponseTransfer) ar;
-						addTransfer((art.getConnectInfo().getTransferIndex()),
-								new RemoteTransfer(art.getConnectInfo(), this));
+					rt.updateTransferStatus(ats);
+
+					if (ats.isFinished()) {
+						removeTransfer(ats.getTransferIndex());
 					}
-
-					if (ar.getIndex().equals("Remerge")) {
-						getGlobalContext().getSlaveManager().putRemergeQueue(
-								new RemergeMessage((AsyncResponseRemerge) ar,
-										this));
-					} else if (ar.getIndex().equals("DiskStatus")) {
-						_status = ((AsyncResponseDiskStatus) ar)
-								.getDiskStatus();
-					} else if (ar.getIndex().equals("TransferStatus")) {
-						TransferStatus ats = ((AsyncResponseTransferStatus) ar)
-								.getTransferStatus();
-						RemoteTransfer rt = null;
-
-						try {
-							rt = getTransfer(ats.getTransferIndex());
-						} catch (SlaveUnavailableException e1) {
-
-							// no reason for slave thread to be running if the
-							// slave is not online
-							return;
-						}
-
-						rt.updateTransferStatus(ats);
-
-						if (ats.isFinished()) {
-							removeTransfer(ats.getTransferIndex());
-						}
+				} else {
+					_indexWithCommands.put(ar.getIndex(), ar);
+					if (pingIndex != null
+							&& pingIndex.equals(ar.getIndex())) {
+						fetchResponse(pingIndex);
+						pingIndex = null;
 					} else {
-						_indexWithCommands.put(ar.getIndex(), ar);
-						if (pingIndex != null
-								&& pingIndex.equals(ar.getIndex())) {
-							fetchResponse(pingIndex);
-							pingIndex = null;
-						} else {
-							notifyAll();
+						synchronized (_commandMonitor) {
+							_commandMonitor.notifyAll();
 						}
 					}
 				}
@@ -910,12 +915,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				.toString(SlaveManager.actualTimeout)));
 	}
 
-	private synchronized void removeTransfer(TransferIndex transferIndex) {
-		RemoteTransfer transfer = null;
-		synchronized (_transfers) {
-			transfer = _transfers.remove(transferIndex);
-		}
+	private void removeTransfer(TransferIndex transferIndex) {
+		RemoteTransfer transfer =  _transfers.remove(transferIndex);
+
 		if (transfer == null) {
+			if (!isOnline()) {
+				return;
+			}
 			throw new IllegalStateException("there is a bug in code");
 		}
 		if (transfer.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD) {
@@ -931,7 +937,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		setOfflineReal(reason);
 	}
 
-	private final synchronized void setOfflineReal(String reason) {
+	private final void setOfflineReal(String reason) {
 
 		if (_socket != null) {
 			setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
@@ -943,9 +949,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 		_sin = null;
 		_sout = null;
-		_indexPool = null;
-		_indexWithCommands = null;
-		_transfers = null;
+		_indexWithCommands.clear();
+		_transfers.clear();
 		_maxPath = 0;
 		_status = null;
 
@@ -977,9 +982,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private AsyncResponse readAsyncResponse() throws SlaveUnavailableException,
 			SocketTimeoutException {
 		Object obj = null;
+		ObjectInputStream in = _sin;
+		if (!isOnline()) {
+			throw new SlaveUnavailableException("Slave is unavailable");
+		}
 		while (true) {
 			try {
-				obj = _sin.readObject();
+				obj = in.readObject();
 			} catch (ClassNotFoundException e) {
 				logger.error("ClassNotFound reading AsyncResponse", e);
 				setOffline("ClassNotFound reading AsyncResponse");
@@ -1021,14 +1030,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			throw new NullPointerException();
 		}
 
+		ObjectOutputStream out = _sout;
 		if (!isOnline()) {
 			throw new SlaveUnavailableException();
 		}
 
 		try {
-			_sout.writeObject(rac);
-			_sout.flush();
-			_sout.reset();
+			out.writeObject(rac);
+			out.flush();
+			out.reset();
 		} catch (IOException e) {
 			logger.error("error in sendCommand()", e);
 			throw new SlaveUnavailableException(
@@ -1047,41 +1057,39 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 	}
 
-	public synchronized void addTransfer(TransferIndex transferIndex,
+	public void addTransfer(TransferIndex transferIndex,
 			RemoteTransfer transfer) {
 		if (!isOnline()) {
 			return;
 		}
 
-		synchronized (_transfers) {
-			_transfers.put(transferIndex, transfer);
-		}
+		_transfers.put(transferIndex, transfer);
 	}
 
-	public synchronized RemoteTransfer getTransfer(TransferIndex transferIndex)
+	public RemoteTransfer getTransfer(TransferIndex transferIndex)
 			throws SlaveUnavailableException {
 		if (!isOnline()) {
 			throw new SlaveUnavailableException("Slave is not online");
 		}
 
-		synchronized (_transfers) {
-			RemoteTransfer ret = _transfers.get(transferIndex);
-			if (ret == null)
+		RemoteTransfer ret = _transfers.get(transferIndex);
+		if (ret == null) {
+			if (isOnline()) {
 				throw new FatalException(
 						"there is a bug somewhere in code, tried to fetch a transfer index that doesn't exist - "
-								+ transferIndex);
-			return ret;
+						+ transferIndex);
+			}
+			throw new SlaveUnavailableException("Slave is not online");
 		}
+		return ret;
 	}
 
-	public synchronized Collection<RemoteTransfer> getTransfers()
+	public Collection<RemoteTransfer> getTransfers()
 			throws SlaveUnavailableException {
 		if (!isOnline()) {
 			throw new SlaveUnavailableException("Slave is not online");
 		}
-		synchronized (_transfers) {
-			return Collections.unmodifiableCollection(_transfers.values());
-		}
+		return Collections.unmodifiableCollection(_transfers.values());
 	}
 
 	public boolean isMemberOf(String string) {

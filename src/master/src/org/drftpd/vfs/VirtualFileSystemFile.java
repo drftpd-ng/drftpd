@@ -273,18 +273,16 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	
 	private void abortTransfers(ArrayList<RemoteTransfer> transfers, String reason) {
 		synchronized (transfers) {
-			for (Iterator<RemoteTransfer> iter = transfers.iterator(); iter.hasNext();) {
-				RemoteTransfer transfer = iter.next();
+			for (RemoteTransfer transfer :  new ArrayList<RemoteTransfer>(transfers)) {
 				transfer.abort(reason);
-				iter.remove();
+				transfers.remove(transfer);
 			}
 		}
 	}
 	
 	private boolean isTransferring(ArrayList<RemoteTransfer> transfers) {
 		synchronized (transfers) {
-			for (Iterator<RemoteTransfer> iter = transfers.iterator(); iter.hasNext();) {
-				RemoteTransfer transfer = iter.next();
+			for (RemoteTransfer transfer : new ArrayList<RemoteTransfer>(transfers)) {
 				try {
 					if (!transfer.getTransferStatus().isFinished()) {
 						return true;
@@ -294,8 +292,6 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 					// this one failed but another might be transferring
 					
 				}
-				// transfer is done or failed, let's remove it from the list so we don't have to iterate over it anymore
-				iter.remove();
 			}
 			return false;
 		}
