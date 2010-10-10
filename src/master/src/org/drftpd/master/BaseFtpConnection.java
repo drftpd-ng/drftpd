@@ -357,7 +357,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 				GlobalContext.getEventService().publishAsync(new ConnectionEvent(getUserNull(), "LOGOUT"));
 			}
 			
-			_pool.shutdown();
+			_pool.shutdownNow();
 			GlobalContext.getConnectionManager().remove(this);
 			GlobalContext.getConnectionManager().dumpThreadPool();
 			
