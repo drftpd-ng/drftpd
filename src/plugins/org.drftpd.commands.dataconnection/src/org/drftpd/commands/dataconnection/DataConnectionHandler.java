@@ -1044,7 +1044,7 @@ public class DataConnectionHandler extends CommandInterface {
 						_keyPrefix+"transfer.complete", env, request.getUser()));
 			}
 
-			response.setObject(CHECKSUM,status.getChecksum());
+			response.setObject(CHECKSUM,status == null ? 0L : status.getChecksum());
 			response.setObject(TRANSFER_FILE,ts.getTransferFile());
 			response.setObject(TRANSFER_SLAVE,ts.getTransferSlave());
 			response.setObject(TRANSFER_SLAVE_INET_ADDRESS, ts.getAddress().getAddress());
