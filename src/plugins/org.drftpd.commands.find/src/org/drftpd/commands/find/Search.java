@@ -221,6 +221,11 @@ public class Search extends CommandInterface {
 
 		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
 
+		if (inodes.isEmpty()) {
+			response.addComment(session.jprintf(_bundle,_keyPrefix+"search.empty", env, user.getName()));
+			return response;
+		}
+
 		InodeHandle inode;
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
 			try {
