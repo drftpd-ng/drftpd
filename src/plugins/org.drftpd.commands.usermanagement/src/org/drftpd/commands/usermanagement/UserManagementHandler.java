@@ -575,7 +575,15 @@ public class UserManagementHandler extends CommandInterface {
 				throw new ImproperUsageException();
 			}
 
-			long credits = Bytes.parseBytes(commandArguments[0]);
+			long credits = 0L;
+			
+			try {
+				credits = Bytes.parseBytes(commandArguments[0]);
+			} catch (NumberFormatException e) {
+				return new CommandResponse(452, "The string " + commandArguments[0]
+						+ " cannot be interpreted");				
+			}
+			
 			logger.info("'" + session.getUserNull(request.getUser()).getName()
 					+ "' changed credits for '" + userToChange.getName()
 					+ "' from '" + userToChange.getCredits() + " to '"
