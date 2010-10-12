@@ -3026,6 +3026,11 @@ public class SiteBot implements ReplyConstants, Runnable {
 	}
 
 	protected void terminate(String reason) {
+		for (UserDetails user : _users.values()) {
+			for (ServiceCommand command : user.getCommandSessions()) {
+				command.abortCommand();
+			}
+		}
 		_isTerminated = true;
 		quitServer(reason);
 		_pool.shutdownNow();
