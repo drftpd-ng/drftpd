@@ -252,6 +252,7 @@ public class ListHandler extends CommandInterface {
 
 			try {
 				if (isStat || isList) {
+					os.write("total 0" + NEWLINE);
 					os.write(toList(container.getElements(), fulldate));
 				} else {
 					os.write(toMLST(container.getElements()));
