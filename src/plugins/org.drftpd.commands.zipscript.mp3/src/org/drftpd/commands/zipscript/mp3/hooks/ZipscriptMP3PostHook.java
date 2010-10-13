@@ -60,7 +60,7 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("cwd.mp3info.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("cwd.mp3info.enabled", "false").equalsIgnoreCase("true")) {
 			addMP3Info(request, response, response.getCurrentDirectory(), false);
 		}
 	}
@@ -156,7 +156,7 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 			if (isStor) {
 				Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 				getPropertiesForPlugin("zipscript.conf");
-				if (cfg.getProperty("stor.mp3info.enabled").equalsIgnoreCase("true")) {
+				if (cfg.getProperty("stor.mp3info.enabled", "false").equalsIgnoreCase("true")) {
 					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix+"stor.mp3info.text"));
 				}
 				FileHandle file = (FileHandle) inode;

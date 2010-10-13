@@ -46,7 +46,7 @@ public class LinkUtils {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
 		// Check if incomplete links are enabled
-		if (!cfg.getProperty("incomplete.links").equals("true")) {
+		if (!cfg.getProperty("incomplete.links", "false").equals("true")) {
 			return;
 		}
 		String knownDirs = cfg.getProperty("incomplete.useparent");

@@ -59,14 +59,14 @@ public class ZipscriptPreHook implements PreHookInterface {
 			logger.fatal("conf/zipscript.conf not found");
 		}
 		// SFV First PathPermissions
-		String sfvFirstUsers = cfg.getProperty("sfvfirst.users");
-		_sfvFirstRequired = cfg.getProperty("sfvfirst.required").equals("true");
-		_sfvFirstAllowNoExt = cfg.getProperty("sfvfirst.allownoext").equals("true");
+		String sfvFirstUsers = cfg.getProperty("sfvfirst.users", "");
+		_sfvFirstRequired = cfg.getProperty("sfvfirst.required", "false").equals("true");
+		_sfvFirstAllowNoExt = cfg.getProperty("sfvfirst.allownoext", "false").equals("true");
 		if (_sfvFirstRequired) {
 			try {
 				// this one gets perms defined in sfvfirst.users
 				StringTokenizer st = new StringTokenizer(cfg
-						.getProperty("sfvfirst.pathcheck"));
+						.getProperty("sfvfirst.pathcheck", ""));
 				while (st.hasMoreTokens()) {
 					GlobalContext.getConfig().addPathPermission(
 							"sfvfirst.pathcheck",
@@ -76,7 +76,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 											sfvFirstUsers, " "))));
 				}
 				st = new StringTokenizer(cfg
-						.getProperty("sfvfirst.pathignore"));
+						.getProperty("sfvfirst.pathignore", ""));
 				while (st.hasMoreTokens()) {
 					GlobalContext.getConfig().addPathPermission(
 							"sfvfirst.pathignore",
@@ -100,7 +100,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 		// Read config
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
-		boolean restrictSfvEnabled = cfg.getProperty("sfv.restrict.files").equals("true");
+		boolean restrictSfvEnabled = cfg.getProperty("sfv.restrict.files", "false").equals("true");
 		boolean sfvFirstEnforcedPath = checkSfvFirstEnforcedPath(request.getCurrentDirectory(), 
 				request.getSession().getUserNull(request.getUser()));
 		try {
@@ -156,7 +156,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 			return true;
 		}
 		String allowedExts = GlobalContext.getGlobalContext().getPluginsConfig().
-			getPropertiesForPlugin("zipscript.conf").getProperty("allowedexts") + " sfv";
+			getPropertiesForPlugin("zipscript.conf").getProperty("allowedexts", "") + " sfv";
 		StringTokenizer st = new StringTokenizer(allowedExts);
 		while (st.hasMoreElements()) {
 			String ext = "." + st.nextElement().toString().toLowerCase();

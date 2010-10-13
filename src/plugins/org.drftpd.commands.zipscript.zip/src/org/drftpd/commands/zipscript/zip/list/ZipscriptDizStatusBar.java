@@ -45,7 +45,7 @@ public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStat
 		String keyPrefix = this.getClass().getName()+".";
 		// Check config
 		boolean statusBarEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
-		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled").equalsIgnoreCase("true");
+		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
 		if (statusBarEnabled) {
 			try {
 				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);

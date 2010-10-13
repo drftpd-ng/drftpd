@@ -81,7 +81,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("stor.zip.integrity.check.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("stor.zip.integrity.check.enabled", "false").equalsIgnoreCase("true")) {
 			FileHandle transferFile;
 			try {
 				transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
@@ -136,7 +136,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("cwd.diz.info.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("cwd.diz.info.enabled", "false").equalsIgnoreCase("true")) {
 			try {
 				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
 				DizInfo dizInfo = zipData.getDizInfo();
@@ -159,7 +159,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("cwd.zip.racestats.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("cwd.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
 			addRaceStats(request, response, response.getCurrentDirectory());
 		}
 	}
@@ -171,7 +171,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("stor.zip.racestats.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("stor.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
 			addRaceStats(request, response, request.getCurrentDirectory());
 		}
 	}

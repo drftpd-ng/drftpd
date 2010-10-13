@@ -211,7 +211,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("cwd.racestats.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("cwd.racestats.enabled", "false").equalsIgnoreCase("true")) {
 			addRaceStats(request, response, response.getCurrentDirectory());
 		}
 	}
@@ -223,7 +223,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		}
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("stor.racestats.enabled").equalsIgnoreCase("true")) {
+		if (cfg.getProperty("stor.racestats.enabled", "false").equalsIgnoreCase("true")) {
 			addRaceStats(request, response, request.getCurrentDirectory());
 		}
 	}

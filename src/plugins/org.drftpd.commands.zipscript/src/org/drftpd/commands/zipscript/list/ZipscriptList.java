@@ -79,9 +79,9 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 		String keyPrefix = this.getClass().getName()+".";
 		// Check config
 		boolean statusBarEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
-		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled").equalsIgnoreCase("true");
+		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
 		boolean missingFilesEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
-		getPropertiesForPlugin("zipscript.conf").getProperty("files.missing.enabled").equalsIgnoreCase("true");
+		getPropertiesForPlugin("zipscript.conf").getProperty("files.missing.enabled", "false").equalsIgnoreCase("true");
 		if (statusBarEnabled || missingFilesEnabled) {
 			ArrayList<String> statusBarEntries = new ArrayList<String>();
 			ReplacerEnvironment env = new ReplacerEnvironment();
