@@ -1482,6 +1482,7 @@ public class UserManagementHandler extends CommandInterface {
 		logger.info("'" + session.getUserNull(request.getUser()).getName()
 				+ "' changed his password");
 		session.getUserNull(request.getUser()).setPassword(request.getArgument());
+		session.getUserNull(request.getUser()).commit();
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
