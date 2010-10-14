@@ -88,6 +88,8 @@ import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 public class LuceneEngine implements IndexEngineInterface {
 	private static final Logger logger = Logger.getLogger(LuceneEngine.class);
 
+	private static final String EXCEPTION_OCCURED_WHILE_INDEXING = "An exception occured while indexing, check stack trace";
+
 	private static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
 	protected static final String INDEX_DIR = "index";
 	
@@ -593,8 +595,10 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			return inodes;
 		} catch (CorruptIndexException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 			throw new IndexException("Unable to search the index", e);
 		} catch (IOException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 			throw new IndexException("Unable to search the index", e);
 		} finally {
 			if (iSearcher != null) {
@@ -664,8 +668,10 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			return inodes;
 		} catch (CorruptIndexException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 			throw new IndexException("Unable to search the index", e);
 		} catch (IOException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 			throw new IndexException("Unable to search the index", e);
 		} finally {
 			if (iSearcher != null) {
