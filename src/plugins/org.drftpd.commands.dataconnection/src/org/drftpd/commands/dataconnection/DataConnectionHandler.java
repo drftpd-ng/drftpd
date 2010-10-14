@@ -1049,7 +1049,9 @@ public class DataConnectionHandler extends CommandInterface {
 			response.setObject(TRANSFER_SLAVE,ts.getTransferSlave());
 			response.setObject(TRANSFER_SLAVE_INET_ADDRESS, ts.getAddress().getAddress());
 			response.setObject(TRANSFER_TYPE, ts.getType());
-			response.setObject(XFER_STATUS, status);
+			if (status != null) {
+				response.setObject(XFER_STATUS, status);
+			}
 
 			if (isStor && transferEnded) {
 				try {
