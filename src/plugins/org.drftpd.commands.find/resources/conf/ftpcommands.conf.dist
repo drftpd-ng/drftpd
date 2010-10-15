@@ -33,8 +33,6 @@ help.specific #x - slave
 help.specific #t - last modified
 help.specific Example: SITE FIND -action printf(filename: #f size: #s)
 help.specific Multiple options are allowed. If multiple options are given a file/dir must match all options.
-input all
-output source
 }
 
 SITE SEARCH {
@@ -45,8 +43,6 @@ perms *
 limit 50
 help Searches for files and directories using wildcards.
 help.specific ${command} <word> [word ..]
-input all
-output source
 }
 
 SITE DUPE {
@@ -57,6 +53,4 @@ perms *
 limit 50
 help Searches for files and directories using exact name match.
 help.specific ${command} <name>
-input all
-output source
 }
