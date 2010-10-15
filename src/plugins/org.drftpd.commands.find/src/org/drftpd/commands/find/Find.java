@@ -17,17 +17,18 @@
 package org.drftpd.commands.find;
 
 import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.NoSuchElementException;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
@@ -39,36 +40,41 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
-import org.drftpd.commands.zipscript.SFVStatus;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.master.Session;
 import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.plugins.jobmanager.JobManager;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.index.AdvancedSearchParams;
+import org.drftpd.vfs.index.IndexEngineInterface;
+import org.drftpd.vfs.index.IndexException;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 
 /**
- * SITE FIND <options>-action <action>Options: -user <user>-group
- * <group>-nogroup -nouser Options: -mtime [-]n -type [f|d] -slave <slave>-size
- * [-]size Options: -name <name>(* for wildcard) -incomplete -offline Actions:
- * print, wipe, delete Multipe options and actions are allowed. If multiple
- * options are given a file must match all options for action to be taken.
- * 
  * @author pyrrhic
  * @author mog
  * @author fr0w
+ * @author scitz0
  * @version $Id$
  */
 public class Find extends CommandInterface {
 	public static final Logger logger = Logger.getLogger(Find.class);
+
+	private ResourceBundle _bundle;
+	private String _keyPrefix;
+
+	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+		super.initialize(method, pluginName, cManager);
+		_bundle = cManager.getResourceBundle();
+		_keyPrefix = this.getClass().getName()+".";
+	}
 	
 	private static interface Action {
 		public String exec(CommandRequest request, InodeHandle inode);		
@@ -167,8 +173,6 @@ public class Find extends CommandInterface {
 	private static class ActionPrintf implements Action {
 		private String _format;
 
-		private String parent;
-
 		public ActionPrintf(String f) {
 			_format = f;
 			if (_format == null) {
@@ -180,13 +184,14 @@ public class Find extends CommandInterface {
 			return formatOutput(inode);
 		}
 
-		private String formatOutput(InodeHandle inode)
-				throws NumberFormatException {
+		private String formatOutput(InodeHandle inode) {
 			
 			HashMap<String, String> formats = new HashMap<String, String>();
 			
 			try {
+				logger.debug("printf name: " + inode.getName());
 				formats.put("#f", inode.getName());
+				formats.put("#p", inode.getPath());
 				formats.put("#s", Bytes.formatBytes(inode.getSize()));
 				formats.put("#u", inode.getUsername());
 				formats.put("#g", inode.getGroup());
@@ -197,7 +202,7 @@ public class Find extends CommandInterface {
 				else
 					formats.put("#x", "no slaves");
 				
-				formats.put("#h", parent); 
+				formats.put("#h", inode.getParent().getName()); 
 			} catch (FileNotFoundException e) {
 				logger.error("The file was there and now it's gone, how?", e);
 			}
@@ -263,9 +268,11 @@ public class Find extends CommandInterface {
 
 		public String exec(CommandRequest request, InodeHandle inode) {
 			try {
-				inode.deleteUnchecked(); // TODO does wipe needs to be checked against delete perms?
+				inode.delete(request.getSession().getUserNull(request.getUser()));
 			} catch (FileNotFoundException e) {
 				logger.error("The file was there and now it's gone, how?", e);
+			} catch (PermissionDeniedException e) {
+				return "You do not have the proper permissions to wipe " + inode.getPath();
 			}
 			return "Wiped " + inode.getPath();
 		}
@@ -276,217 +283,6 @@ public class Find extends CommandInterface {
 
 		public boolean execInFiles() {
 			return true;
-		}
-	}
-
-	private static interface Option {
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException;
-	}
-
-	private static class OptionGroup implements Option {
-		private String groupname;
-
-		public OptionGroup(String g) {
-			groupname = g;
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			return inode.getGroup().equals(groupname);
-		}
-	}
-
-	//TODO can we depend on the zipscript?
-	private static class OptionIncomplete implements Option {
-		private int _minPercent;
-
-		public OptionIncomplete() {
-		}
-
-		public OptionIncomplete(int minPercent) {
-			_minPercent = minPercent;
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			DirectoryHandle dir = (DirectoryHandle) inode;
-			try {
-				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
-				SFVInfo info = sfvData.getSFVInfo();
-				SFVStatus status = sfvData.getSFVStatus();
-				if (_minPercent == 0)
-					return !status.isFinished();
-				return status.getPresent() * 100 / info.getSize()< _minPercent;
-			} catch (Exception e) {
-				return false;
-			}
-		}
-	}
-
-	private static class OptionMTime implements Option {
-		boolean after;
-
-		private Date date;
-
-		public OptionMTime(int h) {
-			after = true;
-
-			if (h < 0) {
-				after = false;
-				h = Math.abs(h);
-			}
-
-			long t = (long) h * 24 * 60 * 60 * 1000;
-			Date currentDate = new Date();
-			date = new Date(currentDate.getTime() - t);
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			Date fileDate = new Date(inode.lastModified());
-			return after ? fileDate.after(date) : fileDate.before(date);
-		}
-	}
-
-	private static class OptionName implements Option {
-		Pattern pattern;
-
-		public OptionName(String str) {
-		    str = str.replaceAll("\\[", "\\\\[");
-		    str = str.replaceAll("\\]", "\\\\]");
-		    str = str.replaceAll("\\(", "\\\\(");
-		    str = str.replaceAll("\\)", "\\\\)");
-		    str = str.replaceAll("[*]", ".*");
-			pattern = Pattern.compile(str);
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			Matcher m = pattern.matcher(inode.getName());
-			return m.matches();
-		}
-	}
-
-	private static class OptionOffline implements Option {
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			DirectoryHandle dir = (DirectoryHandle) inode;
-			return dir.hasOfflineFiles();
-		}
-	}
-
-	private static class OptionSize implements Option {
-		boolean bigger;
-
-		long size;
-
-		public OptionSize(long s, boolean b) {
-			bigger = b;
-			size = s;
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			return bigger ? (inode.getSize() >= size) : (inode.getSize() <= size);
-		}
-	}
-
-	private static class OptionSlave implements Option {
-		RemoteSlave slave;
-
-		public OptionSlave(RemoteSlave s) {
-			slave = s;
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			FileHandle file = (FileHandle) inode;
-			return file.getSlaves().contains(slave);
-		}
-	}
-
-	private static class OptionType implements Option {
-		boolean dirs;
-
-		boolean files;
-
-		public OptionType(boolean f, boolean d) {
-			files = f;
-			dirs = d;
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			if (files && dirs) {
-				return true;
-			} else if (files && !dirs) {
-				return inode.isFile();
-			} else if (!files && dirs) {
-				return inode.isDirectory();
-			}
-
-			return true;
-		}
-	}
-
-	private static class OptionUser implements Option {
-		private String username;
-
-		public OptionUser(String u) {
-			username = u;
-		}
-
-		public boolean isTrueFor(InodeHandle inode) throws FileNotFoundException {
-			return inode.getUsername().equals(username);
-		}
-	}
-
-	private static void findFile(CommandRequest request, CommandResponse response, DirectoryHandle dir, 
-			Collection<Option> options,	ArrayList<Action> actions, boolean files, boolean dirs) throws FileNotFoundException {
-		
-		User user = null;
-		try {
-			user = request.getUserObject();
-		} catch (NoSuchUserException e) {
-			logger.error("The user just issued the command, how doesnt it exist?", e);
-			return;
-		} catch (UserFileException e) {
-			logger.error("Error reading userfile", e);
-			return;
-		}
-
-		for (InodeHandle inode : dir.getInodeHandles(user)) {
-			if (inode.isDirectory()) {
-				logger.debug("findFile("+inode.getPath()+")");
-				findFile(request, response, (DirectoryHandle) inode, options, actions, files, dirs);
-			}
-
-			if ((dirs && inode.isDirectory()) || (files && inode.isFile())) {
-				boolean checkIt = true;
-
-				for (Option findOption : options) {
-					if (response.size() >= 100) {
-						return;
-					}
-
-					if (!findOption.isTrueFor(inode)) {
-						logger.debug(findOption.getClass()+".isTrueFor("+inode.getPath()+") return false");
-						checkIt = false;
-						break;
-					}
-				}
-
-				if (!checkIt) {
-					continue;
-				}
-
-				for (Action findAction : actions) {
-					if ((inode.isFile() && findAction.execInFiles()) ||
-							inode.isDirectory() && findAction.execInDirs()) {
-						logger.debug("Action "+ findAction.getClass() + " executing on " + inode.getPath());
-						response.addComment(findAction.exec(request, inode));
-					}
-					
-
-					if (response.size() == 100 && actions.size() == 1
-							&& actions.get(0) instanceof ActionPrint) {
-						response.addComment("<snip>");
-						return;
-					}
-				}
-			}
 		}
 	}
 
@@ -506,122 +302,141 @@ public class Find extends CommandInterface {
 	}
 
 	public CommandResponse doFIND(CommandRequest request) throws ImproperUsageException {
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
 
-		Collection<String> argsList = new ArrayList<String>();
-		
-		if (request.hasArgument())
-			for (String s : request.getArgument().split(" "))
-				argsList.add(s);
-		
+		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		//Collection<String> c = Arrays.asList(args);
-		ArrayList<Option> options = new ArrayList<Option>();
 		ArrayList<Action> actions = new ArrayList<Action>();
-		boolean files = true;
-		boolean dirs = true;
-		boolean forceFilesOnly = false;
-		boolean forceDirsOnly = false;
 
-		for (Iterator<String> iter = argsList.iterator();iter.hasNext();) {
-			String arg = iter.next();
-			
-			if (!arg.equalsIgnoreCase("-offline") && !arg.equalsIgnoreCase("-nouser") && !arg.equalsIgnoreCase("-nogroup")
-					&& !arg.equalsIgnoreCase("-incomplete") && !iter.hasNext()) {
-				throw new ImproperUsageException();			
-			}
-			
-			if (arg.equalsIgnoreCase("-user")) {
-				options.add(new OptionUser(iter.next()));
-			} else if (arg.equalsIgnoreCase("-group")) {
-				options.add(new OptionGroup(iter.next()));
-			} else if (arg.equalsIgnoreCase("-name")) {
-				options.add(new OptionName(iter.next()));
-			} else if (arg.equalsIgnoreCase("-slave")) {
-				RemoteSlave rs = null;
-				String slaveName = iter.next();
+		int limit = Integer.parseInt(request.getProperties().getProperty("limit.default","5"));
+		int maxLimit = Integer.parseInt(request.getProperties().getProperty("limit.max","20"));
 
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+
+		while(st.hasMoreTokens()) {
+			String option = st.nextToken();
+
+			if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
+				params.setInodeType(AdvancedSearchParams.InodeType.FILE);
+			} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
+				params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+			} else if (!st.hasMoreTokens()) {
+				throw new ImproperUsageException();
+			} else if (option.equalsIgnoreCase("-user")) {
+				params.setOwner(st.nextToken());
+			} else if (option.equalsIgnoreCase("-group")) {
+				params.setGroup(st.nextToken());
+			} else if (option.equalsIgnoreCase("-slaves")) {
+				HashSet<String> slaves = new HashSet<String>(Arrays.asList(st.nextToken().split(",")));
+				params.setSlaves(slaves);
+			} else if (option.equalsIgnoreCase("-age")) {
+				SimpleDateFormat fullDate = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+				SimpleDateFormat shortDate = new SimpleDateFormat("yyyy.MM.dd");
 				try {
-					rs = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-				} catch (ObjectNotFoundException e) {
-					return new CommandResponse(500, "Slave " + slaveName+ " was not found.");
-				}
+					String from = st.nextToken();
+					String to = st.nextToken();
 
-				forceFilesOnly = true;
-				options.add(new OptionSlave(rs));
-			} else if (arg.equalsIgnoreCase("-mtime")) {
-				int offset = 0;
+					long minAge;
+					long maxAge;
 
-				try {
-					offset = Integer.parseInt(iter.next());
+					if (from.length() == 10)
+						minAge = shortDate.parse(from).getTime();
+					else if (from.length() == 19)
+						minAge = fullDate.parse(from).getTime();
+					else
+						throw new ImproperUsageException("Invalid dateformat for min age in index search.");
+
+					if (to.length() == 10)
+						maxAge = shortDate.parse(to).getTime();
+					else if (to.length() == 19)
+						maxAge = fullDate.parse(to).getTime();
+					else
+						throw new ImproperUsageException("Invalid dateformat for max age in index search.");
+
+					if (minAge >= maxAge)
+						throw new ImproperUsageException("Age range invalid, min value higher or same as max");
+
+					params.setMinAge(minAge);
+					params.setMaxAge(maxAge);
 				} catch (NumberFormatException e) {
-					throw new ImproperUsageException();
+					throw new ImproperUsageException(e);
+				} catch (NoSuchElementException e) {
+					throw new ImproperUsageException("You must specify a range for the age, both min and max", e);
+				}  catch (ParseException e) {
+					throw new ImproperUsageException("Invalid dateformat", e);
 				}
-
-				options.add(new OptionMTime(offset));
-			} else if (arg.equalsIgnoreCase("-size")) {
-				long size = 0;
-				boolean bigger = true;
-				String bytes = iter.next();
-
-				if (bytes.startsWith("-")) {
-					bigger = false;
-					bytes = bytes.substring(1);
-				}
-
+			} else if (option.equalsIgnoreCase("-size")) {
 				try {
-					size = Bytes.parseBytes(bytes);
+					long minSize = Bytes.parseBytes(st.nextToken());
+					long maxSize = Bytes.parseBytes(st.nextToken());
+					if (minSize >= maxSize) {
+						throw new ImproperUsageException("Size range invalid, min value higher or same as max");
+					}
+					params.setMinSize(minSize);
+					params.setMaxSize(maxSize);
 				} catch (NumberFormatException e) {
-					throw new ImproperUsageException();
+					throw new ImproperUsageException(e);
+				} catch (NoSuchElementException e) {
+					throw new ImproperUsageException("You must specify a range for the size, both min and max", e);
 				}
-
-				options.add(new OptionSize(size, bigger));
-			} else if (arg.equalsIgnoreCase("-type")) {
-				String type = iter.next().toLowerCase();
-
-				if (type.equals("f")) {
-					dirs = false;
-				} else if (type.equals("d")) {
-					files = false;
+			} else if (option.equalsIgnoreCase("-sort")) {
+				String field = st.nextToken();
+				params.setSortField(field);
+				if (!st.hasMoreTokens()) {
+					throw new ImproperUsageException("You must specify both field and sort order");
+				}
+				String order = st.nextToken();
+				if (order.equalsIgnoreCase("asc")) {
+					params.setSortOrder(false);
 				} else {
-					throw new ImproperUsageException();
+					params.setSortOrder(true);
 				}
-			} else if (arg.equalsIgnoreCase("-nouser")) {
-				options.add(new OptionUser("nobody"));
-			} else if (arg.equalsIgnoreCase("-incomplete")) {
-				forceDirsOnly = true;
-			
-				if (iter.hasNext()) {
-					String parm = iter.next();
-					int i = Math.abs(Integer.parseInt(parm));
-					options.add(new OptionIncomplete(i));
-				} else {
-					options.add(new OptionIncomplete());
-				}
-			} else if (arg.equalsIgnoreCase("-offline")) {
-				forceDirsOnly = true;
-				options.add(new OptionOffline());
-			} else if (arg.equalsIgnoreCase("-nogroup")) {
-				options.add(new OptionGroup("drftpd"));
-			} else if (arg.equalsIgnoreCase("-action")) {
-				
-				String action = iter.next();
-
-				if (action.indexOf("(") != -1) {
-					String cmd = action.substring(0, action.indexOf("("));
-					boolean go = true;
-
-					while (go) {
-						if (action.endsWith(")")) {
-							Action findAction = getActionWithArgs(cmd,
-									getArgs(action));
-							actions.add(findAction);
-							go = false;
-
-							continue;
-						} else if (!iter.hasNext()) {
+			} else if (option.equalsIgnoreCase("-name")) {
+				String searchString = st.nextToken();
+				if (searchString.charAt(0) == '"') {
+					searchString = searchString.substring(1);
+					while (true) {
+						if (searchString.endsWith("\"")) {
+							searchString = searchString.substring(0,searchString.length()-1);
+							break;
+						} else if (!st.hasMoreTokens()) {
 							throw new ImproperUsageException();
 						} else {
-							action += (" " + iter.next());
+							searchString += " " + st.nextToken();
+						}
+					}
+				}
+				params.setName(searchString);
+			} else if (option.equalsIgnoreCase("-exact")) {
+				params.setExact(true);
+			} else if (option.equalsIgnoreCase("-endswith")) {
+				params.setEndsWith(st.nextToken());
+			} else if (option.equalsIgnoreCase("-limit")) {
+				try {
+					int newLimit = Integer.parseInt(st.nextToken());
+					if (newLimit < maxLimit) {
+						limit = newLimit;
+					} else {
+						limit = maxLimit;
+					}
+				} catch (NumberFormatException e) {
+					throw new ImproperUsageException("Limit must be valid number.");
+				}
+			} else if (option.equalsIgnoreCase("-action")) {
+				String action = st.nextToken();
+				if (action.indexOf("(") != -1) {
+					String cmd = action.substring(0, action.indexOf("("));
+					while (true) {
+						if (action.endsWith(")")) {
+							actions.add(getActionWithArgs(cmd,
+									getArgs(action)));
+							break;
+						} else if (!st.hasMoreTokens()) {
+							throw new ImproperUsageException();
+						} else {
+							action += " " + st.nextToken();
 						}
 					}
 				} else if (action.equals("sendtoslaves")) {
@@ -630,20 +445,19 @@ public class Find extends CommandInterface {
 					}
 					// -action sendtoslaves
 					// <numtransfers[:slave[,slave,..][:priority]]>
-					List<String> actionArgs = Arrays.asList(iter.next().split(
-							":"));
+					List<String> actionArgs = Arrays.asList(st.nextToken().split(":"));
 					int numOfSlaves = Integer.parseInt(actionArgs.get(0));
 					int priority = 0;
 					if (actionArgs.size() >= 3) {
 						priority = Integer.parseInt(actionArgs.get(2));
 					}
-					actions.add(new ActionSendToSlaves(numOfSlaves, parseSlaves(iter.next()), priority));
+					actions.add(new ActionSendToSlaves(numOfSlaves, parseSlaves(actionArgs.get(1)), priority));
 				} else if (action.equals("deletefromslaves")) {
 					if (!checkCustomPermission(request, "deleteFromSlaves", "=siteop")) {
 						return new CommandResponse(500, "You do not have the proper permissions for deleteFromSlaves");
 					}
 					// -action deletefromslaves <slave[,slave[,...]]>
-					actions.add(new ActionDeleteFromSlaves(parseSlaves(iter.next())));
+					actions.add(new ActionDeleteFromSlaves(parseSlaves(st.nextToken())));
 				} else {
 					Action findAction = getAction(action.toLowerCase());
 
@@ -658,40 +472,69 @@ public class Find extends CommandInterface {
 
 					actions.add(findAction);
 				}
-			} else {
-				throw new ImproperUsageException();
 			}
 		}
 
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
-		if (actions.size() == 0) {
-			actions.add(new ActionPrint());
+		if (actions.isEmpty()) {
+			throw new ImproperUsageException();
 		}
 
-		if (!dirs && !files) {
-			dirs = true;
-			files = true;
-		}
+		params.setLimit(limit);
 
-		if (forceFilesOnly && forceDirsOnly) {
-			return new CommandResponse(500,"Option conflict. Possibly -slave and -incomplete.");
-		} else if (forceFilesOnly) {
-			dirs = false;
-			response.addComment("Forcing a file only search because of -slave option.");
-		} else if (forceDirsOnly) {
-			files = false;
-			response.addComment("Forcing a dir only search.");
-		}
+		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
+		Map<String,String> inodes;
 
-		options.add(new OptionType(files, dirs));
-		
 		try {
-			findFile(request, response, request.getCurrentDirectory(), options, actions, files, dirs);
-		} catch (FileNotFoundException e) {
-			logger.error("The file was there and now it's gone, how?", e);
+			inodes = ie.advancedFind(request.getCurrentDirectory(), params);
+		} catch (IndexException e) {
+			logger.error(e.getMessage());
+			return new CommandResponse(550, e.getMessage());
+		} catch (IllegalArgumentException e) {
+			logger.info(e.getMessage());
+			return new CommandResponse(550, e.getMessage());
 		}
-		
+
+		ReplacerEnvironment env = new ReplacerEnvironment();
+
+		User user = request.getSession().getUserNull(request.getUser());
+
+		Session session = request.getSession();
+
+		CommandResponse response = new CommandResponse(200, "Find complete!");
+
+		if (inodes.isEmpty()) {
+			response.addComment(session.jprintf(_bundle,_keyPrefix+"find.empty", env, user.getName()));
+			return response;
+		}
+
+		env.add("results", inodes.size());
+		env.add("limit", params.getLimit());
+		response.addComment(session.jprintf(_bundle,_keyPrefix+"find.header", env, user.getName()));
+
+		InodeHandle inode;
+		for (Map.Entry<String,String> item : inodes.entrySet()) {
+			try {
+				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
+						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
+				if (!inode.isHidden(user)) {
+					env.add("name", inode.getName());
+					env.add("path", inode.getPath());
+					env.add("owner", inode.getUsername());
+					env.add("group", inode.getGroup());
+					env.add("size", Bytes.formatBytes(inode.getSize()));
+					for (Action findAction : actions) {
+						if ((inode.isFile() && findAction.execInFiles()) ||
+								(inode.isDirectory() && findAction.execInDirs())) {
+							logger.debug("Action "+ findAction.getClass() + " executing on " + inode.getPath());
+							response.addComment(findAction.exec(request, inode));
+						}
+					}
+				}
+			} catch (FileNotFoundException e) {
+				logger.warn("Index contained an unexistent inode: " + item.getKey());
+			}
+		}
+
 		return response;
 	}
 

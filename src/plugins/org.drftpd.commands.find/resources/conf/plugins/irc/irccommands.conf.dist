@@ -1,28 +1,37 @@
 # $Id$
-supersearch {
+find {
 plugin org.drftpd.commands.find
-class Search
-method doSuperSearch
+class Find
+method doFIND
 perms *
 limit.default 5
 limit.max 20
-help Searches for files and directories in the index w/ advanced filters.
+sendToSlaves =siteop
+deleteFromSlaves =siteop
+wipe =siteop
+help Searches for files and directories in the filesystem w/ some neat filters and actions.
 help.specific ${command} <options>
-help.specific Options: -user <user> | -group <group>
-help.specific Options: -f[ile] | -d[ir]
-help.specific Options: -slaves <slave[,slave,..]>
-help.specific Options: -age <start date> <end date>
+help.specific Options: -user <user> | -group <group> | -f[ile] | -d[ir]
+help.specific Options: -slaves <slave[,slave,..]> | -age <start date> <end date>
 help.specific Valid format: yyyy.MM.dd OR yyyy.MM.dd.HH.mm.ss, Example: 2010.01.29.08.36.33
-help.specific Options: -size <min size> <max size>
-help.specific Options: -sort <field> <asc|desc>
+help.specific Options: -size <min size> <max size> | -sort <field> <asc|desc>
 help.specific Valid sort fields: parentPath fullPath(default) owner group type lastmodified size
-help.specific Options: -limit <number>
-help.specific Options: -exact
-help.specific Makes the name option search for the exact file/dir name specified.
+help.specific Options: -limit <number> | -exact | -name <["]word[ word .."]> | -endswith <name>
+help.specific Exact option makes the name option search for the exact file/dir name specified.
 help.specific Wildcards(* and ?) available but not within the first three chars.
-help.specific Options: -name <word> [word ..]
-help.specific Name MUST be the last option in the command.
-help.specific Options: -endswith <name>
+help.specific Actions: print, printf[(format)], wipe, delete
+help.specific Action: sendtoslaves <numtransfers[:slave[,slave,..][:priority]]>
+help.specific Action: deletefromslaves <slave[,slave[,...]]>
+help.specific Options for printf format:
+help.specific #f - name
+help.specific #p . path
+help.specific #h - parent
+help.specific #s - size
+help.specific #u - user
+help.specific #g - group
+help.specific #x - slave
+help.specific #t - last modified
+help.specific Example: SITE FIND -action printf(filename: #f size: #s)
 help.specific Multiple options are allowed. If multiple options are given a file/dir must match all options.
 input all
 output source
@@ -31,7 +40,7 @@ output source
 search {
 plugin org.drftpd.commands.find
 class Search
-method doSearch
+method doSEARCH
 perms *
 limit 5
 help Searches for files and directories using wildcards.
@@ -43,41 +52,11 @@ output source
 dupe {
 plugin org.drftpd.commands.find
 class Search
-method doDupe
+method doDUPE
 perms *
 limit 5
 help Searches for files and directories using exact name match.
 help.specific ${command} <name>
-input all
-output source
-}
-
-find {
-plugin org.drftpd.commands.find
-class Find
-method doFIND
-perms *
-sendToSlaves =siteop
-deleteFromSlaves =siteop
-wipe =siteop
-help Searches for files and directories in the filesystem w/ some neat filters and actions.
-help.specific ${command} <options> -action <action>
-help.specific Options: -user <user> -group <group> -nogroup -nouser
-help.specific Options: -mtime [-]n -type [f|d] -slave <slave> -size [-]size
-help.specific Options: -name <name>(* for wildcard) -incomplete [min % incomplete] -offline
-help.specific Actions: print, printf[(format)], wipe, delete
-help.specific Action: sendtoslaves <numtransfers[:slave[,slave,..][:priority]]>
-help.specific Action: deletefromslaves <slave[,slave[,...]]>
-help.specific Options for printf format:
-help.specific #f - filename
-help.specific #s - filesize
-help.specific #u - user
-help.specific #g - group
-help.specific #x - slave
-help.specific #t - last modified
-help.specific #h - parent
-help.specific Example: SITE FIND -action printf(filename: #f size: #s)
-help.specific Multiple options and actions are allowed. If multiple options are given a file must match all options for action to be taken
 input all
 output source
 }
