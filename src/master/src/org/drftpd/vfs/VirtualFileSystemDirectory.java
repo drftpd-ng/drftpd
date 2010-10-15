@@ -238,7 +238,6 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			try {
 				inode = getInodeByName(inodeName);
 			} catch (FileNotFoundException e) {
-				logger.debug(path + inodeName + " is missing or was corrupted, stop deleting files outside of drftpd!", e);
 				// This entry is already removed from the REAL _files Set, but we're iterating over a copy
 				continue;
 			}
