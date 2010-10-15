@@ -756,6 +756,7 @@ public class DataConnectionHandler extends CommandInterface {
 		boolean isRetr = cmd.equalsIgnoreCase("RETR");
 		boolean isAppe = cmd.equalsIgnoreCase("APPE");
 		boolean isStou = cmd.equalsIgnoreCase("STOU");
+		boolean fileCreated = false;
 
 		try {
 			if (isAppe || isStou) {
@@ -885,6 +886,7 @@ public class DataConnectionHandler extends CommandInterface {
 				// it doesn't exist in the VFS yet!
 				try {
 					ts.setTransferFile(fh.getParent().createFile(conn.getUserNull(), fh.getName(), ts.getTransferSlave()));
+					fileCreated = true;
 				} catch (FileExistsException e) {
 					// reset is handled in finally
 					return StandardCommandManager.genericResponse(
@@ -1075,7 +1077,7 @@ public class DataConnectionHandler extends CommandInterface {
 			// A simple catch all to delete any 0-byte uploaded files as these could be left around if
 			// settings like delete on abort are disabled
 			try {
-				if (isStor && ts.getTransferFile() != null && ts.getTransferFile().getSize() == 0L) {
+				if (isStor && fileCreated && ts.getTransferFile().getSize() == 0L) {
 					ts.getTransferFile().deleteUnchecked();
 				}
 			} catch (FileNotFoundException e) {
@@ -1095,9 +1097,4 @@ public class DataConnectionHandler extends CommandInterface {
 	public CommandResponse doSTOR(CommandRequest request) {
 		return transfer(request);
 	}
-
-	/*	public synchronized void handshakeCompleted(HandshakeCompletedEvent arg0) {
-		_handshakeCompleted = true;
-		notifyAll();
-	}*/
 }
