@@ -1042,6 +1042,8 @@ public class UserManagementHandler extends CommandInterface {
 				continue;
 			}
 		}
+		
+		myUser.commit();
 
 		return response;
 	}
@@ -1248,6 +1250,7 @@ public class UserManagementHandler extends CommandInterface {
 				+ Bytes.formatBytes(credits) + " ('" + credits + "') to '"
 				+ myUser.getName() + "'");
 		myUser.updateCredits(credits);
+		myUser.commit();
 
 		return new CommandResponse(200, "OK, gave " + Bytes.formatBytes(credits)
 				+ " of your credits to " + myUser.getName());
@@ -1327,7 +1330,9 @@ public class UserManagementHandler extends CommandInterface {
 					userToChange.getKeyedMap().setObject(UserManagement.RATIO,
 							new Float(ratio));
 				}
+				userToChange.commit();
 				response.addComment("Changed " + userToChange.getName() + "!");
+				
 			}
 		}
 
@@ -1401,6 +1406,7 @@ public class UserManagementHandler extends CommandInterface {
 				}
 			}
 
+			userToChange.commit();
 			response.addComment("Changed user " + userToChange.getName());
 		}
 
@@ -1578,6 +1584,7 @@ public class UserManagementHandler extends CommandInterface {
 			String oldUsername = myUser.getName();
 			myUser.rename(args[1]);
 			BaseFtpConnection.fixBaseFtpConnUser(oldUsername, myUser.getName());
+			myUser.commit();
 			logger.info("'" + session.getUserNull(request.getUser()).getName() + "' renamed '"
 					+ oldUsername + "' to '" + myUser.getName() + "'");
 		} catch (NoSuchUserException e) {
@@ -1697,6 +1704,7 @@ public class UserManagementHandler extends CommandInterface {
 					+ Bytes.formatBytes(credits) + " ('" + credits
 					+ "') from '" + myUser.getName() + "'");
 			myUser.updateCredits(-credits);
+			myUser.commit();
 		} catch (NumberFormatException ex) {
 			return new CommandResponse(452, "The string " + amt
 					+ " cannot be interpreted");
