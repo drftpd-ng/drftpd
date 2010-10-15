@@ -105,6 +105,11 @@ public class TransferState {
 	private boolean _isPasv = false;
 
 	/**
+	 * Defines if this transfer successfully created the VFS file
+	 */
+	private boolean _transferFileCreated = false;
+
+	/**
 	 * This class to be used as a state holder for DataConnectionHandler
 	 */
 	public TransferState() {
@@ -233,6 +238,10 @@ public class TransferState {
 		_transferFile = file;
 	}
 
+	public void setTransferFileCreated(boolean transferFileCreated) {
+		_transferFileCreated = transferFileCreated;
+	}
+
 	public void setTransferSlave(RemoteSlave slave) {
 		_rslave = slave;
 	}
@@ -251,6 +260,10 @@ public class TransferState {
 
 	public FileHandle getTransferFile() {
 		return _transferFile;
+	}
+
+	public boolean getTransferFileCreated() {
+		return _transferFileCreated;
 	}
 	
 	public InetSocketAddress getPortAddress() {
@@ -304,7 +317,7 @@ public class TransferState {
 		RemoteTransfer rt = getTransfer();
 		if (rt != null) {
 			rt.abort(reason);
-			if (_transferFile != null && rt.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD &&
+			if (_transferFileCreated && rt.getTransferDirection() == Transfer.TRANSFER_RECEIVING_UPLOAD &&
 					Boolean.parseBoolean(GlobalContext.getConfig().getMainProperties()
 							.getProperty("delete.upload.on.abort", "false"))) {
 				try {
