@@ -308,6 +308,8 @@ public class Find extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
+		DirectoryHandle dir = request.getCurrentDirectory();
+
 		ArrayList<Action> actions = new ArrayList<Action>();
 
 		int limit = Integer.parseInt(request.getProperties().getProperty("limit.default","5"));
@@ -318,12 +320,12 @@ public class Find extends CommandInterface {
 		while(st.hasMoreTokens()) {
 			String option = st.nextToken();
 
-			if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
+			if (!st.hasMoreTokens()) {
+				throw new ImproperUsageException();
+			} else if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
 				params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 			} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
 				params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-			} else if (!st.hasMoreTokens()) {
-				throw new ImproperUsageException();
 			} else if (option.equalsIgnoreCase("-user")) {
 				params.setOwner(st.nextToken());
 			} else if (option.equalsIgnoreCase("-group")) {
@@ -381,6 +383,12 @@ public class Find extends CommandInterface {
 				} catch (NoSuchElementException e) {
 					throw new ImproperUsageException("You must specify a range for the size, both min and max", e);
 				}
+			} else if (option.equalsIgnoreCase("-0byte")) {
+				params.setMinSize(0L);
+				params.setMaxSize(0L);
+			} else if (option.equalsIgnoreCase("-section")) {
+				dir = GlobalContext.getGlobalContext().getSectionManager().
+						getSection(st.nextToken()).getBaseDirectory();
 			} else if (option.equalsIgnoreCase("-sort")) {
 				String field = st.nextToken();
 				params.setSortField(field);
@@ -485,7 +493,7 @@ public class Find extends CommandInterface {
 		Map<String,String> inodes;
 
 		try {
-			inodes = ie.advancedFind(request.getCurrentDirectory(), params);
+			inodes = ie.advancedFind(dir, params);
 		} catch (IndexException e) {
 			logger.error(e.getMessage());
 			return new CommandResponse(550, e.getMessage());

@@ -1,7 +1,0 @@
-SITE UPDATESEARCHER {
-plugin org.drftpd.commands.indexmanager.lucene
-class LuceneHandler
-method doUpdateSearcher
-perms =siteop 
-help ${command} Forces the Lucene Index Search to be updated
-}
