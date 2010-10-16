@@ -120,7 +120,6 @@ public class FtpReply {
 			sb.append(_code + " " + _message + "\r\n");
 		}
 
-		logger.debug(sb.toString());
 		return sb.toString();
 	}
 

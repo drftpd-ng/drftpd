@@ -39,8 +39,6 @@ log4j.appender.slave.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
 
 log4j.logger.org.drftpd.master.BaseFtpConnection.service=DEBUG, debug
 log4j.additivity.org.drftpd.master.BaseFtpConnection.service=false
-log4j.logger.org.drftpd.master.FtpReply=DEBUG, debug
-log4j.additivity.org.drftpd.master.FtpReply=false
 
 log4j.appender.debug=org.apache.log4j.FileAppender
 log4j.appender.debug.File=logs/debug.log
