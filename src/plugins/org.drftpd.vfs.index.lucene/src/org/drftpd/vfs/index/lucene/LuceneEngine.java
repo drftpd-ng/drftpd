@@ -275,7 +275,9 @@ public class LuceneEngine implements IndexEngineInterface {
 			FIELD_NAME.setValue(inode.getName());
 			FIELD_FULL_NAME.setValue(inode.getName());
 			FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
-			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
+			if (!inode.getPath().equals(VirtualFileSystem.separator)) {
+				FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
+			}
 			if (inode.isDirectory())
 				FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
 			else

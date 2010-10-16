@@ -47,7 +47,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = 
 		new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
 
-	private transient boolean _transientLastModified;
+	private boolean _placeHolderLastModified;
 
 	protected long _size = 0;
 
@@ -55,9 +55,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		super(user, group);
 	}
 	
-	protected VirtualFileSystemDirectory(String user, String group, boolean transientLastModified) {
+	protected VirtualFileSystemDirectory(String user, String group, boolean placeHolderLastModified) {
 		super(user,group);
-		_transientLastModified = transientLastModified;
+		_placeHolderLastModified = placeHolderLastModified;
 	}
 	
 	/**
@@ -68,7 +68,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		_files.put(inode.getName(), new SoftReference<VirtualFileSystemInode>(
 				inode));
 		if (updateLastModified && 
-				(getLastModified() < inode.getLastModified() || _transientLastModified)) {
+				(getLastModified() < inode.getLastModified() || _placeHolderLastModified)) {
 			setLastModified(inode.getLastModified());
 		}
 		addSize(inode.getSize());
@@ -76,10 +76,12 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	}
 
 	protected synchronized void addSize(long l) {
-		_size = getSize() + l;
-		getParent().addSize(l);
-		commit();
-		//getVFS().notifySizeChanged(this,_size);
+		if (l > 0L) {
+			_size = getSize() + l;
+			getParent().addSize(l);
+			commit();
+			getVFS().notifySizeChanged(this,_size);
+		}
 	}
 
 	/**
@@ -99,16 +101,16 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @param name
 	 * @param user
 	 * @param group
-	 * @param transientLastModified
+	 * @param placeHolderLastModified
 	 * @throws FileExistsException if this directory already exists.
 	 */
 	protected synchronized void createDirectory(String name, String user,
-			String group, boolean transientLastModified) throws FileExistsException {
+			String group, boolean placeHolderLastModified) throws FileExistsException {
 		if (_files.containsKey(name)) {
 			throw new FileExistsException("An object named " + name
 					+ " already exists in " + getPath());
 		}
-		VirtualFileSystemDirectory inode = createDirectoryRaw(name, user, group, transientLastModified);
+		VirtualFileSystemDirectory inode = createDirectoryRaw(name, user, group, placeHolderLastModified);
 		
 		getVFS().notifyInodeCreated(inode);
 	}
@@ -135,17 +137,18 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @param name
 	 * @param user
 	 * @param group
-	 * @param transientLastModified
+	 * @param placeHolderLastModified
 	 * @return the created directory
 	 */
 	protected VirtualFileSystemDirectory createDirectoryRaw(String name, String user,
-			String group, boolean transientLastModified) {
+			String group, boolean placeHolderLastModified) {
 		VirtualFileSystemDirectory inode = new VirtualFileSystemDirectory(user,
-				group, transientLastModified);
+				group, placeHolderLastModified);
 		inode.setName(name);
 		inode.setParent(this);
+		inode.inodeLoadCompleted();
 		inode.commit();
-		addChild(inode, !transientLastModified);
+		addChild(inode, !placeHolderLastModified);
 		logger.info("createDirectory(" + inode + ")");
 		
 		return inode;
@@ -161,7 +164,21 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 */
 	public synchronized void createFile(String name, String user, String group,
 			String initialSlave) throws FileExistsException {
-		createFile(name, user, group, initialSlave, 0L, false);
+		createFile(name, user, group, initialSlave, 0L, false, 0L);
+	}
+
+	/**
+	 * Create a file inside the current directory.
+	 * @param name
+	 * @param user
+	 * @param group
+	 * @param initialSlave
+	 * @param size
+	 * @throws FileExistsException if this file already exists.
+	 */
+	public synchronized void createFile(String name, String user, String group,
+			String initialSlave, long size) throws FileExistsException {
+		createFile(name, user, group, initialSlave, 0L, false, size);
 	}
 
 	/**
@@ -172,21 +189,23 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @param initialSlave
 	 * @param lastModified
 	 * @param setLastModified
+	 * @param size
 	 * @throws FileExistsException if this file already exists.
 	 */
 	protected synchronized void createFile(String name, String user, String group,
-			String initialSlave, long lastModified, boolean setLastModified) throws FileExistsException {
+			String initialSlave, long lastModified, boolean setLastModified, long size) throws FileExistsException {
 		if (_files.containsKey(name)) {
 			throw new FileExistsException(name + " already exists");
 		}
 		VirtualFileSystemInode inode = new VirtualFileSystemFile(user, group,
-				0, initialSlave);
+				size, initialSlave);
 		inode.setName(name);
 		inode.setParent(this);
 		if (setLastModified) {
 			inode.setLastModified(lastModified);
 		}
 		inode.commit();
+		inode.inodeLoadCompleted();
 		addChild(inode, true);
 		commit();
 		logger.info("createFile(" + inode + ")");
@@ -212,6 +231,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.setName(name);
 		inode.setParent(this);
 		inode.commit();
+		inode.inodeLoadCompleted();
 		addChild(inode, true);
 		commit();
 		logger.info("createLink(" + inode + ")");
@@ -357,8 +377,20 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	@Override
 	public void setSize(long l) {
-		_size = l;
-		//getVFS().notifySizeChanged(this,_size);
+		if (_size != l) {
+			_size = l;
+			if (isInodeLoaded()) {
+				getVFS().notifySizeChanged(this,_size);
+			}
+		}
+	}
+
+	public boolean getPlaceHolderLastModified() {
+		return _placeHolderLastModified;
+	}
+
+	public void setPlaceHolderLastModified(boolean placeHolderLastModified) {
+		_placeHolderLastModified = placeHolderLastModified;
 	}
 
 	public synchronized void removeMissingChild(String name) {
@@ -370,12 +402,14 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	@Override
 	public void setLastModified(long modified) {
-		_transientLastModified = false;
+		if (isInodeLoaded()) {
+			_placeHolderLastModified = false;
+		}
 		super.setLastModified(modified);
 	}
 	
 	protected synchronized void compareAndUpdateLastModified(long lastModified) {
-		if (getLastModified() < lastModified || _transientLastModified) {
+		if (getLastModified() < lastModified || _placeHolderLastModified) {
 			setLastModified(lastModified);
 		}
 	}

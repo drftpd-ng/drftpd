@@ -65,6 +65,8 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	protected Map<String,Object> _untypedPluginMap;
 
 	protected long _lastModified;
+
+	private transient boolean _inodeLoaded;
 	
 	public String descriptiveName() {
 		return getPath();
@@ -169,6 +171,20 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	public abstract void setSize(long l);
 
 	/**
+	 * Sets that the inode has been fully loaded from disk
+	 */
+	public void inodeLoadCompleted() {
+		_inodeLoaded = true;
+	}
+
+	/**
+	 * Returns whether the inode has been fully loaded from disk
+	 */
+	public boolean isInodeLoaded() {
+		return _inodeLoaded;
+	}
+
+	/**
 	 * @return the owner username.
 	 */
 	public String getUsername() {
@@ -247,8 +263,9 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	public void setGroup(String group) {
 		_group = group;
-		
-		getVFS().notifyOwnershipChanged(this, getUsername(), _group);
+		if (isInodeLoaded()) {
+			getVFS().notifyOwnershipChanged(this, getUsername(), _group);
+		}
 	}
 
 	public void setKeyedMap(KeyedMap<Key<?>, Object> data) {
@@ -260,8 +277,12 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 * Set when the file was last modified.
 	 */
 	public void setLastModified(long modified) {
-		_lastModified = modified;
-		//getVFS().notifyLastModifiedChanged(this,_lastModified);
+		if (_lastModified != modified) {
+			_lastModified = modified;
+			if (isInodeLoaded()) {
+				getVFS().notifyLastModifiedChanged(this,_lastModified);
+			}
+		}
 	}
 
 	/**
@@ -286,8 +307,9 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	public void setUsername(String user) {
 		_username = user; 
-		
-		getVFS().notifyOwnershipChanged(this, _username, getGroup());
+		if (isInodeLoaded()) {
+			getVFS().notifyOwnershipChanged(this, _username, getGroup());
+		}
 	}
 
 	public KeyedMap<Key<?>, Object> getPluginMap() {

@@ -211,18 +211,22 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 */
 	@Override
 	public synchronized void setSize(long size) {
-		if (size < 0) {
-			throw new IllegalArgumentException("File size cannot be < 0");
+		if (_size != size) {
+			if (size < 0) {
+				throw new IllegalArgumentException("File size cannot be < 0");
+			}
+			if (getParent() == null) {
+				// we haven't been assigned a parent yet
+				_size = size;
+			} else {
+				getParent().addSize(-_size); // removing old size from parent.
+				_size = size;
+				getParent().addSize(_size);
+			}
+			if (isInodeLoaded()) {
+				getVFS().notifySizeChanged(this,_size);
+			}
 		}
-		if (getParent() == null) {
-			// we haven't been assigned a parent yet
-			_size = size;
-		} else {
-			getParent().addSize(-_size); // removing old size from parent.
-			_size = size;
-			getParent().addSize(_size);
-		}
-		//getVFS().notifySizeChanged(this,_size);
 	}
 
 	public boolean isUploading() {

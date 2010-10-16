@@ -137,6 +137,7 @@ public class VirtualFileSystem {
 		Collections.addAll(files, rootFile.list());
 		_root.setFiles(files);
 		_root.commit();
+		_root.inodeLoadCompleted();
 		return _root;
 	}
 
@@ -243,6 +244,7 @@ public class VirtualFileSystem {
 				}
 				dir.setFiles(files);
 			}
+			inode.inodeLoadCompleted();
 			return inode;
 		} catch (Exception e) {
 			boolean corruptedXMLFile = xmlFile.exists();

@@ -446,8 +446,7 @@ public class DirectoryHandle extends InodeHandle implements
 			rslave.simpleRename(getPath() + lrf.getPath(), getPath(), name);
 		}
 		FileHandle newFile = createFileUnchecked(name, "drftpd", "drftpd",
-				rslave, lrf.lastModified(), true);
-		newFile.setSize(lrf.length());
+				rslave, lrf.lastModified(), true, lrf.length());
 		//newFile.setCheckSum(rslave.getCheckSumForPath(newFile.getPath()));
 		// TODO Implement a Checksum queue on remerge
 		newFile.setCheckSum(0);
@@ -668,14 +667,14 @@ public class DirectoryHandle extends InodeHandle implements
 	/**
 	 * Shortcut to create "owner-less" directories.
 	 * @param name
-	 * @param transientLastModified
+	 * @param placeHolderLastModified
 	 * @return the created directory
 	 * @throws FileExistsException
 	 * @throws FileNotFoundException
 	 */
-	protected DirectoryHandle createDirectorySystem(String name, boolean transientLastModified)
+	protected DirectoryHandle createDirectorySystem(String name, boolean placeHolderLastModified)
 			throws FileExistsException, FileNotFoundException {
-		return createDirectoryUnchecked(name, "drftpd", "drftpd", transientLastModified);
+		return createDirectoryUnchecked(name, "drftpd", "drftpd", placeHolderLastModified);
 	}
 
 	/**
@@ -692,23 +691,23 @@ public class DirectoryHandle extends InodeHandle implements
 	/**
 	 * Given a DirectoryHandle, it makes sure that this directory and all of its parent(s) exist
 	 * @param name
-	 * @param transientLastModified
+	 * @param placeHolderLastModified
 	 * @throws FileExistsException
 	 * @throws FileNotFoundException
 	 */
-	public void createDirectoryRecursive(String name, boolean transientLastModified)
+	public void createDirectoryRecursive(String name, boolean placeHolderLastModified)
 			throws FileExistsException, FileNotFoundException {
 		DirectoryHandle dir = null;
 		try {
-			dir = createDirectorySystem(name, transientLastModified);
+			dir = createDirectorySystem(name, placeHolderLastModified);
 		} catch (FileNotFoundException e) {
-			getParent().createDirectoryRecursive(getName(), transientLastModified);
+			getParent().createDirectoryRecursive(getName(), placeHolderLastModified);
 		} catch (FileExistsException e) {
 			throw new FileExistsException("Object already exists -- "
 					+ getPath() + VirtualFileSystem.separator + name);
 		}
 		if (dir == null) {
-			dir = createDirectorySystem(name, transientLastModified);
+			dir = createDirectorySystem(name, placeHolderLastModified);
 		}
 		logger.debug("Created directory " + dir);
 	}
@@ -736,14 +735,14 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @param name
 	 * @param user
 	 * @param group
-	 * @param transientLastModified
+	 * @param placeHolderLastModified
 	 * @return the created directory.
 	 * @throws FileNotFoundException
 	 * @throws FileExistsException
 	 */
 	protected DirectoryHandle createDirectoryUnchecked(String name, String user,
-			String group, boolean transientLastModified) throws FileExistsException, FileNotFoundException {
-		getInode().createDirectory(name, user, group, transientLastModified);
+			String group, boolean placeHolderLastModified) throws FileExistsException, FileNotFoundException {
+		getInode().createDirectory(name, user, group, placeHolderLastModified);
 		try {
 			return getDirectoryUnchecked(name);
 		} catch (FileNotFoundException e) {
@@ -795,7 +794,7 @@ public class DirectoryHandle extends InodeHandle implements
 	public FileHandle createFileUnchecked(String name, String user, String group,
 			RemoteSlave initialSlave) throws FileExistsException,
 			FileNotFoundException {
-		return createFileUnchecked(name, user, group, initialSlave, 0L, false);
+		return createFileUnchecked(name, user, group, initialSlave, 0L, false, 0L);
 	}
 	
 	/**
@@ -808,14 +807,15 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @param initialSlave
 	 * @param lastModified
 	 * @param setLastModified
+	 * @param size
 	 * @return the created file.
 	 * @throws FileExistsException
 	 * @throws FileNotFoundException
 	 */
 	protected FileHandle createFileUnchecked(String name, String user, String group,
-			RemoteSlave initialSlave, long lastModified, boolean setLastModified) throws FileExistsException,
+			RemoteSlave initialSlave, long lastModified, boolean setLastModified, long size) throws FileExistsException,
 			FileNotFoundException {
-		getInode().createFile(name, user, group, initialSlave.getName(), lastModified, setLastModified);
+		getInode().createFile(name, user, group, initialSlave.getName(), lastModified, setLastModified, size);
 		try {
 			return getFileUnchecked(name);
 		} catch (FileNotFoundException e) {
