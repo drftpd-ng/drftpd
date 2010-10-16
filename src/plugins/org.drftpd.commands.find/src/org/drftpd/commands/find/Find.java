@@ -355,8 +355,8 @@ public class Find extends CommandInterface {
 					else
 						throw new ImproperUsageException("Invalid dateformat for max age in index search.");
 
-					if (minAge >= maxAge)
-						throw new ImproperUsageException("Age range invalid, min value higher or same as max");
+					if (minAge > maxAge)
+						throw new ImproperUsageException("Age range invalid, min value higher than max");
 
 					params.setMinAge(minAge);
 					params.setMaxAge(maxAge);
@@ -371,8 +371,8 @@ public class Find extends CommandInterface {
 				try {
 					long minSize = Bytes.parseBytes(st.nextToken());
 					long maxSize = Bytes.parseBytes(st.nextToken());
-					if (minSize >= maxSize) {
-						throw new ImproperUsageException("Size range invalid, min value higher or same as max");
+					if (minSize > maxSize) {
+						throw new ImproperUsageException("Size range invalid, min value higher than max");
 					}
 					params.setMinSize(minSize);
 					params.setMaxSize(maxSize);

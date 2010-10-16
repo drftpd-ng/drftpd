@@ -95,17 +95,17 @@ public class LuceneEngine implements IndexEngineInterface {
 	
 	private static final Document INDEX_DOCUMENT = new Document();
 	
-	private static final Field FIELD_NAME = new Field("name", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_FULL_NAME = new Field("fullName", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_FULL_NAME_REVERSE = new Field("fullNameReverse", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_NAME = new Field("name", "", Field.Store.NO, Field.Index.ANALYZED);
+	private static final Field FIELD_FULL_NAME = new Field("fullName", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_FULL_NAME_REVERSE = new Field("fullNameReverse", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_FULL_PATH = new Field("fullPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.YES, Boolean.TRUE);
-	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.YES, Boolean.TRUE);
+	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.NO, Field.Index.ANALYZED);
+	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.NO, Boolean.TRUE);
+	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.NO, Boolean.TRUE);
 	
 	private static final Field[] FIELDS = new Field[] {
 		FIELD_NAME, FIELD_FULL_NAME, FIELD_FULL_NAME_REVERSE, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
@@ -521,10 +521,10 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(QUERY_FILE, Occur.MUST);
 			}
 
-			if (!params.getOwner().equals("*")) {
+			if (params.getOwner() != null) {
 				query.add(makeOwnerTermQueryFromString(params.getOwner()), Occur.MUST);
 			}
-			if (!params.getGroup().equals("*")) {
+			if (params.getGroup() != null) {
 				query.add(makeGroupTermQueryFromString(params.getGroup()), Occur.MUST);
 			}
 
@@ -537,19 +537,19 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(slaveQuery, Occur.MUST);
 			}
 
-			if (params.getMinAge() != 0L || params.getMaxAge() != 0L) {
+			if (params.getMinAge() != null && params.getMaxAge() != null) {
 				Query ageQuery = NumericRangeQuery.newLongRange("lastModified",
 						params.getMinAge(), params.getMaxAge(), true, true);
 				query.add(ageQuery, Occur.MUST);
 			}
 
-			if (params.getMinSize() != 0L || params.getMaxSize() != 0L) {
+			if (params.getMinSize() != null && params.getMaxSize() != null) {
 				Query sizeQuery = NumericRangeQuery.newLongRange("size",
 						params.getMinSize(), params.getMaxSize(), true, true);
 				query.add(sizeQuery, Occur.MUST);
 			}
 
-			if (!params.getName().isEmpty()) {
+			if (params.getName() != null) {
 				if (params.getExact()) {
 					int wc1 = params.getName().indexOf("*");
 					int wc2 = params.getName().indexOf("?");
@@ -561,26 +561,28 @@ public class LuceneEngine implements IndexEngineInterface {
 					Query nameQuery = analyze("name", TERM_NAME, params.getName());
 					query.add(nameQuery, Occur.MUST);
 				}
-			} else if (!params.getEndsWith().isEmpty()) {
+			} else if (params.getEndsWith() != null) {
 				query.add(makeFullNameReversePrefixQueryFromString(params.getEndsWith()), Occur.MUST);
 			}
 
-			if (params.getSortField().equalsIgnoreCase("lastModified") ||
-					params.getSortField().equalsIgnoreCase("size")) {
-				setSortField(params.getSortField(), SortField.LONG, params.getSortOrder());
-			} else if (params.getSortField().equalsIgnoreCase("parentPath") ||
-					params.getSortField().equalsIgnoreCase("owner") ||
-					params.getSortField().equalsIgnoreCase("group") ||
-					params.getSortField().equalsIgnoreCase("type")) {
-				setSortField(params.getSortField(), SortField.STRING, params.getSortOrder());
-			} else {
-				setSortField(params.getSortOrder());
+			if (params.getSortField() != null) {
+				if (params.getSortField().equalsIgnoreCase("lastModified") ||
+						params.getSortField().equalsIgnoreCase("size")) {
+					setSortField(params.getSortField(), SortField.LONG, params.getSortOrder());
+				} else if (params.getSortField().equalsIgnoreCase("parentPath") ||
+						params.getSortField().equalsIgnoreCase("owner") ||
+						params.getSortField().equalsIgnoreCase("group") ||
+						params.getSortField().equalsIgnoreCase("type")) {
+					setSortField(params.getSortField(), SortField.STRING, params.getSortOrder());
+				} else {
+					setSortField(params.getSortOrder());
+				}
 			}
 
-			int limit = params.getLimit();
+			int limit = _maxHitsNumber;
 
-			if (limit == 0) {
-				limit = _maxHitsNumber;
+			if (params.getLimit() != null) {
+				limit = params.getLimit();
 			}
 
 			iReader = _iWriter.getReader();

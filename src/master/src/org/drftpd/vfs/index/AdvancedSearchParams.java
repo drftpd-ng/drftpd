@@ -30,20 +30,20 @@ public class AdvancedSearchParams {
 		DIRECTORY, FILE, ANY
 	}
 
-	private String _name = "";
+	private String _name;
 	private boolean _exact = false;
-	private String _endsWith = "";
+	private String _endsWith;
 	private InodeType _inodeType = InodeType.ANY;
 	private Set<String> _slaves = Collections.emptySet();
-	private String _user = "*";
-	private String _group = "*";
-	private long _minAge = 0L;
-	private long _maxAge = 0L;
-	private long _minSize = 0L;
-	private long _maxSize = 0L;
-	private String _sortField = "";
+	private String _user;
+	private String _group;
+	private Long _minAge;
+	private Long _maxAge;
+	private Long _minSize;
+	private Long _maxSize;
+	private String _sortField;
 	private boolean _sortOrder = false;
-	private int _limit = 0;
+	private Integer _limit;
 
 	public AdvancedSearchParams() {
 		
@@ -133,19 +133,19 @@ public class AdvancedSearchParams {
 		return _group;
 	}
 
-	public long getMinAge() {
+	public Long getMinAge() {
 		return _minAge;
 	}
 
-	public long getMaxAge() {
+	public Long getMaxAge() {
 		return _maxAge;
 	}
 
-	public long getMinSize() {
+	public Long getMinSize() {
 		return _minSize;
 	}
 
-	public long getMaxSize() {
+	public Long getMaxSize() {
 		return _maxSize;
 	}
 
@@ -157,7 +157,7 @@ public class AdvancedSearchParams {
 		return _sortOrder;
 	}
 
-	public int getLimit() {
+	public Integer getLimit() {
 		return _limit;
 	}
 }
