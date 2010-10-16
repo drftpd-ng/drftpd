@@ -28,19 +28,13 @@
 		<parameter id="Priority" value="1" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doSearchPerm">
-		<parameter id="ParentMethod" value="doSearch" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
-		<parameter id="HookMethod" value="doPermissionCheck" />
-		<parameter id="Priority" value="1" />
-	</extension>
-	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doSuperSearchPerm">
-		<parameter id="ParentMethod" value="doSuperSearch" />
+		<parameter id="ParentMethod" value="doSEARCH" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
 	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doDupePerm">
-		<parameter id="ParentMethod" value="doDupe" />
+		<parameter id="ParentMethod" value="doDUPE" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
