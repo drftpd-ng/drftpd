@@ -24,6 +24,8 @@
 	</runtime>
 	
 	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="UnDupeHandler" />
 	
 	<!-- DupeCheck directive handler -->
