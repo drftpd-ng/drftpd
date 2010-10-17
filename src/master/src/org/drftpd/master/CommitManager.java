@@ -41,10 +41,10 @@ public class CommitManager {
 
 	private static CommitManager _instance;
 
-	private ConcurrentHashMap<Commitable, Date> _commitMap = null;
-	private boolean _isStarted = false;
+	private ConcurrentHashMap<Commitable, Date> _commitMap;
+	private boolean _isStarted;
 	private AtomicInteger _queueSize;
-	private volatile boolean _drainQueue = false;
+	private volatile boolean _drainQueue;
 	private Thread _commitThread;
 
 	/**
@@ -123,6 +123,19 @@ public class CommitManager {
 	}
 
 	/**
+	 * Forces the immediate write of a (@link Commitable) if present in the commit queue.
+	 * @param object
+	 */
+	public void flushImmediate(Commitable object) {
+		if (_commitMap.containsKey(object)) {
+			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
+			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
+			writeCommitable(object);
+			Thread.currentThread().setContextClassLoader(prevCL);
+		}
+	}
+
+	/**
 	 * Instructs the commitmanager to write all queued items regardless of age, this cannot
 	 * be undone and is used only when the process enters shutdown mode.
 	 */
@@ -142,14 +155,7 @@ public class CommitManager {
 					.iterator(); iter.hasNext();) {
 				Entry<Commitable, Date> entry = iter.next();
 				if (entry.getValue().getTime() < time || _drainQueue) {
-					try {
-						entry.getKey().writeToDisk();
-					} catch (IOException e) {
-						logger.error("Error writing object to disk - "
-								+ entry.getKey().descriptiveName(), e);
-					}
-					iter.remove();
-					_queueSize.decrementAndGet();
+					writeCommitable(entry.getKey());
 				}
 			}
 			
@@ -157,6 +163,18 @@ public class CommitManager {
 				Thread.sleep(10000);
 			} catch (InterruptedException e) {
 			}
+		}
+	}
+
+	private void writeCommitable(Commitable item) {
+		try {
+			item.writeToDisk();
+			if (_commitMap.remove(item) != null) {
+				_queueSize.decrementAndGet();
+			}
+		} catch (IOException e) {
+			logger.error("Error writing object to disk - "
+					+ item.descriptiveName(), e);
 		}
 	}
 
@@ -171,5 +189,4 @@ public class CommitManager {
 			processAllLoop();
 		}
 	}
-
 }

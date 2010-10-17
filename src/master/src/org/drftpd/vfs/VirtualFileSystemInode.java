@@ -226,6 +226,9 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException("Error in logic, this should not happen", e);
 		}
+		// Ensure source/destination is flushed to ondisk VFS in case either is newly created
+		CommitManager.getCommitManager().flushImmediate(destinationDir);
+		CommitManager.getCommitManager().flushImmediate(this);
 		String fileString = "rename(" + this + ")";
 		_parent.removeChild(this);
 		InodeHandle source = VFSUtils.getInodeHandleFor(this);
@@ -235,17 +238,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 					destinationDir.getPath() + VirtualFileSystem.separator
 							+ VirtualFileSystem.getLast(destination));
 		} catch (FileNotFoundException e) {
-			
-			// if the file is in the commit queue
-			// and a FileNotFoundException was thrown in this situation
-			// this file was just created and never commited.
-			boolean inCommitQueue = CommitManager.getCommitManager().contains(this);
-			if (!inCommitQueue) {
-				// file is not on the commit queue
-				// and does not exist, this is an error.
-				throw new RuntimeException("Tried to rename a file that does not exist: " + getPath(), e);
-			}
-			
+			throw new RuntimeException("Tried to rename a file that does not exist: " + getPath(), e);
 		} catch (PermissionDeniedException e) {
 			throw new RuntimeException("FileSystemError", e);
 		}
