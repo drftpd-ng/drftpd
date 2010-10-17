@@ -143,6 +143,7 @@ public class TransferState {
 			_localPassiveConnection = null;
 		}
 		_resumePosition = 0;
+		_transferFileCreated = false;
 	}
 
 	public boolean isPreTransfer() {
