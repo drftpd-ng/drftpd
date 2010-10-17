@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
@@ -48,7 +47,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author fr0w
  */
 public class New extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(New.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
@@ -122,7 +120,7 @@ public class New extends CommandInterface {
 			try {
 				directories.addAll(section.getCurrentDirectory().getDirectories(user));
 			} catch (FileNotFoundException e) {
-				logger.error("The directory was just there! How come it's gone?", e);
+				// Will happen if a section is rm'd whilst this is running
 			}
 		}
 
@@ -148,7 +146,9 @@ public class New extends CommandInterface {
 					env.add("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
 					response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new", env, request.getUser()));
 				} catch (FileNotFoundException e) {
-					logger.error("The directory was just there! How come it's gone?", e);
+					// Directory was deleted whilst this was running, simply omit the dir
+					// Decrement pos to account for the directory we were forced to skip
+					pos--;
 				}
 			}
 			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"footer", env, request.getUser()));
@@ -166,7 +166,8 @@ public class New extends CommandInterface {
 				lastModified1 = d1.lastModified();
 				lastModified2 = d2.lastModified();
 			} catch (FileNotFoundException e) {
-				logger.error("The directory was just there! How come it's gone?", e);
+				// This is valid if the directory was deleted whilst this was running.
+				// This will be thrown again when building the output and the deleted dir omitted.
 			}
 
 			if (lastModified1 == lastModified2) {
