@@ -204,6 +204,11 @@ public class SlaveManagement extends CommandInterface {
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("slavename", rslave.getName());
+		try {
+			env.add("slaveip", rslave.getPASVIP());
+		} catch (SlaveUnavailableException e) {
+			env.add("slaveip", "OFFLINE");
+		}
 
 		if (rslave.isOnline()) {
 			if (!rslave.isAvailable()) {
