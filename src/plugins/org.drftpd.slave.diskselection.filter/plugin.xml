@@ -36,6 +36,10 @@
 		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.MatchdirFilter"/>
 		<parameter id="FilterName" value="Matchdir"/>
 	</extension>
+	<extension plugin-id="org.drftpd.slave.diskselection.filter" point-id="DiskFilter" id="SlaveMatchdirRegexFilter">
+		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.MatchdirRegexFilter"/>
+		<parameter id="FilterName" value="MatchdirRegex"/>
+	</extension>
 	<extension plugin-id="org.drftpd.slave.diskselection.filter" point-id="DiskFilter" id="SlaveMinfreespaceFilter">
 		<parameter id="ClassName" value="org.drftpd.slave.diskselection.filter.MinfreespaceFilter"/>
 		<parameter id="FilterName" value="Minfreespace"/>

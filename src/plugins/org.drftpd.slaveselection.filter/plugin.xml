@@ -40,6 +40,10 @@
 		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MatchdirFilter"/>
 		<parameter id="FilterName" value="Matchdir"/>
 	</extension>
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MatchdirRegexFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MatchdirRegexFilter"/>
+		<parameter id="FilterName" value="MatchdirRegex"/>
+	</extension>
 	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MaxbandwidthFilter">
 		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MaxbandwidthFilter"/>
 		<parameter id="FilterName" value="Maxbandwidth"/>
