@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -85,6 +86,10 @@ public class ListHandler extends CommandInterface {
 		"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 	private static final SimpleDateFormat MLSTTIME = new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+
+	static {
+		MLSTTIME.setTimeZone(TimeZone.getTimeZone("GMT"));
+	}
 
 	private static final String NEWLINE = "\r\n";
 
