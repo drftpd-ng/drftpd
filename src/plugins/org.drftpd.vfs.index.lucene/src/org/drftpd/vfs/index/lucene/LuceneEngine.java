@@ -58,8 +58,8 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopFieldDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
+import org.apache.lucene.store.SimpleFSDirectory;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PhysicalFile;
@@ -192,9 +192,9 @@ public class LuceneEngine implements IndexEngineInterface {
 	private void openStreams() throws IndexException {
 		try {
 			if (_nativeLocking) {
-				_storage = FSDirectory.open(new File(INDEX_DIR), new NativeFSLockFactory(INDEX_DIR));
+				_storage = SimpleFSDirectory.open(new File(INDEX_DIR), new NativeFSLockFactory(INDEX_DIR));
 			} else {
-				_storage = FSDirectory.open(new File(INDEX_DIR));
+				_storage = SimpleFSDirectory.open(new File(INDEX_DIR));
 			}
 
 			_iWriter = new IndexWriter(_storage, ANALYZER, MaxFieldLength.UNLIMITED);
