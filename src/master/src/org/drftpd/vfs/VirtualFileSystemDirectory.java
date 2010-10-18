@@ -76,7 +76,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	}
 
 	protected synchronized void addSize(long l) {
-		if (l > 0L) {
+		if (l != 0L) {
 			_size = getSize() + l;
 			getParent().addSize(l);
 			commit();
@@ -380,6 +380,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		if (_size != l) {
 			_size = l;
 			if (isInodeLoaded()) {
+				commit();
 				getVFS().notifySizeChanged(this,_size);
 			}
 		}

@@ -151,12 +151,6 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		if (getParent() instanceof VirtualFileSystemRoot) {
 			return VirtualFileSystem.separator + getName();
 		}
-		if (getParent() == null) {
-			logger.error("Parent is null");
-		}
-		if (getName() == null) {
-			logger.error("Name is null");
-		}
 		return getParent().getPath() + VirtualFileSystem.separator + getName();
 	}
 
@@ -273,6 +267,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		if (_lastModified != modified) {
 			_lastModified = modified;
 			if (isInodeLoaded()) {
+				commit();
 				getVFS().notifyLastModifiedChanged(this,_lastModified);
 			}
 		}

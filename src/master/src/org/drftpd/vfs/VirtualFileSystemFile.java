@@ -219,11 +219,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 				// we haven't been assigned a parent yet
 				_size = size;
 			} else {
-				getParent().addSize(-_size); // removing old size from parent.
+				getParent().addSize(size-_size); // adjust parent by difference.
 				_size = size;
-				getParent().addSize(_size);
 			}
 			if (isInodeLoaded()) {
+				commit();
 				getVFS().notifySizeChanged(this,_size);
 			}
 		}
