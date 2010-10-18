@@ -81,3 +81,9 @@ partial.remerge.mode=off
 # does not preclude any post hooks running on the transfer
 # command from deleting the file anyway.
 delete.upload.on.abort=false
+
+
+# This sets the first day of the week for reset days.
+# true = Monday for the first day of the week
+# false = Sunday for the first day of the week
+european.cal=true

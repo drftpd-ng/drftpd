@@ -49,6 +49,11 @@ public class TimeManager {
 	};
 	
 	protected void doReset(Calendar cal) {
+		// Check if EuropeanCalendar and change if needed
+		if (isEuropeanCalendar()) {
+			cal.setFirstDayOfWeek(Calendar.MONDAY);
+		}
+		
 		// TODO: Store when the last reset was done
 		int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
 		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
@@ -110,6 +115,16 @@ public class TimeManager {
 						+ " had an error processing " + methodName, e);
 			}
 		}
+	}
+
+	/*
+	 * Checks conf file to see if european calendar is being used.
+	 */
+	public boolean isEuropeanCalendar() {
+		if (GlobalContext.getConfig().getMainProperties().getProperty("european.cal","false").equalsIgnoreCase("true")) {
+			return true;
+		}
+		return false;
 	}
 	
 	public TimeManager () {
