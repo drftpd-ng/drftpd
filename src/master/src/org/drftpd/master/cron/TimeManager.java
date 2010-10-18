@@ -121,10 +121,7 @@ public class TimeManager {
 	 * Checks conf file to see if european calendar is being used.
 	 */
 	public boolean isEuropeanCalendar() {
-		if (GlobalContext.getConfig().getMainProperties().getProperty("european.cal","false").equalsIgnoreCase("true")) {
-			return true;
-		}
-		return false;
+		return GlobalContext.getConfig().getMainProperties().getProperty("european.cal","false").equalsIgnoreCase("true");
 	}
 	
 	public TimeManager () {
