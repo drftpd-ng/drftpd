@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.event.UserEvent;
 import org.drftpd.exceptions.DuplicateElementException;
@@ -228,6 +229,17 @@ public abstract class AbstractUser extends User implements Commitable {
 
 	public boolean isDeleted() {
 		return isMemberOf("deleted");
+	}
+
+	public boolean isExpired() {
+		try {
+			if (getKeyedMap().getObject(UserManagement.EXPIRES).before(new Date())) {
+				return true;
+			}
+		} catch (KeyNotFoundException e) {
+			// Ignore
+		}
+		return false;
 	}
 
 	public boolean isExempt() {

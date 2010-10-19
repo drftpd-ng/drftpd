@@ -28,7 +28,7 @@ method doSITE_CHANGE
 perms =gadmin =siteop
 help Change parameters for a user
 help.specific ${command} <username> <field> <value>
-help.specific Valid fields: group, created, ratio, idle_time, credits, tagline
+help.specific Valid fields: group, created, expires <yyyy-MM-dd>, ratio, idle_time, credits, tagline
 help.specific num_logins # [opt perIP], comment, group_ratio #min #max
 help.specific group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
 input all
