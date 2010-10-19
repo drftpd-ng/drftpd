@@ -26,6 +26,43 @@ cycleTime=30
 #secondsectionname.slavename.4=drftpd4
 #secondsectionname.slavename.5=drftpd5
 
+#thirdsectionname.archiveType=MoveReleaseToMostFreeSlaves
+#thirdsectionname.archiveAfter=43200
+#thirdsectionname.numOfSlaves=2
+#thirdsectionname.priority=3
+#thirdsectionname.slavename.1=drftpd1
+#thirdsectionname.slavename.2=drftpd2
+
+#forthsectionname.archiveType=MoveReleaseOffSlavesToMostFreeSlaves
+#forthsectionname.archiveAfter=43200
+#forthsectionname.numOfSlaves=2
+#forthsectionname.priority=3
+#forthsectionname.offOfSlave.1=slave1
+#forthsectionname.offOfSlave.2=slave2
+#forthsectionname.slavename.1=drftpd1
+#forthsectionname.slavename.2=drftpd2
+
 # If a section is not defined an archiveType, that section is excluded 
 # from automatic archiving.  You may still manually archive releases 
 # with the "site archive" command
+
+
+# Archive Types:
+#
+#
+# MoveReleaseToSpecificSlaves: Moves releases to the specific slaves only.
+#    eg:  site archive RLSNAME MoveReleaseToSpecificSlaves slavename.1=slave1 slavename.2=slave2
+#       This will move 'RLSNAME' off all other slaves and only to 'slave1' and 'slave2'
+#
+# MoveReleaseToMostFreeSlaves: Move releases to the most free slaves listed.
+#    eg:  site archive RLSNAME MoveReleaseToMostFreeSlave slavename.1=slave1 slavename.2=slave2
+#       This will move 'RLSNAME' to the slave with the most free space whether it be 'slave1' or 'slave2'
+#
+# MoveReleaseOffSlavesToMostFreeSlaves:  Moves releases off of specified slaves to most free slaves listed.
+#    eg:  site archive RLSNAME MoveReleaseOffSlavesToMostFreeSlaves offofslave.1=slave1 offofslave.2=slave2 slavename.1=slave3 slavename.2=slave4
+#       This will move 'RLSNAME' off of 'slave1' and 'slave2' and move to whichever slave has most free space of 'slave3' and 'slave4'
+#
+# ConstantMirroring
+#    eg:  above using this .conf file
+#        This will constantly mirror everything from 'slaveX' to 'slaveY' defined in the sections above.
+#
