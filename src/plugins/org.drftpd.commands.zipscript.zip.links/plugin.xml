@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2082 2010-09-20 18:27:50Z cyber1331 $ -->
+<plugin id="org.drftpd.commands.zipscript.zip.links" version="3.0.0">
+	<doc>
+		<doc-text>(Zipscript) - This plugin provides zip links for new uploads, as well as the SITE FIXLINKS command</doc-text>
+	</doc>
+	
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
+		<import plugin-id="org.drftpd.commands.zipscript.zip" exported="true" />
+		<import plugin-id="org.drftpd.commands.zipscript.links" exported="true" />
+	</requires>
+	
+	<runtime>
+		<library id="org.drftpd.commands.zipscript.zip.links" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="LinksZipSTORIncomplete">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.links.hooks.LinksZipPostHook" />
+		<parameter id="HookMethod" value="doLinksZipSTORIncompleteHook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="LinksZipDELEIncomplete">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.links.hooks.LinksZipPostHook" />
+		<parameter id="HookMethod" value="doLinksZipDELECleanupHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+
+	<extension plugin-id="org.drftpd.commands.zipscript.links" point-id="FixLinksProcessDir" id="FixLinksPostProcessDir">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.zip.links.FixLinksPostProcessDir" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="RescanPostProcessDir" id="RescanPostProcessLinksZip">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.zip.links.RescanPostProcessLinksZip" />
+	</extension>
+	
+</plugin>

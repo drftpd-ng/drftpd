@@ -20,6 +20,10 @@
 	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
 	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
 
+	<extension-point id="FixLinksProcessDir">
+		<parameter-def id="Class" type="string" />
+	</extension-point>
+
 	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="LinksSTORIncomplete">
 		<parameter id="ParentMethod" value="doSTOR" />
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.links.hooks.LinksPostHook" />
