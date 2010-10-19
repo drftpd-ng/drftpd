@@ -88,7 +88,7 @@ public class FixLinksPostProcessDir implements FixLinksProcessDirInterface {
 			Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
 			// Check if incomplete links are enabled
-			if (cfg.getProperty("incomplete.zip.links").equals("true")) {
+			if (cfg.getProperty("incomplete.zip.links","false").equals("true")) {
 				// check incomplete status and update links
 				CommandRequest tempReq = (CommandRequest) workingDirReq.clone();
 				tempReq.setCurrentDirectory(workingDir);

@@ -47,7 +47,7 @@ public class RescanPostProcessLinksZip implements RescanPostProcessDirInterface 
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
 		// Check if incomplete links are enabled
-		if (cfg.getProperty("incomplete.zip.links").equals("true")) {
+		if (cfg.getProperty("incomplete.zip.links","false").equals("true")) {
 			// check incomplete status and update links
 			try {
 				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(workingDirReq.getCurrentDirectory());
