@@ -1,0 +1,8 @@
+# $id$
+log4j.logger.org.drftpd.vfs.index.lucene=DEBUG, lucene
+log4j.additivity.org.drftpd.vfs.index.lucene=false
+
+log4j.appender.lucene=org.apache.log4j.FileAppender
+log4j.appender.lucene.File=logs/lucene.log
+log4j.appender.lucene.layout=org.apache.log4j.PatternLayout
+log4j.appender.lucene.layout.ConversionPattern=%p %d{ISO8601} - [%t] %c %x - %m%n
