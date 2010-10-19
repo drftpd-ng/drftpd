@@ -7,7 +7,7 @@ help Create a new ArchiveHandler like defined in archive.conf
 help.specific SITE ARCHIVE Directory [ArchiveType] [property1] [property2] [property...] - an example of a property is slavename.1=myslave just like in archive.conf
 badarchivetype=ArchiveType ${archivetypename} was unable to be initialized - ${exception}
 incompatible ArchiveType ${archivetypename} is incompatible with this version of DrFTPD
-baddir Directory ${baddir} was unable to be found
+baddir Directory ${dirname} was unable to be found
 badslave Unable to add ${slavename} to the slaveList
 loadarchive The Archive plugin must be loaded, use SITE LOADPLUGIN Archive
 success Started ArchiveHandler for ${archivetypename} on ${dirname}

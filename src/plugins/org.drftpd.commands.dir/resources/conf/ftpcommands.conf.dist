@@ -70,7 +70,7 @@ class Dir
 method doSITE_CHOWN
 perms =siteop
 help Changes ownership of a file/directory.
-help.specific ${command} <user>[.<group>] <file>
+help.specific ${command} [-r] <user>[:<group>] <file>
 help.specific Changes ownership of a file/directory.
 }
 

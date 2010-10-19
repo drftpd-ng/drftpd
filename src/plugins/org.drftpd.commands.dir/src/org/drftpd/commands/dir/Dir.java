@@ -452,25 +452,33 @@ public class Dir extends CommandInterface {
 		}
 
 		StringTokenizer st = new StringTokenizer(request.getArgument());
-		String owner = st.nextToken();
-		String group = null;
-		int pos = owner.indexOf('.');
-
-		/* TODO this chgrp isn't actually accessible by site chgrp
-		 * so we should either remove this (and in doing so remove the need
-		 * for this to use getOriginalCommand) or map it to some other command
-		 */
-		if (pos != -1) {
-			group = owner.substring(pos + 1);
-			owner = owner.substring(0, pos);
-		} else if ("SITE CHGRP".equals(request.getCommand())) {
-			group = owner;
-			owner = null;
-		} else if (!"SITE CHOWN".equals(request.getCommand())) {
-			return StandardCommandManager.genericResponse("RESPONSE_202_COMMAND_NOT_IMPLEMENTED");
+		if (st.countTokens() < 2) {
+			throw new ImproperUsageException();
 		}
 
-		CommandResponse response = new CommandResponse(200);
+		String owner = st.nextToken();
+		String group = null;
+		boolean recursive = false;
+
+		if (owner.equalsIgnoreCase("-r")) {
+			recursive = true;
+			owner = st.nextToken();
+		}
+
+		int pos = owner.indexOf(':');
+
+		if (pos > 0) {
+			// Both user and group specified
+			group = owner.substring(pos + 1);
+			owner = owner.substring(0, pos);
+		} else if (pos == 0) {
+			// First char is ':', only change group
+			group = owner.substring(1);
+			owner = null;
+		}
+
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+
 		User user = request.getSession().getUserNull(request.getUser());
 
 		if (!st.hasMoreTokens()) {
@@ -488,13 +496,33 @@ public class Dir extends CommandInterface {
 				if (group != null) {
 					file.setGroup(group);
 				}
+
+				if (file.isDirectory() && recursive) {
+					recursiveCHOWN((DirectoryHandle)file, owner, group, user, response);
+				}
 			} catch (FileNotFoundException e) {
 				response.addComment(e.getMessage());
 			}
 		}
 
-		response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		return response;
+	}
+	private void recursiveCHOWN(DirectoryHandle dir, String owner, String group, User user, CommandResponse response) {
+		try {
+			for (InodeHandle inode : dir.getInodeHandles(user)) {
+				if (owner != null) {
+					inode.setUsername(owner);
+				}
+				if (group != null) {
+					inode.setGroup(group);
+				}
+				if (inode.isDirectory()) {
+					recursiveCHOWN((DirectoryHandle)inode, owner, group, user, response);
+				}
+			}
+		} catch (FileNotFoundException e) {
+			response.addComment(e.getMessage());
+		}
 	}
 
 	public CommandResponse doSITE_LINK(CommandRequest request) throws ImproperUsageException {
