@@ -251,6 +251,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	public void setGroup(String group) {
 		_group = group;
 		if (isInodeLoaded()) {
+			commit();
 			getVFS().notifyOwnershipChanged(this, getUsername(), _group);
 		}
 	}
@@ -296,6 +297,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	public void setUsername(String user) {
 		_username = user; 
 		if (isInodeLoaded()) {
+			commit();
 			getVFS().notifyOwnershipChanged(this, _username, getGroup());
 		}
 	}

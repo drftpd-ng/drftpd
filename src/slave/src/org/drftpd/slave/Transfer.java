@@ -255,10 +255,6 @@ public class Transfer {
 			_slave.sendResponse(new AsyncResponseDiskStatus(_slave
 					.getDiskStatus()));
 			return getTransferStatus();
-		} catch (IOException e) {
-			// TODO really delete on IOException ?
-			// _slave.delete(root + File.separator + filename);
-			throw e; // so the Master can still handle the exception
 		} finally {
 			if (_sock != null) {
 				try {

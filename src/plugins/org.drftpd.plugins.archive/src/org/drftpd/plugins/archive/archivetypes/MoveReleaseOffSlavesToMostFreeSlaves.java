@@ -75,7 +75,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	 */
     protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
     	for (Iterator<InodeHandle> iter = lrf.getInodeHandlesUnchecked().iterator(); iter.hasNext();) {
-            InodeHandle inode = (InodeHandle) iter.next();
+            InodeHandle inode = iter.next();
 
             if (inode.isLink()) {
             	continue;
@@ -86,7 +86,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
             } else {
             	try {
 	            	for (Iterator<RemoteSlave> iter2 = ((FileHandle) inode).getAvailableSlaves().iterator(); iter2.hasNext();) {
-	            		RemoteSlave rslave = (RemoteSlave) iter2.next();
+	            		RemoteSlave rslave = iter2.next();
 	            		
 	                    if (_offOfSlaves.contains(rslave)) {
 	                        return false;

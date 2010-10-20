@@ -40,8 +40,6 @@ public class MatchdirRegexFilter extends DiskFilter {
 
 	private Pattern _p;
 
-	private String _pattern;
-
 	public MatchdirRegexFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
 		super(diskSelection, p, i);
 		_assignList = AssignRoot.parseAssign(this, PropertyHelper.getProperty(p, i+ ".assign"));
