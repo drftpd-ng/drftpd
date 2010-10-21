@@ -3033,7 +3033,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		}
 		_isTerminated = true;
 		quitServer(reason);
-		_pool.shutdownNow();
+		_pool.shutdown();
 		dispose();
 	}
 
