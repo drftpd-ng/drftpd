@@ -29,6 +29,10 @@ public class IndexException extends Exception {
 		super(cause);
 	}
 
+	public IndexException(String message) {
+		super(message);
+	}
+
 	public IndexException(String message, Throwable cause) {
 		super(message, cause);
 	}

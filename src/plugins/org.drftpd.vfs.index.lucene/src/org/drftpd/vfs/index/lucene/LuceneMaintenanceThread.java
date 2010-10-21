@@ -54,7 +54,7 @@ public class LuceneMaintenanceThread extends Thread {
 					break;
 				}
 
-				if (currentTime >= _lastOptimization + _optimizeInterval) {
+				if ((currentTime >= _lastOptimization + _optimizeInterval) && !_engine.isRebuilding()) {
 					_engine.getWriter().optimize();
 					_engine.getWriter().commit();
 					updateLastOptimizationTime();

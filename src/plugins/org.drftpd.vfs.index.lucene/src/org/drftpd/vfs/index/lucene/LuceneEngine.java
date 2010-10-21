@@ -150,7 +150,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private LuceneMaintenanceThread _maintenanceThread;
 	private LuceneBackupThread _backupThread;
 
-	private IndexingVirtualFileSystemListener _listener;
+	private boolean _rebuilding;
 	
 	/**
 	 * Creates all the needed resources for the Index to work.
@@ -175,8 +175,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		_maintenanceThread.start();
 		_backupThread.start();
 		
-		_listener = new IndexingVirtualFileSystemListener();
-		_listener.init();
+		IndexingVirtualFileSystemListener listener = new IndexingVirtualFileSystemListener();
+		listener.init();
 	}
 
 	private void createThreads() {
@@ -455,6 +455,11 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	/* {@inheritDoc} */
 	public void rebuildIndex() throws IndexException {
+		if (_rebuilding) {
+			throw new IndexException("A previous rebuildindex command is already in progress.");
+		}
+		_rebuilding = true;
+
 		closeAll();
 
 		PhysicalFile f = new PhysicalFile(INDEX_DIR);
@@ -464,8 +469,11 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		try {
 			recurseAndBuild(GlobalContext.getGlobalContext().getRoot());
+			commit(); // commit the writer so that the searcher can see the new stuff.
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
+		} finally {
+			_rebuilding = false;
 		}
 	}
 
@@ -485,8 +493,13 @@ public class LuceneEngine implements IndexEngineInterface {
 				addInode(inode);
 			}
 		}
-		
-		commit(); // commit the writer so that the searcher can see the new stuff.
+	}
+
+	/*
+	 * Method to check if an index rebuild is in process or not.
+	 */
+	public boolean isRebuilding() {
+		return _rebuilding;
 	}
 
 	/**
