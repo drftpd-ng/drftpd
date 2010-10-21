@@ -150,6 +150,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private LuceneMaintenanceThread _maintenanceThread;
 	private LuceneBackupThread _backupThread;
 
+	private IndexingVirtualFileSystemListener _listener;
 	private boolean _rebuilding;
 	
 	/**
@@ -175,8 +176,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		_maintenanceThread.start();
 		_backupThread.start();
 		
-		IndexingVirtualFileSystemListener listener = new IndexingVirtualFileSystemListener();
-		listener.init();
+		_listener = new IndexingVirtualFileSystemListener();
+		_listener.init();
 	}
 
 	private void createThreads() {
