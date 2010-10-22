@@ -470,8 +470,10 @@ public class LuceneEngine implements IndexEngineInterface {
 			recurseAndBuild(GlobalContext.getGlobalContext().getRoot());
 			commit(); // commit the writer so that the searcher can see the new stuff.
 		} catch (FileNotFoundException e) {
-			logger.warn("Exception whilst rebuilding lucene index",e);
 			throw new RuntimeException(e);
+		} catch (RuntimeException e) {
+			logger.error("Exception whilst rebuilding lucene index",e);
+			throw e;
 		} finally {
 			_rebuilding = false;
 		}
