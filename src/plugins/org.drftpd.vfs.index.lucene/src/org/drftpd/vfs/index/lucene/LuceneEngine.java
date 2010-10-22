@@ -271,35 +271,32 @@ public class LuceneEngine implements IndexEngineInterface {
 	private synchronized Document makeDocumentFromInode(InodeHandle inode) throws FileNotFoundException {
 		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
 
-		// locking the document so that none touches it.
-		synchronized (INDEX_DOCUMENT) {
-			FIELD_NAME.setValue(inode.getName());
-			FIELD_FULL_NAME.setValue(inode.getName());
-			FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
-			if (!inode.getPath().equals(VirtualFileSystem.separator)) {
-				FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
-			}
-			if (inode.isDirectory())
-				FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
-			else
-				FIELD_FULL_PATH.setValue(inode.getPath());
-			FIELD_OWNER.setValue(inode.getUsername());
-			FIELD_GROUP.setValue(inode.getGroup());
-			FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
-
-			if (inodeType == InodeType.FILE) {
-				StringBuffer sb = new StringBuffer();
-				for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
-					sb.append(slaveName).append(",");
-				}
-				
-				FIELD_SLAVES.setValue(sb.toString());
-			}
-
-			FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
-			FIELD_SIZE.setLongValue(inode.getSize());
+		FIELD_NAME.setValue(inode.getName());
+		FIELD_FULL_NAME.setValue(inode.getName());
+		FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
+		if (!inode.getPath().equals(VirtualFileSystem.separator)) {
+			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
 		}
-		
+		if (inode.isDirectory())
+			FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
+		else
+			FIELD_FULL_PATH.setValue(inode.getPath());
+		FIELD_OWNER.setValue(inode.getUsername());
+		FIELD_GROUP.setValue(inode.getGroup());
+		FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
+
+		if (inodeType == InodeType.FILE) {
+			StringBuffer sb = new StringBuffer();
+			for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
+				sb.append(slaveName).append(",");
+			}
+
+			FIELD_SLAVES.setValue(sb.toString());
+		}
+
+		FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
+		FIELD_SIZE.setLongValue(inode.getSize());
+
 		return INDEX_DOCUMENT;
 	}
 	
@@ -352,8 +349,10 @@ public class LuceneEngine implements IndexEngineInterface {
 	/* {@inheritDoc} */
 	public void addInode(InodeHandle inode) throws IndexException {
 		try {
-			Document doc = makeDocumentFromInode(inode);
-			_iWriter.addDocument(doc);
+			synchronized (INDEX_DOCUMENT) {
+				Document doc = makeDocumentFromInode(inode);
+				_iWriter.addDocument(doc);
+			}
 		} catch (FileNotFoundException e) {
 			logger.error("Unable to add " + inode.getPath() + " to the index", e);
 		} catch (Exception e) {
@@ -375,7 +374,9 @@ public class LuceneEngine implements IndexEngineInterface {
 	/* {@inheritDoc} */
 	public void updateInode(InodeHandle inode) throws IndexException {
 		try {
-			_iWriter.updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
+			synchronized (INDEX_DOCUMENT) {
+				_iWriter.updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
+			}
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		} catch (FileNotFoundException e) {
@@ -404,11 +405,15 @@ public class LuceneEngine implements IndexEngineInterface {
 					String oldPath = doc.getFieldable("fullPath").stringValue();
 					String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
 
-					_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromInode(
-							GlobalContext.getGlobalContext().getRoot().getInodeHandleUnchecked(newPath)));
+					synchronized (INDEX_DOCUMENT) {
+						_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromInode(
+								GlobalContext.getGlobalContext().getRoot().getInodeHandleUnchecked(newPath)));
+					}
 				}
 			} else {
-				_iWriter.updateDocument(makeFullPathTermFromInode(fromInode), makeDocumentFromInode(toInode));
+				synchronized (INDEX_DOCUMENT) {
+					_iWriter.updateDocument(makeFullPathTermFromInode(fromInode), makeDocumentFromInode(toInode));
+				}
 			}
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
