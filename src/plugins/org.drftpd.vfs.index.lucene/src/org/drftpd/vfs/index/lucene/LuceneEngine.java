@@ -268,7 +268,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @param inode
 	 * @throws FileNotFoundException
 	 */
-	private synchronized Document makeDocumentFromInode(InodeHandle inode) throws FileNotFoundException {
+	private Document makeDocumentFromInode(InodeHandle inode) throws FileNotFoundException {
 		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
 
 		FIELD_NAME.setValue(inode.getName());
