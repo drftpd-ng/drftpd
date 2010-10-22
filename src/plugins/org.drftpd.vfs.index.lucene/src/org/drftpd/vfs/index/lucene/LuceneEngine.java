@@ -471,7 +471,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			commit(); // commit the writer so that the searcher can see the new stuff.
 		} catch (FileNotFoundException e) {
 			throw new RuntimeException(e);
-		} catch (RuntimeException e) {
+		} catch (IndexException e) {
 			logger.error("Exception whilst rebuilding lucene index",e);
 			throw e;
 		} finally {
