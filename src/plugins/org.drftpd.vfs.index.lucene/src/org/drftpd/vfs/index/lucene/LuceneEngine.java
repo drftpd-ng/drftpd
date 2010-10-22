@@ -356,9 +356,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			_iWriter.addDocument(doc);
 		} catch (FileNotFoundException e) {
 			logger.error("Unable to add " + inode.getPath() + " to the index", e);
-		} catch (CorruptIndexException e) {
-			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		}
 	}

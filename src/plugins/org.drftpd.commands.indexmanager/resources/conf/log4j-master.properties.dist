@@ -1,0 +1,3 @@
+# $id$
+log4j.logger.org.drftpd.commands.indexmanager=DEBUG, index
+log4j.additivity.org.drftpd.commands.indexmanager=false

@@ -44,3 +44,11 @@ log4j.appender.debug=org.apache.log4j.FileAppender
 log4j.appender.debug.File=logs/debug.log
 log4j.appender.debug.layout=org.apache.log4j.PatternLayout
 log4j.appender.debug.layout.ConversionPattern=%p %d{ISO8601} - [%t] - %m%n
+
+log4j.logger.org.drftpd.vfs.index=DEBUG, index
+log4j.additivity.org.drftpd.vfs.index=false
+
+log4j.appender.index=org.apache.log4j.FileAppender
+log4j.appender.index.File=logs/index.log
+log4j.appender.index.layout=org.apache.log4j.PatternLayout
+log4j.appender.index.layout.ConversionPattern=%p %d{ISO8601} - [%t] - %m%n
