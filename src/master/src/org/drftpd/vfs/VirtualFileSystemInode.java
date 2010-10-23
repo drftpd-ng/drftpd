@@ -208,8 +208,10 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		}
 		
 		try {
-			getVFS().getInodeByPath(destination);
-			throw new FileExistsException(destination + "already exists");
+			VirtualFileSystemInode destinationInode = getVFS().getInodeByPath(destination);
+			if (!destinationInode.equals(this)) {
+				throw new FileExistsException(destination + "already exists");
+			}
 		} catch (FileNotFoundException e) {
 			// This is good
 		}

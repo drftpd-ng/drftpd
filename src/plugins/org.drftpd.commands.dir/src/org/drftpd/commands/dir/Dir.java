@@ -337,11 +337,6 @@ public class Dir extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
-		// set state variable
-		// get filenames
-		//String fileName = request.getArgument();
-		//fileName = user.getVirtualDirectory().getAbsoluteName(fileName);
-		//mstRenFr = user.getVirtualDirectory().getPhysicalName(fileName);
 		User user = request.getSession().getUserNull(request.getUser());
 		try {
 			request.getSession().setObject(RENAMEFROM, request.getCurrentDirectory().getInodeHandle(request.getArgument(), user));
@@ -389,7 +384,40 @@ public class Dir extends CommandInterface {
 		try {
 			toDir = request.getCurrentDirectory().getDirectory(argument, user);
 			// toDir exists and is a directory, so we're just changing the parent directory and not the name
-			newName = fromInode.getName();
+			// unless toInode and fromInode are the same (i.e. a case change)
+			if (fromInode.isDirectory() && fromInode.equals(toDir)) {
+				toDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
+				newName = VirtualFileSystem.getLast(argument);
+			} else {
+				// There are two possibilites here, the target is an existing link or a directory
+				// Check to see if a link with the target name exists
+				newName = fromInode.getName();
+				try {
+					DirectoryHandle linkParentDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
+					String linkName = VirtualFileSystem.getLast(argument);
+					// If a link exists and is the same link as the from inode this is valid
+					try {
+						InodeHandle linkHandle = linkParentDir.getLink(linkName, user);
+						if (fromInode.isLink() && fromInode.equals(linkHandle)) {
+							// Changing case of existing link
+							toDir = linkParentDir;
+							newName = linkName;
+						}
+					} catch (FileNotFoundException e2) {
+						// No link exists so we are moving an inode to a new parent without changing its name
+					} catch (ObjectNotValidException e2) {
+						// Target is an existing directory
+					}
+				} catch (FileNotFoundException e1) {
+					// Destination doesn't exist, shouldn't be possible as the full argument does exist
+					logger.warn("Destination doesn't exist, this shouldn't happen", e1);
+					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+				} catch (ObjectNotValidException e1) {
+					// Destination isn't a Directory, shouldn't be possible as the full argument is a dir
+					logger.warn("Destination isn't a Directory, this shouldn't happen", e1);
+					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+				}
+			}
 		} catch (FileNotFoundException e) {
 			// Directory does not exist, that means they may have specified _renameFrom's new name
 			// as the last part of the argument
@@ -406,7 +434,23 @@ public class Dir extends CommandInterface {
 				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 			}
 		} catch (ObjectNotValidException e) {
-			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+			// Target exists but is not a dir, this is invalid unless the target is a file and the same
+			// file as the source (i.e. a case change)
+			try {
+				toDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
+				newName = VirtualFileSystem.getLast(argument);
+				if (!toDir.equals(fromInode.getParent()) || !newName.equalsIgnoreCase(fromInode.getName())) {
+					return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+				}
+			} catch (FileNotFoundException e1) {
+				// Destination doesn't exist, shouldn't be possible as the full argument does exist
+				logger.warn("Destination doesn't exist, this shouldn't happen", e1);
+				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+			} catch (ObjectNotValidException e1) {
+				// Destination isn't a Directory, shouldn't be possible as the full argument is a dir
+				logger.warn("Destination isn't a Directory, this shouldn't happen", e1);
+				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+			}
 		}
 		InodeHandle toInode = null;
 		if (fromInode.isDirectory()) {
