@@ -467,7 +467,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		int count = 0;
 		for (BaseFtpConnection conn : conns) {
 			if (conn.getUserNull() == user) {
-				if (conn.getTransferState().isTransfering()) {
+				if (conn.getTransferState().getDirection() == transferDirection) {
 					count++;
 				} // else we dont need to process it.
 			}
