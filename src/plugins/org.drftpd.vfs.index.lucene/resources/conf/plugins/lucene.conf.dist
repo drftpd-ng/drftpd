@@ -15,7 +15,16 @@ max_hits=50
 # but beware that increasing it will also increase memory usage.
 #
 # More info: http://wiki.apache.org/lucene-java/ImproveIndexingSpeed 
-maxdocs_buffer=60
+maxdocs_buffer=120
+
+# This setting works together with maxdocs_buffer but instead of flushing after specified amount
+# of documents it will buffer up to specified amount of RAM before flushing.
+# Keep in mind that it will flush "either or" (whichever comes first).
+# Default (16MB) is high enough that maxdocs_buffer should kick in before this one.
+# If you are not sure on what to put here, keep the default.
+#
+# More info: http://wiki.apache.org/lucene-java/ImproveIndexingSpeed
+max_rambuffer=16
 
 # Optimizing is good, but it is also expensive.
 # When you optimize you merge your index making later operations faster.

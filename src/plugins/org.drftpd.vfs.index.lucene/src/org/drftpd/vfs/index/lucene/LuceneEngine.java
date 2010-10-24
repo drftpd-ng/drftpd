@@ -88,7 +88,7 @@ import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 public class LuceneEngine implements IndexEngineInterface {
 	private static final Logger logger = Logger.getLogger(LuceneEngine.class);
 
-	private static final String EXCEPTION_OCCURED_WHILE_INDEXING = "An exception occured while indexing, check stack trace";
+	private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
 
 	private static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
 	protected static final String INDEX_DIR = "index";
@@ -355,7 +355,9 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 		} catch (FileNotFoundException e) {
 			logger.error("Unable to add " + inode.getPath() + " to the index", e);
-		} catch (Exception e) {
+		} catch (CorruptIndexException e) {
+			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
+		} catch (IOException e) {
 			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		}
 	}
@@ -377,10 +379,10 @@ public class LuceneEngine implements IndexEngineInterface {
 			synchronized (INDEX_DOCUMENT) {
 				_iWriter.updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
 			}
-		} catch (CorruptIndexException e) {
-			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		} catch (FileNotFoundException e) {
 			logger.error("The inode was here but now it isn't!", e);
+		} catch (CorruptIndexException e) {
+			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		} catch (IOException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		}
@@ -405,9 +407,13 @@ public class LuceneEngine implements IndexEngineInterface {
 					String oldPath = doc.getFieldable("fullPath").stringValue();
 					String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
 
-					synchronized (INDEX_DOCUMENT) {
-						_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromInode(
-								GlobalContext.getGlobalContext().getRoot().getInodeHandleUnchecked(newPath)));
+					try {
+						synchronized (INDEX_DOCUMENT) {
+							_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromInode(
+									GlobalContext.getGlobalContext().getRoot().getInodeHandleUnchecked(newPath)));
+						}
+					} catch (FileNotFoundException e) {
+						logger.warn("Index rename failed: '" + oldPath + "' to '" + newPath + "', inode gone!");
 					}
 				}
 			} else {
@@ -418,26 +424,22 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
 					toInode.getPath() + " in the index", e);
-		} catch (FileNotFoundException e) {
-			logger.error("The inode was here but now it isn't!", e);
 		} catch (IOException e) {
 			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
 					toInode.getPath() + " in the index", e);
-		} catch (IndexOutOfBoundsException e) {
-			throw new IndexException("Child path shorter than parent, should not be possible", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
 					iSearcher.close();
 				} catch (IOException e) {
-					logger.debug("IOException closing IndexSearcher", e);
+					logger.error("IOException closing IndexSearcher", e);
 				}
 			}
 			if (iReader != null) {
 				try {
 					iReader.close();
 				} catch (IOException e) {
-					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
+					logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
 				}
 			}
 		}
@@ -492,13 +494,18 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @throws IndexException
 	 */
 	private void recurseAndBuild(DirectoryHandle dir) throws FileNotFoundException, IndexException {
-		for (InodeHandle inode : dir.getInodeHandlesUnchecked()) {
-			if (inode.isDirectory()) {
-				addInode(inode);
-				recurseAndBuild((DirectoryHandle) inode);
-			} else if (inode.isFile()) {
-				addInode(inode);
+		try {
+			for (InodeHandle inode : dir.getInodeHandlesUnchecked()) {
+				if (inode.isDirectory()) {
+					addInode(inode);
+					recurseAndBuild((DirectoryHandle) inode);
+				} else if (inode.isFile()) {
+					addInode(inode);
+				}
 			}
+		} catch (FileNotFoundException e) {
+			// Dir gone, error logged in addInode(inode) call from parent dir,
+			// ignore and continue to build index.
 		}
 	}
 
@@ -619,24 +626,24 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			return inodes;
 		} catch (CorruptIndexException e) {
-			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
 		} catch (IOException e) {
-			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
 					iSearcher.close();
 				} catch (IOException e) {
-					logger.debug("IOException closing IndexSearcher", e);
+					logger.error("IOException closing IndexSearcher", e);
 				}
 			}
 			if (iReader != null) {
 				try {
 					iReader.close();
 				} catch (IOException e) {
-					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
+					logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
 				}
 			}
 		}
@@ -692,24 +699,24 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			return inodes;
 		} catch (CorruptIndexException e) {
-			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
 		} catch (IOException e) {
-			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
 					iSearcher.close();
 				} catch (IOException e) {
-					logger.debug("IOException closing IndexSearcher", e);
+					logger.error("IOException closing IndexSearcher", e);
 				}
 			}
 			if (iReader != null) {
 				try {
 					iReader.close();
 				} catch (IOException e) {
-					logger.debug("IOException closing IndexReader obtained from the IndexWriter", e);
+					logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
 				}
 			}
 		}
@@ -740,7 +747,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			ts.end();
 			ts.close();
 		} catch (IOException e) {
-			// log error?
+			logger.error("IOException analyzing string", e);
 		}
 
 		for (String text : tokens) {
@@ -791,6 +798,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			status.put("size", Bytes.formatBytes(size));
 		} catch (IOException e) {
+			logger.error("IOException getting size of index dir", e);
 		}
 
 		return status;
