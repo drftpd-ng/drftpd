@@ -662,6 +662,10 @@ public class Dir extends CommandInterface {
 				}
 			}
 
+			if (wipeFile.isLink()) {
+				wipeFile = ((LinkHandle) wipeFile).getTargetInodeUnchecked();
+			}			
+			
 			wipeFile.delete(request.getSession().getUserNull(request.getUser()));
 			if (wipeFile.isDirectory()) {
 				GlobalContext.getEventService().publishAsync(
