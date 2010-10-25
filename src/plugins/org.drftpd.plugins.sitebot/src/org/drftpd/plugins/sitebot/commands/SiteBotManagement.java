@@ -223,7 +223,11 @@ public class SiteBotManagement extends CommandInterface {
 		String command = st.nextToken();
 		if (command.equalsIgnoreCase("connect")) {
 			try {
-				bot.reconnect();
+				if (bot.isConnected()) {
+					bot.reconnect();
+				} else {
+					bot.connect();
+				}
 				bot.setDisconnected(false);
 			} catch (Exception e) {
 				logger.warn("Error connecting to IRC server",e);
