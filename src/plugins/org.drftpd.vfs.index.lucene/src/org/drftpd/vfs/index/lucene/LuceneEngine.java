@@ -476,8 +476,6 @@ public class LuceneEngine implements IndexEngineInterface {
 		try {
 			recurseAndBuild(GlobalContext.getGlobalContext().getRoot());
 			commit(); // commit the writer so that the searcher can see the new stuff.
-		} catch (FileNotFoundException e) {
-			throw new RuntimeException(e);
 		} catch (IndexException e) {
 			logger.error("Exception whilst rebuilding lucene index",e);
 			throw e;
@@ -493,7 +491,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @throws FileNotFoundException
 	 * @throws IndexException
 	 */
-	private void recurseAndBuild(DirectoryHandle dir) throws FileNotFoundException, IndexException {
+	private void recurseAndBuild(DirectoryHandle dir) throws IndexException {
 		try {
 			for (InodeHandle inode : dir.getInodeHandlesUnchecked()) {
 				if (inode.isDirectory()) {
