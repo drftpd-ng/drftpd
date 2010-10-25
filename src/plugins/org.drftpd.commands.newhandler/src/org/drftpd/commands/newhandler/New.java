@@ -58,9 +58,9 @@ public class New extends CommandInterface {
 	}
 
 	public CommandResponse doNEW(CommandRequest request) throws ImproperUsageException {
-		int defaultCount = Integer.parseInt(request.getProperties().getProperty("default", "5"));;
+		int defaultCount = Integer.parseInt(request.getProperties().getProperty("default", "5"));
 		int maxCount = Integer.parseInt(request.getProperties().getProperty("max", "25"));
-		String sectionFilter = request.getProperties().getProperty("filtered_sections", "").trim();;
+		String sectionFilter = request.getProperties().getProperty("filtered_sections", "").trim();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
 		SectionManagerInterface sectionManager = GlobalContext.getGlobalContext().getSectionManager();

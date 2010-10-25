@@ -44,10 +44,10 @@ public class TrialTest extends TestCase {
      */
     private static final long RESETTIME = 1071519356421L;
     private static final long TESTBYTES = Bytes.parseBytes("100m");
-    private Calendar cal;
-    private int period;
-    private Trial trial;
-    private DummyUser user;
+    private Calendar _cal;
+    private int _period;
+    private Trial _trial;
+    private DummyUser _user;
 
     public TrialTest(String fName) {
         super(fName);
@@ -61,25 +61,25 @@ public class TrialTest extends TestCase {
     }
 
     private void action(int period) {
-        trial.actionPerformed(getUserEvent(period));
+        _trial.actionPerformed(getUserEvent(period));
     }
 
     private void action() {
-        action(period);
+        action(_period);
     }
 
     private void assertUserFailed() {
-        assertTrue(user.getGroups().toString(), user.isMemberOf("FAiLED"));
-        assertFalse(user.getGroups().toString(), user.isMemberOf("PASSED"));
+        assertTrue(_user.getGroups().toString(), _user.isMemberOf("FAiLED"));
+        assertFalse(_user.getGroups().toString(), _user.isMemberOf("PASSED"));
     }
 
     private void assertUserNeither() {
-        assertEquals(user.getGroups().toString(), 0, user.getGroups().size());
+        assertEquals(_user.getGroups().toString(), 0, _user.getGroups().size());
     }
 
     private void assertUserPassed() {
-        assertTrue(user.getGroups().toString(), user.isMemberOf("PASSED"));
-        assertFalse(user.getGroups().toString(), user.isMemberOf("FAiLED"));
+        assertTrue(_user.getGroups().toString(), _user.isMemberOf("PASSED"));
+        assertFalse(_user.getGroups().toString(), _user.isMemberOf("FAiLED"));
     }
 
     private Calendar getJUnitCalendar() {
@@ -92,11 +92,11 @@ public class TrialTest extends TestCase {
 
     private Trial getJUnitTrial() throws Exception {
         Properties p = new Properties();
-        p.setProperty("1.period", Trial.getPeriodName2(period));
+        p.setProperty("1.period", Trial.getPeriodName2(_period));
         p.setProperty("1.fail", "chgrp FAiLED");
         p.setProperty("1.pass", "chgrp PASSED");
         p.setProperty("1.quota", "" + TESTBYTES);
-        p.setProperty("1.name", Trial.getPeriodName(period));
+        p.setProperty("1.name", Trial.getPeriodName(_period));
         p.setProperty("1.perm", "*");
 
         Trial trial = new Trial();
@@ -111,14 +111,14 @@ public class TrialTest extends TestCase {
      */
     private DummyUser getJUnitUser() {
         DummyUser user = new DummyUser("junit", RESETTIME);
-        user.setLastReset(cal.getTimeInMillis());
+        user.setLastReset(_cal.getTimeInMillis());
 
         return user;
     }
 
     private UserEvent getUserEvent(int period) {
-        return new UserEvent(user, getCommandFromPeriod(period),
-            cal.getTimeInMillis());
+        return new UserEvent(_user, getCommandFromPeriod(period),
+            _cal.getTimeInMillis());
     }
 
     private void internalTestBeforeUnique() throws Exception {
@@ -130,43 +130,43 @@ public class TrialTest extends TestCase {
 
     private void internalTestUnique() throws Exception {
         internalSetUp();
-        cal.add(period, 1);
+        _cal.add(_period, 1);
 
         //fail
-        user = getJUnitUser();
+        _user = getJUnitUser();
         action(Trial.PERIOD_DAILY);
         assertUserFailed();
 
         //pass
-        user = getJUnitUser();
-        user.setUploadedBytes(TESTBYTES);
+        _user = getJUnitUser();
+        _user.setUploadedBytes(TESTBYTES);
         action(Trial.PERIOD_DAILY);
         assertUserPassed();
     }
 
     private void internalTestUniqueAfterUnique() throws Exception {
         internalSetUp();
-        cal.add(period, 1);
+        _cal.add(_period, 1);
 
-        Calendar calOld = (Calendar) cal.clone();
-        cal.add(period, 1);
+        Calendar calOld = (Calendar) _cal.clone();
+        _cal.add(_period, 1);
 
         //fail
-        user = getJUnitUser();
-        user.setLastReset(calOld.getTimeInMillis());
+        _user = getJUnitUser();
+        _user.setLastReset(calOld.getTimeInMillis());
         action(Trial.PERIOD_DAILY);
         assertUserFailed();
 
         //pass
-        user = getJUnitUser();
-        user.setLastReset(calOld.getTimeInMillis());
-        user.setUploadedBytes(TESTBYTES);
+        _user = getJUnitUser();
+        _user.setLastReset(calOld.getTimeInMillis());
+        _user.setUploadedBytes(TESTBYTES);
         action(Trial.PERIOD_DAILY);
         assertUserPassed();
 
         //neither (regular fail for daily reset)
-        if (period != Trial.PERIOD_DAILY) {
-            user = getJUnitUser();
+        if (_period != Trial.PERIOD_DAILY) {
+            _user = getJUnitUser();
             action(Trial.PERIOD_DAILY);
             assertUserNeither();
         }
@@ -174,15 +174,15 @@ public class TrialTest extends TestCase {
 
     private void internalTestRegular() throws Exception {
         internalSetUp();
-        cal.add(period, 2);
+        _cal.add(_period, 2);
 
         //pass real period
-        user = getJUnitUser();
-        user.setUploadedBytesForPeriod(period, TESTBYTES);
+        _user = getJUnitUser();
+        _user.setUploadedBytesForPeriod(_period, TESTBYTES);
         action();
         assertUserPassed();
 
-        user = getJUnitUser();
+        _user = getJUnitUser();
         action();
         assertUserFailed();
     }
@@ -195,62 +195,62 @@ public class TrialTest extends TestCase {
     }
 
     public void testDayBeforeUnique() throws Exception {
-        period = Trial.PERIOD_DAILY;
+        _period = Trial.PERIOD_DAILY;
         internalTestBeforeUnique();
     }
 
     public void testDayUnique() throws Exception {
-        period = Trial.PERIOD_DAILY;
+        _period = Trial.PERIOD_DAILY;
         internalTestUnique();
     }
 
     public void testDayRegular() throws Exception {
-        period = Trial.PERIOD_DAILY;
+        _period = Trial.PERIOD_DAILY;
         internalTestRegular();
     }
 
     public void testDayUniqueAfterUnique() throws Exception {
-        period = Trial.PERIOD_DAILY;
+        _period = Trial.PERIOD_DAILY;
         internalTestUniqueAfterUnique();
     }
 
     public void testMonthBeforeUnique() throws Exception {
-        period = Trial.PERIOD_MONTHLY;
+        _period = Trial.PERIOD_MONTHLY;
         internalTestBeforeUnique();
     }
 
     public void testMonthUnique() throws Exception {
-        period = Trial.PERIOD_MONTHLY;
+        _period = Trial.PERIOD_MONTHLY;
         internalTestUnique();
     }
 
     public void testMonthRegular() throws Exception {
-        period = Trial.PERIOD_MONTHLY;
+        _period = Trial.PERIOD_MONTHLY;
         internalTestRegular();
     }
 
     public void testMonthUniqueAfterUnique() throws Exception {
-        period = Trial.PERIOD_MONTHLY;
+        _period = Trial.PERIOD_MONTHLY;
         internalTestUniqueAfterUnique();
     }
 
     public void testWeekBeforeUnique() throws Exception {
-        period = Trial.PERIOD_WEEKLY;
+        _period = Trial.PERIOD_WEEKLY;
         internalTestBeforeUnique();
     }
 
     public void testWeekRegular() throws Exception {
-        period = Trial.PERIOD_WEEKLY;
+        _period = Trial.PERIOD_WEEKLY;
         internalTestRegular();
     }
 
     public void testWeekUniqueAfterUnique() throws Exception {
-        period = Trial.PERIOD_WEEKLY;
+        _period = Trial.PERIOD_WEEKLY;
         internalTestUniqueAfterUnique();
     }
 
     public void testWeekUnique() throws Exception {
-        period = Trial.PERIOD_WEEKLY;
+        _period = Trial.PERIOD_WEEKLY;
         internalTestUnique();
     }
 
@@ -270,10 +270,10 @@ public class TrialTest extends TestCase {
      * period must be set before internalSetUp() is called because of Limit period.
      */
     private void internalSetUp() throws Exception {
-        trial = getJUnitTrial();
-        cal = getJUnitCalendar();
-        Logger.getLogger(TrialTest.class).debug("cal = " + cal.getTime());
-        user = getJUnitUser();
+        _trial = getJUnitTrial();
+        _cal = getJUnitCalendar();
+        Logger.getLogger(TrialTest.class).debug("cal = " + _cal.getTime());
+        _user = getJUnitUser();
     }
 
     public static String getCommandFromPeriod(int period) {

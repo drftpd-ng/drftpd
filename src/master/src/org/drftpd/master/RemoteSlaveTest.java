@@ -26,7 +26,6 @@ import junit.framework.TestSuite;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.event.Event;
-import org.drftpd.exceptions.SlaveFileException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.tests.DummyRemoteSlave;
@@ -47,7 +46,7 @@ public class RemoteSlaveTest extends TestCase {
         return new TestSuite(RemoteSlaveTest.class);
     }
 
-    public void testEquals() throws SlaveFileException {
+    public void testEquals() {
         DummySlaveManager sm = new DummySlaveManager();
         GlobalContext gc = new GC();
         
@@ -63,7 +62,7 @@ public class RemoteSlaveTest extends TestCase {
     }
 
     public void testProcessQueue()
-        throws SlaveFileException, IOException, SlaveUnavailableException {
+        throws IOException, SlaveUnavailableException {
         DummySlaveManager sm = new DummySlaveManager();
         GC gc = new GC();
         //sm.setGlobalContext(gc); -zubov
@@ -90,7 +89,7 @@ public class RemoteSlaveTest extends TestCase {
     }
 
     public void testAddNetworkError()
-        throws InterruptedException, SlaveFileException {
+        throws InterruptedException {
         DummySlaveManager sm = new DummySlaveManager();
         GC gc = new GC();
         //sm.setGlobalContext(gc); -zubov
@@ -147,15 +146,14 @@ public class RemoteSlaveTest extends TestCase {
             _filelist = filelist;
         }
 
-        public String issueDeleteToSlave(String sourceFile)
-            throws SlaveUnavailableException {
+        public String issueDeleteToSlave(String sourceFile) {
             _filelist.remove(sourceFile);
 
             return null;
         }
 
         public String issueRenameToSlave(String from, String toDirPath,
-            String toName) throws SlaveUnavailableException {
+            String toName) {
             _filelist.remove(from);
             _filelist.add(new String(toDirPath + "/" + toName));
 

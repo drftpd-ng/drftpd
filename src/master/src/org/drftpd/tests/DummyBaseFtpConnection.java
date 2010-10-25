@@ -18,7 +18,6 @@
 package org.drftpd.tests;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
@@ -156,8 +155,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
     /* (non-Javadoc)
      * @see net.sf.drftpd.master.BaseFtpConnection#service(net.sf.drftpd.master.FtpRequest, java.io.PrintWriter)
      */
-    public void service(FtpRequest request, PrintWriter out)
-        throws IOException {
+    public void service(FtpRequest request, PrintWriter out) {
         throw new UnsupportedOperationException();
     }
 

@@ -365,8 +365,8 @@ public class MoreStats extends CommandInterface {
             return this.members;
         }
 
-        public void updateMembers(int members) {
-            this.members += members;
+        public void updateMembers(int updatemembers) {
+            members += updatemembers;
         }
     }
     

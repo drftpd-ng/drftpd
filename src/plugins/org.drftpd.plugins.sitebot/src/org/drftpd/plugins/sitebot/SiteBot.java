@@ -3047,19 +3047,19 @@ public class SiteBot implements ReplyConstants, Runnable {
 
 		private ServiceCommand _service;
 
-		private String _nick;
+		private String _nickname;
 
 		private String _ident;
 
 		private CommandThread(IrcRequest request, ServiceCommand service, String nick, String ident) {
 			_request = request;
 			_service = service;
-			_nick = nick;
+			_nickname = nick;
 			_ident = ident;
 		}
 
 		public void run() {
-			UserDetails user = getUserDetails(_nick,_ident);
+			UserDetails user = getUserDetails(_nickname,_ident);
 			CommandRequestInterface cmdRequest = _commandManager.newRequest( _request.getCommand(),
 					_request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), _service, _cmds.get(_request.getCommand()));
 			CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);

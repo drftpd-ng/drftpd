@@ -59,7 +59,7 @@ public class DummySectionManager implements SectionManagerInterface {
 		return _section;
 	}
 
-	public void reload() {	};
+	public void reload() {	}
 	
 }
 

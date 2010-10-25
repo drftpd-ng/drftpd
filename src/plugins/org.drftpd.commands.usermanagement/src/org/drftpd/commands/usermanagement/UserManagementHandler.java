@@ -1337,7 +1337,7 @@ public class UserManagementHandler extends CommandInterface {
 		CommandResponse response = new CommandResponse(200);
 
 		Collection<User> users = GlobalContext.getGlobalContext().getUserManager()
-		.getAllUsersByGroup(group);;
+		.getAllUsersByGroup(group);
 
 		response.addComment("Changing '" + group + "' members " + opt);
 
@@ -1405,7 +1405,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		String newGroup = st.nextToken();
 		Collection<User> users = GlobalContext.getGlobalContext().getUserManager()
-		.getAllUsersByGroup(oldGroup);;
+		.getAllUsersByGroup(oldGroup);
 
 		if (!GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(
 				newGroup).isEmpty()) {

@@ -94,15 +94,15 @@ public class GroupPosition implements Comparable<GroupPosition> {
 		return getGroupname().hashCode();
 	}
 
-	public void updateBytes(long bytes) {
-		this.bytes += bytes;
+	public void updateBytes(long updatebytes) {
+		bytes += updatebytes;
 	}
 
-	public void updateFiles(int files) {
-		this.files += files;
+	public void updateFiles(int updatefiles) {
+		files += updatefiles;
 	}
 
-	public void updateXfertime(long xfertime) {
-		this.xfertime += xfertime;
+	public void updateXfertime(long updatexfertime) {
+		xfertime += updatexfertime;
 	}
 }
