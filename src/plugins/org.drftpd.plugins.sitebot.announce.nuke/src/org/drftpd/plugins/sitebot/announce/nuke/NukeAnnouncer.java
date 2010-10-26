@@ -25,7 +25,9 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.Bytes;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.commands.nuke.NukeBeans;
 import org.drftpd.commands.nuke.NukeUtils;
+import org.drftpd.commands.nuke.NukedUser;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -92,11 +94,11 @@ public class NukeAnnouncer implements AnnounceInterface {
 
 		output.append(ReplacerUtils.jprintf(_keyPrefix+type, env, _bundle));
 
-		for (Map.Entry<String,Long> entry : event.getNukees().entrySet()) {
+		for (NukedUser nukeeObj : NukeBeans.getNukeeList(event.getNukeData())) {
 			ReplacerEnvironment nukeeenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			User nukee;
 			try {
-				nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(entry.getKey());
+				nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeObj.getUsername());
 			} catch (NoSuchUserException e1) {
                 // Unable to get user, does not exist.. skip announce for this user
 				continue;
@@ -106,7 +108,7 @@ public class NukeAnnouncer implements AnnounceInterface {
             }
 			nukeeenv.add("user", nukee.getName());
 			nukeeenv.add("group", nukee.getGroup());
-			long debt = NukeUtils.calculateNukedAmount(entry.getValue(),
+			long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
                     nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), event.getMultiplier());
 			nukeeenv.add("nukedamount", Bytes.formatBytes(debt));
 			output.append(ReplacerUtils.jprintf(_keyPrefix+type+".nukees", nukeeenv, _bundle));
