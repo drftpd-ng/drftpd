@@ -142,12 +142,17 @@ public class NukeUtils {
 	}
 
 	/*
-	 * Method that stripes nuke prefix from path
+	 * Method that stripes nuke prefix from dirs path
 	 */
 	public static String getPathWithoutNukePrefix(String path) {
-		// Get path without [NUKED]- prefix
+		String nukeDir = VirtualFileSystem.getLast(path);
+		if (!nukeDir.startsWith("[NUKED]-")) {
+			// No nuke prefix, just return path;
+			return path;
+		}
+		// Get path for dir without [NUKED]- prefix
 		String unnukedPath = VirtualFileSystem.stripLast(path) + VirtualFileSystem.separator +
-				VirtualFileSystem.getLast(path).substring(8);
+				nukeDir.substring(8);
 		// If nuked dir was in root path will start with //, fix this to single /
 		return unnukedPath.replaceAll("//", "/");
 	}

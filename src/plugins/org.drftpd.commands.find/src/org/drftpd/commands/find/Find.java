@@ -40,6 +40,10 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.commands.nuke.NukeBeans;
+import org.drftpd.commands.nuke.NukeException;
+import org.drftpd.commands.nuke.NukeUtils;
+import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.Session;
@@ -51,6 +55,7 @@ import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
@@ -286,6 +291,72 @@ public class Find extends CommandInterface {
 		}
 	}
 
+	private static class ActionNuke implements Action {
+		private int _multiplier;
+		private String _reason;
+
+		public ActionNuke(int multiplier, String reason) {
+			_multiplier = multiplier;
+			_reason = reason;
+		}
+
+		public String exec(CommandRequest request, InodeHandle inode) {
+			DirectoryHandle dir = (DirectoryHandle)inode;
+
+			// Check if dir is nuked already, remove nuke prefix if necessary
+			String dirName = VirtualFileSystem.getLast(
+					NukeUtils.getPathWithoutNukePrefix(dir.getPath()));
+			NukeData nd = NukeBeans.getNukeBeans().findName(dirName);
+			if (nd != null) {
+				return "Access denied - " +
+					nd.getPath() + " already nuked for '"+ nd.getReason() + "'";
+			}
+
+			User user = request.getSession().getUserNull(request.getUser());
+			try {
+				nd = NukeUtils.nuke(dir, _multiplier, _reason, user);
+			} catch (NukeException e) {
+				return "Nuke failed for " + inode.getPath() + ": " + e.getMessage();
+			}
+			return "Successfully nuked " + nd.getPath();
+		}
+
+		public boolean execInDirs() {
+			return true;
+		}
+
+		public boolean execInFiles() {
+			return false;
+		}
+	}
+
+	private static class ActionUnnuke implements Action {
+		private String _reason;
+
+		public ActionUnnuke(String reason) {
+			_reason = reason;
+		}
+
+		public String exec(CommandRequest request, InodeHandle inode) {
+			// Try to unnuke dir, if its not previously nuked an NukeException will be thrown.
+			NukeData nd;
+			try {
+				nd = NukeUtils.unnuke((DirectoryHandle)inode, _reason);
+			} catch (NukeException e) {
+				return "Unnuke failed for " + inode.getPath() + ": " + e.getMessage();
+			}
+			return "Successfully unnuked " + nd.getPath();
+		}
+
+		public boolean execInDirs() {
+			return true;
+		}
+
+		public boolean execInFiles() {
+			return false;
+		}
+	}
+
 	private static String getArgs(String str) {
 		int start = str.indexOf("(");
 		int end = str.indexOf(")");
@@ -451,6 +522,9 @@ public class Find extends CommandInterface {
 					if (!checkCustomPermission(request, "sendToSlaves", "=siteop")) {
 						return new CommandResponse(500, "You do not have the proper permissions for sendToSlaves");
 					}
+					if (!st.hasMoreTokens()) {
+						throw new ImproperUsageException();
+					}
 					// -action sendtoslaves
 					// <numtransfers[:slave[,slave,..][:priority]]>
 					List<String> actionArgs = Arrays.asList(st.nextToken().split(":"));
@@ -460,6 +534,31 @@ public class Find extends CommandInterface {
 						priority = Integer.parseInt(actionArgs.get(2));
 					}
 					actions.add(new ActionSendToSlaves(numOfSlaves, parseSlaves(actionArgs.get(1)), priority));
+				} else if (action.equals("nuke")) {
+					if (!checkCustomPermission(request, "nuke", "=siteop")) {
+						return new CommandResponse(500, "You do not have the proper permissions for nuke");
+					}
+					if (!st.hasMoreTokens()) {
+						throw new ImproperUsageException();
+					}
+					// -action nuke <multiplier[:reason]]>
+					String actionArgs[] = st.nextToken().split(":");
+					int multiplier = Integer.parseInt(actionArgs[0]);
+					String reason = "";
+					if (actionArgs.length == 2) {
+						reason = actionArgs[1];
+					}
+					actions.add(new ActionNuke(multiplier, reason));
+				} else if (action.equals("unnuke")) {
+					if (!checkCustomPermission(request, "nuke", "=siteop")) {
+						return new CommandResponse(500, "You do not have the proper permissions for unnuke");
+					}
+					// -action unnuke [reason]
+					String reason = "";
+					if (st.hasMoreTokens()) {
+						reason = st.nextToken();
+					}
+					actions.add(new ActionUnnuke(reason));
 				} else if (action.equals("deletefromslaves")) {
 					if (!checkCustomPermission(request, "deleteFromSlaves", "=siteop")) {
 						return new CommandResponse(500, "You do not have the proper permissions for deleteFromSlaves");

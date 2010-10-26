@@ -9,6 +9,7 @@ limit.max 100
 sendToSlaves =siteop
 deleteFromSlaves =siteop
 wipe =siteop
+nuke =siteop =nuke
 help Searches for files and directories in the filesystem w/ some neat filters and actions.
 help.specific ${command} <options>
 help.specific Options: -user <user> | -group <group> | -f[ile] | -d[ir] | -section <section>
@@ -20,6 +21,7 @@ help.specific Options: -limit <number> | -exact | -name <["]word[ word .."]> | -
 help.specific Exact option makes the name option search for the exact file/dir name specified.
 help.specific Wildcards(* and ?) available but not within the first three chars.
 help.specific Actions: print, printf[(format)], wipe, delete
+help.specific Actions: nuke <multiplier[:reason]]> | unnuke [reason]
 help.specific Action: sendtoslaves <numtransfers[:slave[,slave,..][:priority]]>
 help.specific Action: deletefromslaves <slave[,slave[,...]]>
 help.specific Options for printf format:

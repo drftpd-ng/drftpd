@@ -10,6 +10,7 @@
 		<import plugin-id="org.drftpd.commandmanager" exported="true" />
 		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
 		<import plugin-id="org.drftpd.plugins.jobmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.nuke" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.commands.find" path="classes/" type="code">
