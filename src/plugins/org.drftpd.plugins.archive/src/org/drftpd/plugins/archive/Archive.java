@@ -81,7 +81,7 @@ public class Archive implements PluginInterface {
 		Object[] objectParams = { this, section, _props };
 		try {
 			constructor = Class.forName(
-					"org.drftpd.mirroring.archivetypes." + name)
+					"org.drftpd.plugins.archive.archivetypes." + name)
 					.getConstructor(classParams);
 			archiveType = (ArchiveType) constructor.newInstance(objectParams);
 		} catch (Exception e2) {
