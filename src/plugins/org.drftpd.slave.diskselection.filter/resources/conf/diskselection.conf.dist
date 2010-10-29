@@ -22,17 +22,21 @@
 #  x.assign=2
 #  x.multiplier=1
 
-# Matchdir is used to distribute certain files to certain roots.
+# Matchdir(Glob)/MatchdirEx(Regex) is used to distribute certain files to certain roots.
 # Always remember that ".match=" is a valid path according to master VFS.
 # So it does not work like, /mnt/site*.
 # Using the 'assign=all' property here makes the filter useless.
 #  x.filter=matchdir
 #  x.match=/PHOTOS*
 #  x.assign=1+100 2+remove
+#  x.assume.remove=false (if true removes all roots not mentioned in assign)
+#  x.negate.expression=false (if true negates match)
 #
-#  x.filter=matchdir
-#  x.match=/VIDEOS*
+#  x.filter=matchdirex
+#  x.match=^/VIDEOS.*
 #  x.assign=1+remove 2+100
+#  x.assume.remove=false (if true removes all roots not mentioned in assign)
+#  x.negate.expression=false (if true negates match)
 
 # Randomspread filter grabs a random root and adds 1 (one) point
 # to it on the ScoreChart. Usefull to make files spread all over.

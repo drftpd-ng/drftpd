@@ -32,6 +32,8 @@ import org.drftpd.PropertyHelper;
  *  X.filter=matchdir
  *  X.assign=&lt;rootNumber&gt;+100000
  *  X.match=&lt;path glob match&gt;
+ *  X.assume.remove=&lt;true&gt;
+ *  X.negate.expression=&lt;true&gt;
  * </pre>
  * 
  * @author fr0w
@@ -43,15 +45,38 @@ public class MatchdirFilter extends DiskFilter {
 
 	private Perl5Matcher _m = new Perl5Matcher();
 
-	private String _pattern;
+	private boolean _negateExpr;
 
 	public MatchdirFilter(DiskSelectionFilter diskSelection, Properties p, Integer i) {
 		super(diskSelection, p, i);
 		_assignList = AssignRoot.parseAssign(this, PropertyHelper.getProperty(p, i+ ".assign"));
-		_pattern = PropertyHelper.getProperty(p, i + ".match");
+
+		boolean assumeRemove = PropertyHelper.getProperty(p, i + ".assume.remove", "false").
+				equalsIgnoreCase("true");
+		// If assume.remove=true, add all roots not assigned a score to be removed
+		if (assumeRemove) {
+			int roots = diskSelection.getRootCollection().getRootList().size();
+			for (int j = 1; j <= roots; j++) {
+				boolean assigned = false;
+				for (AssignParser ap : _assignList) {
+					if (j == ap.getRoot()) {
+						// Score added to root already, skip
+						assigned = true;
+						break;
+					}
+				}
+				if (!assigned) {
+					// Add root to be remove
+					_assignList.add(new AssignParser(j+"+remove"));
+				}
+			}
+		}
+
+		_negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
+				equalsIgnoreCase("true");
 
 		try {
-			_p = new GlobCompiler().compile(_pattern,
+			_p = new GlobCompiler().compile(PropertyHelper.getProperty(p, i + ".match"),
 					GlobCompiler.CASE_INSENSITIVE_MASK);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -59,7 +84,8 @@ public class MatchdirFilter extends DiskFilter {
 	}
 
 	public void process(ScoreChart sc, String path) {
-		if (_m.matches(path, _p)) {
+		boolean validPath = _negateExpr ? !_m.matches(path, _p) : _m.matches(path, _p);
+		if (validPath) {
 			AssignRoot.addScoresToChart(this, _assignList, sc);
 		}
 	}

@@ -24,5 +24,13 @@
 #.filter=matchdir
 #.match=/section/*
 #.assign=slave1+500 slave2-500 slave3+remove
+#.assume.remove=false (if true removes all slaves not mentioned in assign)
+#.negate.expression=false (if true negates the glob set in match)
 
-# more to come
+#MatchDirEx (Same as MatchDir but uses regular expression instead of globs)
+#.filter=matchdirex
+#.match=^/section/.*$
+#.assign=slave1+500 slave2-500 slave3+remove
+#.assume.remove=false (if true removes all slaves not mentioned in assign)
+#.negate.expression=false (if true negates the glob set in match)
+

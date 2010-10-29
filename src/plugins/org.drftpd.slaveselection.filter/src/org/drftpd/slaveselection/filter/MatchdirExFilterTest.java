@@ -36,19 +36,19 @@ import java.util.Properties;
  * @author scitz0
  * @version $Id$
  */
-public class MatchdirRegexFilterTest extends TestCase {
+public class MatchdirExFilterTest extends TestCase {
     RemoteSlave[] rslaves = {
             new DummyRemoteSlave("slave1"),
             new DummyRemoteSlave("slave2"),
             new DummyRemoteSlave("slave3")
         };
 
-    public MatchdirRegexFilterTest(String fName) {
+    public MatchdirExFilterTest(String fName) {
         super(fName);
     }
 
     public static TestSuite suite() {
-        return new TestSuite(MatchdirRegexFilterTest.class);
+        return new TestSuite(MatchdirExFilterTest.class);
     }
     
     public void setUp() {
@@ -63,7 +63,7 @@ public class MatchdirRegexFilterTest extends TestCase {
         p.put("1.assign", "slave1+100, slave2-100");
         p.put("1.match", "/path1/.*");
         
-        Filter f = new MatchdirRegexFilter(1, p);
+        Filter f = new MatchdirExFilter(1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path2/dir/file.txt"), null);
@@ -88,7 +88,7 @@ public class MatchdirRegexFilterTest extends TestCase {
         p.put("1.assign", "ALL+100");
         p.put("1.match", "/path2/.*");
 
-        Filter f = new MatchdirRegexFilter(1, p);
+        Filter f = new MatchdirExFilter(1, p);
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
@@ -110,7 +110,7 @@ public class MatchdirRegexFilterTest extends TestCase {
 
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
-        Filter f = new MatchdirRegexFilter(1, p);
+        Filter f = new MatchdirExFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/path1/dir/file.txt"), null);
 
         assertEquals(0, sc.getScoreForSlave(rslaves[0]).getScore());

@@ -76,7 +76,7 @@ SITE GADDUSER {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_GADDUSER
-perms =gadmin =siteop
+perms =siteop
 help Add a new user to the specified group
 help.specific ${command} <group> <user> <password> [<ident@ip#1 ..]
 }

@@ -19,6 +19,8 @@ package org.drftpd.slaveselection.filter;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.RemoteSlave;
@@ -33,25 +35,53 @@ import java.util.Properties;
  * Example slaveselection entry:
  * 
  * <pre>
- *  &lt;n&gt;.filter=matchdirregex
+ *  &lt;n&gt;.filter=matchdirex
  *  &lt;n&gt;.assign=&lt;slavename&gt;+100000
  *  &lt;n&gt;.match=&lt;path regex match&gt;
+ *  &lt;n&gt;.assume.remove=&lt;true&gt;
+ *  &lt;n&gt;.negate.expression=&lt;true&gt;
  * </pre>
  * 
  * @author scitz0
  * @version $Id$
  */
-public class MatchdirRegexFilter extends Filter {
+public class MatchdirExFilter extends Filter {
 	private ArrayList<AssignParser> _assigns;
 
 	private Pattern _p;
 
-	public MatchdirRegexFilter(int i, Properties p) {
+	private boolean _negateExpr;
+
+	public MatchdirExFilter(int i, Properties p) {
 		super(i, p);
 		try {
 			_assigns = AssignSlave.parseAssign(PropertyHelper.getProperty(p, i + ".assign"));
+
+			boolean assumeRemove = PropertyHelper.getProperty(p, i + ".assume.remove", "false").
+					equalsIgnoreCase("true");
+			// If assume.remove=true, add all slaves not assigned a score to be removed
+			if (assumeRemove) {
+				for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
+					boolean assigned = false;
+					for (AssignParser ap : _assigns) {
+						if (slave.equals(ap.getRSlave())) {
+							// Score added to slave already, skip
+							assigned = true;
+							break;
+						}
+					}
+					if (!assigned) {
+						// Add slave to be remove
+						_assigns.add(new AssignParser(slave.getName()+"+remove"));
+					}
+				}
+			}
+
 			_p = Pattern.compile(PropertyHelper.getProperty(p, i	+ ".match"),
 					Pattern.CASE_INSENSITIVE);
+
+			_negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
+					equalsIgnoreCase("true");
 		} catch (Exception e) {
 			throw new FatalException(e);
 		}
@@ -60,7 +90,8 @@ public class MatchdirRegexFilter extends Filter {
 	public void process(ScoreChart scorechart, User user, InetAddress source,
 			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
 		Matcher m = _p.matcher(file.getPath());
-		if (m.find()) {
+		boolean validPath = _negateExpr ? !m.find() : m.find();
+		if (validPath) {
 			AssignSlave.addScoresToChart(_assigns, scorechart);
 		}
 	}
