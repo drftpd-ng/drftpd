@@ -59,8 +59,8 @@ public class Dir extends CommandInterface {
 	"yyyyMMddHHmmss.SSS");
 	private static final Logger logger = Logger.getLogger(Dir.class);
 
-	private static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
-	private static final Key<InodeHandle> RENAMETO = new Key<InodeHandle>(Dir.class, "renameto");
+	public static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
+	public static final Key<InodeHandle> RENAMETO = new Key<InodeHandle>(Dir.class, "renameto");
 	
 	// This Keys are place holders for usefull information that gets removed during
 	// deletion operations but are need to process hooks.
@@ -464,8 +464,6 @@ public class Dir extends CommandInterface {
 			return new CommandResponse(500, "Someone has extended the VFS beyond File/Directory/Link");
 		}
 
-		request.getSession().setObject(RENAMETO, toInode);
-		
 		try {
 			/*logger.debug("before rename toInode-" +toInode);
 			logger.debug("before rename toInode.getPath()-" + toInode.getPath());
@@ -484,6 +482,8 @@ public class Dir extends CommandInterface {
 
 			return new CommandResponse(500, "IOException - " + e.getMessage());
 		}
+
+		request.getSession().setObject(RENAMETO, toInode);
 
 		/*logger.debug("after rename toInode-" +toInode);
 		logger.debug("after rename toInode.getPath()-" + toInode.getPath());

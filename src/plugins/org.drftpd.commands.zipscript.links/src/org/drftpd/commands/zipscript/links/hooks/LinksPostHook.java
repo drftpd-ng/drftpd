@@ -31,7 +31,6 @@ import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.links.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
@@ -48,9 +47,6 @@ import org.drftpd.vfs.ObjectNotValidException;
 public class LinksPostHook implements PostHookInterface {
 
 	private static final Logger logger = Logger.getLogger(LinksPostHook.class);
-
-	private static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
-	private static final Key<InodeHandle> RENAMETO = new Key<InodeHandle>(Dir.class, "renameto");
 	
 	private ResourceBundle _bundle;
 
@@ -176,13 +172,13 @@ public class LinksPostHook implements PostHookInterface {
 			return;
 		}
 		
-		InodeHandle fromInode = request.getSession().getObject(RENAMEFROM, null);
+		InodeHandle fromInode = request.getSession().getObject(Dir.RENAMEFROM, null);
 		if ((fromInode == null) || (!fromInode.isDirectory())) {
 			// RNFR Failed || inode is not a directory
 			return;
 		}	
 		
-		InodeHandle toInode = request.getSession().getObject(RENAMETO, null);
+		InodeHandle toInode = request.getSession().getObject(Dir.RENAMETO, null);
 		if ((toInode == null) || (!toInode.isDirectory())) {
 			// RNFR Failed || inode is not a directory
 			return;
