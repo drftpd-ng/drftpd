@@ -42,6 +42,12 @@
 		<parameter id="HookMethod" value="doLinksWIPECleanupHook" />
 		<parameter id="Priority" value="10" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="LinksRNTOIncomplete">
+		<parameter id="ParentMethod" value="doRNTO" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.links.hooks.LinksPostHook" />
+		<parameter id="HookMethod" value="doLinksRNTOCleanupHook" />
+		<parameter id="Priority" value="10" />
+	</extension>	
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="LinkCommandsHandler" />
 	<extension plugin-id="org.drftpd.commands.zipscript" point-id="RescanPostProcessDir" id="RescanPostProcessLinks">
 		<parameter id="Class" value="org.drftpd.commands.zipscript.links.RescanPostProcessLinks" />

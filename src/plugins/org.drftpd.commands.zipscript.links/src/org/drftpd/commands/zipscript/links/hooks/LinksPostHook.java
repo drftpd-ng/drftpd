@@ -31,10 +31,13 @@ import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.links.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 
@@ -46,6 +49,9 @@ public class LinksPostHook implements PostHookInterface {
 
 	private static final Logger logger = Logger.getLogger(LinksPostHook.class);
 
+	private static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
+	private static final Key<InodeHandle> RENAMETO = new Key<InodeHandle>(Dir.class, "renameto");
+	
 	private ResourceBundle _bundle;
 
 	public void initialize(StandardCommandManager cManager) {
@@ -68,23 +74,21 @@ public class LinksPostHook implements PostHookInterface {
 		if (transferFileName.toLowerCase().endsWith(".sfv")) {
 			LinkUtils.processLink(request, "create", _bundle);
 		}
-		else {
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
-			try {
-				SFVStatus sfvStatus = sfvData.getSFVStatus();
-				if (sfvStatus.isFinished()) {
-					// dir is complete, remove link
-					LinkUtils.processLink(request, "delete", _bundle);
-				}
-			} catch (NoAvailableSlaveException e) {
-				// Slave holding sfv is unavailable
-			} catch (FileNotFoundException e) {
-				// No sfv in dir
-			} catch (IOException e) {
-				// sfv not readable
-			} catch (SlaveUnavailableException e) {
-				// Slave holding sfv is unavailable
+		ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
+		try {
+			SFVStatus sfvStatus = sfvData.getSFVStatus();
+			if (sfvStatus.isFinished()) {
+				// dir is complete, remove link
+				LinkUtils.processLink(request, "delete", _bundle);
 			}
+		} catch (NoAvailableSlaveException e) {
+			// Slave holding sfv is unavailable
+		} catch (FileNotFoundException e) {
+			// No sfv in dir
+		} catch (IOException e) {
+			// sfv not readable
+		} catch (SlaveUnavailableException e) {
+			// Slave holding sfv is unavailable
 		}
 		return;
 	}
@@ -162,6 +166,68 @@ public class LinksPostHook implements PostHookInterface {
 				}
 			} catch (FileNotFoundException e2) {
 				logger.warn("Invalid link in dir " + request.getCurrentDirectory().getParent().getPath(),e2);
+			}
+		}
+	}
+	
+	public void doLinksRNTOCleanupHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 250) {
+			// RNTO failed, abort cleanup
+			return;
+		}
+		
+		InodeHandle fromInode = request.getSession().getObject(RENAMEFROM, null);
+		if ((fromInode == null) || (!fromInode.isDirectory())) {
+			// RNFR Failed || inode is not a directory
+			return;
+		}	
+		
+		InodeHandle toInode = request.getSession().getObject(RENAMETO, null);
+		if ((toInode == null) || (!toInode.isDirectory())) {
+			// RNFR Failed || inode is not a directory
+			return;
+		}	
+
+		DirectoryHandle fromDir = (DirectoryHandle) fromInode;
+		DirectoryHandle toDir = (DirectoryHandle) toInode;
+		
+		try {
+			for (LinkHandle link :  fromDir.getLinksUnchecked()) {
+				try {
+					link.getTargetDirectoryUnchecked();
+				} catch (FileNotFoundException e1) {
+					// Link target no longer exists, remove it
+					link.deleteUnchecked();
+					request.setCurrentDirectory(toDir);
+					LinkUtils.processLink(request, "create", _bundle);
+					
+				} catch (ObjectNotValidException e1) {
+					// Link target isn't a directory, delete the link as it is bad
+					link.deleteUnchecked();
+				}
+			}
+		} catch (FileNotFoundException e2) {
+			//ignore - dir probably doesn't exist anymore as it was moved
+		}
+		// Have to check parent too to allow for the case of moving a special subdir
+		if (!fromDir.isRoot()) {
+			try {
+				for (LinkHandle link : fromDir.getParent().getLinksUnchecked()) {
+					try {
+						link.getTargetDirectoryUnchecked();
+					} catch (FileNotFoundException e1) {
+						// Link target no longer exists, remove it
+						link.deleteUnchecked();
+						request.setCurrentDirectory(toDir);
+						LinkUtils.processLink(request, "create", _bundle);
+						
+					} catch (ObjectNotValidException e1) {
+						// Link target isn't a directory, delete the link as it is bad
+						link.deleteUnchecked();
+					}
+				}
+			} catch (FileNotFoundException e2) {
+				logger.warn("Invalid link in dir " + fromDir.getParent().getPath(),e2);
 			}
 		}
 	}
