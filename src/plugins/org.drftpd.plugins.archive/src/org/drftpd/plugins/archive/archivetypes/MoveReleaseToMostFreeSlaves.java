@@ -33,26 +33,26 @@ import org.drftpd.vfs.DirectoryHandle;
 public class MoveReleaseToMostFreeSlaves extends ArchiveType {
     
 	/*
-	 * Constructor, creates archivetype
-	 * makes sure all args are setup correctly
+	 * Constructor:
 	 */
-	public MoveReleaseToMostFreeSlaves(Archive archive, SectionInterface section, Properties props) {
-		super(archive, section, props);
+	public MoveReleaseToMostFreeSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
+		super(archive, section, props,confnum);
 		
 		if (_slaveList.isEmpty()) {
-		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToMostFreeSlaves for section " + getSection().getName());
+		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToMostFreeSlaves for conf number " + confnum);
 		}
 		
 		_numOfSlaves = _slaveList.size();
 		
 		if (_numOfSlaves < 1) {
-		    throw new IllegalArgumentException("numOfSlaves has to be > 0 for section " + section.getName());
+		    throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
 		}
 	}
 	
 	/*
 	 *  This finds all the destination slaves listed by free space.
 	 */
+	@Override
 	public HashSet<RemoteSlave> findDestinationSlaves() {
 		return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,new HashSet<RemoteSlave>(), false));
 	}
@@ -60,6 +60,7 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	/*
 	 * Checks if the dir is already archived
 	 */
+	@Override
     protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
         return isArchivedToXSlaves(lrf, _numOfSlaves);
     }
@@ -67,6 +68,7 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
     /*
      * Outs this as a string to show what is being archived.
      */
+	@Override
     public String toString() {
     	return "MoveReleaseToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }	

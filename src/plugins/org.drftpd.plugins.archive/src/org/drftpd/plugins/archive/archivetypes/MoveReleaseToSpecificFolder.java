@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.Properties;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
@@ -30,48 +29,44 @@ import org.drftpd.vfs.DirectoryHandle;
 /**
  * @author CyBeR
  */
-public class MoveReleaseToSpecificSlaves extends ArchiveType {
-    
+public class MoveReleaseToSpecificFolder extends ArchiveType {
+	
 	/*
-	 * Constructor, creates archivetype
-	 * makes sure all args are setup correctly
+	 * Constructor:
 	 */
-	public MoveReleaseToSpecificSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
+	public MoveReleaseToSpecificFolder(Archive archive, SectionInterface section, Properties props, int confnum) {
 		super(archive, section, props, confnum);
-		
-		if (_slaveList.isEmpty()) {
-		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToSpecificSlave for conf number " + confnum);
-		}
-		
-		_numOfSlaves = _slaveList.size();
-		
-		if (_numOfSlaves < 1) {
-		    throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
-		}
 	}
 	
 	/*
-	 *  This finds all the destination slaves listed in the arguments 
+	 *  Not needed cause we are just moving slaves
 	 */
 	@Override
 	public HashSet<RemoteSlave> findDestinationSlaves() {
-	    return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
+	    return null;
 	}
 
 	/*
-	 * Checks if the dir is already archived
+	 * Checks if files are archived to the right slave, however not needed - return true.
 	 */
-	@Override
     protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-        return isArchivedToXSlaves(lrf, _numOfSlaves);
+        return true;
     }
 
+    /*
+     *  Setting this to true will ONLY move the dir and not archive to a different slave 
+     */
+	@Override
+    public boolean moveReleaseOnly() {
+    	return true;
+    }	
+	
     /*
      * Outs this as a string to show what is being archived.
      */
 	@Override
     public String toString() {
-        return "MoveReleaseToSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+        return "MoveReleaseToSpecificFolder=[directory=[" + getDirectory().getPath() + "]dest=[" + _archiveToFolder.getPath() + "]]";
     }	
 
 }

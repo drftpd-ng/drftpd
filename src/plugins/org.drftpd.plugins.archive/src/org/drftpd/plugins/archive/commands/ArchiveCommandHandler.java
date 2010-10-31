@@ -69,8 +69,7 @@ public class ArchiveCommandHandler extends CommandInterface {
     
     private Archive getArchive() throws ObjectNotFoundException {
     	Archive archive = null;
-		List<PluginInterface> pluginList = GlobalContext.getGlobalContext()
-				.getPlugins();
+		List<PluginInterface> pluginList = GlobalContext.getGlobalContext().getPlugins();
 		for (PluginInterface pi : pluginList) {
 			if (pi instanceof Archive) {
 				archive = (Archive) pi;
@@ -97,8 +96,7 @@ public class ArchiveCommandHandler extends CommandInterface {
 			dir = request.getCurrentDirectory().getDirectory(dirname, user);
 		} catch (FileNotFoundException e1) {
 			env.add("dirname", dirname);
-			response.addComment(request.getSession().jprintf(_bundle, env,
-					_keyPrefix + "baddir"));
+			response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "baddir"));
 
 			return response;
 		} catch (ObjectNotValidException e) {
@@ -111,36 +109,26 @@ public class ArchiveCommandHandler extends CommandInterface {
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e3) {
-        	response.addComment(request.getSession().jprintf(_bundle, env,
-					_keyPrefix + "loadarchive"));
+        	response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "loadarchive"));
             return response;
         }
 
         String archiveTypeName = null;
         ArchiveType archiveType = null;
-        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager()
-                                       .getSection(dir.getPath());
+        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(dir.getPath());
 
         if (st.hasMoreTokens()) { // load the specific type
             archiveTypeName = st.nextToken();
 
-            Class<?>[] classParams = {
-                    org.drftpd.plugins.archive.Archive.class,
-                    SectionInterface.class, Properties.class
-                };
+            Class<?>[] classParams = { org.drftpd.plugins.archive.Archive.class,SectionInterface.class, Properties.class, int.class };
             Constructor<?> constructor = null;
 
             try {
-				constructor = Class.forName(
-						"org.drftpd.plugins.archive.archivetypes."
-								+ archiveTypeName).getConstructor(classParams);
+				constructor = Class.forName("org.drftpd.plugins.archive.archivetypes." + archiveTypeName).getConstructor(classParams);
 			} catch (Exception e1) {
-				logger.debug("Serious error, your ArchiveType for section "
-						+ section.getName()
-						+ " is incompatible with this version of DrFTPD", e1);
-				response.addComment(request.getSession().jprintf(_bundle, env,
-						_keyPrefix + "incompatible"));
-
+				logger.debug("Serious error, ArchiveType: " + archiveTypeName + " does not exists", e1);
+				env.add("archivetypename", archiveTypeName);
+				response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "incompatible"));
 				return response;
 			}
 
@@ -150,27 +138,16 @@ public class ArchiveCommandHandler extends CommandInterface {
                 addConfig(props, st.nextToken(), section);
             }
 
-            Object[] objectParams = { archive, section, props };
+            Object[] objectParams = { archive, section, props, 0 };
 
             try {
                 archiveType = (ArchiveType) constructor.newInstance(objectParams);
             } catch (Exception e2) {
-                logger.warn("Unable to load ArchiveType for section " +
-                    section.getName(), e2);
+                logger.warn("Unable to load ArchiveType: " + archiveTypeName, e2);
                 env.add("exception", e2.getMessage());
-                response.addComment(request.getSession().jprintf(_bundle, env,
-    					_keyPrefix + "badarchivetype"));
-
+                response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "badarchivetype"));
                 return response;
             }
-        }
-
-        if (archiveType == null) {
-            archiveType = archive.getArchiveType(section);
-        }
-
-        if (archiveTypeName == null) {
-            archiveTypeName = archiveType.getClass().getName();
         }
 
         HashSet<RemoteSlave> slaveSet = new HashSet<RemoteSlave>();
@@ -179,25 +156,22 @@ public class ArchiveCommandHandler extends CommandInterface {
             String slavename = st.nextToken();
 
             try {
-                RemoteSlave rslave = GlobalContext.getGlobalContext()
-                                         .getSlaveManager()
-                                         .getRemoteSlave(slavename);
+                RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
                 slaveSet.add(rslave);
             } catch (ObjectNotFoundException e2) {
                 env.add("slavename", slavename);
-                response.addComment(request.getSession().jprintf(_bundle, env,
-    					_keyPrefix + "badslave"));
+                response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "badslave"));
             }
         }
 
         archiveType.setDirectory(dir);
 
+        
         try {
             archive.checkPathForArchiveStatus(dir.getPath());
         } catch (DuplicateArchiveException e) {
             env.add("exception", e.getMessage());
-            response.addComment(request.getSession().jprintf(_bundle, env,
-					_keyPrefix + "fail"));
+            response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "fail"));
         }
 
         if (!slaveSet.isEmpty()) {
@@ -209,8 +183,7 @@ public class ArchiveCommandHandler extends CommandInterface {
         archiveHandler.start();
         env.add("dirname", dir.getPath());
         env.add("archivetypename", archiveTypeName);
-        response.addComment(request.getSession().jprintf(_bundle, env,
-				_keyPrefix + "success"));
+        response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "success"));
 
         return response;
     }
@@ -218,23 +191,20 @@ public class ArchiveCommandHandler extends CommandInterface {
     private void addConfig(Properties props, String string,
         SectionInterface section) {
         if (string.indexOf('=') == -1) {
-            throw new IllegalArgumentException(string +
-                " does not contain an = and is therefore not a property");
+            throw new IllegalArgumentException(string + " does not contain an = and is therefore not a property");
         }
 
         String[] data = string.split("=");
 
         if (data.length != 2) {
-            throw new IllegalArgumentException(string +
-                " is therefore not a property because it has no definite key");
+            throw new IllegalArgumentException(string + " is therefore not a property because it has no definite key");
         }
 
         if (props.containsKey(data[0])) {
-            throw new IllegalArgumentException(string +
-                " is already contained in the Properties");
+            throw new IllegalArgumentException(string + " is already contained in the Properties");
         }
 
-        props.put(section.getName() + "." + data[0], data[1]);
+        props.put("0." + data[0], data[1]);
     }
 
     public CommandResponse doLISTARCHIVETYPES(CommandRequest request) {
@@ -246,23 +216,20 @@ public class ArchiveCommandHandler extends CommandInterface {
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e) {
-        	response.addComment(request.getSession().jprintf(_bundle, env,
-					_keyPrefix + "loadarchive"));
-
+        	response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "loadarchive"));
             return response;
         }
 
-        for (Iterator<ArchiveHandler> iter = archive.getArchiveHandlers().iterator();
-                iter.hasNext(); x++) {
+        for (Iterator<ArchiveHandler> iter = archive.getArchiveHandlers().iterator();iter.hasNext(); x++) {
             ArchiveHandler archiveHandler = iter.next();
             response.addComment(x + ". " + archiveHandler.getArchiveType());
         }
-
+        
         return response;
     }
 
     public String[] getFeatReplies() {
         return null;
     }
-
+    
 }

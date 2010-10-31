@@ -24,7 +24,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
@@ -39,32 +41,59 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	private Set<RemoteSlave> _offOfSlaves;
 	
 	/*
-	 * Constructor, creates archivetype
-	 * makes sure all args are setup correctly
+	 * Constructor:
+	 * 
+	 * Loads offOfSlaves which is unique to this ArchiveType
 	 */
-	public MoveReleaseOffSlavesToMostFreeSlaves(Archive archive, SectionInterface section, Properties props) {
-		super(archive, section, props);
+	public MoveReleaseOffSlavesToMostFreeSlaves(Archive archive, SectionInterface section, Properties props, int confnum) {
+		super(archive, section, props, confnum);
 
-        _offOfSlaves = getOffOfSlaves(props);
-
+        _offOfSlaves = getOffOfSlaves(props,confnum);
         if (_offOfSlaves.isEmpty()) {
-            throw new NullPointerException("Cannot continue, 0 slaves found to move off MoveReleaseOffSlavesToMostFreeSlaves for for section " + getSection().getName());
+            throw new NullPointerException("Cannot continue, 0 slaves found to move off MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
         }
 
 		if (_slaveList.isEmpty()) {
-		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for section " + getSection().getName());
+		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
 		}
 		
 		_numOfSlaves = _slaveList.size();
 		
 		if (_numOfSlaves < 1) {
-		    throw new IllegalArgumentException("numOfSlaves has to be > 0 for section " + section.getName());
+		    throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
 		}
 	}
 	
 	/*
+	 * Gets configuration for offofslaves
+	 */
+	private Set<RemoteSlave> getOffOfSlaves(Properties props, int confnum) {
+		Set<RemoteSlave> offOfSlaves = new HashSet<RemoteSlave>();
+		for (int i = 1;; i++) {
+			String slavename = null;
+
+			try {
+				slavename = PropertyHelper.getProperty(props, confnum + ".offofslave." + i);
+			} catch (NullPointerException e) {
+				break; // done
+			}
+
+			try {
+				RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
+				if (!_slaveList.contains(rslave)) {
+					offOfSlaves.add(rslave);
+				}
+			} catch (ObjectNotFoundException e) {
+				// slave not found
+			}
+		}
+		return offOfSlaves;
+	}	
+	
+	/*
 	 *  This finds all the destination slaves listed by free space.
 	 */
+	@Override
 	public HashSet<RemoteSlave> findDestinationSlaves() {
 		return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,_offOfSlaves, false));
 	}
@@ -73,6 +102,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	 * Checks if the dir/file is already archived
 	 * Also checks if it is removed from all slaves.
 	 */
+	@Override
     protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
     	for (Iterator<InodeHandle> iter = lrf.getInodeHandlesUnchecked().iterator(); iter.hasNext();) {
             InodeHandle inode = iter.next();
@@ -110,6 +140,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
     /*
      * Outs this as a string to show what is being archived.
      */
+	@Override
     public String toString() {
     	return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }	

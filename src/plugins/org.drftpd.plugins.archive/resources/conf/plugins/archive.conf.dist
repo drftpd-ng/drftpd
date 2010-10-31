@@ -1,68 +1,99 @@
-# times are represented in minutes
-# 1440  = 1 day
-# 10080 = 1 week
-# 43200 = 1 month
+################################################################################
+#   This Plugin allows archiving of folders to different slaves and folders 
+#
+#   cycleTime = (Required) - Length between each cycle (Minutes)
+#                1440 = 1 day | 10080 = 1 week | 43200 = 1 month
+#
+#   X.type = (Required) - ArchiveTypeName
+#   X.section = (Required) - Section To Archive From
+#   X.archiveafter = (Optional) - Archive Releases After X minutes
+#   X.repeat = (Optional) - How many times to check Section during 1 cycle
+#   X.archiveregex = (Optional) - Which folders to archive using regex
+#   X.todirectory = (Optional) - Move directory after archive (Section name or FULL path only)
+#   X.todirectorytype = (Optional) - Type to use while moving dir (alpha/dated)
+#   X.priority = (Optional) - How high of a priority this ranks over other archives
+#   X.numofslaves = (Type Specific) - How many different slaves to archive too
+#   X.slavedeadafter = (Type Specific) - When to not try to mirror (ConstantMirror)
+#   X.slavename.Y = (Type Specific) - Slaves to archive too
+#   X.offofslave.Y = (Type Specific) - Slaves to archive OFF of
+#
+#   Examples:
+#
+#   This will archive everything in SECTION1 to 2 different slaves
+#   (slave1, slave2, or slave3) after 1 week, and if slave doesn't respond
+#   it will remove after 1 day
+#   ----------------------------
+#   X.type=ConstantMirroring
+#   X.section=SECTION1
+#   X.archiveAfter=10080
+#   X.numofslaves=2
+#   X.priority=3
+#   X.slaveDeadAfter=1440
+#   X.slavename.1=slave1
+#   X.slavename.2=slave2
+#   X.slavename.3=slave3
+#   ----------------------------
+#
+#   This will move everything in SECTION1 to 1 slave with the least amount
+#   of free slave after 1 month.
+#   ----------------------------
+#   X.type=MoveReleaseToMostFreeSlaves
+#   X.section=SECTION1
+#   X.archiveAfter=43200
+#   X.numofslaves=1
+#   X.priority=3
+#   X.slavename.1=slave1
+#   X.slavename.2=slave2
+#   X.slavename.3=slave3
+#   ----------------------------
+#
+#   This will move directors with 1080i/1080p in SECTION1 off of slave1/slave2 
+#   and move them to 2 slaves with most free space after 1 month.
+#   ----------------------------
+#   X.type=MoveReleaseOffSlavesToMostFreeSlaves
+#   X.section=SECTION1
+#   X.archiveAfter=43200
+#   X.numofslaves=2
+#   X.archiveregex=^.*(1080(p|i)).*$
+#   X.priority=3
+#   X.offffslave.1=slave1
+#   X.offffslave.2=slave2
+#   X.slavename.1=slave3
+#   X.slavename.2=slave4
+#   X.slavename.3=slave5
+#   ----------------------------
+#
+#   This will move directors with 1080i/1080p in SECTION1 to one
+#   of the slaves listed after 1 day.  It will also move the dir to SECTION2
+#   in a alpha dir (ie /SECTION2/A - for dirs starting with A)
+#   ----------------------------
+#   X.type=MoveReleaseToSpecificSlaves
+#   X.section=SECTION1
+#   X.archiveAfter=1440
+#   X.numofslaves=1
+#   X.archiveregex=^.*(1080(p|i)).*$
+#   X.priority=3
+#   X.slavename.1=slave1
+#   X.slavename.2=slave2
+#   X.todirectory=SECTION2
+#   X.todirectorytype=alpha
+#   ----------------------------
+#
+#   This will move directors with 1080i/1080p in SECTION1 to
+#   /folder2/subfolder1/MMdd after 1 day.  This will also repeat
+#   5 times each cycle.  Since there is no slave archiving it can
+#   move up to 5 directories every cycle time.
+#   ----------------------------
+#   X.type=MoveReleaseToSpecificFolder
+#   X.section=SECTION1
+#   X.archiveAfter=1440
+#   X.archiveregex=^.*(1080(p|i)).*$
+#   X.todirectory=/folder2/subfolder1
+#   X.todirectorytype=dated:MMdd
+#   X.repeat=5
+#   ----------------------------
+#
+#
+################################################################################
 
-# amount of time between checking site for releases to archive
 cycleTime=30
-
-# ArchiveTypes define the definition of "Archived"
-# do not archive releases younger than archiveAfter
-
-#This configuration will make sure that two copies of every file are on live slaves
-#firstsectionname.archiveType=ConstantMirroring
-#firstsectionname.numOfSlaves=2
-#firstsectionname.slaveDeadAfter=1440
-#firstsectionname.priority=3
-
-#This configuration will make sure that three copies of every file are on the slaves identified
-#secondsectionname.archiveType=ConstantMirroring
-#secondsectionname.archiveAfter=0
-#secondsectionname.numOfSlaves=3
-#secondsectionname.priority=3
-#secondsectionname.slavename.1=drftpd1
-#secondsectionname.slavename.2=drftpd2
-#secondsectionname.slavename.3=drftpd3
-#secondsectionname.slavename.4=drftpd4
-#secondsectionname.slavename.5=drftpd5
-
-#thirdsectionname.archiveType=MoveReleaseToMostFreeSlaves
-#thirdsectionname.archiveAfter=43200
-#thirdsectionname.numOfSlaves=2
-#thirdsectionname.priority=3
-#thirdsectionname.slavename.1=drftpd1
-#thirdsectionname.slavename.2=drftpd2
-
-#forthsectionname.archiveType=MoveReleaseOffSlavesToMostFreeSlaves
-#forthsectionname.archiveAfter=43200
-#forthsectionname.numOfSlaves=2
-#forthsectionname.priority=3
-#forthsectionname.offOfSlave.1=slave1
-#forthsectionname.offOfSlave.2=slave2
-#forthsectionname.slavename.1=drftpd1
-#forthsectionname.slavename.2=drftpd2
-
-# If a section is not defined an archiveType, that section is excluded 
-# from automatic archiving.  You may still manually archive releases 
-# with the "site archive" command
-
-
-# Archive Types:
-#
-#
-# MoveReleaseToSpecificSlaves: Moves releases to the specific slaves only.
-#    eg:  site archive RLSNAME MoveReleaseToSpecificSlaves slavename.1=slave1 slavename.2=slave2
-#       This will move 'RLSNAME' off all other slaves and only to 'slave1' and 'slave2'
-#
-# MoveReleaseToMostFreeSlaves: Move releases to the most free slaves listed.
-#    eg:  site archive RLSNAME MoveReleaseToMostFreeSlave slavename.1=slave1 slavename.2=slave2
-#       This will move 'RLSNAME' to the slave with the most free space whether it be 'slave1' or 'slave2'
-#
-# MoveReleaseOffSlavesToMostFreeSlaves:  Moves releases off of specified slaves to most free slaves listed.
-#    eg:  site archive RLSNAME MoveReleaseOffSlavesToMostFreeSlaves offofslave.1=slave1 offofslave.2=slave2 slavename.1=slave3 slavename.2=slave4
-#       This will move 'RLSNAME' off of 'slave1' and 'slave2' and move to whichever slave has most free space of 'slave3' and 'slave4'
-#
-# ConstantMirroring
-#    eg:  above using this .conf file
-#        This will constantly mirror everything from 'slaveX' to 'slaveY' defined in the sections above.
-#

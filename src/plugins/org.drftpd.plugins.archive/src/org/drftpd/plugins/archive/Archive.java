@@ -36,9 +36,8 @@ import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 
 /**
- * @author zubov
- * @version $Id$ This addon needs
- *          a little reworking, consider it and its related packages unstable
+ * @author CyBeR
+ * @version $Id$
  */
 public class Archive implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(Archive.class);
@@ -51,81 +50,75 @@ public class Archive implements PluginInterface {
 
 	private TimerTask _runHandler = null;
 
-	public Archive() {
-
-	}
-
+	
 	public Properties getProperties() {
 		return _props;
 	}
-
-	/**
-	 * @return the correct ArchiveType for the
-	 * @section - it will return null if that section does not have an
-	 *          archiveType loaded for it
-	 */
-	public ArchiveType getArchiveType(SectionInterface section) {
-		ArchiveType archiveType = null;
-		String name = null;
-
-		try {
-			name = PropertyHelper.getProperty(_props, section.getName()
-					+ ".archiveType");
-		} catch (NullPointerException e) {
-			return null; // excluded, not setup
-		}
-
-		Constructor<?> constructor = null;
-		Class<?>[] classParams = { Archive.class, SectionInterface.class,
-				Properties.class };
-		Object[] objectParams = { this, section, _props };
-		try {
-			constructor = Class.forName(
-					"org.drftpd.plugins.archive.archivetypes." + name)
-					.getConstructor(classParams);
-			archiveType = (ArchiveType) constructor.newInstance(objectParams);
-		} catch (Exception e2) {
-			logger.error("Unable to load ArchiveType for section "
-					+ section.getName(), e2);
-		}
-
-		return archiveType;
-	}
-
-	/**
-	 * Returns the getCycleTime setting
-	 */
+	
 	public long getCycleTime() {
 		return _cycleTime;
 	}
 
+	/*
+	 * Returns the archive type corrisponding with the .conf file
+	 * and which Archive number the loop is on
+	 */
+	public ArchiveType getArchiveType(int count, String type) {
+		ArchiveType archiveType = null;
+		
+		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section",""));
+        if (!sec.getName().isEmpty()) {
+			Constructor<?> constructor = null;
+			Class<?>[] classParams = { Archive.class, SectionInterface.class, Properties.class, int.class };
+			Object[] objectParams = { this, sec, _props, count };
+			try {
+				constructor = Class.forName("org.drftpd.plugins.archive.archivetypes." + type).getConstructor(classParams);
+				archiveType = (ArchiveType) constructor.newInstance(objectParams);
+			} catch (Exception e2) {
+				logger.error("Unable to load ArchiveType for section " + count + "." + type, e2);
+			}
+        } else {
+        	logger.error("Unable to load Section for Archive " + count + "." + type);
+        }
+		return archiveType;
+	}
+
+	/*
+	 * Reloads all the different archive's in .conf file
+	 * Loops though each one and adds to the ArchiveHandler
+	 */
 	private void reload() {
-		_props = GlobalContext.getGlobalContext().getPluginsConfig()
-				.getPropertiesForPlugin("archive.conf");
-		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,
-				"cycleTime", "30"));
+		_props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("archive.conf");
+		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,"cycletime", "30"));
+		
 		if (_runHandler != null) {
 			_runHandler.cancel();
 		}
+		
 		_runHandler = new TimerTask() {
 			public void run() {
-				Collection<SectionInterface> sectionsToCheck = GlobalContext
-						.getGlobalContext().getSectionManager().getSections();
-				for (SectionInterface section : sectionsToCheck) {
-					ArchiveType archiveType = getArchiveType(section);
-
+				
+				int count = 1;
+				
+				String type;
+				while ((type = PropertyHelper.getProperty(_props, count + ".type",null)) != null) {
+					ArchiveType archiveType = getArchiveType(count,type);
 					if (archiveType == null) {
 						continue;
 					}
-
 					new ArchiveHandler(archiveType).start();
-				}
+					
+					count++;					
+				} 
 			}
 		};
-		GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, 0,
-				_cycleTime);
+
+		GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, 0, _cycleTime);
 	}
 
+	/*
+	 * This Removes archive handler from current archives in use
+	 */
 	public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
 		for (Iterator<ArchiveHandler> iter = _archiveHandlers.iterator(); iter.hasNext();) {
 			ArchiveHandler ah = iter.next();
@@ -140,32 +133,37 @@ public class Archive implements PluginInterface {
 		return false;
 	}
 
+	/*
+	 * Returns all the current ArchiveHandlers
+	 */
 	public Collection<ArchiveHandler> getArchiveHandlers() {
 		return Collections.unmodifiableCollection(_archiveHandlers);
 	}
 
-	public synchronized void addArchiveHandler(ArchiveHandler handler)
-			throws DuplicateArchiveException {
-		checkPathForArchiveStatus(handler.getArchiveType().getDirectory()
-				.getPath());
+	/*
+	 * Adds a specfic ArchiveHandle to the list.  Makes sure directory already isn't added.
+	 */
+	public synchronized void addArchiveHandler(ArchiveHandler handler) throws DuplicateArchiveException {
+		checkPathForArchiveStatus(handler.getArchiveType().getDirectory().getPath());
 		_archiveHandlers.add(handler);
 	}
 
-	public void checkPathForArchiveStatus(String handlerPath)
-			throws DuplicateArchiveException {
+	/*
+	 * This checks to see if the current directory is already queued to be archived.
+	 * Throws DuplicateArchive expcetion if it is.
+	 */
+	public void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
 		for (Iterator<ArchiveHandler> iter = _archiveHandlers.iterator(); iter.hasNext();) {
 			ArchiveHandler ah = iter.next();
 			String ahPath = ah.getArchiveType().getDirectory().getPath();
 
 			if (ahPath.length() > handlerPath.length()) {
 				if (ahPath.startsWith(handlerPath)) {
-					throw new DuplicateArchiveException(ahPath
-							+ " is already being archived");
+					throw new DuplicateArchiveException(ahPath + " is already being archived");
 				}
 			} else {
 				if (handlerPath.startsWith(ahPath)) {
-					throw new DuplicateArchiveException(handlerPath
-							+ " is already being archived");
+					throw new DuplicateArchiveException(handlerPath + " is already being archived");
 				}
 			}
 		}

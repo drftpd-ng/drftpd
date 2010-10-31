@@ -30,18 +30,20 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 
-
 /**
- * @author zubov
+ * @author CyBeR
  */
 public class ConstantMirroring extends ArchiveType {
     private long _slaveDeadAfter;
 
-    public ConstantMirroring(Archive archive, SectionInterface section,
-        Properties p) {
-        super(archive, section, p);
-        _slaveDeadAfter = 1000 * 60 * Long.parseLong(p.getProperty(
-                section.getName() + ".slaveDeadAfter", "0"));
+    /*
+     * Consturctor:
+     * 
+     * Loads slaveDeadAfter which is a special config just for this archivetype
+     */
+    public ConstantMirroring(Archive archive, SectionInterface section,Properties p, int confnum) {
+        super(archive, section, p, confnum);
+        _slaveDeadAfter = 1000 * 60 * Long.parseLong(p.getProperty(confnum + ".slavedeadafter", "0"));
         int size = 0;
         if (_slaveList.isEmpty()) {
 			_slaveList = null;
@@ -51,19 +53,17 @@ public class ConstantMirroring extends ArchiveType {
 		}
         
         if (_numOfSlaves > size && _numOfSlaves < 1) {
-			throw new IllegalArgumentException(
-					"numOfSlaves has to be 1 <= numOfSlaves <= the size of the destination slave list for section "
-							+ section.getName());
+			throw new IllegalArgumentException("numOfSlaves has to be 1 <= numOfSlaves <= the size of the destination slave for conf number " + confnum);
 		}
     }
 
+    @Override
     public HashSet<RemoteSlave> findDestinationSlaves() {
-        return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext()
-                                  .getSlaveManager().getSlaves());
+        return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
     }
 
-    protected boolean isArchivedDir(DirectoryHandle lrf)
-    throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+    @Override
+    protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
     	for (FileHandle src : lrf.getFilesUnchecked()) {
 
     		Collection<RemoteSlave> slaves;
@@ -105,10 +105,8 @@ public class ConstantMirroring extends ArchiveType {
 		return true;
     }
     
-
+    @Override
     public String toString() {
-        return "ConstantMirroring=[directory=[" + getDirectory().getPath() +
-        "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" +
-        _numOfSlaves + "]]";
+    	return "ConstantMirroring=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }
 }
