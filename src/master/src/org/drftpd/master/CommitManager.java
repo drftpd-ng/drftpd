@@ -175,6 +175,9 @@ public class CommitManager {
 		} catch (IOException e) {
 			logger.error("Error writing object to disk - "
 					+ item.descriptiveName(), e);
+		} catch (Exception e) {
+			logger.error("Error writing object to disk - "
+					+ item.descriptiveName(), e);
 		}
 	}
 
