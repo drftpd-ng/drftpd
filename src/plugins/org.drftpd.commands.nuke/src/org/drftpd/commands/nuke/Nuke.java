@@ -232,7 +232,7 @@ public class Nuke extends CommandInterface {
 				long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
 						nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
 				nukeeenv.add("nukedamount", Bytes.formatBytes(debt));
-				response.addComment(session.jprintf(_bundle, _keyPrefix+"nuke.nukees", env, nukee));
+				response.addComment(session.jprintf(_bundle, _keyPrefix+"nuke.nukees", nukeeenv, nukee));
 			}
 		}
 
