@@ -154,13 +154,12 @@ public class NukeBeans {
 	 * @param path
 	 * @return true if the given path is on the nukelog or false if it isnt.
 	 */
-	public synchronized boolean findPath(String path) {
+	public synchronized NukeData findPath(String path) {
 		try {
-			get(path);
+			return get(path);
 		} catch (ObjectNotFoundException e) {
-			return false;
+			return null;
 		}
-		return true;
 	}
 
 	/**

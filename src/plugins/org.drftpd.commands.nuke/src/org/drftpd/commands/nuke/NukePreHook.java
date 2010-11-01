@@ -35,18 +35,21 @@ public class NukePreHook implements PreHookInterface {
 	}
 	
 	public CommandRequestInterface doNukeCheck(CommandRequest request) {
-		String dir = request.getArgument();
+		String path = VirtualFileSystem.fixPath(request.getArgument());
 
-		if (dir.startsWith(VirtualFileSystem.separator)) {
-			// Get dir name from path
-			dir = VirtualFileSystem.fixPath(dir);
-			dir = VirtualFileSystem.getLast(dir);
+		if (!path.startsWith(VirtualFileSystem.separator)) {
+			// Create full path
+			if (request.getCurrentDirectory().isRoot()) {
+				path = VirtualFileSystem.separator + path;
+			} else {
+				path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
+			}
 		}
 
-		NukeData nd = NukeBeans.getNukeBeans().findName(dir);
+		NukeData nd = NukeBeans.getNukeBeans().findPath(path);
 
 		if (nd != null) {
-			// This dir name exist in nukelog
+			// This path exist in nukelog
 			request.setAllowed(false);
 			request.setDeniedResponse(new CommandResponse(530, "Access denied - " +
 					nd.getPath() + " already nuked for '"+ nd.getReason() + "'"));
