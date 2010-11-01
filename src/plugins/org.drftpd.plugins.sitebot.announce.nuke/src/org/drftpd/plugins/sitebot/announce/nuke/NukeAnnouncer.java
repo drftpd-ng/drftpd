@@ -18,7 +18,6 @@ package org.drftpd.plugins.sitebot.announce.nuke;
 
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-import java.util.Map;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;

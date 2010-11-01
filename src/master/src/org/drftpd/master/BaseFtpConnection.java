@@ -28,8 +28,6 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.SynchronousQueue;
@@ -462,10 +460,9 @@ public class BaseFtpConnection extends Session implements Runnable {
 	}
 
 	public static int countTransfersForUser(User user, char transferDirection) {
-		List<BaseFtpConnection> conns = GlobalContext.getConnectionManager().getConnections();
 		
 		int count = 0;
-		for (BaseFtpConnection conn : conns) {
+		for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
 			if (conn.getUserNull() == user) {
 				if (conn.getTransferState().getDirection() == transferDirection) {
 					count++;
@@ -484,16 +481,12 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * @param newUsername
 	 */
 	public static void fixBaseFtpConnUser(String oldUsername, String newUsername) {
-		List<BaseFtpConnection> list = GlobalContext.getConnectionManager().getConnections();
-		synchronized (list) {
-			List<BaseFtpConnection> conns = Collections.unmodifiableList(list);
-			for (BaseFtpConnection conn : conns) {
-				if (conn.getUsername() == null) {
-					// User authentication not completed yet for this connection
-					continue;
-				} else if (conn.getUsername().equals(oldUsername)) {
-					conn.setUser(newUsername);
-				}
+		for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
+			if (conn.getUsername() == null) {
+				// User authentication not completed yet for this connection
+				continue;
+			} else if (conn.getUsername().equals(oldUsername)) {
+				conn.setUser(newUsername);
 			}
 		}
 	}

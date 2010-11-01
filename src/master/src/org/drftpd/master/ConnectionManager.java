@@ -23,7 +23,6 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -251,7 +250,7 @@ public class ConnectionManager {
 	 * returns a <code>Collection</code> of current connections
 	 */
 	public List<BaseFtpConnection> getConnections() {
-		return Collections.unmodifiableList(_conns);
+		return new ArrayList<BaseFtpConnection>(_conns);
 	}
 
 	public static GlobalContext getGlobalContext() {
@@ -265,8 +264,7 @@ public class ConnectionManager {
 	}
 
 	public void shutdownPrivate(String message) {
-		for (BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(
-				getConnections())) {
+		for (BaseFtpConnection conn : getConnections()) {
 			conn.stop(message);
 		}
 	}
@@ -321,7 +319,7 @@ public class ConnectionManager {
 		logger.info("Reloading "+ cmdConf +", origin "+event.getOrigin());
 		loadCommands();
 		_commandManager.initialize(getCommands(), themeDir);
-		for (BaseFtpConnection conn : new ArrayList<BaseFtpConnection>(getConnections())) {
+		for (BaseFtpConnection conn : getConnections()) {
 			conn.setCommands(getCommands());
 		}
 	}

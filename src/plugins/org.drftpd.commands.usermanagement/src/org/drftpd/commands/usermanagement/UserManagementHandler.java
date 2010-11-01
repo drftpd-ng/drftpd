@@ -21,7 +21,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -1464,10 +1463,8 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-				GlobalContext.getConnectionManager().getConnections());
 
-		for (BaseFtpConnection conn2 : conns) {
+		for (BaseFtpConnection conn2 : GlobalContext.getConnectionManager().getConnections()) {
 
 			try {
 				if (conn2.getUser().getName().equals(username)) {
@@ -1492,10 +1489,8 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(
-				GlobalContext.getConnectionManager().getConnections());
 
-		for (BaseFtpConnection conn : conns) {
+		for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
 			try {
 				if (!conn.getUser().getName().equals(kicker)) {
 					conn.stop(message);
@@ -1868,7 +1863,7 @@ public class UserManagementHandler extends CommandInterface {
 		
 		List<BaseFtpConnection> conns = request.getSession().getObject(CONNECTIONS, null);		
 		if (conns == null) {
-			conns = Collections.unmodifiableList(ConnectionManager.getConnectionManager().getConnections());
+			conns = ConnectionManager.getConnectionManager().getConnections();
 		}	
 
 		for (BaseFtpConnection conn : conns) {

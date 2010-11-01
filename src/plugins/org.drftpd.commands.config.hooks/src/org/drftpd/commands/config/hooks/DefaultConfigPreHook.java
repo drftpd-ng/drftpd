@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands.config.hooks;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class DefaultConfigPreHook implements PreHookInterface {
 	}
 
 	public CommandRequestInterface hideInWhoHook(CommandRequest request) {
-		List<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(ConnectionManager.getConnectionManager().getConnections());
+		List<BaseFtpConnection> conns = ConnectionManager.getConnectionManager().getConnections();
 		ConfigInterface cfg = GlobalContext.getConfig();
 		
 		for (Iterator<BaseFtpConnection> iter = conns.iterator(); iter.hasNext();) {
