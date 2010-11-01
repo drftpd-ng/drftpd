@@ -234,8 +234,8 @@ public class VirtualFileSystem {
 			inode.setName(getLast(path));
 			if (inode.isDirectory()) {
 				VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
-				Collection<String> files = new ArrayList<String>();
 				String[] list = realDirectory.list();
+				Collection<String> files = new ArrayList<String>(list.length);
 				for (String item : list) {
 					if (item.equals(dirName)) {
 						continue;
