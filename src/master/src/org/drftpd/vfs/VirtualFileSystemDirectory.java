@@ -242,7 +242,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	/**
 	 * @return a Set containing all inode names inside this directory.
 	 */
-	public Set<String> getInodeNames() {
+	public synchronized Set<String> getInodeNames() {
 		return new HashSet<String>(_files.keySet());
 	}
 
@@ -253,7 +253,11 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		HashSet<InodeHandle> set = new HashSet<InodeHandle>();
 		String path = getPath() + (getPath().equals("/") ? "" : VirtualFileSystem.separator);
 		// not dynamically called for efficiency
-		for (String inodeName : new HashSet<String>(_files.keySet())) {
+		HashSet<String> inodeKeys = null;
+		synchronized (this) {
+			inodeKeys = new HashSet<String>(_files.keySet());
+		}
+		for (String inodeName : inodeKeys) {
 			VirtualFileSystemInode inode = null;
 			try {
 				inode = getInodeByName(inodeName);
