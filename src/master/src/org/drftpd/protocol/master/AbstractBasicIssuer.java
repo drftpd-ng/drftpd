@@ -61,9 +61,9 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
 	public abstract String issueRemergeToSlave(RemoteSlave rslave, String path, boolean partialRemerge, 
 			long skipAgeCutoff, long masterTime) throws SlaveUnavailableException;
 
-	public abstract String issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
+	public abstract void issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
 
-	public abstract String issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
+	public abstract void issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
 
 	public abstract String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException;
 }

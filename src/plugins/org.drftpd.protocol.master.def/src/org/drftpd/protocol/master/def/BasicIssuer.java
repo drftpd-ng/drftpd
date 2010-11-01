@@ -150,18 +150,16 @@ public class BasicIssuer extends AbstractBasicIssuer {
 		return index;
 	}
 
-	public String issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommand(index, "remergePause"));
+	public void issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+		rslave.sendCommand(new AsyncCommand("remergePause", "remergePause"));
 
-		return index;
+		return;
 	}
 
-	public String issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
-		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommand(index, "remergeResume"));
+	public void issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
+		rslave.sendCommand(new AsyncCommand("remergeResume", "remergeResume"));
 
-		return index;
+		return;
 	}
 
 	@Override
