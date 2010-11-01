@@ -337,7 +337,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * Changes the directory tree.
 	 * @param files
 	 */
-	public synchronized void setFiles(Collection<String> files) {
+	public synchronized void setFiles(String[] files) {
 		for (String file : files) {
 			_files.put(file, null);
 		}

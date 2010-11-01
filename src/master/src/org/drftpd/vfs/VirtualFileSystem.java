@@ -24,10 +24,8 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 
@@ -57,6 +55,15 @@ public class VirtualFileSystem {
 		}
 	}
 
+	static class DirInodeFilenameFilter implements FilenameFilter {
+
+		@Override
+		public boolean accept(File dir, String file) {
+			return !file.equals(dirName);
+		}
+		
+	}
+
 	private static VirtualFileSystem _vfs = null;
 
 	public static final String dirName = ".dirProperties";
@@ -64,6 +71,8 @@ public class VirtualFileSystem {
 	public static final String fileSystemPath = "files";
 
 	private static final Logger logger = Logger.getLogger(VirtualFileSystem.class);
+
+	private static final DirInodeFilenameFilter dirFilter = new DirInodeFilenameFilter();
 
 	public static final String separator = "/";
 
@@ -133,9 +142,7 @@ public class VirtualFileSystem {
 		new File(fileSystemPath).mkdirs();
 		_root = new VirtualFileSystemRoot("drftpd", "drftpd");
 		File rootFile = new File(fileSystemPath);
-		Collection<String> files = new ArrayList<String>();
-		Collections.addAll(files, rootFile.list());
-		_root.setFiles(files);
+		_root.setFiles(rootFile.list(dirFilter));
 		_root.commit();
 		_root.inodeLoadCompleted();
 		return _root;
@@ -234,15 +241,7 @@ public class VirtualFileSystem {
 			inode.setName(getLast(path));
 			if (inode.isDirectory()) {
 				VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
-				String[] list = realDirectory.list();
-				Collection<String> files = new ArrayList<String>(list.length);
-				for (String item : list) {
-					if (item.equals(dirName)) {
-						continue;
-					}
-					files.add(item);
-				}
-				dir.setFiles(files);
+				dir.setFiles(realDirectory.list(dirFilter));
 			}
 			inode.inodeLoadCompleted();
 			return inode;
