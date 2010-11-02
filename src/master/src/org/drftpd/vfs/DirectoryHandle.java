@@ -547,8 +547,15 @@ public class DirectoryHandle extends InodeHandle implements
 			// compare is == 0, they have the same name
 
 			if (compare < 0) {
-				// add the file
-				createRemergedFile(source, rslave, false);
+				if (source.isFile()) {
+					// add the file
+					createRemergedFile(source, rslave, false);
+				} else {
+					throw new IOException(
+							source.getName()
+									+ " from slave " + rslave.getName() +
+									" isDirectory() -- this shouldn't happen, this directory should already be created through a previous remerge process");
+				}
 				// advance one runner
 				if (sourceIter.hasNext()) {
 					source = sourceIter.next();
