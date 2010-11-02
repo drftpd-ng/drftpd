@@ -107,7 +107,7 @@ public abstract class ArchiveType {
 	 * @param archive
 	 * @param section
 	 * @param p
-	 * #param confnum
+	 * @param confnum
 	 */
 	public ArchiveType(Archive archive, SectionInterface section, Properties p, int confnum) {
 		_confnum = confnum;

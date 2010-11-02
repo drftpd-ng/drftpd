@@ -103,17 +103,17 @@ public class ArchiveHandler extends Thread {
 					_jobs = _archiveType.send();
 				}
 	
-				GlobalContext.getEventService().publishAsync(new ArchiveStartEvent(_archiveType,_jobs));
+				GlobalContext.getEventService().publish(new ArchiveStartEvent(_archiveType,_jobs));
 				long starttime = System.currentTimeMillis();
 				if (_jobs != null) {
 					_archiveType.waitForSendOfFiles(_jobs);
 				}
 				
 				if (!_archiveType.moveRelease(getArchiveType().getDirectory())) {
-					GlobalContext.getEventService().publishAsync(new ArchiveFailedEvent(_archiveType,starttime,"Failed To Move Directory"));	
+					GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType,starttime,"Failed To Move Directory"));	
 				} else {
 					logger.info("Done archiving " + getArchiveType().getDirectory().getPath());
-					GlobalContext.getEventService().publishAsync(new ArchiveFinishEvent(_archiveType,starttime));
+					GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType,starttime));
 				}
 			} catch (Exception e) {
 				logger.warn("", e);
