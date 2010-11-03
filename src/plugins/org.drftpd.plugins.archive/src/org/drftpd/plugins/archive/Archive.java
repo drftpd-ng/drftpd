@@ -16,11 +16,11 @@
  */
 package org.drftpd.plugins.archive;
 
-import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.TimerTask;
 
@@ -31,9 +31,12 @@ import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.event.ReloadEvent;
+import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
 import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.sections.SectionInterface;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 
 /**
  * @author CyBeR
@@ -49,7 +52,8 @@ public class Archive implements PluginInterface {
 	private HashSet<ArchiveHandler> _archiveHandlers = null;
 
 	private TimerTask _runHandler = null;
-
+	
+	private CaseInsensitiveHashMap<String, Class<ArchiveType>> _typesMap;
 	
 	public Properties getProperties() {
 		return _props;
@@ -65,29 +69,57 @@ public class Archive implements PluginInterface {
 	 */
 	public ArchiveType getArchiveType(int count, String type) {
 		ArchiveType archiveType = null;
+		Class<?>[] SIG = { Archive.class, SectionInterface.class, Properties.class, int.class };
 		
-		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section",""));
-        if (!sec.getName().isEmpty()) {
-			Constructor<?> constructor = null;
-			Class<?>[] classParams = { Archive.class, SectionInterface.class, Properties.class, int.class };
-			Object[] objectParams = { this, sec, _props, count };
-			try {
-				constructor = Class.forName("org.drftpd.plugins.archive.archivetypes." + type).getConstructor(classParams);
-				archiveType = (ArchiveType) constructor.newInstance(objectParams);
-			} catch (Exception e2) {
-				logger.error("Unable to load ArchiveType for section " + count + "." + type, e2);
-			}
-        } else {
-        	logger.error("Unable to load Section for Archive " + count + "." + type);
-        }
-		return archiveType;
+		if (!_typesMap.containsKey(type)) {
+			// if we can't find one filter that will be enought to brake the whole chain.
+			logger.error("Archive Type: " + type + " wasn't loaded.");
+			
+		} else {
+	
+			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section",""));
+	        if (!sec.getName().isEmpty()) {
+				try {
+					Class<ArchiveType> clazz = _typesMap.get(type);
+					archiveType = clazz.getConstructor(SIG).newInstance(new Object[] { this, sec, _props, count });
+	
+				} catch (Exception e) {
+					logger.error("Unable to load ArchiveType for section " + count + "." + type, e);
+				}		
+	        } else {
+	        	logger.error("Unable to load Section for Archive " + count + "." + type);
+	        }
+		}
+		return archiveType;	
 	}
 
+	/*
+	 * Load the different Types of Archives specified in plugin.xml
+	 */
+	private void initTypes() {
+		CaseInsensitiveHashMap<String, Class<ArchiveType>> typesMap = new CaseInsensitiveHashMap<String, Class<ArchiveType>>();
+
+		try {
+			List<PluginObjectContainer<ArchiveType>> loadedTypes =
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.archive", "ArchiveType", "ClassName", false);
+			for (PluginObjectContainer<ArchiveType> container : loadedTypes) {
+				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
+				typesMap.put(filterName, container.getPluginClass());
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.plugins.archive.archivetypes extension point 'ArchiveType'",e);
+		}
+		
+		_typesMap = typesMap;
+	}
+	
 	/*
 	 * Reloads all the different archive's in .conf file
 	 * Loops though each one and adds to the ArchiveHandler
 	 */
 	private void reload() {
+		initTypes();
+		
 		_props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("archive.conf");
 		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,"cycletime", "30"));
 		
@@ -103,11 +135,9 @@ public class Archive implements PluginInterface {
 				String type;
 				while ((type = PropertyHelper.getProperty(_props, count + ".type",null)) != null) {
 					ArchiveType archiveType = getArchiveType(count,type);
-					if (archiveType == null) {
-						continue;
+					if (archiveType != null) {
+						new ArchiveHandler(archiveType).start();
 					}
-					new ArchiveHandler(archiveType).start();
-					
 					count++;					
 				} 
 			}

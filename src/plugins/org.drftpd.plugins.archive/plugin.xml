@@ -16,6 +16,12 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
+	
+	<extension-point id="ArchiveType">
+		<parameter-def id="TypeName" type="string" />
+		<parameter-def id="ClassName" type="string" />
+	</extension-point>
+	
 	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
 	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
 
@@ -23,4 +29,27 @@
 		<parameter id="Class" value="org.drftpd.plugins.archive.Archive"/>
 	</extension>
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ArchiveCommandHandler" />
+	
+	<!-- Start Of ArchiveTypes -->
+	<extension plugin-id="org.drftpd.plugins.archive" point-id="ArchiveType" id="ConstantMirroringType">
+		<parameter id="ClassName" value="org.drftpd.plugins.archive.archivetypes.ConstantMirroring"/>
+		<parameter id="TypeName" value="ConstantMirroring"/>
+	</extension>	
+	<extension plugin-id="org.drftpd.plugins.archive" point-id="ArchiveType" id="MoveReleaseOffSlavesToMostFreeSlaves">
+		<parameter id="ClassName" value="org.drftpd.plugins.archive.archivetypes.MoveReleaseOffSlavesToMostFreeSlaves"/>
+		<parameter id="TypeName" value="MoveReleaseOffSlavesToMostFreeSlaves"/>
+	</extension>	
+	<extension plugin-id="org.drftpd.plugins.archive" point-id="ArchiveType" id="MoveReleaseToMostFreeSlaves">
+		<parameter id="ClassName" value="org.drftpd.plugins.archive.archivetypes.MoveReleaseToMostFreeSlaves"/>
+		<parameter id="TypeName" value="MoveReleaseToMostFreeSlaves"/>
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.archive" point-id="ArchiveType" id="MoveReleaseToSpecificFolder">
+		<parameter id="ClassName" value="org.drftpd.plugins.archive.archivetypes.MoveReleaseToSpecificFolder"/>
+		<parameter id="TypeName" value="MoveReleaseToSpecificFolder"/>
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.archive" point-id="ArchiveType" id="MoveReleaseToSpecificSlaves">
+		<parameter id="ClassName" value="org.drftpd.plugins.archive.archivetypes.MoveReleaseToSpecificSlaves"/>
+		<parameter id="TypeName" value="MoveReleaseToSpecificSlaves"/>
+	</extension>	
+	<!-- End Of ArchiveTypes -->
 </plugin>
