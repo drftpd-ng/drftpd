@@ -94,6 +94,15 @@ public class Archive implements PluginInterface {
 	}
 
 	/*
+	 * Returns a list of the current archive types, as a copy.
+	 * We don't want to allow modifications to this.
+	 */
+	@SuppressWarnings("unchecked")
+	public CaseInsensitiveHashMap<String, Class<ArchiveType>> getTypesMap() {
+		return (CaseInsensitiveHashMap<String, Class<ArchiveType>>) _typesMap.clone();
+	}		
+	
+	/*
 	 * Load the different Types of Archives specified in plugin.xml
 	 */
 	private void initTypes() {

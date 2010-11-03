@@ -209,7 +209,7 @@ public class ArchiveCommandHandler extends CommandInterface {
 
     public CommandResponse doLISTARCHIVETYPES(CommandRequest request) {
     	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        int x = 0;
+        int x = 1;
         ReplacerEnvironment env = new ReplacerEnvironment();
         Archive archive;
 
@@ -220,9 +220,9 @@ public class ArchiveCommandHandler extends CommandInterface {
             return response;
         }
 
-        for (Iterator<ArchiveHandler> iter = archive.getArchiveHandlers().iterator();iter.hasNext(); x++) {
-            ArchiveHandler archiveHandler = iter.next();
-            response.addComment(x + ". " + archiveHandler.getArchiveType());
+        for (Iterator<String> iter = archive.getTypesMap().keySet().iterator();iter.hasNext();x++) {
+        	String type = iter.next();
+            response.addComment(x + ": " + type);        	
         }
         
         return response;
