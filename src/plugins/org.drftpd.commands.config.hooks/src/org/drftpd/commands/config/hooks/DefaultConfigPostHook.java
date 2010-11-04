@@ -39,7 +39,7 @@ public class DefaultConfigPostHook implements PostHookInterface {
 	public void showMessageForPath(CommandRequest request, CommandResponse response) {
 		Collection<MessagePathPermission> msgPath = GlobalContext.getConfig().getKeyedMap().getObject(DefaultConfigHandler.MSGPATH, null);
 
-		if (msgPath == null) {
+		if (msgPath == null || response.getCurrentDirectory() == null) {
 			return;
 		}
 		

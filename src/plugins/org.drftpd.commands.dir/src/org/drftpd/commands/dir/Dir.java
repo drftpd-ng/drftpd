@@ -106,7 +106,7 @@ public class Dir extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
-		DirectoryHandle newCurrentDirectory = null;
+		DirectoryHandle newCurrentDirectory;
 		User user = request.getSession().getUserNull(request.getUser());
 
 		try {
@@ -117,19 +117,15 @@ public class Dir extends CommandInterface {
 			return new CommandResponse(550, request.getArgument() + ": is not a directory");
 		}
 
-		CommandResponse response = new CommandResponse(250,
+		return new CommandResponse(250,
 				"Directory changed to " + newCurrentDirectory.getPath(),
 				newCurrentDirectory, request.getUser());
-
-		response.setCurrentDirectory(newCurrentDirectory);
-
-		return response;
 	}
 
 	private void addVictimInformationToResponse(InodeHandle victim,
 			CommandResponse response) throws FileNotFoundException {
 		response.setObject(FILENAME, victim.getName());
-		response.setObject(FILESIZE, Long.valueOf(victim.getSize()));
+		response.setObject(FILESIZE, victim.getSize());
 		response.setObject(USERNAME, victim.getUsername());
 		response.setObject(ISFILE, victim.isFile());
 		response.setObject(XFERTIME, victim.isFile() ? ((FileHandle)victim).getXfertime() : 0L);
@@ -155,7 +151,7 @@ public class Dir extends CommandInterface {
 		CommandResponse response = StandardCommandManager
 		.genericResponse("RESPONSE_250_ACTION_OKAY");
 		User user = request.getSession().getUserNull(request.getUser());
-		InodeHandle victim = null;
+		InodeHandle victim;
 		try {
 			victim = request.getCurrentDirectory().getInodeHandle(fileName,
 					user);
@@ -275,7 +271,7 @@ public class Dir extends CommandInterface {
 			} catch (ObjectNotValidException e) {
 				return new CommandResponse(550, "Parent directory does not exist");
 			}
-			DirectoryHandle newDir = null;
+			DirectoryHandle newDir;
 			try {
 				newDir = fakeDirectory.getParent().createDirectory(session.getUserNull(request.getUser()), dirName);
 			} catch (FileNotFoundException e) {
@@ -380,8 +376,8 @@ public class Dir extends CommandInterface {
 				argument = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + argument;
 			}
 		}
-		DirectoryHandle toDir = null;
-		String newName = null;
+		DirectoryHandle toDir;
+		String newName;
 		User user = request.getSession().getUserNull(request.getUser());
 
 		try {
@@ -455,7 +451,7 @@ public class Dir extends CommandInterface {
 				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 			}
 		}
-		InodeHandle toInode = null;
+		InodeHandle toInode;
 		if (fromInode.isDirectory()) {
 			toInode = new DirectoryHandle(toDir.getPath() + VirtualFileSystem.separator + newName);
 		} else if (fromInode.isFile()) {
