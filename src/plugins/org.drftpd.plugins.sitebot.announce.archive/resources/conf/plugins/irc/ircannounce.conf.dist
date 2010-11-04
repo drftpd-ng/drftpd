@@ -1,0 +1,7 @@
+# To specify where the archive announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#archive.path.1=/path/subpath/*
+#archive.path.1.destination=public
+#archive.section.1=*
+#archive.section.1.destination=public
+

@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.sitebot.announce.archive" version="3.0.0">
+	<doc>
+		<doc-text>(Sitebot) - This plugin provides Archive announcements for Sitebot</doc-text>
+	</doc>
+
+	<requires>
+		<import plugin-id="master" />
+		<import plugin-id="org.drftpd.plugins.archive" />
+		<import plugin-id="org.drftpd.plugins.sitebot" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.sitebot.announce.archive" path="classes/" type="code" />
+	</runtime>
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="ArchiveAnnounce">
+		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.archive.ArchiveAnnouncer" />
+	</extension>
+</plugin>
