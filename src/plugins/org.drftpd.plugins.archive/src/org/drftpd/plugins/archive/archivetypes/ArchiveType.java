@@ -169,6 +169,10 @@ public abstract class ArchiveType {
 					continue;
 				}
 
+				if (checkFailedDir(lrf.getPath())) {
+					continue;
+				}				
+				
 				try {
 					// Checks regex to see if dir should be archived or not
 					if (lrf.getName().matches(getArchiveRegex())) {
