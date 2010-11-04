@@ -121,6 +121,8 @@ public class Dir extends CommandInterface {
 				"Directory changed to " + newCurrentDirectory.getPath(),
 				newCurrentDirectory, request.getUser());
 
+		response.setCurrentDirectory(newCurrentDirectory);
+
 		return response;
 	}
 
