@@ -72,7 +72,12 @@ public class ArchiveHandler extends Thread {
 	 * This also throws events so they can be caught for sitebot announcing.
 	 */
 	public void run() {
+		long curtime = System.currentTimeMillis();
 		for (int i=0; i<_archiveType.getRepeat(); i++) {
+			if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
+				//don't want to double archive stuff...so we to check and make sure
+				break;
+			}
 			try {
 				synchronized (_archiveType._parent) {
 					if (_archiveType.getDirectory() == null) {
@@ -110,7 +115,9 @@ public class ArchiveHandler extends Thread {
 				}
 				
 				if (!_archiveType.moveRelease(getArchiveType().getDirectory())) {
-					GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType,starttime,"Failed To Move Directory"));	
+					_archiveType.addFailedDir(getArchiveType().getDirectory().getPath());
+					GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType,starttime,"Failed To Move Directory"));
+					logger.info("Failed to Archiving " + getArchiveType().getDirectory().getPath() + " (Failed To Move Directory)");
 				} else {
 					logger.info("Done archiving " + getArchiveType().getDirectory().getPath());
 					GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType,starttime));

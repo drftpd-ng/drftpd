@@ -95,8 +95,9 @@ public abstract class ArchiveType {
 	
 	// Used for: how many times to repeat during each cycle
 	private int _repeat;
-	
-	//private DirectoryHandle _destinationDirectory;
+
+	//  Used for holding all failed directorys during each cycle
+	private ArrayList<String> _failedDirs;
 
 	/**
 	 * Sets _slaveList, _numOfSlaves, _section, _parent, and _archiveAfter Each
@@ -372,6 +373,7 @@ public abstract class ArchiveType {
 	 * Sets standard properties for this ArchiveType
 	 */
 	private void setProperties(Properties properties) {
+		_failedDirs = new ArrayList<String>();
 		_archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".archiveafter","0"));
 		_numOfSlaves = Integer.parseInt(properties.getProperty(_confnum + ".numofslaves", "0"));
 		_repeat = Integer.parseInt(properties.getProperty(_confnum + ".repeat", "1"));
@@ -628,4 +630,18 @@ public abstract class ArchiveType {
 		return _destinationDirectory;
 	}
 
+	/*
+	 * Adds failed dir for archiving when using repeat
+	 */
+	public void addFailedDir(String path) {
+		_failedDirs.add(path);
+	}
+	
+	/*
+	 * Returns if dir has been added to the Failed dirs
+	 */
+	public boolean checkFailedDir(String path) {
+		return _failedDirs.contains(path);
+	}	
+	
 }
