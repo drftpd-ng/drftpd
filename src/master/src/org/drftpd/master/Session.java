@@ -59,7 +59,11 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 
 		if (user != null) {
 			for (Map.Entry<Key<?>, Object> entry : user.getKeyedMap().getAllObjects().entrySet()) {
-				env.add(entry.getKey().toString(), entry.getValue().toString());
+				String key = entry.getKey().toString();
+				String value = entry.getValue().toString();
+				if (key.equals("org.drftpd.commands.nuke.metadata.NukeUserData@nukedBytes"))
+					value = Bytes.formatBytes(Long.parseLong(value));
+				env.add(key, value);
 			}
 			env.add("user", user.getName());
 			env.add("username", user.getName());
