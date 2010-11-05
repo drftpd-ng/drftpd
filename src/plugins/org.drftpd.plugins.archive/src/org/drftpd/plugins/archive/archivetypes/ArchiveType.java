@@ -587,9 +587,15 @@ public abstract class ArchiveType {
 				if (type != null) {
 					toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type + VirtualFileSystem.separator + fromDir.getName());					
 				}
-				fromDir.renameToUnchecked(toInode);
-				_destinationDirectory = toInode; 
-				return true;
+
+				
+				if (!toInode.exists()) {
+					fromDir.renameToUnchecked(toInode);
+					_destinationDirectory = toInode;
+					return true;
+				}
+				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because it already exists at destination");
+				
 			} catch (FileExistsException e) {
 				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because it already exists at destination"); 
 			} catch (FileNotFoundException e) {
