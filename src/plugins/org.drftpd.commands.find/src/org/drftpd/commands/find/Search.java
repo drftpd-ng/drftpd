@@ -108,7 +108,7 @@ public class Search extends CommandInterface {
 			return response;
 		}
 
-		env.add("results", inodes.size());
+		int results = 0;
 		env.add("limit", params.getLimit());
 		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
 
@@ -118,6 +118,7 @@ public class Search extends CommandInterface {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
 				if (!inode.isHidden(user)) {
+					results++;
 					env.add("name", inode.getName());
 					env.add("path", inode.getPath());
 					env.add("owner", inode.getUsername());
@@ -129,6 +130,7 @@ public class Search extends CommandInterface {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}
 		}
+		env.add("results", results);
 
 		return response;
 	}
