@@ -130,7 +130,10 @@ public class Search extends CommandInterface {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}
 		}
-		env.add("results", results);
+		if (results == 0)
+			return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"search.empty", env, user.getName()));
+		else
+			env.add("results", results);
 
 		return response;
 	}
