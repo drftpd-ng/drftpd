@@ -159,14 +159,21 @@ public abstract class ArchiveType {
 	 */
 	public final DirectoryHandle getOldestNonArchivedDir() {
 		ArrayList<DirectoryHandle> oldDirs = new ArrayList<DirectoryHandle>();
-
+		boolean stillarchiving = false;
+		
 		try {
 			for (Iterator<DirectoryHandle> iter = getSection().getCurrentDirectory().getDirectoriesUnchecked().iterator(); iter.hasNext();) {
 				DirectoryHandle lrf = iter.next();
 				try {
 					_parent.checkPathForArchiveStatus(lrf.getPath());
 				} catch (DuplicateArchiveException e1) {
-					continue;
+					/*
+					 *	we are already archiving something for this type..
+					 *  ..lets wait until thats done before we continue 
+					 */
+					//continue;
+					stillarchiving = true;
+					break;
 				}
 
 				if (checkFailedDir(lrf.getPath())) {
@@ -233,7 +240,9 @@ public abstract class ArchiveType {
 			logger.debug(getClass().toString() + " - Returning the oldest directory " + oldestDir);
 			return oldestDir;
 		}
-		logger.debug(getClass().toString() + " - All directories are archived");
+		if (!stillarchiving) {
+			logger.debug(getClass().toString() + " - All directories are archived");
+		}
 		return null;
 	}
 
@@ -600,6 +609,8 @@ public abstract class ArchiveType {
 				return "0-9";
 			} else if (inode.getName().matches("^[a-zA-Z].*$")) { 
 				return "" + inode.getName().toUpperCase().charAt(0);
+			} else {
+				return "UNKNOWN";
 			}
 		} else if (type.toLowerCase().startsWith("dated:")) {
 			String[] splittype = _archiveDirType.split(":");
