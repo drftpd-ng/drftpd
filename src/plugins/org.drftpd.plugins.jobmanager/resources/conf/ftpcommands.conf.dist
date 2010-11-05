@@ -31,6 +31,15 @@ help.specific jobindex and all jobs including and between lowrange and highrange
 help.specific You can use as many ranges as your heart desires.
 }
 
+SITE REMOVEJOBS {
+plugin org.drftpd.plugins.jobmanager
+class JobManagerCommandHandler
+method doREMOVEJOBS
+perms =siteop
+help Removes all jobs that are not currently transferring.
+help.specific Removes all jobs that are not currently transferring.  
+}
+
 SITE STARTJOBS {
 plugin org.drftpd.plugins.jobmanager
 class JobManagerCommandHandler

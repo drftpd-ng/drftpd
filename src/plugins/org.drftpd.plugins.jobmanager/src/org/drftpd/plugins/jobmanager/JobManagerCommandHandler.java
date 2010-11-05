@@ -188,6 +188,19 @@ public class JobManagerCommandHandler extends CommandInterface {
 		return response;
 	}
 
+	public CommandResponse doREMOVEJOBS(CommandRequest request) {
+		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		treeSet.addAll(getJobManager().getAllJobsFromQueue());
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		for (Job job : treeSet) {
+			if (!job.isTransferring()) {
+				getJobManager().stopJob(job);
+			}
+		}
+		response.addComment("Removing all non transfering jobs");
+		return response;		
+	}
+		
 	public CommandResponse doREMOVEJOB(CommandRequest request) throws ImproperUsageException {
 
 		if (!request.hasArgument()) {

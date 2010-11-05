@@ -46,6 +46,12 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
+	<extension plugin-id="org.drftpd.plugins.jobmanager" point-id="PreHook" id="doSITE_REMOVEJOBSPerm">
+		<parameter id="ParentMethod" value="doREMOVEJOBS" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>	
 	<extension plugin-id="org.drftpd.plugins.jobmanager" point-id="PreHook" id="doSITE_STARTJOBSPerm">
 		<parameter id="ParentMethod" value="doSTARTJOBS" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
