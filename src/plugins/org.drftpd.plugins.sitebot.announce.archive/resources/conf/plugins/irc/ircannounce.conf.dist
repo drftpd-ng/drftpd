@@ -1,7 +1,17 @@
 # To specify where the archive announces will appear rather than just using your
 # default channels, uncomment the next lines and set them there.
-#archive.path.1=/path/subpath/*
-#archive.path.1.destination=public
-#archive.section.1=*
-#archive.section.1.destination=public
+#archive_start.path.1=/path/subpath/*
+#archive_start.path.1.destination=public
+#archive_start.section.1=*
+#archive_start.section.1.destination=public
+#
+#archive_finish.path.1=/path/subpath/*
+#archive_finish.path.1.destination=public
+#archive_finish.section.1=*
+#archive_finish.section.1.destination=public
+#
+#archive_failed.path.1=/path/subpath/*
+#archive_failed.path.1.destination=public
+#archive_failed.section.1=*
+#archive_failed.section.1.destination=public
 

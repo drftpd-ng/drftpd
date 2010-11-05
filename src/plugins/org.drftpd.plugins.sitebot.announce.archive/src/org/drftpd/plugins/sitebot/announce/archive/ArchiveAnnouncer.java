@@ -57,7 +57,7 @@ public class ArchiveAnnouncer implements AnnounceInterface {
 	}
 
 	public String[] getEventTypes() {
-		return new String[] { "archivestartevent","archivefinishevent","archivefailedevent" };
+		return new String[] { "archive_finish", "archive_start", "archive_failed" };
 	}
 	
 	public void setResourceBundle(ResourceBundle bundle) {
@@ -66,7 +66,7 @@ public class ArchiveAnnouncer implements AnnounceInterface {
 
     @EventSubscriber
 	public void onArchiveStartEvent(ArchiveStartEvent event) {
-		AnnounceWriter writer = _config.getPathWriter("archive", event.getArchiveType().getDirectory());
+		AnnounceWriter writer = _config.getPathWriter("archive_start", event.getArchiveType().getDirectory());
 		if (writer != null) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             
@@ -81,7 +81,7 @@ public class ArchiveAnnouncer implements AnnounceInterface {
     
     @EventSubscriber
 	public void onArchiveFinishEvent(ArchiveFinishEvent event) {
-    	AnnounceWriter writer = _config.getPathWriter("archive", event.getArchiveType().getDirectory());
+    	AnnounceWriter writer = _config.getPathWriter("archive_finish", event.getArchiveType().getDirectory());
 		if (writer != null) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             
@@ -101,7 +101,7 @@ public class ArchiveAnnouncer implements AnnounceInterface {
     
     @EventSubscriber
 	public void onArchiveFailedEvent(ArchiveFailedEvent event) {
-    	AnnounceWriter writer = _config.getPathWriter("archive", event.getArchiveType().getDirectory());
+    	AnnounceWriter writer = _config.getPathWriter("archive_failed", event.getArchiveType().getDirectory());
 		if (writer != null) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
             
