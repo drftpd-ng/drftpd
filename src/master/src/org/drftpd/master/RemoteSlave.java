@@ -941,7 +941,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	private final void setOfflineReal(String reason) {
-
+		// If the slave is still processing the remerge queue clear all
+		// outstanding entries
+		_remergeQueue.clear();
 		if (_socket != null) {
 			setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
 			try {
