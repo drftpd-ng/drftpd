@@ -41,10 +41,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.Logger;
@@ -90,10 +87,6 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	private int _port;
 
 	protected ServerSocket _serverSocket;
-
-	private LinkedBlockingQueue<RemergeMessage> _remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
-
-	private RemergeThread _remergeThread;
 
 	private boolean _sslSlaves;
 	
@@ -485,27 +478,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				rslave.setOffline(e);
 				logger.error(e);
 			} catch (Throwable t) {
-				logger.fatal("Throwable in SalveManager loop", t);
+				logger.fatal("Throwable in SlaveManager loop", t);
 			}
-		}
-	}
-
-	public BlockingQueue<RemergeMessage> getRemergeQueue() {
-		return _remergeQueue;
-	}
-
-	/**
-	 * @param message
-	 */
-	public void putRemergeQueue(RemergeMessage message) {
-		try {
-			_remergeQueue.put(message);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		if (_remergeThread == null || !_remergeThread.isAlive()) {
-			_remergeThread = new RemergeThread();
-			_remergeThread.start();
 		}
 	}
 
@@ -629,44 +603,5 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 						getProtocolCentral().getIssuerForClass(AbstractBasicIssuer.class);
 		}
 		return _basicIssuer; 
-	}
-}
-
-class RemergeThread extends Thread {
-	private static final Logger logger = Logger.getLogger(RemergeThread.class);
-
-	public RemergeThread() {
-		super("RemergeThread");
-	}
-
-	public void run() {
-		while (true) {
-			RemergeMessage msg;
-			try {
-				msg = getGlobalContext().getSlaveManager().getRemergeQueue()
-						.take();
-			} catch (InterruptedException e) {
-				logger.info("", e);
-				continue;
-			}
-
-			if (msg.isCompleted()) {
-				msg.getRslave().makeAvailableAfterRemerge();
-				continue;
-			}
-
-			DirectoryHandle dir = new DirectoryHandle(msg.getDirectory());
-
-			try {
-				dir.remerge(msg.getFiles(), msg.getRslave(), msg.getLastModified());
-			} catch (IOException e2) {
-				logger.error("IOException during remerge", e2);
-				msg.getRslave().setOffline("IOException during remerge");
-			}
-		}
-	}
-
-	private static GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
 	}
 }

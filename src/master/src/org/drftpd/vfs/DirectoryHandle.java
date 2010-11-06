@@ -439,7 +439,7 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	private void createRemergedFile(LightRemoteInode lrf, RemoteSlave rslave,
-			boolean collision) throws IOException {
+			boolean collision) throws FileExistsException, FileNotFoundException {
 		String name = lrf.getName();
 		if (collision) {
 			name = lrf.getName() + ".collision." + rslave.getName();
@@ -460,8 +460,14 @@ public class DirectoryHandle extends InodeHandle implements
 		try {
 			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
 		} catch (FileNotFoundException e) {
-			// create directory for merging
-			getParent().createDirectoryRecursive(getName(), true);
+			try {
+				// create directory for merging
+				getParent().createDirectoryRecursive(getName(), true);
+			} catch (FileExistsException e1) {
+				// Can happen if another slave is remerging the same directory and
+				// that thread created the dir between this thread checking and
+				// not finding the dir and trying to create it.
+			}
 			
 			// lets try this again, this time, if it doesn't work, we throw an
 			// IOException up the chain
@@ -521,7 +527,20 @@ public class DirectoryHandle extends InodeHandle implements
 
 				while (source != null) {
 					if (source.isFile()) {
-						createRemergedFile(source, rslave, false);
+						try {
+							createRemergedFile(source, rslave, false);
+						} catch (FileExistsException e) {
+							// File created by another slaves thread since this thread
+							// listed the directory, just need to add this slave to the
+							// list for the file
+							try {
+								getFileUnchecked(source.getName()).addSlave(rslave);
+							} catch (ObjectNotValidException e1) {
+								// File has collided with a dir/link in VFS, create this
+								// as a collision
+								createRemergedFile(source, rslave, true);
+							}
+						}
 					} else {
 						throw new IOException(
 								source.getName()
@@ -549,7 +568,20 @@ public class DirectoryHandle extends InodeHandle implements
 			if (compare < 0) {
 				if (source.isFile()) {
 					// add the file
-					createRemergedFile(source, rslave, false);
+					try {
+						createRemergedFile(source, rslave, false);
+					} catch (FileExistsException e) {
+						// File created by another slaves thread since this thread
+						// listed the directory, just need to add this slave to the
+						// list for the file
+						try {
+							getFileUnchecked(source.getName()).addSlave(rslave);
+						} catch (ObjectNotValidException e1) {
+							// File has collided with a dir/link in VFS, create this
+							// as a collision
+							createRemergedFile(source, rslave, true);
+						}
+					}
 				} else {
 					throw new IOException(
 							source.getName()

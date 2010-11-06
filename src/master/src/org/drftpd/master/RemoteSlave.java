@@ -40,6 +40,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -77,6 +78,7 @@ import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
 import org.drftpd.util.HostMask;
 import org.drftpd.util.HostMaskCollection;
+import org.drftpd.vfs.DirectoryHandle;
 
 /**
  * @author mog
@@ -135,6 +137,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private transient boolean _initRemergeCompleted;
 
 	private transient Object _commandMonitor = new Object();
+
+	private transient LinkedBlockingQueue<RemergeMessage> _remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
+
+	private transient RemergeThread _remergeThread;
 
 	public RemoteSlave(String name) {
 		_name = name;
@@ -420,8 +426,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			throw new IOException(e.getMessage());
 		}
 
-		getGlobalContext().getSlaveManager().putRemergeQueue(
-				new RemergeMessage(this));
+		putRemergeQueue(new RemergeMessage(this));
+
 		// TODO move lastConnect time setting to makeAvailableAfterRemerge()
 		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
 		_initRemergeCompleted = true;
@@ -647,10 +653,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			setOffline(e);
 		}
 		
-		class RemergeThread implements Runnable {
+		class InitiateRemergeThread implements Runnable {
 			public void run() {
 				try {
-					
 					initializeSlaveAfterThreadIsRunning();
 				} catch (Exception e) {
 					setOffline(e);
@@ -658,7 +663,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			}
 		}
 
-		new Thread(new RemergeThread(), "RemoteSlaveRemerge - " + getName()).start();		
+		new Thread(new InitiateRemergeThread(), "RemoteSlaveRemerge - " + getName()).start();		
 		start();
 	}
 
@@ -866,9 +871,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				}
 
 				if (ar.getIndex().equals("Remerge")) {
-					getGlobalContext().getSlaveManager().putRemergeQueue(
-							new RemergeMessage((AsyncResponseRemerge) ar,
-									this));
+					putRemergeQueue(new RemergeMessage((AsyncResponseRemerge) ar, this));
 				} else if (ar.getIndex().equals("DiskStatus")) {
 					_status = ((AsyncResponseDiskStatus) ar)
 					.getDiskStatus();
@@ -1199,5 +1202,50 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	
 	public ObjectInputStream getInputStream() {
 		return _sin;
+	}
+
+	private void putRemergeQueue(RemergeMessage message) {
+		try {
+			_remergeQueue.put(message);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		if (_remergeThread == null || !_remergeThread.isAlive()) {
+			_remergeThread = new RemergeThread(getName());
+			_remergeThread.start();
+		}
+	}
+
+	private class RemergeThread extends Thread {
+
+		public RemergeThread(String slaveName) {
+			super("RemergeThread - " + slaveName);
+		}
+
+		public void run() {
+			while (true) {
+				RemergeMessage msg;
+				try {
+					msg = _remergeQueue.take();
+				} catch (InterruptedException e) {
+					logger.info("", e);
+					continue;
+				}
+
+				if (msg.isCompleted()) {
+					msg.getRslave().makeAvailableAfterRemerge();
+					continue;
+				}
+
+				DirectoryHandle dir = new DirectoryHandle(msg.getDirectory());
+
+				try {
+					dir.remerge(msg.getFiles(), msg.getRslave(), msg.getLastModified());
+				} catch (IOException e) {
+					logger.error("IOException during remerge", e);
+					msg.getRslave().setOffline("IOException during remerge");
+				}
+			}
+		}
 	}
 }
