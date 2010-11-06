@@ -601,6 +601,9 @@ public abstract class ArchiveType {
 			} catch (FileNotFoundException e) {
 				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because '" + getDirectory().getPath() + "' no longer exists");
 			}			
+		} else {
+			// No need to move directory, so lets return true
+			return true;
 		}
 		return false;
 	}
