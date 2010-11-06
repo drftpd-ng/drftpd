@@ -165,13 +165,14 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 					RemoteSlave rslave = getASlaveForFunction();
 					try {		
 						checksum = rslave.getCheckSumForPath(getPath());
-						setCheckSum(checksum);
-						return checksum;
 					} catch (IOException e) {
 						rslave.setOffline(e);
+						continue;
 					} catch (SlaveUnavailableException e) {
 						continue;
 					}
+					setCheckSum(checksum);
+					return checksum;
 				}
 			}
 		}
