@@ -1241,6 +1241,12 @@ public class SiteBot implements ReplyConstants, Runnable {
 		if (_config.getBlowfishEnabled()) {
 			if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
 				try {
+					Blowfish chanCipher = _ciphers.get(channel);
+					if (chanCipher == null) {
+						logger.error("Received encrypted message in channel " + channel + 
+								" but no blowfish key is set for the channel!");
+						return;
+					}
 					message = _ciphers.get(channel).decrypt(message);
 				} catch (UnsupportedEncodingException e) {
 					/* Can't really happen, as the character set hardcoded
