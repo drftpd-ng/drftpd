@@ -1236,7 +1236,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 				if (msg.isCompleted()) {
 					msg.getRslave().makeAvailableAfterRemerge();
-					continue;
+					break;
 				}
 
 				DirectoryHandle dir = new DirectoryHandle(msg.getDirectory());
@@ -1246,6 +1246,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				} catch (IOException e) {
 					logger.error("IOException during remerge", e);
 					msg.getRslave().setOffline("IOException during remerge");
+					break;
 				}
 			}
 		}
