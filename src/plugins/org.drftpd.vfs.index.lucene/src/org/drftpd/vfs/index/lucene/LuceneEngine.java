@@ -54,8 +54,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopFieldDocs;
+import org.apache.lucene.search.TopFieldCollector;
+import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -399,9 +399,10 @@ public class LuceneEngine implements IndexEngineInterface {
 				iReader = _iWriter.getReader();
 				iSearcher = new IndexSearcher(iReader);
 
-				TopDocs topDocs = iSearcher.search(prefixQuery, Integer.MAX_VALUE);
+				TopScoreDocCollector topScoreDocsCollector = TopScoreDocCollector.create(Integer.MAX_VALUE, false);
+				iSearcher.search(prefixQuery, topScoreDocsCollector);
 
-				for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+				for (ScoreDoc scoreDoc : topScoreDocsCollector.topDocs().scoreDocs) {
 					Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
 
 					String oldPath = doc.getFieldable("fullPath").stringValue();
@@ -614,11 +615,12 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			iReader = _iWriter.getReader();
 			iSearcher = new IndexSearcher(iReader);
-			TopFieldDocs topFieldDocs = iSearcher.search(query, null, limit, SORT);
+			TopFieldCollector topFieldCollector = TopFieldCollector.create(SORT, limit, true, false, false, false);
+			iSearcher.search(query, topFieldCollector);
 			logger.debug("Query: " + query);
 
-			for (ScoreDoc scoreDoc : topFieldDocs.scoreDocs) {
-				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+			for (ScoreDoc scoreDoc : topFieldCollector.topDocs().scoreDocs) {
+				Document doc = iSearcher.doc(scoreDoc.doc, new AdvancedSearchFieldSelector());
 				inodes.put(doc.getFieldable("fullPath").stringValue(), doc.getFieldable("type").stringValue());
 			}
 
@@ -687,10 +689,11 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			iReader = _iWriter.getReader();
 			iSearcher = new IndexSearcher(iReader);
-			TopDocs topDocs = iSearcher.search(query, _maxHitsNumber);
+			TopScoreDocCollector topScoreDocsCollector = TopScoreDocCollector.create(_maxHitsNumber, false);
+			iSearcher.search(query, topScoreDocsCollector);
 			logger.debug("Query: " + query);
 
-			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+			for (ScoreDoc scoreDoc : topScoreDocsCollector.topDocs().scoreDocs) {
 				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
 				inodes.add(doc.getFieldable("fullPath").stringValue());
 			}

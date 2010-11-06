@@ -35,6 +35,7 @@ import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -62,9 +63,8 @@ public class Search extends CommandInterface {
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
 		params.setName(request.getArgument());
-		params.setLimit(Integer.parseInt(request.getProperties().getProperty("limit","5")));
 
-		return search(request, params);
+		return search(request, params, Integer.parseInt(request.getProperties().getProperty("limit","5")));
 	}
 
 	public CommandResponse doDUPE(CommandRequest request) throws ImproperUsageException {
@@ -76,12 +76,11 @@ public class Search extends CommandInterface {
 
 		params.setName(request.getArgument());
 		params.setExact(true);
-		params.setLimit(Integer.parseInt(request.getProperties().getProperty("limit","5")));
 
-		return search(request, params);
+		return search(request, params, Integer.parseInt(request.getProperties().getProperty("limit","5")));
 	}
 
-	private CommandResponse search(CommandRequest request, AdvancedSearchParams params) {
+	private CommandResponse search(CommandRequest request, AdvancedSearchParams params, int limit) {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -108,32 +107,40 @@ public class Search extends CommandInterface {
 			return response;
 		}
 
-		int results = 0;
-		env.add("limit", params.getLimit());
-		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
-
+		LinkedList<String> responses = new LinkedList<String>();
+		
 		InodeHandle inode;
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
+			if (responses.size() == limit)
+				break;
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
 				if (!inode.isHidden(user)) {
-					results++;
 					env.add("name", inode.getName());
 					env.add("path", inode.getPath());
 					env.add("owner", inode.getUsername());
 					env.add("group", inode.getGroup());
 					env.add("size", Bytes.formatBytes(inode.getSize()));
-					response.addComment(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
+					responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
 				}
 			} catch (FileNotFoundException e) {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}
 		}
-		if (results == 0)
-			return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"search.empty", env, user.getName()));
-		else
-			env.add("results", results);
+
+		if (responses.isEmpty()) {
+			response.addComment(session.jprintf(_bundle,_keyPrefix+"search.empty", env, user.getName()));
+			return response;
+		}
+
+		env.add("limit", limit);
+		env.add("results", responses.size());
+		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
+
+		for (String line : responses) {
+			response.addComment(line);
+		}
 
 		return response;
 	}

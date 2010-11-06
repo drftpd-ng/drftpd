@@ -1,10 +1,10 @@
 # Iterating over all the returned hits of the search is very expensive.
 # This parameter limits the number of hits a search can return.
 # The bigger this number is the more cpu/io/memory Lucene will use.
-# Default (50) seems reasonable enough, change it on your own risk.
+# Default (100) seems reasonable enough, change it on your own risk.
 #
 # More info: http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
-max_hits=50
+max_hits=100
 
 # *ADVANCED SETTING* The larger this setting is the least Lucene will try to flush your index
 # due to the amount of buffered documents. Flushing is time consuming due to IO operations.

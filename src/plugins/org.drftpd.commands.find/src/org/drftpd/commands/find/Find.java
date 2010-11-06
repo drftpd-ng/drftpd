@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -586,8 +587,6 @@ public class Find extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		params.setLimit(limit);
-
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -614,17 +613,16 @@ public class Find extends CommandInterface {
 			return response;
 		}
 
-		int results = 0;
-		env.add("limit", params.getLimit());
-		response.addComment(session.jprintf(_bundle,_keyPrefix+"find.header", env, user.getName()));
-
+		LinkedList<String> responses = new LinkedList<String>();
+		
 		InodeHandle inode;
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
+			if (responses.size() == limit)
+				break;
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
 				if (!inode.isHidden(user)) {
-					results++;
 					env.add("name", inode.getName());
 					env.add("path", inode.getPath());
 					env.add("owner", inode.getUsername());
@@ -634,7 +632,7 @@ public class Find extends CommandInterface {
 						if ((inode.isFile() && findAction.execInFiles()) ||
 								(inode.isDirectory() && findAction.execInDirs())) {
 							logger.debug("Action "+ findAction.getClass() + " executing on " + inode.getPath());
-							response.addComment(findAction.exec(request, inode));
+							responses.add(findAction.exec(request, inode));
 						}
 					}
 				}
@@ -642,10 +640,19 @@ public class Find extends CommandInterface {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}
 		}
-		if (results == 0)
-			return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"find.empty", env, user.getName()));
-		else
-			env.add("results", results);
+
+		if (responses.isEmpty()) {
+			response.addComment(session.jprintf(_bundle,_keyPrefix+"find.empty", env, user.getName()));
+			return response;
+		}
+
+		env.add("limit", limit);
+		env.add("results", responses.size());
+		response.addComment(session.jprintf(_bundle,_keyPrefix+"find.header", env, user.getName()));
+
+		for (String line : responses) {
+			response.addComment(line);
+		}
 
 		return response;
 	}
