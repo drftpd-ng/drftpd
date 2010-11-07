@@ -83,9 +83,10 @@ public class Find extends CommandInterface {
 	}
 	
 	private static interface Action {
-		public String exec(CommandRequest request, InodeHandle inode);		
+		public String exec(CommandRequest request, InodeHandle inode);
 		public boolean execInDirs();
 		public boolean execInFiles();
+		public boolean failed();
 	}
 	
 	private static class ActionDeleteFromSlaves implements Action {
@@ -116,11 +117,17 @@ public class Find extends CommandInterface {
 
 		public boolean execInFiles() {
 			return true;
-		}		
+		}
+
+		public boolean failed() {
+			return false;
+		}
 	}
 
 
 	private static class ActionDelete implements Action {
+		private boolean _failed;
+
 		private String doDELE(CommandRequest request, InodeHandle inode) {
 			String reply = "";
 			try {
@@ -131,6 +138,7 @@ public class Find extends CommandInterface {
 				try {
 					file.delete(user);
 				} catch (PermissionDeniedException e) {
+					_failed = true;
 					return "Access denied for " + file.getPath();
 				}
 
@@ -139,9 +147,11 @@ public class Find extends CommandInterface {
 				User uploader = GlobalContext.getGlobalContext().getUserManager().getUserByName(file.getUsername());
 				uploader.updateCredits((long) -(file.getSize() * uploader.getKeyedMap().getObjectFloat(UserManagement.RATIO)));				
 			} catch (UserFileException e) {
-				reply += "Error removing credits: " + e.getMessage();
+				reply += " - Error removing credits: " + e.getMessage();
+				_failed = true;
 			} catch (NoSuchUserException e) {
-				reply += "Error removing credits: " + e.getMessage();
+				reply += " - Error removing credits: " + e.getMessage();
+				_failed = true;
 			} catch (FileNotFoundException e) {
 				logger.error("The file was there and now it's gone, how?", e);
 			}		
@@ -155,7 +165,11 @@ public class Find extends CommandInterface {
 
 		public boolean execInFiles() {
 			return true;
-		}	
+		}
+
+		public boolean failed() {
+			return _failed;
+		}
 
 		public String exec(CommandRequest request, InodeHandle file) {
 			return doDELE(request, file);
@@ -173,6 +187,10 @@ public class Find extends CommandInterface {
 
 		public boolean execInFiles() {
 			return true;
+		}
+
+		public boolean failed() {
+			return false;
 		}
 	}
 
@@ -229,6 +247,10 @@ public class Find extends CommandInterface {
 		public boolean execInFiles() {
 			return true;
 		}
+
+		public boolean failed() {
+			return false;
+		}
 	}
 
 	private static class ActionSendToSlaves implements Action {
@@ -268,9 +290,13 @@ public class Find extends CommandInterface {
 			return true;
 		}
 
+		public boolean failed() {
+			return false;
+		}
 	}
 
 	private static class ActionWipe implements Action {
+		private boolean _failed;
 
 		public String exec(CommandRequest request, InodeHandle inode) {
 			try {
@@ -278,6 +304,7 @@ public class Find extends CommandInterface {
 			} catch (FileNotFoundException e) {
 				logger.error("The file was there and now it's gone, how?", e);
 			} catch (PermissionDeniedException e) {
+				_failed = true;
 				return "You do not have the proper permissions to wipe " + inode.getPath();
 			}
 			return "Wiped " + inode.getPath();
@@ -290,9 +317,14 @@ public class Find extends CommandInterface {
 		public boolean execInFiles() {
 			return true;
 		}
+
+		public boolean failed() {
+			return _failed;
+		}
 	}
 
 	private static class ActionNuke implements Action {
+		private boolean _failed;
 		private int _multiplier;
 		private String _reason;
 
@@ -309,6 +341,7 @@ public class Find extends CommandInterface {
 					NukeUtils.getPathWithoutNukePrefix(dir.getPath()));
 			NukeData nd = NukeBeans.getNukeBeans().findName(dirName);
 			if (nd != null) {
+				_failed = true;
 				return "Access denied - " +
 					nd.getPath() + " already nuked for '"+ nd.getReason() + "'";
 			}
@@ -317,6 +350,7 @@ public class Find extends CommandInterface {
 			try {
 				nd = NukeUtils.nuke(dir, _multiplier, _reason, user);
 			} catch (NukeException e) {
+				_failed = true;
 				return "Nuke failed for " + inode.getPath() + ": " + e.getMessage();
 			}
 			return "Successfully nuked " + nd.getPath();
@@ -329,9 +363,14 @@ public class Find extends CommandInterface {
 		public boolean execInFiles() {
 			return false;
 		}
+
+		public boolean failed() {
+			return _failed;
+		}
 	}
 
 	private static class ActionUnnuke implements Action {
+		private boolean _failed;
 		private String _reason;
 
 		public ActionUnnuke(String reason) {
@@ -344,6 +383,7 @@ public class Find extends CommandInterface {
 			try {
 				nd = NukeUtils.unnuke((DirectoryHandle)inode, _reason);
 			} catch (NukeException e) {
+				_failed = true;
 				return "Unnuke failed for " + inode.getPath() + ": " + e.getMessage();
 			}
 			return "Successfully unnuked " + nd.getPath();
@@ -355,6 +395,10 @@ public class Find extends CommandInterface {
 
 		public boolean execInFiles() {
 			return false;
+		}
+
+		public boolean failed() {
+			return _failed;
 		}
 	}
 
@@ -387,6 +431,8 @@ public class Find extends CommandInterface {
 		int limit = Integer.parseInt(request.getProperties().getProperty("limit.default","5"));
 		int maxLimit = Integer.parseInt(request.getProperties().getProperty("limit.max","20"));
 
+		boolean quiet = false;
+
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 
 		while(st.hasMoreTokens()) {
@@ -398,6 +444,8 @@ public class Find extends CommandInterface {
 				params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 			} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
 				params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+			} else if (option.equalsIgnoreCase("-quiet")) {
+				quiet = true;
 			} else if (option.equalsIgnoreCase("-user")) {
 				params.setOwner(st.nextToken());
 			} else if (option.equalsIgnoreCase("-group")) {
@@ -614,10 +662,11 @@ public class Find extends CommandInterface {
 		}
 
 		LinkedList<String> responses = new LinkedList<String>();
+		int results = 0;
 		
 		InodeHandle inode;
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
-			if (responses.size() == limit)
+			if (results == limit)
 				break;
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
@@ -632,22 +681,25 @@ public class Find extends CommandInterface {
 						if ((inode.isFile() && findAction.execInFiles()) ||
 								(inode.isDirectory() && findAction.execInDirs())) {
 							logger.debug("Action "+ findAction.getClass() + " executing on " + inode.getPath());
-							responses.add(findAction.exec(request, inode));
+							String text = findAction.exec(request, inode);
+							if (!quiet || findAction.failed())
+								responses.add(text);
 						}
 					}
+					results++;
 				}
 			} catch (FileNotFoundException e) {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}
 		}
 
-		if (responses.isEmpty()) {
+		if (results == 0) {
 			response.addComment(session.jprintf(_bundle,_keyPrefix+"find.empty", env, user.getName()));
 			return response;
 		}
 
 		env.add("limit", limit);
-		env.add("results", responses.size());
+		env.add("results", results);
 		response.addComment(session.jprintf(_bundle,_keyPrefix+"find.header", env, user.getName()));
 
 		for (String line : responses) {
