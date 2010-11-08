@@ -268,6 +268,7 @@ public class NukeUtils {
 		nd.setMultiplier(multiplier);
 		nd.setAmount(nukedAmount);
 		nd.setSize(nukeDirSize);
+		nd.setTime(System.currentTimeMillis());
 
         // adding to the nukelog.
         NukeBeans.getNukeBeans().add(nd);
@@ -362,6 +363,7 @@ public class NukeUtils {
         }
 
 		nd.setReason(reason);
+		nd.setTime(System.currentTimeMillis());
 
 		return nd;
 	}
