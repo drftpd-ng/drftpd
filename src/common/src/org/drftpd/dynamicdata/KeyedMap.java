@@ -16,7 +16,6 @@
  */
 package org.drftpd.dynamicdata;
 
-import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -59,7 +58,7 @@ public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> {
 	}
 
 	public Map<K, V> getAllObjects() {
-		return Collections.unmodifiableMap(this);
+		return new KeyedMap<K, V>(this);
 	}
 
 	@SuppressWarnings("unchecked")
