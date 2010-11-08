@@ -141,6 +141,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Term TERM_OWNER = new Term("owner", "");
 	private static final Term TERM_GROUP = new Term("group", "");
 	private static final Term TERM_SLAVES = new Term("slaves", "");
+	private static final SimpleSearchFieldSelector SIMPLE_FIELD_SELECTOR = new SimpleSearchFieldSelector();
+	private static final AdvancedSearchFieldSelector ADVANCED_FIELD_SELECTOR = new AdvancedSearchFieldSelector();
 
 	private Sort SORT = new Sort();
 
@@ -423,8 +425,9 @@ public class LuceneEngine implements IndexEngineInterface {
 						this.docBase = docBase;
 					}
 				});
+
 				for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i+1)) {
-					Document doc = iSearcher.doc(i, new SimpleSearchFieldSelector());
+					Document doc = iSearcher.doc(i, SIMPLE_FIELD_SELECTOR);
 
 					String oldPath = doc.getFieldable("fullPath").stringValue();
 					String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
@@ -641,7 +644,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			logger.debug("Query: " + query);
 
 			for (ScoreDoc scoreDoc : topFieldCollector.topDocs().scoreDocs) {
-				Document doc = iSearcher.doc(scoreDoc.doc, new AdvancedSearchFieldSelector());
+				Document doc = iSearcher.doc(scoreDoc.doc, ADVANCED_FIELD_SELECTOR);
 				inodes.put(doc.getFieldable("fullPath").stringValue(), doc.getFieldable("type").stringValue());
 			}
 
@@ -715,7 +718,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			logger.debug("Query: " + query);
 
 			for (ScoreDoc scoreDoc : topScoreDocsCollector.topDocs().scoreDocs) {
-				Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+				Document doc = iSearcher.doc(scoreDoc.doc, SIMPLE_FIELD_SELECTOR);
 				inodes.add(doc.getFieldable("fullPath").stringValue());
 			}
 
