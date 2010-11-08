@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
+import java.util.BitSet;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,11 +47,13 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
@@ -92,9 +95,9 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
 	protected static final String INDEX_DIR = "index";
-	
+
 	private static final Document INDEX_DOCUMENT = new Document();
-	
+
 	private static final Field FIELD_NAME = new Field("name", "", Field.Store.NO, Field.Index.ANALYZED);
 	private static final Field FIELD_FULL_NAME = new Field("fullName", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_FULL_NAME_REVERSE = new Field("fullNameReverse", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
@@ -106,14 +109,14 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.NO, Field.Index.ANALYZED);
 	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.NO, Boolean.TRUE);
 	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.NO, Boolean.TRUE);
-	
+
 	private static final Field[] FIELDS = new Field[] {
 		FIELD_NAME, FIELD_FULL_NAME, FIELD_FULL_NAME_REVERSE, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
 	};
 	private static final NumericField[] NUMERICFIELDS = new NumericField[] {
 		FIELD_LASTMODIFIED, FIELD_SIZE
 	};
-	
+
 	static {
 		for (Field field : FIELDS) {
 			INDEX_DOCUMENT.add(field);
@@ -128,7 +131,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private static final TermQuery QUERY_DIRECTORY = new TermQuery(new Term("type", "d"));
 	private static final TermQuery QUERY_FILE = new TermQuery(new Term("type", "f"));
-	
+
 	private static final Term TERM_NAME = new Term("name", "");
 	private static final Term TERM_FULL_NAME = new Term("fullName", "");
 	private static final Term TERM_FULL_NAME_REVERSE = new Term("fullNameReverse", "");
@@ -152,7 +155,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private IndexingVirtualFileSystemListener _listener;
 	private boolean _rebuilding;
-	
+
 	/**
 	 * Creates all the needed resources for the Index to work.
 	 * <ul>
@@ -169,13 +172,13 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		createThreads();
 		reload();
-		
+
 		openStreams();
 
 		Runtime.getRuntime().addShutdownHook(new Thread(new IndexShutdownHookRunnable(), "IndexSaverThread"));
 		_maintenanceThread.start();
 		_backupThread.start();
-		
+
 		_listener = new IndexingVirtualFileSystemListener();
 		_listener.init();
 	}
@@ -184,7 +187,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		_maintenanceThread = new LuceneMaintenanceThread();
 		_backupThread = new LuceneBackupThread();
 	}
-	
+
 	/**
 	 * Opens all the needed streams that the engine needs to work properly.
 	 * 
@@ -223,7 +226,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		// in minutes, convert'em!
 		int optimizeInterval = Integer.parseInt(cfg.getProperty("optimize_interval", "15")) * 60 * 1000;
 		_maintenanceThread.setOptimizationInterval(optimizeInterval);
-		
+
 		// in minutes, convert it!
 		int interval = Integer.parseInt(cfg.getProperty("backup_interval", "120")) * 60 * 1000;
 		int maxNumber = Integer.parseInt(cfg.getProperty("max_backups", "2"));
@@ -299,24 +302,24 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		return INDEX_DOCUMENT;
 	}
-	
+
 	private Term makeFullPathTermFromInode(InodeHandle inode) {
 		if (inode.isDirectory()) {
 			return TERM_FULL.createTerm(inode.getPath() + VirtualFileSystem.separator);
 		}
-		
+
 		return TERM_FULL.createTerm(inode.getPath());
 	}
 
 	private Term makeFullPathTermFromString(String path) {
 		return TERM_FULL.createTerm(path);
 	}
-	
+
 	private Term makeParentPathTermFromInode(InodeHandle inode) {
 		if (inode.isDirectory()) {
 			return TERM_PARENT.createTerm(inode.getPath() + VirtualFileSystem.separator);
 		}
-		
+
 		return TERM_PARENT.createTerm(inode.getPath());
 	}
 
@@ -336,7 +339,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private TermQuery makeGroupTermQueryFromString(String group) {
 		return new TermQuery(TERM_GROUP.createTerm(group));
 	}
-	
+
 	private void setSortField(boolean order) {
 		SORT.setSort(new SortField("fullPath", SortField.STRING, order));
 	}
@@ -387,7 +390,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		}
 	}
-	
+
 	/* {@inheritDoc} */
 	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException {
 		IndexSearcher iSearcher = null;
@@ -399,11 +402,29 @@ public class LuceneEngine implements IndexEngineInterface {
 				iReader = _iWriter.getReader();
 				iSearcher = new IndexSearcher(iReader);
 
-				TopScoreDocCollector topScoreDocsCollector = TopScoreDocCollector.create(Integer.MAX_VALUE, false);
-				iSearcher.search(prefixQuery, topScoreDocsCollector);
+				final BitSet bits = new BitSet(iReader.maxDoc());
+				iSearcher.search(prefixQuery, new Collector() {
+					private int docBase;
 
-				for (ScoreDoc scoreDoc : topScoreDocsCollector.topDocs().scoreDocs) {
-					Document doc = iSearcher.doc(scoreDoc.doc, new SimpleSearchFieldSelector());
+					// ignore scorer
+					public void setScorer(Scorer scorer) {
+					}
+
+					// accept docs out of order (for a BitSet it doesn't matter)
+					public boolean acceptsDocsOutOfOrder() {
+						return true;
+					}
+
+					public void collect(int doc) {
+						bits.set(doc + docBase);
+					}
+
+					public void setNextReader(IndexReader reader, int docBase) {
+						this.docBase = docBase;
+					}
+				});
+				for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i+1)) {
+					Document doc = iSearcher.doc(i, new SimpleSearchFieldSelector());
 
 					String oldPath = doc.getFieldable("fullPath").stringValue();
 					String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
@@ -522,7 +543,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 *            Search options.
 	 */
 	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params)
-			throws IndexException, IllegalArgumentException {
+	throws IndexException, IllegalArgumentException {
 		IndexSearcher iSearcher = null;
 		IndexReader iReader = null;
 		try {
@@ -669,7 +690,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				PrefixQuery parentQuery = new PrefixQuery(makeParentPathTermFromInode(startNode));
 				query.add(parentQuery, Occur.MUST);
 			}
-			
+
 			Query nameQuery = analyze("name", TERM_NAME, text);
 			query.add(nameQuery, Occur.MUST);
 
@@ -808,11 +829,11 @@ public class LuceneEngine implements IndexEngineInterface {
 	protected Directory getStorage() {
 		return _storage;
 	}
-	
+
 	protected IndexWriter getWriter() {
 		return _iWriter;
 	}
-	
+
 	/**
 	 * Hook ran by the JVM before shutting down itself completely. This hook
 	 * saves the index state to keep it usable the next time you start DrFTPd.
