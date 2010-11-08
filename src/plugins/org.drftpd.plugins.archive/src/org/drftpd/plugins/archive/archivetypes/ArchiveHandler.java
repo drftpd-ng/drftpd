@@ -76,7 +76,7 @@ public class ArchiveHandler extends Thread {
 		for (int i=0; i<_archiveType.getRepeat(); i++) {
 			if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
 				//don't want to double archive stuff...so we to check and make sure
-				break;
+				return;
 			}
 			try {
 				synchronized (_archiveType._parent) {

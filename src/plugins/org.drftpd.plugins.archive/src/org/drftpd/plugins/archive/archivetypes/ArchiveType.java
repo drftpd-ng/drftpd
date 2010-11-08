@@ -159,7 +159,6 @@ public abstract class ArchiveType {
 	 */
 	public final DirectoryHandle getOldestNonArchivedDir() {
 		ArrayList<DirectoryHandle> oldDirs = new ArrayList<DirectoryHandle>();
-		boolean stillarchiving = false;
 		
 		try {
 			for (Iterator<DirectoryHandle> iter = getSection().getCurrentDirectory().getDirectoriesUnchecked().iterator(); iter.hasNext();) {
@@ -168,12 +167,12 @@ public abstract class ArchiveType {
 					_parent.checkPathForArchiveStatus(lrf.getPath());
 				} catch (DuplicateArchiveException e1) {
 					/*
-					 *	we are already archiving something for this type..
+					 *	we are already archiving something for this path..
 					 *  ..lets wait until thats done before we continue 
 					 */
 					//continue;
-					stillarchiving = true;
-					break;
+					logger.debug(getClass().toString() + " - Already archiving something from this path.  Lets wait.");
+					return null;
 				}
 
 				if (checkFailedDir(lrf.getPath())) {
@@ -240,9 +239,7 @@ public abstract class ArchiveType {
 			logger.debug(getClass().toString() + " - Returning the oldest directory " + oldestDir);
 			return oldestDir;
 		}
-		if (!stillarchiving) {
-			logger.debug(getClass().toString() + " - All directories are archived");
-		}
+		logger.debug(getClass().toString() + " - All directories are archived");
 		return null;
 	}
 
