@@ -95,14 +95,11 @@ public class ArchiveHandler extends Thread {
 					}
 				}
 				if (!_archiveType.moveReleaseOnly()) {
-					if (_archiveType.getRSlaves() == null) {
-						Set<RemoteSlave> destSlaves = _archiveType.findDestinationSlaves();
-		
-						if (destSlaves == null) {
-							_archiveType.setDirectory(null);
-							return; // no available slaves to use
-						}
-						_archiveType.setRSlaves(Collections.unmodifiableSet(destSlaves));
+					Set<RemoteSlave> destSlaves = _archiveType.findDestinationSlaves();
+	
+					if (destSlaves == null) {
+						_archiveType.setDirectory(null);
+						return; // no available slaves to use
 					}
 					
 					_jobs = _archiveType.send();

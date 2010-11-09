@@ -20,6 +20,7 @@ package org.drftpd.plugins.archive.archivetypes;
 import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
@@ -53,8 +54,18 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	 *  This finds all the destination slaves listed by free space.
 	 */
 	@Override
-	public HashSet<RemoteSlave> findDestinationSlaves() {
-		return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,new HashSet<RemoteSlave>(), false));
+	public Set<RemoteSlave> findDestinationSlaves() {
+		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+		for (RemoteSlave freeslave: GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,new HashSet<RemoteSlave>(), false)) {
+			for (RemoteSlave confslave: _slaveList) {
+				if (freeslave.getName().equals(confslave.getName())) {
+					destSlaves.add(confslave);
+					break;
+				}
+			}
+		}
+		
+		return destSlaves;			
 	}
 
 	/*
@@ -62,7 +73,7 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	 */
 	@Override
     protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-        return isArchivedToXSlaves(lrf, _numOfSlaves);
+        return isArchivedToSpecificSlaves(lrf, _numOfSlaves,findDestinationSlaves());
     }
 
     /*
@@ -70,7 +81,7 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
      */
 	@Override
     public String toString() {
-    	return "MoveReleaseToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+    	return "MoveReleaseToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }	
 
 }

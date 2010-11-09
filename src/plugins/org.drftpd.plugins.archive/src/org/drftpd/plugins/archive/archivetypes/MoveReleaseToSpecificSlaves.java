@@ -18,10 +18,10 @@
 package org.drftpd.plugins.archive.archivetypes;
 
 import java.io.FileNotFoundException;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
@@ -51,11 +51,11 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 	}
 	
 	/*
-	 *  This finds all the destination slaves listed in the arguments 
+	 *  Return an unmodifiableSet of Slaves loaded from conf
 	 */
 	@Override
-	public HashSet<RemoteSlave> findDestinationSlaves() {
-	    return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
+	public Set<RemoteSlave> findDestinationSlaves() {
+		return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
 	}
 
 	/*
@@ -63,7 +63,7 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
 	 */
 	@Override
     protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-        return isArchivedToXSlaves(lrf, _numOfSlaves);
+        return isArchivedToSpecificSlaves(lrf, _numOfSlaves,_slaveList);
     }
 
     /*
@@ -71,7 +71,7 @@ public class MoveReleaseToSpecificSlaves extends ArchiveType {
      */
 	@Override
     public String toString() {
-        return "MoveReleaseToSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+        return "MoveReleaseToSpecificSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }	
 
 }

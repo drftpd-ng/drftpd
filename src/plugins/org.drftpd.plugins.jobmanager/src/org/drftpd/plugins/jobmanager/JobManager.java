@@ -158,8 +158,7 @@ public class JobManager implements PluginInterface {
 
 		Collection<RemoteSlave> availableSlaves;
 		try {
-			availableSlaves = getGlobalContext().getSlaveManager()
-					.getAvailableSlaves();
+			availableSlaves = getGlobalContext().getSlaveManager().getAvailableSlaves();
 		} catch (NoAvailableSlaveException e1) {
 			return; // can't transfer with no slaves
 		}
@@ -168,6 +167,12 @@ public class JobManager implements PluginInterface {
 		Set<Job> skipJobs = new HashSet<Job>();
 
 		synchronized (this) {
+			/*
+			 * this loops through and makes sure that the file is on every available
+			 * slave.  However this isn't the case for all archive types, so we
+			 * will do a check later on to see if the job is fully archived
+			 * with the .conf specificiations.
+			 */
 			while (!busySlavesDown.containsAll(availableSlaves)) {
 				job = getNextJob(busySlavesDown, skipJobs);
 				if (job == null) {
@@ -182,10 +187,21 @@ public class JobManager implements PluginInterface {
 					continue;
 				}
 
+				/*
+				 * Lets check and see if the file is already archived with the right number of slaves
+				 * And if it is, lets not re-archive the thing if not needed.
+				 * 
+				 * Cleanup is used to remove other files from old - not needed slaves
+				 * Removejob is to remove it from this queue, and return the process 
+				 */
+				if (job.checkIfArchived()) {
+					job.cleanup();
+					removeJobFromQueue(job);
+					return;
+				}
+				
 				try {
-					sourceSlave = getGlobalContext().getSlaveSelectionManager()
-							.getASlaveForJobDownload(job.getFile(),job.getSlaveObjects(
-									job.getSlavesToTransferTo()));
+					sourceSlave = getGlobalContext().getSlaveSelectionManager().getASlaveForJobDownload(job.getFile(),job.getSlaveObjects(job.getSlavesToTransferTo()));
 				} catch (NoAvailableSlaveException e) {
 					try {
 						busySlavesDown.addAll(job.getFile().getSlaves());
@@ -210,9 +226,7 @@ public class JobManager implements PluginInterface {
 				}
 				try {
 					availableSlaves.removeAll(job.getFile().getSlaves());
-					destSlave = getGlobalContext().getSlaveSelectionManager()
-							.getASlaveForJobUpload(job.getFile(),
-									destinationSlaveObjects, sourceSlave);
+					destSlave = getGlobalContext().getSlaveSelectionManager().getASlaveForJobUpload(job.getFile(),destinationSlaveObjects, sourceSlave);
 					
 					break; // we have a source slave and a destination
 					// slave,

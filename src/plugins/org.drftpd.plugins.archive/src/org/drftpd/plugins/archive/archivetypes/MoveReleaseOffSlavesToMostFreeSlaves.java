@@ -91,11 +91,22 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	}	
 	
 	/*
-	 *  This finds all the destination slaves listed by free space.
+	 *  This finds all the destination slaves listed by free space
+	 *  excluding the slaves we do NOT want to send too
 	 */
 	@Override
-	public HashSet<RemoteSlave> findDestinationSlaves() {
-		return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,_offOfSlaves, false));
+	public Set<RemoteSlave> findDestinationSlaves() {
+		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+		for (RemoteSlave freeslave: GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,_offOfSlaves, false)) {
+			for (RemoteSlave confslave: _slaveList) {
+				if (freeslave.getName().equals(confslave.getName())) {
+					destSlaves.add(confslave);
+					break;
+				}
+			}
+		}
+		
+		return destSlaves;		
 	}
 
 	/*
@@ -133,7 +144,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 
         }
 
-        return true;    	
+    	return isArchivedToSpecificSlaves(lrf, _numOfSlaves,findDestinationSlaves());  	
     	
     }
 
@@ -142,7 +153,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
      */
 	@Override
     public String toString() {
-    	return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+    	return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }	
 
 }

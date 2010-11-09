@@ -19,11 +19,11 @@ package org.drftpd.plugins.archive.archivetypes;
 
 import java.io.FileNotFoundException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
-import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
@@ -45,21 +45,24 @@ public class ConstantMirroring extends ArchiveType {
         super(archive, section, p, confnum);
         _slaveDeadAfter = 1000 * 60 * Long.parseLong(p.getProperty(confnum + ".slavedeadafter", "0"));
         int size = 0;
-        if (_slaveList.isEmpty()) {
-			_slaveList = null;
-			size = findDestinationSlaves().size();
-		} else {
-			size = _slaveList.size();
-		}
+        
+		if (_slaveList.isEmpty()) {
+		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToSpecificSlave for conf number " + confnum);
+		}        
+		size = _slaveList.size();
         
         if (_numOfSlaves > size && _numOfSlaves < 1) {
 			throw new IllegalArgumentException("numOfSlaves has to be 1 <= numOfSlaves <= the size of the destination slave for conf number " + confnum);
 		}
     }
 
+	/*
+	 *  We do NOT want to return any other destination slaves than what is listed
+	 *  inside the .conf file 
+	 */
     @Override
-    public HashSet<RemoteSlave> findDestinationSlaves() {
-        return new HashSet<RemoteSlave>(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
+    public Set<RemoteSlave> findDestinationSlaves() {
+    	return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
     }
 
     @Override
@@ -88,7 +91,7 @@ public class ConstantMirroring extends ArchiveType {
     			}
     		}
 
-    		if (!getRSlaves().containsAll(slaves)) {
+    		if (!findDestinationSlaves().containsAll(slaves)) {
     			return false;
     		}
 
@@ -107,6 +110,6 @@ public class ConstantMirroring extends ArchiveType {
     
     @Override
     public String toString() {
-    	return "ConstantMirroring=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(getRSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+    	return "ConstantMirroring=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
     }
 }

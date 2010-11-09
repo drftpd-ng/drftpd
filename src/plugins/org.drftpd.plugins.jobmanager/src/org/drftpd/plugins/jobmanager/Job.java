@@ -480,4 +480,26 @@ public class Job {
 	public Collection<? extends RemoteSlave> getDestinationSlaveObjects() throws ObjectNotFoundException {
 		return getSlaveObjects(getDestinationSlaves());
 	}
+	
+	/*
+	 * This will check to see if file is already archived to the correct slaves
+	 * it will loop through all destination slaves, and make sure that the file is
+	 * on at least "_trasnferNum" of them.
+	 */
+	public boolean checkIfArchived() {
+		int numofslaves = _transferNum;
+        try {
+        	for (String destslave : _destSlaves) {
+				if (destslave.equals(getFile().getSlaveNames())) {
+					numofslaves--;
+				}
+			}
+        } catch (FileNotFoundException e) {
+        	// couldn't find find...not good...but assume all is well.
+        }	
+		
+        if (numofslaves > 0)
+        	return false;
+		return true;
+	}
 }

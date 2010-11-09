@@ -152,7 +152,7 @@ public class Archive implements PluginInterface {
 			}
 		};
 
-		GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, 0, _cycleTime);
+		GlobalContext.getGlobalContext().getTimer().schedule(_runHandler, _cycleTime, _cycleTime);
 	}
 
 	/*

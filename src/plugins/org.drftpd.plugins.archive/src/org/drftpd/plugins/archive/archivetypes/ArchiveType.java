@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -118,8 +117,7 @@ public abstract class ArchiveType {
 	}
 
 	/**
-	 * Used to determine a list of slaves dynamically during runtime, only gets
-	 * called if _slaveList == null
+	 * Used to determine a list of slaves specified in from the conf file
 	 * 
 	 * @return
 	 */
@@ -244,13 +242,6 @@ public abstract class ArchiveType {
 	}
 
 	/*
-	 * Returns unmodifiable Set<RemoteSlave>.
-	 */
-	public final Set<RemoteSlave> getRSlaves() {
-		return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
-	}
-	
-	/*
 	 * Gets the jobmananger, hopefully its loaded.
 	 */
 	public JobManager getJobManager() {
@@ -287,7 +278,7 @@ public abstract class ArchiveType {
 		for (Iterator<FileHandle> iter = lrf.getFilesUnchecked().iterator(); iter.hasNext();) {
 			FileHandle file = iter.next();
 			logger.info("Adding " + file.getPath() + " to the job queue");
-			Job job = new Job(file, _priority, _numOfSlaves, getRSlaves());
+			Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
 			jobQueue.add(job);
 		}
 
@@ -295,9 +286,9 @@ public abstract class ArchiveType {
 	}
 
 	/*
-	 * Checks to see if files are achived to the all the slaves configured
+	 * Checks to see if files are archived to the all the slaves configured
 	 */
-	protected static final boolean isArchivedToXSlaves(DirectoryHandle lrf,int x) throws OfflineSlaveException {
+	protected static final boolean isArchivedToAllSlaves(DirectoryHandle lrf,int x) throws OfflineSlaveException {
 		HashSet<RemoteSlave> slaveSet = null;
 		Set<DirectoryHandle> directories = null;
 		Set<FileHandle> files = null;
@@ -310,7 +301,7 @@ public abstract class ArchiveType {
 		}
 
 		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
-			if (!isArchivedToXSlaves(iter.next(), x)) {
+			if (!isArchivedToAllSlaves(iter.next(), x)) {
 				return false;
 			}
 		}
@@ -351,6 +342,59 @@ public abstract class ArchiveType {
 		return (slaveSet.size() == x);
 	}
 
+	/*
+	 * Checks to see if the files are archived to the specific slaves specified
+	 */
+	protected static final boolean isArchivedToSpecificSlaves(DirectoryHandle lrf,int x,Set<RemoteSlave> rslaves) throws OfflineSlaveException {
+		Set<DirectoryHandle> directories = null;
+		Set<FileHandle> files = null;
+		try {
+			directories = lrf.getDirectoriesUnchecked();
+			files = lrf.getFilesUnchecked();
+		} catch (FileNotFoundException e1) {
+			// directory doesn't exist, no files to archive
+			return true;
+		}
+
+		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
+			if (!isArchivedToSpecificSlaves(iter.next(), x,rslaves)) {
+				return false;
+			}
+		}
+		
+		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
+			FileHandle file = iter.next();
+			Collection<RemoteSlave> availableSlaves;
+			try {
+				if (!file.isAvailable()) {
+					throw new OfflineSlaveException(file.getPath() + " is offline");
+				}
+				availableSlaves = file.getSlaves();
+			} catch (FileNotFoundException e) {
+				// can't archive a directory with files that have been moved,
+				// we'll come back later
+				return true;
+			}
+
+			
+			int checknumslaves = 0;
+			for (RemoteSlave fileslaves: availableSlaves) {
+				for (RemoteSlave listslaves: rslaves) {
+					if (listslaves.getName().equals(fileslaves.getName())) {
+						checknumslaves++;
+					}
+				}
+			}
+			if (checknumslaves < x) {
+				return false;
+			}
+			
+		}
+		return true;
+	}
+	
+	
+	
 	/*
 	 * Checks to see if directory is currently being archived.
 	 */
@@ -487,7 +531,7 @@ public abstract class ArchiveType {
 	}
 
 	/*
-	 * Sets the slaves to archive too
+	 * Sets the slaves to archive too (used for archive command only)
 	 */
 	public final void setRSlaves(Set<RemoteSlave> slaveList) {
 		_slaveList = slaveList;
