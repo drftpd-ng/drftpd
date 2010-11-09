@@ -133,7 +133,7 @@ public class Job {
 		 * and no more than what is listed in numofslaves
 		 */
 		for (Iterator<String> iter = toTransferTo.iterator();iter.hasNext();) {
-			if (iter.equals(getFile().getSlaveNames())) {
+			if (iter.next().equals(getFile().getSlaveNames())) {
 				_transferNum--;
 			}
 		}
