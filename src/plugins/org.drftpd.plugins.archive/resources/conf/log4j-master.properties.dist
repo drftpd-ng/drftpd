@@ -1,4 +1,12 @@
-# $id$
-log4j.logger.org.drftpd.plugins.archive.Archive=DEBUG, mirroring
-log4j.logger.org.drftpd.plugins.archive.commands.ArchiveCommandHandler=DEBUG, mirroring
+# $Id$
+log4j.logger.org.drftpd.plugins.archive=DEBUG, archive
+log4j.logger.org.drftpd.plugins.archive.Archive=DEBUG, archive
+log4j.logger.org.drftpd.plugins.archive.archivetypes.ArchiveHandle=DEBUG, archive
+log4j.logger.org.drftpd.plugins.archive.archivetypes.ArchiveType=DEBUG, archive
+log4j.logger.org.drftpd.plugins.archive.commands.ArchiveCommandHandler=DEBUG, archive
 log4j.additivity.org.drftpd.plugins.archive=false
+
+log4j.appender.archive=org.apache.log4j.FileAppender
+log4j.appender.archive.File=logs/archive.log
+log4j.appender.archive.layout=org.apache.log4j.PatternLayout
+log4j.appender.archive.layout.ConversionPattern=%p %d{dd MMM yyyy HH:mm:ss} [%t] %c %x - %m%n
