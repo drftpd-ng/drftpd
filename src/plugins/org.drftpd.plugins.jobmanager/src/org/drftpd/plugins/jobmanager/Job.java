@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 
@@ -126,6 +127,17 @@ public class Job {
 	
 	public Collection<String> getSlavesToTransferTo() throws FileNotFoundException {
 		ArrayList<String> toTransferTo = new ArrayList<String>(_destSlaves);
+		
+		/*
+		 * This put an extra check in to make sure that files are on the correct slaves
+		 * and no more than what is listed in numofslaves
+		 */
+		for (Iterator<String> iter = toTransferTo.iterator();iter.hasNext();) {
+			if (iter.equals(getFile().getSlaveNames())) {
+				_transferNum--;
+			}
+		}
+		
 		toTransferTo.removeAll(getFile().getSlaveNames());
 		return toTransferTo;
 	}
