@@ -93,6 +93,20 @@
 #   X.repeat=5
 #   ----------------------------
 #
+#   This will move all in SECTION1 to only exist on 'slave1 or slave2'
+#	If the file exists on multiple slaves, it will remove it from the other
+#   slaves.
+#   If numofslaves > 1 it will make sure each dir is on X number of slaves
+#   ----------------------------
+#   X.type=MoveReleaseOffMultipleSlavesToSpecificSlaves
+#   X.section=SECTION1
+#   X.archiveAfter=1440
+#   X.numofslaves=1
+#   X.priority=1
+#   X.slavename.1=slave1
+#   X.slavename.2=slave2
+#   ----------------------------
+#
 #
 ################################################################################
 

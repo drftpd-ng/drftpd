@@ -116,8 +116,8 @@ public class ArchiveHandler extends Thread {
 					GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType,starttime,"Failed To Move Directory"));
 					logger.info("Failed to Archiving " + getArchiveType().getDirectory().getPath() + " (Failed To Move Directory)");
 				} else {
-					logger.info("Done archiving " + getArchiveType().getDirectory().getPath());
 					GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType,starttime));
+					logger.info("Done archiving " + getArchiveType().getDirectory().getPath());
 				}
 			} catch (Exception e) {
 				logger.warn("", e);

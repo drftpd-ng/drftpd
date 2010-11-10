@@ -50,6 +50,12 @@
 	<extension plugin-id="org.drftpd.plugins.archive" point-id="ArchiveType" id="MoveReleaseToSpecificSlaves">
 		<parameter id="ClassName" value="org.drftpd.plugins.archive.archivetypes.MoveReleaseToSpecificSlaves"/>
 		<parameter id="TypeName" value="MoveReleaseToSpecificSlaves"/>
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.archive" point-id="ArchiveType" id="MoveReleaseOffMultipleSlavesToSpecificSlaves">
+		<parameter id="ClassName" value="org.drftpd.plugins.archive.archivetypes.MoveReleaseOffMultipleSlavesToSpecificSlaves"/>
+		<parameter id="TypeName" value="MoveReleaseOffMultipleSlavesToSpecificSlaves"/>
 	</extension>	
+	
+	
 	<!-- End Of ArchiveTypes -->
 </plugin>
