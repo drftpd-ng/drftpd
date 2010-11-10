@@ -1,7 +1,5 @@
 # $Id$
 log4j.logger.org.drftpd.plugins.archive=DEBUG, archive
-log4j.logger.org.drftpd.plugins.archive.archivetypes=DEBUG, archive
-log4j.logger.org.drftpd.plugins.archive.commands.ArchiveCommandHandler=DEBUG, archive
 log4j.additivity.org.drftpd.plugins.archive=false
 
 log4j.appender.archive=org.apache.log4j.FileAppender

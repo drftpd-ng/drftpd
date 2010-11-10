@@ -57,8 +57,6 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
 		}
 		
-		_numOfSlaves = _slaveList.size();
-		
 		if (_numOfSlaves < 1) {
 		    throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
 		}
