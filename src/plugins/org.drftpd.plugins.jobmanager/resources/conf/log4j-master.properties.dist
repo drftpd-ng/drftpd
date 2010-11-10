@@ -1,6 +1,5 @@
 # $Id$
 log4j.logger.org.drftpd.plugins.jobmanager=DEBUG, jobmanager
-log4j.logger.org.drftpd.plugins.jobmanager.JobManager=DEBUG, mirroring
 log4j.additivity.org.drftpd.plugins.jobmanager=false
 
 log4j.appender.jobmanager=org.apache.log4j.FileAppender
