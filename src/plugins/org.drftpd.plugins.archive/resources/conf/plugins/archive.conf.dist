@@ -1,7 +1,7 @@
 ################################################################################
 #   This Plugin allows archiving of folders to different slaves and folders 
 #
-#   cycleTime = (Required) - Length between each cycle (Minutes)
+#   cycletime = (Required) - Length between each cycle (Minutes)
 #                1440 = 1 day | 10080 = 1 week | 43200 = 1 month
 #
 #   X.type = (Required) - ArchiveTypeName
@@ -96,4 +96,4 @@
 #
 ################################################################################
 
-cycleTime=30
+cycletime=30
