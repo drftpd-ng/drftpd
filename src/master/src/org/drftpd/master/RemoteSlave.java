@@ -31,6 +31,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -153,12 +154,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	
 	public static final Key<Boolean> SSL = new Key<Boolean>(RemoteSlave.class, "ssl");
 
-	public final static Hashtable<String,RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
+	public static Hashtable<String,RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
 		Hashtable<String, RemoteSlave> map = new Hashtable<String, RemoteSlave>(
 				rslaves.size());
 
-		for (Iterator<RemoteSlave> iter = rslaves.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = iter.next();
+		for (RemoteSlave rslave : rslaves) {
 			map.put(rslave.getName(), rslave);
 		}
 
@@ -250,10 +250,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public final boolean equals(Object obj) {
-		if (!(obj instanceof RemoteSlave))
-			return false;
-		
-		return ((RemoteSlave) obj).getName().equals(getName());
+		return obj instanceof RemoteSlave && ((RemoteSlave) obj).getName().equals(getName());
 	}
 
 	public GlobalContext getGlobalContext() {
@@ -581,7 +578,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 * Renames files/directories and waits for the response
 	 */
 	public void simpleRename(String from, String toDirPath, String toName) {
-		String simplePath = null;
+		String simplePath;
 		if (toDirPath.endsWith("/")) {
 			simplePath = toDirPath + toName;
 		} else {
@@ -679,7 +676,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public String fetchIndex() throws SlaveUnavailableException {
-		String index = null;
+		String index;
 		while (isOnline()) {
 			try {
 				index = _indexPool.poll(1000, TimeUnit.MILLISECONDS);
@@ -878,7 +875,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				} else if (ar.getIndex().equals("TransferStatus")) {
 					TransferStatus ats = ((AsyncResponseTransferStatus) ar)
 					.getTransferStatus();
-					RemoteTransfer rt = null;
+					RemoteTransfer rt;
 
 					try {
 						rt = getTransfer(ats.getTransferIndex());
@@ -940,7 +937,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		setOfflineReal(reason);
 	}
 
-	private final void setOfflineReal(String reason) {
+	private void setOfflineReal(String reason) {
 		// If the slave is still processing the remerge queue clear all
 		// outstanding entries
 		_remergeQueue.clear();
@@ -954,8 +951,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 		_sin = null;
 		_sout = null;
-		_indexWithCommands.clear();
-		_transfers.clear();
+		if (_indexWithCommands != null)
+			_indexWithCommands.clear();
+		if (_transfers != null)
+			_transfers.clear();
 		_maxPath = 0;
 		_status = null;
 
@@ -986,7 +985,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 */
 	private AsyncResponse readAsyncResponse() throws SlaveUnavailableException,
 			SocketTimeoutException {
-		Object obj = null;
+		Object obj;
 		ObjectInputStream in = _sin;
 		if (!isOnline()) {
 			throw new SlaveUnavailableException("Slave is unavailable");
@@ -1174,12 +1173,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(
 						RemoteSlave.class).getPropertyDescriptors();
 				ArrayList<String> transientList = new ArrayList<String>();
-				for (int x = 0; x < transientFields.length; x++) {
-					transientList.add(transientFields[x]);
-				}
-				for (int x = 0; x < pdArr.length; x++) {
-					if (transientList.contains(pdArr[x].getName())) {
-						pdArr[x].setValue("transient", Boolean.TRUE);
+				transientList.addAll(Arrays.asList(transientFields));
+				for (PropertyDescriptor pd : pdArr) {
+					if (transientList.contains(pd.getName())) {
+						pd.setValue("transient", Boolean.TRUE);
 					}
 				}
 			} catch (IntrospectionException e1) {
