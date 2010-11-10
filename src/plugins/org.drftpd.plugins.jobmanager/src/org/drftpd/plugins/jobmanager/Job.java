@@ -320,7 +320,7 @@ public class Job {
 			throw new IllegalStateException(
 					"Job cannot have a destSlaveSet of size 0 with transferNum > 0");
 		}
-		if (_transferNum == 0) {
+		if (_transferNum <= 0) {
 			cleanup();
 		}
 	}
