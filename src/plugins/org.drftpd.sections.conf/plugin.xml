@@ -16,6 +16,23 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
+	
+	<extension-point id="SectionType">
+		<parameter-def id="TypeName" type="string" />
+		<parameter-def id="ClassName" type="string" />
+	</extension-point>
+	
+	<!-- Start Of SectionsTypes -->
+	<extension plugin-id="org.drftpd.sections.conf" point-id="SectionType" id="PlainSectionType">
+		<parameter id="ClassName" value="org.drftpd.sections.conf.PlainSection"/>
+		<parameter id="TypeName" value="Plain"/>
+	</extension>	
+	<extension plugin-id="org.drftpd.sections.conf" point-id="SectionType" id="DatedSectionType">
+		<parameter id="ClassName" value="org.drftpd.sections.conf.DatedSection"/>
+		<parameter id="TypeName" value="Dated"/>
+	</extension>	
+	<!-- End Of SectionsTypes -->
+	
 	<extension plugin-id="master" point-id="SectionManager" id="ConfigurableSectionManager">
 		<parameter id="Class" value="org.drftpd.sections.conf.SectionManager"/>
 	</extension>

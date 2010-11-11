@@ -23,13 +23,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
+import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -37,13 +42,15 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
+	private static final Logger logger = Logger.getLogger(SectionManager.class);
 	
-	private static final Class<?>[] CONSTRUCTOR_SIG = new Class<?>[] { int.class, Properties.class };
 	private static final PlainSection EMPTYSECTION = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
 
 	private HashMap<String, SectionInterface> _sections;
 
 	private boolean _mkdirs = false;
+	
+	private CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> _typesMap;
 	
 	public SectionManager() {
 		reload();
@@ -84,7 +91,29 @@ public class SectionManager implements SectionManagerInterface {
 		}
 		return match;
 	}
+	
+	/*
+	 * Load the different Section Types specified in plugin.xml
+	 */
+	private void initTypes() {
+		CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>>();
+
+		try {
+			List<PluginObjectContainer<ConfigurableSectionInterface>> loadedTypes =
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.sections.conf", "SectionType", "ClassName", false);
+			for (PluginObjectContainer<ConfigurableSectionInterface> container : loadedTypes) {
+				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
+				typesMap.put(filterName, container.getPluginClass());
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.sections.conf extension point 'SectionType'",e);
+		}
+		_typesMap = typesMap;
+	}
+	
+	
 	public void reload() {
+		initTypes();
 		Properties p = new Properties();
 		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
 		FileInputStream stream = null;
@@ -105,28 +134,35 @@ public class SectionManager implements SectionManagerInterface {
 		_mkdirs = p.getProperty("make.section.dirs", "false").equals("true");
 
 		for (int i = 1;; i++) {
-				String name = p.getProperty(i + ".name");
-				if (name == null)
-					break;
-				String type = p.getProperty(i + ".type", "plain").trim();
+			String name = p.getProperty(i + ".name");
+			if (name == null)
+				break;
+			String type = p.getProperty(i + ".type", "plain").trim();
+
+			Class<?>[] SIG = { int.class, Properties.class };
+			boolean notloaded = false;
+			if (!_typesMap.containsKey(type)) {
+				// Section Type does not exist
+				logger.error("Section Type: " + type + " wasn't loaded.");
+				notloaded = true;
+			} else {
 				try {
-					Class<?> clazz = Class.forName("org.drftpd.sections.conf."
-							+ type.substring(0, 1).toUpperCase()
-							+ type.substring(1) + "Section");
-					ConfigurableSectionInterface section = (ConfigurableSectionInterface) clazz
-							.getDeclaredConstructor(CONSTRUCTOR_SIG)
-							.newInstance(
-									new Object[] { Integer.valueOf(i), p });
+					Class<ConfigurableSectionInterface> clazz = _typesMap.get(type);
+					ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(new Object[] { Integer.valueOf(i), p });
 					sections.put(name, section);
 					if (_mkdirs) {
 						section.createSectionDir();
 					}
 				} catch (Exception e) {
-					throw new FatalException("Unknown section type: " + i
-						+ ".type = " + type, e);
-				}
+					throw new FatalException("Unable To Load Section type: " + i + ".type = " + type);
+				}		
 			}
-		_sections = sections;
+			
+			if (notloaded) {
+				throw new FatalException("Unknown section type: " + i + ".type = " + type);
+			}
+		}
+	_sections = sections;
 	}
 
 	public SectionInterface lookup(DirectoryHandle directory) {
