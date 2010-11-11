@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
@@ -457,51 +456,65 @@ public class Find extends CommandInterface {
 				SimpleDateFormat fullDate = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
 				SimpleDateFormat shortDate = new SimpleDateFormat("yyyy.MM.dd");
 				try {
-					String from = st.nextToken();
-					String to = st.nextToken();
+					String[] range = getMinMax(st.nextToken());
 
-					long minAge;
-					long maxAge;
+					if (range[0] != null) {
+						if (range[0].length() == 10)
+							params.setMinAge(shortDate.parse(range[0]).getTime());
+						else if (range[0].length() == 19)
+							params.setMinAge(fullDate.parse(range[0]).getTime());
+						else
+							throw new ImproperUsageException("Invalid date format for min age.");
+					}
 
-					if (from.length() == 10)
-						minAge = shortDate.parse(from).getTime();
-					else if (from.length() == 19)
-						minAge = fullDate.parse(from).getTime();
-					else
-						throw new ImproperUsageException("Invalid dateformat for min age in index search.");
-
-					if (to.length() == 10)
-						maxAge = shortDate.parse(to).getTime();
-					else if (to.length() == 19)
-						maxAge = fullDate.parse(to).getTime();
-					else
-						throw new ImproperUsageException("Invalid dateformat for max age in index search.");
-
-					if (minAge > maxAge)
-						throw new ImproperUsageException("Age range invalid, min value higher than max");
-
-					params.setMinAge(minAge);
-					params.setMaxAge(maxAge);
-				} catch (NumberFormatException e) {
-					throw new ImproperUsageException(e);
-				} catch (NoSuchElementException e) {
-					throw new ImproperUsageException("You must specify a range for the age, both min and max", e);
-				}  catch (ParseException e) {
-					throw new ImproperUsageException("Invalid dateformat", e);
+					if (range[1] != null) {
+						if (range[1].length() == 10)
+							params.setMaxAge(shortDate.parse(range[1]).getTime());
+						else if (range[1].length() == 19)
+							params.setMaxAge(fullDate.parse(range[1]).getTime());
+						else
+							throw new ImproperUsageException("Invalid date format for max age.");
+					}
+				} catch (ParseException e) {
+					throw new ImproperUsageException("Invalid date format", e);
 				}
 			} else if (option.equalsIgnoreCase("-size")) {
 				try {
-					long minSize = Bytes.parseBytes(st.nextToken());
-					long maxSize = Bytes.parseBytes(st.nextToken());
-					if (minSize > maxSize) {
-						throw new ImproperUsageException("Size range invalid, min value higher than max");
+					String[] range = getMinMax(st.nextToken());
+					if (range[0] != null && range[1] != null) {
+						long minSize = Bytes.parseBytes(range[0]);
+						long maxSize = Bytes.parseBytes(range[1]);
+						if (minSize > maxSize) {
+							throw new ImproperUsageException("Size range invalid, min value higher than max");
+						}
+						params.setMinSize(minSize);
+						params.setMaxSize(maxSize);
+					} else if (range[0] != null) {
+						params.setMinSize(Bytes.parseBytes(range[0]));
+					} else if (range[1] != null) {
+						params.setMaxSize(Bytes.parseBytes(range[1]));
 					}
-					params.setMinSize(minSize);
-					params.setMaxSize(maxSize);
 				} catch (NumberFormatException e) {
 					throw new ImproperUsageException(e);
-				} catch (NoSuchElementException e) {
-					throw new ImproperUsageException("You must specify a range for the size, both min and max", e);
+				}
+			} else if (option.equalsIgnoreCase("-nbrofslaves")) {
+				try {
+					String[] range = getMinMax(st.nextToken());
+					if (range[0] != null && range[1] != null) {
+						int minNbrOfSlaves = Integer.parseInt(range[0]);
+						int maxNbrOfSlaves = Integer.parseInt(range[1]);
+						if (minNbrOfSlaves > maxNbrOfSlaves) {
+							throw new ImproperUsageException("Slave number range invalid, min value higher than max");
+						}
+						params.setMinSlaves(minNbrOfSlaves);
+						params.setMaxSlaves(maxNbrOfSlaves);
+					} else if (range[0] != null) {
+						params.setMinSlaves(Integer.parseInt(range[0]));
+					} else if (range[1] != null) {
+						params.setMaxSlaves(Integer.parseInt(range[1]));
+					}
+				} catch (NumberFormatException e) {
+					throw new ImproperUsageException(e);
 				}
 			} else if (option.equalsIgnoreCase("-0byte")) {
 				params.setMinSize(0L);
@@ -624,7 +637,8 @@ public class Find extends CommandInterface {
 					if (findAction instanceof ActionWipe) {
 						if (!checkCustomPermission(request, "wipe", "=siteop")) {
 							return new CommandResponse(500, "You do not have the proper permissions for wipe");
-						}					}
+						}
+					}
 
 					actions.add(findAction);
 				}
@@ -737,5 +751,21 @@ public class Find extends CommandInterface {
 				destSlaves.add(rslave);
 		}
 		return destSlaves;
+	}
+
+	private String[] getMinMax(String arg) {
+		arg = arg.trim();
+		String[] range = new String[2];
+		int i = arg.indexOf(":");
+		if (i == -1) {
+			range[0] = arg;
+			range[1] = arg;
+		} else {
+			String min = arg.substring(0,i);
+			String max = arg.substring(i+1);
+			range[0] = min.isEmpty() ? null : min;
+			range[1] = max.isEmpty() ? null : max;
+		}
+		return range;
 	}
 }

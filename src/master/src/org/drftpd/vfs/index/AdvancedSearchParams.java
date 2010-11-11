@@ -41,6 +41,8 @@ public class AdvancedSearchParams {
 	private Long _maxAge;
 	private Long _minSize;
 	private Long _maxSize;
+	private Integer _minSlaves;
+	private Integer _maxSlaves;
 	private String _sortField;
 	private boolean _sortOrder = false;
 	private Integer _limit;
@@ -91,6 +93,14 @@ public class AdvancedSearchParams {
 
 	public void setMaxSize(long maxSize) {
 		_maxSize = maxSize;
+	}
+
+	public void setMinSlaves(int minSlaves) {
+		_minSlaves = minSlaves;
+	}
+
+	public void setMaxSlaves(int maxSlaves) {
+		_maxSlaves = maxSlaves;
 	}
 
 	public void setSortField(String sortField) {
@@ -147,6 +157,14 @@ public class AdvancedSearchParams {
 
 	public Long getMaxSize() {
 		return _maxSize;
+	}
+
+	public Integer getMinSlaves() {
+		return _minSlaves;
+	}
+
+	public Integer getMaxSlaves() {
+		return _maxSlaves;
 	}
 
 	public String getSortField() {

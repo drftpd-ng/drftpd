@@ -107,6 +107,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.NO, Field.Index.ANALYZED);
+	private static final NumericField FIELD_SLAVES_NBR = new NumericField("nbrOfSlaves", Field.Store.NO, Boolean.TRUE);
 	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.NO, Boolean.TRUE);
 	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.NO, Boolean.TRUE);
 
@@ -114,7 +115,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		FIELD_NAME, FIELD_FULL_NAME, FIELD_FULL_NAME_REVERSE, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
 	};
 	private static final NumericField[] NUMERICFIELDS = new NumericField[] {
-		FIELD_LASTMODIFIED, FIELD_SIZE
+		FIELD_SLAVES_NBR, FIELD_LASTMODIFIED, FIELD_SIZE
 	};
 
 	static {
@@ -295,8 +296,10 @@ public class LuceneEngine implements IndexEngineInterface {
 			for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
 				sb.append(slaveName).append(",");
 			}
-
+			FIELD_SLAVES_NBR.setIntValue(((FileHandle) inode).getSlaveNames().size());
 			FIELD_SLAVES.setValue(sb.toString());
+		} else {
+			FIELD_SLAVES_NBR.setIntValue(0);
 		}
 
 		FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
@@ -589,16 +592,22 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(slaveQuery, Occur.MUST);
 			}
 
-			if (params.getMinAge() != null && params.getMaxAge() != null) {
+			if (params.getMinAge() != null || params.getMaxAge() != null) {
 				Query ageQuery = NumericRangeQuery.newLongRange("lastModified",
 						params.getMinAge(), params.getMaxAge(), true, true);
 				query.add(ageQuery, Occur.MUST);
 			}
 
-			if (params.getMinSize() != null && params.getMaxSize() != null) {
+			if (params.getMinSize() != null || params.getMaxSize() != null) {
 				Query sizeQuery = NumericRangeQuery.newLongRange("size",
 						params.getMinSize(), params.getMaxSize(), true, true);
 				query.add(sizeQuery, Occur.MUST);
+			}
+
+			if (params.getMinSlaves() != null || params.getMaxSlaves() != null) {
+				Query nbrOfSlavesQuery = NumericRangeQuery.newIntRange("nbrOfSlaves",
+						params.getMinSlaves(), params.getMaxSlaves(), true, true);
+				query.add(nbrOfSlavesQuery, Occur.MUST);
 			}
 
 			if (params.getName() != null) {
@@ -621,6 +630,8 @@ public class LuceneEngine implements IndexEngineInterface {
 				if (params.getSortField().equalsIgnoreCase("lastModified") ||
 						params.getSortField().equalsIgnoreCase("size")) {
 					setSortField(params.getSortField(), SortField.LONG, params.getSortOrder());
+				} else if (params.getSortField().equalsIgnoreCase("nbrOfSlaves")) {
+					setSortField(params.getSortField(), SortField.INT, params.getSortOrder());
 				} else if (params.getSortField().equalsIgnoreCase("parentPath") ||
 						params.getSortField().equalsIgnoreCase("owner") ||
 						params.getSortField().equalsIgnoreCase("group") ||
