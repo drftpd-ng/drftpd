@@ -159,7 +159,7 @@ public class Archive implements PluginInterface {
 	/*
 	 * This Removes archive handler from current archives in use
 	 */
-	public boolean removeArchiveHandler(ArchiveHandler handler) {
+	public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
 		return _archiveHandlers.remove(handler);
 	}
 
