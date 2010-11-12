@@ -18,6 +18,7 @@
 package org.drftpd.misc;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author zubov
@@ -28,6 +29,10 @@ public class CaseInsensitiveHashMap<K, V> extends HashMap<K, V> {
 
 	public CaseInsensitiveHashMap() {
 		super();
+	}
+
+	public CaseInsensitiveHashMap(Map<K,V> map) {
+		super(map);
 	}
 
 	public boolean containsKey(String arg0) {
