@@ -159,18 +159,8 @@ public class Archive implements PluginInterface {
 	/*
 	 * This Removes archive handler from current archives in use
 	 */
-	public synchronized boolean removeArchiveHandler(ArchiveHandler handler) {
-		for (Iterator<ArchiveHandler> iter = _archiveHandlers.iterator(); iter.hasNext();) {
-			ArchiveHandler ah = iter.next();
-
-			if (ah == handler) {
-				iter.remove();
-
-				return true;
-			}
-		}
-
-		return false;
+	public boolean removeArchiveHandler(ArchiveHandler handler) {
+		return _archiveHandlers.remove(handler);
 	}
 
 	/*
