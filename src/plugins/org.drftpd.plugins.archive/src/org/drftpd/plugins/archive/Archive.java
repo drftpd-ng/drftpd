@@ -134,6 +134,7 @@ public class Archive implements PluginInterface {
 		
 		if (_runHandler != null) {
 			_runHandler.cancel();
+			GlobalContext.getGlobalContext().getTimer().purge();
 		}
 		
 		_runHandler = new TimerTask() {
