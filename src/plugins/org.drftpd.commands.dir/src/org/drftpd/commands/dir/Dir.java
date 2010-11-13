@@ -18,7 +18,6 @@
 package org.drftpd.commands.dir;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
@@ -46,7 +45,6 @@ import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
-
 
 
 /**
@@ -382,6 +380,8 @@ public class Dir extends CommandInterface {
 
 		try {
 			toDir = request.getCurrentDirectory().getDirectory(argument, user);
+			logger.debug("Argument is "+argument);
+			logger.debug("ToDir is "+toDir.getPath());
 			// toDir exists and is a directory, so we're just changing the parent directory and not the name
 			// unless toInode and fromInode are the same (i.e. a case change)
 			if (fromInode.isDirectory() && fromInode.equals(toDir)) {
@@ -391,16 +391,19 @@ public class Dir extends CommandInterface {
 				// There are two possibilites here, the target is an existing link or a directory
 				// Check to see if a link with the target name exists
 				newName = fromInode.getName();
+				boolean linkRename = false;
+				DirectoryHandle argParentDir = null;
 				try {
-					DirectoryHandle linkParentDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
+					argParentDir = request.getCurrentDirectory().getDirectory(VirtualFileSystem.stripLast(argument), user);
 					String linkName = VirtualFileSystem.getLast(argument);
 					// If a link exists and is the same link as the from inode this is valid
 					try {
-						InodeHandle linkHandle = linkParentDir.getLink(linkName, user);
+						InodeHandle linkHandle = argParentDir.getLink(linkName, user);
 						if (fromInode.isLink() && fromInode.equals(linkHandle)) {
 							// Changing case of existing link
-							toDir = linkParentDir;
+							toDir = argParentDir;
 							newName = linkName;
+							linkRename = true;
 						}
 					} catch (FileNotFoundException e2) {
 						// No link exists so we are moving an inode to a new parent without changing its name
@@ -415,6 +418,14 @@ public class Dir extends CommandInterface {
 					// Destination isn't a Directory, shouldn't be possible as the full argument is a dir
 					logger.warn("Destination isn't a Directory, this shouldn't happen", e1);
 					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+				}
+				if (!linkRename && fromInode.isDirectory() && newName.equalsIgnoreCase(VirtualFileSystem.getLast(argument))) {
+					// Source is a directory and a directory with the same name already exists in the target, the move
+					// should not be allowed. Rather than returning an error here we will allow the VFS to reject this so that
+					// permissions can be checked otherwise this could leak knowledge of the contents of parts of the VFS the
+					// user does not have access to.
+					toDir = argParentDir;
+					newName = VirtualFileSystem.getLast(argument);
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -473,12 +484,9 @@ public class Dir extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		} catch (FileNotFoundException e) {
 			logger.info("FileNotFoundException on renameTo()", e);
-
 			return new CommandResponse(500, "FileNotFound - " + e.getMessage());
-		} catch (IOException e) {
-			logger.info("IOException on renameTo()", e);
-
-			return new CommandResponse(500, "IOException - " + e.getMessage());
+		} catch (FileExistsException e) {
+			return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
 		}
 
 		request.getSession().setObject(RENAMETO, toInode);

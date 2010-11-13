@@ -258,6 +258,9 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 * @throws FileNotFoundException if the source inode does not exist.
 	 */
 	public void renameToUnchecked(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
+		if (toInode.exists()) {
+			throw new FileExistsException(toInode.getPath() + " already exists");
+		}
 		String fromPath = getPath();
 		VirtualFileSystemInode inode = getInode();
 		SlaveManager sm = getGlobalContext().getSlaveManager();
