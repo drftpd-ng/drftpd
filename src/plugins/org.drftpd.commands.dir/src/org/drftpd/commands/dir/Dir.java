@@ -380,8 +380,6 @@ public class Dir extends CommandInterface {
 
 		try {
 			toDir = request.getCurrentDirectory().getDirectory(argument, user);
-			logger.debug("Argument is "+argument);
-			logger.debug("ToDir is "+toDir.getPath());
 			// toDir exists and is a directory, so we're just changing the parent directory and not the name
 			// unless toInode and fromInode are the same (i.e. a case change)
 			if (fromInode.isDirectory() && fromInode.equals(toDir)) {
