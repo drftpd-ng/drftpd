@@ -61,3 +61,10 @@ diskselection=org.drftpd.slave.diskselection.filter
 # a full remerge when connecting to a master irrespective
 # of any partial remerge settings on the master
 ignore.partialremerge=false
+
+# Setting this to true will list the slave roots concurrently
+# during remerge. This should only be set if the slave has more than
+# one root and more than one CPU otherwise it will likely be slower
+# than leaving it disabled. The speed increase from enabling this will
+# likely increase with more roots and CPUs.
+concurrent.root.iteration=false

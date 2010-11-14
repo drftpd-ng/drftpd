@@ -28,7 +28,14 @@ import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.drftpd.io.PhysicalFile;
@@ -40,16 +47,24 @@ import org.drftpd.io.PhysicalFile;
 public class RootCollection {
 	private static final Logger logger = Logger.getLogger(RootCollection.class);
 
-	private Collection<Root> _roots = null;
+	private ArrayList<Root> _roots = null;
 	private Slave _slave = null;
+	private ThreadPoolExecutor _pool;
 
 	public RootCollection(Slave slave, Collection<Root> roots) throws IOException {
 		/** sanity checks * */
 		validateRoots(roots);
 		_roots = new ArrayList<Root>(roots);
 		_slave = slave;
+		if (_slave.concurrentRootIteration()) {
+			int numThreads = Math.min(_roots.size(), Runtime.getRuntime().availableProcessors());
+			_pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS, 
+					new LinkedBlockingQueue<Runnable>(), new RootListHandlerThreadFactory(),
+					new ThreadPoolExecutor.CallerRunsPolicy());
+			_pool.allowCoreThreadTimeOut(true);
+		}
 	}
-	
+
 	/**
 	 * Returns a sorted (alphabetical) list of inodes in the path given
 	 * @param path
@@ -63,6 +78,47 @@ public class RootCollection {
 			files.addAll(Arrays.asList(fileArray));
 		}
 		return files;
+	}
+
+	/**
+	 * Returns a sorted (alphabetical) list of inodes in the path given along with
+	 * a file object pointing to the file and the most recent last modified for the
+	 * path across the root collection
+	 * @param path
+	 * @return
+	 */
+	public RootPathContents getLocalInodesConcurrent(String path) {
+		CountDownLatch latch = new CountDownLatch(_roots.size());
+		File[][] rootFiles = new File[_roots.size()][];
+		Long[] rootLastModified = new Long[_roots.size()];
+		TreeMap<String,File> files = new TreeMap<String,File>(String.CASE_INSENSITIVE_ORDER);
+		for (int i = 0; i < _roots.size(); i++) {
+			_pool.execute(new RootListHandler(rootFiles, i, latch, path, rootLastModified));
+		}
+		while (true) {
+			try {
+				latch.await();
+				break;
+			} catch (InterruptedException e) {
+				// Loop around and wait again
+			}
+		}
+		long lastModified = Long.MIN_VALUE;
+		for (int i = 0; i < _roots.size(); i++) {
+			if (rootFiles[i] != null) {
+				for (int j = 0; j < rootFiles[i].length; j++) {
+					if (!files.containsKey(rootFiles[i][j].getName())) {
+						files.put(rootFiles[i][j].getName(), rootFiles[i][j]);
+					}
+				}
+			}
+			if (rootLastModified[i] != null) {
+				if (rootLastModified[i].longValue() > lastModified) {
+					lastModified = rootLastModified[i].longValue();
+				}
+			}
+		}
+		return new RootPathContents(lastModified, files);
 	}
 
 	public long getLastModifiedForPath(String path) {
@@ -289,6 +345,48 @@ public class RootCollection {
 	}
 
 	public ArrayList<Root> getRootList() {
-		return (ArrayList<Root>) _roots;
+		return _roots;
 	}
+
+	private class RootListHandler implements Runnable {
+		
+		private File[][] _files;
+		private int _root;
+		private CountDownLatch _latch;
+		private String _path;
+		private Long[] _rootLastModified;
+		
+		public RootListHandler(File[][] files, int root, CountDownLatch latch, String path, Long[] rootLastModified) {
+			_files = files;
+			_root = root;
+			_latch = latch;
+			_path = path;
+			_rootLastModified = rootLastModified;
+		}
+
+		public void run() {
+			Thread currThread = Thread.currentThread();
+			currThread.setName("Root List Handler - " + currThread.getId()
+					+ " - processing root " + _root + " - " + _path);
+			File rootPath = _roots.get(_root).getFile(_path);
+			if (rootPath.exists()) {
+				_files[_root] = rootPath.listFiles();
+				_rootLastModified[_root] = rootPath.lastModified();
+			}
+			_latch.countDown();
+			currThread.setName(RootListHandlerThreadFactory.getIdleThreadName(currThread.getId()));
+		}
+	}
+}
+
+class RootListHandlerThreadFactory implements ThreadFactory {
+	public static String getIdleThreadName(long threadId) {
+		return "Root List Handler - "+ threadId + " - Waiting for root to process";
+	}
+
+	public Thread newThread(Runnable r) {
+		Thread t = Executors.defaultThreadFactory().newThread(r);
+		t.setName(getIdleThreadName(t.getId()));
+		return t;
+	}	
 }

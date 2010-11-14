@@ -112,6 +112,8 @@ public class Slave {
 
 	private boolean _ignorePartialRemerge;
 
+	private boolean _concurrentRootIteration;
+
 	protected Slave() {
 	}
 
@@ -196,7 +198,8 @@ public class Slave {
 		_uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
 		_downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
 		_bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
-	
+
+		_concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
 		_roots = getDefaultRootBasket(p);
 		loadDiskSelection(p);
 
@@ -630,5 +633,9 @@ public class Slave {
 
 	public boolean ignorePartialRemerge() {
 		return _ignorePartialRemerge;
+	}
+
+	public boolean concurrentRootIteration() {
+		return _concurrentRootIteration;
 	}
 }

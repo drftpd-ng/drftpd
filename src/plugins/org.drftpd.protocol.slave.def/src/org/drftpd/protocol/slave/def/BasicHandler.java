@@ -16,6 +16,7 @@
  */
 package org.drftpd.protocol.slave.def;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -24,6 +25,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,6 +42,7 @@ import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.RootCollection;
+import org.drftpd.slave.RootPathContents;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferIndex;
@@ -227,7 +230,11 @@ public class BasicHandler extends AbstractHandler {
 			} else {
 				logger.info("Partial remerge disabled, performing full remerge");
 			}
-			handleRemergeRecursive2(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
+			if (getSlaveObject().concurrentRootIteration()) {
+				handleRemergeRecursiveConcurrent(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
+			} else {
+				handleRemergeRecursive2(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
+			}
 
 			return new AsyncResponse(ac.getIndex());
 		} catch (Throwable e) {
@@ -290,6 +297,61 @@ public class BasicHandler extends AbstractHandler {
 			}
 			if (file.isDirectory()) {
 				handleRemergeRecursive2(rootCollection, fullPath, partialRemerge, skipAgeCutoff);
+			}
+			fileList.add(new LightRemoteInode(file));
+		}
+		if (!partialRemerge || inodesModified) {
+			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
+			logger.debug("Sending " + path + " to the master");
+		} else {
+			logger.debug("Skipping send of " + path + " as no files changed since last merge");
+		}
+	}
+
+	private void handleRemergeRecursiveConcurrent(RootCollection rootCollection,
+			String path, boolean partialRemerge, long skipAgeCutoff) {
+		while (remergePaused.get()) {
+			synchronized(remergeWaitObj) {
+				try {
+					remergeWaitObj.wait();
+				} catch (InterruptedException e) {
+					// Either we have been woken properly in which case we will exit the
+					// loop or we have not in which case we will wait again.
+				}
+			}
+		}
+
+		RootPathContents rootContents = rootCollection.getLocalInodesConcurrent(path);
+		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+
+		boolean inodesModified = false;
+		long pathLastModified = rootContents.getLastModified();
+		// Need to check the last modified of the parent itself to detect where
+		// files have been deleted but none changed or added
+		if (partialRemerge && pathLastModified > skipAgeCutoff) {
+			inodesModified = true;
+		}
+		for (Map.Entry<String, File> entry : rootContents.getInodes().entrySet()) {
+			PhysicalFile file = new PhysicalFile(entry.getValue());
+			String fullPath = path + "/" + entry.getKey();
+			try {
+				if (file.isSymbolicLink()) {
+					// ignore it, but log an error
+					logger.warn("You have a symbolic link " + fullPath
+							+ " -- these are ignored by drftpd");
+					continue;
+				}
+			} catch (IOException e) {
+				logger
+						.warn("You have a symbolic link that couldn't be read at "
+								+ fullPath + " -- these are ignored by drftpd");
+				continue;
+			}
+			if (partialRemerge && file.lastModified() > skipAgeCutoff) {
+				inodesModified = true;
+			}
+			if (file.isDirectory()) {
+				handleRemergeRecursiveConcurrent(rootCollection, fullPath, partialRemerge, skipAgeCutoff);
 			}
 			fileList.add(new LightRemoteInode(file));
 		}
