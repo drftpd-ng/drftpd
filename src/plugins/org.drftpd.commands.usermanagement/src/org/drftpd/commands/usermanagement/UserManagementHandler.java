@@ -1738,7 +1738,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452, ex.getMessage());
 		}
 
-		return new CommandResponse(200, "OK, removed " + credits + "b from "
+		return new CommandResponse(200, "OK, removed " + Bytes.formatBytes(credits) + " from "
 				+ myUser.getName() + ".");
 	}
 
