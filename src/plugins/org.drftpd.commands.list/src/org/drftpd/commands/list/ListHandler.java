@@ -539,4 +539,12 @@ public class ListHandler extends CommandInterface {
 					", possibly the org.drftpd.commands.list extension point definition has changed in the plugin.xml",e);
 		}
 	}
+	
+	/*
+	 * Returning a copy of listAddons, so we can't change them.
+	 */
+	@SuppressWarnings("unchecked")
+	public ArrayList<AddListElementsInterface> getAddons() {
+		return (ArrayList<AddListElementsInterface>) _listAddons.clone();
+	}
 }
