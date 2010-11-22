@@ -543,8 +543,7 @@ public class ListHandler extends CommandInterface {
 	/*
 	 * Returning a copy of listAddons, so we can't change them.
 	 */
-	@SuppressWarnings("unchecked")
 	public ArrayList<AddListElementsInterface> getAddons() {
-		return (ArrayList<AddListElementsInterface>) _listAddons.clone();
+		return new ArrayList<AddListElementsInterface>(_listAddons);
 	}
 }
