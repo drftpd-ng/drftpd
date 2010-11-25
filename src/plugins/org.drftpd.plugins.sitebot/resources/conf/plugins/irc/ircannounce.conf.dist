@@ -93,6 +93,26 @@
 #
 # The above example will result in all invite events being announced in #siteopchannel,
 # any other event type, such as shutdown or slave events will be announced in #mainchannel
+#
+#
+# REMOVE PARTS OF PATH IN ANNOUNCEMENT:
+# The configuration of a DrFTPd v2 similar way of announcing of dated dirs is possible.
+# Default in v3 it would include the dated dirs subfolder in the announcement.
+# To avoid this use the example below.
+#
+# Example:
+# default.path.1=/SECTION1/****/*
+# default.path.1.destination=#irc-channel
+# default.path.1.displayname=SECTION1
+#
+# default.path.2=/SECTION2/****-**/*
+# default.path.2.destination=#irc-channel
+# default.path.2.displayname=SECTION2
+#
+# The first section is an example howto remove date from the announcement defined as MMdd.
+# The second section is an example howto remove year and week from the announcement
+# defined as yyyy-ww.
+
 default.section.1=*
 default.section.1.destination=public
 default.destination=public
