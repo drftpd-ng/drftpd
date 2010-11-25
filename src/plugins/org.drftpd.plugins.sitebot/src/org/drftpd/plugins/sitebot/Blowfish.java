@@ -64,38 +64,40 @@ public class Blowfish {
 
 	/* Encrypt function	 */
 	public String encrypt(String tocrypt) {
-
-		// Mode cypher in Encrypt mode
-		try {
-			_ecipher.init(Cipher.ENCRYPT_MODE, _skeySpec);
-		} catch (InvalidKeyException e) {
-			logger.warn("Invalid blowfish key",e);
+		// Make sure _ecipher is synchronized so decrypt/encrypt don't race
+		synchronized (_ecipher) {
+			// Mode cypher in Encrypt mode
+			try {
+				_ecipher.init(Cipher.ENCRYPT_MODE, _skeySpec);
+			} catch (InvalidKeyException e) {
+				logger.warn("Invalid blowfish key",e);
+			}
+	
+			String rEncrypt = "";
+			// Paddind the String
+			byte[] bEncrypt = tocrypt.getBytes();
+			int taille = bEncrypt.length;
+			int limit = 8 - (bEncrypt.length % 8);
+			byte[] buff = new byte[taille + limit];
+	
+			for (int i = 0; i < taille; i++)
+				buff[i] = bEncrypt[i];
+	
+			for (int i = taille; i < taille + limit; i++)
+				buff[i] = 0x0;
+	
+			try { 
+				// Encrypt the padding string
+				byte[] encrypted = _ecipher.doFinal(buff); 
+				// B64 ENCRYPTION (mircryption needed)
+				rEncrypt = Base64.bytetoB64(encrypted);
+			} catch (Exception e) {
+				logger.warn("Exception whilst encrypting blowfish string",e);
+			}
+	
+			rEncrypt = BEGIN.concat(rEncrypt);
+			return rEncrypt;
 		}
-
-		String rEncrypt = "";
-		// Paddind the String
-		byte[] bEncrypt = tocrypt.getBytes();
-		int taille = bEncrypt.length;
-		int limit = 8 - (bEncrypt.length % 8);
-		byte[] buff = new byte[taille + limit];
-
-		for (int i = 0; i < taille; i++)
-			buff[i] = bEncrypt[i];
-
-		for (int i = taille; i < taille + limit; i++)
-			buff[i] = 0x0;
-
-		try { 
-			// Encrypt the padding string
-			byte[] encrypted = _ecipher.doFinal(buff); 
-			// B64 ENCRYPTION (mircryption needed)
-			rEncrypt = Base64.bytetoB64(encrypted);
-		} catch (Exception e) {
-			logger.warn("Exception whilst encrypting blowfish string",e);
-		}
-
-		rEncrypt = BEGIN.concat(rEncrypt);
-		return rEncrypt;
 	}
 
 	/* Decrypt function */
@@ -108,31 +110,33 @@ public class Blowfish {
 
 		byte[] decrypted = null;
 
-		try {
-			// Mode cypher in Decrypt mode
-			_ecipher.init(Cipher.DECRYPT_MODE, _skeySpec);
-			decrypted = _ecipher.doFinal(again);
-
-			// Recup exact length
-			int leng = decrypted.length - 8;
-			while(leng < decrypted.length && decrypted[leng] != 0x0) {leng++;}
-			byte[] finalArray = new byte[leng];
-			// Format & Limit the Result String
-			for(int i = 0; i < leng; i++) {
-				finalArray[i] = decrypted[i];
-			}			
-			//Force again the encoding result string
-			return new String(finalArray,"8859_1");
-		} catch (InvalidKeyException e) {
-			logger.error("Invalid key error when decrypting blowfish string, possibly means export crypto isn't installed",e);
-			return "";
-		} catch (Exception e) {
-			// Exception, not necessary padding, return directly
-			// The decypted string
-			logger.warn("Exception whilst decrypting blowfish string",e);
-			return new String(decrypted,"8859_1");
+		// Make sure _ecipher is synchronized so decrypt/encrypt don't race
+		synchronized (_ecipher) {
+			try {
+				// Mode cypher in Decrypt mode
+				_ecipher.init(Cipher.DECRYPT_MODE, _skeySpec);
+				decrypted = _ecipher.doFinal(again);
+	
+				// Recup exact length
+				int leng = decrypted.length - 8;
+				while(leng < decrypted.length && decrypted[leng] != 0x0) {leng++;}
+				byte[] finalArray = new byte[leng];
+				// Format & Limit the Result String
+				for(int i = 0; i < leng; i++) {
+					finalArray[i] = decrypted[i];
+				}			
+				//Force again the encoding result string
+				return new String(finalArray,"8859_1");
+			} catch (InvalidKeyException e) {
+				logger.error("Invalid key error when decrypting blowfish string, possibly means export crypto isn't installed",e);
+				return "";
+			} catch (Exception e) {
+				// Exception, not necessary padding, return directly
+				// The decypted string
+				logger.warn("Exception whilst decrypting blowfish string",e);
+				return new String(decrypted,"8859_1");
+			}
 		}
 	}
-
 	
 }
