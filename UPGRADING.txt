@@ -1,13 +1,18 @@
 UPGRADING
 
-Replace classes/ and src/, update all .conf files with new or changed 
-directives found in the correlating .dist files
-Especially make sure commandhandlers.conf gets updated as new commands 
-won't be recognized if commandhandlers.conf isn't up-to-date.
+To upgrade from 1.1.4 to 3.0 you will need install 2.x first and utilize
+bin/xstream2beans.sh to convert userfiles from 1.1.4 to 2.x format.
+Next follow the steps below.
 
-1.1.4 --> 2.0
-run bin/xstream2beans.sh before starting the daemon
+To upgrade from 2.x to 3.0 you will not be able to keep the virtual file system
+or slave files. Userfiles will be converted correctly if password is not encrypted.
 
-rm slaves.xml (you will need to create them again, described in MAJORCHANGES.txt)
+Follow the installation documentation and do now install into the version 2.x:
+  http://www.drftpd.org/index.php/Official_Install_Guide_3
 
-delete files.mlst(don't worry, it will be recreated)
+During the execution of ./build.sh you have the option to convert 2.x userfiles.
+Check that option and you are asked to point to the folder where version 2.x is
+installed. The build process will then copy and convert all files into the 3.0
+environment. Next start the master and readd slaves. Themes and all .conf files
+have to be rebuild in 3.0. Copying over the files will give you alot of problems.
+The virtual file system will be built when slaves are merged for the first time.

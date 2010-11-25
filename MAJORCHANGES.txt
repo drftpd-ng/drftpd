@@ -1,3 +1,22 @@
+==== 3.0
+The reasons it's 3.0 and not 2.1
+* Virtual file system is now not held in memory, but saved in ./files as XML files.
+  This saves memory, and speeds up the master, and lowers the overall load.
+* Sources are changed to Java Plug-in Framework (JPF) to improve the modularity and 
+  extensibility of DrFTPD. This allows users to create plugins without changing the
+  core of DrFTPD.
+* New irc sitebot along with supporting infrastructure changes.
+  - Brief summary of sitebot changes/additions:
+    * Sitebot now supports per user blowfish keys for private message encyrption, along with DH1080 support.
+    * Supports a list of servers to cycle through in the event of disconnection or connect failure.
+    * Integrated support for irc services (nickserv/chanserv) , based on ideas from a forum mod.
+    * Allows binding the SiteBot to a specific IP for machines with multiple public IPs.
+    * Optional high security SSL trust requiring a properly validated certificate chain or private SSL cert provided.
+    * Multiple bot support (both simplistic and very experimental at this point).
+    * More configurable announce targets based on either sections or path patterns.
+    * Now shares the same command plugins as the ftp frontend rather than its own duplicated commands.
+
+
 ==== 2.0
 The reasons it's 2.0 and not 1.2
 * File list is now case insensitive.
