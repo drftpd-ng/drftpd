@@ -318,7 +318,7 @@ public class Job {
 
 		if (getSlavesToTransferTo().isEmpty() && (_transferNum > 0)) {
 			throw new IllegalStateException(
-					"Job cannot have a destSlaveSet of size 0 with transferNum > 0");
+					"Job cannot have a destSlaveSet of size 0 with transferNum > 0 - File: '" + getFile() + "' File Slaves: '" + getFile().getSlaveNames().toString() + "'" );
 		}
 		if (_transferNum <= 0) {
 			cleanup();
