@@ -247,16 +247,17 @@ public class LinksPostHook implements PostHookInterface {
 		} catch (FileNotFoundException e2) {
 			//ignore - dir probably doesn't exist anymore as it was move
 		}
-		// Have to check parent too to allow for the case of moving a special subdir
-		if (!fromDir.isRoot()) {
+		// Check the Parent dirs to see if any links are there
+		DirectoryHandle parent = fromDir.getParent();
+		while (!parent.isRoot()) {
 			try {
-				for (LinkHandle link : fromDir.getParent().getLinksUnchecked()) {
+				for (LinkHandle link : parent.getLinksUnchecked()) {
 					try {
 						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remove it
     					if (link.getTargetString().startsWith(fromDir.getPath())) {
-    						LinkHandle newlink = toDir.getParent().getNonExistentLinkHandle(link.getName().replace(fromDir.getName(),toDir.getName()));
+    						LinkHandle newlink = parent.getNonExistentLinkHandle(link.getName().replace(fromDir.getName(),toDir.getName()));
     						
         					try {
         						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
@@ -279,8 +280,9 @@ public class LinksPostHook implements PostHookInterface {
 					}
 				}
 			} catch (FileNotFoundException e2) {
-				logger.warn("Invalid link in dir " + fromDir.getParent().getPath(),e2);
+				logger.warn("Invalid link in dir " + parent.getPath(),e2);
 			}
+			parent = parent.getParent();
 		}
 	}
 }

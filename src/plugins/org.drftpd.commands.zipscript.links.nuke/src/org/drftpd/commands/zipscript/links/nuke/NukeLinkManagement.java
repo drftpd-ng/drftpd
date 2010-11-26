@@ -78,24 +78,25 @@ public class NukeLinkManagement implements PluginInterface {
 			//ignore - dir probably doesn't exist anymore as it was move
 		}
 		
-		// Check the Parent dir to see if any links are there
-		if (!fromDir.isRoot()) {
+		// Check the Parent dirs to see if any links are there
+		DirectoryHandle parent = fromDir.getParent();
+		while (!parent.isRoot()) {
 			try {
-				for (LinkHandle link : fromDir.getParent().getLinksUnchecked()) {
+				for (LinkHandle link : parent.getLinksUnchecked()) {
 					try {
 						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remove it
     					if (link.getTargetString().startsWith(fromDir.getPath())) {
-    						LinkHandle newlink = toDir.getParent().getNonExistentLinkHandle(link.getName().replace(fromDir.getName(), _prefix + fromDir.getName()));
+    						LinkHandle newlink = parent.getNonExistentLinkHandle(link.getName().replace(fromDir.getName(), _prefix + fromDir.getName()));
     						if (event.getCommand().equalsIgnoreCase("unnuke")) {
-    							newlink = toDir.getParent().getNonExistentLinkHandle(link.getName().replace(_prefix,""));
+    							newlink = parent.getNonExistentLinkHandle(link.getName().replace(_prefix,""));
     						}
         					try {
         						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
         						link.renameToUnchecked(newlink);
 							} catch (FileExistsException e) {
-								// couldn't rename it, it already exists ignore
+								// couldn't rename it, it already exists - ignore
 							} catch (FileNotFoundException e2) {
 								// couldn't set target
 								link.deleteUnchecked();
@@ -112,6 +113,7 @@ public class NukeLinkManagement implements PluginInterface {
 			} catch (FileNotFoundException e2) {
 				//ignore - dir probably doesn't exist anymore as it was move
 			}
+			parent = parent.getParent();
 		}    		
     }
 }
