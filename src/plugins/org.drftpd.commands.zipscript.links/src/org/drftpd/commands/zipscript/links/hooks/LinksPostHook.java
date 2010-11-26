@@ -32,6 +32,7 @@ import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.links.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.vfs.DirectoryHandle;
@@ -228,22 +229,23 @@ public class LinksPostHook implements PostHookInterface {
 		DirectoryHandle toDir = (DirectoryHandle) toInode;
 		
 		try {
-			for (LinkHandle link :  fromDir.getLinksUnchecked()) {
+			for (LinkHandle link :  toDir.getLinksUnchecked()) {
 				try {
 					link.getTargetDirectoryUnchecked();
 				} catch (FileNotFoundException e1) {
 					// Link target no longer exists, remove it
-					link.deleteUnchecked();
-					request.setCurrentDirectory(toDir);
-					LinkUtils.processLink(request, "create", _bundle);
-					
+					if (link.getTargetString().startsWith(fromDir.getPath())) {
+						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
+					} else {
+						link.deleteUnchecked();
+					}
 				} catch (ObjectNotValidException e1) {
 					// Link target isn't a directory, delete the link as it is bad
 					link.deleteUnchecked();
 				}
 			}
 		} catch (FileNotFoundException e2) {
-			//ignore - dir probably doesn't exist anymore as it was moved
+			//ignore - dir probably doesn't exist anymore as it was move
 		}
 		// Have to check parent too to allow for the case of moving a special subdir
 		if (!fromDir.isRoot()) {
@@ -253,9 +255,23 @@ public class LinksPostHook implements PostHookInterface {
 						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remove it
-						link.deleteUnchecked();
-						request.setCurrentDirectory(toDir);
-						LinkUtils.processLink(request, "create", _bundle);
+    					if (link.getTargetString().startsWith(fromDir.getPath())) {
+    						LinkHandle newlink = toDir.getParent().getNonExistentLinkHandle(link.getName().replace(fromDir.getName(),toDir.getName()));
+    						
+        					try {
+        						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
+								link.renameToUnchecked(newlink);
+
+							} catch (FileExistsException e) {
+								// couldn't rename it, it already exists. we don't want to delete
+							} catch (FileNotFoundException e2) {
+								// couldn't set target
+								link.deleteUnchecked();
+							}
+        					
+    					} else {
+    						link.deleteUnchecked();
+    					}
 						
 					} catch (ObjectNotValidException e1) {
 						// Link target isn't a directory, delete the link as it is bad

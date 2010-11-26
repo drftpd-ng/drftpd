@@ -47,7 +47,7 @@ public class NukeLinkManagement implements PluginInterface {
 
     @EventSubscriber
 	public void onNukeEvent(NukeEvent event) {
-		DirectoryHandle fromDir = null;
+    	DirectoryHandle fromDir = null;
 		DirectoryHandle toDir = null;
 		if (event.getCommand().equalsIgnoreCase("nuke")) {
 			fromDir = new DirectoryHandle(VirtualFileSystem.separator).getNonExistentDirectoryHandle(event.getPath());
@@ -57,6 +57,7 @@ public class NukeLinkManagement implements PluginInterface {
 			fromDir  = new DirectoryHandle(VirtualFileSystem.separator).getNonExistentDirectoryHandle(toDir.getParent().getPath() + VirtualFileSystem.separator + _prefix + toDir.getName());
 		}
 
+		// Checks nuked dir for linkes inside to move
 		try {
 			for (LinkHandle link :  toDir.getLinksUnchecked()) {
 				try {
@@ -76,7 +77,8 @@ public class NukeLinkManagement implements PluginInterface {
 		} catch (FileNotFoundException e2) {
 			//ignore - dir probably doesn't exist anymore as it was move
 		}
-		// Have to check parent too to allow for the case of moving a special subdir
+		
+		// Check the Parent dir to see if any links are there
 		if (!fromDir.isRoot()) {
 			try {
 				for (LinkHandle link : fromDir.getParent().getLinksUnchecked()) {
@@ -90,10 +92,12 @@ public class NukeLinkManagement implements PluginInterface {
     							newlink = toDir.getParent().getNonExistentLinkHandle(link.getName().replace(_prefix,""));
     						}
         					try {
-        						link.setTarget(toDir.getPath());
+        						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
         						link.renameToUnchecked(newlink);
 							} catch (FileExistsException e) {
-								// couldn't rename it, it already exists.
+								// couldn't rename it, it already exists ignore
+							} catch (FileNotFoundException e2) {
+								// couldn't set target
 								link.deleteUnchecked();
 							}
     					} else {

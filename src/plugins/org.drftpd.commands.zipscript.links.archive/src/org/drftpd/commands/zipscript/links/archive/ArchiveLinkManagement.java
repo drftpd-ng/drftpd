@@ -51,24 +51,16 @@ public class ArchiveLinkManagement implements PluginInterface {
     		DirectoryHandle fromDir = event.getArchiveType().getDirectory();
     		DirectoryHandle toDir = event.getArchiveType().getDestinationDirectory();
     		
+    		// THis is for links inside the moved DIR
     		try {
-    			for (LinkHandle link :  fromDir.getLinksUnchecked()) {
+    			for (LinkHandle link :  toDir.getLinksUnchecked()) {
     				try {
     					link.getTargetDirectoryUnchecked();
     				} catch (FileNotFoundException e1) {
     					// Link target no longer exists, remove it
     					
-    					if (link.getTargetString().equals(fromDir.getPath())) {
-    					
-    						LinkHandle newlink = toDir.getParent().getNonExistentLinkHandle(link.getName());
-        					try {
-								link.renameToUnchecked(newlink);
-								link.setTarget(toDir.getPath());
-							} catch (FileExistsException e) {
-								// couldn't rename it, it already exists.
-								link.deleteUnchecked();
-							}
-        					
+    					if (link.getTargetString().startsWith(fromDir.getPath())) {
+    						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
     					} else {
     						link.deleteUnchecked();
     					}
@@ -80,7 +72,8 @@ public class ArchiveLinkManagement implements PluginInterface {
     		} catch (FileNotFoundException e2) {
     			//ignore - dir probably doesn't exist anymore as it was move
     		}
-    		// Have to check parent too to allow for the case of moving a special subdir
+    		
+    		// THis is for links in the Parent DIR
     		if (!fromDir.isRoot()) {
     			try {
     				for (LinkHandle link : fromDir.getParent().getLinksUnchecked()) {
@@ -89,14 +82,16 @@ public class ArchiveLinkManagement implements PluginInterface {
     					} catch (FileNotFoundException e1) {
     						// Link target no longer exists, remove it
 
-        					if (link.getTargetString().equals(fromDir.getPath())) {
+        					if (link.getTargetString().startsWith(fromDir.getPath())) {
         						
         						LinkHandle newlink = toDir.getParent().getNonExistentLinkHandle(link.getName());
             					try {
+            						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
     								link.renameToUnchecked(newlink);
-    								link.setTarget(toDir.getPath());
     							} catch (FileExistsException e) {
-    								// couldn't rename it, it already exists.
+    								// couldn't rename it, it already exists - ignore
+    							} catch (FileNotFoundException e2) {
+    								// couldn't set target
     								link.deleteUnchecked();
     							}
             					
@@ -114,7 +109,6 @@ public class ArchiveLinkManagement implements PluginInterface {
     			}
     		}    		
     	}
-
     }
 
 }
