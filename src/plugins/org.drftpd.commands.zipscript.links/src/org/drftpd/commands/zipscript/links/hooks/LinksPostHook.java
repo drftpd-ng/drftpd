@@ -39,6 +39,7 @@ import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author djb61
@@ -131,8 +132,22 @@ public class LinksPostHook implements PostHookInterface {
 			// WIPE failed, abort cleanup
 			return;
 		}
+		String arg = request.getArgument();
+		if (arg.startsWith("-r ")) {
+			arg = arg.substring(3);
+		}
+
+		if (arg.endsWith(VirtualFileSystem.separator)) {
+			arg.substring(0,arg.length()-1);
+		}
+		
+		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
+		if (!wipeDir.exists()) {
+			return;
+		}
+
 		try {
-			for (LinkHandle link : request.getCurrentDirectory().getLinksUnchecked()) {
+			for (LinkHandle link : wipeDir.getLinksUnchecked()) {
 				try {
 					link.getTargetDirectoryUnchecked();
 				} catch (FileNotFoundException e1) {
@@ -144,12 +159,13 @@ public class LinksPostHook implements PostHookInterface {
 				}
 			}
 		} catch (FileNotFoundException e2) {
-			logger.warn("Invalid link in dir " + request.getCurrentDirectory().getPath(),e2);
+			logger.warn("Invalid Dir " + wipeDir.getPath(),e2);
 		}
+		
 		// Have to check parent too to allow for the case of wiping a special subdir
-		if (!request.getCurrentDirectory().isRoot()) {
+		if (!wipeDir.isRoot()) {
 			try {
-				for (LinkHandle link : request.getCurrentDirectory().getParent().getLinksUnchecked()) {
+				for (LinkHandle link : wipeDir.getParent().getLinksUnchecked()) {
 					try {
 						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
@@ -161,7 +177,34 @@ public class LinksPostHook implements PostHookInterface {
 					}
 				}
 			} catch (FileNotFoundException e2) {
-				logger.warn("Invalid link in dir " + request.getCurrentDirectory().getParent().getPath(),e2);
+				logger.warn("Invalid link in dir " + wipeDir.getParent().getPath(),e2);
+			}
+		}
+
+		//check if arguement was a file
+		DirectoryHandle oldrequestdir = request.getCurrentDirectory();
+		if (arg.endsWith(".sfv")) {
+			request.setCurrentDirectory(wipeDir);
+			LinkUtils.processLink(request, "delete", _bundle);
+			request.setCurrentDirectory(oldrequestdir);
+		} else {
+			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(wipeDir);
+			try {
+				SFVStatus sfvStatus = sfvData.getSFVStatus();
+				if (!sfvStatus.isFinished()) {
+					// dir is now incomplete, add link
+					request.setCurrentDirectory(wipeDir);
+					LinkUtils.processLink(request, "create", _bundle);
+					request.setCurrentDirectory(oldrequestdir);
+				}
+			} catch (NoAvailableSlaveException e) {
+				// Slave holding sfv is unavailable
+			} catch (FileNotFoundException e) {
+				// No sfv in dir
+			} catch (IOException e) {
+				// sfv not readable
+			} catch (SlaveUnavailableException e) {
+				// Slave holding sfv is unavailable
 			}
 		}
 	}

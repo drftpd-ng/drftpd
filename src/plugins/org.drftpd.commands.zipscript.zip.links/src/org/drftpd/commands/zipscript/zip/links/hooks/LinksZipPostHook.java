@@ -31,6 +31,8 @@ import org.drftpd.commands.zipscript.zip.DizStatus;
 import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author CyBeR
@@ -104,5 +106,57 @@ public class LinksZipPostHook implements PostHookInterface {
 			// zip not readable
 		}
 		return;
+	}
+	
+	
+	public void doLinksZipWIPECleanupHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 200) {
+			// WIPE failed, abort cleanup
+			return;
+		}
+		String arg = request.getArgument();
+		if (arg.startsWith("-r ")) {
+			arg = arg.substring(3);
+		}
+		if (arg.endsWith(VirtualFileSystem.separator)) {
+			arg.substring(0,arg.length()-1);
+		}
+		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
+		if (!wipeDir.exists()) {
+			return;
+		}
+		DirectoryHandle oldrequestdir = request.getCurrentDirectory();
+		ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(wipeDir);
+		try {
+			DizStatus dizStatus = zipData.getDizStatus();
+			if (!dizStatus.isFinished()) {
+				// dir is now incomplete, add link
+				request.setCurrentDirectory(wipeDir);
+				LinkUtils.processLink(request, "create", _bundle);
+				request.setCurrentDirectory(oldrequestdir);
+			}
+		} catch (NoAvailableSlaveException e) {
+			// Slave holding zip is unavailable
+		} catch (FileNotFoundException e) {
+			// No zip in dir
+			// We have to make sure there is a .sfv in this dir before deleting
+			try {
+				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(wipeDir);
+				sfvData.getSFVStatus();
+			} catch (NoAvailableSlaveException e1) {
+				// Slave holding sfv is unavailable
+			} catch (FileNotFoundException e1) {
+				// No SFV in dir - now we can delete link
+				request.setCurrentDirectory(wipeDir);
+				LinkUtils.processLink(request, "delete", _bundle);
+				request.setCurrentDirectory(oldrequestdir);
+			} catch (IOException e1) {
+				// SFV not readable
+			} catch (SlaveUnavailableException e1) {
+				// No Slave with SFV available
+			}			
+		} catch (IOException e) {
+			// zip not readable
+		}
 	}
 }
