@@ -49,6 +49,7 @@ import org.drftpd.util.GroupPosition;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -207,6 +208,43 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		}
 	}
 
+	public void doZipscriptWIPEDizCleanupHook(CommandRequest request, CommandResponse response) {
+		if (response.getCode() != 200) {
+			// WIPE failed, abort cleanup
+			return;
+		}
+		String arg = request.getArgument();
+		
+		if (!arg.toLowerCase().endsWith(".zip")) { 
+			return;
+		}
+		
+		if (arg.startsWith("-r ")) {
+			arg = arg.substring(3);
+		}
+		if (arg.endsWith(VirtualFileSystem.separator)) {
+			arg = arg.substring(0,arg.length()-1);
+		}
+		
+		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
+		
+		try {
+			boolean noZip = true;
+			// Check if there are any other zips left
+			for(FileHandle file : wipeDir.getFilesUnchecked()) {
+				if (file.getName().toLowerCase().endsWith(".zip")) {
+					noZip = false;
+					break;
+				}
+			}
+			if (noZip) {
+				request.getCurrentDirectory().removePluginMetaData(DizInfo.DIZINFO);
+			}
+		} catch(FileNotFoundException e) {
+			// No inode to remove dizinfo from or dir has been deleted
+		}
+	}	
+	
 	private void addRaceStats(CommandRequest request, CommandResponse response, DirectoryHandle dir) {
 		// show race stats
 		try {

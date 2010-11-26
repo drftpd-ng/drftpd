@@ -40,7 +40,7 @@
 		<parameter id="ParentMethod" value="doSITE_WIPE" />
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.links.hooks.LinksZipPostHook" />
 		<parameter id="HookMethod" value="doLinksZipWIPECleanupHook" />
-		<parameter id="Priority" value="10" />
+		<parameter id="Priority" value="15" />
 	</extension>
 
 	<extension plugin-id="org.drftpd.commands.zipscript.links" point-id="FixLinksProcessDir" id="FixLinksPostProcessDir">

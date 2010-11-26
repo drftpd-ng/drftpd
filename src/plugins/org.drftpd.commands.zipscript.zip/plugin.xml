@@ -37,6 +37,12 @@
 		<parameter id="HookMethod" value="doZipscriptDELEDizCleanupHook" />
 		<parameter id="Priority" value="13" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptWIPEZipCleanup">
+		<parameter id="ParentMethod" value="doSITE_WIPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
+		<parameter id="HookMethod" value="doZipscriptWIPEDizCleanupHook" />
+		<parameter id="Priority" value="13" />
+	</extension>	
 	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDDizStats">
 		<parameter id="ParentMethod" value="doCWD" />
 		<parameter id="HookClass" value="org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook" />
