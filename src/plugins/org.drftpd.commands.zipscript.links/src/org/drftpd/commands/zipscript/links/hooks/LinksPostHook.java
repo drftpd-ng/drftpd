@@ -39,7 +39,6 @@ import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author djb61
@@ -132,14 +131,14 @@ public class LinksPostHook implements PostHookInterface {
 			// WIPE failed, abort cleanup
 			return;
 		}
-		String arg = request.getArgument();
-		if (arg.startsWith("-r ")) {
-			arg = arg.substring(3);
-		}
 
-		arg = VirtualFileSystem.fixPath(arg);
+		DirectoryHandle wipeDir = null;
+		try {
+			wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(response.getObject(Dir.WIPE_PATH)).getParent();
+		} catch (KeyNotFoundException e) {
+			return;
+		}
 		
-		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
 		if (!wipeDir.exists()) {
 			return;
 		}
@@ -181,7 +180,7 @@ public class LinksPostHook implements PostHookInterface {
 
 		//check if arguement was a file
 		DirectoryHandle oldrequestdir = request.getCurrentDirectory();
-		if (arg.endsWith(".sfv")) {
+		if (request.getArgument().endsWith(".sfv")) {
 			request.setCurrentDirectory(wipeDir);
 			LinkUtils.processLink(request, "delete", _bundle);
 			request.setCurrentDirectory(oldrequestdir);

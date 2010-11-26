@@ -25,14 +25,15 @@ import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.links.LinkUtils;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.commands.zipscript.zip.DizStatus;
 import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
+import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author CyBeR
@@ -114,17 +115,17 @@ public class LinksZipPostHook implements PostHookInterface {
 			// WIPE failed, abort cleanup
 			return;
 		}
-		String arg = request.getArgument();
-		if (arg.startsWith("-r ")) {
-			arg = arg.substring(3);
+		DirectoryHandle wipeDir = null;
+		try {
+			wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(response.getObject(Dir.WIPE_PATH)).getParent();
+		} catch (KeyNotFoundException e) {
+			return;
 		}
 		
-		arg = VirtualFileSystem.fixPath(arg);
-
-		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
 		if (!wipeDir.exists()) {
 			return;
 		}
+		
 		DirectoryHandle oldrequestdir = request.getCurrentDirectory();
 		ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(wipeDir);
 		try {

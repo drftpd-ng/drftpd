@@ -218,11 +218,12 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			return;
 		}
 		
-		if (arg.startsWith("-r ")) {
-			arg = arg.substring(3);
+		DirectoryHandle wipeDir = null;
+		try {
+			wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(response.getObject(Dir.WIPE_PATH)).getParent();
+		} catch (KeyNotFoundException e) {
+			return;
 		}
-		
-		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(arg).getParent();
 		
 		try {
 			boolean noZip = true;

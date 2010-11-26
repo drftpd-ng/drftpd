@@ -68,6 +68,9 @@ public class Dir extends CommandInterface {
 	public static final Key<Boolean> ISFILE = new Key<Boolean>(Dir.class, "isFile");
 	public static final Key<Long> XFERTIME = new Key<Long>(Dir.class, "xferTime");
 
+	public static final Key<Boolean> WIPE_RECURSIVE = new Key<Boolean>(Dir.class, "wipe_recursive");
+	public static final Key<String> WIPE_PATH = new Key<String>(Dir.class, "wipe_path");
+	
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>
 	 *
@@ -650,13 +653,17 @@ public class Dir extends CommandInterface {
 
 		boolean recursive;
 
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		if (arg.startsWith("-r ")) {
 			arg = arg.substring(3);
+			response.setObject(WIPE_RECURSIVE,true);
 			recursive = true;
 		} else {
+			response.setObject(WIPE_RECURSIVE,false);
 			recursive = false;
 		}
 
+		response.setObject(WIPE_PATH,arg = VirtualFileSystem.fixPath(arg));
 		InodeHandle wipeFile;
 		User user = request.getSession().getUserNull(request.getUser());
 
@@ -686,7 +693,7 @@ public class Dir extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
-		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		return response;
 	}
 
 	/**
