@@ -226,7 +226,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			arg = arg.substring(0,arg.length()-1);
 		}
 		
-		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
+		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(arg).getParent();
 		
 		try {
 			boolean noZip = true;
@@ -238,7 +238,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 				}
 			}
 			if (noZip) {
-				request.getCurrentDirectory().removePluginMetaData(DizInfo.DIZINFO);
+				wipeDir.removePluginMetaData(DizInfo.DIZINFO);
 			}
 		} catch(FileNotFoundException e) {
 			// No inode to remove dizinfo from or dir has been deleted
