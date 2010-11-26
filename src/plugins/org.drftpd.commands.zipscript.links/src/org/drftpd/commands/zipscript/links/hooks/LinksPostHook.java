@@ -138,7 +138,7 @@ public class LinksPostHook implements PostHookInterface {
 		}
 
 		if (arg.endsWith(VirtualFileSystem.separator)) {
-			arg.substring(0,arg.length()-1);
+			arg = arg.substring(0,arg.length()-1);
 		}
 		
 		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
