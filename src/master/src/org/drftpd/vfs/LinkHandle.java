@@ -72,6 +72,10 @@ public class LinkHandle extends InodeHandle implements LinkHandleInterface {
 		return getInode().getLinkPath();
 	}
 
+	public String getTargetStringWithSlash() throws FileNotFoundException {
+		return getInode().getLinkPath() + VirtualFileSystem.separator;
+	}
+	
 	@Override
 	public void removeSlave(RemoteSlave rslave) throws FileNotFoundException {
 		// we don't have anything to remove

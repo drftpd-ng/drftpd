@@ -64,7 +64,7 @@ public class NukeLinkManagement implements PluginInterface {
 					link.getTargetDirectoryUnchecked();
 				} catch (FileNotFoundException e1) {
 					// Link target no longer exists, remove it
-					if (link.getTargetString().startsWith(fromDir.getPath())) {
+					if (link.getTargetStringWithSlash().startsWith(fromDir.getPath() + VirtualFileSystem.separator)) {
 						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
 					} else {
 						link.deleteUnchecked();
@@ -87,7 +87,7 @@ public class NukeLinkManagement implements PluginInterface {
 						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remove it
-    					if (link.getTargetString().startsWith(fromDir.getPath())) {
+						if (link.getTargetStringWithSlash().startsWith(fromDir.getPath() + VirtualFileSystem.separator)) {
     						LinkHandle newlink = parent.getNonExistentLinkHandle(link.getName().replace(fromDir.getName(), _prefix + fromDir.getName()));
     						if (event.getCommand().equalsIgnoreCase("unnuke")) {
     							newlink = parent.getNonExistentLinkHandle(link.getName().replace(_prefix,""));

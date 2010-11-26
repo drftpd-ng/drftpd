@@ -26,6 +26,7 @@ import org.drftpd.plugins.archive.event.ArchiveFinishEvent;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author CyBeR
@@ -59,7 +60,7 @@ public class ArchiveLinkManagement implements PluginInterface {
     				} catch (FileNotFoundException e1) {
     					// Link target no longer exists, remove it
     					
-    					if (link.getTargetString().startsWith(fromDir.getPath())) {
+    					if (link.getTargetStringWithSlash().startsWith(fromDir.getPath() + VirtualFileSystem.separator)) {
     						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
     					} else {
     						link.deleteUnchecked();
@@ -82,7 +83,7 @@ public class ArchiveLinkManagement implements PluginInterface {
     					} catch (FileNotFoundException e1) {
     						// Link target no longer exists, remove it
 
-        					if (link.getTargetString().startsWith(fromDir.getPath())) {
+    						if (link.getTargetStringWithSlash().startsWith(fromDir.getPath() + VirtualFileSystem.separator)) {
         						
         						LinkHandle newlink = toDir.getParent().getNonExistentLinkHandle(link.getName());
             					try {

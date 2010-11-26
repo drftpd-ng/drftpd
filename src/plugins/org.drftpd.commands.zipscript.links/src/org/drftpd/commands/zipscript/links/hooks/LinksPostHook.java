@@ -40,6 +40,7 @@ import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
 
 /**
  * @author djb61
@@ -234,7 +235,7 @@ public class LinksPostHook implements PostHookInterface {
 					link.getTargetDirectoryUnchecked();
 				} catch (FileNotFoundException e1) {
 					// Link target no longer exists, remove it
-					if (link.getTargetString().startsWith(fromDir.getPath())) {
+					if (link.getTargetStringWithSlash().startsWith(fromDir.getPath() + VirtualFileSystem.separator)) {
 						link.setTarget(link.getTargetString().replace(fromDir.getPath(),toDir.getPath()));
 					} else {
 						link.deleteUnchecked();
@@ -256,7 +257,7 @@ public class LinksPostHook implements PostHookInterface {
 						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
 						// Link target no longer exists, remove it
-    					if (link.getTargetString().startsWith(fromDir.getPath())) {
+						if (link.getTargetStringWithSlash().startsWith(fromDir.getPath() + VirtualFileSystem.separator)) {
     						LinkHandle newlink = parent.getNonExistentLinkHandle(link.getName().replace(fromDir.getName(),toDir.getName()));
     						
         					try {
