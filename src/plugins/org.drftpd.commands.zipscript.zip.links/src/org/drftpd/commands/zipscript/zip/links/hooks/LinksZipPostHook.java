@@ -118,9 +118,9 @@ public class LinksZipPostHook implements PostHookInterface {
 		if (arg.startsWith("-r ")) {
 			arg = arg.substring(3);
 		}
-		if (arg.endsWith(VirtualFileSystem.separator)) {
-			arg = arg.substring(0,arg.length()-1);
-		}
+		
+		arg = VirtualFileSystem.fixPath(arg);
+
 		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentDirectoryHandle(arg).getParent();
 		if (!wipeDir.exists()) {
 			return;

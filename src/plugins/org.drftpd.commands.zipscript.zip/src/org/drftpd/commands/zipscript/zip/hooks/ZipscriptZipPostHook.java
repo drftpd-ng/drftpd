@@ -49,7 +49,6 @@ import org.drftpd.util.GroupPosition;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -221,9 +220,6 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		
 		if (arg.startsWith("-r ")) {
 			arg = arg.substring(3);
-		}
-		if (arg.endsWith(VirtualFileSystem.separator)) {
-			arg = arg.substring(0,arg.length()-1);
 		}
 		
 		DirectoryHandle wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(arg).getParent();
