@@ -663,7 +663,7 @@ public class Dir extends CommandInterface {
 			recursive = false;
 		}
 
-		response.setObject(WIPE_PATH,arg = VirtualFileSystem.fixPath(arg));
+		response.setObject(WIPE_PATH,VirtualFileSystem.fixPath(arg));
 		InodeHandle wipeFile;
 		User user = request.getSession().getUserNull(request.getUser());
 
