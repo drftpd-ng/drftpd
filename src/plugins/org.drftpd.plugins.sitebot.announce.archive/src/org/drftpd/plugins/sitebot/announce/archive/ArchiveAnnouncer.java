@@ -90,7 +90,7 @@ public class ArchiveAnnouncer implements AnnounceInterface {
 			env.add("time", event.getArchiveTime());
 			env.add("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
 			
-			if (event.getArchiveType().getDestinationDirectory().getPath() != null) {
+			if (event.getArchiveType().getDestinationDirectory() != null) {
 				env.add("destdir", event.getArchiveType().getDestinationDirectory().getPath());
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".finish.move", env, _bundle), writer);
 			} else {
