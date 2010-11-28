@@ -8,9 +8,10 @@
 #   X.section = (Required) - Section To Archive From
 #   X.archiveafter = (Optional) - Archive Releases After X minutes
 #   X.repeat = (Optional) - How many times to check Section during 1 cycle
+#   X.scansubdirs = (Optional) - Used to scan subdirs of section instead of section dirs.  (eg. MP3)
 #   X.archiveregex = (Optional) - Which folders to archive using regex
 #   X.todirectory = (Optional) - Move directory after archive (Section name or FULL path only)
-#   X.todirectorytype = (Optional) - Type to use while moving dir (alpha/dated)
+#   X.todirectorytype = (Optional) - Type to use while moving dir (alpha/dated/rls/regex)
 #   X.priority = (Optional) - How high of a priority this ranks over other archives
 #   X.numofslaves = (Type Specific) - How many different slaves to archive too
 #   X.slavedeadafter = (Type Specific) - When to not try to mirror (ConstantMirror)
@@ -47,7 +48,7 @@
 #   X.slavename.3=slave3
 #   ----------------------------
 #
-#   This will move directors with 1080i/1080p in SECTION1 off of slave1/slave2 
+#   This will move directories with 1080i/1080p in SECTION1 off of slave1/slave2 
 #   and move them to 2 slaves with most free space after 1 month.
 #   ----------------------------
 #   X.type=MoveReleaseOffSlavesToMostFreeSlaves
@@ -63,7 +64,7 @@
 #   X.slavename.3=slave5
 #   ----------------------------
 #
-#   This will move directors with 1080i/1080p in SECTION1 to one
+#   This will move directories with 1080i/1080p in SECTION1 to one
 #   of the slaves listed after 1 day.  It will also move the dir to SECTION2
 #   in a alpha dir (ie /SECTION2/A - for dirs starting with A)
 #   ----------------------------
@@ -79,7 +80,7 @@
 #   X.todirectorytype=alpha
 #   ----------------------------
 #
-#   This will move directors with 1080i/1080p in SECTION1 to
+#   This will move directories with 1080i/1080p in SECTION1 to
 #   /folder2/subfolder1/MMdd after 1 day.  This will also repeat
 #   5 times each cycle.  Since there is no slave archiving it can
 #   move up to 5 directories every cycle time.
@@ -107,6 +108,41 @@
 #   X.slavename.2=slave2
 #   ----------------------------
 #
+#   This will MP3 Dated Subdirs (/SECTION1/0101/*) directories to
+#   the slaves listed after 1 day.
+#   ----------------------------
+#   X.type=MoveReleaseToSpecificSlaves
+#   X.section=SECTION1
+#   X.scansubdirs=1
+#   X.archiveAfter=1440
+#   X.numofslaves=1
+#   X.priority=3
+#   X.slavename.1=slave1
+#   X.slavename.2=slave2
+#   ----------------------------
+#
+#   This will move directories in SECTION1 to
+#   /folder2/subfolder1/rls.name/rls.name.Season.01 after 1 day.
+#   NOTE: ${episode} is also a element that can be read
+#   EXAMPLE: rls.name.S01E02.extension-group
+#   ----------------------------
+#   X.type=MoveReleaseToSpecificFolder
+#   X.section=SECTION1
+#   X.archiveAfter=1440
+#   X.todirectory=/folder2/subfolder1
+#   X.todirectorytype=rls:${rls}/${rls}.Season.${season}
+#   ----------------------------
+#
+#   This will move directories in SECTION1 to
+#   /folder2/subfolder1/rls.name after 1 day.
+#   EXAMPLE: rls.name.S01E02.extension-group
+#   ----------------------------
+#   X.type=MoveReleaseToSpecificFolder
+#   X.section=SECTION1
+#   X.archiveAfter=1440
+#   X.todirectory=/folder2/subfolder1
+#   X.todirectorytype=regex:(?i)(.*)(\\.|-|_)S\\d.*
+#   ----------------------------
 #
 ################################################################################
 
