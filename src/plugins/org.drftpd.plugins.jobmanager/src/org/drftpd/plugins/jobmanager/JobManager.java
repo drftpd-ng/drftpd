@@ -280,6 +280,9 @@ public class JobManager implements PluginInterface {
 			_runJob.cancel();
 			getGlobalContext().getTimer().purge();
 		}
+		if (_sleepSeconds <= 0) {
+			_sleepSeconds = 500;
+		}
 		_runJob = new TimerTask() {
 			public void run() {
 				if (_isStopped) {
