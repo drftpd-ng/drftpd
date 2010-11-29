@@ -291,7 +291,11 @@ public class JobManager implements PluginInterface {
 				new JobTransferThread(getJobManager()).start();
 			}
 		};
-		getGlobalContext().getTimer().schedule(_runJob, 0, _sleepSeconds);
+		try {
+			getGlobalContext().getTimer().schedule(_runJob, 0, _sleepSeconds);
+		} catch (IllegalStateException e) {
+			// Timer Already Canceled
+		}
 	}
 
 	public synchronized void removeJobFromQueue(Job job) {
