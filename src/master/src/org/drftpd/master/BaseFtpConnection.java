@@ -542,6 +542,17 @@ public class BaseFtpConnection extends Session implements Runnable {
 		}
 	}
 
+	/**
+	 * This is required because otherwise the superclass Hashtable.equals() will be
+	 * used which treats two maps as equal if the contents/size of the maps are equal
+	 * including for empty maps. For connections we only want equality to be true if 
+	 * the objects being compared truly are the same connection.
+	 */
+	@Override
+	public boolean equals(Object o) {
+		return o == this;
+	}
+
 	class CommandThread implements Runnable {
 
 		private FtpRequest _ftpRequest;
