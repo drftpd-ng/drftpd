@@ -1028,6 +1028,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 	 * performs no actions and may be overridden as required.
 	 */
 	protected void onDisconnect() {
+        if (_outputThread != null) { 
+         	_outputThread.interrupt(); 
+        } 
 		try {
 			if (!_isTerminated && !_userDisconnected) {
 				reconnect();
