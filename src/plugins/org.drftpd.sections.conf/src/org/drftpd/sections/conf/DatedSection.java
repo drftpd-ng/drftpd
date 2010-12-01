@@ -237,6 +237,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		if (rc._type == TOP_OF_DAY) {
 			processNewDate(d);
 		}
+		resetHour(d);
 	}
 
 	public void resetHour(Date d) {
@@ -255,6 +256,9 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		if (rc._type == TOP_OF_MONTH) {
 			processNewDate(d);
 		}
+		// must do this to conform to TimeEventInterface
+		resetDay(d);
+		resetHour(d);
 	}
 
 	public void resetWeek(Date d) {
@@ -264,7 +268,10 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 	}
 
 	public void resetYear(Date d) {
-		// no year option currently
+		// must do this to conform to TimeEventInterface
+		resetMonth(d);
+		resetDay(d);
+		resetHour(d);
 	}
 	
     public SimpleDateFormat getDateFormat() {
