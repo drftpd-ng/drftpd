@@ -26,10 +26,10 @@
 #   ----------------------------
 #   X.type=ConstantMirroring
 #   X.section=SECTION1
-#   X.archiveAfter=10080
+#   X.archiveafter=10080
 #   X.numofslaves=2
 #   X.priority=3
-#   X.slaveDeadAfter=1440
+#   X.slavedeadafter=1440
 #   X.slavename.1=slave1
 #   X.slavename.2=slave2
 #   X.slavename.3=slave3
@@ -40,7 +40,7 @@
 #   ----------------------------
 #   X.type=MoveReleaseToMostFreeSlaves
 #   X.section=SECTION1
-#   X.archiveAfter=43200
+#   X.archiveafter=43200
 #   X.numofslaves=1
 #   X.priority=3
 #   X.slavename.1=slave1
@@ -53,12 +53,12 @@
 #   ----------------------------
 #   X.type=MoveReleaseOffSlavesToMostFreeSlaves
 #   X.section=SECTION1
-#   X.archiveAfter=43200
+#   X.archiveafter=43200
 #   X.numofslaves=2
 #   X.archiveregex=^.*(1080(p|i)).*$
 #   X.priority=3
-#   X.offffslave.1=slave1
-#   X.offffslave.2=slave2
+#   X.offofslave.1=slave1
+#   X.offofslave.2=slave2
 #   X.slavename.1=slave3
 #   X.slavename.2=slave4
 #   X.slavename.3=slave5
@@ -70,7 +70,7 @@
 #   ----------------------------
 #   X.type=MoveReleaseToSpecificSlaves
 #   X.section=SECTION1
-#   X.archiveAfter=1440
+#   X.archiveafter=1440
 #   X.numofslaves=1
 #   X.archiveregex=^.*(1080(p|i)).*$
 #   X.priority=3
@@ -87,7 +87,7 @@
 #   ----------------------------
 #   X.type=MoveReleaseToSpecificFolder
 #   X.section=SECTION1
-#   X.archiveAfter=1440
+#   X.archiveafter=1440
 #   X.archiveregex=^.*(1080(p|i)).*$
 #   X.todirectory=/folder2/subfolder1
 #   X.todirectorytype=dated:MMdd
@@ -101,7 +101,7 @@
 #   ----------------------------
 #   X.type=MoveReleaseOffMultipleSlavesToSpecificSlaves
 #   X.section=SECTION1
-#   X.archiveAfter=1440
+#   X.archiveafter=1440
 #   X.numofslaves=1
 #   X.priority=1
 #   X.slavename.1=slave1
@@ -114,7 +114,7 @@
 #   X.type=MoveReleaseToSpecificSlaves
 #   X.section=SECTION1
 #   X.scansubdirs=1
-#   X.archiveAfter=1440
+#   X.archiveafter=1440
 #   X.numofslaves=1
 #   X.priority=3
 #   X.slavename.1=slave1
@@ -128,7 +128,7 @@
 #   ----------------------------
 #   X.type=MoveReleaseToSpecificFolder
 #   X.section=SECTION1
-#   X.archiveAfter=1440
+#   X.archiveafter=1440
 #   X.todirectory=/folder2/subfolder1
 #   X.todirectorytype=rls:${rls}/${rls}.Season.${season}
 #   ----------------------------
@@ -139,7 +139,7 @@
 #   ----------------------------
 #   X.type=MoveReleaseToSpecificFolder
 #   X.section=SECTION1
-#   X.archiveAfter=1440
+#   X.archiveafter=1440
 #   X.todirectory=/folder2/subfolder1
 #   X.todirectorytype=regex:(?i)(.*)(\\.|-|_)S\\d.*
 #   ----------------------------
