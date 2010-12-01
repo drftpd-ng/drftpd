@@ -292,6 +292,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		GlobalContext.getEventService().publish(new UserEvent(this, "RESETDAY", resetDate
 				.getTime()));
 		super.resetDay(resetDate);
+		super.resetHour(resetDate);
 		logger.info("Reset daily stats for " + getName());
 	}
 
@@ -299,6 +300,8 @@ public abstract class AbstractUser extends User implements Commitable {
 		GlobalContext.getEventService().publish(new UserEvent(this, "RESETMONTH", resetDate
 				.getTime()));
 		super.resetMonth(resetDate);
+		super.resetDay(resetDate);
+		super.resetHour(resetDate);
 		logger.info("Reset monthly stats for " + getName());
 	}
 
@@ -306,21 +309,25 @@ public abstract class AbstractUser extends User implements Commitable {
 		GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate
 				.getTime()));
 		super.resetWeek(resetDate);
-		
 		if (getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT) > 0) {
 			setCredits(getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT));
 		}
 		logger.info("Reset weekly stats for " + getName());
 	}	
 
-	public void resetHour(Date d) {
+	public void resetHour(Date resetDate) {
 		// do nothing for now
-		super.resetHour(d);
+		super.resetHour(resetDate);
 	}
 
-	public void resetYear(Date d) {
-		// do nothing for now
-		super.resetYear(d);
+	public void resetYear(Date resetDate) {
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETYEAR", resetDate
+				.getTime()));
+		super.resetYear(resetDate);
+		super.resetMonth(resetDate);
+		super.resetDay(resetDate);	
+		super.resetHour(resetDate);
+		logger.info("Reset Yearly stats for " + getName());
 	}
 
 	public void setCredits(long credits) {
