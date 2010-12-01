@@ -47,6 +47,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 	protected static final int TOP_OF_DAY = 3;
 	protected static final int TOP_OF_WEEK = 4;
 	protected static final int TOP_OF_MONTH = 5;
+	protected static final int TOP_OF_YEAR = 6;
 
 	// The gmtTimeZone is used only in computeCheckPeriod() method.
 	private static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
@@ -94,7 +95,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		// set sate to 1970-01-01 00:00:00 GMT
 		Date epoch = new Date(0);
 		/* if(datePattern != null) */{
-			for (int i = TOP_OF_MINUTE; i <= TOP_OF_MONTH; i++) {
+			for (int i = TOP_OF_MINUTE; i <= TOP_OF_YEAR; i++) {
 				SimpleDateFormat simpleDateFormat = (SimpleDateFormat) _dateFormat
 						.clone();
 				simpleDateFormat.setTimeZone(gmtTimeZone); // do all date
@@ -141,6 +142,10 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		case TOP_OF_MONTH:
 			logger.debug("DatedSection [" + getName() + "] to be rolled at start of every month.");
 			break;
+
+		case TOP_OF_YEAR:
+			logger.debug("DatedSection [" + getName() + "] to be rolled at start of new year.");
+			break;			
 
 		default:
 			logger.warn("Unknown periodicity for DatedSection [" + getName() + "].");
@@ -268,6 +273,9 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 	}
 
 	public void resetYear(Date d) {
+		if (rc._type == TOP_OF_YEAR) {
+			processNewDate(d);
+		}
 		// must do this to conform to TimeEventInterface
 		resetMonth(d);
 		resetDay(d);
@@ -366,6 +374,16 @@ class RollingCalendar extends GregorianCalendar {
 
 			break;
 
+		case DatedSection.TOP_OF_YEAR:
+			this.set(Calendar.DATE, 1);
+			this.set(Calendar.HOUR_OF_DAY, 0);
+			this.set(Calendar.SECOND, 0);
+			this.set(Calendar.MILLISECOND, 0);
+			this.set(Calendar.MONTH, 1);
+			this.add(Calendar.YEAR, 1);
+
+			break;
+			
 		default:
 			throw new IllegalStateException("Unknown periodicity type.");
 		}
