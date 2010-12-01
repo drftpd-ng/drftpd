@@ -144,6 +144,17 @@
 #   X.todirectorytype=regex:(?i)(.*)(\\.|-|_)S\\d.*
 #   ----------------------------
 #
+#   This will move directories in DATED SECTION1 to
+#   /folder2/subfolder1/2010-MM after 1 day.
+#   EXAMPLE: 0102
+#   ----------------------------
+#   X.type=MoveReleaseToSpecificFolder
+#   X.section=SECTION1
+#   X.archiveafter=1440
+#   X.todirectory=/folder2/subfolder1
+#   X.todirectorytype=rls:2010-${regex:(\\d\\d).*}
+#   ----------------------------
+#
 ################################################################################
 
 cycletime=30

@@ -727,16 +727,16 @@ public abstract class ArchiveType {
 				return "UNKNOWN";
 			}
 		} else if (type.toLowerCase().startsWith("dated:")) {
-			String[] splittype = _archiveDirType.split(":");
-			if (splittype.length > 1) {
-				SimpleDateFormat _dateFormat = new SimpleDateFormat(splittype[1]);
+			String splittype = type.substring(6);
+			if (splittype.length() > 1) {
+				SimpleDateFormat _dateFormat = new SimpleDateFormat(splittype);
 				return _dateFormat.format(new Date());
 			}
 			logger.warn("Date format invalid for: _archiveDirType");
 		} else if (type.toLowerCase().startsWith("rls:")) {
-			String[] splittype = _archiveDirType.split(":");
-			if (splittype.length > 1) {
-				String retstr = splittype[1];
+			String splittype = type.substring(4);
+			if (splittype.length() > 1) {
+				String retstr = splittype;
 				if (retstr.contains("${rls}")) {
 					Pattern pattern = Pattern.compile("(?i)(.*)(\\.|-|_)S\\d.*");
 					Matcher matcher = pattern. matcher(inode.getName());
@@ -776,13 +776,34 @@ public abstract class ArchiveType {
 					return "UNKNOWN"; 
 				}
 				
+				while (retstr.contains("${regex:")) {
+					String regexstr = retstr.substring(retstr.indexOf("${regex:") + 8, retstr.indexOf("}"));
+					if (regexstr.length() < 1) {
+						break;
+					}
+					String fullstr = "${regex:" + regexstr + "}";
+					try {
+						Pattern pattern = Pattern.compile(regexstr);
+						Matcher matcher = pattern.matcher(inode.getName());
+						if (matcher.matches()) {
+							retstr = retstr.replace(fullstr, matcher.group(1));
+						}
+					} catch (PatternSyntaxException e) {
+						logger.debug("Regex Syntax Error in '" + regexstr + "' for '" + fullstr + "'",e);
+					}
+					
+					if (retstr.contains(fullstr)) {
+						return "UNKNOWN";
+					}
+					
+				}
 				return retstr;
 			}
 			return "UNKNOWN";
 		} else if (type.toLowerCase().startsWith("regex:")) {
-			String[] splittype = _archiveDirType.split(":");
-			if (splittype.length > 1) {
-				Pattern pattern = Pattern.compile(splittype[1]);
+			String splittype = type.substring(6);
+			if (splittype.length() > 1) {
+				Pattern pattern = Pattern.compile(splittype);
 				Matcher matcher = pattern. matcher(inode.getName());
 				if(matcher.matches()) {
 					return matcher.group(1);
