@@ -376,7 +376,7 @@ public class Nuke extends CommandInterface {
         String reason;
 
         if (st.hasMoreTokens()) {
-            reason = st.nextToken("");
+            reason = st.nextToken("").trim();
         } else {
             reason = "";
         }
