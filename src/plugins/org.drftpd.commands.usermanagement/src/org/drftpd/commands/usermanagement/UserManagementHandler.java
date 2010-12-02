@@ -1852,7 +1852,8 @@ public class UserManagementHandler extends CommandInterface {
 			boolean idle, boolean command, boolean statusUsers, boolean statusSpeed, boolean restrictUser) {
 		Session session = request.getSession();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		
+
+		int nbusers = 0;
 		long speedup = 0;
 		long speeddn = 0;
 		long speed = 0;
@@ -1887,8 +1888,9 @@ public class UserManagementHandler extends CommandInterface {
 					continue;
 				}
 			}
+
+			nbusers++;
 			env.add("targetuser", user.getName());
-			
 			env.add("ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
 
 			synchronized (conn) {
@@ -1938,10 +1940,9 @@ public class UserManagementHandler extends CommandInterface {
 					}
 				}
 			}
-
 		}
 
-		env.add("currentusers", conns.size());
+		env.add("currentusers", nbusers);
 		env.add("maxusers", GlobalContext.getConfig().getMaxUsersTotal());
 		env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
 		env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
