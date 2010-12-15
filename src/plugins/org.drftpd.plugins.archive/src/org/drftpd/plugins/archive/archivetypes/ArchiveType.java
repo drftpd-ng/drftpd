@@ -748,7 +748,7 @@ public abstract class ArchiveType {
 					return "UNKNOWN"; 
 				}				
 				if (retstr.contains("${season}")) {
-					Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s(\\d|\\d\\d)e.*");
+					Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s(\\d|\\d\\d)(e|d).*");
 					Matcher matcher = pattern. matcher(inode.getName());
 					if(matcher.matches()) {
 						if (matcher.group(2).length() < 2) {
