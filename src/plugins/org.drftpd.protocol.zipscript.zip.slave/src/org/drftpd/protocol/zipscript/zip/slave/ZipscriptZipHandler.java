@@ -16,7 +16,6 @@
  */
 package org.drftpd.protocol.zipscript.zip.slave;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -92,14 +91,14 @@ public class ZipscriptZipHandler extends AbstractHandler {
 	private DizInfo getDizInfo(Slave slave, String path) {
 		DizInfo dizInfo = new DizInfo();
 		InputStream entryStream = null;
-		ZipInputArchive zipFile = null;
+		SimpleReadOnlyFile zipFile = null;
 		try {
-			File file = slave.getRoots().getFile(path);
-			zipFile = new ZipInputArchive(new SimpleReadOnlyFile(file),"UTF-8",true,false);
-			for (Enumeration<?> zipEntries = zipFile.getArchiveEntries();zipEntries.hasMoreElements();) {
+			zipFile = new SimpleReadOnlyFile(slave.getRoots().getFile(path));
+			ZipInputArchive zipArchive = new ZipInputArchive(zipFile,"UTF-8",true,false);
+			for (Enumeration<?> zipEntries = zipArchive.getArchiveEntries();zipEntries.hasMoreElements();) {
 				ZipEntry zipEntry = (ZipEntry)zipEntries.nextElement();
 				if (zipEntry.getName().toLowerCase().equals("file_id.diz")) {
-					entryStream = zipFile.getCheckedInputStream(zipEntry);
+					entryStream = zipArchive.getCheckedInputStream(zipEntry);
 					byte[] buff = new byte[65536];
 					StringBuilder dizBuffer = new StringBuilder();
 					int bytesRead = 0;
