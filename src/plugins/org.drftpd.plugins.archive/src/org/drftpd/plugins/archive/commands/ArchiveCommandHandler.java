@@ -18,7 +18,6 @@
 package org.drftpd.plugins.archive.commands;
 
 import java.io.FileNotFoundException;
-import java.lang.reflect.Constructor;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -115,39 +114,25 @@ public class ArchiveCommandHandler extends CommandInterface {
 
         String archiveTypeName = null;
         ArchiveType archiveType = null;
-        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().getSection(dir.getPath());
 
+        SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+        
         if (st.hasMoreTokens()) { // load the specific type
             archiveTypeName = st.nextToken();
-
-            Class<?>[] classParams = { org.drftpd.plugins.archive.Archive.class,SectionInterface.class, Properties.class, int.class };
-            Constructor<?> constructor = null;
-
-            try {
-				constructor = Class.forName("org.drftpd.plugins.archive.archivetypes." + archiveTypeName).getConstructor(classParams);
-			} catch (Exception e1) {
-				logger.debug("Serious error, ArchiveType: " + archiveTypeName + " does not exists", e1);
-				env.add("archivetypename", archiveTypeName);
-				response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "incompatible"));
-				return response;
-			}
 
             Properties props = new Properties();
 
             while (st.hasMoreTokens()) {
-                addConfig(props, st.nextToken(), section);
+                addConfig(props, st.nextToken());
             }
-
-            Object[] objectParams = { archive, section, props, 0 };
-
-            try {
-                archiveType = (ArchiveType) constructor.newInstance(objectParams);
-            } catch (Exception e2) {
-                logger.warn("Unable to load ArchiveType: " + archiveTypeName, e2);
-                env.add("exception", e2.getMessage());
-                response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "badarchivetype"));
-                return response;
-            }
+            
+            archiveType = archive.getArchiveType(0,archiveTypeName,section,props);
+            if (archiveType == null) {
+				logger.debug("Serious error, ArchiveType: " + archiveTypeName + " does not exists");
+				env.add("archivetypename", archiveTypeName);
+				response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "incompatible"));
+				return response;
+			}
         }
 
         HashSet<RemoteSlave> slaveSet = new HashSet<RemoteSlave>();
@@ -188,8 +173,7 @@ public class ArchiveCommandHandler extends CommandInterface {
         return response;
     }
 
-    private void addConfig(Properties props, String string,
-        SectionInterface section) {
+    private void addConfig(Properties props, String string) {
         if (string.indexOf('=') == -1) {
             throw new IllegalArgumentException(string + " does not contain an = and is therefore not a property");
         }
@@ -204,7 +188,7 @@ public class ArchiveCommandHandler extends CommandInterface {
             throw new IllegalArgumentException(string + " is already contained in the Properties");
         }
 
-        props.put("0." + data[0], data[1]);
+        props.put("0." + data[0].toLowerCase(), data[1]);
     }
 
     public CommandResponse doLISTARCHIVETYPES(CommandRequest request) {

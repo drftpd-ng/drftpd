@@ -67,7 +67,7 @@ public class Archive implements PluginInterface {
 	 * Returns the archive type corrisponding with the .conf file
 	 * and which Archive number the loop is on
 	 */
-	public ArchiveType getArchiveType(int count, String type) {
+	public ArchiveType getArchiveType(int count, String type, SectionInterface sec, Properties props) {
 		ArchiveType archiveType = null;
 		Class<?>[] SIG = { Archive.class, SectionInterface.class, Properties.class, int.class };
 		
@@ -76,12 +76,10 @@ public class Archive implements PluginInterface {
 			logger.error("Archive Type: " + type + " wasn't loaded.");
 			
 		} else {
-	
-			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section",""));
 	        if (!sec.getName().isEmpty()) {
 				try {
 					Class<ArchiveType> clazz = _typesMap.get(type);
-					archiveType = clazz.getConstructor(SIG).newInstance(new Object[] { this, sec, _props, count });
+					archiveType = clazz.getConstructor(SIG).newInstance(new Object[] { this, sec, props, count });
 	
 				} catch (Exception e) {
 					logger.error("Unable to load ArchiveType for section " + count + "." + type, e);
@@ -143,7 +141,8 @@ public class Archive implements PluginInterface {
 				
 				String type;
 				while ((type = PropertyHelper.getProperty(_props, count + ".type",null)) != null) {
-					ArchiveType archiveType = getArchiveType(count,type);
+					SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section",""));
+					ArchiveType archiveType = getArchiveType(count,type,sec,_props);
 					if (archiveType != null) {
 						new ArchiveHandler(archiveType).start();
 					}
