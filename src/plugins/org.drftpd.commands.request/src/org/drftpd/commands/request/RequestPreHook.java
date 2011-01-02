@@ -48,14 +48,18 @@ public class RequestPreHook implements PreHookInterface {
 
 	public CommandRequestInterface doWklyAllotmentPreCheck(CommandRequest request) {
 		User user = request.getSession().getUserNull(request.getUser());
-		int weekReqs = user.getKeyedMap().getObject(RequestUserData.WEEKREQS,0);
-		if (_weekMax != 0 && weekReqs >= _weekMax && !_weekExempt.check(user)) {
-			// User is not exempted and max number of request this week is made already
-			request.setAllowed(false);
-			request.setDeniedResponse(new CommandResponse(530, "Access denied - " +
-					"You have reached max(" + _weekMax + ") number of requests per week"));
-		}
-		return request;
+		if (user != null) {
+			int weekReqs = user.getKeyedMap().getObjectInteger(RequestUserData.WEEKREQS);
+			if (_weekMax != 0 && weekReqs >= _weekMax && !_weekExempt.check(user)) {
+				// User is not exempted and max number of request this week is made already
+				request.setAllowed(false);
+				request.setDeniedResponse(new CommandResponse(530, "Access denied - " + "You have reached max(" + _weekMax + ") number of requests per week"));
+			}
+			return request;
+		} 
+		request.setAllowed(false);
+		request.setDeniedResponse(new CommandResponse(530, "Access denied - No Such User"));
+		return request;		
 	}
 
 	/**
