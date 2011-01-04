@@ -27,8 +27,11 @@ public class VFSExceptionListener implements ExceptionListener {
 	private static final Logger logger = Logger
 			.getLogger(VirtualFileSystem.class.getName());
 
-	public VFSExceptionListener() {
+	private String _inodePath;
+
+	public VFSExceptionListener(String inodePath) {
 		super();
+		_inodePath = inodePath;
 	}
 
 	public void exceptionThrown(Exception arg0) {
@@ -37,9 +40,9 @@ public class VFSExceptionListener implements ExceptionListener {
 		} else if (arg0 instanceof NullPointerException) {
 			// suppress this as will be thrown by deserializing plugin metadata which is no longer needed
 		} else if (arg0 instanceof InvocationTargetException) {
-			logger.error("ExceptionListener throwing", arg0.getCause());
+			logger.error("ExceptionListener throwing for inode " + _inodePath, arg0.getCause());
 		} else {
-			logger.error("ExceptionListener throwing", arg0);
+			logger.error("ExceptionListener throwing for inode " + _inodePath, arg0);
 		}
 	}
 }

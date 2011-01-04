@@ -232,7 +232,7 @@ public class VirtualFileSystem {
 		try {
 			xmlDec = new XMLDecoder(new BufferedInputStream(
 					new FileInputStream(fullPath)));
-			xmlDec.setExceptionListener(new VFSExceptionListener());
+			xmlDec.setExceptionListener(new VFSExceptionListener(fullPath));
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec
@@ -356,7 +356,7 @@ public class VirtualFileSystem {
 			enc = new XMLEncoder(new BufferedOutputStream(
 					new SafeFileOutputStream(fullPath)));
 			inode.setupXML(enc);
-			enc.setExceptionListener(new VFSExceptionListener());
+			enc.setExceptionListener(new VFSExceptionListener(fullPath));
 			enc.writeObject(inode);
 		} catch (IOException e) {
 			logger.error("Unable to write " + fullPath + " to disk", e);
