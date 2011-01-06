@@ -33,6 +33,7 @@ import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
+import org.drftpd.event.RenameFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.io.PermissionDeniedException;
@@ -492,6 +493,8 @@ public class Dir extends CommandInterface {
 
 		request.getSession().setObject(RENAMETO, toInode);
 
+		GlobalContext.getEventService().publishAsync(new RenameFtpEvent(request.getSession().getUserNull(request.getUser()), "RNTO", fromInode, toInode, System.currentTimeMillis()));
+		
 		/*logger.debug("after rename toInode-" +toInode);
 		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
 		logger.debug("after rename toInode.getParent()-" + toInode.getParent());
