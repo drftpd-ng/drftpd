@@ -171,6 +171,9 @@ public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandR
 	}
 
 	public User getUserObject() throws NoSuchUserException, UserFileException {
+		if (getUser() == null) {
+			throw new NoSuchUserException("User not set, authentication may not have completed yet");
+		}
 		return GlobalContext.getGlobalContext().getUserManager().getUserByName(getUser());
 	}
 

@@ -187,6 +187,20 @@ public class BaseFtpConnection extends Session implements Runnable {
 	}
 
 	public User getUserNull() {
+		if (_user == null || !isAuthenticated()) {
+			return null;
+		}
+		try {
+			return getGlobalContext().getUserManager().getUserByNameUnchecked(
+					_user);
+		} catch (NoSuchUserException e) {
+			return null;
+		} catch (UserFileException e) {
+			return null;
+		}
+	}
+
+	public User getUserNullUnchecked() {
 		if (_user == null) {
 			return null;
 		}
@@ -204,7 +218,10 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * @return the username (string).
 	 */
 	public String getUsername() {
-		return _user;
+		if (isAuthenticated()) {
+			return _user;
+		}
+		return null;
 	}
 
 	public boolean isAuthenticated() {
@@ -572,7 +589,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 			clearAborted();
 			CommandRequestInterface cmdRequest = _commandManager.newRequest(
 					_ftpRequest.getCommand(), _ftpRequest.getArgument(),
-					_currentDirectory, _user, _conn, _conn.getCommands().get(_ftpRequest.getCommand()));
+					_currentDirectory, _conn.getUsername(), _conn, _conn.getCommands().get(_ftpRequest.getCommand()));
 			CommandResponseInterface cmdResponse = _commandManager
 				.execute(cmdRequest);
 			if (cmdResponse != null) {

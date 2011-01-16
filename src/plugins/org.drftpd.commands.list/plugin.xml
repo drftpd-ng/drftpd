@@ -38,4 +38,10 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="doSTATPerm">
+		<parameter id="ParentMethod" value="doSTAT" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
 </plugin>

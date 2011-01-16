@@ -111,7 +111,7 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doPASS(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        if (conn.getUserNull() == null) {
+        if (conn.getUserNullUnchecked() == null) {
         	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
         }
 
@@ -119,7 +119,7 @@ public class LoginHandler extends CommandInterface {
         String pass = request.hasArgument() ? request.getArgument() : "";
 
         // login failure - close connection
-        if (conn.getUserNull().checkPassword(pass)) {
+        if (conn.getUserNullUnchecked().checkPassword(pass)) {
             conn.setAuthenticated(true);
             GlobalContext.getEventService().publishAsync(new UserEvent(
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
