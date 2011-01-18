@@ -685,23 +685,26 @@ public class Find extends CommandInterface {
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
-				if (!inode.isHidden(user)) {
-					env.add("name", inode.getName());
-					env.add("path", inode.getPath());
-					env.add("owner", inode.getUsername());
-					env.add("group", inode.getGroup());
-					env.add("size", Bytes.formatBytes(inode.getSize()));
-					for (Action findAction : actions) {
-						if ((inode.isFile() && findAction.execInFiles()) ||
-								(inode.isDirectory() && findAction.execInDirs())) {
-							logger.debug("Action "+ findAction.getClass() + " executing on " + inode.getPath());
-							String text = findAction.exec(request, inode);
-							if (!quiet || findAction.failed())
-								responses.add(text);
-						}
-					}
-					results++;
-				}
+				if (inode.isHidden(user) ||
+                        inode.getPath().matches(request.getProperties().getProperty("path_filter",""))) {
+                    // No access or path filtered for this command
+                    continue;
+                }
+                env.add("name", inode.getName());
+                env.add("path", inode.getPath());
+                env.add("owner", inode.getUsername());
+                env.add("group", inode.getGroup());
+                env.add("size", Bytes.formatBytes(inode.getSize()));
+                for (Action findAction : actions) {
+                    if ((inode.isFile() && findAction.execInFiles()) ||
+                            (inode.isDirectory() && findAction.execInDirs())) {
+                        logger.debug("Action "+ findAction.getClass() + " executing on " + inode.getPath());
+                        String text = findAction.exec(request, inode);
+                        if (!quiet || findAction.failed())
+                            responses.add(text);
+                    }
+                }
+                results++;
 			} catch (FileNotFoundException e) {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}

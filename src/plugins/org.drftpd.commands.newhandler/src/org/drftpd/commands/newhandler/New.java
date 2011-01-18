@@ -138,6 +138,11 @@ public class New extends CommandInterface {
 			for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext() && (pos <= count); pos++) {
 				try {
 					DirectoryHandle dir = iter.next();
+                    if (dir.isHidden(user)) {
+                        // User do not have access to this dir, skip and decrement pos.
+                        pos--;
+                        continue;
+                    }
 					env.add("pos", "" + pos);
 					env.add("name", allSections ? dir.getPath() : dir.getName());
 					env.add("diruser", dir.getUsername());

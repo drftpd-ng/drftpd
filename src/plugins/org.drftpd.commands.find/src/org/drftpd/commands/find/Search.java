@@ -64,7 +64,10 @@ public class Search extends CommandInterface {
 
 		params.setName(request.getArgument());
 
-		return search(request, params, Integer.parseInt(request.getProperties().getProperty("limit","5")));
+        int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
+        String pathFilter = request.getProperties().getProperty("path_filter","");
+
+		return search(request, params, limit, pathFilter);
 	}
 
 	public CommandResponse doDUPE(CommandRequest request) throws ImproperUsageException {
@@ -77,10 +80,13 @@ public class Search extends CommandInterface {
 		params.setName(request.getArgument());
 		params.setExact(true);
 
-		return search(request, params, Integer.parseInt(request.getProperties().getProperty("limit","5")));
+        int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
+        String pathFilter = request.getProperties().getProperty("path_filter","");
+
+		return search(request, params, limit, pathFilter);
 	}
 
-	private CommandResponse search(CommandRequest request, AdvancedSearchParams params, int limit) {
+	private CommandResponse search(CommandRequest request, AdvancedSearchParams params, int limit, String pathFilter) {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -116,14 +122,16 @@ public class Search extends CommandInterface {
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
-				if (!inode.isHidden(user)) {
-					env.add("name", inode.getName());
-					env.add("path", inode.getPath());
-					env.add("owner", inode.getUsername());
-					env.add("group", inode.getGroup());
-					env.add("size", Bytes.formatBytes(inode.getSize()));
-					responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
-				}
+				if (inode.isHidden(user) || inode.getPath().matches(pathFilter)) {
+                    // No access or path filtered for this command
+                    continue;
+                }
+                env.add("name", inode.getName());
+                env.add("path", inode.getPath());
+                env.add("owner", inode.getUsername());
+                env.add("group", inode.getGroup());
+                env.add("size", Bytes.formatBytes(inode.getSize()));
+                responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
 			} catch (FileNotFoundException e) {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}

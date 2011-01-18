@@ -6,6 +6,8 @@ method doFIND
 perms *
 limit.default 5
 limit.max 20
+# Regex path filter
+path_filter ^/PRE/.*
 sendToSlaves =siteop
 deleteFromSlaves =siteop
 wipe =siteop
@@ -47,6 +49,8 @@ class Search
 method doSEARCH
 perms *
 limit 5
+# Regex path filter
+path_filter ^/PRE/.*
 help Searches for files and directories using wildcards.
 help.specific ${command} <word> [word ..]
 input all
@@ -59,6 +63,8 @@ class Search
 method doDUPE
 perms *
 limit 5
+# Regex path filter
+path_filter ^/PRE/.*
 help Searches for files and directories using exact name match.
 help.specific ${command} <name>
 input all
