@@ -123,15 +123,15 @@ public class Search extends CommandInterface {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
 				if (inode.isHidden(user) || inode.getPath().matches(pathFilter)) {
-                    // No access or path filtered for this command
-                    continue;
-                }
-                env.add("name", inode.getName());
-                env.add("path", inode.getPath());
-                env.add("owner", inode.getUsername());
-                env.add("group", inode.getGroup());
-                env.add("size", Bytes.formatBytes(inode.getSize()));
-                responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
+					// No access or path filtered for this command
+					continue;
+				}
+				env.add("name", inode.getName());
+				env.add("path", inode.getPath());
+				env.add("owner", inode.getUsername());
+				env.add("group", inode.getGroup());
+				env.add("size", Bytes.formatBytes(inode.getSize()));
+				responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
 			} catch (FileNotFoundException e) {
 				logger.warn("Index contained an unexistent inode: " + item.getKey());
 			}
