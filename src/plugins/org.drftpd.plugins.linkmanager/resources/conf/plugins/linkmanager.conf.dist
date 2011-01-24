@@ -11,6 +11,6 @@
 #	x.sectionexclude = Regex format to Exclude Sections from Types
 #	x.deleteon = Delete links on what commands (RMD/DEL/WIPE/NUKE/*)
 #	x.addparentdir = A Regex representation to added these folder as a child of the parent release 
-#	x.linkname = How you want the linkname to look. ${dirname}
+#	x.linkname = How you want the linkname to look. ${dirname} ${section}
 #
 ################################################################################
