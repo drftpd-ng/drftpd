@@ -1,0 +1,30 @@
+################################################################################
+#	ZIPINCOMPLETE:
+#
+#	This will find all directories that are incomplete and not Excluded
+#	using a .zip file and place a link to said directory in /_INCOMPLETES_
+#
+#	x.type=ZIPINCOMPLETE
+#	x.dirname=/_INCOMPLETES_
+#	x.section=*
+#	x.exclude=
+#	x.sectionexclude=^(?i)(pre|staff|speedtests)$
+#	x.deleteon=*
+#	x.linkname=(incomplete)-${dirname}
+#	x.addparentdir=^(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$
+#
+#	This will find all directories that are not incomplete and not Excluded
+#	using a .zip file and place a link in the parent directory
+#	IE. /section/rls1 is incomplete - link will be /section/(incomplete)-rls1
+#	IE. /section/rls1/cd1 is incomplete - link will be /section/(incomplete)-rls1-cd1
+#
+#	x.type=ZIPINCOMPLETE
+#	x.dirname=% 
+#	x.section=*    
+#	x.exclude=
+#	x.sectionexclude=^(?i)(pre|staff|speedtests)$
+#	x.deleteon=*   
+#	x.linkname=(incomplete)-${dirname}
+#	x.addparentdir=^/(.*)/((cd|dvd|dis[ck])[1-9])$
+#
+################################################################################

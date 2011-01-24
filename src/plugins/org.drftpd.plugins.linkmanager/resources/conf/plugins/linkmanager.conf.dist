@@ -1,0 +1,16 @@
+################################################################################
+#	Link Manager
+#
+#	This will create links for specific types of LinkManager Types.
+#	All Types have the following attributes:
+#
+#	x.type = The type of LinkManager you want to run
+#	x.dirname = The dirname where you want the links to show up.  Use % for Section Dir
+#	x.section = The section you want to scan for LinkTypes. Use * for all section
+#	x.exclude = Regex format to Exclude Dirs from Path
+#	x.sectionexclude = Regex format to Exclude Sections from Types
+#	x.deleteon = Delete links on what commands (RMD/DEL/WIPE/NUKE/*)
+#	x.addparentdir = A Regex representation to added these folder as a child of the parent release 
+#	x.linkname = How you want the linkname to look. ${dirname}
+#
+################################################################################

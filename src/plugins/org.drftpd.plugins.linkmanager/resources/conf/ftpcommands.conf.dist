@@ -1,0 +1,8 @@
+SITE FIXLINKS2 {
+plugin org.drftpd.plugins.linkmanager
+class LinkManagerCommands
+method doSITE_FIXLINKS
+perms =siteop
+help Fixes All Links from LinkManager
+help.specific ${command}
+}
