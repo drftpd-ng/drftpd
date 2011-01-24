@@ -13,7 +13,7 @@
 #	x.linkname=(incomplete)-${dirname}
 #	x.addparentdir=^(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$
 #
-#	This will find all directories that are not incomplete and not Excluded
+#	This will find all directories that are incomplete and not Excluded
 #	using a .sfv file and place a link in the parent directory
 #	IE. /section/rls1 is incomplete - link will be /section/(incomplete)-rls1
 #	IE. /section/rls1/cd1 is incomplete - link will be /section/(incomplete)-rls1-cd1
