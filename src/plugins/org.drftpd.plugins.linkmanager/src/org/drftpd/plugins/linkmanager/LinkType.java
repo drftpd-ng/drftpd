@@ -160,6 +160,7 @@ public abstract class LinkType {
 	 */
 	protected void createLink(DirectoryHandle targetDir, String dirPath, String linkName) {
 		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(targetDir);
+		String sectionname;
 		if (!section.getName().isEmpty()) {
 			if (targetDir.equals(section.getBaseDirectory())) {
 				// Base Section - Skip
@@ -181,6 +182,9 @@ public abstract class LinkType {
 				// Section is excluded
 				return;
 			}
+			
+			// Save the section name for later use.
+			sectionname = section.getName();
 		} else {
 			// Dir isn't in a section but lets check if its at the root of the FTP
 			try {
@@ -192,6 +196,15 @@ public abstract class LinkType {
 				// Directory Is Root - Skip
 				return;
 			}
+			
+			/* Since this isn't a real section name
+			 * Lets find out what root dir/section it is from
+			 */
+			DirectoryHandle dir = targetDir.getParent();
+			while (!dir.getParent().isRoot()) {
+				dir = dir.getParent();
+			}
+			sectionname = dir.getName();
 		}
 		
 		if (dirPath.matches(getExclude())) {
@@ -206,6 +219,8 @@ public abstract class LinkType {
 		if (totalMat.find()) {
 			linkNameFinal = getLinkName().replace("${dirname}",dirPath.substring(dirPath.substring(0,dirPath.lastIndexOf("/")).lastIndexOf("/")+1).replace("/","-"));
 		}
+
+		linkNameFinal = linkNameFinal.replace("${section}",sectionname);		
 		
 		DirectoryHandle linkDir = new DirectoryHandle(getDirName(targetDir));
 		if (!linkDir.exists()) {
