@@ -63,6 +63,12 @@ public class Search extends CommandInterface {
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
 		params.setName(request.getArgument());
+		params.setExact(request.getProperties().getProperty("exact","false").equals("true"));
+		String type = request.getProperties().getProperty("type");
+		if (type != null && type.equals("d"))
+			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+		else if (type != null && type.equals("f"))
+			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 
         int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
         String pathFilter = request.getProperties().getProperty("path_filter","");
@@ -78,7 +84,12 @@ public class Search extends CommandInterface {
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
 		params.setName(request.getArgument());
-		params.setExact(true);
+		params.setExact(request.getProperties().getProperty("exact","true").equals("true"));
+		String type = request.getProperties().getProperty("type");
+		if (type != null && type.equals("d"))
+			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+		else if (type != null && type.equals("f"))
+			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 
         int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
         String pathFilter = request.getProperties().getProperty("path_filter","");

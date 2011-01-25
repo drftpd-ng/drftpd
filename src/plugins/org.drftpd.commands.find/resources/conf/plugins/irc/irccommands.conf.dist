@@ -30,8 +30,9 @@ help.specific Action: sendtoslaves <numtransfers[:slave[,slave,..][:priority]]>
 help.specific Action: deletefromslaves <slave[,slave[,...]]>
 help.specific Options for printf format:
 help.specific #f - name
-help.specific #p . path
-help.specific #h - parent
+help.specific #p - path
+help.specific #h - parent path
+help.specific #H - parent name
 help.specific #s - size
 help.specific #u - user
 help.specific #g - group
@@ -49,6 +50,10 @@ class Search
 method doSEARCH
 perms *
 limit 5
+# Search for: d = directories & f = files (comment to search for all)
+type d
+# Only match exact file/dir-name (true/false)
+exact false
 # Regex path filter
 path_filter ^/PRE/.*
 help Searches for files and directories using wildcards.
@@ -63,6 +68,10 @@ class Search
 method doDUPE
 perms *
 limit 5
+# Search for: d = directories & f = files (comment to search for all)
+type f
+# Only match exact file/dir-name (true/false)
+exact true
 # Regex path filter
 path_filter ^/PRE/.*
 help Searches for files and directories using exact name match.

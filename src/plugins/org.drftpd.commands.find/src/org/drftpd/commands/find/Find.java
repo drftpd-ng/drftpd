@@ -225,7 +225,8 @@ public class Find extends CommandInterface {
 				else
 					formats.put("#x", "no slaves");
 				
-				formats.put("#h", inode.getParent().getName()); 
+				formats.put("#H", inode.getParent().getName());
+				formats.put("#h", inode.getParent().getPath());
 			} catch (FileNotFoundException e) {
 				logger.error("The file was there and now it's gone, how?", e);
 			}
