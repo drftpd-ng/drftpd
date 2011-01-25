@@ -281,6 +281,22 @@ public abstract class LinkType {
 			}
 			
 			/*
+			 * Get section information for link
+			 */
+			SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(targetDir);
+			String sectionname;
+			if (!section.getName().isEmpty()) {
+				sectionname = section.getName();
+			} else {
+				DirectoryHandle dir = targetDir.getParent();
+				while (!dir.getParent().isRoot()) {
+					dir = dir.getParent();
+				}
+				sectionname = dir.getName();
+			}
+			linkNameFinal = linkNameFinal.replace("${section}",sectionname);
+			
+			/*
 			 * Find Exact Link Name
 			 */
 			try {
