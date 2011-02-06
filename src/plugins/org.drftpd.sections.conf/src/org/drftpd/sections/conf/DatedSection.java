@@ -217,6 +217,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		if (link != null) {
 			try {
 				link.setTarget(targetDir.getPath());
+				link.setLastModified(System.currentTimeMillis());
 				return;
 				// link's target path has been updated
 			} catch (FileNotFoundException e) {
