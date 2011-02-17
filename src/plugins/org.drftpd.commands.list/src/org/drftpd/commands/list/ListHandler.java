@@ -103,7 +103,7 @@ public class ListHandler extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+	protected String _keyPrefix;
 
 	@Override
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
@@ -165,7 +165,7 @@ public class ListHandler extends CommandInterface {
 		return list(request, false, false, false, true);
 	}
 
-	private CommandResponse list(CommandRequest request, boolean isList, boolean isStat, boolean isMlst, boolean isMlsd) 
+	protected CommandResponse list(CommandRequest request, boolean isList, boolean isStat, boolean isMlst, boolean isMlsd) 
 	throws ImproperUsageException {
 		try {
 			String directoryName = null;
@@ -278,7 +278,7 @@ public class ListHandler extends CommandInterface {
 		}
 	}
 
-	public ListElementsContainer listElements(DirectoryHandle dir, Session session, String user) throws IOException {
+	private ListElementsContainer listElements(DirectoryHandle dir, Session session, String user) throws IOException {
 		ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
 		ArrayList<InodeHandle> tempFileList = new ArrayList<InodeHandle>(dir.getInodeHandles(session.getUserNull(user)));
 		ArrayList<InodeHandleInterface> listFiles = container.getElements();
@@ -429,7 +429,7 @@ public class ListHandler extends CommandInterface {
 		return output.toString();
 	}
 
-	public void addPermission(InodeHandleInterface inode, StringBuilder output) throws FileNotFoundException {
+	private void addPermission(InodeHandleInterface inode, StringBuilder output) throws FileNotFoundException {
 		if (inode.isLink()) {
 			output.append("l");
 		} else if (inode.isDirectory()) {
@@ -447,7 +447,7 @@ public class ListHandler extends CommandInterface {
 		output.append(inode.isDirectory() ? "x" : "-");
 	}
 
-	public String getUnixDate(long date, boolean fulldate) {
+	private String getUnixDate(long date, boolean fulldate) {
 		Date date1 = new Date(date);
 		long dateTime = date1.getTime();
 
@@ -485,7 +485,7 @@ public class ListHandler extends CommandInterface {
 		}
 	}
 
-	public String padToLength(String value, int length) {
+	private String padToLength(String value, int length) {
 		if (value.length() >= length) {
 			return value;
 		}
