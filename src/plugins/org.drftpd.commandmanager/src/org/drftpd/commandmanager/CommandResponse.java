@@ -119,7 +119,7 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 	}
 
 	public String getMessage() {
-		return getObject(CommandResponse.MESSAGE, null);
+		return getObject(CommandResponse.MESSAGE, "");
 	}
 
 	public String getUser() {
