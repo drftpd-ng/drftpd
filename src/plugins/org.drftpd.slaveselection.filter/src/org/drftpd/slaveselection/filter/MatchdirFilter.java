@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.Pattern;
+import org.apache.oro.text.regex.Perl5Compiler;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
@@ -49,8 +50,6 @@ public class MatchdirFilter extends Filter {
 	private ArrayList<AssignParser> _assigns;
 
 	private Pattern _p;
-
-	private Perl5Matcher _m = new Perl5Matcher();
 
 	private boolean _negateExpr;
 	
@@ -79,7 +78,7 @@ public class MatchdirFilter extends Filter {
 				}
 			}
 
-			_p = new GlobCompiler().compile(PropertyHelper.getProperty(p, i	+ ".match"));
+			_p = new GlobCompiler().compile(PropertyHelper.getProperty(p, i	+ ".match"),Perl5Compiler.READ_ONLY_MASK);
 
 			_negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
 					equalsIgnoreCase("true");
@@ -90,6 +89,7 @@ public class MatchdirFilter extends Filter {
 
 	public void process(ScoreChart scorechart, User user, InetAddress source,
 			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
+		Perl5Matcher _m = new Perl5Matcher();
 		boolean validPath = _negateExpr ? !_m.matches(file.getPath(), _p) : _m.matches(file.getPath(), _p);
 		if (validPath) {
 			AssignSlave.addScoresToChart(_assigns, scorechart);
