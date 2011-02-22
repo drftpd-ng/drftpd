@@ -147,7 +147,7 @@ help.specific ${command} [message]
 SITE KILL {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
-method doSITE_Kll
+method doSITE_KILL
 perms =siteop
 help Kill's a specific connection from the FTP by thread ID
 help.specific ${command} <threadID> [message]
