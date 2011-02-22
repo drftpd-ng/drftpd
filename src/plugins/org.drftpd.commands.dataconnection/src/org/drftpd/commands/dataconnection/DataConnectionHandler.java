@@ -992,13 +992,11 @@ public class DataConnectionHandler extends CommandInterface {
 				} else {
 					throw new RuntimeException();
 				}
-				if (isStor && conn.isAborted()) {
-					if (isStor) {
-						if (ts.getTransferFile().exists()) {
-							response = new CommandResponse(226,"Transfer aborted");
-						} else {
-							response = new CommandResponse(226,"Transfer aborted - deleting file");
-						}
+				if (conn.isAborted()) {
+					if (isStor && !ts.getTransferFile().exists()) {
+						response = new CommandResponse(226,"Transfer aborted - deleting file");
+					} else {
+						response = new CommandResponse(226,"Transfer aborted");
 					}
 				}
 				transferEnded = true;
