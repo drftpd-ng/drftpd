@@ -883,7 +883,7 @@ public class DirectoryHandle extends InodeHandle implements
 		checkHiddenPath(this, user);
 		
 		if (!getVFSPermissions().checkPathPermission("upload", user, getNonExistentFileHandle(name))) {
-			throw new PermissionDeniedException("You are not allowed to upload to "+ getParent());
+			throw new PermissionDeniedException("You are not allowed to upload "+ getPath());
 		}
 		
 		return createFileUnchecked(name, user.getName(), user.getGroup(), initialSlave);
