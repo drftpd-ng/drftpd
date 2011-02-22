@@ -201,9 +201,7 @@ public class LoginHandler extends CommandInterface {
         
         if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
         	if (GlobalContext.getConfig().getAllowConnectionsDenyReason() != null) {
-        		CommandResponse response = new CommandResponse(530, "RESPONSE_530_ACCESS_DENIED");
-        		response.addComment(GlobalContext.getConfig().getAllowConnectionsDenyReason());
-        		return response;
+        		return new CommandResponse(530, GlobalContext.getConfig().getAllowConnectionsDenyReason());
         	}
         	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");	
         }

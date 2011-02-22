@@ -70,7 +70,7 @@ public class ConfigManager implements ConfigInterface {
 	
 	private ArrayList<InetAddress> _bouncerIps;
 	private String _loginPrompt = GlobalContext.VERSION + " http://drftpd.org";
-	private String _allowConnectionDenyReason = "";
+	private String _allowConnectionsDenyReason = "";
 	private String _pasvAddr = null;
 	private PortRange _portRange = new PortRange(0); 
 	private boolean _hideIps = true;
@@ -242,7 +242,7 @@ public class ConfigManager implements ConfigInterface {
 				} else if (drct.equals("allow_connections")) {
 					getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
 				} else if (drct.equals("allow_connections_deny_reason")) {
-					_allowConnectionDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
+					_allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
 				
 				} else if (drct.equals("exempt")) {
 					getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
@@ -351,7 +351,7 @@ public class ConfigManager implements ConfigInterface {
 	}
 	
 	public String getAllowConnectionsDenyReason() {
-		return _allowConnectionDenyReason;
+		return _allowConnectionsDenyReason;
 	}
 	
 	public int getMaxUsersExempt() {
