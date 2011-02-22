@@ -1882,7 +1882,6 @@ public class UserManagementHandler extends CommandInterface {
 		Session session = request.getSession();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-		int nbusers = 0;
 		long speedup = 0;
 		long speeddn = 0;
 		long speed = 0;
@@ -1898,6 +1897,15 @@ public class UserManagementHandler extends CommandInterface {
 
 		for (BaseFtpConnection conn : conns) {
 			if (!conn.isAuthenticated()) {
+                if (!restrictUser) {
+                 	env.add("targetuser", "<new>");
+                 	env.add("ip", conn.getClientAddress().getHostAddress());
+                 	env.add("idle", Time.formatTime(System.currentTimeMillis() - conn.getLastActive()));
+
+                 	if (!conn.isExecuting() && idle) {
+                 		response.addComment(session.jprintf(_bundle, _keyPrefix + type + ".new", env, request.getUser())); 
+                 	} 
+                 }
 				continue;
 			}
 			
@@ -1918,7 +1926,6 @@ public class UserManagementHandler extends CommandInterface {
 				}
 			}
 
-			nbusers++;
 			env.add("targetuser", user.getName());
 			env.add("ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
 			env.add("thread", conn.getThreadID());
@@ -1972,7 +1979,7 @@ public class UserManagementHandler extends CommandInterface {
 			}
 		}
 
-		env.add("currentusers", nbusers);
+		env.add("currentusers", conns.size());
 		env.add("maxusers", GlobalContext.getConfig().getMaxUsersTotal());
 		env.add("totalupspeed", Bytes.formatBytes(speedup) + "/s");
 		env.add("totaldnspeed", Bytes.formatBytes(speeddn) + "/s");
