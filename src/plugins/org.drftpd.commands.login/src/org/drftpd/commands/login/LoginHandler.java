@@ -62,6 +62,7 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doIDNT(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+    	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         if (request.getSession().getObject(BaseFtpConnection.ADDRESS, null) != null) {
             logger.error("Multiple IDNT commands");
             return new CommandResponse(530, "Multiple IDNT commands");
@@ -99,6 +100,7 @@ public class LoginHandler extends CommandInterface {
         }
 
         // bnc doesn't expect any reply
+        request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
         return null;
     }
 
@@ -111,6 +113,7 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doPASS(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+    	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         if (conn.getUserNullUnchecked() == null) {
         	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
         }
@@ -131,7 +134,7 @@ public class LoginHandler extends CommandInterface {
             } catch (IOException e) {
                 // Not mandatory to have a welcome text, so if it is not present silently ignore
             }
-
+            request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
             return response;
         }
 
@@ -162,7 +165,7 @@ public class LoginHandler extends CommandInterface {
      */
     public CommandResponse doUSER(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-
+    	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         conn.setAuthenticated(false);
         conn.setUser(null);
 
@@ -228,6 +231,7 @@ public class LoginHandler extends CommandInterface {
                 ReplacerEnvironment env = new ReplacerEnvironment();
                 env.add("user", newUser.getName());
                 
+                request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
                 return new CommandResponse(331,
                         conn.jprintf(_bundle, _keyPrefix+"user.success", env, request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());

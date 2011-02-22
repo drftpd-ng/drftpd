@@ -71,6 +71,8 @@ public class BaseFtpConnection extends Session implements Runnable {
 	public static final Key<InetAddress> ADDRESS = new Key<InetAddress>(BaseFtpConnection.class, "address");
 	public static final Key<String> IDENT = new Key<String>(BaseFtpConnection.class, "ident");
 	
+	public static final Key<Boolean> FAILEDLOGIN = new Key<Boolean>(BaseFtpConnection.class, "failedlogin");
+	
 	public static final String NEWLINE = "\r\n";
 
 	/**
@@ -603,6 +605,11 @@ public class BaseFtpConnection extends Session implements Runnable {
 					printOutput(new FtpReply(cmdResponse));
 				}
 			}
+			
+			if (cmdRequest.getSession().getObject(BaseFtpConnection.FAILEDLOGIN,false)) {
+				_conn.stop("Closing Connection");
+			}
+			
 			_commandCount.decrementAndGet();
 		}
 	}
