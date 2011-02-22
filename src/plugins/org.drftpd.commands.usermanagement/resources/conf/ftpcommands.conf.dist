@@ -144,6 +144,15 @@ help Kick all users current connections to the site
 help.specific ${command} [message]
 }
 
+SITE KILL {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_Kll
+perms =siteop
+help Kill's a specific connection from the FTP by thread ID
+help.specific ${command} <threadID> [message]
+}
+
 SITE PASSWD {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler

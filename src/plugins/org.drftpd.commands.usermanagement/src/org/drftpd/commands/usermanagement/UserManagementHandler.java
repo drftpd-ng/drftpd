@@ -1501,6 +1501,35 @@ public class UserManagementHandler extends CommandInterface {
 
 		return response;
 	}
+	
+	public CommandResponse doSITE_KILL(CommandRequest request) throws ImproperUsageException {
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+		
+		int threadId = -1;
+		try {
+			threadId = Integer.parseInt(st.nextToken(" "));
+		} catch (NumberFormatException e) {
+			throw new ImproperUsageException();
+		}
+
+		String reason = "No Reason Specified";
+		if (st.hasMoreTokens()) {
+			reason = st.nextToken("\r\n");
+		}
+		
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(GlobalContext.getConnectionManager().getConnections());
+		for (BaseFtpConnection conn2 : conns) {
+			if (conn2.getThreadID() == threadId) {
+				conn2.stop("Session Killed: " + reason);
+			}
+		}
+		
+		return response;
+	}
 
 	public CommandResponse doSITE_PASSWD(CommandRequest request)
 			throws ImproperUsageException {
@@ -1892,7 +1921,8 @@ public class UserManagementHandler extends CommandInterface {
 			nbusers++;
 			env.add("targetuser", user.getName());
 			env.add("ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
-
+			env.add("thread", conn.getThreadID());
+			
 			synchronized (conn) {
 				TransferState ts = conn.getTransferState();
 

@@ -159,6 +159,13 @@ public class BaseFtpConnection extends Session implements Runnable {
 		return _currentDirectory;
 	}
 
+	/*
+	 * Returns thread id number
+	 */
+	public long getThreadID() {
+		return _thread.getId();
+	}
+	
 	/**
 	 * Returns the "currentTimeMillis" when last command finished executing.
 	 */
