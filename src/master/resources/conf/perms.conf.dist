@@ -47,6 +47,7 @@ hideinwho 		/hidden_path/*	*
 # allow_connections * => everyone can connect.
 # allow_connections =siteop => only users from the siteop group can connect.
 allow_connections *
+#allow_connections_deny_reason Access Denied
 
 # Accepts only one range of ports
 #pasv_ports 50000-60000

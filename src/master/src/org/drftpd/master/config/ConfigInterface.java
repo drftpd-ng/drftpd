@@ -59,6 +59,8 @@ public interface ConfigInterface {
 	public boolean getHideIps();
 
 	public String getLoginPrompt();
+	
+	public String getAllowConnectionsDenyReason();
 
 	public int getMaxUsersExempt();
 
