@@ -65,5 +65,4 @@ public class UserManagement {
 
 	public static final Key<String> BAN_REASON = new Key<String>(UserManagement.class, "ban_reason");
 
-	public static final Key<Date> EXPIRES = new Key<Date>(UserManagement.class, "expires");
 }

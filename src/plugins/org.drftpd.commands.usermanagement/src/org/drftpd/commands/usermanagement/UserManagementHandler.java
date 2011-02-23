@@ -263,7 +263,6 @@ public class UserManagementHandler extends CommandInterface {
 			newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
 			newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
 			newUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
-			newUser.getKeyedMap().setObject(UserManagement.EXPIRES, new Date(4102441199000L));
 			newUser.getKeyedMap().setObject(UserManagement.COMMENT,	"Added by " + session.getUserNull(request.getUser()).getName());
 			newUser.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
 			newUser.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
@@ -828,35 +827,6 @@ public class UserManagementHandler extends CommandInterface {
 
 			response = new CommandResponse(200, session.jprintf(_bundle,
 					_keyPrefix+"changecreated.success", env, request.getUser()));
-		} else if ("expires".equals(command)) {
-			if (commandArguments.length != 1) {
-				throw new ImproperUsageException();
-			}
-			Date myDate;
-			if (commandArguments[0].equalsIgnoreCase("remove")) {
-				myDate = new Date(4102441199000L);
-			} else {
-				try {
-					myDate = new SimpleDateFormat("yyyy-MM-dd")
-							.parse(commandArguments[0]);
-				} catch (ParseException e1) {
-					logger.info(e1);
-					return new CommandResponse(452, e1.getMessage());
-				}
-			}
-			logger.info("'"
-					+ session.getUserNull(request.getUser()).getName()
-					+ "' changed expires for '"
-					+ userToChange.getName()
-					+ "' from '"
-					+ userToChange.getKeyedMap().getObject(
-							UserManagement.EXPIRES, new Date(4102441199000L)) + "' to '" + myDate + "'");
-			userToChange.getKeyedMap()
-					.setObject(UserManagement.EXPIRES, myDate);
-			env.add("date", myDate);
-			String type = (myDate.getTime() == 4102441199000L) ? "remove" : "success";
-			response = new CommandResponse(200, session.jprintf(_bundle,
-					_keyPrefix+"changeexpires."+type, env, request.getUser()));
 		} else if ("wkly_allotment".equals(command)) {
 			if (commandArguments.length != 1) {
 				throw new ImproperUsageException();

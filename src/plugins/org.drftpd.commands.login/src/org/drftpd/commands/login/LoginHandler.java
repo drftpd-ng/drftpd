@@ -194,10 +194,6 @@ public class LoginHandler extends CommandInterface {
         					UserManagement.REASON,
         					StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
-
-		if (newUser.isExpired()) {
-        	return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
         
         if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
         	if (GlobalContext.getConfig().getAllowConnectionsDenyReason() != null) {
