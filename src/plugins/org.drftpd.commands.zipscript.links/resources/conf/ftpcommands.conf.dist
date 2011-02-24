@@ -1,8 +1,0 @@
-SITE FIXLINKS {
-plugin org.drftpd.commands.zipscript.links
-class LinkCommands
-method doSITE_FIXLINKS
-perms *
-help removes invalid links and creates missing incomplete links if enabled.
-help.specific ${command}
-}
