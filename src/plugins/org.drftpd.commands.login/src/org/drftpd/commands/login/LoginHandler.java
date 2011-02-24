@@ -65,13 +65,14 @@ public class LoginHandler extends CommandInterface {
     	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         if (request.getSession().getObject(BaseFtpConnection.ADDRESS, null) != null) {
             logger.error("Multiple IDNT commands");
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Multiple");
             return new CommandResponse(530, "Multiple IDNT commands");
 
         }
 
         if (!GlobalContext.getConfig().getBouncerIps().contains(conn.getClientAddress())) {
             logger.warn("IDNT from non-bnc");
-
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Non-BNC");
             return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
@@ -79,12 +80,14 @@ public class LoginHandler extends CommandInterface {
         int pos1 = arg.indexOf('@');
 
         if (pos1 == -1) {
+        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Syntax");
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
         int pos2 = arg.indexOf(':', pos1 + 1);
 
         if (pos2 == -1) {
+        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Syntax");
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
@@ -93,7 +96,7 @@ public class LoginHandler extends CommandInterface {
             request.getSession().setObject(BaseFtpConnection.IDENT, arg.substring(0, pos1));
         } catch (UnknownHostException e) {
             logger.info("Invalid hostname passed to IDNT", e);
-
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "IDNT Failed");
             //this will most likely cause control connection to become unsynchronized
             //but give error anyway, this error is unlikely to happen
             return new CommandResponse(501, "IDNT FAILED: " + e.getMessage());
@@ -115,6 +118,7 @@ public class LoginHandler extends CommandInterface {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
         if (conn.getUserNullUnchecked() == null) {
+        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Bad-Sequence");
         	return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
         }
 
@@ -138,6 +142,7 @@ public class LoginHandler extends CommandInterface {
             return response;
         }
 
+        request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Failed");
         return new CommandResponse(530, conn.jprintf(_bundle, _keyPrefix+"pass.fail", request.getUser()));
     }
 
@@ -171,6 +176,7 @@ public class LoginHandler extends CommandInterface {
 
         // argument check
         if (!request.hasArgument()) {
+        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Syntax");
         	return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
 
@@ -179,16 +185,20 @@ public class LoginHandler extends CommandInterface {
         try {
             newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
         } catch (NoSuchUserException ex) {
+        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Non-Existant");
         	return new CommandResponse(530, ex.getMessage());
         } catch (UserFileException ex) {
             logger.warn(ex, ex);
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Non-Existant");
             return new CommandResponse(530, "IOException: " + ex.getMessage());
         } catch (RuntimeException ex) {
             logger.error(ex, ex);
+            request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Runtime");
             return new CommandResponse(530, "RuntimeException: " + ex.getMessage());
         }
 
         if (newUser.isDeleted()) {
+        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Deleted");
         	return new CommandResponse(530,
         			newUser.getKeyedMap().getObject(
         					UserManagement.REASON,
@@ -196,6 +206,7 @@ public class LoginHandler extends CommandInterface {
         }
         
         if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
+        	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Not-Allowed");
         	if (GlobalContext.getConfig().getAllowConnectionsDenyReason() != null) {
         		return new CommandResponse(530, GlobalContext.getConfig().getAllowConnectionsDenyReason());
         	}
@@ -239,6 +250,7 @@ public class LoginHandler extends CommandInterface {
         	return new CommandResponse(530, e.getMessage());
         }
 
+        request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER IP-Failed");
         //fail
         logger.warn(newUser.getName() + " failed hostmask check");
         return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
