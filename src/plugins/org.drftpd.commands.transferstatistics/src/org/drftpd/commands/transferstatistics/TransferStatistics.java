@@ -37,7 +37,6 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.Session;
 import org.drftpd.permissions.Permission;
-import org.drftpd.plugins.Trial;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -51,6 +50,11 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class TransferStatistics extends CommandInterface  {
+	public static final int PERIOD_ALL = 0;
+	public static final int PERIOD_MONTHLY = 1;
+	public static final int PERIOD_WEEKLY = 2;
+	public static final int PERIOD_DAILY = 3;
+	
 	private static final Logger logger = Logger.getLogger(TransferStatistics.class);
 
 	private ResourceBundle _bundle;
@@ -267,34 +271,34 @@ public class TransferStatistics extends CommandInterface  {
 
 			env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
 			env.add("upfilesday", "" + user.getUploadedFilesDay());
-			env.add("uprateday", getUpRate(user, Trial.PERIOD_DAILY));
+			env.add("uprateday", getUpRate(user, PERIOD_DAILY));
 			env.add("upbytesweek",
 					Bytes.formatBytes(user.getUploadedBytesWeek()));
 			env.add("upfilesweek", "" + user.getUploadedFilesWeek());
-			env.add("uprateweek", getUpRate(user, Trial.PERIOD_WEEKLY));
+			env.add("uprateweek", getUpRate(user, PERIOD_WEEKLY));
 			env.add("upbytesmonth",
 					Bytes.formatBytes(user.getUploadedBytesMonth()));
 			env.add("upfilesmonth", "" + user.getUploadedFilesMonth());
-			env.add("upratemonth", getUpRate(user, Trial.PERIOD_MONTHLY));
+			env.add("upratemonth", getUpRate(user, PERIOD_MONTHLY));
 			env.add("upbytes", Bytes.formatBytes(user.getUploadedBytes()));
 			env.add("upfiles", "" + user.getUploadedFiles());
-			env.add("uprate", getUpRate(user, Trial.PERIOD_ALL));
+			env.add("uprate", getUpRate(user, PERIOD_ALL));
 
 			env.add("dnbytesday",
 					Bytes.formatBytes(user.getDownloadedBytesDay()));
 			env.add("dnfilesday", "" + user.getDownloadedFilesDay());
-			env.add("dnrateday", getDownRate(user, Trial.PERIOD_DAILY));
+			env.add("dnrateday", getDownRate(user, PERIOD_DAILY));
 			env.add("dnbytesweek",
 					Bytes.formatBytes(user.getDownloadedBytesWeek()));
 			env.add("dnfilesweek", "" + user.getDownloadedFilesWeek());
-			env.add("dnrateweek", getDownRate(user, Trial.PERIOD_WEEKLY));
+			env.add("dnrateweek", getDownRate(user, PERIOD_WEEKLY));
 			env.add("dnbytesmonth",
 					Bytes.formatBytes(user.getDownloadedBytesMonth()));
 			env.add("dnfilesmonth", "" + user.getDownloadedFilesMonth());
-			env.add("dnratemonth", getDownRate(user, Trial.PERIOD_MONTHLY));
+			env.add("dnratemonth", getDownRate(user, PERIOD_MONTHLY));
 			env.add("dnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
 			env.add("dnfiles", "" + user.getDownloadedFiles());
-			env.add("dnrate", getDownRate(user, Trial.PERIOD_ALL));
+			env.add("dnrate", getDownRate(user, PERIOD_ALL));
 
 			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix + type, env,
 					user.getName()));
