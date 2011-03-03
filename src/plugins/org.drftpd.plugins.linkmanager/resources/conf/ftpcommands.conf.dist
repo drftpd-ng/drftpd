@@ -1,4 +1,4 @@
-SITE FIXLINKS2 {
+SITE FIXLINKS {
 plugin org.drftpd.plugins.linkmanager
 class LinkManagerCommands
 method doSITE_FIXLINKS

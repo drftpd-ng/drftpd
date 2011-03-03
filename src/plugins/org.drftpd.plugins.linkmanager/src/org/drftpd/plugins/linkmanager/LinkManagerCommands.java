@@ -19,6 +19,7 @@ package org.drftpd.plugins.linkmanager;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -44,29 +45,33 @@ public class LinkManagerCommands extends CommandInterface {
 		if (request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
-		
-		LinkManager _linkmanager = LinkManager.getLinkManager();
-		
+
+		new runFixLinks().start();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
-		dirs.add(request.getCurrentDirectory());
-		while (dirs.size() > 0) {
-			DirectoryHandle workingDir = dirs.poll();
-			
-			for (LinkType link : _linkmanager.getLinks()) {
-				link.doFixLink(workingDir);
-			}
-			
-			try {
-				dirs.addAll(workingDir.getDirectoriesUnchecked());
-			}
-			catch (FileNotFoundException e1) {
-				response.addComment("Error recursively listing: "+workingDir.getPath());
-			}
-			
-		}
 		return response;
 	}
 	
+	
+	private class runFixLinks extends Thread {
+		public void run() {
+			LinkManager _linkmanager = LinkManager.getLinkManager();
+			LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+			dirs.add(GlobalContext.getGlobalContext().getRoot());
+			while (dirs.size() > 0) {
+				DirectoryHandle workingDir = dirs.poll();
+				
+				for (LinkType link : _linkmanager.getLinks()) {
+					link.doFixLink(workingDir);
+				}
+				
+				try {
+					dirs.addAll(workingDir.getDirectoriesUnchecked());
+				}
+				catch (FileNotFoundException e1) {
+					// ignore - dir no longer exists
+				}
+			}
+		}
+	}
 	
 }
