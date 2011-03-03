@@ -19,6 +19,7 @@ package org.drftpd.plugins.linkmanager;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
 
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -33,6 +34,7 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 
 public class LinkManagerCommands extends CommandInterface {
+	private static final Logger logger = Logger.getLogger(LinkManagerCommands.class);
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -71,6 +73,7 @@ public class LinkManagerCommands extends CommandInterface {
 					// ignore - dir no longer exists
 				}
 			}
+			logger.info("Site Fixlinks - Finished");
 		}
 	}
 	
