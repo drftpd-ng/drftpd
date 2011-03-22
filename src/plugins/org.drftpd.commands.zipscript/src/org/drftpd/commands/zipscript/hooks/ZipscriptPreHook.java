@@ -39,6 +39,7 @@ import org.drftpd.permissions.Permission;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
 
 /**
  * @author djb61
@@ -96,15 +97,16 @@ public class ZipscriptPreHook implements PreHookInterface {
 			// Syntax error but we'll let the command itself deal with it
 			return request;
 		}
-		String checkName = request.getArgument().toLowerCase();
+		FileHandle checkFile = request.getCurrentDirectory().getNonExistentFileHandle(request.getArgument());
+		String checkName = checkFile.getName().toLowerCase();
 		// Read config
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
 		boolean restrictSfvEnabled = cfg.getProperty("sfv.restrict.files", "false").equals("true");
-		boolean sfvFirstEnforcedPath = checkSfvFirstEnforcedPath(request.getCurrentDirectory(), 
+		boolean sfvFirstEnforcedPath = checkSfvFirstEnforcedPath(checkFile.getParent(), 
 				request.getSession().getUserNull(request.getUser()));
 		try {
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(request.getCurrentDirectory());
+			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(checkFile.getParent());
 			SFVInfo sfv = sfvData.getSFVInfo();
 			if (checkName.endsWith(".sfv")) {
 				request.setAllowed(false);
