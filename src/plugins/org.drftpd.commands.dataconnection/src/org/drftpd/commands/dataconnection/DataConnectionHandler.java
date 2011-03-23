@@ -424,6 +424,11 @@ public class DataConnectionHandler extends CommandInterface {
 			reset(conn);
 			return new CommandResponse(550, "Unable to get correct User file");			
 		}
+		
+		if (ts.getPretRequest().getArgument() == null) {
+			reset(conn);
+			return new CommandResponse(550, "Unable to get PretRequest Argument");			
+		}
 	
 		if (cmd.equals("RETR")) {
 			FileHandle file = null;
