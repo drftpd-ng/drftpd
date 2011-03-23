@@ -420,7 +420,11 @@ public class DataConnectionHandler extends CommandInterface {
 		}
 		String cmd = ghostRequest.getCommand();
 		User user = request.getSession().getUserNull(request.getUser());
-
+		if (user == null) {
+			reset(conn);
+			return new CommandResponse(550, "Unable to get correct User file");			
+		}
+	
 		if (cmd.equals("RETR")) {
 			FileHandle file = null;
 			try {
