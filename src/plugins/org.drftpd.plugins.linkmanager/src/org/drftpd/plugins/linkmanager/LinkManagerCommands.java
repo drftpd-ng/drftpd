@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -48,32 +47,39 @@ public class LinkManagerCommands extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		new runFixLinks().start();
+		runFixLinks rfl = new runFixLinks();
+		rfl.dir = request.getCurrentDirectory();
+		rfl.start();
+		
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		return response;
 	}
 	
 	
 	private class runFixLinks extends Thread {
+		public DirectoryHandle dir;
+		
 		public void run() {
-			LinkManager _linkmanager = LinkManager.getLinkManager();
-			LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
-			dirs.add(GlobalContext.getGlobalContext().getRoot());
-			while (dirs.size() > 0) {
-				DirectoryHandle workingDir = dirs.poll();
-				
-				for (LinkType link : _linkmanager.getLinks()) {
-					link.doFixLink(workingDir);
+			if (dir != null) {
+				LinkManager _linkmanager = LinkManager.getLinkManager();
+				LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+				dirs.add(dir); 
+				while (dirs.size() > 0) {
+					DirectoryHandle workingDir = dirs.poll();
+					
+					for (LinkType link : _linkmanager.getLinks()) {
+						link.doFixLink(workingDir);
+					}
+					
+					try {
+						dirs.addAll(workingDir.getDirectoriesUnchecked());
+					}
+					catch (FileNotFoundException e1) {
+						// ignore - dir no longer exists
+					}
 				}
-				
-				try {
-					dirs.addAll(workingDir.getDirectoriesUnchecked());
-				}
-				catch (FileNotFoundException e1) {
-					// ignore - dir no longer exists
-				}
+				logger.info("Site Fixlinks - Finished");
 			}
-			logger.info("Site Fixlinks - Finished");
 		}
 	}
 	
