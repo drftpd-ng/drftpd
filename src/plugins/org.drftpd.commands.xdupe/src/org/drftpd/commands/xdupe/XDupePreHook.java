@@ -22,6 +22,9 @@ public class XDupePreHook implements PreHookInterface {
 		DirectoryHandle dir = request.getCurrentDirectory();
 		
 		StringTokenizer st = new StringTokenizer(request.getArgument());
+		if (!st.hasMoreTokens()) {
+			return request;
+		}
 		String arg = st.nextToken();		
 		String fileName = arg.equalsIgnoreCase("STOR") ? st.nextToken() : arg;
 		
