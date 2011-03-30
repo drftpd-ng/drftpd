@@ -17,7 +17,6 @@
  */
 package org.drftpd.slave;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.drftpd.io.PhysicalFile;
@@ -30,6 +29,8 @@ public class Root {
 	private PhysicalFile _rootFile;
 
 	private long _lastModified;
+	
+	private static final String separator = "/";
 
 	public Root(String root) throws IOException {
 		_rootFile = new PhysicalFile(new PhysicalFile(root).getCanonicalFile());
@@ -65,7 +66,7 @@ public class Root {
 	}
 
 	public PhysicalFile getFile(String path) {
-		return new PhysicalFile(getPath() + File.separator + path);
+		return new PhysicalFile(getPath() + separator + path);
 	}
 
 	/* (non-Javadoc)

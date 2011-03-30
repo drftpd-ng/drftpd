@@ -79,6 +79,8 @@ public class Transfer {
 	public static final char TRANSFER_UNKNOWN = 'U';
 
 	private String _pathForUpload = null;
+	
+	private static final String separator = "/";
 
 	/**
 	 * Start undefined transfer.
@@ -222,17 +224,17 @@ public class Transfer {
 
 	public TransferStatus receiveFile(String dirname, char mode,
 			String filename, long offset, String inetAddress) throws IOException, TransferDeniedException {
-		_pathForUpload = dirname + File.separator + filename;
+		_pathForUpload = dirname + separator + filename;
 		try {
 			_slave.getRoots().getFile(_pathForUpload);
 			throw new FileExistsException("File " + dirname
-					+ File.separatorChar + filename + " exists");
+					+ separator + filename + " exists");
 		} catch (FileNotFoundException ex) {
 		}
 		String root = _slave.getRoots().getARootFileDir(dirname).getPath();
 
 		try {
-			_out = new FileOutputStream(new File(root + File.separator
+			_out = new FileOutputStream(new File(root + separator
 					+ filename));
 
 			if (_slave.getUploadChecksums()) {
