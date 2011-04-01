@@ -182,9 +182,9 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		if (newDir == null) { // this is good, this is the standard process
 			try {
 				DirectoryHandle checkDir = getBaseDirectory().getNonExistentDirectoryHandle(dateDirName);
-				if ((checkDir.getParent() != getBaseDirectory()) && (checkDir != getBaseDirectory())) {
+				if ((checkDir.getParent() != getBaseDirectory()) && (!checkDir.getParent().isRoot())) {
 					try {
-						getBaseDirectory().getParent().createDirectoryRecursive(checkDir.getParent().getName(), true);
+						checkDir.getParent().getParent().createDirectoryRecursive(checkDir.getParent().getName(), true);
 					} catch (FileExistsException e) {
 						// Creating Dir Recursively - Ignore if it already exists
 					}
