@@ -40,3 +40,13 @@ sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
 #who has their restricted by the sfv-first system ?
 #if you wanted siteop group to be exempt, put: !=siteop *
 sfvfirst.users=*
+
+#disallows .sfv to be uploaded if subdir of (sfvdeny.subdir.include) exists
+#true/false
+sfvdeny.subdir=false
+
+#list of the subdirs to include when searching to deny sfv upload (regex)
+sfvdeny.subdir.include=.*(?i)(cd[1-9]|dvd[1-9]|dis(c|k)[1-9]).*
+
+#list of sections/dirs to exclude when searching for deny sfv upload (regex)
+sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE|GROUPS).*

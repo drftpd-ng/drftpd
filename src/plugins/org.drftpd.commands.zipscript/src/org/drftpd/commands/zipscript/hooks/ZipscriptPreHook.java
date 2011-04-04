@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
@@ -53,6 +54,12 @@ public class ZipscriptPreHook implements PreHookInterface {
 
 	private boolean _sfvFirstAllowNoExt;
 
+	private boolean _sfvDenySubDir;
+	
+	private String _sfvDenySubDirInclude;
+	
+	private String _sfvDenySubDirExclude;
+	
 	public void initialize(StandardCommandManager cManager) {
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
@@ -63,6 +70,9 @@ public class ZipscriptPreHook implements PreHookInterface {
 		String sfvFirstUsers = cfg.getProperty("sfvfirst.users", "");
 		_sfvFirstRequired = cfg.getProperty("sfvfirst.required", "false").equals("true");
 		_sfvFirstAllowNoExt = cfg.getProperty("sfvfirst.allownoext", "false").equals("true");
+		_sfvDenySubDir = cfg.getProperty("sfvdeny.subdir", "false").equals("true");
+		_sfvDenySubDirInclude = cfg.getProperty("sfvdeny.subdir.include", ".*");
+		_sfvDenySubDirExclude = cfg.getProperty("sfvdeny.subdir.exclude", ".*");		
 		if (_sfvFirstRequired) {
 			try {
 				// this one gets perms defined in sfvfirst.users
@@ -105,6 +115,11 @@ public class ZipscriptPreHook implements PreHookInterface {
 		boolean restrictSfvEnabled = cfg.getProperty("sfv.restrict.files", "false").equals("true");
 		boolean sfvFirstEnforcedPath = checkSfvFirstEnforcedPath(checkFile.getParent(), 
 				request.getSession().getUserNull(request.getUser()));
+		if (checkSfvDenySubdir(checkFile)) {
+			request.setAllowed(false);
+			request.setDeniedResponse(new CommandResponse(533,"Requested action not taken. Cannot Upload Due To Subdir"));
+			return request;
+		}		
 		try {
 			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(checkFile.getParent());
 			SFVInfo sfv = sfvData.getSFVInfo();
@@ -176,6 +191,31 @@ public class ZipscriptPreHook implements PreHookInterface {
 				&& !GlobalContext.getConfig().checkPathPermission(
 						"sfvfirst.pathignore", user, dir)) {
 			return true;
+		}
+		return false;
+	}
+	
+	private boolean checkSfvDenySubdir(FileHandle file) {
+		if ((file.getName().endsWith(".sfv")) && (_sfvDenySubDir)) {
+			try {
+				if (file.getPath().matches(_sfvDenySubDirExclude)) {
+					return false;
+				}
+			} catch (PatternSyntaxException e) {
+				logger.debug("Bad Regex Patter for 'sfvdeny.subdir.exclude' '" + _sfvDenySubDirExclude + "'");				
+			}
+			
+			try {
+				for (DirectoryHandle dir : file.getParent().getDirectoriesUnchecked()) {
+					if (dir.getName().matches(_sfvDenySubDirInclude)) {
+						return true;
+					}
+				}
+			} catch (PatternSyntaxException e) {
+				logger.debug("Bad Regex Patter for 'sfvdeny.subdir.include' '" + _sfvDenySubDirInclude + "'");
+			} catch (FileNotFoundException e) {
+				// parent no longer exists....ignore
+			}
 		}
 		return false;
 	}
