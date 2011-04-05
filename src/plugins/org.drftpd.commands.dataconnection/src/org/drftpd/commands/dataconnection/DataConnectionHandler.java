@@ -432,10 +432,6 @@ public class DataConnectionHandler extends CommandInterface {
 	
 		if (cmd.equals("RETR")) {
 			FileHandle file = null;
-			if (ts.getPretRequest().getArgument() == null) {
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");				
-			}
 			try {
 				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
 			} catch (FileNotFoundException e) {
