@@ -92,6 +92,8 @@ public class ConfigManager implements ConfigInterface {
 		
 		initializeKeyedMap();
 		
+		_bouncerIps = new ArrayList<InetAddress>();
+		
 		readConf();
 	}
 	
@@ -214,8 +216,6 @@ public class ConfigManager implements ConfigInterface {
 			in = new LineNumberReader(new FileReader(permsFile));
 			String line;
 			
-			ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
-			
 			while ((line = in.readLine()) != null) {				
 				StringTokenizer st = new StringTokenizer(line);
 				
@@ -249,6 +249,7 @@ public class ConfigManager implements ConfigInterface {
 				} else if (drct.equals("exempt")) {
 					getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
 				} else if (drct.equals("bouncer_ips")) {
+					ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
 					while (st.hasMoreTokens()) {
 						ips.add(InetAddress.getByName(st.nextToken()));
 					}
