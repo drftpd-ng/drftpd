@@ -51,6 +51,14 @@ public class MP3Parser {
 				} catch (BitstreamException e) {
 					// Not a valid MP3
 					throw new IOException(_mp3file.getName() + " is not a valid MP3 file");
+				} finally {
+					if (mp3Stream != null) {
+						try {
+							mp3Stream.close();
+						} catch (BitstreamException e) {
+							// ignore
+						}
+					}
 				}
 				if (frameHeader == null) {
 					// Not a valid MP3
