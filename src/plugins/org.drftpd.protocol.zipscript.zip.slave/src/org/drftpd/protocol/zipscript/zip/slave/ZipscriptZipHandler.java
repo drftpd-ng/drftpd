@@ -66,13 +66,18 @@ public class ZipscriptZipHandler extends AbstractHandler {
 			ZipInputArchive zipArchive = new ZipInputArchive(zipFile,"UTF-8",true,false);
 			for (Enumeration<?> zipEntries = zipArchive.getArchiveEntries();zipEntries.hasMoreElements();) {
 				ZipEntry zipEntry = (ZipEntry)zipEntries.nextElement();
-				entryStream = zipArchive.getCheckedInputStream(zipEntry);
-				byte[] buff = new byte[65536];
-				while (entryStream.read(buff) != -1) {
-					// do nothing, we are only checking for crc
+				try {
+					entryStream = zipArchive.getCheckedInputStream(zipEntry);
+					byte[] buff = new byte[65536];
+					while (entryStream.read(buff) != -1) {
+						// do nothing, we are only checking for crc
+					}
+					entryStream.close();
+				} catch (IOException e) {
+					throw new IOException(e);
 				}
-				entryStream.close();
 			}
+			zipArchive.close();
 		} catch (IOException e) {
 			// Catch all IOExceptions not just CRC32Exception as a badly truncated zip can trigger an EOFException etc
 			integrityOk = false;
