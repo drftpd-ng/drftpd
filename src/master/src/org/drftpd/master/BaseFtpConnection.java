@@ -386,6 +386,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 			if (isExecuting()) {
 				super.abortCommand();
 			}
+			getTransferState().reset();
 			_pool.shutdown();
 			GlobalContext.getConnectionManager().remove(this);
 			GlobalContext.getConnectionManager().dumpThreadPool();
