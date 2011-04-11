@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -39,9 +38,8 @@ import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.sitebot.AnnounceInterface;
+import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
@@ -62,7 +60,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
+public class SFVAnnouncer extends AbstractAnnouncer {
 
 	private static final Logger logger = Logger.getLogger(SFVAnnouncer.class);
 
@@ -71,7 +69,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 	private ResourceBundle _bundle;
 
 	private String _keyPrefix;
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -153,14 +151,14 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 				if (writer != null) {
 					fillEnvSection(env, fileevent, writer, true);
 					env.add("files", Integer.toString(sfvinfo.getSize()));
-					env.add("expectedsize", (Bytes.formatBytes(getSFVLargestFileBytes(dir,sfvData) * sfvinfo.getSize())));
+					env.add("expectedsize", (Bytes.formatBytes(SFVTools.getSFVLargestFileBytes(dir,sfvData) * sfvinfo.getSize())));
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.first", env, _bundle), writer);
 				}
 				return;
 			}
 			//check if new racer
 			if ((sfvinfo.getSize() - sfvstatus.getMissing()) != 1) {
-				for (Iterator<FileHandle> iter = getSFVFiles(dir, sfvData).iterator(); iter.hasNext();) {
+				for (Iterator<FileHandle> iter = SFVTools.getSFVFiles(dir, sfvData).iterator(); iter.hasNext();) {
 					FileHandle sfvFileEntry = iter.next();
 
 					if (!sfvFileEntry.equals(fileevent.getTransferFile()) && sfvFileEntry.getUsername().equals(username)
@@ -184,17 +182,17 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 			if (sfvstatus.isFinished()) {
 				AnnounceWriter writer = _config.getPathWriter("store.complete", fileevent.getDirectory());
 				if (writer != null) {
-					Collection<UploaderPosition> racers = RankUtils.userSort(getSFVFiles(dir, sfvData),
+					Collection<UploaderPosition> racers = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvData),
 							"bytes", "high");
-					Collection<GroupPosition> groups = RankUtils.topFileGroup(getSFVFiles(dir, sfvData));
+					Collection<GroupPosition> groups = RankUtils.topFileGroup(SFVTools.getSFVFiles(dir, sfvData));
 
 					fillEnvSection(env, fileevent, writer, false);
 
 					env.add("racers", Integer.toString(racers.size()));
 					env.add("groups", Integer.toString(groups.size()));
 					env.add("files", Integer.toString(sfvinfo.getSize()));
-					env.add("size", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
-					env.add("speed", Bytes.formatBytes(getXferspeed(dir, sfvData)) + "/s");
+					env.add("size", Bytes.formatBytes(SFVTools.getSFVTotalBytes(dir, sfvData)));
+					env.add("speed", Bytes.formatBytes(SFVTools.getXferspeed(dir, sfvData)) + "/s");
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete", env, _bundle), writer);
 
 					// Find max users/groups to announce
@@ -306,7 +304,7 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 					(sfvstatus.getMissing() == halfway)) {
 				AnnounceWriter writer = _config.getPathWriter("store.halfway", fileevent.getDirectory());
 				if (writer != null) {
-					Collection<UploaderPosition> uploaders = RankUtils.userSort(getSFVFiles(dir, sfvData),
+					Collection<UploaderPosition> uploaders = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvData),
 							"bytes", "high");
 
 					UploaderPosition stat = uploaders.iterator().next();
@@ -352,16 +350,6 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			fillEnvSection(env, direvent, writer, false);
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+type, env, _bundle), writer);
-		}
-	}
-
-	private void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
-			}
 		}
 	}
 
@@ -423,8 +411,8 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 				sfvinfo = sfvData.getSFVInfo();
 				totalsfv += 1;
 				totalfiles += sfvinfo.getSize();
-				totalbytes += getSFVTotalBytes(dir,sfvData);
-				totalxfertime += getSFVTotalXfertime(dir,sfvData);
+				totalbytes += SFVTools.getSFVTotalBytes(dir,sfvData);
+				totalxfertime += SFVTools.getSFVTotalXfertime(dir,sfvData);
 			} catch (Exception e1) {
 				// Failed to get sfv data, safe to continue, that data
 				// will just not be available
@@ -436,8 +424,8 @@ public class SFVAnnouncer extends SFVTools implements AnnounceInterface {
 						sfvinfo = sfvData.getSFVInfo();
 						totalsfv += 1;
 						totalfiles += sfvinfo.getSize();
-						totalbytes += getSFVTotalBytes(subdir,sfvData);
-						totalxfertime += getSFVTotalXfertime(subdir,sfvData);
+						totalbytes += SFVTools.getSFVTotalBytes(subdir,sfvData);
+						totalxfertime += SFVTools.getSFVTotalXfertime(subdir,sfvData);
 					} catch (Exception e1) {
 						// Failed to get sfv data, safe to continue, that data
 						// will just not be available

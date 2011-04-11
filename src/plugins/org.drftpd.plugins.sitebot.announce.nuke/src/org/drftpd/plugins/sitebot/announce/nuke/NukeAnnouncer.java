@@ -17,7 +17,6 @@
 package org.drftpd.plugins.sitebot.announce.nuke;
 
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -32,9 +31,8 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.event.NukeEvent;
-import org.drftpd.plugins.sitebot.AnnounceInterface;
+import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.util.ReplacerUtils;
@@ -44,7 +42,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author scitz0
  * @version $Id$
  */
-public class NukeAnnouncer implements AnnounceInterface {
+public class NukeAnnouncer extends AbstractAnnouncer {
 
 	private AnnounceConfig _config;
 
@@ -117,16 +115,6 @@ public class NukeAnnouncer implements AnnounceInterface {
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
 			sayOutput(output.toString(), writer);
-		}
-	}
-
-	private void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
-			}
 		}
 	}
 }

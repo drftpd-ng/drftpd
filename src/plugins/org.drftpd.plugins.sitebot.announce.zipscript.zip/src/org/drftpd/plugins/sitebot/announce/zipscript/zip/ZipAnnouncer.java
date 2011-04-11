@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -38,9 +37,8 @@ import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.plugins.sitebot.AnnounceInterface;
+import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
@@ -61,7 +59,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
+public class ZipAnnouncer extends AbstractAnnouncer {
 
 	private static final Logger logger = Logger.getLogger(ZipAnnouncer.class);
 
@@ -70,7 +68,7 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 	private ResourceBundle _bundle;
 
 	private String _keyPrefix;
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -144,14 +142,14 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 				if (writer != null) {
 					fillEnvSection(env, fileevent, writer, true);
 					env.add("files", Integer.toString(dizInfo.getTotal()));
-					env.add("expectedsize", (Bytes.formatBytes(getZipLargestFileBytes(dir) * dizInfo.getTotal())));
+					env.add("expectedsize", (Bytes.formatBytes(ZipTools.getZipLargestFileBytes(dir) * dizInfo.getTotal())));
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.first", env, _bundle), writer);
 				}
 				return;
 			}
 			//check if new racer
 			if ((dizInfo.getTotal() - dizStatus.getMissing()) != 1) {
-				for (Iterator<FileHandle> iter = getZipFiles(dir).iterator(); iter.hasNext();) {
+				for (Iterator<FileHandle> iter = ZipTools.getZipFiles(dir).iterator(); iter.hasNext();) {
 					FileHandle zipFileEntry = iter.next();
 
 					if (!zipFileEntry.equals(fileevent.getTransferFile()) && zipFileEntry.getUsername().equals(username)
@@ -175,17 +173,17 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 			if (dizStatus.isFinished()) {
 				AnnounceWriter writer = _config.getPathWriter("store.complete", fileevent.getDirectory());
 				if (writer != null) {
-					Collection<UploaderPosition> racers = RankUtils.userSort(getZipFiles(dir),
+					Collection<UploaderPosition> racers = RankUtils.userSort(ZipTools.getZipFiles(dir),
 							"bytes", "high");
-					Collection<GroupPosition> groups = RankUtils.topFileGroup(getZipFiles(dir));
+					Collection<GroupPosition> groups = RankUtils.topFileGroup(ZipTools.getZipFiles(dir));
 
 					fillEnvSection(env, fileevent, writer, false);
 
 					env.add("racers", Integer.toString(racers.size()));
 					env.add("groups", Integer.toString(groups.size()));
 					env.add("files", Integer.toString(dizInfo.getTotal()));
-					env.add("size", Bytes.formatBytes(getZipTotalBytes(dir)));
-					env.add("speed", Bytes.formatBytes(getXferspeed(dir)) + "/s");
+					env.add("size", Bytes.formatBytes(ZipTools.getZipTotalBytes(dir)));
+					env.add("speed", Bytes.formatBytes(ZipTools.getXferspeed(dir)) + "/s");
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete", env, _bundle), writer);
 
 					// Find max users/groups to announce
@@ -297,7 +295,7 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 					(dizStatus.getMissing() == halfway)) {
 				AnnounceWriter writer = _config.getPathWriter("store.halfway", fileevent.getDirectory());
 				if (writer != null) {
-					Collection<UploaderPosition> uploaders = RankUtils.userSort(getZipFiles(dir),
+					Collection<UploaderPosition> uploaders = RankUtils.userSort(ZipTools.getZipFiles(dir),
 							"bytes", "high");
 
 					UploaderPosition stat = uploaders.iterator().next();
@@ -341,16 +339,6 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			fillEnvSection(env, direvent, writer, false);
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+type, env, _bundle), writer);
-		}
-	}
-
-	private void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
-			}
 		}
 	}
 
@@ -412,8 +400,8 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 				dizInfo = zipData.getDizInfo();
 				totaldiz += 1;
 				totalfiles += dizInfo.getTotal();
-				totalbytes += getZipTotalBytes(dir);
-				totalxfertime += getZipTotalXfertime(dir);
+				totalbytes += ZipTools.getZipTotalBytes(dir);
+				totalxfertime += ZipTools.getZipTotalXfertime(dir);
 			} catch (Exception e1) {
 				// Failed to get diz data, safe to continue, that data
 				// will just not be available
@@ -425,8 +413,8 @@ public class ZipAnnouncer extends ZipTools implements AnnounceInterface {
 						dizInfo = zipData.getDizInfo();
 						totaldiz += 1;
 						totalfiles += dizInfo.getTotal();
-						totalbytes += getZipTotalBytes(subdir);
-						totalxfertime += getZipTotalXfertime(subdir);
+						totalbytes += ZipTools.getZipTotalBytes(subdir);
+						totalxfertime += ZipTools.getZipTotalXfertime(subdir);
 					} catch (Exception e1) {
 						// Failed to get diz data, safe to continue, that data
 						// will just not be available

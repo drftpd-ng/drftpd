@@ -134,7 +134,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private static final String themeDir = "conf/themes/irc";
 
 	// An ArrayList to hold references to announce plugins we have connected
-	private ArrayList<AnnounceInterface> _announcers = new ArrayList<AnnounceInterface>();
+	private ArrayList<AbstractAnnouncer> _announcers = new ArrayList<AbstractAnnouncer>();
 	private AnnounceConfig _announceConfig = null;
 	private ArrayList<String> _eventTypes = new ArrayList<String>();
 
@@ -2912,9 +2912,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 
 	private void loadAnnouncers(String confDir) {
 		try {
-			List<AnnounceInterface> loadedAnnouncers =
+			List<AbstractAnnouncer> loadedAnnouncers =
 				CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Announce", "Class");
-			for (AnnounceInterface announcer : loadedAnnouncers) {
+			for (AbstractAnnouncer announcer : loadedAnnouncers) {
 				_announcers.add(announcer);
 				logger.debug("Loading sitebot announcer from plugin "
 						+CommonPluginUtils.getPluginIdForObject(announcer));
@@ -2932,7 +2932,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		_announceConfig = new AnnounceConfig(confDir, _eventTypes, this);
 
 		// Initialise the announcers with the config
-		for (AnnounceInterface announcer : _announcers) {
+		for (AbstractAnnouncer announcer : _announcers) {
 			announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
 		}
 	}
@@ -2968,19 +2968,19 @@ public class SiteBot implements ReplyConstants, Runnable {
 		_announceConfig.reload();
 		
 		// Ensure that all announcers pickup any changes to the theme files
-		for (AnnounceInterface announcer : _announcers) {
+		for (AbstractAnnouncer announcer : _announcers) {
 			announcer.setResourceBundle(_commandManager.getResourceBundle());
 		}
 	}
 
 	@EventSubscriber
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
-		Set<AnnounceInterface> unloadedAnnouncers =
+		Set<AbstractAnnouncer> unloadedAnnouncers =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "Announce", event, _announcers);
 		if (!unloadedAnnouncers.isEmpty()) {
 			boolean typeRemoved = false;
-			for (Iterator<AnnounceInterface> iter = _announcers.iterator(); iter.hasNext();) {
-				AnnounceInterface announcer = iter.next();
+			for (Iterator<AbstractAnnouncer> iter = _announcers.iterator(); iter.hasNext();) {
+				AbstractAnnouncer announcer = iter.next();
 				if (unloadedAnnouncers.contains(announcer)) {
 					for (String type : announcer.getEventTypes()) {
 						if (_eventTypes.remove(type)) {
@@ -3003,9 +3003,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			boolean typeAdded = false;
-			List<AnnounceInterface> loadedAnnouncers =
+			List<AbstractAnnouncer> loadedAnnouncers =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.plugins.sitebot", "Announce", "Class", event);
-			for (AnnounceInterface announcer : loadedAnnouncers) {
+			for (AbstractAnnouncer announcer : loadedAnnouncers) {
 				logger.debug("Loading sitebot announcer provided by plugin "
 						+CommonPluginUtils.getPluginIdForObject(announcer));
 				announcer.initialise(_announceConfig,_commandManager.getResourceBundle());

@@ -18,7 +18,6 @@
 package org.drftpd.plugins.sitebot.announce.def;
 
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -27,9 +26,8 @@ import org.drftpd.commands.slavemanagement.SlaveManagement;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.SlaveEvent;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.sitebot.AnnounceInterface;
+import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
@@ -43,7 +41,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class BasicAnnouncer implements AnnounceInterface {
+public class BasicAnnouncer extends AbstractAnnouncer {
 
 	private static final Logger logger = Logger.getLogger(BasicAnnouncer.class);
 
@@ -147,16 +145,6 @@ public class BasicAnnouncer implements AnnounceInterface {
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
 			sayOutput(output, writer);
-		}
-	}
-
-	private void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
-			}
 		}
 	}
 

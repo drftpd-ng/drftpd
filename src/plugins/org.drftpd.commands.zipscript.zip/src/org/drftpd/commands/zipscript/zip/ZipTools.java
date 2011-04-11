@@ -34,7 +34,7 @@ import org.drftpd.vfs.FileHandle;
  */
 public class ZipTools {
 
-	protected Collection<FileHandle> getZipFiles(DirectoryHandle dir) 
+	public static Collection<FileHandle> getZipFiles(DirectoryHandle dir) 
 	throws IOException, FileNotFoundException {
 		Collection<FileHandle> files = new ArrayList<FileHandle>();
 
@@ -46,7 +46,7 @@ public class ZipTools {
 		return files;
 	}
 
-	protected long getZipTotalBytes(DirectoryHandle dir) 
+	public static long getZipTotalBytes(DirectoryHandle dir) 
 	throws IOException, FileNotFoundException {
 		long totalBytes = 0;
 
@@ -56,7 +56,7 @@ public class ZipTools {
 		return totalBytes;
 	}
 
-	protected long getZipLargestFileBytes(DirectoryHandle dir) 
+	public static long getZipLargestFileBytes(DirectoryHandle dir) 
 	throws IOException, FileNotFoundException {
 		long largestFileBytes = 0;
 
@@ -68,7 +68,7 @@ public class ZipTools {
 		return largestFileBytes;
 	}
 
-	protected long getZipTotalXfertime(DirectoryHandle dir)
+	public static long getZipTotalXfertime(DirectoryHandle dir)
 	throws IOException, FileNotFoundException {
 		long totalXfertime = 0;
 
@@ -78,7 +78,7 @@ public class ZipTools {
 		return totalXfertime;
 	}
 
-	protected long getXferspeed(DirectoryHandle dir)
+	public static long getXferspeed(DirectoryHandle dir)
 	throws IOException, FileNotFoundException {
 		long totalXfertime = getZipTotalXfertime(dir);
 		if (totalXfertime / 1000 == 0) {
@@ -88,7 +88,7 @@ public class ZipTools {
 		return getZipTotalBytes(dir) / (totalXfertime / 1000);
 	}
 
-	protected boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
+	public static boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
 		return ((AsyncResponseZipCRCInfo) rslave.fetchResponse(index)).isOk();
 	}
 }

@@ -35,7 +35,7 @@ import org.drftpd.vfs.VirtualFileSystem;
  */
 public class SFVTools {
 
-	protected Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
+	public static Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		Collection<FileHandle> files = new ArrayList<FileHandle>();
 		SFVInfo sfvInfo = sfvData.getSFVInfo();
@@ -49,7 +49,7 @@ public class SFVTools {
 		return files;
 	}
 
-	protected long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
+	public static long getSFVTotalBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long totalBytes = 0;
 
@@ -59,7 +59,7 @@ public class SFVTools {
 		return totalBytes;
 	}
 
-	protected long getSFVLargestFileBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
+	public static long getSFVLargestFileBytes(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long largestFileBytes = 0;
 
@@ -71,7 +71,7 @@ public class SFVTools {
 		return largestFileBytes;
 	}
 
-	protected long getSFVTotalXfertime(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
+	public static long getSFVTotalXfertime(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long totalXfertime = 0;
 
@@ -81,7 +81,7 @@ public class SFVTools {
 		return totalXfertime;
 	}
 
-	protected long getXferspeed(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
+	public static long getXferspeed(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData)
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
 		long totalXfertime = getSFVTotalXfertime(dir, sfvData);
 		if (totalXfertime / 1000 == 0) {

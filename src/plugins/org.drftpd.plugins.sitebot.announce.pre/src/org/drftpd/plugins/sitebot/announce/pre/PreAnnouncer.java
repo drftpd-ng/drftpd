@@ -17,13 +17,11 @@
 package org.drftpd.plugins.sitebot.announce.pre;
 
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.plugins.sitebot.AnnounceInterface;
+import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.event.PreEvent;
@@ -34,7 +32,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author lh
  * @version $Id$
  */
-public class PreAnnouncer implements AnnounceInterface {
+public class PreAnnouncer extends AbstractAnnouncer {
 
 	private AnnounceConfig _config;
 
@@ -76,16 +74,6 @@ public class PreAnnouncer implements AnnounceInterface {
 			env.add("files", event.getFiles());
 			env.add("bytes", event.getBytes());
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".pre", env, _bundle), writer);
-		}
-	}
-
-	private void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
-			}
 		}
 	}
 }

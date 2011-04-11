@@ -17,14 +17,12 @@
 package org.drftpd.plugins.sitebot.announce.request;
 
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.event.RequestEvent;
-import org.drftpd.plugins.sitebot.AnnounceInterface;
+import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.util.ReplacerUtils;
@@ -34,7 +32,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author scitz0
  * @version $Id$
  */
-public class RequestAnnouncer implements AnnounceInterface {
+public class RequestAnnouncer extends AbstractAnnouncer {
 
 	private AnnounceConfig _config;
 
@@ -76,16 +74,6 @@ public class RequestAnnouncer implements AnnounceInterface {
 			env.add("owner", event.getRequestOwner().getName());
 			env.add("ownerGroup", event.getRequestOwner().getGroup());
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+event.getCommand(), env, _bundle), writer);
-		}
-	}
-
-	private void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
-			}
 		}
 	}
 }

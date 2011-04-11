@@ -17,14 +17,12 @@
 package org.drftpd.plugins.sitebot.announce.zipscript.mp3;
 
 import java.util.ResourceBundle;
-import java.util.StringTokenizer;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.zipscript.mp3.event.MP3Event;
-import org.drftpd.plugins.sitebot.AnnounceInterface;
+import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
@@ -36,7 +34,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author djb61
  * @version $Id$
  */
-public class MP3Announcer implements AnnounceInterface {
+public class MP3Announcer extends AbstractAnnouncer {
 
 	private AnnounceConfig _config;
 
@@ -109,16 +107,6 @@ public class MP3Announcer implements AnnounceInterface {
 				env.add("runtime", runtime);
 				env.add("path", event.getDir().getName());
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".id3tag", env, _bundle), writer);
-			}
-		}
-	}
-
-	private void sayOutput(String output, AnnounceWriter writer) {
-		StringTokenizer st = new StringTokenizer(output,"\n");
-		while (st.hasMoreTokens()) {
-			String token = st.nextToken();
-			for (OutputWriter oWriter : writer.getOutputWriters()) {
-				oWriter.sendMessage(token);
 			}
 		}
 	}
