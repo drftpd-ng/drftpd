@@ -70,4 +70,8 @@ public class VirtualFileSystemRoot extends VirtualFileSystemDirectory {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	protected boolean isRoot() {
+		return true;
+	}
 }

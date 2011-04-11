@@ -17,7 +17,9 @@
 package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -474,5 +476,9 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 */
 	public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
 		return getInode().<T>getUntypedPluginMetaData(key);
+	}
+
+	public Map<String,AtomicInteger> getSlaveRefCounts() throws FileNotFoundException {
+		return getInode().getSlaveRefCounts();
 	}
 }

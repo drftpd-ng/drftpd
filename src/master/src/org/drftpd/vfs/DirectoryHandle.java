@@ -947,6 +947,9 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 
 	public void removeSlave(RemoteSlave rslave) throws FileNotFoundException {
+		if (getInode().getRefCountForSlave(rslave.getName()) == 0) {
+			return;
+		}
 		boolean empty = isEmptyUnchecked();
 		for (InodeHandle inode : getInodeHandlesUnchecked()) {
 			inode.removeSlave(rslave);
@@ -1015,5 +1018,9 @@ public class DirectoryHandle extends InodeHandle implements
 
 	protected void compareAndUpdateLastModified(long lastModified) throws FileNotFoundException {
 		getInode().compareAndUpdateLastModified(lastModified);
+	}
+
+	public void recalcSlaveRefCounts() throws FileNotFoundException {
+		getInode().recalcSlaveRefCounts();
 	}
 }

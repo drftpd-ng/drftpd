@@ -26,7 +26,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
@@ -119,6 +122,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 			added = _slaves.add(rslave);
 		}
 		if (added) {
+			getParent().incrementSlaveRefCount(rslave);
 			commit();
 		
 			getVFS().notifySlavesChanged(this, _slaves);
@@ -149,7 +153,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		synchronized (_slaves) {
 			removed = _slaves.remove(rslave);
 			isEmpty = _slaves.isEmpty();
-		}		
+		}
+		if (removed) {
+			getParent().decrementSlaveRefCount(rslave);
+		}
 		if (isEmpty) {
 			delete();
 		} else if (removed) {
@@ -405,4 +412,13 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		return _size;
 	}
 
+	protected Map<String,AtomicInteger> getSlaveRefCounts() {
+		Map<String,AtomicInteger> slaveRefCounts = new TreeMap<String,AtomicInteger>();
+		synchronized(_slaves) {
+			for (String slave : _slaves) {
+				slaveRefCounts.put(slave, new AtomicInteger(1));
+			}
+		}
+		return slaveRefCounts;
+	}
 }

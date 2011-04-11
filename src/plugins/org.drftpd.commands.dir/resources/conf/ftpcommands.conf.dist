@@ -116,3 +116,16 @@ class Dir
 method doSIZE
 perms *
 }
+
+SITE FIXSLAVECOUNT {
+plugin org.drftpd.commands.dir
+class Dir
+method doSITE_FIXSLAVECOUNT
+perms =siteop
+help Recursively walks through and validates the slave reference counts held against the current working directory
+help.specific ${command}
+help.specific This command should only be run when the site has a static VFS,
+help.specific this means no file uploads, no slaves remerging and no active
+help.specific archiving/jobs defined. If changes happen in the VFS whilst this
+help.specific command is running the resulting counts set will be incorrect.
+}

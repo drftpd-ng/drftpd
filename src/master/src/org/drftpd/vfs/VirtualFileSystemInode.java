@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
@@ -62,7 +63,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 
 	protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<Key<?>, Object>();
 
-	protected Map<String,Object> _untypedPluginMap;
+	protected Map<String,Object> _untypedPluginMap = new TreeMap<String,Object>();
 
 	protected long _lastModified;
 
@@ -337,35 +338,23 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	}
 
 	protected synchronized <T> void addUntypedPluginMetaData(String key, T object) {
-		if (_untypedPluginMap == null) {
-			_untypedPluginMap = new TreeMap<String,Object>();
-		}
 		_untypedPluginMap.put(key,object);
 		commit();
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T removeUntypedPluginMetaData(String key) {
-		T value = null;
-		if (_untypedPluginMap != null) {
-			synchronized(_untypedPluginMap) {
-				value = (T)_untypedPluginMap.remove(key);
-			}
-			if (value != null) {
-				commit();
-			}
+		T value = (T)_untypedPluginMap.remove(key);
+		if (value != null) {
+			commit();
 		}
 		return value;
 	}
 
 	@SuppressWarnings("unchecked")
 	protected <T> T getUntypedPluginMetaData(String key) {
-		T value = null;
-		if (_untypedPluginMap != null) {
-			synchronized(_untypedPluginMap) {
-				value = (T)_untypedPluginMap.get(key);
-			}
-		}
+		T value = (T)_untypedPluginMap.get(key);
+
 		return value;
 	}
 
@@ -391,5 +380,6 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		
 		return ((VirtualFileSystemInode) obj).getPath().equalsIgnoreCase(getPath());
 	}
-	
+
+	protected abstract Map<String,AtomicInteger> getSlaveRefCounts();
 }

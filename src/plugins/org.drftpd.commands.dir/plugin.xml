@@ -107,8 +107,14 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-		<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="doSITEFIXSIZEPerm">
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="doSITEFIXSIZEPerm">
 		<parameter id="ParentMethod" value="doSITE_FIXSIZE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PreHook" id="doSITEFIXSLAVECOUNTPerm">
+		<parameter id="ParentMethod" value="doSITE_FIXSLAVECOUNT" />
 		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />

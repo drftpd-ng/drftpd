@@ -24,6 +24,9 @@ import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Lowest representation of a directory.
@@ -93,5 +96,10 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 		enc.setPersistenceDelegate(VirtualFileSystemLink.class,
 				new DefaultPersistenceDelegate(new String[] { "username",
 						"group", "linkPath" }));
+	}
+
+	protected Map<String,AtomicInteger> getSlaveRefCounts() {
+		// Links don't reside on slaves so return an empty Map
+		return new TreeMap<String,AtomicInteger>();
 	}
 }

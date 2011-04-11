@@ -137,9 +137,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	
 	private transient boolean _initRemergeCompleted;
 
-	private transient Object _commandMonitor = new Object();
+	private transient Object _commandMonitor;
 
-	private transient LinkedBlockingQueue<RemergeMessage> _remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
+	private transient LinkedBlockingQueue<RemergeMessage> _remergeQueue;
 
 	private transient RemergeThread _remergeThread;
 
@@ -150,6 +150,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_ipMasks = new HostMaskCollection();
 		_renameQueue = new LinkedList<QueuedOperation>();
 		_remergePaused = new AtomicBoolean();
+		_remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
+		_commandMonitor = new Object();
 	}
 	
 	public static final Key<Boolean> SSL = new Key<Boolean>(RemoteSlave.class, "ssl");

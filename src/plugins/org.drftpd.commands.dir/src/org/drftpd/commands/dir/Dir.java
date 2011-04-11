@@ -491,7 +491,7 @@ public class Dir extends CommandInterface {
 		}
 
 		request.getSession().setObject(RENAMETO, toInode);
-		
+
 		/*logger.debug("after rename toInode-" +toInode);
 		logger.debug("after rename toInode.getPath()-" + toInode.getPath());
 		logger.debug("after rename toInode.getParent()-" + toInode.getParent());
@@ -770,7 +770,17 @@ public class Dir extends CommandInterface {
 			return new CommandResponse(500, e.getMessage());
 		}
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		response.addComment("Difference was of " + Bytes.formatBytes(difference));
+		response.addComment("Difference was " + Bytes.formatBytes(difference));
+		return response;
+	}
+
+	public CommandResponse doSITE_FIXSLAVECOUNT(CommandRequest request) {
+		try {
+			request.getCurrentDirectory().recalcSlaveRefCounts();
+		} catch (FileNotFoundException e) {
+			return new CommandResponse(500, e.getMessage());
+		}
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		return response;
 	}
 }

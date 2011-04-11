@@ -18,8 +18,11 @@
 package org.drftpd.vfs;
 
 import java.beans.DefaultPersistenceDelegate;
+import java.beans.Encoder;
+import java.beans.Expression;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
+import java.beans.PersistenceDelegate;
 import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
@@ -27,8 +30,10 @@ import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.drftpd.exceptions.FileExistsException;
 
@@ -42,7 +47,7 @@ import org.drftpd.exceptions.FileExistsException;
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected static final Collection<String> transientListDirectory = Arrays
-			.asList(new String[] { "name", "parent", "files"});
+	.asList(new String[] { "name", "parent", "files"});
 
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = 
 		new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
@@ -51,15 +56,17 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected long _size = 0;
 
+	private Map<String,AtomicInteger> _slaveRefCounts = new TreeMap<String,AtomicInteger>();
+
 	public VirtualFileSystemDirectory(String user, String group) {
 		super(user, group);
 	}
-	
+
 	protected VirtualFileSystemDirectory(String user, String group, boolean placeHolderLastModified) {
 		super(user,group);
 		_placeHolderLastModified = placeHolderLastModified;
 	}
-	
+
 	/**
 	 * Add another inode to the directory tree.
 	 * @param inode
@@ -72,7 +79,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			setLastModified(inode.getLastModified());
 		}
 		addSize(inode.getSize());
-		commit();
+		addChildSlaveRefCounts(inode, inode.getSlaveRefCounts());
 	}
 
 	protected synchronized void addSize(long l) {
@@ -95,7 +102,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 			String group) throws FileExistsException {
 		createDirectory(name, user, group, false);
 	}
-	
+
 	/**
 	 * Create a directory inside the current Directory.
 	 * @param name
@@ -111,7 +118,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 					+ " already exists in " + getPath());
 		}
 		VirtualFileSystemDirectory inode = createDirectoryRaw(name, user, group, placeHolderLastModified);
-		
+
 		getVFS().notifyInodeCreated(inode);
 	}
 
@@ -128,7 +135,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	protected VirtualFileSystemDirectory createDirectoryRaw(String name, String user, String group) {
 		return createDirectoryRaw(name, user, group, false);
 	}
-	
+
 	/**
 	 * Do not use this method unless you REALLY know what you're doing. This
 	 * method should only be used in two cases, in the createDirectory(string,
@@ -150,7 +157,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.commit();
 		addChild(inode, !placeHolderLastModified);
 		logger.info("createDirectory(" + inode + ")");
-		
+
 		return inode;
 	}
 
@@ -209,7 +216,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		addChild(inode, true);
 		commit();
 		logger.info("createFile(" + inode + ")");
-		
+
 		getVFS().notifyInodeCreated(inode);
 	}
 
@@ -235,7 +242,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		addChild(inode, true);
 		commit();
 		logger.info("createLink(" + inode + ")");
-		
+
 		getVFS().notifyInodeCreated(inode);
 	}
 
@@ -283,7 +290,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @throws FileNotFoundException
 	 */
 	protected VirtualFileSystemInode getInodeByName(String name)
-			throws FileNotFoundException {
+	throws FileNotFoundException {
 		name = VirtualFileSystem.fixPath(name);
 		if (name.startsWith(VirtualFileSystem.separator)) {
 			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(name);
@@ -329,8 +336,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 */
 	protected synchronized void removeChild(VirtualFileSystemInode child) {
 		addSize(-child.getSize());
+		removeChildSlaveRefCounts(child, child.getSlaveRefCounts());
 		removeMissingChild(child.getName());
-		commit();
 	}
 
 	/**
@@ -349,11 +356,11 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	@Override
 	protected void setupXML(XMLEncoder enc) {
 		super.setupXML(enc);
-		
+
 		PropertyDescriptor[] pdArr;
 		try {
 			pdArr = Introspector.getBeanInfo(VirtualFileSystemDirectory.class)
-					.getPropertyDescriptors();
+			.getPropertyDescriptors();
 		} catch (IntrospectionException e) {
 			logger.error("I don't know what to do here", e);
 			throw new RuntimeException(e);
@@ -366,7 +373,17 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		}
 		enc.setPersistenceDelegate(VirtualFileSystemDirectory.class,
 				new DefaultPersistenceDelegate(new String[] { "username",
-						"group" }));
+				"group" }));
+		enc.setPersistenceDelegate(AtomicInteger.class, 
+				new PersistenceDelegate() {
+			protected Expression instantiate(Object oldInstance, Encoder out) {
+				AtomicInteger ai = (AtomicInteger) oldInstance;
+				return new Expression(oldInstance,
+						oldInstance.getClass(),
+						"new",
+						new Object[] { ai.get() });
+			}
+		});
 	}
 
 	@Override
@@ -412,10 +429,141 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		}
 		super.setLastModified(modified);
 	}
-	
+
 	protected synchronized void compareAndUpdateLastModified(long lastModified) {
 		if (getLastModified() < lastModified || _placeHolderLastModified) {
 			setLastModified(lastModified);
 		}
+	}
+
+	public void setSlaveRefCounts(Map<String,AtomicInteger> slaveRefCounts) {
+		_slaveRefCounts = slaveRefCounts;
+	}
+
+	public Map<String,AtomicInteger> getSlaveRefCounts() {
+		synchronized (_slaveRefCounts) {
+			return new TreeMap<String,AtomicInteger>(_slaveRefCounts);
+		}
+	}
+
+	protected void addChildSlaveRefCounts(VirtualFileSystemInode childInode, Map<String,AtomicInteger> childRefCounts) {
+		if (!childRefCounts.isEmpty()) {
+			for (Map.Entry<String,AtomicInteger> refEntry : childRefCounts.entrySet()) {
+				AtomicInteger currentCount;
+				synchronized (_slaveRefCounts) {
+					currentCount = _slaveRefCounts.get(refEntry.getKey());
+					if (currentCount == null) {
+						currentCount = new AtomicInteger(0);
+						_slaveRefCounts.put(refEntry.getKey(), currentCount);
+					}
+				}
+				currentCount.addAndGet(refEntry.getValue().intValue());
+			}
+			if (!isRoot()) {
+				getParent().addChildSlaveRefCounts(childInode, childRefCounts);
+			}
+		}
+		commit();
+	}
+
+	protected void removeChildSlaveRefCounts(VirtualFileSystemInode childInode, Map<String,AtomicInteger> childRefCounts) {
+		if (!childRefCounts.isEmpty()) {
+			for (Map.Entry<String,AtomicInteger> refEntry : childRefCounts.entrySet()) {
+				AtomicInteger currentCount;
+				currentCount = _slaveRefCounts.get(refEntry.getKey());
+				if (currentCount == null) {
+					// Shouldn't happen since we're removing a child, therefore we should have
+					// counts for the slaves referenced by the child
+					logger.error("Removing child " + childInode.getPath() + " from " + getPath()
+							+ " child contained a count of " + refEntry.getValue().intValue()
+							+ " for slave " + refEntry.getKey() + " but the slave has no count"
+							+ " against this directory");
+					continue;
+				}
+				currentCount.addAndGet(-refEntry.getValue().intValue());
+			}
+			if (!isRoot()) {
+				getParent().removeChildSlaveRefCounts(childInode, childRefCounts);
+			}
+		}
+		commit();
+	}
+
+	protected void incrementSlaveRefCount(String slave) {
+		AtomicInteger currentCount;
+		synchronized (_slaveRefCounts) {
+			currentCount = _slaveRefCounts.get(slave);
+			if (currentCount == null) {
+				currentCount = new AtomicInteger(0);
+				_slaveRefCounts.put(slave, currentCount);
+			}
+		}
+		currentCount.incrementAndGet();
+		if (!isRoot()) {
+			getParent().incrementSlaveRefCount(slave);
+		}
+		commit();
+	}
+
+	protected void decrementSlaveRefCount(String slave) {
+		AtomicInteger currentCount;
+		synchronized (_slaveRefCounts) {
+			currentCount = _slaveRefCounts.get(slave);
+			if (currentCount == null) {
+				currentCount = new AtomicInteger(0);
+				_slaveRefCounts.put(slave, currentCount);
+			}
+		}
+		currentCount.decrementAndGet();
+		if (!isRoot()) {
+			getParent().decrementSlaveRefCount(slave);
+		}
+		commit();
+	}
+
+	protected boolean isRoot() {
+		return false;
+	}
+
+	protected int getRefCountForSlave(String slave) {
+		AtomicInteger slaveCount = _slaveRefCounts.get(slave);
+		if (slaveCount == null) {
+			return 0;
+		}
+		return slaveCount.get();
+	}
+
+	protected void recalcSlaveRefCounts() {
+		TreeMap<String,AtomicInteger> updCounts = new TreeMap<String,AtomicInteger>();
+		for (InodeHandle inode : getInodes()) {
+			if (inode.isDirectory()) {
+				try {
+					((DirectoryHandle)inode).recalcSlaveRefCounts();
+				} catch (FileNotFoundException e) {
+					// Dir has been deleted, skip it
+					continue;
+				}
+			}
+			try {
+				Map<String,AtomicInteger> inodeCounts = inode.getSlaveRefCounts();
+				for (String slave : inodeCounts.keySet()) {
+					AtomicInteger currCount = updCounts.get(slave);
+					if (currCount == null) {
+						currCount = inodeCounts.get(slave);
+					} else {
+						currCount.addAndGet(inodeCounts.get(slave).get());
+					}
+					updCounts.put(slave, currCount);
+				}
+			} catch (FileNotFoundException e) {
+				// Inode has been deleted, skip it
+				continue;
+			}
+		}
+		synchronized (_slaveRefCounts) {
+			_slaveRefCounts.clear();
+			_slaveRefCounts.putAll(updCounts);
+		}
+		commit();
 	}
 }
