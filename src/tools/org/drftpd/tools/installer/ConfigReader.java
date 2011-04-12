@@ -46,7 +46,7 @@ public class ConfigReader {
 			config.setFileLogging(false);
 			config.setClean(false);
 			config.setConvertUsers(false);
-			config.setPrintTrace(false);
+			config.setPrintTrace(true);
 			config.setSuppressLog(false);
 			config.setDevMode(false);
 			config.setPluginSelections(new HashMap<String,Boolean>());
