@@ -99,18 +99,18 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private static final Document INDEX_DOCUMENT = new Document();
 
-	private static final Field FIELD_NAME = new Field("name", "", Field.Store.NO, Field.Index.ANALYZED);
-	private static final Field FIELD_FULL_NAME = new Field("fullName", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_FULL_NAME_REVERSE = new Field("fullNameReverse", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_NAME = new Field("name", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final Field FIELD_FULL_NAME = new Field("fullName", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_FULL_NAME_REVERSE = new Field("fullNameReverse", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_PARENT_PATH = new Field("parentPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_FULL_PATH = new Field("fullPath", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.NO, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_OWNER = new Field("owner", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
+	private static final Field FIELD_GROUP = new Field("group", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
 	private static final Field FIELD_TYPE = new Field("type", "", Field.Store.YES, Field.Index.NOT_ANALYZED);
-	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.NO, Field.Index.ANALYZED);
-	private static final NumericField FIELD_SLAVES_NBR = new NumericField("nbrOfSlaves", Field.Store.NO, Boolean.TRUE);
-	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.NO, Boolean.TRUE);
-	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.NO, Boolean.TRUE);
+	private static final Field FIELD_SLAVES = new Field("slaves", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final NumericField FIELD_SLAVES_NBR = new NumericField("nbrOfSlaves", Field.Store.YES, Boolean.TRUE);
+	private static final NumericField FIELD_LASTMODIFIED = new NumericField("lastModified", Field.Store.YES, Boolean.TRUE);
+	private static final NumericField FIELD_SIZE = new NumericField("size", Field.Store.YES, Boolean.TRUE);
 
 	private static final Field[] FIELDS = new Field[] {
 		FIELD_NAME, FIELD_FULL_NAME, FIELD_FULL_NAME_REVERSE, FIELD_PARENT_PATH, FIELD_FULL_PATH, FIELD_OWNER, FIELD_GROUP, FIELD_TYPE, FIELD_SLAVES
@@ -337,7 +337,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		FIELD_NAME.setValue(inode.getName());
 		FIELD_FULL_NAME.setValue(inode.getName());
 		FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
-		if (!inode.getPath().equals(VirtualFileSystem.separator)) {
+		if (inode.getPath().equals(VirtualFileSystem.separator)) {
+			FIELD_PARENT_PATH.setValue("");
+		} else {
 			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
 		}
 		if (inode.isDirectory())
@@ -491,15 +493,19 @@ public class LuceneEngine implements IndexEngineInterface {
 
 					String oldPath = doc.getFieldable(FIELD_FULL_PATH.name()).stringValue();
 					String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
+					doc.removeField(FIELD_FULL_PATH.name());
+					doc.removeField(FIELD_PARENT_PATH.name());
 
-					try {
-						synchronized (INDEX_DOCUMENT) {
-							_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromRealInode(
-									GlobalContext.getGlobalContext().getRoot().getInodeHandleUnchecked(newPath)));
+					synchronized (INDEX_DOCUMENT) {
+						FIELD_FULL_PATH.setValue(newPath);
+						if (newPath.equals(VirtualFileSystem.separator)) {
+							FIELD_PARENT_PATH.setValue("");
+						} else {
+							FIELD_PARENT_PATH.setValue(VirtualFileSystem.stripLast(newPath) + VirtualFileSystem.separator);
 						}
-					} catch (FileNotFoundException e) {
-						logger.debug("Index rename failed: '" + oldPath + "' to '" + newPath + "', new inode already gone!, deleting stale old inode from index");
-						_iWriter.deleteDocuments(makeFullPathTermFromString(oldPath));
+						doc.add(FIELD_FULL_PATH);
+						doc.add(FIELD_PARENT_PATH);
+						_iWriter.updateDocument(makeFullPathTermFromString(oldPath), doc);
 					}
 				}
 			} else {
