@@ -106,7 +106,7 @@ public class ZipIncompleteManager implements PluginInterface {
 	public void onVirtualFileSystemInodeDeletedEvent(VirtualFileSystemInodeDeletedEvent vfsevent) {
 		if (vfsevent.getInode().isFile()) {
 			if (vfsevent.getInode().getParent().exists()) {
-				if (((FileHandle) vfsevent.getInode()).getName().endsWith(".zip")) {
+				if ((new FileHandle(vfsevent.getInode().getPath())).getName().endsWith(".zip")) {
 					ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(vfsevent.getInode().getParent());
 					try {
 						if (!zipData.getDizStatus().isFinished()) {

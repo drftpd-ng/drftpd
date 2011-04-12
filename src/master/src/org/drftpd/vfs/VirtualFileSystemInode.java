@@ -100,11 +100,12 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	public void delete() {
 		logger.info("delete(" + this + ")");
 		
+		String path = getPath();
 		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());
 		_parent.removeChild(this);
 		CommitManager.getCommitManager().remove(this);
 		
-		getVFS().notifyInodeDeleted(this);
+		getVFS().notifyInodeDeleted(this, path);
 	}
 
 	/**
@@ -227,8 +228,8 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		CommitManager.getCommitManager().flushImmediate(destinationDir);
 		CommitManager.getCommitManager().flushImmediate(this);
 		String fileString = "rename(" + this + ")";
+		String sourcePath = getPath();
 		_parent.removeChild(this);
-		InodeHandle source = VFSUtils.getInodeHandleFor(this);
 		try {			
 			VirtualFileSystem.getVirtualFileSystem().renameInode(
 					this.getPath(),
@@ -244,7 +245,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		_parent.addChild(this, true);
 		fileString = fileString + ",(" + this + ")";
 		logger.info(fileString);
-		getVFS().notifyInodeRenamed(source,this);
+		getVFS().notifyInodeRenamed(sourcePath,this);
 	}
 
 	/**
@@ -333,7 +334,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		return value;
 	}
 
-	protected <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
+	public <T> T getPluginMetaData(Key<T> key) throws KeyNotFoundException {
 		return _pluginMap.getObject(key);
 	}
 
@@ -352,7 +353,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected <T> T getUntypedPluginMetaData(String key) {
+	public <T> T getUntypedPluginMetaData(String key) {
 		T value = (T)_untypedPluginMap.get(key);
 
 		return value;

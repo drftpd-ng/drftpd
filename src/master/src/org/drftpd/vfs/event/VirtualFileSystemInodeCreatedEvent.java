@@ -26,8 +26,8 @@ import org.drftpd.vfs.VirtualFileSystemInode;
  */
 public class VirtualFileSystemInodeCreatedEvent extends VirtualFileSystemEvent {
 	
-	public VirtualFileSystemInodeCreatedEvent(VirtualFileSystemInode inode) {
-		super(inode);
+	public VirtualFileSystemInodeCreatedEvent(VirtualFileSystemInode inode, String path) {
+		super(inode, path);
 	}
 	
 }

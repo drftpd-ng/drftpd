@@ -26,8 +26,7 @@ import org.drftpd.vfs.VirtualFileSystemInode;
  */
 public class VirtualFileSystemInodeDeletedEvent extends VirtualFileSystemEvent {
 	
-	public VirtualFileSystemInodeDeletedEvent(VirtualFileSystemInode inode) {
-		super(inode);
+	public VirtualFileSystemInodeDeletedEvent(VirtualFileSystemInode inode, String path) {
+		super(inode, path);
 	}
-	
 }

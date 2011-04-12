@@ -28,8 +28,8 @@ public class VirtualFileSystemLastModifiedEvent extends VirtualFileSystemEvent {
 
 	private long _lastmodified;
 
-	public VirtualFileSystemLastModifiedEvent(VirtualFileSystemInode inode, long lastmodified) {
-		super(inode);
+	public VirtualFileSystemLastModifiedEvent(VirtualFileSystemInode inode, String path, long lastmodified) {
+		super(inode, path);
 		
 		_lastmodified = lastmodified;
 	}

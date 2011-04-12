@@ -17,7 +17,6 @@
  */
 package org.drftpd.vfs.event;
 
-import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystemInode;
 
 /**
@@ -27,18 +26,18 @@ import org.drftpd.vfs.VirtualFileSystemInode;
  */
 public class VirtualFileSystemRenameEvent extends VirtualFileSystemEvent {
 
-	private InodeHandle _source;
+	private ImmutableInodeHandle _source;
 	
-	public VirtualFileSystemRenameEvent(InodeHandle source, VirtualFileSystemInode destination) {
-		super(destination);
+	public VirtualFileSystemRenameEvent(String sourcePath, VirtualFileSystemInode destination, String destinationPath) {
+		super(destination, destinationPath);
 		
-		_source = source;
+		_source = new ImmutableInodeHandle(destination, sourcePath);
 	}
 	
 	/**
 	 * @return where the file is being renamed to.
 	 */
-	public InodeHandle getSource() {
+	public ImmutableInodeHandle getSource() {
 		return _source;
 	}
 

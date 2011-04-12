@@ -29,8 +29,8 @@ public class VirtualFileSystemOwnershipEvent extends VirtualFileSystemEvent {
 	private String _owner;
 	private String _group;
 	
-	public VirtualFileSystemOwnershipEvent(VirtualFileSystemInode inode, String owner, String group) {
-		super(inode);
+	public VirtualFileSystemOwnershipEvent(VirtualFileSystemInode inode, String path, String owner, String group) {
+		super(inode, path);
 		
 		_owner = owner;
 		_group = group;

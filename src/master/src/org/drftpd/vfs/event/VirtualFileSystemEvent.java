@@ -32,6 +32,8 @@ import org.drftpd.vfs.VirtualFileSystemInode;
 public abstract class VirtualFileSystemEvent {
 	
 	private InodeHandle _inode;
+	
+	private ImmutableInodeHandle _immutableInode;
 
 	/**
 	 * This constructor accepts a {@link VirtualFileSystemInode} but in order
@@ -39,15 +41,22 @@ public abstract class VirtualFileSystemEvent {
 	 * to convert the current <code>realInode</code> to an {@link InodeHandle}
 	 * @param realInode
 	 */
-	public VirtualFileSystemEvent(VirtualFileSystemInode realInode) {
+	public VirtualFileSystemEvent(VirtualFileSystemInode realInode, String path) {
 		_inode = VFSUtils.getInodeHandleFor(realInode);
+		_immutableInode = new ImmutableInodeHandle(realInode, path);
 	}
 	
 	/**
-	 * @return the {@link InodeHandle} that this event is releated to.
+	 * @return the {@link InodeHandle} that this event is related to.
 	 */
 	public InodeHandle getInode() {
 		return _inode;
 	}
-
+	
+	/**
+	 * @return the {@link ImmutableInodeHandle} that this event is related to.
+	 */
+	public ImmutableInodeHandle getImmutableInode() {
+		return _immutableInode;
+	}
 }

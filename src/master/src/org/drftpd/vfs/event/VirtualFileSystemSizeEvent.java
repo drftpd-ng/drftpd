@@ -28,8 +28,8 @@ public class VirtualFileSystemSizeEvent extends VirtualFileSystemEvent {
 
 	private long _size;
 
-	public VirtualFileSystemSizeEvent(VirtualFileSystemInode inode, long size) {
-		super(inode);
+	public VirtualFileSystemSizeEvent(VirtualFileSystemInode inode, String path, long size) {
+		super(inode, path);
 		
 		_size = size;
 	}

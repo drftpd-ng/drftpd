@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.event.VirtualFileSystemEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
@@ -65,7 +65,7 @@ public class IndexingVirtualFileSystemListener {
 	 * @return false if this event should be ignored by this listener
 	 */
 	private static boolean bypassEvent(VirtualFileSystemEvent event) {
-		return event.getInode().isLink();
+		return event.getImmutableInode().isLink();
 	}
 	
 	/**
@@ -77,7 +77,7 @@ public class IndexingVirtualFileSystemListener {
 		if (bypassEvent(event))
 			return;
 		
-		inodeUpdated(event.getInode());
+		inodeUpdated(event.getImmutableInode());
 	}
 	
 	/**
@@ -89,7 +89,7 @@ public class IndexingVirtualFileSystemListener {
 		if (bypassEvent(event))
 			return;
 		
-		inodeUpdated(event.getInode());
+		inodeUpdated(event.getImmutableInode());
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class IndexingVirtualFileSystemListener {
 		if (bypassEvent(event))
 			return;
 
-		inodeUpdated(event.getInode());
+		inodeUpdated(event.getImmutableInode());
 	}
 
 	/**
@@ -113,7 +113,7 @@ public class IndexingVirtualFileSystemListener {
 		if (bypassEvent(event))
 			return;
 
-		inodeUpdated(event.getInode());
+		inodeUpdated(event.getImmutableInode());
 	}
 	
 	/**
@@ -121,7 +121,7 @@ public class IndexingVirtualFileSystemListener {
 	 * so this place is used to avoid code repetition.
 	 * @param inode
 	 */
-	protected void inodeUpdated(InodeHandle inode) {
+	protected void inodeUpdated(ImmutableInodeHandle inode) {
 		try {
 			getIndexEngine().updateInode(inode);
 		} catch (IndexException e) {
@@ -138,7 +138,7 @@ public class IndexingVirtualFileSystemListener {
 		if (bypassEvent(event))
 			return;
 		try {
-			getIndexEngine().renameInode(event.getSource(), event.getInode());
+			getIndexEngine().renameInode(event.getSource(), event.getImmutableInode());
 		} catch (IndexException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 		}
@@ -155,7 +155,7 @@ public class IndexingVirtualFileSystemListener {
 			return;
 		
 		try {
-			getIndexEngine().addInode(event.getInode());
+			getIndexEngine().addInode(event.getImmutableInode());
 		} catch (IndexException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 		}
@@ -167,7 +167,7 @@ public class IndexingVirtualFileSystemListener {
 			return;
 		
 		try {
-			getIndexEngine().deleteInode(event.getInode());
+			getIndexEngine().deleteInode(event.getImmutableInode());
 		} catch (IndexException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 		}

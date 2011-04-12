@@ -31,8 +31,8 @@ public class VirtualFileSystemSlaveEvent extends VirtualFileSystemEvent {
 
 	private Set<String> _slaves;
 
-	public VirtualFileSystemSlaveEvent(VirtualFileSystemFile file, Set<String> slaves) {
-		super(file);
+	public VirtualFileSystemSlaveEvent(VirtualFileSystemFile file, String path, Set<String> slaves) {
+		super(file, path);
 		
 		_slaves = slaves;
 	}

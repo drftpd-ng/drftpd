@@ -32,6 +32,7 @@ import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
 
@@ -144,7 +145,7 @@ public class LinkManager implements PluginInterface {
 		if (vfsevent.getInode().isDirectory()) {
 			for (LinkType link : getLinks()) {
 				if ((link.getDeleteOnContains("wipe")) || (link.getDeleteOnContains("rmd"))) {
-					link.doDeleteLink((DirectoryHandle) vfsevent.getInode());
+					link.doDeleteLink(new DirectoryHandle(vfsevent.getInode().getPath()));
 				}
 			}			
 		}
@@ -155,7 +156,7 @@ public class LinkManager implements PluginInterface {
 	 */
 	@EventSubscriber
 	public void onVirtualFileSystemRenameEvent(VirtualFileSystemRenameEvent vfsevent) {
-		InodeHandle fromInode = vfsevent.getSource();
+		ImmutableInodeHandle fromInode = vfsevent.getSource();
 		if ((fromInode == null) || (!fromInode.isDirectory())) {
 			// INode is not a directory
 			return;
@@ -167,7 +168,7 @@ public class LinkManager implements PluginInterface {
 			return;
 		}	
 
-		DirectoryHandle fromDir = (DirectoryHandle) fromInode;
+		DirectoryHandle fromDir = new DirectoryHandle(fromInode.getPath());
 		DirectoryHandle toDir = (DirectoryHandle) toInode;
 
 		for (LinkType link : getLinks()) {

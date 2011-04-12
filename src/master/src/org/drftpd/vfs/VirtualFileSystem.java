@@ -388,43 +388,43 @@ public class VirtualFileSystem {
 	protected void notifyOwnershipChanged(VirtualFileSystemInode inode, String owner, String group) {
 		logger.debug("Notifying that ownership of " + inode.getPath() + " has changed to: " + owner + "/" + group);
 
-		publishAsyncEvent(new VirtualFileSystemOwnershipEvent(inode, owner, group));
+		publishAsyncEvent(new VirtualFileSystemOwnershipEvent(inode, inode.getPath(), owner, group));
 	}
 	
 	protected void notifySlavesChanged(VirtualFileSystemFile inode, Set<String> slaves) {
 		logger.debug("Notifying the list of slaves of " + inode.getPath() + " has changed to: " + slaves);
 		
-		publishAsyncEvent(new VirtualFileSystemSlaveEvent(inode, slaves));
+		publishAsyncEvent(new VirtualFileSystemSlaveEvent(inode, inode.getPath(), slaves));
 	}
 	
-	protected void notifyInodeRenamed(InodeHandle source, VirtualFileSystemInode destination) {
-		logger.debug("Notifying that " + source.getPath() + " has been renamed to " + destination.getPath());
+	protected void notifyInodeRenamed(String sourcePath, VirtualFileSystemInode destination) {
+		logger.debug("Notifying that " + sourcePath + " has been renamed to " + destination.getPath());
 
-		publishAsyncEvent(new VirtualFileSystemRenameEvent(source, destination));
+		publishAsyncEvent(new VirtualFileSystemRenameEvent(sourcePath, destination, destination.getPath()));
 	}
 	
 	protected void notifyInodeCreated(VirtualFileSystemInode inode) {
 		logger.debug("Notifying that " + inode.getPath() + " has been created");
 
-		publishAsyncEvent(new VirtualFileSystemInodeCreatedEvent(inode));
+		publishAsyncEvent(new VirtualFileSystemInodeCreatedEvent(inode, inode.getPath()));
 	}
 	
-	protected void notifyInodeDeleted(VirtualFileSystemInode inode) {
-		logger.debug("Notifying that " + inode.getPath() + " has been deleted");
+	protected void notifyInodeDeleted(VirtualFileSystemInode inode, String path) {
+		logger.debug("Notifying that " + path + " has been deleted");
 
-		publishAsyncEvent(new VirtualFileSystemInodeDeletedEvent(inode));
+		publishAsyncEvent(new VirtualFileSystemInodeDeletedEvent(inode, path));
 	}
 
 	protected void notifySizeChanged(VirtualFileSystemInode inode, long size) {
 		logger.debug("Notifying that the size of " + inode.getPath() + " has changed to: " + size);
 
-		publishAsyncEvent(new VirtualFileSystemSizeEvent(inode, size));
+		publishAsyncEvent(new VirtualFileSystemSizeEvent(inode, inode.getPath(), size));
 	}
 
 	protected void notifyLastModifiedChanged(VirtualFileSystemInode inode, long lastmodified) {
 		logger.debug("Notifying that the last modified timestamp of " + inode.getPath() + " has changed to: " + lastmodified);
 
-		publishAsyncEvent(new VirtualFileSystemLastModifiedEvent(inode, lastmodified));
+		publishAsyncEvent(new VirtualFileSystemLastModifiedEvent(inode, inode.getPath(), lastmodified));
 	}
 	
 	private void publishAsyncEvent(VirtualFileSystemEvent event) {

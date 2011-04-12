@@ -70,6 +70,7 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
@@ -274,7 +275,63 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @param inode
 	 * @throws FileNotFoundException
 	 */
-	private Document makeDocumentFromInode(InodeHandle inode) throws FileNotFoundException {
+	private Document makeDocumentFromInode(ImmutableInodeHandle inode) throws FileNotFoundException {
+		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
+
+		FIELD_NAME.setValue(inode.getName());
+		FIELD_FULL_NAME.setValue(inode.getName());
+		FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
+		if (inode.getPath().equals(VirtualFileSystem.separator)) {
+			FIELD_PARENT_PATH.setValue("");
+		} else {
+			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
+		}
+		if (inode.isDirectory())
+			FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
+		else
+			FIELD_FULL_PATH.setValue(inode.getPath());
+		FIELD_OWNER.setValue(inode.getUsername());
+		FIELD_GROUP.setValue(inode.getGroup());
+		FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
+
+		if (inodeType == InodeType.FILE) {
+			StringBuffer sb = new StringBuffer();
+			for (String slaveName : inode.getSlaveNames()) {
+				sb.append(slaveName).append(",");
+			}
+			FIELD_SLAVES_NBR.setIntValue(inode.getSlaveNames().size());
+			FIELD_SLAVES.setValue(sb.toString());
+		} else {
+			FIELD_SLAVES_NBR.setIntValue(0);
+		}
+
+		FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
+		FIELD_SIZE.setLongValue(inode.getSize());
+
+		return INDEX_DOCUMENT;
+	}
+	
+	/**
+	 * Shortcut to create Lucene Document from the Inode's data. The fields that
+	 * are stored in the index are:
+	 * <ul>
+	 * <li>name - The name of the inode</li>
+	 * <li>fullName - The full name of the inode</li>
+	 * <li>fullNameReverse - The full name of the inode in reverse order</li>
+	 * <li>parentPath - The full path of the parent inode</li>
+	 * <li>fullPath - The full path of the inode</li>
+	 * <li>owner - The user who owns the file</li>
+	 * <li>group - The group of the user who owns the file</li>
+	 * <li>type - File or Directory</li>
+	 * <li>slaves - If the inode is a file, then the slaves are stored</li>
+	 * <li>lastModified - Timestamp of when the inode was last modified</li>
+	 * <li>size - The size of the inode</li>
+	 * </ul>
+	 * 
+	 * @param inode
+	 * @throws FileNotFoundException
+	 */
+	private Document makeDocumentFromRealInode(InodeHandle inode) throws FileNotFoundException {
 		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
 
 		FIELD_NAME.setValue(inode.getName());
@@ -307,8 +364,8 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		return INDEX_DOCUMENT;
 	}
-
-	private Term makeFullPathTermFromInode(InodeHandle inode) {
+	
+	private Term makeFullPathTermFromInode(ImmutableInodeHandle inode) {
 		if (inode.isDirectory()) {
 			return TERM_FULL.createTerm(inode.getPath() + VirtualFileSystem.separator);
 		}
@@ -355,7 +412,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/* {@inheritDoc} */
-	public void addInode(InodeHandle inode) throws IndexException {
+	public void addInode(ImmutableInodeHandle inode) throws IndexException {
 		try {
 			synchronized (INDEX_DOCUMENT) {
 				Document doc = makeDocumentFromInode(inode);
@@ -371,7 +428,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/* {@inheritDoc} */
-	public void deleteInode(InodeHandle inode) throws IndexException {
+	public void deleteInode(ImmutableInodeHandle inode) throws IndexException {
 		try {
 			_iWriter.deleteDocuments(makeFullPathTermFromInode(inode));
 		} catch (CorruptIndexException e) {
@@ -382,7 +439,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/* {@inheritDoc} */
-	public void updateInode(InodeHandle inode) throws IndexException {
+	public void updateInode(ImmutableInodeHandle inode) throws IndexException {
 		try {
 			synchronized (INDEX_DOCUMENT) {
 				_iWriter.updateDocument(makeFullPathTermFromInode(inode), makeDocumentFromInode(inode));
@@ -397,7 +454,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/* {@inheritDoc} */
-	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException {
+	public void renameInode(ImmutableInodeHandle fromInode, ImmutableInodeHandle toInode) throws IndexException {
 		IndexSearcher iSearcher = null;
 		IndexReader iReader = null;
 		try {
@@ -432,16 +489,17 @@ public class LuceneEngine implements IndexEngineInterface {
 				for (int i = bits.nextSetBit(0); i >= 0; i = bits.nextSetBit(i+1)) {
 					Document doc = iSearcher.doc(i, SIMPLE_FIELD_SELECTOR);
 
-					String oldPath = doc.getFieldable("fullPath").stringValue();
+					String oldPath = doc.getFieldable(FIELD_FULL_PATH.name()).stringValue();
 					String newPath = toInode.getPath() + oldPath.substring(fromInode.getPath().length());
 
 					try {
 						synchronized (INDEX_DOCUMENT) {
-							_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromInode(
+							_iWriter.updateDocument(makeFullPathTermFromString(oldPath), makeDocumentFromRealInode(
 									GlobalContext.getGlobalContext().getRoot().getInodeHandleUnchecked(newPath)));
 						}
 					} catch (FileNotFoundException e) {
-						logger.warn("Index rename failed: '" + oldPath + "' to '" + newPath + "', inode gone!");
+						logger.debug("Index rename failed: '" + oldPath + "' to '" + newPath + "', new inode already gone!, deleting stale old inode from index");
+						_iWriter.deleteDocuments(makeFullPathTermFromString(oldPath));
 					}
 				}
 			} else {
@@ -523,15 +581,30 @@ public class LuceneEngine implements IndexEngineInterface {
 		try {
 			for (InodeHandle inode : dir.getInodeHandlesUnchecked()) {
 				if (inode.isDirectory()) {
-					addInode(inode);
+					addRealInode(inode);
 					recurseAndBuild((DirectoryHandle) inode);
 				} else if (inode.isFile()) {
-					addInode(inode);
+					addRealInode(inode);
 				}
 			}
 		} catch (FileNotFoundException e) {
 			// Dir gone, error logged in addInode(inode) call from parent dir,
 			// ignore and continue to build index.
+		}
+	}
+	
+	private void addRealInode(InodeHandle inode) throws IndexException {
+		try {
+			synchronized (INDEX_DOCUMENT) {
+				Document doc = makeDocumentFromRealInode(inode);
+				_iWriter.addDocument(doc);
+			}
+		} catch (FileNotFoundException e) {
+			logger.error("Unable to add " + inode.getPath() + " to the index", e);
+		} catch (CorruptIndexException e) {
+			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
+		} catch (IOException e) {
+			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		}
 	}
 

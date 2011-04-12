@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 
 /**
@@ -49,21 +49,21 @@ public interface IndexEngineInterface {
 	 * The kind of information stored in the index is up to the implementation.
 	 * @throws IndexException
 	 */
-	public void addInode(InodeHandle inode) throws IndexException;
+	public void addInode(ImmutableInodeHandle inode) throws IndexException;
 	
 	/**
 	 * Deletes an inode from the index.
 	 * @param inode
 	 * @throws IndexException
 	 */
-	public void deleteInode(InodeHandle inode) throws IndexException;
+	public void deleteInode(ImmutableInodeHandle inode) throws IndexException;
 	
 	/**
 	 * Updates the data of an inode.
 	 * @param inode
 	 * @throws IndexException
 	 */
-	public void updateInode(InodeHandle inode) throws IndexException;
+	public void updateInode(ImmutableInodeHandle inode) throws IndexException;
 	
 	/**
 	 * Renames the inode in the index
@@ -71,7 +71,7 @@ public interface IndexEngineInterface {
 	 * @param toInode
 	 * @throws IndexException
 	 */
-	public void renameInode(InodeHandle fromInode, InodeHandle toInode) throws IndexException;
+	public void renameInode(ImmutableInodeHandle fromInode, ImmutableInodeHandle toInode) throws IndexException;
 	
 	/**
 	 * Force the engine to save its current data.<br>
