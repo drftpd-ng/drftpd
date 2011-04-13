@@ -276,6 +276,14 @@ public class GlobalContext {
 				} catch (InterruptedException e) {
 				}
 			}
+			while (GlobalContext.getEventService().getQueueSize() > 0) {
+				logger.info("Waiting for queued events to be processed - " + 
+						GlobalContext.getEventService().getQueueSize() + " remaining");
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+			}
 			while (CommitManager.getCommitManager().getQueueSize() > 0) {
 				logger.info("Waiting for queued commits to be drained - " + 
 						CommitManager.getCommitManager().getQueueSize() + " remaining");
