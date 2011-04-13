@@ -134,7 +134,8 @@ public class NukeUtils {
 					dirsToNuke.add(inode);
 				}
 			} catch (FileNotFoundException e) {
-				throw new FileNotFoundException("Index contained an unexistent inode: " + item.getKey());
+				// This is ok, could be multiple nukes fired and
+				// that is has not yet been reflected in index due to async event.
 			}
 		}
 
