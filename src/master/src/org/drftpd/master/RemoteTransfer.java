@@ -140,11 +140,13 @@ public class RemoteTransfer {
 			SlaveManager.getBasicIssuer().issueAbortToSlave(_rslave, getTransferIndex(), reason);
 		} catch (SlaveUnavailableException e) {
 			_status = new TransferStatus(getTransferIndex(), e);
-		} finally {
-			if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-				_pointer.unlinkPointer(this);
+		} finally {	
+			synchronized (this) {
+				if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+					_pointer.unlinkPointer(this);
+				}
+				_pointer = null;
 			}
-			_pointer = null;
 		}
 	}
 	

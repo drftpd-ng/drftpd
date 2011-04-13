@@ -121,12 +121,10 @@ public class TransferState {
 		if (transfer == null) {
 			return Transfer.TRANSFER_UNKNOWN;
 		}
-		synchronized (transfer) {
-			return transfer.getTransferDirection();
-		}
+		return transfer.getTransferDirection();
 	}
 	
-	public void reset() {
+	public synchronized void reset() {
 		_rslave = null;
 		if (_transfer != null) {
 			_transfer.abort("reset");
