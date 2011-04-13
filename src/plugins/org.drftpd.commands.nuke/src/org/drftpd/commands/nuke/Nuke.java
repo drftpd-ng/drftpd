@@ -106,7 +106,12 @@ public class Nuke extends CommandInterface {
         
         DirectoryHandle currentDir = request.getCurrentDirectory();
 		String nukeDirName = st.nextToken();
-        User requestUser = session.getUserNull(request.getUser());
+
+		if (nukeDirName.contains("[NUKED]-")) {
+			return new CommandResponse(500, "Nuke Failed: Cannot Nuke A Previously Nuked Dir");
+		}
+		
+		User requestUser = session.getUserNull(request.getUser());
 
 		String nukeDirPath = VirtualFileSystem.fixPath(nukeDirName);
 
