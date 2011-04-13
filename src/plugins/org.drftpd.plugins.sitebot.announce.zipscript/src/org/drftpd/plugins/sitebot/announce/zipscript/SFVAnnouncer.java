@@ -33,6 +33,7 @@ import org.drftpd.RankUtils;
 import org.drftpd.Time;
 import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.SFVTools;
+import org.drftpd.commands.zipscript.event.SFVMemberTransferEvent;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.TransferEvent;
@@ -92,18 +93,21 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 	}
 
 	@EventSubscriber
-	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {
-		if ("PRE".equals(direvent.getCommand())) {
-			outputDirectoryEvent(direvent, "pre");
-		} else if ("STOR".equals(direvent.getCommand())) {
-			outputDirectorySTOR((TransferEvent) direvent);
+	public void onDirectoryFtpEvent(DirectoryFtpEvent dirEvent) {
+		if ("PRE".equals(dirEvent.getCommand())) {
+			outputDirectoryEvent(dirEvent, "pre");
+		} else if ("STOR".equals(dirEvent.getCommand())) {
+			outputDirectorySTOR((TransferEvent) dirEvent);
 		}
+	}
+	
+	@EventSubscriber
+	public void onSFVMemberTransferEvent(SFVMemberTransferEvent sfvEvent) {
+		outputSFVMemberSTOR(sfvEvent);
 	}
 
 	private void outputDirectorySTOR(TransferEvent fileevent) {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-
-		DirectoryHandle dir = fileevent.getDirectory();
 
 		// ANNOUNCE NFO FILE
 		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".nfo")) {
@@ -112,66 +116,52 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 				fillEnvSection(env, fileevent, writer, true); 
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.nfo", env, _bundle), writer);
 			}
-			return;
-		} 
+		}
+	}
 
-		SFVInfo sfvinfo;
-		ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
+	private void outputSFVMemberSTOR(SFVMemberTransferEvent sfvEvent) {
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-		try {
-			sfvinfo = sfvData.getSFVInfo();
-		} catch (FileNotFoundException ex) {
-			logger.info("No sfv file in " + dir.getPath() +
-			", can't publish race info");
-			return;
-		} catch (IOException ex) {
-			logger.info("Unable to read sfv file in " + dir.getPath() +
-			", can't publish race info");
-			return;
-		} catch (NoAvailableSlaveException e) {
-			logger.info("No available slave with .sfv");
-			return;
-		} catch (SlaveUnavailableException e) {
-			logger.info("No available slave with .sfv");
+		DirectoryHandle dir = sfvEvent.getDirectory();
+
+
+		if (sfvEvent.getSFVInfo().getEntries().get(sfvEvent.getTransferFile().getName()) == null) {
 			return;
 		}
 
-		if (sfvinfo.getEntries().get(fileevent.getTransferFile().getName()) == null) {
-			return;
-		}
-
-		int halfway = (int) Math.floor((double) sfvinfo.getSize() / 2);
+		int halfway = (int) Math.floor((double) sfvEvent.getSFVInfo().getSize() / 2);
 
 		try {
-			String username = fileevent.getUser().getName();
-			SFVStatus sfvstatus = sfvData.getSFVStatus();
+			String username = sfvEvent.getUser().getName();
+			SFVStatus sfvStatus = sfvEvent.getSFVStatus();
 
-			if (sfvstatus.getAvailable() == 1 && sfvinfo.getSize() > 1) {
-				AnnounceWriter writer = _config.getPathWriter("store.first", fileevent.getDirectory());
+			if (sfvStatus.getAvailable() == 1 && sfvEvent.getSFVInfo().getSize() > 1) {
+				AnnounceWriter writer = _config.getPathWriter("store.first", dir);
 				if (writer != null) {
-					fillEnvSection(env, fileevent, writer, true);
-					env.add("files", Integer.toString(sfvinfo.getSize()));
-					env.add("expectedsize", (Bytes.formatBytes(SFVTools.getSFVLargestFileBytes(dir,sfvData) * sfvinfo.getSize())));
+					fillEnvSection(env, sfvEvent, writer, true);
+					env.add("files", Integer.toString(sfvEvent.getSFVInfo().getSize()));
+					env.add("expectedsize", (Bytes.formatBytes(
+							SFVTools.getSFVLargestFileBytes(dir, sfvEvent.getSFVData()) * sfvEvent.getSFVInfo().getSize())));
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.first", env, _bundle), writer);
 				}
 				return;
 			}
 			//check if new racer
-			if ((sfvinfo.getSize() - sfvstatus.getMissing()) != 1) {
-				for (Iterator<FileHandle> iter = SFVTools.getSFVFiles(dir, sfvData).iterator(); iter.hasNext();) {
+			if ((sfvEvent.getSFVInfo().getSize() - sfvStatus.getMissing()) != 1) {
+				for (Iterator<FileHandle> iter = SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()).iterator(); iter.hasNext();) {
 					FileHandle sfvFileEntry = iter.next();
 
-					if (!sfvFileEntry.equals(fileevent.getTransferFile()) && sfvFileEntry.getUsername().equals(username)
+					if (!sfvFileEntry.equals(sfvEvent.getTransferFile()) && sfvFileEntry.getUsername().equals(username)
 							&& sfvFileEntry.getXfertime() > 0) {
 						break;
 					}
 
 					if (!iter.hasNext()) {
-						AnnounceWriter writer = _config.getPathWriter("store.race", fileevent.getDirectory());
+						AnnounceWriter writer = _config.getPathWriter("store.race", dir);
 						if (writer != null) {
-							fillEnvSection(env, fileevent, writer, true);
+							fillEnvSection(env, sfvEvent, writer, true);
 							env.add("filesleft",
-									Integer.toString(sfvstatus.getMissing()));
+									Integer.toString(sfvStatus.getMissing()));
 							sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.race", env, _bundle), writer);
 						}
 					}
@@ -179,20 +169,20 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 			}
 
 			//COMPLETE
-			if (sfvstatus.isFinished()) {
-				AnnounceWriter writer = _config.getPathWriter("store.complete", fileevent.getDirectory());
+			if (sfvStatus.isFinished()) {
+				AnnounceWriter writer = _config.getPathWriter("store.complete", dir);
 				if (writer != null) {
-					Collection<UploaderPosition> racers = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvData),
+					Collection<UploaderPosition> racers = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()),
 							"bytes", "high");
-					Collection<GroupPosition> groups = RankUtils.topFileGroup(SFVTools.getSFVFiles(dir, sfvData));
+					Collection<GroupPosition> groups = RankUtils.topFileGroup(SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()));
 
-					fillEnvSection(env, fileevent, writer, false);
+					fillEnvSection(env, sfvEvent, writer, false);
 
 					env.add("racers", Integer.toString(racers.size()));
 					env.add("groups", Integer.toString(groups.size()));
-					env.add("files", Integer.toString(sfvinfo.getSize()));
-					env.add("size", Bytes.formatBytes(SFVTools.getSFVTotalBytes(dir, sfvData)));
-					env.add("speed", Bytes.formatBytes(SFVTools.getXferspeed(dir, sfvData)) + "/s");
+					env.add("files", Integer.toString(sfvEvent.getSFVInfo().getSize()));
+					env.add("size", Bytes.formatBytes(SFVTools.getSFVTotalBytes(dir, sfvEvent.getSFVData())));
+					env.add("speed", Bytes.formatBytes(SFVTools.getXferspeed(dir, sfvEvent.getSFVData())) + "/s");
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete", env, _bundle), writer);
 
 					// Find max users/groups to announce
@@ -240,7 +230,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 						raceenv.add("position", String.valueOf(position));
 						raceenv.add("percent",
 								Integer.toString(
-										(stat.getFiles() * 100) / sfvinfo.getSize()) + "%");
+										(stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
 						raceenv.add("alup",
 								new Integer(UserTransferStats.getStatsPlace("ALUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
@@ -286,7 +276,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 						raceenv.add("files", Integer.toString(stat.getFiles()));
 						raceenv.add("percent",
 								Integer.toString(
-										(stat.getFiles() * 100) / sfvinfo.getSize()) + "%");
+										(stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
 						raceenv.add("speed",
 								Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
@@ -300,11 +290,11 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 				}
 
 				//HALFWAY
-			} else if ((sfvinfo.getSize() >= 4) &&
-					(sfvstatus.getMissing() == halfway)) {
-				AnnounceWriter writer = _config.getPathWriter("store.halfway", fileevent.getDirectory());
+			} else if ((sfvEvent.getSFVInfo().getSize() >= 4) &&
+					(sfvStatus.getMissing() == halfway)) {
+				AnnounceWriter writer = _config.getPathWriter("store.halfway", dir);
 				if (writer != null) {
-					Collection<UploaderPosition> uploaders = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvData),
+					Collection<UploaderPosition> uploaders = RankUtils.userSort(SFVTools.getSFVFiles(dir, sfvEvent.getSFVData()),
 							"bytes", "high");
 
 					UploaderPosition stat = uploaders.iterator().next();
@@ -313,9 +303,9 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 					env.add("leadfiles", Integer.toString(stat.getFiles()));
 					env.add("leadsize", Bytes.formatBytes(stat.getBytes()));
 					env.add("leadpercent",
-							Integer.toString((stat.getFiles() * 100) / sfvinfo.getSize()) +
+							Integer.toString((stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) +
 					"%");
-					env.add("filesleft", Integer.toString(sfvstatus.getMissing()));
+					env.add("filesleft", Integer.toString(sfvStatus.getMissing()));
 
 					User leaduser = null;
 					try {
@@ -328,7 +318,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 					}
 					env.add("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
 					env.add("leadgroup", leaduser != null ? leaduser.getGroup() : "");
-					fillEnvSection(env, fileevent, writer, false);
+					fillEnvSection(env, sfvEvent, writer, false);
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.halfway", env, _bundle), writer);
 				}
 			}

@@ -31,12 +31,11 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
 import org.drftpd.Time;
-import org.drftpd.commands.zipscript.zip.DizStatus;
 import org.drftpd.commands.zipscript.zip.ZipTools;
+import org.drftpd.commands.zipscript.zip.event.ZipTransferEvent;
 import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.event.TransferEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
@@ -91,78 +90,63 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 	}
 
 	@EventSubscriber
-	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {
-		if ("PRE".equals(direvent.getCommand())) {
-			outputDirectoryEvent(direvent, "pre");
-		} else if ("STOR".equals(direvent.getCommand())) {
-			outputDirectorySTOR((TransferEvent) direvent);
+	public void onDirectoryFtpEvent(DirectoryFtpEvent dirEvent) {
+		if ("PRE".equals(dirEvent.getCommand())) {
+			outputDirectoryEvent(dirEvent, "pre");
 		}
 	}
+	
+	@EventSubscriber
+	public void onZipTransferEvent(ZipTransferEvent zipEvent) {
+		outputZipSTOR(zipEvent);
+	}
 
-	private void outputDirectorySTOR(TransferEvent fileevent) {
+	private void outputZipSTOR(ZipTransferEvent zipEvent) {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-		DirectoryHandle dir = fileevent.getDirectory();
+		DirectoryHandle dir = zipEvent.getDirectory();
 
-		DizInfo dizInfo;
-		ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
-
-		try {
-			dizInfo = zipData.getDizInfo();
-		} catch (FileNotFoundException ex) {
-			logger.info("No diz file in " + dir.getPath() +
-			", can't publish race info");
-			return;
-		} catch (IOException ex) {
-			logger.info("Unable to read diz file in " + dir.getPath() +
-			", can't publish race info");
-			return;
-		} catch (NoAvailableSlaveException e) {
-			logger.info("No available slave for .diz");
+		if (!zipEvent.getTransferFile().getName().toLowerCase().endsWith(".zip")) {
 			return;
 		}
 
-		if (!fileevent.getTransferFile().getName().toLowerCase().endsWith(".zip")) {
-			return;
-		}
-
-		int halfway = (int) Math.floor((double) dizInfo.getTotal() / 2);
+		int halfway = (int) Math.floor((double) zipEvent.getDizInfo().getTotal() / 2);
 
 		try {
-			String username = fileevent.getUser().getName();
-			DizStatus dizStatus = zipData.getDizStatus();
+			String username = zipEvent.getUser().getName();
 			
 			// sanity check for when we have more zips than the .diz stated
-			if (dizStatus.getMissing() < 0) {
+			if (zipEvent.getDizStatus().getMissing() < 0) {
 				return;
 			}
 
-			if (dizStatus.getAvailable() == 1 && dizInfo.getTotal() > 1) {
-				AnnounceWriter writer = _config.getPathWriter("store.first", fileevent.getDirectory());
+			if (zipEvent.getDizStatus().getAvailable() == 1 && zipEvent.getDizInfo().getTotal() > 1) {
+				AnnounceWriter writer = _config.getPathWriter("store.first", dir);
 				if (writer != null) {
-					fillEnvSection(env, fileevent, writer, true);
-					env.add("files", Integer.toString(dizInfo.getTotal()));
-					env.add("expectedsize", (Bytes.formatBytes(ZipTools.getZipLargestFileBytes(dir) * dizInfo.getTotal())));
+					fillEnvSection(env, zipEvent, writer, true);
+					env.add("files", Integer.toString(zipEvent.getDizInfo().getTotal()));
+					env.add("expectedsize", (Bytes.formatBytes(
+							ZipTools.getZipLargestFileBytes(dir) * zipEvent.getDizInfo().getTotal())));
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.first", env, _bundle), writer);
 				}
 				return;
 			}
 			//check if new racer
-			if ((dizInfo.getTotal() - dizStatus.getMissing()) != 1) {
+			if ((zipEvent.getDizInfo().getTotal() - zipEvent.getDizStatus().getMissing()) != 1) {
 				for (Iterator<FileHandle> iter = ZipTools.getZipFiles(dir).iterator(); iter.hasNext();) {
 					FileHandle zipFileEntry = iter.next();
 
-					if (!zipFileEntry.equals(fileevent.getTransferFile()) && zipFileEntry.getUsername().equals(username)
+					if (!zipFileEntry.equals(zipEvent.getTransferFile()) && zipFileEntry.getUsername().equals(username)
 							&& zipFileEntry.getXfertime() > 0) {
 						break;
 					}
 
 					if (!iter.hasNext()) {
-						AnnounceWriter writer = _config.getPathWriter("store.race", fileevent.getDirectory());
+						AnnounceWriter writer = _config.getPathWriter("store.race", dir);
 						if (writer != null) {
-							fillEnvSection(env, fileevent, writer, true);
+							fillEnvSection(env, zipEvent, writer, true);
 							env.add("filesleft",
-									Integer.toString(dizStatus.getMissing()));
+									Integer.toString(zipEvent.getDizStatus().getMissing()));
 							sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.race", env, _bundle), writer);
 						}
 					}
@@ -170,18 +154,18 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 			}
 
 			//COMPLETE
-			if (dizStatus.isFinished()) {
-				AnnounceWriter writer = _config.getPathWriter("store.complete", fileevent.getDirectory());
+			if (zipEvent.getDizStatus().isFinished()) {
+				AnnounceWriter writer = _config.getPathWriter("store.complete", dir);
 				if (writer != null) {
 					Collection<UploaderPosition> racers = RankUtils.userSort(ZipTools.getZipFiles(dir),
 							"bytes", "high");
 					Collection<GroupPosition> groups = RankUtils.topFileGroup(ZipTools.getZipFiles(dir));
 
-					fillEnvSection(env, fileevent, writer, false);
+					fillEnvSection(env, zipEvent, writer, false);
 
 					env.add("racers", Integer.toString(racers.size()));
 					env.add("groups", Integer.toString(groups.size()));
-					env.add("files", Integer.toString(dizInfo.getTotal()));
+					env.add("files", Integer.toString(zipEvent.getDizInfo().getTotal()));
 					env.add("size", Bytes.formatBytes(ZipTools.getZipTotalBytes(dir)));
 					env.add("speed", Bytes.formatBytes(ZipTools.getXferspeed(dir)) + "/s");
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete", env, _bundle), writer);
@@ -231,7 +215,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 						raceenv.add("position", String.valueOf(position));
 						raceenv.add("percent",
 								Integer.toString(
-										(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
+										(stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal()) + "%");
 						raceenv.add("alup",
 								Integer.valueOf(UserTransferStats.getStatsPlace("ALUP",
 										raceuser, GlobalContext.getGlobalContext().getUserManager())));
@@ -277,7 +261,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 						raceenv.add("files", Integer.toString(stat.getFiles()));
 						raceenv.add("percent",
 								Integer.toString(
-										(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
+										(stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal()) + "%");
 						raceenv.add("speed",
 								Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
@@ -291,9 +275,9 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 				}
 
 				//HALFWAY
-			} else if ((dizInfo.getTotal() >= 4) &&
-					(dizStatus.getMissing() == halfway)) {
-				AnnounceWriter writer = _config.getPathWriter("store.halfway", fileevent.getDirectory());
+			} else if ((zipEvent.getDizInfo().getTotal() >= 4) &&
+					(zipEvent.getDizStatus().getMissing() == halfway)) {
+				AnnounceWriter writer = _config.getPathWriter("store.halfway", dir);
 				if (writer != null) {
 					Collection<UploaderPosition> uploaders = RankUtils.userSort(ZipTools.getZipFiles(dir),
 							"bytes", "high");
@@ -304,9 +288,9 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 					env.add("leadfiles", Integer.toString(stat.getFiles()));
 					env.add("leadsize", Bytes.formatBytes(stat.getBytes()));
 					env.add("leadpercent",
-							Integer.toString((stat.getFiles() * 100) / dizInfo.getTotal()) +
+							Integer.toString((stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal()) +
 					"%");
-					env.add("filesleft", Integer.toString(dizStatus.getMissing()));
+					env.add("filesleft", Integer.toString(zipEvent.getDizStatus().getMissing()));
 
 					User leaduser = null;
 					try {
@@ -319,12 +303,10 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 					}
 					env.add("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
 					env.add("leadgroup", leaduser != null ? leaduser.getGroup() : "");
-					fillEnvSection(env, fileevent, writer, false);
+					fillEnvSection(env, zipEvent, writer, false);
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.halfway", env, _bundle), writer);
 				}
 			}
-		} catch (NoAvailableSlaveException e) {
-			// Slave with sfv is offline
 		} catch (FileNotFoundException e) {
 			// SFV deleted?
 		} catch (IOException e) {

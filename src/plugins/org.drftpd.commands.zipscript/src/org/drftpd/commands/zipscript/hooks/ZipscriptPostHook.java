@@ -19,6 +19,7 @@ package org.drftpd.commands.zipscript.hooks;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -36,10 +37,13 @@ import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.SFVTools;
+import org.drftpd.commands.zipscript.event.SFVMemberTransferEvent;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -166,6 +170,21 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 					// Good! transfer checksum matches sfv checksum
 					response.addComment("checksum match: SLAVE/SFV:" +
 							Long.toHexString(checksum));
+					if (transferFile.exists()) {
+						try {
+							BaseFtpConnection conn = (BaseFtpConnection)request.getSession();
+							RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
+							InetAddress transferSlaveInetAddr =
+								response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+							char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
+							GlobalContext.getEventService().publishAsync(
+									new SFVMemberTransferEvent(conn, "STOR", transferFile,
+											conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
+											transferType, sfvData, sfv, sfvData.getSFVStatus()));
+						} catch (KeyNotFoundException e1) {
+							// one or more bits of information didn't get populated correctly, have to skip the event
+						}
+					}
 				} else if (checksum == 0) {
 					// Here we have two conditions:
 					if (transferFile.getSize() == 0) {

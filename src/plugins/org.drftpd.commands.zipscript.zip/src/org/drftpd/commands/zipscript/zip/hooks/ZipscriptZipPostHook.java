@@ -19,6 +19,7 @@ package org.drftpd.commands.zipscript.zip.hooks;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -35,10 +36,12 @@ import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.zip.DizStatus;
 import org.drftpd.commands.zipscript.zip.ZipTools;
+import org.drftpd.commands.zipscript.zip.event.ZipTransferEvent;
 import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
 import org.drftpd.slave.RemoteIOException;
@@ -104,6 +107,24 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 						boolean ok = getZipIntegrityFromIndex(rslave, index);
 						if (ok) {
 							response.addComment("Zip integrity check OK");
+							if (transferFile.exists()) {
+								try {
+									BaseFtpConnection conn = (BaseFtpConnection)request.getSession();
+									RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
+									InetAddress transferSlaveInetAddr =
+										response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+									char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
+									ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(request.getCurrentDirectory());
+									GlobalContext.getEventService().publishAsync(
+											new ZipTransferEvent(conn, "STOR", transferFile,
+													conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
+													transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
+								} catch (KeyNotFoundException e1) {
+									// one or more bits of information didn't get populated correctly, have to skip the event
+								} catch (IOException e) {
+									// Do nothing, from user perspective STOR has completed so no point informing them
+								}
+							}
 						} else {
 							response.addComment("Zip integrity check failed, deleting file");
 							try {
