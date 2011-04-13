@@ -63,10 +63,12 @@ public class RemoteTransfer {
 		_status = ts;
 
 		if (_status.isFinished()) {
-			if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
-				_pointer.unlinkPointer(this);
+			synchronized (this) {
+				if (_pointer != null && _transferDirection != Transfer.TRANSFER_UNKNOWN) {
+					_pointer.unlinkPointer(this);
+				}
+				_pointer = null;
 			}
-			_pointer = null;
 		}
 	}
 
