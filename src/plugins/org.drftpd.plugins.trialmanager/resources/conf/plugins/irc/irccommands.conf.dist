@@ -1,0 +1,32 @@
+top {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doTOP
+perms *
+help Lists All Users In Trial Period
+help.specific ${command} <num>
+input all
+output source
+}
+
+cut {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doCUT
+perms *
+help Lists All Cut Users In Trial Period
+help.specific ${command} <num>
+input all
+output source
+}
+
+passed {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doPASSED
+perms *
+help Lists If User Has Passed Trial
+help.specific ${command} <User>
+input all
+output source
+}

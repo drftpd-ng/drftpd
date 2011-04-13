@@ -1,0 +1,26 @@
+SITE TOP {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doTOP
+perms *
+help Lists All Users In Trial Period
+help.specific ${command}
+}
+
+SITE CUT {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doCUT
+perms *
+help Lists All Cut Users In Trial Period
+help.specific ${command}
+}
+
+SITE PASSED {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doPASSED
+perms *
+help Lists If User Has Passed Trial
+help.specific ${command}
+}
