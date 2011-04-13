@@ -130,7 +130,7 @@ public class NukeUtils {
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
 			try {
 				DirectoryHandle inode = new DirectoryHandle(VirtualFileSystem.fixPath(item.getKey()));
-				if (!inode.isHidden(user)) {
+				if (!inode.isHidden(user) && inode.getName().equals(name)) {
 					dirsToNuke.add(inode);
 				}
 			} catch (FileNotFoundException e) {
