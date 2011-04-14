@@ -25,12 +25,15 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
+import java.util.TreeSet;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -173,11 +176,12 @@ public class ThemeTask extends Task {
 		} else {
 			String keyPrefix = dirPrefix + "." + parts[0] + ".";
 			FileInputStream fis = null;
-			BufferedReader input = null;
+			InputStreamReader input = null;
 			try {
 				// Create a BufferedReader to read the file
 				fis = new FileInputStream(file);
-				input = new BufferedReader(new InputStreamReader(fis,"8859_1"));
+				input = new InputStreamReader(fis,"8859_1");
+				PropertyResourceBundle inputBundle = new PropertyResourceBundle(input);
 
 				// Retrieve string object for the theme this
 				// this file belongs to, if we don't have one
@@ -195,15 +199,32 @@ public class ThemeTask extends Task {
 
 				// Copy all properties from file into theme
 				// adding the correct namespace prefix
-				while (input.ready()) {
-					String line = input.readLine();
-					if (line != null) {
-						if (line.indexOf('=') != -1) {
-							output.append(keyPrefix);
-						}
-						output.append(line);
-						output.append("\n");
+				TreeSet<String> sortedProps = new TreeSet<String>(inputBundle.keySet());
+				for (String propKey : sortedProps) {
+					output.append(keyPrefix);
+					output.append(propKey);
+					output.append("=");
+					String propValue = inputBundle.getString(propKey);
+					if (propValue.indexOf('\n') != -1) {
+						output.append("\\\n");
 					}
+					BufferedReader valueReader = new BufferedReader(
+							new StringReader(propValue));
+					try {
+						String valueLine;
+						int lineCount = 0;
+						while ((valueLine = valueReader.readLine()) != null) {
+							if (lineCount > 0) {
+								output.append("\\n\\");
+							}
+							output.append(valueLine);
+							lineCount++;
+						}
+
+					} catch(IOException e) {
+						// As this is a string being read from this shouldn't happen
+					}
+					output.append("\n");
 				}
 
 				// Put modified theme back in the map
