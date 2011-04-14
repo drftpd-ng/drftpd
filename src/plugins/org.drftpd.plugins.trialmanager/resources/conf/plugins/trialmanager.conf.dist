@@ -4,11 +4,11 @@
 #	This will load and configure the types specified in this configuration file
 #	All Trial Types have the following attributes:
 #
-#	x.type = The type of Trial Manager you want to run
-#	x.name = The of the specific type (usually used for output) 
-#	x.pass = What to do when user passes (setgrp/chgrp/delete/purge) (Might be type dependent)
-#	x.fail = What to do when user fails (setgrp/chgrp/delete/purge) (Might be type dependent)
-#	x.period = Period of which trial to use (3 = daily | 2 = weekly | 1 = monthly)
-#	x.perms = Users which to include/exclude in this Trial type
+#	x.type = The type of Trial Manager you want to run (Name of the Plugin) (Required)
+#	x.name = The of the specific type (usually used for output) (Required) 
+#	x.pass = What to do when user passes (setgrp/chgrp/delete/purge) (Might be type dependent) (Optional)
+#	x.fail = What to do when user fails (setgrp/chgrp/delete/purge) (Might be type dependent) (Optional)
+#	x.period = Period of which trial to use (3 = daily | 2 = weekly | 1 = monthly) (Required)
+#	x.perms = Users which to include/exclude in this Trial type (Optional)
 #
 ################################################################################
