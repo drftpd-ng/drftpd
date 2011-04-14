@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -48,6 +47,7 @@ public abstract class TrialType {
 	private int _period; // 3 = daily | 2 = weekly | 1 = monthly
 	private String _periodstr;
 	private Permission _perms;
+	private boolean _euroTime;
 	
 	/*
 	 * Loads all the .conf information for the specific type
@@ -76,6 +76,12 @@ public abstract class TrialType {
 			case 1: _periodstr = "MONTHUP"; break;
 			case 2: _periodstr = "WKUP"; break;
 			case 3: _periodstr = "DAYUP"; break;
+		}
+		
+		_euroTime = false;
+		TimeManager timemgr = new TimeManager();
+		if (timemgr.isEuropeanCalendar()) {
+			_euroTime = true;
 		}
         
 	}
@@ -120,34 +126,57 @@ public abstract class TrialType {
 		return filteredusers;
 	}
 	
-	@SuppressWarnings("deprecation")
 	protected String getRemainingTime() {
 		Calendar cal = Calendar.getInstance();
+		Calendar cal2 = (Calendar) cal.clone();
 		
-		TimeManager timemgr = new TimeManager();
-		if (timemgr.isEuropeanCalendar()) {
+		if (_euroTime) {
 			cal.setFirstDayOfWeek(Calendar.MONDAY);
+			cal2.setFirstDayOfWeek(Calendar.MONDAY);
 		}
-		cal.set(Calendar.HOUR, 0);
+		
+		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.DAY_OF_WEEK, 1);
-		cal.add(Calendar.WEEK_OF_MONTH, 1);
+		// 3 = daily | 2 = weekly | 1 = monthly
 		
-		Calendar cal2 = Calendar.getInstance();
-
-		
-		long difference = cal.getTimeInMillis() - cal2.getTimeInMillis();
-		Date date = new Date(difference);
-		
-		if ((date.getDate() - 1) < 1) {
-			if (date.getHours() < 1) {
-				return date.getMinutes() + " Minutes";
+		switch (_period) {
+			case 1: {
+				cal.set(Calendar.DAY_OF_MONTH, 1);
+				cal.add(Calendar.MONTH, 1);
+				break;
 			}
-			return date.getHours() + " Hours";
+			case 2: {
+				cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+				cal.add(Calendar.WEEK_OF_MONTH, 1);
+				break;
+			}
+			case 3: {
+				cal.add(Calendar.DAY_OF_MONTH, 1);
+				break;
+			}
 		}
-		return (date.getDate() - 1) + " Days";		
 		
+		//logger.debug("TrialType DateCheck: "+this.getPeriod() + " ~ " + this.getPeriodStr());
+		//logger.debug("TrialType DateCheck 1: "+ cal.getTime());
+		//logger.debug("TrialType DateCheck 2: "+ cal2.getTime());
+		
+		long diff = cal.getTimeInMillis() - cal2.getTimeInMillis();
+		long diffSeconds = diff / 1000;
+		long diffMinutes = diff / (60 * 1000);
+		long diffHours = diff / (60 * 60 * 1000);
+		long diffDays = diff / (24 * 60 * 60 * 1000);
+		
+		if (diffDays > 0) {
+			return diffDays + " Days";
+		}
+		if (diffHours > 0) {
+			return diffHours + " Hours";
+		}
+		if (diffMinutes > 0) {
+			return diffMinutes + " Minutes";
+		}
+		return diffSeconds + " Seconds";
 	}
 	
 	public abstract void doTrial();
