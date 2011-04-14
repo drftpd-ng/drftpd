@@ -177,7 +177,7 @@ public class ListHandler extends CommandInterface {
 				StringBuffer optionsSb = new StringBuffer(4);
 				StringTokenizer st = new StringTokenizer(request.getArgument()," ");
 
-				while (st.hasMoreTokens()) {
+				while (st.hasMoreTokens() && (!isMlst)) {
 					String token = st.nextToken();
 					if (token.charAt(0) == '-') {
 						if (isStat || isList) {
@@ -200,6 +200,18 @@ public class ListHandler extends CommandInterface {
 				return StandardCommandManager.genericResponse("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS");
 			}
 
+			if (isMlst) {
+				if (!request.hasArgument()) {
+					throw new ImproperUsageException();
+				}
+				
+				try {
+					conn.getCurrentDirectory().getInodeHandleUnchecked(request.getArgument());
+				} catch (FileNotFoundException e) {
+					return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");			
+				}
+			}
+			
 			DirectoryHandle directoryFile;
 			CommandResponse response = null;	
 			User user = request.getSession().getUserNull(request.getUser());
@@ -222,8 +234,8 @@ public class ListHandler extends CommandInterface {
 				conn.printOutput("213-STAT"+NEWLINE);
 				os = conn.getControlWriter();
 			} else if (isMlst) {
-				response = new CommandResponse(250, "End of MLST");
-				conn.printOutput("250-MLST" + NEWLINE);
+				response = new CommandResponse(250, "End");
+				conn.printOutput("250- Listing " + request.getArgument() + NEWLINE);
 				os = conn.getControlWriter();
 			} else {
 				if (!ts.getSendFilesEncrypted()
@@ -260,7 +272,7 @@ public class ListHandler extends CommandInterface {
 					os.write("total 0" + NEWLINE);
 					os.write(toList(container.getElements(), fulldate));
 				} else {
-					os.write(toMLST(container.getElements()));
+					os.write(toMLST(container.getElements(),request.getArgument()));
 				}
 				if (isStat || isMlst)
 					return response;
@@ -324,69 +336,71 @@ public class ListHandler extends CommandInterface {
 		return container;
 	}
 
-	private String toMLST(Collection<InodeHandleInterface> listElements) {
+	private String toMLST(Collection<InodeHandleInterface> listElements, String filename) {
 		StringBuilder output = new StringBuilder();
 
 		for (InodeHandleInterface inode : listElements) {
-			try {
-				StringBuilder line = new StringBuilder();
-				if (inode.isLink()) {
-					line.append("type=OS.unix=slink:" + ((LinkHandle) inode).getTargetString() + ";");
-				} else if (inode.isFile()) {
-					line.append("type=file;");
-				} else if (inode.isDirectory()) {
-					line.append("type=dir;");
-				} else {
-					throw new RuntimeException("type");
-				}
-
-				FileHandle file = null;
-				boolean isFileHandle = false;
-				if (inode.isFile() && inode instanceof FileHandle) {
-					file = (FileHandle) inode;
-					isFileHandle = true;
-				}
-
+			if (filename.isEmpty() || inode.getName().equals(filename)) {
 				try {
-					if (isFileHandle && file.getCheckSum() != 0) {
-						line.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
+					StringBuilder line = new StringBuilder();
+					if (inode.isLink()) {
+						line.append("type=OS.unix=slink:" + ((LinkHandle) inode).getTargetString() + ";");
+					} else if (inode.isFile()) {
+						line.append("type=file;");
+					} else if (inode.isDirectory()) {
+						line.append("type=dir;");
+					} else {
+						throw new RuntimeException("type");
 					}
-				} catch (NoAvailableSlaveException e) {
-					logger.debug("Unable to fetch checksum for: "+inode.getPath());
-				}
-
-				line.append("size=" + inode.getSize() + ";");
-				synchronized(MLSTTIME) {
-					line.append("modify=" + MLSTTIME.format(new Date(inode.lastModified())) +";");
-				}
-
-				line.append("unix.owner=" + inode.getUsername() + ";");
-				line.append("unix.group=" + inode.getGroup() + ";");
-
-				if (isFileHandle) {
-					Iterator<RemoteSlave> iter = file.getSlaves().iterator();
-					line.append("x.slaves=");
-
-					if (iter.hasNext()) {
-						line.append(iter.next().getName());
-
-						while (iter.hasNext()) {
-							line.append("," + iter.next().getName());
+	
+					FileHandle file = null;
+					boolean isFileHandle = false;
+					if (inode.isFile() && inode instanceof FileHandle) {
+						file = (FileHandle) inode;
+						isFileHandle = true;
+					}
+	
+					try {
+						if (isFileHandle && file.getCheckSum() != 0) {
+							line.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
 						}
+					} catch (NoAvailableSlaveException e) {
+						logger.debug("Unable to fetch checksum for: "+inode.getPath());
 					}
-
-					line.append(";");
+	
+					line.append("size=" + inode.getSize() + ";");
+					synchronized(MLSTTIME) {
+						line.append("modify=" + MLSTTIME.format(new Date(inode.lastModified())) +";");
+					}
+	
+					line.append("unix.owner=" + inode.getUsername() + ";");
+					line.append("unix.group=" + inode.getGroup() + ";");
+	
+					if (isFileHandle) {
+						Iterator<RemoteSlave> iter = file.getSlaves().iterator();
+						line.append("x.slaves=");
+	
+						if (iter.hasNext()) {
+							line.append(iter.next().getName());
+	
+							while (iter.hasNext()) {
+								line.append("," + iter.next().getName());
+							}
+						}
+	
+						line.append(";");
+					}
+	
+					if (isFileHandle && file.getXfertime() != 0) {
+						line.append("x.xfertime=" + file.getXfertime() + ";");
+					}
+	
+					line.append(" " + inode.getName());
+					line.append(NEWLINE);
+					output.append(line.toString());
+				} catch (FileNotFoundException e) {
+					// entry was deleted whilst listing the dir, it will simply be omitted
 				}
-
-				if (isFileHandle && file.getXfertime() != 0) {
-					line.append("x.xfertime=" + file.getXfertime() + ";");
-				}
-
-				line.append(" " + inode.getName());
-				line.append(NEWLINE);
-				output.append(line.toString());
-			} catch (FileNotFoundException e) {
-				// entry was deleted whilst listing the dir, it will simply be omitted
 			}
 		}
 		return output.toString();
