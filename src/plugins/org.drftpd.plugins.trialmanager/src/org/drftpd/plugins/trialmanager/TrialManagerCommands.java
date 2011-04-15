@@ -38,30 +38,45 @@ public class TrialManagerCommands extends CommandInterface {
 	
 	public CommandResponse doTOP(CommandRequest request) {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
+		boolean didRun = false;
 		TrialManager trialmanager = TrialManager.getTrialManager();
 		for (TrialType trialtype : trialmanager.getTrials()) {
 			trialtype.doTop(request,_bundle,response);
+			didRun = true;
+		}
+		
+		if (!didRun) {
+			response.addComment("No Trial Types Loaded With This Command");
 		}
 		return response;
 	}
 	
 	public CommandResponse doCUT(CommandRequest request) {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
+		boolean didRun = false;
 		TrialManager trialmanager = TrialManager.getTrialManager();
 		for (TrialType trialtype : trialmanager.getTrials()) {
 			trialtype.doCut(request,_bundle,response);
+			didRun = true;
+		}
+		
+		if (!didRun) {
+			response.addComment("No Trial Types Loaded With This Command");
 		}
 		return response;
 	}
 	
 	public CommandResponse doPASSED(CommandRequest request) {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
+		boolean didRun = false;
 		TrialManager trialmanager = TrialManager.getTrialManager();
 		for (TrialType trialtype : trialmanager.getTrials()) {
 			trialtype.doPassed(request,_bundle,response);
+			didRun = true;
+		}
+		
+		if (!didRun) {
+			response.addComment("No Trial Types Loaded With This Command");
 		}
 		return response;
 	}
