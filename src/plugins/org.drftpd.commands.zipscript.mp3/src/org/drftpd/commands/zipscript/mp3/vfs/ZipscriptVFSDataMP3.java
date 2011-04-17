@@ -102,17 +102,18 @@ public class ZipscriptVFSDataMP3 {
 			if (mp3info == null) {
 				throw new FileNotFoundException("Unable to obtain info for MP3 file");
 			}
-			_inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
+
 			// Update mp3info on parent directory inode
 			DirectoryHandle dir = file.getParent();
-			synchronized(dir) {
-				try {
-					getMP3InfoFromInode(dir);
-				} catch (KeyNotFoundException e1) {
-					_setDir = true;
-					dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
-				}
+			try {
+				getMP3InfoFromInode(dir);
+			} catch (KeyNotFoundException e1) {
+				_setDir = true;
+				dir.addPluginMetaData(MP3Info.MP3INFO, mp3info);
 			}
+			
+			// Update mp3info on the file inode
+			_inode.addPluginMetaData(MP3Info.MP3INFO, mp3info);
 			return mp3info;
 		} else {
 			throw new IllegalArgumentException("Inode type other than directory or file passed in");
