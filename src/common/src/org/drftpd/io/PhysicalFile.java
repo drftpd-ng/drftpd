@@ -28,6 +28,7 @@ import java.net.URI;
 @SuppressWarnings("serial")
 public class PhysicalFile extends File {
 
+	@SuppressWarnings("hiding")
 	public static final String separator = "/";
 
 	public PhysicalFile(String pathname) {
