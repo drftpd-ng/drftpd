@@ -152,11 +152,12 @@ public class RemoteTransfer {
 		}
 	}
 	
-	public void receiveFile(String path, char type, long position, String inetAddress)
+	public void receiveFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
 			throws IOException, SlaveUnavailableException {
 		_path = path;
 		
-		String index = SlaveManager.getBasicIssuer().issueReceiveToSlave(_rslave, path, type, position,	inetAddress, getTransferIndex());
+		String index = SlaveManager.getBasicIssuer().issueReceiveToSlave(
+				_rslave, path, type, position,	inetAddress, getTransferIndex(), minSpeed, maxSpeed);
 		
 		_transferDirection = Transfer.TRANSFER_RECEIVING_UPLOAD;
 		try {
@@ -167,10 +168,11 @@ public class RemoteTransfer {
 		_pointer = new TransferPointer(_path, this);
 	}
 
-	public void sendFile(String path, char type, long position, String inetAddress)
+	public void sendFile(String path, char type, long position, String inetAddress, long minSpeed, long maxSpeed)
 			throws IOException, SlaveUnavailableException {
 		_path = path;
-		String index = SlaveManager.getBasicIssuer().issueSendToSlave(_rslave, path, type, position, inetAddress, getTransferIndex());
+		String index = SlaveManager.getBasicIssuer().issueSendToSlave(
+				_rslave, path, type, position, inetAddress, getTransferIndex(), minSpeed, maxSpeed);
 		_transferDirection = Transfer.TRANSFER_SENDING_DOWNLOAD;
 		try {
 			_rslave.fetchResponse(index);

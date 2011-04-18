@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -88,9 +87,8 @@ public class BasicHandler extends AbstractHandler {
 	}
 	
 	// TODO check this.
-	public AsyncResponse handleAbort(AsyncCommandArgument aca) {
-		String[] args = aca.getArgs().split(",");
-		TransferIndex ti = new TransferIndex(Integer.parseInt(args[0]));
+	public AsyncResponse handleAbort(AsyncCommandArgument ac) {
+		TransferIndex ti = new TransferIndex(Integer.parseInt(ac.getArgsArray()[0]));
 		
 		HashMap<TransferIndex, Transfer> transfers = getSlaveObject().getTransferMap();
 
@@ -99,24 +97,23 @@ public class BasicHandler extends AbstractHandler {
 		}
 
 		Transfer t = transfers.get(ti);
-		t.abort(args[1]);
-		return new AsyncResponse(aca.getIndex());
+		t.abort(ac.getArgsArray()[1]);
+		return new AsyncResponse(ac.getIndex());
 	}
 
 	public AsyncResponse handleConnect(AsyncCommandArgument ac) {
-		String[] data = ac.getArgs().split(",");
-		String[] data2 = data[0].split(":");
-		boolean encrypted = data[1].equals("true");
-		boolean useSSLClientHandshake = data[2].equals("true");
+		String[] data = ac.getArgsArray()[0].split(":");
+		boolean encrypted = ac.getArgsArray()[1].equals("true");
+		boolean useSSLClientHandshake = ac.getArgsArray()[2].equals("true");
 		InetAddress address;
 
 		try {
-			address = InetAddress.getByName(data2[0]);
+			address = InetAddress.getByName(data[0]);
 		} catch (UnknownHostException e1) {
 			return new AsyncResponseException(ac.getIndex(), e1);
 		}
 
-		int port = Integer.parseInt(data2[1]);
+		int port = Integer.parseInt(data[1]);
 		Transfer t = new Transfer(new ActiveConnection(encrypted ? getSlaveObject().getSSLContext() : null,
 				new InetSocketAddress(address, port), useSSLClientHandshake),
 				getSlaveObject(), new TransferIndex());
@@ -178,15 +175,18 @@ public class BasicHandler extends AbstractHandler {
 	}
 
 	public AsyncResponse handleReceive(AsyncCommandArgument ac) {
-		String[] args = ac.getArgs().split(",", 5);
-		char type = args[0].charAt(0);
-		long position = Long.parseLong(args[1]);
-		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(args[2]));
-		String inetAddress = args[3];
-		String path = mapPathToRenameQueue(args[4]);
+		char type = ac.getArgsArray()[0].charAt(0);
+		long position = Long.parseLong(ac.getArgsArray()[1]);
+		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(ac.getArgsArray()[2]));
+		String inetAddress = ac.getArgsArray()[3];
+		String path = mapPathToRenameQueue(ac.getArgsArray()[4]);
 		String fileName = path.substring(path.lastIndexOf("/") + 1);
 		String dirName = path.substring(0, path.lastIndexOf("/"));
+		long minSpeed = Long.parseLong(ac.getArgsArray()[5]);
+		long maxSpeed = Long.parseLong(ac.getArgsArray()[6]);
 		Transfer t = getSlaveObject().getTransfer(transferIndex);
+		t.setMinSpeed(minSpeed);
+		t.setMaxSpeed(maxSpeed);
 		getSlaveObject().sendResponse(new AsyncResponse(ac.getIndex())); // return calling thread
 		// on master
 		try {
@@ -364,10 +364,9 @@ public class BasicHandler extends AbstractHandler {
 	}
 	
 	public AsyncResponse handleRename(AsyncCommandArgument ac) {
-		StringTokenizer st = new StringTokenizer(ac.getArgs(), ",");
-		String from = mapPathToRenameQueue(st.nextToken());
-		String toDir = st.nextToken();
-		String toFile = st.nextToken();
+		String from = mapPathToRenameQueue(ac.getArgsArray()[0]);
+		String toDir = ac.getArgsArray()[1];
+		String toFile = ac.getArgsArray()[2];
 
 		try {
 			try {
@@ -395,13 +394,16 @@ public class BasicHandler extends AbstractHandler {
 	}
 
 	public AsyncResponse handleSend(AsyncCommandArgument ac) {
-		String[] args = ac.getArgs().split(",", 5);
-		char type = args[0].charAt(0);
-		long position = Long.parseLong(args[1]);
-		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(args[2]));
-		String inetAddress = args[3];
-		String path = mapPathToRenameQueue(args[4]);
+		char type = ac.getArgsArray()[0].charAt(0);
+		long position = Long.parseLong(ac.getArgsArray()[1]);
+		TransferIndex transferIndex = new TransferIndex(Integer.parseInt(ac.getArgsArray()[2]));
+		String inetAddress = ac.getArgsArray()[3];
+		String path = mapPathToRenameQueue(ac.getArgsArray()[4]);
+		long minSpeed = Long.parseLong(ac.getArgsArray()[5]);
+		long maxSpeed = Long.parseLong(ac.getArgsArray()[6]);
 		Transfer t = getSlaveObject().getTransfer(transferIndex);
+		t.setMinSpeed(minSpeed);
+		t.setMaxSpeed(maxSpeed);
 		sendResponse(new AsyncResponse(ac.getIndex()));
 
 		// calling thread on master

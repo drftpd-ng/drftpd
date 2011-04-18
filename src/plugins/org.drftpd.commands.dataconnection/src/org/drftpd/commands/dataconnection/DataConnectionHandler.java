@@ -85,6 +85,10 @@ public class DataConnectionHandler extends CommandInterface {
 	public static final Key<String> INET_ADDRESS = new Key<String>(DataConnectionHandler.class, "inetAddress");
 
 	public static final Key<TransferStatus> XFER_STATUS = new Key<TransferStatus>(DataConnectionHandler.class, "transferStatus");
+	
+	public static final Key<Long> MIN_XFER_SPEED = new Key<Long>(DataConnectionHandler.class, "minTransferSpeed");
+	
+	public static final Key<Long> MAX_XFER_SPEED = new Key<Long>(DataConnectionHandler.class, "maxTransferSpeed");
 
 	private ResourceBundle _bundle;
 
@@ -957,7 +961,9 @@ public class DataConnectionHandler extends CommandInterface {
 
 				if (isRetr) {
 					ts.sendFile(ts.getTransferFile().getPath(), ts.getType(),
-							ts.getResumePosition(), address);
+							ts.getResumePosition(), address,
+							request.getObjectLong(MIN_XFER_SPEED),
+							request.getObjectLong(MAX_XFER_SPEED));
 
 					while (true) {
 						synchronized(ts) {
@@ -974,7 +980,9 @@ public class DataConnectionHandler extends CommandInterface {
 					}
 				} else if (isStor) {
 					ts.receiveFile(ts.getTransferFile().getPath(), ts.getType(),
-							ts.getResumePosition(), address);
+							ts.getResumePosition(), address,
+							request.getObjectLong(MIN_XFER_SPEED),
+							request.getObjectLong(MAX_XFER_SPEED));
 
 					while (true) {
 						synchronized(ts) {

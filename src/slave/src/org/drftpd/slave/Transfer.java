@@ -81,6 +81,10 @@ public class Transfer {
 	private String _pathForUpload = null;
 	
 	private static final String separator = "/";
+	
+	private long _minSpeed = 0L;
+	
+	private long _maxSpeed = 0L;
 
 	/**
 	 * Start undefined transfer.
@@ -212,6 +216,22 @@ public class Transfer {
 		}
 
 		return (int) (_transfered / ((float) elapsed / (float) 1000));
+	}
+	
+	public long getMinSpeed() {
+		return _minSpeed;
+	}
+	
+	public long getMaxSpeed() {
+		return _maxSpeed;
+	}
+	
+	public void setMinSpeed(long minSpeed) {
+		_minSpeed = minSpeed;
+	}
+	
+	public void setMaxSpeed(long maxSpeed) {
+		_maxSpeed = maxSpeed;
 	}
 
 	public boolean isReceivingUploading() {

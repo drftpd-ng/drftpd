@@ -47,8 +47,8 @@ public class BasicIssuer extends AbstractBasicIssuer {
 		}
 		
 		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "connect", ip + ":" + port
-				+ "," + encryptedDataChannel + "," + useSSLClientHandshake));
+		rslave.sendCommand(new AsyncCommandArgument(index, "connect", 
+				new String[]{ip + ":" + port, String.valueOf(encryptedDataChannel), String.valueOf(useSSLClientHandshake)}));
 
 		return index;
 	}
@@ -94,10 +94,11 @@ public class BasicIssuer extends AbstractBasicIssuer {
 	}
 
 	public String issueReceiveToSlave(RemoteSlave rslave, String name, char c, long position,
-			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException {
+			String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "receive", c + ","
-				+ position + "," + tindex + "," + inetAddress + "," + name));
+		rslave.sendCommand(new AsyncCommandArgument(index, "receive", 
+				new String[]{String.valueOf(c), String.valueOf(position),
+				tindex.toString(), inetAddress, name, String.valueOf(minSpeed), String.valueOf(maxSpeed)}));
 
 		return index;
 	}
@@ -108,8 +109,8 @@ public class BasicIssuer extends AbstractBasicIssuer {
 			toDirPath = "/";
 		}
 		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "rename", from + ","
-				+ toDirPath + "," + toName));
+		rslave.sendCommand(new AsyncCommandArgument(index, "rename", 
+				new String[]{from, toDirPath, toName}));
 
 		return index;
 	}
@@ -127,16 +128,17 @@ public class BasicIssuer extends AbstractBasicIssuer {
 		if (reason == null) {
 			reason = "null";
 		}
-		rslave.sendCommand(new AsyncCommandArgument("abort", "abort", transferIndex
-				.toString() + "," + reason));
+		rslave.sendCommand(new AsyncCommandArgument("abort", "abort", 
+				new String[]{transferIndex.toString(), reason}));
 	}
 
 
 	public String issueSendToSlave(RemoteSlave rslave, String name, char c, long position,
-			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException {
+			String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
-		rslave.sendCommand(new AsyncCommandArgument(index, "send", c + "," + position
-				+ "," + tindex + "," + inetAddress + "," + name));
+		rslave.sendCommand(new AsyncCommandArgument(index, "send",
+				new String[]{String.valueOf(c), String.valueOf(position), tindex.toString(),
+				inetAddress, name, String.valueOf(minSpeed), String.valueOf(maxSpeed)}));
 
 		return index;
 	}

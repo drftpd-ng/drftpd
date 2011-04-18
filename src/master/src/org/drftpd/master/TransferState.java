@@ -351,12 +351,14 @@ public class TransferState {
 		return getTransfer().getTransferStatus();
 	}
 
-	public synchronized void sendFile(String path, char type, long resumePosition, String address) throws IOException, SlaveUnavailableException {
-		getTransfer().sendFile(path, type, resumePosition, address);
+	public synchronized void sendFile(String path, char type, long resumePosition, String address, long minSpeed, long maxSpeed)
+	throws IOException, SlaveUnavailableException {
+		getTransfer().sendFile(path, type, resumePosition, address, minSpeed, maxSpeed);
 	}
 
-	public synchronized void receiveFile(String path, char type, long resumePosition, String address) throws IOException, SlaveUnavailableException {
-		getTransfer().receiveFile(path, type, resumePosition, address);
+	public synchronized void receiveFile(String path, char type, long resumePosition, String address, long minSpeed, long maxSpeed)
+	throws IOException, SlaveUnavailableException {
+		getTransfer().receiveFile(path, type, resumePosition, address, minSpeed, maxSpeed);
 	}
 
 	public synchronized long getElapsed() {

@@ -44,7 +44,7 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
 	public abstract String issuePingToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
 
 	public abstract String issueReceiveToSlave(RemoteSlave rslave, String name, char c, long position,
-			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException;
+			String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException;
 
 	public abstract String issueRenameToSlave(RemoteSlave rslave, String from, String toDirPath,
 			String toName) throws SlaveUnavailableException;
@@ -56,7 +56,7 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
 
 
 	public abstract String issueSendToSlave(RemoteSlave rslave, String name, char c, long position,
-			String inetAddress, TransferIndex tindex) throws SlaveUnavailableException;
+			String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException;
 
 	public abstract String issueRemergeToSlave(RemoteSlave rslave, String path, boolean partialRemerge, 
 			long skipAgeCutoff, long masterTime) throws SlaveUnavailableException;

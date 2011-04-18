@@ -120,7 +120,7 @@ public class SlaveTransfer {
 		}
 
 		try {
-			_destTransfer.receiveFile(_file.getPath(), 'I', 0, "*@*");
+			_destTransfer.receiveFile(_file.getPath(), 'I', 0, "*@*", 0L, 0L);
 		} catch (IOException e1) {
 			throw new DestinationSlaveException(e1);
 		} catch (SlaveUnavailableException e1) {
@@ -128,7 +128,7 @@ public class SlaveTransfer {
 		}
 
 		try {
-			_srcTransfer.sendFile(_file.getPath(), 'I', 0, "*@*");
+			_srcTransfer.sendFile(_file.getPath(), 'I', 0, "*@*", 0L, 0L);
 		} catch (IOException e2) {
 			throw new SourceSlaveException(e2);
 		} catch (SlaveUnavailableException e2) {
