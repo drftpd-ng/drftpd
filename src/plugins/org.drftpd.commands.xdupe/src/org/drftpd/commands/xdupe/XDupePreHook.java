@@ -26,7 +26,13 @@ public class XDupePreHook implements PreHookInterface {
 			return request;
 		}
 		String arg = st.nextToken();		
-		String fileName = arg.equalsIgnoreCase("STOR") ? st.nextToken() : arg;
+		String fileName = arg;
+		if (arg.equalsIgnoreCase("STOR")) {
+			if (!st.hasMoreTokens()) {
+				return request;
+			}
+			fileName = st.nextToken();
+		}
 		
 		FileHandle f = dir.getNonExistentFileHandle(fileName);
 		
