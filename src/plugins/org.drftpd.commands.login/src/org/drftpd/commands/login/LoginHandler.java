@@ -193,28 +193,33 @@ public class LoginHandler extends CommandInterface {
             newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
         } catch (NoSuchUserException ex) {
         	getIP(request);
+        	request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
         	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Non-Existant");
         	return new CommandResponse(530, ex.getMessage());
         } catch (UserFileException ex) {
             logger.warn(ex, ex);
             getIP(request);
+            request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Non-Existant");
             return new CommandResponse(530, "IOException: " + ex.getMessage());
         } catch (RuntimeException ex) {
             logger.error(ex, ex);
             getIP(request);
+            request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
             request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Runtime");
             return new CommandResponse(530, "RuntimeException: " + ex.getMessage());
         }
 
         if (newUser.isDeleted()) {
         	getIP(request);
+        	request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
         	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Deleted");
         	return new CommandResponse(530,newUser.getKeyedMap().getObject(UserManagement.REASON,StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED").getMessage()));
         }
         
         if(!GlobalContext.getConfig().isLoginAllowed(newUser)) {
         	getIP(request);
+        	request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
         	request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER Not-Allowed");
         	if (GlobalContext.getConfig().getAllowConnectionsDenyReason() != null) {
         		return new CommandResponse(530, GlobalContext.getConfig().getAllowConnectionsDenyReason());
@@ -259,6 +264,7 @@ public class LoginHandler extends CommandInterface {
         	return new CommandResponse(530, e.getMessage());
         }
 
+        request.getSession().setObject(BaseFtpConnection.FAILEDUSERNAME, request.getArgument());
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER IP-Failed");
         //fail
         logger.warn(newUser.getName() + " failed hostmask check");

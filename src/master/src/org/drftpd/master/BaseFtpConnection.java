@@ -75,6 +75,8 @@ public class BaseFtpConnection extends Session implements Runnable {
 	
 	public static final Key<String> FAILEDREASON = new Key<String>(BaseFtpConnection.class, "failedreason");
 	
+	public static final Key<String> FAILEDUSERNAME = new Key<String>(BaseFtpConnection.class, "failedusername");
+	
 	public static final String NEWLINE = "\r\n";
 
 	/**
