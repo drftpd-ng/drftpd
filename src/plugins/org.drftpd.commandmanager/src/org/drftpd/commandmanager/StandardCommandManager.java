@@ -226,7 +226,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 		} catch (Throwable t) {
 			if (!(t instanceof Error)) {
 				CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
-				logger.error("Command "+request.getCommand()+" failed", t);
+				logger.error("Command "+request.getCommand()+" failed: '" + request.getArgument() + "'", t);
 				return cmdFailed;
 			}
 			throw (Error) t;
