@@ -78,10 +78,11 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 	}
 
 	public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
+		// removing this in-case of a bad transfer
+		/*if (response.getCode() != 226) {
 			// Transfer failed, abort checks
 			return;
-		}
+		}*/
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf");
 		if (cfg.getProperty("stor.zip.integrity.check.enabled", "false").equalsIgnoreCase("true")) {

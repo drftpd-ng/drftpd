@@ -131,10 +131,11 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 	}
 
 	public void doZipscriptSTORPostCheck(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
+		// removing this in-case of a bad transfer
+		/*if (response.getCode() != 226) {
 			// Transfer failed, abort checks
 			return;
-		}
+		}*/
 		FileHandle transferFile;
 		try {
 			transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
