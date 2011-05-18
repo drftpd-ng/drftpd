@@ -254,8 +254,8 @@ public class UserDetails {
 		return _writer;
 	}
 
-	protected synchronized ServiceCommand getCommandSession(ArrayList<OutputWriter> outputs) {
-		ServiceCommand newSession = new ServiceCommand(_bot, outputs, this, _ident);
+	protected synchronized ServiceCommand getCommandSession(ArrayList<OutputWriter> outputs, String source) {
+		ServiceCommand newSession = new ServiceCommand(_bot, outputs, this, _ident, source);
 		_commandSessions.add(newSession);
 		return newSession;
 	}

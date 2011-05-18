@@ -2823,7 +2823,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			}
 			// Check if we found valid outputs and if so proceed
 			if (!cmdOutputs.isEmpty()) {
-				ServiceCommand service = getUserDetails(sender,ident).getCommandSession(cmdOutputs);
+				ServiceCommand service = getUserDetails(sender,ident).getCommandSession(cmdOutputs, channel);
 				service.setCommands(_cmds);
 				try {
 					_pool.execute(new CommandThread(request,service,sender,ident));

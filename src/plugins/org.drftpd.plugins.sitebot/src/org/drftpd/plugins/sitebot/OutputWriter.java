@@ -61,4 +61,8 @@ public class OutputWriter {
 	protected void updateCipher(Blowfish cipher) {
 		_cipher = cipher;
 	}
+	
+	protected String getDestination() {
+		return _output;
+	}
 }

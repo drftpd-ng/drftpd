@@ -34,7 +34,9 @@ public class ServiceCommand extends Session {
 
 	public static final Key<String> IDENT = new Key<String>(ServiceCommand.class, "ident");
 
-	public static final Key<UserDetails> IRCUSER = new Key<UserDetails>(ServiceCommand.class,"ircuser");
+	public static final Key<UserDetails> IRCUSER = new Key<UserDetails>(ServiceCommand.class, "ircuser");
+	
+	public static final Key<String> SOURCE = new Key<String>(ServiceCommand.class, "source");
 
 	private transient SiteBot _bot;
 
@@ -42,11 +44,14 @@ public class ServiceCommand extends Session {
 
 	private UserDetails _runningUser;
 
-	public ServiceCommand(SiteBot bot, ArrayList<OutputWriter> outputs, UserDetails runningUser, String ident) {
+	public ServiceCommand(SiteBot bot, ArrayList<OutputWriter> outputs, UserDetails runningUser, String ident, String source) {
 		_bot = bot;
 		_outputs = outputs;
-		setObject(IRCUSER,runningUser);
-		setObject(IDENT,ident);
+		setObject(IRCUSER, runningUser);
+		setObject(IDENT, ident);
+		if (source != null) {
+			setObject(SOURCE, source);
+		}
 		_runningUser = runningUser;
 	}
 
@@ -74,6 +79,18 @@ public class ServiceCommand extends Session {
 
 	public UserDetails getIrcUser() {
 		return getObject(IRCUSER, null);
+	}
+	
+	public String getSource() {
+		return getObject(SOURCE, _runningUser.getNick());
+	}
+	
+	public String[] getDestination() {
+		String[] outputs = new String[_outputs.size()];
+		for (int i = 0; i < outputs.length; i++) {
+			outputs[i] = _outputs.get(i).getDestination();
+		}
+		return outputs;
 	}
 
 	public SiteBot getBot() {
