@@ -302,13 +302,19 @@ public class ListHandler extends CommandInterface {
 			boolean offlineFilesEnabled = GlobalContext.getConfig().getMainProperties().getProperty("files.offline.enabled", "true").equals("true");
 			
 			if (offlineFilesEnabled && element.isFile()) {
-				if (!((FileHandleInterface) element).isAvailable()) {
-					ReplacerEnvironment env = new ReplacerEnvironment();
-					env.add("ofilename", element.getName());
-					String oFileName = session.jprintf(_bundle, _keyPrefix+"files.offline.filename", env, user);
-
-					listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
-					numTotal++;
+				try {
+					if (!((FileHandleInterface) element).isAvailable()) {
+						ReplacerEnvironment env = new ReplacerEnvironment();
+						env.add("ofilename", element.getName());
+						String oFileName = session.jprintf(_bundle, _keyPrefix+"files.offline.filename", env, user);
+	
+						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
+						numTotal++;
+					}
+				} catch (IOException e) {
+					//File No Longer Exists - This can happen and is normal 
+					// if file is deleted to to bad crc or aborted during the list process
+					// Ignore
 				}
 				// -OFFLINE and "ONLINE" files will both be present until someone implements
 				// a way to reupload OFFLINE files.
