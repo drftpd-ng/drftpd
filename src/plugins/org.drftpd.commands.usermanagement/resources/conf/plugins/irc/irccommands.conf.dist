@@ -222,6 +222,17 @@ input all
 output source
 }
 
+swap {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_SWAP
+perms =siteop
+help Swap Credits Between Users
+help.specific ${command} <srcuser> <destuser> <bytes>
+input all
+output source
+}
+
 take {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler

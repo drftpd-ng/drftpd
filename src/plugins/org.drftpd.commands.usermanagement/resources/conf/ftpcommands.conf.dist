@@ -207,6 +207,15 @@ help Change your tagline
 help.specific ${command} <tagline>
 }
 
+SITE SWAP {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_SWAP
+perms =siteop
+help Swap Credits Between Users
+help.specific ${command} <srcuser> <destuser> <bytes>
+}
+
 SITE TAKE {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler

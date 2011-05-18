@@ -1194,6 +1194,69 @@ public class UserManagementHandler extends CommandInterface {
 		return response;
 	}
 
+	public CommandResponse doSITE_SWAP(CommandRequest request) throws ImproperUsageException {
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+	
+		StringTokenizer st = new StringTokenizer(request.getArgument());
+	
+		if (!st.hasMoreTokens()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
+	
+		User srcUser;
+		
+		try {
+			srcUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(st.nextToken());
+		} catch (Exception e) {
+			logger.warn("", e);
+			return new CommandResponse(200, e.getMessage());
+		}
+	
+		if (!st.hasMoreTokens()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
+		
+		User destUser;
+		try {
+			destUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(st.nextToken());
+		} catch (Exception e) {
+			logger.warn("", e);
+			return new CommandResponse(200, e.getMessage());
+		}
+		
+		if (!st.hasMoreTokens()) {
+			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		}
+		
+		long credits = 0;
+		String amt = null;
+		try {
+			amt = st.nextToken();
+			credits = Bytes.parseBytes(amt);
+		} catch (NumberFormatException ex) {
+			return new CommandResponse(452, "The string " + amt + " cannot be interpreted");
+		}
+	
+		if (0 > credits) {
+			return new CommandResponse(452, credits + " is not a positive number.");
+		}
+	
+		if (credits > srcUser.getCredits()) {
+			return new CommandResponse(452,"You cannot give more credits than you have.");
+		}
+
+		logger.info("'" + srcUser.getName() + "' transfered " + Bytes.formatBytes(credits) + " ('" + credits + "') to '" + destUser.getName() + "'");
+		
+		srcUser.updateCredits(-credits);
+		srcUser.commit();
+		destUser.updateCredits(credits);
+		destUser.commit();
+	
+		return new CommandResponse(200, "OK, gave " + Bytes.formatBytes(credits) + " of " + srcUser.getName() + "'s credits to " + destUser.getName());
+	}
+	
 	public CommandResponse doSITE_GIVE(CommandRequest request)
 			throws ImproperUsageException {
 
