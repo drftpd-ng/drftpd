@@ -789,7 +789,7 @@ public abstract class ArchiveType {
 							retstr = retstr.replace(fullstr, matcher.group(1));
 						}
 					} catch (PatternSyntaxException e) {
-						logger.debug("Regex Syntax Error in '" + regexstr + "' for '" + fullstr + "'",e);
+						logger.error("Regex Syntax Error in '" + regexstr + "' for '" + fullstr + "'",e);
 					}
 					
 					if (retstr.contains(fullstr)) {
