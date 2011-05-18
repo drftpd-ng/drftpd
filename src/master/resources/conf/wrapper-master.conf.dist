@@ -31,10 +31,28 @@ wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-master.propertie
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-master.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
-# Uncommenting the following time will increase initial startup time but should
-# improve performance once running. This option requires you to have a full JDK
-# installed, not simply a JRE.
-#wrapper.java.additional.5=-server
+#--- Uncommenting the following (And changing X to next number), 
+#--- causes DR to create a memory dump if out of memory
+#wrapper.java.additional.X=-XX:+HeapDumpOnOutOfMemoryError
+#--- Uncommenting the following (And changing X to next number), 
+#--- Causes Garbage collectible items to remain in memory and not collected if available memory is sufficient
+#wrapper.java.additional.X=-XX:SoftRefLRUPolicyMSPerMB=10000
+#--- Uncommenting the following (And changing X to next number), 
+#--- Unlocks and uses part of the new G1GC
+#wrapper.java.additional.X=-XX:+UnlockExperimentalVMOptions
+#--- Uncommenting the following (And changing X to next number), 
+#--- Use the new garbage collection routine 6.14 or higher needed
+#wrapper.java.additional.X=-XX:+UseG1GC
+#--- Uncommenting the following (And changing X to next number), 
+#--- Sets users timezone
+#wrapper.java.additional.X=-Duser.timezone="Europe/Amsterdam"
+#--- Uncommenting the following (And changing X to next number), 
+#--- Uses optimized versions of Get<Primitive>Field.
+#wrapper.java.additional.X=-XX:+UseFastAccessorMethods
+#--- Uncommenting the following (And changing X to next number), time will increase initial startup 
+#--- time but should improve performance once running. This option requires you to have a 
+#--- full JDK installed, not simply a JRE.
+#wrapper.java.additional.X=-server
 
 # ---------------------------------------
 # Enable below if you wish to monitor the memory that drftpd uses, the 
