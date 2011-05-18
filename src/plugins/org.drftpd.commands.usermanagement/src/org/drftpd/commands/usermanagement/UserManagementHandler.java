@@ -1243,6 +1243,7 @@ public class UserManagementHandler extends CommandInterface {
 			}
 
 			session.getUserNull(request.getUser()).updateCredits(-credits);
+			session.getUserNull(request.getUser()).commit();
 		}
 
 		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' transfered "
