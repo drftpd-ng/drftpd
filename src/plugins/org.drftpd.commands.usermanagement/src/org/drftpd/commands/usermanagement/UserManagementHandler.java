@@ -1857,6 +1857,7 @@ public class UserManagementHandler extends CommandInterface {
 		long speed = 0;
 		int xfersup = 0;
 		int xfersdn = 0;
+		int xferidle = 0;
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		
@@ -1875,6 +1876,7 @@ public class UserManagementHandler extends CommandInterface {
                  	if (!conn.isExecuting() && idle) {
                  		response.addComment(session.jprintf(_bundle, _keyPrefix + type + ".new", env, request.getUser())); 
                  	} 
+                 	xferidle++;
                  }
 				continue;
 			}
@@ -1957,6 +1959,7 @@ public class UserManagementHandler extends CommandInterface {
 		env.add("xfersup", xfersup);
 		env.add("xfersdn", xfersdn);
 		env.add("xfers", xfersup+xfersdn);
+		env.add("idlers",xferidle);
 		if (response.getComment().size() > 0 && (statusSpeed || statusUsers)) {
 			response.addComment("");
 		}
