@@ -114,24 +114,23 @@ public class SFVIncompleteManager implements PluginInterface {
 		if (vfsevent.getInode().isFile()) {
 			if (vfsevent.getInode().getParent().exists()) {
 				try {
-					for (FileHandle file : vfsevent.getInode().getParent().getFilesUnchecked()) {
-						if (file.getPath().endsWith(".sfv")) {
-							if (!file.getPath().equals(vfsevent.getInode().getPath())) {
-								return;
+					// Check to see if file deleted was .sfv
+					if (vfsevent.getInode().getName().endsWith(".sfv")) {
+						for (LinkType link : _linkmanager.getLinks()) {
+							if (link.getEventType().equals("sfvincomplete")) {
+								link.doDeleteLink(vfsevent.getInode().getParent());
 							}
-
-							for (LinkType link : _linkmanager.getLinks()) {
-								if (link.getEventType().equals("sfvincomplete")) {
-									link.doDeleteLink(vfsevent.getInode().getParent());
-								}
-							}								
-						} else {
+						}
+					} 
+					for (FileHandle file : vfsevent.getInode().getParent().getFilesUnchecked()) {
+						if (!file.getPath().endsWith(".sfv")) {
 					        ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(vfsevent.getInode().getParent());
 							try {
 								if (!sfvData.getSFVStatus().isFinished()) {
 									for (LinkType link : _linkmanager.getLinks()) {
 										if (link.getEventType().equals("sfvincomplete")) {
 											link.doCreateLink(vfsevent.getInode().getParent());
+											return;
 										}
 									}
 								}
@@ -144,7 +143,6 @@ public class SFVIncompleteManager implements PluginInterface {
 							} catch (SlaveUnavailableException e) {
 								// no slaves available for .sfv - ignore
 							}							
-							
 						}
 					}
 				} catch (FileNotFoundException e) {
