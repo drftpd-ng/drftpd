@@ -79,7 +79,7 @@ public abstract class LinkType {
 	 */
 	public String getDirName(DirectoryHandle dir) {
 		if (_dirname.equals("%")) {
-			if (dir.getPath().matches(_addparentdir)) {
+			if (dir.getName().matches(_addparentdir)) {
 				if (!dir.getParent().isRoot()) {
 					return dir.getParent().getParent().getPath();
 				}
@@ -279,7 +279,6 @@ public abstract class LinkType {
 			if (totalMat.find()) {
 		    	linkNameFinal = getLinkName().replace("${dirname}",dirPath.substring(dirPath.substring(0,dirPath.lastIndexOf("/")).lastIndexOf("/")+1).replace("/","-"));
 			}
-			
 			/*
 			 * Get section information for link
 			 */
@@ -351,6 +350,9 @@ public abstract class LinkType {
 		if (linkDir.exists()) {
 			try {
 				for (LinkHandle link : linkDir.getLinksUnchecked()) {
+					/*
+					 * Try to rename link if link is already in target Dir 
+					 */
 					try {
 						link.getTargetDirectoryUnchecked();
 					} catch (FileNotFoundException e1) {
@@ -383,6 +385,56 @@ public abstract class LinkType {
 						}	
 					}
 				}
+					
+				/*
+				 * Try to rename link if link is still in OLD target dir
+				 */
+				DirectoryHandle oldlinkDir = new DirectoryHandle(getDirName(oldDir));
+				if (oldlinkDir.exists()) {
+					try {
+						for (LinkHandle link : oldlinkDir.getLinksUnchecked()) {					
+							try {
+								link.getTargetDirectoryUnchecked();
+							} catch (FileNotFoundException e1) {
+								try {
+									if (link.getTargetStringWithSlash().startsWith(oldDir.getPath() + "/")) {
+										// Rename/Repoint Link
+										try {
+											LinkHandle newlink = null;
+											if (targetDir.getName().contains("[NUKED]-")) {
+												newlink = new LinkHandle(link.getPath().replace(oldDir.getName(), targetDir.getName()));
+											} else {
+												newlink = new LinkHandle(link.getPath().replace(oldDir.getName(), targetDir.getName()).replace(link.getParent().getPath(),linkDir.getPath()));
+											}
+											String oldtarget = link.getTargetStringWithSlash();
+
+											link.renameToUnchecked(newlink);
+											newlink.setTarget(oldtarget.replace(oldDir.getPath(),targetDir.getPath()));
+										} catch (FileNotFoundException e) {
+											link.deleteUnchecked();
+										} catch (FileExistsException e) {
+											link.deleteUnchecked();
+										}
+									} else {
+										link.deleteUnchecked();	
+									}
+								} catch (FileNotFoundException e) {
+									// Link no longer exists - Ignore
+								}							
+							} catch (ObjectNotValidException e1) {
+								// Link target isn't a directory, delete the link as it is bad
+								try {
+									link.deleteUnchecked();
+								} catch (FileNotFoundException e) {
+									// Link no longer exists - Ignore
+								}	
+							}
+						}	
+					} catch (FileNotFoundException e2) {
+						//No Links Found - Ignore
+					}
+				}
+
 			} catch (FileNotFoundException e2) {
 				//No Links Found - Ignore
 			}
