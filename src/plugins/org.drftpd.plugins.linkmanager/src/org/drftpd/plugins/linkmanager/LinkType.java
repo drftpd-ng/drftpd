@@ -275,7 +275,7 @@ public abstract class LinkType {
 		if (linkDir.exists()) {
 			String linkNameFinal = getLinkName().replace("${dirname}",linkName);
 			Pattern totalPat = Pattern.compile(getAddParentDir());
-			Matcher totalMat = totalPat.matcher(dirPath);
+			Matcher totalMat = totalPat.matcher(linkName);
 			if (totalMat.find()) {
 		    	linkNameFinal = getLinkName().replace("${dirname}",dirPath.substring(dirPath.substring(0,dirPath.lastIndexOf("/")).lastIndexOf("/")+1).replace("/","-"));
 			}
