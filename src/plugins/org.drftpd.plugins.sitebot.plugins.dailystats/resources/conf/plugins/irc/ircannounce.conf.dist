@@ -1,3 +1,0 @@
-# To specify where the daily stats announces will appear rather than just using your
-# default channels, uncomment the next line and set them there.
-#dailystats.destination=public
