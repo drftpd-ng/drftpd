@@ -21,11 +21,14 @@ package org.drftpd.master;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
 import org.drftpd.util.CommonPluginUtils;
 
 /**
@@ -148,9 +151,19 @@ public class CommitManager {
 		return;
 	}
 
+	private long getCommitDelay() {
+		Properties cfg = GlobalContext.getConfig().getMainProperties();
+		try {
+			return Long.parseLong(PropertyHelper.getProperty(cfg, "disk.commit.delay","10000"));
+		} catch (NumberFormatException e) {
+		}
+		return 10000;
+	}
+	
 	private void processAllLoop() {
 		while (true) {
-			long time = System.currentTimeMillis() - 10000;
+			long delay = getCommitDelay();
+			long time = System.currentTimeMillis() - delay;
 			for (Iterator<Entry<Commitable, Date>> iter = _commitMap.entrySet()
 					.iterator(); iter.hasNext();) {
 				Entry<Commitable, Date> entry = iter.next();
@@ -160,7 +173,7 @@ public class CommitManager {
 			}
 			
 			try {
-				Thread.sleep(10000);
+				Thread.sleep(delay);
 			} catch (InterruptedException e) {
 			}
 		}

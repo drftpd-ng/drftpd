@@ -87,3 +87,11 @@ delete.upload.on.abort=false
 # true = Monday for the first day of the week
 # false = Sunday for the first day of the week
 european.cal=false
+
+# Time in milliseconds (ms)
+# Suggested values:
+#   Higher values reduce disk I/O but at the penalty of latency in commits.
+#   Standard SATA HD = 10000 (default)
+#   SSD = 1000 (higher values should help in a longer SSD Lifespan
+#   RAMDISK = 500
+#disk.commit.delay=10000
