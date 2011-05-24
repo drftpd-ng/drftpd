@@ -165,7 +165,8 @@ public class TransferState {
         // get socket depending on the selection
         if (isPort()) {
             try {
-				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? GlobalContext.getGlobalContext().getSSLContext() : null, _portAddress, getSSLHandshakeClientMode());
+				ActiveConnection ac = new ActiveConnection(_encryptedDataChannel ? GlobalContext.getGlobalContext().getSSLContext() : null, _portAddress, getSSLHandshakeClientMode(),ConnectionManager.getBindIP());
+
                 dataSocket = ac.connect(GlobalContext.getConfig().getCipherSuites(), 0);
             } catch (IOException ex) {
                 logger.warn("Error opening data socket", ex);

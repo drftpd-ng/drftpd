@@ -46,6 +46,7 @@ import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.exceptions.TransferDeniedException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.FtpReply;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
@@ -193,7 +194,7 @@ public class DataConnectionHandler extends CommandInterface {
 			// setup a PassiveConnection for a local transfer, LIST/NLST
 			PassiveConnection pc;
 			try {
-				pc = new PassiveConnection(ts.getSendFilesEncrypted() ? conn.getGlobalContext().getSSLContext() : null, conn.getGlobalContext().getPortRange(), false);
+				pc = new PassiveConnection(ts.getSendFilesEncrypted() ? conn.getGlobalContext().getSSLContext() : null, conn.getGlobalContext().getPortRange(), false, ConnectionManager.getBindIP()); 
 			} catch (IOException e1) {
 				reset(conn);
 				return new CommandResponse(500, e1.getMessage());

@@ -115,7 +115,7 @@ public class BasicHandler extends AbstractHandler {
 
 		int port = Integer.parseInt(data[1]);
 		Transfer t = new Transfer(new ActiveConnection(encrypted ? getSlaveObject().getSSLContext() : null,
-				new InetSocketAddress(address, port), useSSLClientHandshake),
+				new InetSocketAddress(address, port), useSSLClientHandshake,getSlaveObject().getBindIP()),
 				getSlaveObject(), new TransferIndex());
 		
 		getSlaveObject().addTransfer(t);
@@ -153,7 +153,7 @@ public class BasicHandler extends AbstractHandler {
 
 		try {
 			c = new PassiveConnection(encrypted ? getSlaveObject().getSSLContext() : null,
-					getSlaveObject().getPortRange(), useSSLClientMode);
+					getSlaveObject().getPortRange(), useSSLClientMode,getSlaveObject().getBindIP());
 			
 		} catch (IOException e) {
 			return new AsyncResponseException(ac.getIndex(), e);

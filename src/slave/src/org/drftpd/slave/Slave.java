@@ -113,6 +113,8 @@ public class Slave {
 	private boolean _ignorePartialRemerge;
 
 	private boolean _concurrentRootIteration;
+	
+	private String _bindIP = null;
 
 	protected Slave() {
 	}
@@ -166,6 +168,15 @@ public class Slave {
 			_s = new Socket();
 		}
 
+		if (PropertyHelper.getProperty(p, "bind.ip",null) != null) {
+			try {
+				_s.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"),0));
+				_bindIP = PropertyHelper.getProperty(p, "bind.ip",null);
+			} catch (IOException e) {
+				throw new SSLUnavailableException("Unable To Bind Port Correctly");
+			}
+		}
+		
 		try {
 			_timeout = Integer.parseInt(PropertyHelper.getProperty(p, "slave.timeout"));
 		} catch (NullPointerException e) {
@@ -617,6 +628,10 @@ public class Slave {
 	
 	public PortRange getPortRange() {
 		return _portRange;
+	}
+	
+	public String getBindIP() {
+		return _bindIP;
 	}
 	
 	public ObjectInputStream getInputStream() {

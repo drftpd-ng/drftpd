@@ -52,12 +52,12 @@ public class PassiveConnection extends Connection {
 	 *             will not use SSL
 	 */
 	public PassiveConnection(SSLContext ctx, PortRange portRange,
-			boolean useSSLClientMode) throws IOException {
+			boolean useSSLClientMode, String bindIP) throws IOException {
 		_useSSLClientMode = useSSLClientMode;
 		if (ctx != null) {
-			_serverSocket = portRange.getPort(ctx.getServerSocketFactory());
+			_serverSocket = portRange.getPort(ctx.getServerSocketFactory(),bindIP);
 		} else {
-			_serverSocket = portRange.getPort(ServerSocketFactory.getDefault());
+			_serverSocket = portRange.getPort(ServerSocketFactory.getDefault(),bindIP);
 		}
 		_serverSocket.setSoTimeout(TIMEOUT);
 	}

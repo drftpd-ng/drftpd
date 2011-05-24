@@ -64,19 +64,23 @@ public class PortRange {
 		_bufferSize = bufferSize;
 	}
 	
-	private ServerSocket createServerSocket(int port, ServerSocketFactory ssf) throws IOException {
+	private ServerSocket createServerSocket(int port, ServerSocketFactory ssf, String bindIP) throws IOException {
 		ServerSocket ss = ssf.createServerSocket();
 		if (_bufferSize > 0) {
 			ss.setReceiveBufferSize(_bufferSize);	
 		}
-		ss.bind(new InetSocketAddress(port),1);
+		if (bindIP == null) {
+			ss.bind(new InetSocketAddress(port),1);
+		} else {
+			ss.bind(new InetSocketAddress(bindIP,port),1);
+		}
 		return ss;
 	}
 
-	public ServerSocket getPort(ServerSocketFactory ssf) {
+	public ServerSocket getPort(ServerSocketFactory ssf, String bindIP) {
 		if (_minPort == 0) {
 			try {
-				return createServerSocket(0,ssf);
+				return createServerSocket(0,ssf,bindIP);
 			} catch (IOException e) {
 				logger.error("Unable to bind anonymous port", e);
 				throw new RuntimeException(e);
@@ -88,7 +92,7 @@ public class PortRange {
 		boolean retry = true;
 		while (true) {
 			try {
-				return createServerSocket(pos,ssf);
+				return createServerSocket(pos,ssf,bindIP);
 			} catch (IOException e) {
 			}
 			pos++;

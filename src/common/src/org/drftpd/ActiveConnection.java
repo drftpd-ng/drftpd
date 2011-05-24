@@ -43,11 +43,14 @@ public class ActiveConnection extends Connection {
 	private Socket _sock;
 
 	private boolean _useSSLClientHandshake;
+	
+	private String _bindIP;
 
 	public ActiveConnection(SSLContext ctx, InetSocketAddress addr,
-			boolean useSSLClientHandshake) {
+			boolean useSSLClientHandshake, String bindIP) {
 		_addr = addr;
 		_ctx = ctx;
+		_bindIP = bindIP;
 		_useSSLClientHandshake = useSSLClientHandshake;
 	}
 
@@ -61,6 +64,11 @@ public class ActiveConnection extends Connection {
 			if (bufferSize > 0) {
 				sslsock.setReceiveBufferSize(bufferSize);
 			}
+			
+			if (_bindIP != null) {
+				sslsock.bind(new InetSocketAddress(_bindIP,sslsock.getPort()));
+			}
+			
 			sslsock.connect(_addr, TIMEOUT);
 			setSockOpts(sslsock);
 			if (cipherSuites != null && cipherSuites.length != 0) {
@@ -74,6 +82,11 @@ public class ActiveConnection extends Connection {
 			if (bufferSize > 0) {
 				_sock.setReceiveBufferSize(bufferSize);
 			}
+			
+			if (_bindIP != null) {
+				_sock.bind(new InetSocketAddress(_bindIP,_sock.getPort()));
+			}
+			 
 			_sock.connect(_addr, TIMEOUT);
 			setSockOpts(_sock);
 		}

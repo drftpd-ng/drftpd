@@ -66,6 +66,8 @@ public class ConnectionManager {
 	private List<BaseFtpConnection> _conns = new Vector<BaseFtpConnection>();
 
 	private ThreadPoolExecutor _pool;
+	
+	private static String _bindIP;
 
 	/**
 	 * If you're creating a ConnectionManager object and it's not part of a TestCase
@@ -83,6 +85,10 @@ public class ConnectionManager {
 			_connectionManager = new ConnectionManager();
 		}
 		return _connectionManager;
+	}
+	
+	public static String getBindIP() {
+		return _bindIP;
 	}
 
 	public static void boot() {
@@ -123,6 +129,7 @@ public class ConnectionManager {
 				server.bind(new InetSocketAddress(bindip, Integer
 						.parseInt(PropertyHelper
 								.getProperty(cfg, "master.port"))));
+				_bindIP = bindip;
 				logger.info("Listening on " + server.getInetAddress() + ":"
 						+ server.getLocalPort());
 			} else {
