@@ -69,7 +69,7 @@ public class ThrottledInputStream extends InputStream {
 
     public void setMaxBytesPerSecond(long maxBytes) {
         if (maxBytes < 0) {
-        	throw new IllegalArgumentException("Maximum bytes per second must be at least.");
+        	throw new IllegalArgumentException("Maximum bytes per second must be at least one.");
         }
         maxBytesPerSecond = maxBytes;
     }
