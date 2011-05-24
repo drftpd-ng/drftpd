@@ -20,6 +20,7 @@ public class ThrottledInputStream extends InputStream {
         this(input, Long.MAX_VALUE);
     }
 
+    @Override
     public void close() throws IOException {
         in.close();
     }
@@ -28,6 +29,7 @@ public class ThrottledInputStream extends InputStream {
         return counter;
     }
 
+    @Override
     public int read() throws IOException {
         int result = in.read();
         if (result != -1) {
@@ -37,6 +39,7 @@ public class ThrottledInputStream extends InputStream {
         return result;
     }
 
+    @Override
     public int read(byte[] b) throws IOException {
         int result = in.read(b);
         if (result > 0) {
@@ -46,6 +49,7 @@ public class ThrottledInputStream extends InputStream {
         return result;
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
         int result = in.read(b, off, len);
         if (result > 0) {
@@ -65,11 +69,12 @@ public class ThrottledInputStream extends InputStream {
 
     public void setMaxBytesPerSecond(long maxBytes) {
         if (maxBytes < 0) {
-        	throw new IllegalArgumentException("Maximum bytes per second must be one or larger.");
+        	throw new IllegalArgumentException("Maximum bytes per second must be at least.");
         }
         maxBytesPerSecond = maxBytes;
     }
 
+    @Override
     public long skip(long n) throws IOException {
         return in.skip(n);
     }
