@@ -813,6 +813,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 					}
 					catch (NumberFormatException e) {
 						// Keep the existing value.
+						// In case of a server PRIVMSG we sould keep the senderInfo as source nick. 
+					 	sourceNick = senderInfo;
 					}
 
 					if (code != -1) {
