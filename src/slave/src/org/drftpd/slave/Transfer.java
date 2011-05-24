@@ -55,6 +55,8 @@ public class Transfer {
 	private char _direction;
 
 	private long _finished = 0;
+	
+	private ThrottledInputStream _int;
 
 	private InputStream _in;
 
@@ -393,15 +395,18 @@ public class Transfer {
 			byte[] buff = new byte[Math.max(_slave.getBufferSize(), 65535)];
 			int count;
 			long currentTime = System.currentTimeMillis();
-
+			//max speed buffer
+			_int = new ThrottledInputStream(_in,_maxSpeed);
+			
+			boolean first = true;
+			long lastCheck = 0;
+			
 			try {
 				while (true) {
 					if (_abortReason != null) {
-						throw new TransferFailedException(
-								"Transfer was aborted - " + _abortReason,
-								getTransferStatus());
+						throw new TransferFailedException("Transfer was aborted - " + _abortReason, getTransferStatus());
 					}
-					count = _in.read(buff);
+					count = _int.read(buff);
 					if (count == -1) {
 						if (associatedUpload == null) {
 							break; // done transferring
@@ -419,15 +424,24 @@ public class Transfer {
 					if ((System.currentTimeMillis() - currentTime) >= 1000) {
 						TransferStatus ts = getTransferStatus();
 						if (ts.isFinished()) {
-							throw new TransferFailedException(
-									"Transfer was aborted - " + _abortReason,
-									ts);
+							throw new TransferFailedException("Transfer was aborted - " + _abortReason,ts);
 						}
-						_slave
-								.sendResponse(new AsyncResponseTransferStatus(
-										ts));
+						_slave.sendResponse(new AsyncResponseTransferStatus(ts));
 						currentTime = System.currentTimeMillis();
 					}
+					
+					// Min Speed Check
+					if (_minSpeed > 0) {
+						lastCheck = (lastCheck == 0 ? System.currentTimeMillis() : lastCheck);
+						long delay = System.currentTimeMillis() - lastCheck;
+						if (first ? delay >= 20000 : delay >= 10000) {
+							first = false;
+							if (getXferSpeed() < _minSpeed) {
+								throw new TransferSlowException("Transfer was aborted - '" + String.valueOf(getXferSpeed() + "' is < '" + _minSpeed + "'"), getTransferStatus());
+							}
+						}
+					}
+					
 					_transfered += count;
 					_out.write(buff, 0, count);
 				}

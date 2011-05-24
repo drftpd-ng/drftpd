@@ -38,6 +38,7 @@ import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commands.dataconnection.event.SlowTransferEvent;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -55,6 +56,7 @@ import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferFailedException;
+import org.drftpd.slave.TransferSlowException;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.FtpRequest;
@@ -1022,7 +1024,10 @@ public class DataConnectionHandler extends CommandInterface {
 				boolean fxpDenied = false;
 
 				if (ex instanceof TransferFailedException) {
-					if (ex.getCause() instanceof TransferDeniedException) {
+					if (ex.getCause() instanceof TransferSlowException) {
+						GlobalContext.getEventService().publishAsync(new SlowTransferEvent(user.getName(),ts.getTransferFile().getParent().getPath(),ts.getTransferFile().getName(),isStor,conn,request.getSession().getObjectLong(MIN_XFER_SPEED),status == null ? 0L : status.getXferSpeed(), status == null ? 0L : status.getTransfered()));
+						response = new CommandResponse(426, "You are transfering too slow");	
+					} else if (ex.getCause() instanceof TransferDeniedException) {
 						fxpDenied = true;
 						response = new CommandResponse(426, "You are not allowed to FXP from here.");
 					}
