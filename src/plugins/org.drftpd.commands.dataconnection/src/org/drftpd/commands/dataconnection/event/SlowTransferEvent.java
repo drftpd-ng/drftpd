@@ -17,6 +17,7 @@
 package org.drftpd.commands.dataconnection.event;
 
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.usermanager.User;
 
 /**
 * @author CyBeR
@@ -24,7 +25,7 @@ import org.drftpd.master.BaseFtpConnection;
 */
 public class SlowTransferEvent {
 
-	private String _user;
+	private User _user;
 	private String _path;
 	private String _file;
 	private boolean _isStor;
@@ -33,7 +34,7 @@ public class SlowTransferEvent {
 	private long _speed;
 	private long _transfered;
 	
-	public SlowTransferEvent(String user, String path, String file, boolean isStor, BaseFtpConnection conn, long minspeed, long speed, long transfered) {
+	public SlowTransferEvent(User user, String path, String file, boolean isStor, BaseFtpConnection conn, long minspeed, long speed, long transfered) {
 		_user = user;
 		_path = path;
 		_file = file;
@@ -44,7 +45,7 @@ public class SlowTransferEvent {
 		_transfered = transfered;
 	}
 
-	public String getUser() {
+	public User getUser() {
 		return _user;
 	}
 	
