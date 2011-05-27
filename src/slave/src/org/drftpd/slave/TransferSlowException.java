@@ -24,20 +24,11 @@ package org.drftpd.slave;
  */
 @SuppressWarnings("serial")
 public class TransferSlowException extends TransferFailedException {
-	private TransferStatus _status;
-
 	public TransferSlowException(Exception e, TransferStatus status) {
 		super(e.getMessage(),status);
-		initCause(e);
-		_status = status;
 	}
 
 	public TransferSlowException(String message, TransferStatus status) {
 		super(message,status);
-		_status = status;
-	}
-
-	public TransferStatus getStatus() {
-		return _status;
 	}
 }
