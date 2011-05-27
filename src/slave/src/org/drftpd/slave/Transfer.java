@@ -448,8 +448,8 @@ public class Transfer {
 
 				_out.flush();
 			} catch (IOException e) {
-				if (e instanceof TransferSlowException) {
-					throw new TransferSlowException(e, getTransferStatus());
+				if (e instanceof TransferFailedException || e instanceof TransferSlowException) {
+					throw e;
 				}
 				throw new TransferFailedException(e, getTransferStatus());
 			}
