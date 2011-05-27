@@ -1022,10 +1022,12 @@ public class DataConnectionHandler extends CommandInterface {
 				transferEnded = true;
 			} catch (IOException ex) {          	                
 				boolean fxpDenied = false;
+				boolean slowDenied = false;
 
 				if (ex instanceof TransferFailedException) {
 					if (ex.getCause() instanceof TransferSlowException) {
-						GlobalContext.getEventService().publishAsync(new SlowTransferEvent(user,ts.getTransferFile().getParent().getPath(),ts.getTransferFile().getName(),isStor,conn,request.getSession().getObjectLong(MIN_XFER_SPEED),status == null ? 0L : status.getXferSpeed(), status == null ? 0L : status.getTransfered()));
+						slowDenied = true;
+						GlobalContext.getEventService().publish(new SlowTransferEvent(user,ts.getTransferFile().getParent().getPath(),ts.getTransferFile().getName(),isStor,conn,request.getSession().getObjectLong(MIN_XFER_SPEED),status == null ? 0L : status.getXferSpeed(), status == null ? 0L : status.getTransfered()));
 						response = new CommandResponse(426, "You are transfering too slow");	
 					} else if (ex.getCause() instanceof TransferDeniedException) {
 						fxpDenied = true;
@@ -1033,18 +1035,18 @@ public class DataConnectionHandler extends CommandInterface {
 					}
 				}
 
-				if (!fxpDenied) {
+				if ((!fxpDenied) && (!slowDenied)) {
 					logger.debug("IOException during transfer", ex);
 					response = new CommandResponse(426, "Transfer failed");
 				}
 
 				if (isStor) {
 					conn.abortCommand();
-					if (!fxpDenied && !ts.getTransferFile().exists()) {
+					if (!fxpDenied && !ts.getTransferFile().exists() && !slowDenied) {
 						response = new CommandResponse(426, "Transfer failed, deleting file");
 					}
 				}
-
+				
 				response.addComment(ex.getMessage());
 			} catch (SlaveUnavailableException e) {
 				logger.error("Slave went offline during transfer", e);
