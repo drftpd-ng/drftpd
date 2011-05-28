@@ -391,7 +391,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 			// Reset just the transfer if one is active, a full reset of the TransferState instance is
 			// not required as this object will not be reused. Leaving the rest of the state untouched
 			// will allow any active command threads to terminate gracefully.
-			getTransferState().abort("Connection closed");
+			getTransferState().resetTransfer();
 			_pool.shutdown();
 			GlobalContext.getConnectionManager().remove(this);
 			GlobalContext.getConnectionManager().dumpThreadPool();

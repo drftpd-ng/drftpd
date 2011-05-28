@@ -126,7 +126,7 @@ public class TransferState {
 	
 	public synchronized void reset() {
 		_rslave = null;
-		abort("reset");
+		resetTransfer();
 		
 		_transfer = null;
 		_transferFile = null;
@@ -140,6 +140,12 @@ public class TransferState {
 		}
 		_resumePosition = 0;
 		_transferFileCreated = false;
+	}
+	
+	public synchronized void resetTransfer() {
+		if (_transfer != null) {
+			_transfer.abort("reset");
+		}
 	}
 
 	public boolean isPreTransfer() {
