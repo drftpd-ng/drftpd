@@ -126,9 +126,7 @@ public class TransferState {
 	
 	public synchronized void reset() {
 		_rslave = null;
-		if (_transfer != null) {
-			_transfer.abort("reset");
-		}
+		abort("reset");
 		
 		_transfer = null;
 		_transferFile = null;
