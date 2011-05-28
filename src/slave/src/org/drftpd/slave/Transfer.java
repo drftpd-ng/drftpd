@@ -119,6 +119,9 @@ public class Transfer {
 	public synchronized void abort(String reason) {
 		try {
 			_abortReason = reason;
+			if (_int != null) {
+				_int.wake();
+			}
 
 		} finally {
 			if (_conn != null) {

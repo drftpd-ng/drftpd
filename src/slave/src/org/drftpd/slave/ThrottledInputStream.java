@@ -4,16 +4,18 @@ import java.io.IOException;
 import java.io.InputStream; 
 
 public class ThrottledInputStream extends InputStream {
-    private long counter;
-    private InputStream in;
-    private long lastCounter;
-    private long lastMillis;
-    private long maxBytesPerSecond;
+    private long _counter;
+    private InputStream _in;
+    private long _lastCounter;
+    private long _lastMillis;
+    private long _maxBytesPerSecond;
+    private Object _monitor;
 
     public ThrottledInputStream(InputStream input, long maximumBytesPerSecond) {
-        in = input;
+        _in = input;
         setMaxBytesPerSecond(maximumBytesPerSecond);
-        lastMillis = System.currentTimeMillis();
+        _lastMillis = System.currentTimeMillis();
+        _monitor = new Object();
     }
 
     public ThrottledInputStream(InputStream input) {
@@ -22,18 +24,18 @@ public class ThrottledInputStream extends InputStream {
 
     @Override
     public void close() throws IOException {
-        in.close();
+        _in.close();
     }
 
     public long getCounter() {
-        return counter;
+        return _counter;
     }
 
     @Override
     public int read() throws IOException {
-        int result = in.read();
+        int result = _in.read();
         if (result != -1) {
-            counter++;
+            _counter++;
             waitIfNecessary();
         }
         return result;
@@ -41,9 +43,9 @@ public class ThrottledInputStream extends InputStream {
 
     @Override
     public int read(byte[] b) throws IOException {
-        int result = in.read(b);
+        int result = _in.read(b);
         if (result > 0) {
-            counter += result;
+            _counter += result;
             waitIfNecessary();
         }
         return result;
@@ -51,9 +53,9 @@ public class ThrottledInputStream extends InputStream {
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-        int result = in.read(b, off, len);
+        int result = _in.read(b, off, len);
         if (result > 0) {
-        	counter += result;
+        	_counter += result;
             waitIfNecessary();
         }
         return result;
@@ -64,40 +66,48 @@ public class ThrottledInputStream extends InputStream {
     }
 
     public void setCounter(long newValue) {
-        counter = newValue;
+        _counter = newValue;
     }
 
     public void setMaxBytesPerSecond(long maxBytes) {
         if (maxBytes < 0) {
         	throw new IllegalArgumentException("Maximum bytes per second must be at least one.");
         }
-        maxBytesPerSecond = maxBytes;
+        _maxBytesPerSecond = maxBytes;
     }
 
     @Override
     public long skip(long n) throws IOException {
-        return in.skip(n);
+        return _in.skip(n);
+    }
+    
+    public void wake() {
+    	synchronized (_monitor) {
+    		_monitor.notify();
+    	}
     }
 
     private void waitIfNecessary() {
-        if (maxBytesPerSecond == 0) {
+        if (_maxBytesPerSecond == 0) {
         	return;
         }
 
-        long diffBytes = counter - lastCounter;
+        long diffBytes = _counter - _lastCounter;
         long millis = System.currentTimeMillis();
-        long diffMillis = millis - lastMillis;
-        long waitMillis = (1000 * diffBytes - diffMillis * maxBytesPerSecond) / maxBytesPerSecond;
+        long diffMillis = millis - _lastMillis;
+        long waitMillis = (1000 * diffBytes - diffMillis * _maxBytesPerSecond) / _maxBytesPerSecond;
 
         if (waitMillis > 0) {
-            try {
-                Thread.sleep(waitMillis);
-            }
-            catch (InterruptedException ie) {
-            }
+        	synchronized (_monitor) {
+	            try {
+	                _monitor.wait(waitMillis);
+	            }
+	            catch (InterruptedException ie) {
+	            }
+        	}
         }
 
-        lastCounter = counter;
-        lastMillis = System.currentTimeMillis();
+        _lastCounter = _counter;
+        _lastMillis = System.currentTimeMillis();
     } 
 }
