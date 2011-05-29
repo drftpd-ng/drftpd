@@ -57,7 +57,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 	 */
 	@Override
 	public long getSize() {
-		return getLinkPath().length();
+		return 0L;
 	}
 
 	/* (non-Javadoc)
@@ -66,7 +66,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 	@Override
 	public void setSize(long l) {
 		return;
-		// size of links are the length of the path/name that it's pointing at
+		// size of links are always zero
 	}
 
 	@Override
