@@ -1,0 +1,26 @@
+################################################################################
+#	Traffic Manager
+#
+#	This will allow you to specify Min/Max speed for users/paths
+#
+#	Note: This plug-in works on a first match system.
+#	IE. If you are part of 2 types, only the least most number type will engage
+#
+#	x.type = Traffic Type to use
+#	x.name = Name of this type
+#	x.minspeed = Min speed allowed for this type (In KB/s) (0 for Disable)
+#	x.maxspeed = Max speed allowed for this type (In KB/s) (0 for Disable)
+#	x.include = Regex format to Include Paths for this Type (All = *)
+#	x.exclude = Regex format to Include Paths for this Type
+#	x.perms = Permissions for this Type
+#	x.up = Use this type for Upload (True/False)
+#	x.dn = Use this type for Download (True/False)
+#
+################################################################################
+
+################################################################################
+#	Default
+#
+#	This will just stop/throttle the transfer
+#
+################################################################################

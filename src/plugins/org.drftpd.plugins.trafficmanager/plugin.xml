@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
+<plugin id="org.drftpd.plugins.trafficmanager" version="3.0.0">
+	<doc>
+		<doc-text> This plugin provides a Traffic Manager</doc-text>
+	</doc>
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" />
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.trafficmanager" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
+	<extension plugin-id="master" point-id="Plugin" id="TrafficManager">
+		<parameter id="Class" value="org.drftpd.plugins.trafficmanager.TrafficManager"/>
+	</extension>
+	
+	<extension-point id="TrafficType">
+		<parameter-def id="TypeName" type="string" />
+		<parameter-def id="ClassName" type="string" />
+	</extension-point>
+	
+	
+	<!-- Hooks -->
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="TrafficManagerSTOR">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.trafficmanager.TrafficManagerHooks" />
+		<parameter id="HookMethod" value="doTrafficManagerSTOR" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PreHook" id="TrafficManagerRETR">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.trafficmanager.TrafficManagerHooks" />
+		<parameter id="HookMethod" value="doTrafficManagerRETR" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<!-- End of Hooks -->
+	
+	<extension plugin-id="org.drftpd.plugins.trafficmanager" point-id="TrafficType" id="TrafficDefault">
+		<parameter id="ClassName" value="org.drftpd.plugins.trafficmanager.types.def.TrafficDefault"/>
+		<parameter id="TypeName" value="Default"/>
+	</extension>	
+
+</plugin>
