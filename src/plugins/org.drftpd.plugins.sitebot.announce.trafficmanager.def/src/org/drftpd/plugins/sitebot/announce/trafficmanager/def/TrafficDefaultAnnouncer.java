@@ -56,7 +56,7 @@ public class TrafficDefaultAnnouncer extends AbstractAnnouncer {
 	}
  
 	public String[] getEventTypes() {
-		return new String[] {"def"};
+		return new String[] {"trafficmanager.def"};
     }
 
     public void setResourceBundle(ResourceBundle bundle) {
