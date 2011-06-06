@@ -53,6 +53,10 @@ wrapper.java.additional.4=-XX:+UnsyncloadClass
 #--- time but should improve performance once running. This option requires you to have a 
 #--- full JDK installed, not simply a JRE.
 #wrapper.java.additional.X=-server
+#--- Uncommenting the following (And changing X to next number), will change ouput side from ASCII(false) to Binary(true)
+#--- This will change file size to base 2
+#wrapper.java.additional.X=-Dbytes.binary=true
+
 
 # ---------------------------------------
 # Enable below if you wish to monitor the memory that drftpd uses, the 
