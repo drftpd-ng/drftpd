@@ -31,15 +31,15 @@ public class AlphanumericalTokenizer extends CharTokenizer {
 		super(Version.LUCENE_32, input);
 	}
 
-	protected boolean isTokenChar(char c) {
-		return Character.isLetter(c) || Character.isDigit(c) || isWildcardChar(c);
+	protected boolean isTokenChar(int c) {
+		return Character.isLetter(c) || Character.isDigit(c) || isWildcardChar((char) c);
 	}
 	
 	private boolean isWildcardChar(char c) {
 		return c == '?' || c == '*';
 	}
 	
-	protected char normalize(char c) {
+	protected int normalize(int c) {
 	    return (Character.isLetter(c) ? Character.toLowerCase(c) : c);
 	}
 }
