@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PhysicalFile;
@@ -94,7 +93,10 @@ public class LuceneBackupThread  extends Thread {
 					// creating the destination directory.
 					FSDirectory bkpDirectory = FSDirectory.open(f);
 
-					Directory.copy(_engine.getStorage(), bkpDirectory, false);
+					for (String file : _engine.getStorage().listAll()) {
+						_engine.getStorage().copy(bkpDirectory, file, file);
+					}
+					
 					logger.debug("A backup of the index was created successfully.");
 					updateLastBackupTime();
 				} catch (IOException e) {
