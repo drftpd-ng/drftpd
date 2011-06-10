@@ -20,6 +20,7 @@ package org.drftpd.vfs.index.lucene.analysis;
 import java.io.Reader;
 
 import org.apache.lucene.analysis.CharTokenizer;
+import org.apache.lucene.util.Version;
 
 /**
  * @author fr0w
@@ -27,7 +28,7 @@ import org.apache.lucene.analysis.CharTokenizer;
  */
 public class AlphanumericalTokenizer extends CharTokenizer {
 	public AlphanumericalTokenizer(Reader input) {
-		super(input);
+		super(Version.LUCENE_32, input);
 	}
 
 	protected boolean isTokenChar(char c) {
