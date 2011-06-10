@@ -1975,6 +1975,7 @@ public class UserManagementHandler extends CommandInterface {
 				if (!conn.isExecuting() && idle) {
 					response.addComment(session.jprintf(_bundle, _keyPrefix
 							+ type + ".idle", env, request.getUser()));
+					xferidle++;
 				} else {
 					synchronized (ts) {
 						if (ts.isTransfering()) {
