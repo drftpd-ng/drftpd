@@ -77,7 +77,7 @@ public class UserHandler extends CommandInterface {
 			StringBuilder newIdents = new StringBuilder();
 			String sourceBot = commSession.getBot().getBotName();
 			for (int i = 0; i < existIdents.length;i++) {
-				if (existIdents[i].startsWith(sourceBot)) {
+				if (existIdents[i].startsWith(sourceBot + "|")) {
 					newIdents.append(sourceBot);
 					newIdents.append("|");
 					newIdents.append(ident);
@@ -143,7 +143,7 @@ public class UserHandler extends CommandInterface {
 			StringBuilder newIdents = new StringBuilder();
 			String sourceBot = session.getBot().getBotName();
 			for (int i = 0; i < existIdents.length;i++) {
-				if (existIdents[i].startsWith(sourceBot)) {
+				if (existIdents[i].startsWith(sourceBot + "|")) {
 					newIdents.append(sourceBot);
 					newIdents.append("|");
 					newIdents.append(ident);

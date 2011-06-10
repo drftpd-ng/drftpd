@@ -133,7 +133,7 @@ public class UserDetails {
 					String[] userKeys = userKeysString.split(",");
 					String userKey = "";
 					for (int i = 0; i < userKeys.length;i++) {
-						if (userKeys[i].startsWith(_bot.getBotName())) {
+						if (userKeys[i].startsWith(_bot.getBotName() + "|")) {
 							String[] botKey = userKeys[i].split("\\|");
 							if (botKey.length > 1) {
 								userKey = botKey[1];
@@ -169,7 +169,7 @@ public class UserDetails {
 		boolean foundOld = false;
 		StringBuilder userKey = new StringBuilder();
 		for (int i = 0; i < userKeys.length;i++) {
-			if (userKeys[i].startsWith(_bot.getBotName())) {
+			if (userKeys[i].startsWith(_bot.getBotName() + "|")) {
 				userKey.append(_bot.getBotName());
 				userKey.append("|");
 				userKey.append(_blowKey);
@@ -225,7 +225,7 @@ public class UserDetails {
 		StringBuilder newIdents = new StringBuilder();
 		String sourceBot = _bot.getBotName();
 		for (int i = 0; i < existIdents.length;i++) {
-			if (existIdents[i].startsWith(sourceBot)) {
+			if (existIdents[i].startsWith(sourceBot + "|")) {
 				newIdents.append(sourceBot);
 				newIdents.append("|");
 				newIdents.append(ident);

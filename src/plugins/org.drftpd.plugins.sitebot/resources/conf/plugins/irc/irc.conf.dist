@@ -171,6 +171,7 @@ ssl.keystore.password=changeit
 # Internal bot name, there is no need to change this unless you use the multiple bots
 # option, in that case only this name will be used to identify a bot in things like
 # site irc commands
+# NOTE: you cannot have the character | in the name
 bot.name=DrFTPD-Bot
 
 # Enable multiple bots, this option is pretty simplistic if used. Multiple bots will be
