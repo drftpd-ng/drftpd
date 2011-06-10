@@ -60,8 +60,7 @@ public class DupeCheckCommands extends CommandInterface {
         CommandResponse response = new CommandResponse(200, "Un-Dupe Complete");
         
 		AdvancedSearchParams params = new AdvancedSearchParams();
-		params.setName(arg);
-		params.setExact(true);
+		params.setExact(arg);
 
 		try {
 			IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();

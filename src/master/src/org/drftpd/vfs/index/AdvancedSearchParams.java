@@ -31,7 +31,9 @@ public class AdvancedSearchParams {
 	}
 
 	private String _name;
-	private boolean _exact = false;
+	private String _exact;
+	private String _regex;
+	private String _privPathRegex;
 	private String _endsWith;
 	private InodeType _inodeType = InodeType.ANY;
 	private Set<String> _slaves = Collections.emptySet();
@@ -55,8 +57,16 @@ public class AdvancedSearchParams {
 		_name = name;
 	}
 
-	public void setExact(boolean exact) {
+	public void setExact(String exact) {
 		_exact = exact;
+	}
+
+	public void setRegex(String regex) {
+		_regex = regex;
+	}
+
+	public void setPrivPathRegex(String regex) {
+		_privPathRegex = regex;
 	}
 
 	public void setEndsWith(String endsWith) {
@@ -119,8 +129,16 @@ public class AdvancedSearchParams {
 		return _name;
 	}
 
-	public boolean getExact() {
+	public String getExact() {
 		return _exact;
+	}
+
+	public String getRegex() {
+		return _regex;
+	}
+
+	public String getPrivPathRegex() {
+		return _privPathRegex;
 	}
 
 	public String getEndsWith() {

@@ -14,7 +14,10 @@
 		<library id="org.drftpd.vfs.index.lucene" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="lucene" path="../../../lib/lucene-core-3.0.2.jar" type="code">
+		<library id="lucene" path="../../../lib/lucene-core-3.2.0.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="lucene-queries" path="../../../lib/lucene-queries-3.2.0.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

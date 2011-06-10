@@ -59,6 +59,7 @@ import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
+import org.drftpd.vfs.perms.VFSPermissions;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 
@@ -426,6 +427,8 @@ public class Find extends CommandInterface {
 
 		DirectoryHandle dir = request.getCurrentDirectory();
 
+		User user = request.getSession().getUserNull(request.getUser());
+
 		ArrayList<Action> actions = new ArrayList<Action>();
 
 		int limit = Integer.parseInt(request.getProperties().getProperty("limit.default","5"));
@@ -551,9 +554,20 @@ public class Find extends CommandInterface {
 					}
 				}
 				params.setName(searchString);
+			} else if (option.equalsIgnoreCase("-regex")) {
+				if (!st.hasMoreTokens()) {
+					throw new ImproperUsageException("You must specify a regex string to match against");
+				}
+				params.setRegex(st.nextToken());
 			} else if (option.equalsIgnoreCase("-exact")) {
-				params.setExact(true);
+				if (!st.hasMoreTokens()) {
+					throw new ImproperUsageException("You must specify a string to match against");
+				}
+				params.setExact(st.nextToken());
 			} else if (option.equalsIgnoreCase("-endswith")) {
+				if (!st.hasMoreTokens()) {
+					throw new ImproperUsageException("You must specify the string file/dir should end with");
+				}
 				params.setEndsWith(st.nextToken());
 			} else if (option.equalsIgnoreCase("-limit")) {
 				try {
@@ -568,7 +582,7 @@ public class Find extends CommandInterface {
 				}
 			} else if (option.equalsIgnoreCase("-action")) {
 				String action = st.nextToken();
-				if (action.indexOf("(") != -1) {
+				if (action.contains("(")) {
 					String cmd = action.substring(0, action.indexOf("("));
 					while (true) {
 						if (action.endsWith(")")) {
@@ -650,6 +664,12 @@ public class Find extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
+		if (request.getProperties().getProperty("observe.privpath","true").equalsIgnoreCase("true")) {
+			params.setPrivPathRegex(getVFSPermissions().getPrivPathRegex(user));
+		} else {
+			params.setPrivPathRegex(getVFSPermissions().getPrivPathRegex());
+		}
+
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -664,8 +684,6 @@ public class Find extends CommandInterface {
 		}
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
-
-		User user = request.getSession().getUserNull(request.getUser());
 
 		Session session = request.getSession();
 
@@ -686,9 +704,8 @@ public class Find extends CommandInterface {
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
-				if (inode.isHidden(user) ||
-						inode.getPath().matches(request.getProperties().getProperty("path_filter",""))) {
-					// No access or path filtered for this command
+				if (inode.getPath().matches(request.getProperties().getProperty("path_filter",""))) {
+					// Path filtered for this command
 					continue;
 				}
 				env.add("name", inode.getName());
@@ -725,6 +742,10 @@ public class Find extends CommandInterface {
 		}
 
 		return response;
+	}
+
+	private static VFSPermissions getVFSPermissions() {
+		return GlobalContext.getConfig().getVFSPermissions();
 	}
 
 	private Action getAction(String actionName) {

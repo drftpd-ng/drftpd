@@ -52,6 +52,10 @@ public class GlobPathPermission extends PathPermission {
 		
 		return m.matches(path, _pat);
 	}
+
+	public Pattern getPattern() {
+		return _pat;
+	}
 	
 	public String toString() {
 		return getClass().getCanonicalName()+",pat="+_pat.getPattern()+",users="+_users.toString();

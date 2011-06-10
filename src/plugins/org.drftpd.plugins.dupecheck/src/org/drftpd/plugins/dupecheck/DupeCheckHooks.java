@@ -125,8 +125,7 @@ public class DupeCheckHooks implements PreHookInterface {
 			User user = request.getSession().getUserNull(request.getUser());
 
 			AdvancedSearchParams params = new AdvancedSearchParams();
-			params.setName(request.getArgument());
-			params.setExact(true);
+			params.setExact(request.getArgument());
 			
 			IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 			Map<String,String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params);

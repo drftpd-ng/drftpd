@@ -15,12 +15,13 @@ help.specific ${command} <options>
 help.specific Options: -user <user> | -group <group> | -f[ile] | -d[ir] | -section <section>
 help.specific Options: -slaves <slave[,slave,..]> | -age <start date>:<end date>
 help.specific Options: -0byte | -size <min size>:<max size> | -nbrofslaves <min>:<max>
-help.specific Options: -sort <field> <asc|desc> | -quiet
-help.specific Options: -limit <number> | -exact | -name <["]word[ word .."]> | -endswith <name>
+help.specific Options: -sort <field> <asc|desc> | -quiet | -limit <number>
+help.specific Options: -regex <pattern> | -exact <name> | -name <["]word[ word .."]> | -endswith <name>
 help.specific Valid format: yyyy.MM.dd OR yyyy.MM.dd.HH.mm.ss, Example: 2010.01.29.08.36.33
 help.specific For range options min or max can be left empty
 help.specific Valid sort fields: parentPath fullPath(default) owner group type nbrOfSlaves lastModified size
-help.specific Exact option makes the name option search for the exact file/dir name specified.
+help.specific Regex option matches against full path.
+help.specific Exact option makes a wildcard query against exact file/dir name.
 help.specific Wildcards(* and ?) available but not within the first three chars.
 help.specific Actions: print, printf[(format)], wipe, delete
 help.specific Actions: nuke <multiplier[:reason]]> | unnuke [reason]

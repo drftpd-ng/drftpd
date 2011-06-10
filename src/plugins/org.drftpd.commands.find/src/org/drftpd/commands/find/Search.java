@@ -32,6 +32,7 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
+import org.drftpd.vfs.perms.VFSPermissions;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
@@ -62,8 +63,14 @@ public class Search extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		params.setName(request.getArgument());
-		params.setExact(request.getProperties().getProperty("exact","false").equals("true"));
+		params.setPrivPathRegex(getPrivPathRegex(request));
+
+		if (request.getProperties().getProperty("exact","false").equals("true")) {
+			params.setExact(request.getArgument());
+		} else {
+			params.setName(request.getArgument());
+		}
+
 		String type = request.getProperties().getProperty("type");
 		if (type != null && type.equals("d"))
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
@@ -83,8 +90,14 @@ public class Search extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		params.setName(request.getArgument());
-		params.setExact(request.getProperties().getProperty("exact","true").equals("true"));
+		params.setPrivPathRegex(getPrivPathRegex(request));
+
+		if (request.getProperties().getProperty("exact","false").equals("true")) {
+			params.setExact(request.getArgument());
+		} else {
+			params.setName(request.getArgument());
+		}
+		
 		String type = request.getProperties().getProperty("type");
 		if (type != null && type.equals("d"))
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
@@ -133,8 +146,8 @@ public class Search extends CommandInterface {
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
-				if (inode.isHidden(user) || inode.getPath().matches(pathFilter)) {
-					// No access or path filtered for this command
+				if (inode.getPath().matches(pathFilter)) {
+					// Path filtered for this command
 					continue;
 				}
 				env.add("name", inode.getName());
@@ -162,5 +175,15 @@ public class Search extends CommandInterface {
 		}
 
 		return response;
+	}
+
+	private static String getPrivPathRegex(CommandRequest request) {
+		VFSPermissions VFSperm = GlobalContext.getConfig().getVFSPermissions();
+		User user = request.getSession().getUserNull(request.getUser());
+		if (request.getProperties().getProperty("observe.privpath","true").equalsIgnoreCase("true")) {
+			return VFSperm.getPrivPathRegex(user);
+		} else {
+			return VFSperm.getPrivPathRegex();
+		}
 	}
 }

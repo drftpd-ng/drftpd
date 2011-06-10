@@ -35,7 +35,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -43,8 +43,8 @@ import org.apache.lucene.document.NumericField;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
@@ -52,6 +52,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.regex.RegexQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Sort;
@@ -63,6 +64,7 @@ import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
+import org.apache.lucene.util.Version;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PhysicalFile;
@@ -205,10 +207,11 @@ public class LuceneEngine implements IndexEngineInterface {
 				_storage = FSDirectory.open(new File(INDEX_DIR));
 			}
 
-			_iWriter = new IndexWriter(_storage, ANALYZER, MaxFieldLength.UNLIMITED);
+			IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_32 ,ANALYZER);
+			conf.setMaxBufferedDocs(_maxDocsBuffer);
+			conf.setRAMBufferSizeMB(_maxRAMBufferSize);
 
-			_iWriter.setMaxBufferedDocs(_maxDocsBuffer);
-			_iWriter.setRAMBufferSizeMB(_maxRAMBufferSize);
+			_iWriter = new IndexWriter(_storage, conf);
 		} catch (IOException e) {
 			closeAll();
 
@@ -295,7 +298,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
 
 		if (inodeType == InodeType.FILE) {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			for (String slaveName : inode.getSlaveNames()) {
 				sb.append(slaveName).append(",");
 			}
@@ -351,7 +354,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
 
 		if (inodeType == InodeType.FILE) {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
 				sb.append(slaveName).append(",");
 			}
@@ -389,6 +392,10 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private WildcardQuery makeFullNameWildcardQueryFromString(String name) {
 		return new WildcardQuery(TERM_FULL_NAME.createTerm(name));
+	}
+
+	private RegexQuery makeFullPathRegexQueryFromString(String regex) {
+		return new RegexQuery(TERM_FULL.createTerm(regex));
 	}
 
 	private PrefixQuery makeFullNameReversePrefixQueryFromString(String name) {
@@ -463,7 +470,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			if (toInode.isDirectory()) {
 				PrefixQuery prefixQuery = new PrefixQuery(makeFullPathTermFromInode(fromInode));
 
-				iReader = _iWriter.getReader();
+				iReader = IndexReader.open(_iWriter, true);
 				iSearcher = new IndexSearcher(iReader);
 
 				final BitSet bits = new BitSet(iReader.maxDoc());
@@ -663,7 +670,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			if (!params.getSlaves().isEmpty()) {
-				StringBuffer sb = new StringBuffer();
+				StringBuilder sb = new StringBuilder();
 				for (String slaveName : params.getSlaves()) {
 					sb.append(slaveName).append(" ");
 				}
@@ -690,18 +697,22 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			if (params.getName() != null) {
-				if (params.getExact()) {
-					int wc1 = params.getName().indexOf("*");
-					int wc2 = params.getName().indexOf("?");
-					if ((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3)) {
-						throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
-					}
-					query.add(makeFullNameWildcardQueryFromString(params.getName()), Occur.MUST);
-				} else {
-					Query nameQuery = analyze("name", TERM_NAME, params.getName());
-					query.add(nameQuery, Occur.MUST);
+				if (!validWildcards(params.getName())) {
+					throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
 				}
-			} else if (params.getEndsWith() != null) {
+				Query nameQuery = analyze("name", TERM_NAME, params.getName());
+				query.add(nameQuery, Occur.MUST);
+			}
+			if (params.getExact() != null) {
+				if (!validWildcards(params.getExact())) {
+					throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
+				}
+				query.add(makeFullNameWildcardQueryFromString(params.getExact()), Occur.MUST);
+			}
+			if (params.getRegex() != null) {
+				query.add(makeFullPathRegexQueryFromString(params.getRegex()), Occur.MUST);
+			}
+			if (params.getEndsWith() != null) {
 				query.add(makeFullNameReversePrefixQueryFromString(params.getEndsWith()), Occur.MUST);
 			}
 
@@ -721,17 +732,22 @@ public class LuceneEngine implements IndexEngineInterface {
 				}
 			}
 
+			if (params.getPrivPathRegex() != null) {
+				query.add(makeFullPathRegexQueryFromString(params.getPrivPathRegex()), Occur.MUST_NOT);
+			}
+
 			int limit = _maxHitsNumber;
 
 			if (params.getLimit() != null) {
 				limit = params.getLimit();
 			}
 
-			iReader = _iWriter.getReader();
+			logger.debug("Query: " + query);
+
+			iReader = IndexReader.open(_iWriter, true);
 			iSearcher = new IndexSearcher(iReader);
 			TopFieldCollector topFieldCollector = TopFieldCollector.create(SORT, limit, true, false, false, false);
 			iSearcher.search(query, topFieldCollector);
-			logger.debug("Query: " + query);
 
 			for (ScoreDoc scoreDoc : topFieldCollector.topDocs().scoreDocs) {
 				Document doc = iSearcher.doc(scoreDoc.doc, ADVANCED_FIELD_SELECTOR);
@@ -761,6 +777,12 @@ public class LuceneEngine implements IndexEngineInterface {
 				}
 			}
 		}
+	}
+
+	private boolean validWildcards(String text) {
+		int wc1 = text.indexOf("*");
+		int wc2 = text.indexOf("?");
+		return !((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3));
 	}
 
 	/**
@@ -801,7 +823,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(QUERY_FILE, Occur.MUST);
 			}
 
-			iReader = _iWriter.getReader();
+			iReader = IndexReader.open(_iWriter, true);
 			iSearcher = new IndexSearcher(iReader);
 			TopScoreDocCollector topScoreDocsCollector = TopScoreDocCollector.create(_maxHitsNumber, false);
 			iSearcher.search(query, topScoreDocsCollector);
@@ -853,11 +875,13 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		Set<String> tokens = new HashSet<String>(); // avoids repeated terms.
 
-		TermAttribute termAtt = ts.getAttribute(TermAttribute.class);
+		// get the CharTermAttribute from the TokenStream
+		CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
 
 		try {
+			ts.reset();
 			while (ts.incrementToken()) {
-				tokens.add(new String(termAtt.termBuffer(), 0, termAtt.termLength()));
+				tokens.add(termAtt.toString());
 			}
 			ts.end();
 			ts.close();

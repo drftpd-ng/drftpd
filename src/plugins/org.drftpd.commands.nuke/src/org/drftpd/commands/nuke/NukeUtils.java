@@ -113,8 +113,7 @@ public class NukeUtils {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		params.setName(name);
-		params.setExact(true);
+		params.setExact(name);
 		params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
 		params.setSortField("lastmodified");
 		params.setSortOrder(true);
