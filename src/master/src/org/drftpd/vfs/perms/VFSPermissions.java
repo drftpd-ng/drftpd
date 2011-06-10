@@ -26,7 +26,6 @@ import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.GlobCompiler;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.usermanager.User;
@@ -220,7 +219,7 @@ public class VFSPermissions {
 		HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get("privpath");
 		LinkedList<PathPermission> perms = map.get("privpath");
 
-		if (perms.isEmpty() || perms == null) {
+		if (perms.isEmpty()) {
 			return null;
 		}
 
@@ -243,9 +242,8 @@ public class VFSPermissions {
 		if (sb.length() == 2) {
 			// no regex added
 			return null;
-		} else {
-			return sb.toString();
 		}
+		return sb.toString();
 	}
 	
 	// if you want to debug this class, call this method.

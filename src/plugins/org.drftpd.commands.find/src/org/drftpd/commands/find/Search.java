@@ -182,8 +182,7 @@ public class Search extends CommandInterface {
 		User user = request.getSession().getUserNull(request.getUser());
 		if (request.getProperties().getProperty("observe.privpath","true").equalsIgnoreCase("true")) {
 			return VFSperm.getPrivPathRegex(user);
-		} else {
-			return VFSperm.getPrivPathRegex();
 		}
+		return VFSperm.getPrivPathRegex();
 	}
 }
