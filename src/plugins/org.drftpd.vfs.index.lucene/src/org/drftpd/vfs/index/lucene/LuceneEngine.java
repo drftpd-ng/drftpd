@@ -306,6 +306,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			FIELD_SLAVES.setValue(sb.toString());
 		} else {
 			FIELD_SLAVES_NBR.setIntValue(0);
+			FIELD_SLAVES.setValue("");
 		}
 
 		FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
@@ -362,6 +363,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			FIELD_SLAVES.setValue(sb.toString());
 		} else {
 			FIELD_SLAVES_NBR.setIntValue(0);
+			FIELD_SLAVES.setValue("");
 		}
 
 		FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
@@ -467,8 +469,12 @@ public class LuceneEngine implements IndexEngineInterface {
 		IndexSearcher iSearcher = null;
 		IndexReader iReader = null;
 		try {
+			Term fromInodeTerm = makeFullPathTermFromInode(fromInode);
+			synchronized (INDEX_DOCUMENT) {
+				_iWriter.updateDocument(fromInodeTerm, makeDocumentFromInode(toInode));
+			}
 			if (toInode.isDirectory()) {
-				PrefixQuery prefixQuery = new PrefixQuery(makeFullPathTermFromInode(fromInode));
+				PrefixQuery prefixQuery = new PrefixQuery(fromInodeTerm);
 
 				iReader = IndexReader.open(_iWriter, true);
 				iSearcher = new IndexSearcher(iReader);
@@ -514,10 +520,6 @@ public class LuceneEngine implements IndexEngineInterface {
 						doc.add(FIELD_PARENT_PATH);
 						_iWriter.updateDocument(makeFullPathTermFromString(oldPath), doc);
 					}
-				}
-			} else {
-				synchronized (INDEX_DOCUMENT) {
-					_iWriter.updateDocument(makeFullPathTermFromInode(fromInode), makeDocumentFromInode(toInode));
 				}
 			}
 		} catch (CorruptIndexException e) {
