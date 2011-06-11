@@ -18,7 +18,6 @@ package org.drftpd.protocol.zipscript.zip.slave;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,9 +31,12 @@ import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 
 import sun.misc.BASE64Encoder;
-import de.schlichtherle.io.archive.zip.ZipInputArchive;
-import de.schlichtherle.io.rof.SimpleReadOnlyFile;
-import de.schlichtherle.util.zip.ZipEntry;
+import de.schlichtherle.truezip.file.TArchiveDetector;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.fs.FsSyncException;
+import de.schlichtherle.truezip.fs.archive.zip.CheckedZipDriver;
+import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 
 /**
  * Handler for Zip requests.
@@ -59,85 +61,102 @@ public class ZipscriptZipHandler extends AbstractHandler {
 
 	private boolean checkZipFile(Slave slave, String path) {
 		boolean integrityOk = true;
-		InputStream entryStream = null;
-		SimpleReadOnlyFile zipFile = null;
+		TFile zipFile = null;
 		try {
-			zipFile = new SimpleReadOnlyFile(slave.getRoots().getFile(path));
-			ZipInputArchive zipArchive = new ZipInputArchive(zipFile,"UTF-8",true,false);
-			for (Enumeration<?> zipEntries = zipArchive.getArchiveEntries();zipEntries.hasMoreElements();) {
-				ZipEntry zipEntry = (ZipEntry)zipEntries.nextElement();
-				try {
-					entryStream = zipArchive.getCheckedInputStream(zipEntry);
-					byte[] buff = new byte[65536];
-					while (entryStream.read(buff) != -1) {
-						// do nothing, we are only checking for crc
+			InputStream entryStream = null;
+			zipFile = new TFile(slave.getRoots().getFile(path), 
+					new TArchiveDetector("zip", new CheckedZipDriver(IOPoolLocator.SINGLETON)));
+			TFile[] zipEntries = zipFile.listFiles();
+			if (zipEntries == null) {
+				integrityOk = false;
+			} else {
+				for (TFile entry : zipEntries) {
+					try {
+						entryStream = new TFileInputStream(entry);
+						byte[] buff = new byte[65536];
+						while (entryStream.read(buff) != -1) {
+							// do nothing, we are only checking for crc
+						}
+					} catch (IOException e) {
+						throw new IOException(e);
+					} finally {
+						if (entryStream != null) {
+							entryStream.close();
+						}
 					}
-					entryStream.close();
-				} catch (IOException e) {
-					throw new IOException(e);
 				}
 			}
-			zipArchive.close();
 		} catch (IOException e) {
-			// Catch all IOExceptions not just CRC32Exception as a badly truncated zip can trigger an EOFException etc
 			integrityOk = false;
 		} finally {
 			if (zipFile != null) {
 				try {
-					zipFile.close();
-				} catch (IOException e) {
-					// don't care at this point, just cleaning up descriptors
+					TFile.umount(zipFile, true);
+				} catch (FsSyncException e) {
+					// Already closed
 				}
 			}
 		}
+		
 		return integrityOk;
 	}
 
 	private DizInfo getDizInfo(Slave slave, String path) {
 		DizInfo dizInfo = new DizInfo();
-		InputStream entryStream = null;
-		SimpleReadOnlyFile zipFile = null;
+		TFile zipFile = null;
 		try {
-			zipFile = new SimpleReadOnlyFile(slave.getRoots().getFile(path));
-			ZipInputArchive zipArchive = new ZipInputArchive(zipFile,"UTF-8",true,false);
-			for (Enumeration<?> zipEntries = zipArchive.getArchiveEntries();zipEntries.hasMoreElements();) {
-				ZipEntry zipEntry = (ZipEntry)zipEntries.nextElement();
-				if (zipEntry.getName().toLowerCase().equals("file_id.diz")) {
-					entryStream = zipArchive.getCheckedInputStream(zipEntry);
-					byte[] buff = new byte[65536];
-					StringBuilder dizBuffer = new StringBuilder();
-					int bytesRead = 0;
-					while (bytesRead != -1) {
-						bytesRead = entryStream.read(buff);
-						if (bytesRead != -1) {
-							String dizBlock = new String(buff,0,bytesRead,"8859_1");
-							dizBuffer.append(dizBlock);
+			InputStream entryStream = null;
+			zipFile = new TFile(slave.getRoots().getFile(path), 
+					new TArchiveDetector("zip", new CheckedZipDriver(IOPoolLocator.SINGLETON)));
+			TFile[] zipEntries = zipFile.listFiles();
+			if (zipEntries != null) {
+				for (TFile entry : zipEntries) {
+					if (entry.getName().toLowerCase().equals("file_id.diz")) {
+						try {
+							entryStream = new TFileInputStream(entry);
+							byte[] buff = new byte[65536];
+							StringBuilder dizBuffer = new StringBuilder();
+							int bytesRead = 0;
+							while (bytesRead != -1) {
+								bytesRead = entryStream.read(buff);
+								if (bytesRead != -1) {
+									String dizBlock = new String(buff,0,bytesRead,"8859_1");
+									dizBuffer.append(dizBlock);
+								}
+							}
+							entryStream.close();
+							String dizString = dizBuffer.toString();
+							int total = getDizTotal(dizString);
+							if (total > 0) {
+								dizInfo.setValid(true);
+								dizInfo.setTotal(total);
+								dizString = new BASE64Encoder().encode(dizBuffer.toString().getBytes("8859_1"));
+								//dizString = Base64.bytetoB64(dizBuffer.toString().getBytes("8859_1"));
+								dizInfo.setString(dizString);
+							}
+							break;
+						} catch (IOException e) {
+							// Something wrong with the .diz entry in this file, just return with no diz info
+						} finally {
+							if (entryStream != null) {
+								entryStream.close();
+							}
 						}
 					}
-					entryStream.close();
-					String dizString = dizBuffer.toString();
-					int total = getDizTotal(dizString);
-					if (total > 0) {
-						dizInfo.setValid(true);
-						dizInfo.setTotal(total);
-						dizString = new BASE64Encoder().encode(dizBuffer.toString().getBytes("8859_1"));
-						//dizString = Base64.bytetoB64(dizBuffer.toString().getBytes("8859_1"));
-						dizInfo.setString(dizString);
-					}
-					break;
 				}
 			}
 		} catch (IOException e) {
-			// Something wrong with the .diz entry in this file, just return with no diz info
+			// Unable to read zip just ignore
 		} finally {
 			if (zipFile != null) {
 				try {
-					zipFile.close();
-				} catch (IOException e) {
-					// don't care at this point, just cleaning up descriptors
+					TFile.umount(zipFile, true);
+				} catch (FsSyncException e) {
+					// Already closed
 				}
 			}
 		}
+
 		return dizInfo;
 	}
 

@@ -52,7 +52,7 @@
 		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.0.0.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-lang" path="../../lib/commons-lang-2.5.jar" type="code">
+		<library id="commons-lang" path="../../lib/commons-lang-2.6.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

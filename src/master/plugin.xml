@@ -20,7 +20,7 @@
 		<library id="replacer" path="../../lib/replacer.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-net" path="../../lib/commons-net-2.0.jar" type="code">
+		<library id="commons-net" path="../../lib/commons-net-3.0.1.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="eventbus" path="../../lib/eventbus-1.4.jar" type="code">
