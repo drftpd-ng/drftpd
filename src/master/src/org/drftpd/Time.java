@@ -30,6 +30,13 @@ public class Time {
 			return "0m 0s";
 		}
 
+		// Less than a minute...
+		if (time < (60 * 1000)) {
+			float s = time / 1000F;
+			
+			return s + "s";
+		}
+		
 		// Less than an hour...
 		if (time < (60 * 60 * 1000)) {
 			long min = time / 60000;
