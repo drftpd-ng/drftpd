@@ -671,7 +671,7 @@ public class Dir extends CommandInterface {
 			wipeFile = request.getCurrentDirectory().getInodeHandle(arg, user);
 
 			if (wipeFile.isDirectory() && !recursive) {
-				if (((DirectoryHandle) wipeFile).isEmpty(user)) {
+				if (!((DirectoryHandle) wipeFile).isEmpty(user)) {
 					return new CommandResponse(550, "Can't wipe, directory not empty");
 				}
 			}
@@ -690,7 +690,7 @@ public class Dir extends CommandInterface {
 		} catch (FileNotFoundException e) {
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		} catch (PermissionDeniedException e) {
-			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
 
 		return response;
