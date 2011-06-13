@@ -39,7 +39,7 @@ public class ZipTools {
 		Collection<FileHandle> files = new ArrayList<FileHandle>();
 
 		for (FileHandle file : dir.getFilesUnchecked()) {
-			if (file.getName().toLowerCase().endsWith(".zip") && file.getXfertime() != -1) {
+			if (file.getName().toLowerCase().endsWith(".zip") && file.getXfertime() > 0) {
 				files.add(file);
 			}
 		}

@@ -42,7 +42,7 @@ public class SFVTools {
 
 		for (String name : sfvInfo.getEntries().keySet()) {
 			FileHandle file = new FileHandle(dir.getPath()+VirtualFileSystem.separator+name);
-			if (file.exists() && file.getXfertime() != -1) {
+			if (file.exists() && file.getXfertime() > 0) {
 				files.add(file);
 			}
 		}
