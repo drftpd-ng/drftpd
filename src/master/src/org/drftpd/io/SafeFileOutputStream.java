@@ -92,8 +92,13 @@ public class SafeFileOutputStream extends OutputStream {
 	}
 
 	public void write(int b) throws IOException {
-		_out.write(b);
-		// ensures the file gets written to
-		failed = false;
+		try {
+			_out.write(b);
+			// ensures the file gets written to
+			failed = false;
+		} catch (IOException e) {
+			failed = true;
+			throw e;
+		}
 	}
 }

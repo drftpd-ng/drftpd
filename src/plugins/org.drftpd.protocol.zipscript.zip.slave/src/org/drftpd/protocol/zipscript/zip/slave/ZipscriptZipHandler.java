@@ -124,7 +124,6 @@ public class ZipscriptZipHandler extends AbstractHandler {
 									dizBuffer.append(dizBlock);
 								}
 							}
-							entryStream.close();
 							String dizString = dizBuffer.toString();
 							int total = getDizTotal(dizString);
 							if (total > 0) {
