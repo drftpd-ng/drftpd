@@ -31,7 +31,7 @@ public class ID3Tag implements Serializable {
     private String _title = "";
     private String _comment = "";
     private String _year = "";
-    byte _genre = 0;
+    byte _genre = -1;
     byte _track = 0;
 
     public ID3Tag() {
