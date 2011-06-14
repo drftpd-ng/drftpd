@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
@@ -55,6 +57,18 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 		reload();
 	}
 	
+    @EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+    	initFilters();
+		try {
+			reload();
+		} catch (FileNotFoundException e) {
+			logger.error("Error Re-loading SlaveSelection Configuration Files (Files not found)");
+		} catch (IOException e) {
+			logger.error("Error Re-loading SlaveSelection Configuration Files");
+		}
+    }	
+	
 	private void initFilters() {
 		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<String, Class<Filter>>();
 
@@ -74,10 +88,9 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 		_filtersMap = filtersMap;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public CaseInsensitiveHashMap<String, Class<Filter>> getFiltersMap() {
 		// we dont want to pass this object around allowing it to be modified, make a copy of it.
-		return (CaseInsensitiveHashMap<String, Class<Filter>>) _filtersMap.clone();
+		return new CaseInsensitiveHashMap<String, Class<Filter>>(_filtersMap); 
 	}
 
 	/**
