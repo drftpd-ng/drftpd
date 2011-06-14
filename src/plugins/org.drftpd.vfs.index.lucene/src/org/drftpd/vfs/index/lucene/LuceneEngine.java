@@ -25,7 +25,6 @@ import java.io.StringReader;
 import java.text.DateFormat;
 import java.util.BitSet;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Map;
@@ -575,7 +574,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		openStreams();
 
 		try {
-			recurseAndBuild(GlobalContext.getGlobalContext().getRoot());
+			DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
+			addRealInode(root); // Start by adding root inode
+			recurseAndBuild(root); // Recursively traverse the VFS and add all inodes
 			commit(); // commit the writer so that the searcher can see the new stuff.
 		} catch (IndexException e) {
 			logger.error("Exception whilst rebuilding lucene index",e);
@@ -915,18 +916,41 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * </ul>
 	 */
 	public Map<String, String> getStatus() {
-		Map<String, String> status = new HashMap<String, String>();
+		Map<String, String> status = new LinkedHashMap<String, String>();
 
 		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
 		String lastOp = df.format(new Date(_maintenanceThread.getLastOptimizationTime()));
 		String lastBackup = df.format(new Date(_backupThread.getLastBackup()));
-
-		status.put("inodes", String.valueOf(_iWriter.maxDoc()));
 		status.put("backend", "Apache Lucene (http://lucene.apache.org)");
+
+		try {
+			status.put("inodes", String.valueOf(_iWriter.numDocs()));
+		} catch (IOException e) {
+			logger.error("IOException getting IndexWriter", e);
+		}
+
+		IndexReader iReader = null;
+		try {
+			iReader = IndexReader.open(_iWriter, true);
+			status.put("deleted inodes", String.valueOf(iReader.numDeletedDocs()));
+		} catch (CorruptIndexException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
+		} catch (IOException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
+		} finally {
+			if (iReader != null) {
+				try {
+					iReader.close();
+				} catch (IOException e) {
+					logger.error("IOException closing IndexReader obtained from the IndexWriter", e);
+				}
+			}
+		}
+		
+		status.put("cached inodes", String.valueOf(_iWriter.numRamDocs()));
 		status.put("max hits", String.valueOf(_maxHitsNumber));
 		status.put("last optimization", lastOp);
 		status.put("last backup", lastBackup);
-		status.put("cached inodes", String.valueOf(_iWriter.numRamDocs()));
 		status.put("ram usage", Bytes.formatBytes(_iWriter.ramSizeInBytes()));
 
 		long size = 0L;
