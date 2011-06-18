@@ -61,7 +61,7 @@ public class ZipscriptVFSDataMP3 {
 			DirectoryHandle dir = (DirectoryHandle) _inode;
 			MP3Info mp3info = null;
 			for (FileHandle file : dir.getFilesUnchecked()) {
-				if (file.getName().toLowerCase().endsWith(".mp3") && file.getSize() > 0 && file.getXfertime() > 0) {
+				if (file.getName().toLowerCase().endsWith(".mp3") && file.getSize() > 0 && file.getXfertime() != -1) {
 					RemoteSlave rslave = file.getASlaveForFunction();
 					String index;
 					try {

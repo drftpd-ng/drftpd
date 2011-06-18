@@ -57,7 +57,7 @@ public class ZipscriptVFSDataZip {
 		// Find the info for the first zip file we come across and use that
 		DizInfo dizInfo = null;
 		for (FileHandle file : _dir.getFilesUnchecked()) {
-			if (file.getName().toLowerCase().endsWith(".zip") && file.getSize() > 0 && file.getXfertime() > 0) {
+			if (file.getName().toLowerCase().endsWith(".zip") && file.getSize() > 0 && file.getXfertime() != -1) {
 				RemoteSlave rslave = file.getASlaveForFunction();
 				String index;
 				try {
