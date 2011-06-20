@@ -86,8 +86,11 @@ public class DupeCheckHooks implements PreHookInterface {
 	 * Prehook method for Making a New DIR
 	 */
 	public CommandRequestInterface doDupeCheckMKD(CommandRequest request) {
-		if (((_type == 2) || (_type == 3)) && (!checkFile(request.getArgument()))) {
-			return doDupeCheck(request);
+		if (request.hasArgument()) {
+			String dirname = getName(request.getArgument());
+			if (((_type == 2) || (_type == 3)) && (!checkFile(dirname))) {
+				return doDupeCheck(request,dirname);
+			}
 		}
 		return request;
 	}
@@ -96,11 +99,31 @@ public class DupeCheckHooks implements PreHookInterface {
 	 * Prehook method for Creating a New FILE
 	 */
 	public CommandRequestInterface doDupeCheckSTOR(CommandRequest request) {
-		if (((_type == 1) || (_type == 3)) && (!checkFile(request.getArgument()))) {
-			return doDupeCheck(request);
+		if (request.hasArgument()) {
+			String filename = getName(request.getArgument());
+			if (((_type == 1) || (_type == 3)) && (!checkFile(filename))) {
+				return doDupeCheck(request,filename);
+			}
 		}
 		return request;
 	}	
+	
+	/*
+	 * Returns the filename/dirname without the path
+	 */
+	private String getName(String name) {
+		// Check if "/" Exists as a char
+		if (name.indexOf('/') != -1) {
+			// Check to see if last char is a "/" and if it is, remove it
+			if (name.charAt(name.length()-1) == '/') {
+				// Remove last "/"
+				name = name.substring(0,name.length()-1);
+			}
+			// Return last substring of file/dir
+			return name.substring(name.lastIndexOf('/') + 1);
+		}
+		return name;
+	}
 	
 	/*
 	 * Checks the file/dir to see if its in the regex exclude list
@@ -119,13 +142,13 @@ public class DupeCheckHooks implements PreHookInterface {
 	 * Checks to see if file/dir is already in database
 	 * Then checks to see if user has permission to upload file/dir 
 	 */
-	private CommandRequestInterface doDupeCheck(CommandRequest request) {
+	private CommandRequestInterface doDupeCheck(CommandRequest request, String realname) {
 
 		try {
 			User user = request.getSession().getUserNull(request.getUser());
 
 			AdvancedSearchParams params = new AdvancedSearchParams();
-			params.setExact(request.getArgument());
+			params.setExact(realname);
 			
 			IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 			Map<String,String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params);
