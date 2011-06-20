@@ -87,7 +87,7 @@ public class DupeCheckHooks implements PreHookInterface {
 	 */
 	public CommandRequestInterface doDupeCheckMKD(CommandRequest request) {
 		if (request.hasArgument()) {
-			String dirname = getName(request.getArgument());
+			String dirname = request.getCurrentDirectory().getNonExistentDirectoryHandle(request.getArgument()).getName();
 			if (((_type == 2) || (_type == 3)) && (!checkFile(dirname))) {
 				return doDupeCheck(request,dirname);
 			}
@@ -100,30 +100,13 @@ public class DupeCheckHooks implements PreHookInterface {
 	 */
 	public CommandRequestInterface doDupeCheckSTOR(CommandRequest request) {
 		if (request.hasArgument()) {
-			String filename = getName(request.getArgument());
+			String filename = request.getCurrentDirectory().getNonExistentFileHandle(request.getArgument()).getName();
 			if (((_type == 1) || (_type == 3)) && (!checkFile(filename))) {
 				return doDupeCheck(request,filename);
 			}
 		}
 		return request;
 	}	
-	
-	/*
-	 * Returns the filename/dirname without the path
-	 */
-	private String getName(String name) {
-		// Check if "/" Exists as a char
-		if (name.indexOf('/') != -1) {
-			// Check to see if last char is a "/" and if it is, remove it
-			if (name.charAt(name.length()-1) == '/') {
-				// Remove last "/"
-				name = name.substring(0,name.length()-1);
-			}
-			// Return last substring of file/dir
-			return name.substring(name.lastIndexOf('/') + 1);
-		}
-		return name;
-	}
 	
 	/*
 	 * Checks the file/dir to see if its in the regex exclude list
