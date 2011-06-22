@@ -82,13 +82,13 @@ public abstract class ArchiveType {
 	protected DirectoryHandle _archiveToFolder;
 	
 	// Used for: setting destincation directory ONLY after moving it (more for events)
-	private DirectoryHandle _destinationDirectory;
+	protected DirectoryHandle _destinationDirectory;
 	
 	// Used for: a specific type of folder to archive too.  (Alpha/Dated)
 	protected String _archiveDirType;
 	
 	// Check to see if we are going to move the relase after archive
-	private boolean _moveRelease;
+	protected boolean _moveRelease;
 	
 	// Checks to see if we are moving the release only (no slave -> slave archive)
 	protected boolean _moveReleaseOnly;
@@ -617,7 +617,7 @@ public abstract class ArchiveType {
 	/*
 	 * Recursively Create parent directories
 	 */
-	private boolean createDirectories(DirectoryHandle dir) {
+	protected boolean createDirectories(DirectoryHandle dir) {
 		if (!dir.exists() && (!dir.isRoot())) {
 			if (!dir.getParent().exists()) {
 				if (!createDirectories(dir.getParent())) {
