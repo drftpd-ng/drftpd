@@ -43,8 +43,6 @@ public class InputThread extends Thread {
 	private boolean _isConnected = true;
 	private boolean _disposed = false;
 
-	public static final int MAX_LINE_LENGTH = 512;
-
 	/**
 	 * The InputThread reads lines from the IRC server and allows the
 	 * SiteBot to handle them.

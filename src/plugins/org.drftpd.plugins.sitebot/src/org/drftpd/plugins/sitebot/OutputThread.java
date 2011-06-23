@@ -59,8 +59,8 @@ public class OutputThread extends Thread {
 	 *                 byte array.
 	 */
 	static void sendRawLine(SiteBot bot, BufferedWriter bwriter, String line) {
-		if (line.length() > bot.getMaxLineLength() - 2) {
-			line = line.substring(0, bot.getMaxLineLength() - 2);
+		if (line.length() > bot.getConfig().getMaxLineLength() - 2) {
+			line = line.substring(0, bot.getConfig().getMaxLineLength() - 2);
 		}
 		synchronized(bwriter) {
 			try {

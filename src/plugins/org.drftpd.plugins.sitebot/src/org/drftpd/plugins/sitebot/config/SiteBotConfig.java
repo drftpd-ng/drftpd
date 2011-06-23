@@ -74,6 +74,8 @@ public class SiteBotConfig {
 
 	private String _localBindHost;
 
+	private int _maxLineLength;
+	
 	private long _messageDelay;
 
 	private String _name;
@@ -178,6 +180,7 @@ public class SiteBotConfig {
 		} else if (cfg.getProperty("commands.full").equalsIgnoreCase("queue")) {
 			_commandsQueue = true;
 		}
+		_maxLineLength = Integer.parseInt(cfg.getProperty("line.length.max", "512"));
 	}
 
 	public boolean getAutoNick() {
@@ -234,6 +237,10 @@ public class SiteBotConfig {
 
 	public String getLocalBindHost() {
 		return _localBindHost;
+	}
+	
+	public int getMaxLineLength() {
+		return _maxLineLength;
 	}
 
 	public long getMessageDelay() {

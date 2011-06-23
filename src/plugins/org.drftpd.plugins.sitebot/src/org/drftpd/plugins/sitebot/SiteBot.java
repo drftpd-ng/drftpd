@@ -143,6 +143,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private String _nick = null;
 	private String _ctcpVersion = "DrFTPD SiteBot ";
 	private String _finger = "You ought to be arrested for fingering a bot!";
+	private String _hostMask = null;
 	private boolean _isTerminated = false;
 	private boolean _userDisconnected = false;
 
@@ -340,6 +341,38 @@ public class SiteBot implements ReplyConstants, Runnable {
 			this.setNick(nick);
 
 		}
+		
+		// Find what the server considers our hostmask to be
+		OutputThread.sendRawLine(this, bwriter, "WHOIS " + nick);
+		line = null;
+		String hostMask = "";
+		while ((line = breader.readLine()) != null) {
+			this.handleLine(line);
+			StringTokenizer tokenizer = new StringTokenizer(line);
+			// Disregard sender
+			tokenizer.nextToken();
+			String code = tokenizer.nextToken();
+			if (code.equals("311")) {
+				// Whois reply received
+				// Disregard target
+				tokenizer.nextToken();
+				String ourNick = tokenizer.nextToken();
+				String ourUser = tokenizer.nextToken();
+				String ourHost = tokenizer.nextToken();
+				hostMask = ourNick + "!" + ourUser + "@" + ourHost;
+				break;
+			}
+			else if (code.equals("318")) {
+				// End of whois reached.
+				break;
+			}
+			else if (code.startsWith("4") || code.startsWith("5")) {
+				// Error returned from command
+				logger.error("Error returned from whois command: " + line);
+				break;
+			}
+		}
+		this.setHostMask(hostMask);
 
 		logger.info("*** Logged onto server.");
 
@@ -989,6 +1022,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
 	private void joinChannels() {
 		for (ChannelConfig chan : _config.getChannels()) {
+			Blowfish cipher = null;
 			if (_config.getBlowfishEnabled()) {
 				String chanKey = chan.getBlowKey();
 				if (chanKey == null || chanKey.equals("")) {
@@ -996,13 +1030,11 @@ public class SiteBot implements ReplyConstants, Runnable {
 					" ,the bot will not join this channel");
 					break;
 				}
-				Blowfish cipher = new Blowfish(chan.getBlowKey());
+				cipher = new Blowfish(chan.getBlowKey());
 				_ciphers.put(chan.getName(), cipher);
-				_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),cipher,true));
+				
 			}
-			else {
-				_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),null,false));
-			}
+			_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),cipher));
 			// Check whether we are in the channel, if not then join
 			if (!_channels.containsKey(chan.getName())) {
 				joinChannel(chan);
@@ -2142,15 +2174,13 @@ public class SiteBot implements ReplyConstants, Runnable {
 		if (_config.getChannelAutoJoin()) {
 			for (ChannelConfig chan : _config.getChannels()) {
 				if (chan.getName().equalsIgnoreCase(channel)) {
+					Blowfish cipher = null;
 					joinChannel(chan);
 					if (_config.getBlowfishEnabled()) {
-						Blowfish cipher = new Blowfish(chan.getBlowKey());
+						cipher = new Blowfish(chan.getBlowKey());
 						_ciphers.put(chan.getName(), cipher);
-						_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),cipher,true));
 					}
-					else {
-						_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),null,false));
-					}
+					_writers.put(chan.getName(),new OutputWriter(this,chan.getName(),cipher));
 					break;
 				}
 			}
@@ -2283,6 +2313,13 @@ public class SiteBot implements ReplyConstants, Runnable {
 		return _nick;
 	}
 
+	private final void setHostMask(String hostMask) {
+		_hostMask = hostMask;
+	}
+	
+	public String getHostMask() {
+		return _hostMask;
+	}
 
 	/**
 	 * Gets the internal finger message of the PircBot.
@@ -2315,21 +2352,6 @@ public class SiteBot implements ReplyConstants, Runnable {
 	public final long getMessageDelay() {
 		return _config.getMessageDelay();
 	}
-
-
-	/**
-	 * Gets the maximum length of any line that is sent via the IRC protocol.
-	 * The IRC RFC specifies that line lengths, including the trailing \r\n
-	 * must not exceed 512 bytes.  Hence, there is currently no option to
-	 * change this value in PircBot.  All lines greater than this length
-	 * will be truncated before being sent to the IRC server.
-	 * 
-	 * @return The maximum line length (currently fixed at 512)
-	 */
-	public final int getMaxLineLength() {
-		return InputThread.MAX_LINE_LENGTH;
-	}
-
 
 	/**
 	 * Returns the name of the last IRC server the PircBot tried to connect to.
@@ -2972,6 +2994,12 @@ public class SiteBot implements ReplyConstants, Runnable {
 		// Ensure that all announcers pickup any changes to the theme files
 		for (AbstractAnnouncer announcer : _announcers) {
 			announcer.setResourceBundle(_commandManager.getResourceBundle());
+		}
+		
+		// Update OutputWriters for users, not required for channels as new ones have
+		// been constructed in the joinChannels() call
+		for (UserDetails userDets : _users.values()) {
+			userDets.getOutputWriter().reload();
 		}
 	}
 

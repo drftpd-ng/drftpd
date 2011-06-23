@@ -149,6 +149,10 @@ bind.host=
 # Character set to use when sending to the irc server
 charset=ISO-8859-1
 
+# Maximum length of lines to use when sending messages to the server, this is the
+# length of the full raw command including the CRLF at the end
+line.length.max=512
+
 # Require strict trust when validating the server certificate for SSL connections
 # With this enabled the bot will only connect to servers where the certificate has
 # a valid certificate chain back to a trusted root authority OR if there is a local

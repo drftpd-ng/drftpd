@@ -17,11 +17,16 @@
  */
 package org.drftpd.plugins.sitebot;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
+
 /**
  * @author djb61
  * @version $Id$
  */
 public class OutputWriter {
+
+	private static final String LINESEP = System.getProperty("line.separator");
 
 	private Blowfish _cipher;
 
@@ -31,38 +36,64 @@ public class OutputWriter {
 
 	private String _output;
 
+	private int _maxOutputLen;
+
 	protected OutputWriter() {
 		// Empty constructor for extending classes
 	}
 
-	public OutputWriter(SiteBot bot, String output, Blowfish cipher, boolean blowfishEnabled) {
+	public OutputWriter(SiteBot bot, String output, Blowfish cipher) {
 		_bot = bot;
 		_output = output;
 		_cipher = cipher;
-		_blowfishEnabled = blowfishEnabled;
+		_blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
+		_maxOutputLen = getMaxLineLength();
 	}
 
 	public void sendMessage(String message) {
-		if (_blowfishEnabled) {
-			// Check if we have a valid cipher before proceeding, this is to cover
-			// the case where the OutputWriter is for a private message to a user
-			// yet they don't have a blowfish key available. This is possible since
-			// they could've initiated the command using blowfish in a channel. If
-			// this is the case just skip the output to them.
-			if (_cipher != null) {
-				_bot.sendMessage(_output, _cipher.encrypt(message));
+		for (String line : splitLines(message)) {
+			if (_blowfishEnabled) {
+				// Check if we have a valid cipher before proceeding, this is to cover
+				// the case where the OutputWriter is for a private message to a user
+				// yet they don't have a blowfish key available. This is possible since
+				// they could've initiated the command using blowfish in a channel. If
+				// this is the case just skip the output to them.
+				if (_cipher != null) {
+					_bot.sendMessage(_output, _cipher.encrypt(line));
+				}
+			}
+			else {
+				_bot.sendMessage(_output, line);
 			}
 		}
-		else {
-			_bot.sendMessage(_output, message);
-		}
+	}
+	
+	public void reload() {
+		_blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
+		_maxOutputLen = getMaxLineLength();
 	}
 
 	protected void updateCipher(Blowfish cipher) {
 		_cipher = cipher;
 	}
-	
+
 	protected String getDestination() {
 		return _output;
+	}
+
+	private String[] splitLines(String message) {
+		if (message.length() > _maxOutputLen) {
+			return StringUtils.split(WordUtils.wrap(message, _maxOutputLen, LINESEP, true), LINESEP);
+		}
+		return new String[] { message };
+	}
+
+	private int getMaxLineLength() {
+		int maxLen = _bot.getConfig().getMaxLineLength() - _bot.getHostMask().length() - _output.length() - 14;
+		if (_blowfishEnabled) {
+			maxLen = ((maxLen / 12) * 8) - 4;
+		}
+		
+		return maxLen;
 	}
 }

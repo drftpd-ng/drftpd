@@ -59,7 +59,7 @@ public class UserDetails {
 		_bot = bot;
 		_ident = ident;
 		_nick = nick;
-		_writer = new OutputWriter(_bot, _nick, _cipher, _bot.getConfig().getBlowfishEnabled());
+		_writer = new OutputWriter(_bot, _nick, null);
 		getDetailsFromDB();
 	}
 
