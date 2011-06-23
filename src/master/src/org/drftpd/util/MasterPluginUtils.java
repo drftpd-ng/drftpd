@@ -19,6 +19,7 @@ package org.drftpd.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -63,14 +64,14 @@ public class MasterPluginUtils extends CommonPluginUtils {
 	 *         The <tt>UnloadPluginEvent</tt> event object containing details of the unloaded plugin
 	 *
 	 * @param  loadedExtensions
-	 *         A <tt>List</tt> containing the object instances currently held for all loaded plugins
+	 *         A <tt>Collection</tt> containing the object instances currently held for all loaded plugins
 	 *         against the extension point.
 	 *
 	 * @return  A <tt>Set</tt> containing the object instances from the <tt>loadedExtensions</tt> <tt>List</tt>
 	 *          which belong to the plugin being unloaded. If the unloading plugin does not implement the
 	 *          extension point then an empty <tt>Set</tt> is returned.
 	 */
-	public static <T> Set<T> getUnloadedExtensionObjects(Object caller, String extName, UnloadPluginEvent event, List<T> loadedExtensions) {
+	public static <T> Set<T> getUnloadedExtensionObjects(Object caller, String extName, UnloadPluginEvent event, Collection<T> loadedExtensions) {
 		Set<T> unloadedExtensions = new HashSet<T>();
 		PluginManager manager = PluginManager.lookup(caller);
 		String currentPlugin = manager.getPluginFor(caller).getDescriptor().getId();
