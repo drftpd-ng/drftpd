@@ -17,11 +17,11 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Arrays; 
 
 import org.apache.log4j.Logger;
 
@@ -33,8 +33,17 @@ public class DH1080 {
 
 	private static final Logger logger = Logger.getLogger(DH1080.class);
 
-	private static final String B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	private static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
+	private static final int[] IA = new int[256];  
+	 
+	static {  
+		Arrays.fill(IA, -1);  
+		for (int i = 0; i < CA.length; i++) {  
+			IA[CA[i]] = i;  
+		}  
+	}  
+	
 	private static final String PRIME = "++ECLiPSE+is+proud+to+present+latest+FiSH+release+featuring+even+more+security+for+you+++shouts+go+out+to+TMG+for+helping+to+generate+this+cool+sophie+germain+prime+number++++/C32L";
 
 	private BigInteger _privateInt;
@@ -95,58 +104,26 @@ public class DH1080 {
 	 * not be used for anything else.
 	 */
 	private static byte[] decodeB64(String input) {
-		StringBuilder outputBuilder = new StringBuilder();
-		int k = 0;
-		int overflow;
-		byte temp;
-		while (true) {
-			if (k+1<input.length()) {
-				temp = (byte)(B64.indexOf(input.charAt(k))<<2);
-				k++;
-				temp |= B64.indexOf(input.charAt(k))>>4;
-				overflow = temp;
-				if (overflow < 0) {
-					overflow += 256;
-				}
-				outputBuilder.append((char)overflow);
-			}
-			else {
+		byte[] dArr = new byte[input.length() * 6 >> 3];  
+		  
+		for(int i = 0, z = 0; z < dArr.length;) {  
+			if (z >= dArr.length) {  
 				break;
 			}
-			if (k+1<input.length()) {
-				temp = (byte)(B64.indexOf(input.charAt(k))<<4);
-				k++;
-				temp |= B64.indexOf(input.charAt(k))>>2;
-				overflow = temp;
-				if (overflow < 0) {
-					overflow += 256;
-				}
-				outputBuilder.append((char)overflow);
-			}
-			else {
+			dArr[z++] = (byte) ((IA[input.charAt(i)] << 2) | (IA[input.charAt(i + 1)] >> 4));  
+			i++;  
+			if (z >= dArr.length) { 
 				break;
 			}
-			if (k+1<input.length()) {
-				temp = (byte)(B64.indexOf(input.charAt(k))<<6);
-				k++;
-				temp |= B64.indexOf(input.charAt(k));
-				overflow = temp;
-				if (overflow < 0) {
-					overflow += 256;
-				}
-				outputBuilder.append((char)overflow);
-			}
-			else {
+			dArr[z++] = (byte) ((IA[input.charAt(i)] << 4) | (IA[input.charAt(i + 1)] >> 2));  
+			i++;  
+			if (z >= dArr.length) {  
 				break;
 			}
-			k++;
-		} try {
-			return outputBuilder.toString().getBytes("8859_1");
-		} catch (UnsupportedEncodingException e) {
-			// Shouldn't be possible as this is a JVM default charset
-			logger.warn("Couldn't use 8859_1 charset",e);
-			return outputBuilder.toString().getBytes();
+			dArr[z++] = (byte) ((IA[input.charAt(i)] << 6) | IA[input.charAt(i + 1)]);  
+			i += 2; 
 		}
+		return dArr;
 	}
 
 	/** This is an alternate base64 encoder, this is required as
@@ -158,28 +135,30 @@ public class DH1080 {
 	 */
 	private static String encodeB64(byte[] input) {
 		int i;
-		char m,t;
-		StringBuilder outputBuilder = new StringBuilder();
+		int p = 0;  
+		char m, t;  
+		char[] dArr = new char[((input.length / 3 + 1) << 2) - (3 - input.length % 3)];  
 
-		m=0x80;
-		for (i=0,t=0; i<(input.length<<3); i++){
-			if ((input[(i>>3)]&m) != 0) {
-				t|=1;
+		m = 0x80;  
+		for (i = 0, t = 0; i < (input.length << 3); i++){  
+			if ((input[(i >> 3)] & m) != 0) {  
+				t |= 1; 
 			}
 			if ((m>>=1) == 0) {
 				m=0x80;
 			}
-			if (((i+1)%6) == 0) {
-				outputBuilder.append(B64.charAt(t));
-				t&=0;
-			}
+			if (((i + 1) % 6) == 0) {  
+				dArr[p++] = CA[t];  
+				t &= 0;  
+			}  
+			
 			t<<=1;
 		}
 		m=(char)(5-(i%6));
 		t<<=m;
 		if (m != 0) {
-			outputBuilder.append(B64.charAt(t));
+			dArr[p++] = CA[t];
 		}
-		return outputBuilder.toString();
+		return new String(dArr);
 	}
 }

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.drftpd.util.Base64; 
 
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
@@ -30,7 +31,6 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 
-import sun.misc.BASE64Encoder;
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
@@ -129,8 +129,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 							if (total > 0) {
 								dizInfo.setValid(true);
 								dizInfo.setTotal(total);
-								dizString = new BASE64Encoder().encode(dizBuffer.toString().getBytes("8859_1"));
-								//dizString = Base64.bytetoB64(dizBuffer.toString().getBytes("8859_1"));
+								dizString = Base64.encodeToString(dizBuffer.toString().getBytes("8859_1"), Base64.RFC2045);
 								dizInfo.setString(dizString);
 							}
 							break;

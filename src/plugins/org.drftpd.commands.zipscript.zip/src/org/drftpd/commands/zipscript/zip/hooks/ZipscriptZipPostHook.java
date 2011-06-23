@@ -50,6 +50,7 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.GroupPosition;
 import org.drftpd.util.UploaderPosition;
+import org.drftpd.util.Base64;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.tanesha.replacer.FormatterException;
@@ -57,7 +58,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
 
-import sun.misc.BASE64Decoder;
 
 /**
  * @author djb61
@@ -162,8 +162,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			try {
 				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
 				DizInfo dizInfo = zipData.getDizInfo();
-				response.addComment(new String(new BASE64Decoder().decodeBuffer(dizInfo.getString()),"8859_1"));
-				//response.addComment(new String(Base64.b64tobyte(dizInfo.getString()),"8859_1"));
+				response.addComment(new String(Base64.decodeFast(dizInfo.getString(), Base64.RFC2045),"8859_1")); 
 			} catch (FileNotFoundException e) {
 				//Error fetching .diz, ignore
 			} catch (IOException e) {
