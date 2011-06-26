@@ -25,6 +25,7 @@ import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.event.VirtualFileSystemEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
+import org.drftpd.vfs.event.VirtualFileSystemInodeRefreshEvent;
 import org.drftpd.vfs.event.VirtualFileSystemLastModifiedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
 import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
@@ -145,7 +146,7 @@ public class IndexingVirtualFileSystemListener {
 	}
 	
 	/**
-	 * Method called whenever an inode is creatd or deleted.
+	 * Method called whenever an inode is created.
 	 * Depends on {@link VirtualFileSystemInodeCreatedEvent} <code>type</code> property.
 	 * @param event
 	 */
@@ -161,6 +162,10 @@ public class IndexingVirtualFileSystemListener {
 		}
 	}
 	
+	/**
+	 * Method called whenever an inode is deleted
+	 * @param event
+	 */
 	@EventSubscriber
 	public void inodeDeleted(VirtualFileSystemInodeDeletedEvent event) {
 		if (bypassEvent(event))
@@ -171,6 +176,18 @@ public class IndexingVirtualFileSystemListener {
 		} catch (IndexException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_INDEXING, e);
 		}
+	}
+	
+	/**
+	 * Method called whenever a refresh is requested for an inode
+	 * @param event
+	 */
+	@EventSubscriber
+	public void inodeRefresh(VirtualFileSystemInodeRefreshEvent event) {
+		if (bypassEvent(event))
+			return;
+
+		inodeUpdated(event.getImmutableInode());
 	}
 }
 

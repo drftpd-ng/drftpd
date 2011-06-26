@@ -12,3 +12,13 @@ class IndexManager
 method doIndexStatus
 perms =siteop
 }
+
+SITE REFRESHINDEX {
+plugin org.drftpd.commands.indexmanager
+class IndexManager
+method doRefreshIndex
+perms =siteop
+help requests a recursive refresh of data held for the current directory in the index.
+help.specific ${command} [-q]
+help.specific     The -q option suppresses details of the progress of the refresh.
+}

@@ -481,4 +481,18 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	public Map<String,AtomicInteger> getSlaveRefCounts() throws FileNotFoundException {
 		return getInode().getSlaveRefCounts();
 	}
+	
+	/**
+	 * Request that a refresh notification is issued for this inode to inform VFS listeners
+	 * that they may want to update any information held regarding this inode.
+	 * 
+	 * @param  sync
+	 *         Whether the refresh should processed synchronously or not
+	 *         
+	 * @throws FileNotFoundException
+	 *         If the inode for this handle does not exist
+	 */
+	public void requestRefresh(boolean sync) throws FileNotFoundException {
+		getInode().refresh(sync);
+	}
 }

@@ -15,38 +15,28 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.vfs.event;
+package org.drftpd.vfs.index.lucene.extensions;
 
-import org.drftpd.vfs.VirtualFileSystemInode;
+import org.apache.lucene.search.BooleanQuery;
+import org.drftpd.vfs.index.AdvancedSearchParams;
 
 /**
- * This event is fired whenever the ownership of an inode changes
- * @author fr0w
+ * @author djb61
  * @version $Id$
  */
-public class VirtualFileSystemOwnershipEvent extends VirtualFileSystemEvent {
-
-	private String _owner;
-	private String _group;
-	
-	public VirtualFileSystemOwnershipEvent(VirtualFileSystemInode inode, String path, String owner, String group) {
-		super(inode, path);
-		
-		_owner = owner;
-		_group = group;
-	}
+public interface QueryTermExtensionInterface {
 
 	/**
-	 * @return the new owner of the inode
+	 * This method is called whenever a query is made to the index.
+	 * If any relevant data is contained within the extension map of
+	 * the search parameters this should be added to the index query
+	 * appropriately.
+	 * 
+	 * @param doc
+	 *            The document to populate fields in.
+	 * 
+	 * @param inode
+	 *            The inode currently being indexed.
 	 */
-	public String getOwner() {
-		return _owner;
-	}
-
-	/**
-	 * @return the new group of the inode
-	 */
-	public String getGroup() {
-		return _group;
-	}
+	public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params);
 }

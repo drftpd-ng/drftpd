@@ -21,6 +21,13 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
+	<extension-point id="IndexData">
+		<parameter-def id="Class" type="string" />
+	</extension-point>
+	<extension-point id="QueryTerm">
+		<parameter-def id="Class" type="string" />
+	</extension-point>
+	
 	<extension plugin-id="master" point-id="IndexingEngine" id="LuceneEngine">
 		<parameter id="Class" value="org.drftpd.vfs.index.lucene.LuceneEngine" />
 	</extension>

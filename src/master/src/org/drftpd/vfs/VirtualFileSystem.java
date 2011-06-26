@@ -37,6 +37,7 @@ import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.event.VirtualFileSystemEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
+import org.drftpd.vfs.event.VirtualFileSystemInodeRefreshEvent;
 import org.drftpd.vfs.event.VirtualFileSystemLastModifiedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
 import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
@@ -427,7 +428,21 @@ public class VirtualFileSystem {
 		publishAsyncEvent(new VirtualFileSystemLastModifiedEvent(inode, inode.getPath(), lastmodified));
 	}
 	
+	protected void notifyInodeRefresh(VirtualFileSystemInode inode, boolean sync) {
+		logger.debug("Notifying that a refresh has been requested for " + inode.getPath());
+
+		if (sync) {
+			publishSyncEvent(new VirtualFileSystemInodeRefreshEvent(inode, inode.getPath()));
+		} else {
+			publishAsyncEvent(new VirtualFileSystemInodeRefreshEvent(inode, inode.getPath()));
+		}
+	}
+	
 	private void publishAsyncEvent(VirtualFileSystemEvent event) {
 		GlobalContext.getEventService().publishAsync(event);
+	}
+	
+	private void publishSyncEvent(VirtualFileSystemEvent event) {
+		GlobalContext.getEventService().publish(event);
 	}
 }

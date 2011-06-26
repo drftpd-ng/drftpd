@@ -20,33 +20,13 @@ package org.drftpd.vfs.event;
 import org.drftpd.vfs.VirtualFileSystemInode;
 
 /**
- * This event is fired whenever the ownership of an inode changes
- * @author fr0w
+ * This event is fired whenever an inode's data should be refreshed by listeners.
+ * @author djb61
  * @version $Id$
  */
-public class VirtualFileSystemOwnershipEvent extends VirtualFileSystemEvent {
+public class VirtualFileSystemInodeRefreshEvent extends VirtualFileSystemEvent {
 
-	private String _owner;
-	private String _group;
-	
-	public VirtualFileSystemOwnershipEvent(VirtualFileSystemInode inode, String path, String owner, String group) {
+	public VirtualFileSystemInodeRefreshEvent(VirtualFileSystemInode inode, String path) {
 		super(inode, path);
-		
-		_owner = owner;
-		_group = group;
-	}
-
-	/**
-	 * @return the new owner of the inode
-	 */
-	public String getOwner() {
-		return _owner;
-	}
-
-	/**
-	 * @return the new group of the inode
-	 */
-	public String getGroup() {
-		return _group;
 	}
 }

@@ -17,6 +17,7 @@
  */
 package org.drftpd.vfs.index;
 
+import java.io.FileNotFoundException;
 import java.util.Map;
 import java.util.Set;
 
@@ -82,8 +83,9 @@ public interface IndexEngineInterface {
 	
 	/**
 	 * Removes ALL the content from the Index and recurse through the VFS recreating the index.
+	 * @throws FileNotFoundException 
 	 */
-	public void rebuildIndex() throws IndexException;
+	public void rebuildIndex() throws IndexException, FileNotFoundException;
 	
 	/**
 	 * This method should return a Map containing information about the index engine.<br>

@@ -20,6 +20,10 @@ package org.drftpd.vfs.index;
 import java.util.Collections;
 import java.util.Set;
 
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.dynamicdata.KeyedMap;
+
 /**
  * @author fr0w
  * @version $Id$
@@ -48,9 +52,10 @@ public class AdvancedSearchParams {
 	private String _sortField;
 	private boolean _sortOrder = false;
 	private Integer _limit;
+	private KeyedMap<Key<?>, Object> _extensionMap;
 
 	public AdvancedSearchParams() {
-		
+		_extensionMap = new KeyedMap<Key<?>, Object>();
 	}
 
 	public void setName(String name) {
@@ -124,6 +129,10 @@ public class AdvancedSearchParams {
 	public void setLimit(int limit) {
 		_limit = limit;
 	}
+	
+	public <T> void addExtensionData(Key<T> key, T data) {
+		_extensionMap.put(key, data);
+	}
 
 	public String getName() {
 		return _name;
@@ -195,5 +204,9 @@ public class AdvancedSearchParams {
 
 	public Integer getLimit() {
 		return _limit;
+	}
+	
+	public <T> T getExtensionData(Key<T> key) throws KeyNotFoundException {
+		return _extensionMap.getObject(key);
 	}
 }

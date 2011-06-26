@@ -17,13 +17,19 @@
  */
 package org.drftpd.commands.indexmanager;
 
+import java.io.FileNotFoundException;
 import java.util.Map.Entry;
+import java.util.LinkedList;
 import java.util.ResourceBundle;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.master.Session;
+import org.drftpd.usermanager.User;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -51,6 +57,8 @@ public class IndexManager extends CommandInterface {
 			ie.rebuildIndex();
 		} catch (IndexException e) {
 			return new CommandResponse(550, e.getMessage());
+		} catch (FileNotFoundException e) {
+			return new CommandResponse(550, e.getMessage());
 		}
 
 		response.addComment("Entries in the index: " + ie.getStatus().get("inodes"));
@@ -72,6 +80,53 @@ public class IndexManager extends CommandInterface {
 			}
 		} else {
 			response.addComment("Entries in the index: " + ie.getStatus().get("inodes"));
+		}
+
+		return response;
+	}
+	
+	public CommandResponse doRefreshIndex(CommandRequest request) {
+		Session session = request.getSession();
+		User user = session.getUserNull(request.getUser());
+		CommandResponse response = new CommandResponse(200, "Index refreshed");
+		boolean quiet = false;
+		if (request.getArgument().equalsIgnoreCase("-q")) {
+			quiet = true;
+		}
+
+		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+		dirs.add(request.getCurrentDirectory());
+		while (dirs.size() > 0 && !session.isAborted()) {
+			DirectoryHandle workingDir = dirs.poll();
+			try {
+				workingDir.requestRefresh(true);
+				if (!quiet) {
+					session.printOutput(200,"Refresh requested for "+workingDir.getPath());
+				}
+			} catch (FileNotFoundException e2) {
+				if (!quiet) {
+					session.printOutput(200,"Skipping refresh of " + workingDir.getPath() + " as directory no longer exists");
+				}
+				// No point trying to list the directory as we know it doesn't exist, skip to the next
+				continue;
+			}
+			try {
+				for (InodeHandle inode : workingDir.getInodeHandles(user)) {
+					if (inode.isDirectory()) {
+						dirs.add((DirectoryHandle) inode);
+					} else if (inode.isFile()) {
+						try {
+							inode.requestRefresh(true);
+						} catch (FileNotFoundException e) {
+							// File no longer present, silently skip
+						}
+					}
+				}
+			} catch (FileNotFoundException e) {
+				if (!quiet) {
+					session.printOutput(200,"Error recursively listing: "+workingDir.getPath());
+				}
+			}
 		}
 
 		return response;

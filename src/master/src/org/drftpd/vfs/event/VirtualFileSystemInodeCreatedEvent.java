@@ -29,5 +29,4 @@ public class VirtualFileSystemInodeCreatedEvent extends VirtualFileSystemEvent {
 	public VirtualFileSystemInodeCreatedEvent(VirtualFileSystemInode inode, String path) {
 		super(inode, path);
 	}
-	
 }

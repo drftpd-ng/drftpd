@@ -23,9 +23,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Map;
 import java.util.Set;
@@ -64,11 +66,15 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
 import org.apache.lucene.util.Version;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.io.PhysicalFile;
+import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.util.MasterPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.event.ImmutableInodeHandle;
@@ -78,6 +84,8 @@ import org.drftpd.vfs.index.IndexException;
 import org.drftpd.vfs.index.IndexingVirtualFileSystemListener;
 import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
+import org.drftpd.vfs.index.lucene.extensions.IndexDataExtensionInterface;
+import org.drftpd.vfs.index.lucene.extensions.QueryTermExtensionInterface;
 
 
 /**
@@ -160,6 +168,9 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private IndexingVirtualFileSystemListener _listener;
 	private boolean _rebuilding;
+	
+	private List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<IndexDataExtensionInterface>();
+	private List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<QueryTermExtensionInterface>();
 
 	/**
 	 * Creates all the needed resources for the Index to work.
@@ -175,6 +186,36 @@ public class LuceneEngine implements IndexEngineInterface {
 	public void init() throws IndexException {
 		logger.debug("Initializing Index");
 
+		// Load index data extensions
+		try {
+			List<IndexDataExtensionInterface> loadedDataExtensions =
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.vfs.index.lucene", "IndexData", "Class");
+			for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
+				dataExtension.initializeFields(INDEX_DOCUMENT);
+				_dataExtensions.add(dataExtension);
+				logger.debug("Loading lucene index data extension from plugin "
+						+CommonPluginUtils.getPluginIdForObject(dataExtension));
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.vfs.index.lucene extension point 'IndexData', possibly the "+
+					"org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+		}
+		
+		// Load query term extensions
+		try {
+			List<QueryTermExtensionInterface> loadedQueryExtensions =
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.vfs.index.lucene", "QueryTerm", "Class");
+			for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
+				_queryExtensions.add(queryExtension);
+				logger.debug("Loading lucene query term extension from plugin "
+						+CommonPluginUtils.getPluginIdForObject(queryExtension));
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.vfs.index.lucene extension point 'QueryTerm', possibly the "+
+					"org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+		}
+		
+		AnnotationProcessor.process(this);
 		createThreads();
 		reload();
 
@@ -310,63 +351,11 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
 		FIELD_SIZE.setLongValue(inode.getSize());
-
-		return INDEX_DOCUMENT;
-	}
-	
-	/**
-	 * Shortcut to create Lucene Document from the Inode's data. The fields that
-	 * are stored in the index are:
-	 * <ul>
-	 * <li>name - The name of the inode</li>
-	 * <li>fullName - The full name of the inode</li>
-	 * <li>fullNameReverse - The full name of the inode in reverse order</li>
-	 * <li>parentPath - The full path of the parent inode</li>
-	 * <li>fullPath - The full path of the inode</li>
-	 * <li>owner - The user who owns the file</li>
-	 * <li>group - The group of the user who owns the file</li>
-	 * <li>type - File or Directory</li>
-	 * <li>slaves - If the inode is a file, then the slaves are stored</li>
-	 * <li>lastModified - Timestamp of when the inode was last modified</li>
-	 * <li>size - The size of the inode</li>
-	 * </ul>
-	 * 
-	 * @param inode
-	 * @throws FileNotFoundException
-	 */
-	private Document makeDocumentFromRealInode(InodeHandle inode) throws FileNotFoundException {
-		InodeType inodeType = inode.isDirectory() ? InodeType.DIRECTORY : InodeType.FILE;
-
-		FIELD_NAME.setValue(inode.getName());
-		FIELD_FULL_NAME.setValue(inode.getName());
-		FIELD_FULL_NAME_REVERSE.setValue(new StringBuilder(inode.getName()).reverse().toString());
-		if (inode.getPath().equals(VirtualFileSystem.separator)) {
-			FIELD_PARENT_PATH.setValue("");
-		} else {
-			FIELD_PARENT_PATH.setValue(inode.getParent().getPath() + VirtualFileSystem.separator);
+		
+		// Add data from any extensions
+		for (IndexDataExtensionInterface dataExtension: _dataExtensions) {
+			dataExtension.addData(INDEX_DOCUMENT, inode);
 		}
-		if (inode.isDirectory())
-			FIELD_FULL_PATH.setValue(inode.getPath() + VirtualFileSystem.separator);
-		else
-			FIELD_FULL_PATH.setValue(inode.getPath());
-		FIELD_OWNER.setValue(inode.getUsername());
-		FIELD_GROUP.setValue(inode.getGroup());
-		FIELD_TYPE.setValue(inodeType.toString().toLowerCase().substring(0, 1));
-
-		if (inodeType == InodeType.FILE) {
-			StringBuilder sb = new StringBuilder();
-			for (String slaveName : ((FileHandle) inode).getSlaveNames()) {
-				sb.append(slaveName).append(",");
-			}
-			FIELD_SLAVES_NBR.setIntValue(((FileHandle) inode).getSlaveNames().size());
-			FIELD_SLAVES.setValue(sb.toString());
-		} else {
-			FIELD_SLAVES_NBR.setIntValue(0);
-			FIELD_SLAVES.setValue("");
-		}
-
-		FIELD_LASTMODIFIED.setLongValue(inode.lastModified());
-		FIELD_SIZE.setLongValue(inode.getSize());
 
 		return INDEX_DOCUMENT;
 	}
@@ -560,7 +549,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	}
 
 	/* {@inheritDoc} */
-	public void rebuildIndex() throws IndexException {
+	public void rebuildIndex() throws IndexException, FileNotFoundException {
 		if (_rebuilding) {
 			throw new IndexException("A previous rebuildindex command is already in progress.");
 		}
@@ -575,11 +564,14 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		try {
 			DirectoryHandle root = GlobalContext.getGlobalContext().getRoot();
-			addRealInode(root); // Start by adding root inode
+			root.requestRefresh(true); // Start by adding root inode
 			recurseAndBuild(root); // Recursively traverse the VFS and add all inodes
 			commit(); // commit the writer so that the searcher can see the new stuff.
 		} catch (IndexException e) {
 			logger.error("Exception whilst rebuilding lucene index",e);
+			throw e;
+		} catch (FileNotFoundException e) {
+			logger.error("Root directory not found whilst rebuilding lucene index", e);
 			throw e;
 		} finally {
 			_rebuilding = false;
@@ -590,37 +582,30 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * Inner function called by rebuildIndex().
 	 * 
 	 * @param dir
-	 * @throws FileNotFoundException
+	 * 
 	 * @throws IndexException
 	 */
 	private void recurseAndBuild(DirectoryHandle dir) throws IndexException {
 		try {
 			for (InodeHandle inode : dir.getInodeHandlesUnchecked()) {
 				if (inode.isDirectory()) {
-					addRealInode(inode);
-					recurseAndBuild((DirectoryHandle) inode);
+					try {
+						inode.requestRefresh(true);
+						recurseAndBuild((DirectoryHandle) inode);
+					} catch (FileNotFoundException e) {
+						// Directory no longer present, silently skip
+					}
+					
 				} else if (inode.isFile()) {
-					addRealInode(inode);
+					try {
+						inode.requestRefresh(true);
+					} catch (FileNotFoundException e) {
+						// File no longer present, silently skip
+					}
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// Dir gone, error logged in addInode(inode) call from parent dir,
-			// ignore and continue to build index.
-		}
-	}
-	
-	private void addRealInode(InodeHandle inode) throws IndexException {
-		try {
-			synchronized (INDEX_DOCUMENT) {
-				Document doc = makeDocumentFromRealInode(inode);
-				_iWriter.addDocument(doc);
-			}
-		} catch (FileNotFoundException e) {
-			logger.error("Unable to add " + inode.getPath() + " to the index", e);
-		} catch (CorruptIndexException e) {
-			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
-		} catch (IOException e) {
-			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
+			// Directory no longer present, silently skip
 		}
 	}
 
@@ -743,6 +728,11 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			if (params.getLimit() != null) {
 				limit = params.getLimit();
+			}
+			
+			// Add any query terms from extensions
+			for (QueryTermExtensionInterface queryExtension : _queryExtensions) {
+				queryExtension.addQueryTerms(query, params);
 			}
 
 			logger.debug("Query: " + query);
@@ -870,7 +860,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * @param name
 	 * @return Query
 	 */
-	private Query analyze(String field, Term term, String name) {
+	public static Query analyze(String field, Term term, String name) {
 		TokenStream ts = ANALYZER.tokenStream(field, new StringReader(name));
 
 		BooleanQuery bQuery = new BooleanQuery();
@@ -975,6 +965,46 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	protected IndexWriter getWriter() {
 		return _iWriter;
+	}
+	
+	@EventSubscriber
+	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
+		try {
+			List<IndexDataExtensionInterface> loadedDataExtensions =
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "IndexData", "Class", event);
+			if (!loadedDataExtensions.isEmpty()) {
+				List<IndexDataExtensionInterface> clonedDataExtensions = new ArrayList<IndexDataExtensionInterface>(_dataExtensions);
+				for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
+					logger.debug("Loading lucene index data extension from plugin "
+							+ CommonPluginUtils.getPluginIdForObject(dataExtension));
+					synchronized (INDEX_DOCUMENT) {
+						dataExtension.initializeFields(INDEX_DOCUMENT);
+					}
+					clonedDataExtensions.add(dataExtension);
+				}
+				_dataExtensions = clonedDataExtensions;
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.vfs.index.lucene extension point 'IndexData'"
+					+ ", possibly the org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+		}
+		
+		try {
+			List<QueryTermExtensionInterface> loadedQueryExtensions =
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "QueryTerm", "Class", event);
+			if (!loadedQueryExtensions.isEmpty()) {
+				List<QueryTermExtensionInterface> clonedQueryExtensions = new ArrayList<QueryTermExtensionInterface>(_queryExtensions);
+				for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
+					logger.debug("Loading lucene query term extension from plugin "
+							+ CommonPluginUtils.getPluginIdForObject(queryExtension));
+					clonedQueryExtensions.add(queryExtension);
+				}
+				_queryExtensions = clonedQueryExtensions;
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.vfs.index.lucene extension point 'QueryTerm'"
+					+ ", possibly the org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+		}
 	}
 
 	/**

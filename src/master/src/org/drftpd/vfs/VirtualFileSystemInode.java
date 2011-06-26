@@ -383,4 +383,11 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	}
 
 	protected abstract Map<String,AtomicInteger> getSlaveRefCounts();
+	
+	/**
+	 * Publish a refresh notification for this inode
+	 */
+	protected void refresh(boolean sync) {
+		getVFS().notifyInodeRefresh(this, sync);
+	}
 }

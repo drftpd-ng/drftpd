@@ -295,8 +295,35 @@ public class SiteManagementHandler extends CommandInterface {
 				return new CommandResponse(500, "Unloading of this plugin is prohibited");
 			}
 		}
+		
+		/* Check whether all descdendants of this plugin allow unloading, 
+		 * to do this an attribute named DenyUnload is set to "true" in the 
+		 * plugins manifest, if this attribute does not exist or contains 
+		 * anything else it is assumed that unloading is permitted.
+		 */
+		List<PluginDescriptor> unloadingPlugins = getPluginsToUnload(pluginDesc, manager.getRegistry());
+		List<String> prohibitedPlugins = new ArrayList<String>();
+		for (PluginDescriptor unloadPlugin : unloadingPlugins) {
+			if (!unloadPlugin.getId().equals(pluginDesc.getId())) {
+				unloadAttribute = unloadPlugin.getAttribute("DenyUnload");
+				if (unloadAttribute != null) {
+					if (unloadAttribute.getValue().equalsIgnoreCase("true")) {
+						prohibitedPlugins.add(unloadPlugin.getId());
+					}
+				}
+			}
+		}
+		if (!prohibitedPlugins.isEmpty()) {
+			CommandResponse response = new CommandResponse(500, "Unloading of this plugin is prohibited");
+			response.addComment("The following descendant plugins are prohibited from unloading");
+			for (String deniedPlugin : prohibitedPlugins) {
+				response.addComment(deniedPlugin);
+			}
+			return response;
+		}
+		
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		for (PluginDescriptor unloadPlugin : getPluginsToUnload(pluginDesc, manager.getRegistry())) {
+		for (PluginDescriptor unloadPlugin : unloadingPlugins) {
 			if (manager.isPluginActivated(unloadPlugin)) {
 				GlobalContext.getEventService().publish(new UnloadPluginEvent(unloadPlugin.getId()));
 				manager.deactivatePlugin(unloadPlugin.getId());
