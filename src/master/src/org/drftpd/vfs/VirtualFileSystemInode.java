@@ -332,6 +332,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	protected <T> T removePluginMetaData(Key<T> key) {
 		T value = (T)_pluginMap.remove(key);
 		commit();
+		getVFS().notifyInodeRefresh(this, false);
 		return value;
 	}
 
