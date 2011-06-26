@@ -325,6 +325,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	protected <T> void addPluginMetaData(Key<T> key, T object) {
 		_pluginMap.setObject(key,object);
 		commit();
+		getVFS().notifyInodeRefresh(this, false);
 	}
 
 	@SuppressWarnings("unchecked")
