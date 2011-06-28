@@ -21,12 +21,10 @@ package org.drftpd.vfs.index.lucene;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.StringReader;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map;
@@ -36,8 +34,6 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
@@ -103,7 +99,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
 
-	private static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
+	protected static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
 	protected static final String INDEX_DIR = "index";
 
 	private static final Document INDEX_DOCUMENT = new Document();
@@ -407,7 +403,7 @@ public class LuceneEngine implements IndexEngineInterface {
 
 	private void setSortField(String field, int type, boolean order) {
 		SORT.setSort(new SortField(field, type, order),
-				new SortField("fullPath", SortField.STRING));
+				new SortField("fullPath", SortField.STRING, order));
 	}
 
 	/* {@inheritDoc} */
@@ -662,7 +658,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				for (String slaveName : params.getSlaves()) {
 					sb.append(slaveName).append(" ");
 				}
-				Query slaveQuery = analyze("slaves", TERM_SLAVES, sb.toString().trim());
+				Query slaveQuery = LuceneUtils.analyze("slaves", TERM_SLAVES, sb.toString().trim());
 				query.add(slaveQuery, Occur.MUST);
 			}
 
@@ -685,14 +681,14 @@ public class LuceneEngine implements IndexEngineInterface {
 			}
 
 			if (params.getName() != null) {
-				if (!validWildcards(params.getName())) {
+				if (!LuceneUtils.validWildcards(params.getName())) {
 					throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
 				}
-				Query nameQuery = analyze("name", TERM_NAME, params.getName());
+				Query nameQuery = LuceneUtils.analyze("name", TERM_NAME, params.getName());
 				query.add(nameQuery, Occur.MUST);
 			}
 			if (params.getExact() != null) {
-				if (!validWildcards(params.getExact())) {
+				if (!LuceneUtils.validWildcards(params.getExact())) {
 					throw new IllegalArgumentException("Wildcards in the first three chars not allowed.");
 				}
 				query.add(makeFullNameWildcardQueryFromString(params.getExact()), Occur.MUST);
@@ -772,12 +768,6 @@ public class LuceneEngine implements IndexEngineInterface {
 		}
 	}
 
-	private boolean validWildcards(String text) {
-		int wc1 = text.indexOf("*");
-		int wc2 = text.indexOf("?");
-		return !((wc1 > 0 && wc1 <= 3) || (wc2 > 0 && wc2 <= 3));
-	}
-
 	/**
 	 * @param startNode
 	 *            The dir where the search will begin.
@@ -799,7 +789,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(parentQuery, Occur.MUST);
 			}
 
-			Query nameQuery = analyze("name", TERM_NAME, text);
+			Query nameQuery = LuceneUtils.analyze("name", TERM_NAME, text);
 			query.add(nameQuery, Occur.MUST);
 
 			if (inodeType == InodeType.ANY) {
@@ -850,44 +840,6 @@ public class LuceneEngine implements IndexEngineInterface {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Parses the inode name removing unwanted chars from it.
-	 * 
-	 * @param field
-	 * @param term
-	 * @param name
-	 * @return Query
-	 */
-	public static Query analyze(String field, Term term, String name) {
-		TokenStream ts = ANALYZER.tokenStream(field, new StringReader(name));
-
-		BooleanQuery bQuery = new BooleanQuery();
-		WildcardQuery wQuery;
-
-		Set<String> tokens = new HashSet<String>(); // avoids repeated terms.
-
-		// get the CharTermAttribute from the TokenStream
-		CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);
-
-		try {
-			ts.reset();
-			while (ts.incrementToken()) {
-				tokens.add(termAtt.toString());
-			}
-			ts.end();
-			ts.close();
-		} catch (IOException e) {
-			logger.error("IOException analyzing string", e);
-		}
-
-		for (String text : tokens) {
-			wQuery = new WildcardQuery(term.createTerm(text));
-			bQuery.add(wQuery, Occur.MUST);
-		}
-
-		return bQuery;
 	}
 
 	/**
