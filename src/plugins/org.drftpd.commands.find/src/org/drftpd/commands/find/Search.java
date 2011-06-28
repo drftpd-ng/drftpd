@@ -77,10 +77,9 @@ public class Search extends CommandInterface {
 		else if (type != null && type.equals("f"))
 			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 
-        int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
-        String pathFilter = request.getProperties().getProperty("path_filter","");
+		int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
 
-		return search(request, params, limit, pathFilter);
+		return search(request, params, limit);
 	}
 
 	public CommandResponse doDUPE(CommandRequest request) throws ImproperUsageException {
@@ -104,13 +103,12 @@ public class Search extends CommandInterface {
 		else if (type != null && type.equals("f"))
 			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 
-        int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
-        String pathFilter = request.getProperties().getProperty("path_filter","");
+		int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
 
-		return search(request, params, limit, pathFilter);
+		return search(request, params, limit);
 	}
 
-	private CommandResponse search(CommandRequest request, AdvancedSearchParams params, int limit, String pathFilter) {
+	private CommandResponse search(CommandRequest request, AdvancedSearchParams params, int limit) {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -146,10 +144,6 @@ public class Search extends CommandInterface {
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
-				if (inode.getPath().matches(pathFilter)) {
-					// Path filtered for this command
-					continue;
-				}
 				env.add("name", inode.getName());
 				env.add("path", inode.getPath());
 				env.add("owner", inode.getUsername());
@@ -167,7 +161,7 @@ public class Search extends CommandInterface {
 		}
 
 		env.add("limit", limit);
-		env.add("results", responses.size());
+		env.add("results", inodes.size());
 		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
 
 		for (String line : responses) {

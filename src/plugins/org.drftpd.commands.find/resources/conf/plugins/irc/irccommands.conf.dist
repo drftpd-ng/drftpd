@@ -8,29 +8,28 @@ limit.default 5
 limit.max 20
 # When set to false it will only find stuff publicly available, if true it will honor the privpath rules
 observe.privpath false
-# Regex path filter
-#path_filter ^/PRE/.*
 sendToSlaves =siteop
 deleteFromSlaves =siteop
 wipe =siteop
 nuke =siteop =nuke
 help Searches for files and directories in the filesystem w/ some neat filters and actions.
-help.specific ${command} <options>
+help.specific ${command} <options> <actions>
 help.specific Options: -user <user> | -group <group> | -f[ile] | -d[ir] | -section <section>
-help.specific Options: -slaves <slave[,slave,..]> | -age <start date>:<end date>
+help.specific Options: -slaves <slave[ slave ..]> | -age <start date>:<end date>
 help.specific Options: -0byte | -size <min size>:<max size> | -nbrofslaves <min>:<max>
 help.specific Options: -sort <field> <asc|desc> | -quiet | -limit <number>
-help.specific Options: -regex <pattern> | -exact <name> | -name <["]word[ word .."]> | -endswith <name>
-help.specific Valid format: yyyy.MM.dd OR yyyy.MM.dd.HH.mm.ss, Example: 2010.01.29.08.36.33
+help.specific Options: -regex <pattern> | -exact <name> | -name <word[ word ..]> | -endswith <name>
+help.specific Actions: -print | -printf <format[ format ..]> | -wipe | -delete
+help.specific Actions: -nuke <multiplier> [reason] | -unnuke [reason]
+help.specific Action: -sendtoslaves <numtransfers> [slave[,slave,..]] [priority]
+help.specific Action: -deletefromslaves <slave[ slave ..]>
+help.specific All options/actions with multiple or space in arguments must be enclosed with "
+help.specific Valid date format: yyyy.MM.dd OR yyyy.MM.dd.HH.mm.ss, Example: 2010.01.29.08.36.33
 help.specific For range options min or max can be left empty
 help.specific Valid sort fields: parentPath fullPath(default) owner group type nbrOfSlaves lastModified size
 help.specific Regex option matches against full path.
 help.specific Exact option makes a wildcard query against exact file/dir name.
 help.specific Wildcards(* and ?) available but not within the first three chars.
-help.specific Actions: print, printf[(format)], wipe, delete
-help.specific Actions: nuke <multiplier[:reason]]> | unnuke [reason]
-help.specific Action: sendtoslaves <numtransfers[:slave[,slave,..][:priority]]>
-help.specific Action: deletefromslaves <slave[,slave[,...]]>
 help.specific Options for printf format:
 help.specific #f - name
 help.specific #p - path
@@ -41,8 +40,8 @@ help.specific #u - user
 help.specific #g - group
 help.specific #x - slave
 help.specific #t - last modified
-help.specific Example: SITE FIND -action printf(filename: #f size: #s)
-help.specific Multiple options are allowed. If multiple options are given a file/dir must match all options.
+help.specific Example: !FIND -printf "filename: #f size: #s"
+help.specific Multiple options/actions are allowed. If multiple options are given a file/dir must match all options.
 input all
 output source
 }
@@ -59,8 +58,6 @@ observe.privpath false
 type d
 # Only match exact file/dir-name (true/false)
 exact false
-# Regex path filter
-#path_filter ^/PRE/.*
 help Searches for files and directories using wildcards.
 help.specific ${command} <word> [word ..]
 input all
@@ -79,8 +76,6 @@ observe.privpath false
 type f
 # Only match exact file/dir-name (true/false)
 exact true
-# Regex path filter
-#path_filter ^/PRE/.*
 help Searches for files and directories using exact name match.
 help.specific ${command} <name>
 input all

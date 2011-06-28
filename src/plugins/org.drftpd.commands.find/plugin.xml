@@ -17,8 +17,115 @@
 			<export prefix="*" />
 		</library>
 	</runtime>
+
+	<extension-point id="Option">
+		<parameter-def id="OptionName" type="string" />
+		<parameter-def id="ClassName" type="string" />
+	</extension-point>
+	<extension-point id="Action">
+		<parameter-def id="ActionName" type="string" />
+		<parameter-def id="ClassName" type="string" />
+	</extension-point>
 	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
 	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
+	<!-- Options -->
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="NameOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.NameOption"/>
+		<parameter id="OptionName" value="Name"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="RegexOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.NameOption"/>
+		<parameter id="OptionName" value="Regex"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="ExactOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.NameOption"/>
+		<parameter id="OptionName" value="Exact"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="EndswithOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.NameOption"/>
+		<parameter id="OptionName" value="Endswith"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="UserOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.UserOption"/>
+		<parameter id="OptionName" value="User"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="GroupOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.UserOption"/>
+		<parameter id="OptionName" value="Group"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="AgeOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.AgeOption"/>
+		<parameter id="OptionName" value="Age"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="SizeOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.SizeOption"/>
+		<parameter id="OptionName" value="Size"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="0ByteOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.SizeOption"/>
+		<parameter id="OptionName" value="0Byte"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="SlavesOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.SlaveOption"/>
+		<parameter id="OptionName" value="Slaves"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="NbrOfSlavesOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.SlaveOption"/>
+		<parameter id="OptionName" value="NbrOfSlaves"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="FileOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.TypeOption"/>
+		<parameter id="OptionName" value="File"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="FileShortOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.TypeOption"/>
+		<parameter id="OptionName" value="F"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="DirOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.TypeOption"/>
+		<parameter id="OptionName" value="Dir"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="DirShortOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.option.TypeOption"/>
+		<parameter id="OptionName" value="D"/>
+	</extension>
+	<!-- End Options -->
+
+	<!-- Actions -->
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="PrintAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.PrintAction"/>
+		<parameter id="ActionName" value="Print"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="PrintfAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.PrintfAction"/>
+		<parameter id="ActionName" value="Printf"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="DeleteAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.DeleteAction"/>
+		<parameter id="ActionName" value="Delete"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="WipeAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.WipeAction"/>
+		<parameter id="ActionName" value="Wipe"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="DeleteFromSlavesAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.DeleteFromSlavesAction"/>
+		<parameter id="ActionName" value="DeleteFromSlaves"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="SendToSlavesAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.SendToSlavesAction"/>
+		<parameter id="ActionName" value="SendToSlaves"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="NukeAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.NukeAction"/>
+		<parameter id="ActionName" value="Nuke"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Action" id="UnnukeAction">
+		<parameter id="ClassName" value="org.drftpd.commands.find.action.UnnukeAction"/>
+		<parameter id="ActionName" value="Unnuke"/>
+	</extension>
+	<!-- End Actions -->
 
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="FindHandler" />
 
