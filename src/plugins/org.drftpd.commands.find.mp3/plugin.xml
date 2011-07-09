@@ -1,0 +1,40 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
+<plugin id="org.drftpd.commands.find.mp3" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides mp3 metadata query options for find.</doc-text>
+	</doc>
+	<requires>
+		<import plugin-id="org.drftpd.commands.find" exported="true" />
+		<import plugin-id="org.drftpd.vfs.index.lucene.extensions.mp3" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.find.mp3" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<!-- Options -->
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="MP3GenreOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.mp3.MP3Option"/>
+		<parameter id="OptionName" value="MP3Genre"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="MP3TitleOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.mp3.MP3Option"/>
+		<parameter id="OptionName" value="MP3Title"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="MP3ArtistOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.mp3.MP3Option"/>
+		<parameter id="OptionName" value="MP3Artist"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="MP3AlbumOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.mp3.MP3Option"/>
+		<parameter id="OptionName" value="MP3Album"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="MP3YearOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.mp3.MP3Option"/>
+		<parameter id="OptionName" value="MP3Year"/>
+	</extension>
+	<!-- End Options -->
+</plugin>

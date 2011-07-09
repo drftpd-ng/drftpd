@@ -31,7 +31,6 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
 import org.drftpd.Time;
-import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.event.SFVMemberTransferEvent;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
@@ -44,6 +43,7 @@ import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -232,29 +232,29 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 								Integer.toString(
 										(stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
 						raceenv.add("alup",
-								new Integer(UserTransferStats.getStatsPlace("ALUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("ALUP", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("monthup",
-								new Integer(UserTransferStats.getStatsPlace("MONTHUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("MONTHUP", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("wkup",
-								new Integer(UserTransferStats.getStatsPlace("WKUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("WKUP", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("dayup",
-								new Integer(UserTransferStats.getStatsPlace("DAYUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("DAYUP", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("aldn",
-								new Integer(UserTransferStats.getStatsPlace("ALDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("ALDN", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("monthdn",
-								new Integer(UserTransferStats.getStatsPlace("MONTHDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("MONTHDN", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("wkdn",
-								new Integer(UserTransferStats.getStatsPlace("WKDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("WKDN", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("daydn",
-								new Integer(UserTransferStats.getStatsPlace("DAYDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+								UserTransferStats.getStatsPlace("DAYDN", raceuser,
+										GlobalContext.getGlobalContext().getUserManager()));
 						sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete.racer", raceenv, _bundle), writer);
 						
 						position++;
@@ -351,7 +351,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 		env.add("section", writer.getSectionName(dir));
 		env.add("path", writer.getPath(dir));
 
-		TransferEvent event = null;
+		TransferEvent event;
 
 		if (direvent instanceof TransferEvent) {
 			event = (TransferEvent) direvent;
@@ -440,7 +440,6 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 			}
 		} catch (FileNotFoundException e1) {
 			// The directory or file no longer exists, just fail out of the method
-			return;
 		}	
 	}
 }

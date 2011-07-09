@@ -21,8 +21,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.protocol.zipscript.zip.common.DizStatus;
 import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.DirectoryHandle;
@@ -90,5 +93,22 @@ public class ZipTools {
 
 	public static boolean getZipIntegrityFromIndex(RemoteSlave rslave, String index) throws RemoteIOException, SlaveUnavailableException {
 		return ((AsyncResponseZipCRCInfo) rslave.fetchResponse(index)).isOk();
+	}
+
+	public static DizStatus getDizStatus(DizInfo dizInfo, DirectoryHandle dir)
+	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+		int offline = 0;
+		int present = 0;
+		for (FileHandle file : dir.getFilesUnchecked()) {
+			if (file.isFile() && file.getName().toLowerCase().endsWith(".zip")) {
+				if (!file.isUploading()) {
+					present++;
+				}
+				if (!file.isAvailable()) {
+					offline++;
+				}
+			}
+		}
+		return new DizStatus(dizInfo.getTotal(), offline, present);
 	}
 }

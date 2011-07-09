@@ -26,6 +26,7 @@ import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.plugins.linkmanager.LinkManager;
 import org.drftpd.plugins.linkmanager.LinkType;
 import org.drftpd.vfs.FileHandle;
@@ -92,6 +93,8 @@ public class ZipIncompleteManager implements PluginInterface {
 				// can't read .zip - ignore
 			} catch (NoAvailableSlaveException e) {
 				// no slaves available for .zip - ignore
+			} catch (SlaveUnavailableException e) {
+				// no slaves available for .zip - ignore
 			}
         }
     }
@@ -123,6 +126,8 @@ public class ZipIncompleteManager implements PluginInterface {
 						// can't read zip - ignore
 					} catch (NoAvailableSlaveException e) {
 						// no slaves available for zip - ignore
+					} catch (SlaveUnavailableException e) {
+						// no slaves available for .zip - ignore
 					}
 					
 					/* Can't find the zip file - lets delete the links */

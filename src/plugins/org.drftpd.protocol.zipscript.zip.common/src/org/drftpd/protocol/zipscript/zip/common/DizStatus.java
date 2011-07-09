@@ -15,21 +15,21 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.zipscript;
+package org.drftpd.protocol.zipscript.zip.common;
 
 /**
- * @author mog
+ * @author djb61
  * @version $Id$
  */
 
-public class SFVStatus {
+public class DizStatus {
 	private int _offline;
 
 	private int _present;
 
 	private int _total;
 
-	public SFVStatus(int total, int offline, int present) {
+	public DizStatus(int total, int offline, int present) {
 		_total = total;
 		_offline = offline;
 		_present = present;
@@ -74,6 +74,7 @@ public class SFVStatus {
 	}
 
 	public boolean isFinished() {
-		return getMissing() == 0;
+		// less strict than for sfv as we could have more zips than the diz total
+		return getMissing() <= 0;
 	}
 }

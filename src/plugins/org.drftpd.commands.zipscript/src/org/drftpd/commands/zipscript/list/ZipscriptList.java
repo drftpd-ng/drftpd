@@ -31,7 +31,6 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.LoadPluginEvent;
@@ -39,6 +38,7 @@ import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
@@ -154,8 +154,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 				}
 				if (statusBarBuilder.length() > 0) {
 					env.add("statusbar",statusBarBuilder.toString());
-					String statusDirName = null;
-					statusDirName = container.getSession().jprintf(bundle,
+					String statusDirName = container.getSession().jprintf(bundle,
 							keyPrefix+"statusbar.format",env, container.getUser());
 
 					if (statusDirName == null) {

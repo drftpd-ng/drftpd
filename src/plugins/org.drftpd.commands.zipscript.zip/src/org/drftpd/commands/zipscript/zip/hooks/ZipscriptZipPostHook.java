@@ -34,7 +34,6 @@ import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
-import org.drftpd.commands.zipscript.zip.DizStatus;
 import org.drftpd.commands.zipscript.zip.ZipTools;
 import org.drftpd.commands.zipscript.zip.event.ZipTransferEvent;
 import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
@@ -44,6 +43,7 @@ import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.protocol.zipscript.zip.common.DizStatus;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -148,7 +148,6 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 				response.addComment("File has already been deleted, skipping zip integrity check");
 			}
 		}
-		return;
 	}
 
 	public void doZipscriptCWDDizInfoHook(CommandRequest request, CommandResponse response) {
@@ -239,7 +238,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			return;
 		}
 		
-		DirectoryHandle wipeDir = null;
+		DirectoryHandle wipeDir;
 		try {
 			wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(response.getObject(Dir.WIPE_PATH)).getParent();
 		} catch (KeyNotFoundException e) {
@@ -395,6 +394,8 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 		} catch (IOException e) {
 			//Error fetching SFV, ignore
 		} catch (NoAvailableSlaveException e) {
+			//Error fetching SFV, ignore
+		} catch (SlaveUnavailableException e) {
 			//Error fetching SFV, ignore
 		}
 	}

@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
+<plugin id="org.drftpd.vfs.index.lucene.extensions.mp3" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides queries mp3 metadata in the lucene index</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.mp3.common" exported="true" />
+		<import plugin-id="org.drftpd.vfs.index.lucene" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.vfs.index.lucene.extensions.mp3" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension plugin-id="org.drftpd.vfs.index.lucene" point-id="IndexData" id="MP3DataExtension">
+		<parameter id="Class" value="org.drftpd.vfs.index.lucene.extensions.mp3.MP3DataExtension"/>
+	</extension>
+	<extension plugin-id="org.drftpd.vfs.index.lucene" point-id="QueryTerm" id="MP3QueryExtension">
+		<parameter id="Class" value="org.drftpd.vfs.index.lucene.extensions.mp3.MP3QueryExtension"/>
+	</extension>
+</plugin>

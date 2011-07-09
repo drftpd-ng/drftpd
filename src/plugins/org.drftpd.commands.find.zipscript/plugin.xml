@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
+<plugin id="org.drftpd.commands.find.zipscript" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides sfv/zip metadata query options for find.</doc-text>
+	</doc>
+	<requires>
+		<import plugin-id="org.drftpd.commands.find" exported="true" />
+		<import plugin-id="org.drftpd.vfs.index.lucene.extensions.zipscript" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.find.zipscript" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<!-- Options -->
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="ZipscriptPresentOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.zipscript.ZipscriptOption"/>
+		<parameter id="OptionName" value="Present"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="ZipscriptMissingOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.zipscript.ZipscriptOption"/>
+		<parameter id="OptionName" value="Missing"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="ZipscriptPercentOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.zipscript.ZipscriptOption"/>
+		<parameter id="OptionName" value="Percent"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="ZipscriptIncompleteOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.zipscript.ZipscriptOption"/>
+		<parameter id="OptionName" value="Incomplete"/>
+	</extension>
+	<!-- End Options -->
+</plugin>

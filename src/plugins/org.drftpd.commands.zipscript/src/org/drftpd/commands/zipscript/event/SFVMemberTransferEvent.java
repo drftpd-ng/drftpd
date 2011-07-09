@@ -19,12 +19,12 @@ package org.drftpd.commands.zipscript.event;
 
 import java.net.InetAddress;
 
-import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.vfs.FileHandle;
 
 /**

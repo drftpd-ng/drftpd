@@ -21,16 +21,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.zipscript.SFVStatus;
+import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.protocol.zipscript.common.async.AsyncResponseSFVInfo;
 import org.drftpd.protocol.zipscript.master.ZipscriptIssuer;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -73,7 +73,7 @@ public class ZipscriptVFSDataSFV {
 		for (FileHandle file : _dir.getFilesUnchecked()) {
 			if (file.getSize() > 0 && file.getXfertime() != -1 && file.getName().toLowerCase().endsWith(".sfv")) {
 				for (int i = 0; i < 5; i++) {
-					SFVInfo info = null;
+					SFVInfo info;
 					RemoteSlave rslave = file.getASlaveForFunction();
 					String index;
 					try {
@@ -95,21 +95,7 @@ public class ZipscriptVFSDataSFV {
 	}
 	
 	public SFVStatus getSFVStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
-		int offline = 0;
-		int present = 0;
-		SFVInfo sfvInfo = getSFVInfo();
-		CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
-		for (FileHandle file : _dir.getFilesUnchecked()) {
-			if (file.isFile() && sfvEntries.containsKey(file.getName())) {
-				if (!file.isUploading()) {
-					present++;
-				}
-				if (!file.isAvailable()) {
-					offline++;
-				}
-			}
-		}
-		return new SFVStatus(sfvEntries.size(), offline, present);
+		return SFVTools.getSFVStatus(getSFVInfo(), _dir);
 	}
 	
 	private SFVInfo getSFVInfoFromInode(DirectoryHandle vfsDirHandle) throws FileNotFoundException, KeyNotFoundException {

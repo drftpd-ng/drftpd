@@ -25,6 +25,8 @@ import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
+import org.drftpd.vfs.CaseInsensitiveTreeMap;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
@@ -89,5 +91,23 @@ public class SFVTools {
 		}
 
 		return getSFVTotalBytes(dir, sfvData) / (totalXfertime / 1000);
+	}
+
+	public static SFVStatus getSFVStatus(SFVInfo sfvInfo, DirectoryHandle dir)
+	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+		int offline = 0;
+		int present = 0;
+		CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
+		for (FileHandle file : dir.getFilesUnchecked()) {
+			if (file.isFile() && sfvEntries.containsKey(file.getName())) {
+				if (!file.isUploading()) {
+					present++;
+				}
+				if (!file.isAvailable()) {
+					offline++;
+				}
+			}
+		}
+		return new SFVStatus(sfvEntries.size(), offline, present);
 	}
 }

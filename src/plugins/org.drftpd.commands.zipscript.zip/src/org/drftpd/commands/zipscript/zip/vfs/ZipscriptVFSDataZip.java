@@ -21,12 +21,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.zipscript.zip.DizStatus;
+import org.drftpd.commands.zipscript.zip.ZipTools;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.protocol.zipscript.zip.common.DizStatus;
 import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseDizInfo;
 import org.drftpd.protocol.zipscript.zip.master.ZipscriptZipIssuer;
 import org.drftpd.slave.RemoteIOException;
@@ -48,8 +49,7 @@ public class ZipscriptVFSDataZip {
 
 	public DizInfo getDizInfo() throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		try {
-			DizInfo dizInfo = getDizInfoFromInode(_dir);
-			return dizInfo;
+			return getDizInfoFromInode(_dir);
 		} catch (KeyNotFoundException e1) {
 			// bah, let's load it
 		}
@@ -68,7 +68,7 @@ public class ZipscriptVFSDataZip {
 				} catch (RemoteIOException e) {
 					// continue, the next zip might work
 				}
-				if (dizInfo.isValid()) {
+				if (dizInfo != null && dizInfo.isValid()) {
 					break;
 				}
 			}
@@ -82,21 +82,8 @@ public class ZipscriptVFSDataZip {
 		throw new FileNotFoundException("No usable zip files found in directory");
 	}
 
-	public DizStatus getDizStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException {
-		int offline = 0;
-		int present = 0;
-		DizInfo dizInfo = getDizInfo();
-		for (FileHandle file : _dir.getFilesUnchecked()) {
-			if (file.isFile() && file.getName().toLowerCase().endsWith(".zip")) {
-				if (!file.isUploading()) {
-					present++;
-				}
-				if (!file.isAvailable()) {
-					offline++;
-				}
-			}
-		}
-		return new DizStatus(dizInfo.getTotal(), offline, present);
+	public DizStatus getDizStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+		return ZipTools.getDizStatus(getDizInfo(), _dir);
 	}
 
 	private DizInfo getDizInfoFromInode(InodeHandle vfsInodeHandle) throws FileNotFoundException, KeyNotFoundException {

@@ -8,7 +8,7 @@
 		<attribute id="MustBuild" value="true" />
 	</attributes>
 	<requires>
-		<import plugin-id="master"/>
+		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
 		<library id="org.drftpd.vfs.index.lucene" path="classes/" type="code">

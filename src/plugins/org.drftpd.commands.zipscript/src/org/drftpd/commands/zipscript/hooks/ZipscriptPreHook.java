@@ -33,6 +33,7 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.permissions.GlobPathPermission;
@@ -65,6 +66,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 			getPropertiesForPlugin("zipscript.conf");
 		if (cfg == null) {
 			logger.fatal("conf/zipscript.conf not found");
+			throw new FatalException("conf/zipscript.conf not found");
 		}
 		// SFV First PathPermissions
 		String sfvFirstUsers = cfg.getProperty("sfvfirst.users", "");
@@ -185,14 +187,11 @@ public class ZipscriptPreHook implements PreHookInterface {
 	}
 
 	private boolean checkSfvFirstEnforcedPath(DirectoryHandle dir, User user) {
-		if (_sfvFirstRequired
+		return _sfvFirstRequired
 				&& GlobalContext.getConfig().checkPathPermission("sfvfirst.pathcheck",
 						user, dir)
 				&& !GlobalContext.getConfig().checkPathPermission(
-						"sfvfirst.pathignore", user, dir)) {
-			return true;
-		}
-		return false;
+						"sfvfirst.pathignore", user, dir);
 	}
 	
 	private boolean checkSfvDenySubdir(FileHandle file) {

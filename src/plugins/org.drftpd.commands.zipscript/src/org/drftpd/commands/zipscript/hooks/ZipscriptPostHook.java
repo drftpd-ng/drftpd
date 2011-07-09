@@ -35,7 +35,6 @@ import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
-import org.drftpd.commands.zipscript.SFVStatus;
 import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.commands.zipscript.event.SFVMemberTransferEvent;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
@@ -45,6 +44,7 @@ import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -127,7 +127,6 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
 			//response.addComment("Slave has disabled download checksum");
 		}
-		return;
 	}
 
 	public void doZipscriptSTORPostCheck(CommandRequest request, CommandResponse response) {
@@ -221,7 +220,6 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 				"zipscript - SFV unavailable, slave(s) with .sfv file is offline");
 			}
 		}
-		return;
 	}
 
 	public void doZipscriptCWDStatsHook(CommandRequest request, CommandResponse response) {
