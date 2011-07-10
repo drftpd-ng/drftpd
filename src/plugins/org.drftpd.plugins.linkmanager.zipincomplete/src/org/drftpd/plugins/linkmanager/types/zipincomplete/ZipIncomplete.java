@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.plugins.linkmanager.LinkType;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -75,8 +74,6 @@ public class ZipIncomplete extends LinkType {
 		} catch (IOException e) {
 			// can't read .zip - ignore
 		} catch (NoAvailableSlaveException e) {
-			// no slaves available for .zip - ignore
-		} catch (SlaveUnavailableException e) {
 			// no slaves available for .zip - ignore
 		}
 	}

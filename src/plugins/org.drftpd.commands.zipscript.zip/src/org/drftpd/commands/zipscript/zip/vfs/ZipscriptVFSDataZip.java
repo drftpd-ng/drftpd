@@ -82,7 +82,7 @@ public class ZipscriptVFSDataZip {
 		throw new FileNotFoundException("No usable zip files found in directory");
 	}
 
-	public DizStatus getDizStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	public DizStatus getDizStatus() throws IOException, FileNotFoundException, NoAvailableSlaveException {
 		return ZipTools.getDizStatus(getDizInfo(), _dir);
 	}
 

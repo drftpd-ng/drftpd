@@ -395,8 +395,6 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			//Error fetching SFV, ignore
 		} catch (NoAvailableSlaveException e) {
 			//Error fetching SFV, ignore
-		} catch (SlaveUnavailableException e) {
-			//Error fetching SFV, ignore
 		}
 	}
 }

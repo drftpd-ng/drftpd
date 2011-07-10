@@ -21,8 +21,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
@@ -67,10 +65,6 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
 				// Fields will be cleared below
 			} catch (FileNotFoundException e) {
 				// Fields will be cleared below
-			} catch (NoAvailableSlaveException e) {
-				// Fields will be cleared below
-			} catch (SlaveUnavailableException e) {
-				// Fields will be cleared below
 			} catch (IOException e) {
 				// Fields will be cleared below
 			}
@@ -80,10 +74,6 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
 			} catch (KeyNotFoundException e) {
 				// Fields will be cleared below
 			} catch (FileNotFoundException e) {
-				// Fields will be cleared below
-			} catch (NoAvailableSlaveException e) {
-				// Fields will be cleared below
-			} catch (SlaveUnavailableException e) {
 				// Fields will be cleared below
 			} catch (IOException e) {
 				// Fields will be cleared below
@@ -105,7 +95,7 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
 	}
 
 	private SFVStatus getSFVStatus(SFVInfo sfvInfo, DirectoryHandle dir)
-	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	throws IOException, FileNotFoundException {
 		int offline = 0;
 		int present = 0;
 		CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
@@ -123,7 +113,7 @@ public class ZipscriptDataExtension implements IndexDataExtensionInterface {
 	}
 
 	private DizStatus getDizStatus(DizInfo dizInfo, DirectoryHandle dir)
-	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	throws IOException, FileNotFoundException {
 		int offline = 0;
 		int present = 0;
 		for (FileHandle file : dir.getFilesUnchecked()) {

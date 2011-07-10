@@ -94,7 +94,7 @@ public class SFVTools {
 	}
 
 	public static SFVStatus getSFVStatus(SFVInfo sfvInfo, DirectoryHandle dir)
-	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	throws IOException, FileNotFoundException {
 		int offline = 0;
 		int present = 0;
 		CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();

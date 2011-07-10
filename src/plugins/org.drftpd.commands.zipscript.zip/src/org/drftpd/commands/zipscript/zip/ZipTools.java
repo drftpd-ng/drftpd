@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
@@ -96,7 +95,7 @@ public class ZipTools {
 	}
 
 	public static DizStatus getDizStatus(DizInfo dizInfo, DirectoryHandle dir)
-	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
+	throws IOException, FileNotFoundException {
 		int offline = 0;
 		int present = 0;
 		for (FileHandle file : dir.getFilesUnchecked()) {
