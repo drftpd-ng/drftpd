@@ -39,6 +39,7 @@ public class ConnectionStressTest extends TestCase {
 	
 	private static final Logger logger = Logger.getLogger(ConnectionStressTest.class);
 	
+	@SuppressWarnings("unused")
 	private int failures = 0;
 	private int success = 0;
 	

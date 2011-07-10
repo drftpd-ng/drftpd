@@ -231,9 +231,7 @@ public class DataConnectionHandler extends CommandInterface {
 						// make it loop till it finds a good one
 						slave = null;
 					} catch (RemoteIOException e) {
-						if (slave != null) {
-							slave.setOffline("Slave could not listen for a connection");
-						}
+						slave.setOffline("Slave could not listen for a connection");
 						logger.error("Slave could not listen for a connection", e);
 						// make it loop until it finds a good one
 						slave = null;
@@ -262,10 +260,7 @@ public class DataConnectionHandler extends CommandInterface {
 						// make it loop till it finds a good one
 						slave = null;
 					} catch (RemoteIOException e) {
-						if (slave != null) {
-							slave
-							.setOffline("Slave could not listen for a connection");
-						}
+						slave.setOffline("Slave could not listen for a connection");
 						logger.error("Slave could not listen for a connection",
 								e);
 						// make it loop until it finds a good one
@@ -456,8 +451,6 @@ public class DataConnectionHandler extends CommandInterface {
 				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
 			} catch (FileNotFoundException e) {
 				// this is good, do nothing
-				// should be null already, but just for my (current) sanity
-				file = null;
 			} catch (ObjectNotValidException e) {
 				// this is not good, file exists
 				// until we can upload multiple instances of files
