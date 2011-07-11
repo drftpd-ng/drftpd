@@ -33,8 +33,9 @@ public class SlowTransferEvent {
 	private long _minspeed;
 	private long _speed;
 	private long _transfered;
+	private String _slavename;
 	
-	public SlowTransferEvent(User user, String path, String file, boolean isStor, BaseFtpConnection conn, long minspeed, long speed, long transfered) {
+	public SlowTransferEvent(User user, String path, String file, boolean isStor, BaseFtpConnection conn, long minspeed, long speed, long transfered, String slavename) {
 		_user = user;
 		_path = path;
 		_file = file;
@@ -43,6 +44,7 @@ public class SlowTransferEvent {
 		_minspeed = minspeed;
 		_speed = speed;
 		_transfered = transfered;
+		_slavename = slavename;
 	}
 
 	public User getUser() {
@@ -76,5 +78,9 @@ public class SlowTransferEvent {
 	public long getTransfered() {
 		return _transfered;
 	}	
+	
+	public String getSlaveName() {
+		return _slavename;
+	}
 	
 }

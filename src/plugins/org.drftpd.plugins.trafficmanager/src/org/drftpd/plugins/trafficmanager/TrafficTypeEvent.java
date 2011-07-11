@@ -32,8 +32,9 @@ public class TrafficTypeEvent {
 	private long _minspeed;
 	private long _speed;
 	private long _transfered;
+	private String _slavename;
 	
-	public TrafficTypeEvent(String type, User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered) {
+	public TrafficTypeEvent(String type, User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, String slavename) {
 		_type = type;
 		_user = user;
 		_path = path;
@@ -42,6 +43,7 @@ public class TrafficTypeEvent {
 		_minspeed = minspeed;
 		_speed = speed;
 		_transfered = transfered;
+		_slavename = slavename;
 	}
 
 	public String getType() {
@@ -75,5 +77,9 @@ public class TrafficTypeEvent {
 	public long getTransfered() {
 		return _transfered;
 	}	
+	
+	public String getSlaveName() {
+		return _slavename;
+	}
 	
 }

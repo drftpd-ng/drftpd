@@ -1021,7 +1021,7 @@ public class DataConnectionHandler extends CommandInterface {
 					if (ex.getCause() instanceof TransferSlowException) {
 						TransferSlowException tse = (TransferSlowException) ex.getCause();
 						slowDenied = true;
-						GlobalContext.getEventService().publish(new SlowTransferEvent(user,ts.getTransferFile().getParent().getPath(),ts.getTransferFile().getName(),isStor,conn,request.getObjectLong(MIN_XFER_SPEED),tse.getStatus().getXferSpeed(), tse.getStatus().getTransfered()));
+						GlobalContext.getEventService().publish(new SlowTransferEvent(user,ts.getTransferFile().getParent().getPath(),ts.getTransferFile().getName(),isStor,conn,request.getObjectLong(MIN_XFER_SPEED),tse.getStatus().getXferSpeed(), tse.getStatus().getTransfered(),ts.getTransferSlave().getName()));
 						response = new CommandResponse(426, "You are transfering too slow");	
 					} else if (ex.getCause() instanceof TransferDeniedException) {
 						fxpDenied = true;

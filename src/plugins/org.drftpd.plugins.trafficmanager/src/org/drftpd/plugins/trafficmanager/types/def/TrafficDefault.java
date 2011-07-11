@@ -36,11 +36,11 @@ public class TrafficDefault extends TrafficType {
 	}
 
 	@Override
-	public void doAction(User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn) {
+	public void doAction(User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slavename) {
 		/*
 		 * Don't do anything, just publish Event for announce.
 		 */
-		GlobalContext.getEventService().publishAsync(new TrafficTypeEvent(getType(),user,path,file,isStor,minspeed,speed,transfered));
+		GlobalContext.getEventService().publishAsync(new TrafficTypeEvent(getType(),user,path,file,isStor,minspeed,speed,transfered,slavename));
 	}
 
 }

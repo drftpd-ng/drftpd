@@ -73,6 +73,7 @@ public class TrafficDefaultAnnouncer extends AbstractAnnouncer {
 				env.add("nickname",event.getUser().getName());
 				env.add("file",event.getFile());
 				env.add("path",event.getPath());
+				env.add("slave",event.getSlaveName());
 				
 				env.add("transfered",Bytes.formatBytes(event.getTransfered()));
 				env.add("minspeed",Bytes.formatBytes(event.getMinSpeed()) + "/s");

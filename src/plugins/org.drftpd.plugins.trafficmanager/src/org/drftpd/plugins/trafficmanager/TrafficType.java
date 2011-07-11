@@ -140,6 +140,6 @@ public abstract class TrafficType {
 		return _dn;
 	}		
 	
-	public abstract void doAction(User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn);
+	public abstract void doAction(User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slaveName);
 
 }
