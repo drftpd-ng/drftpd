@@ -127,7 +127,6 @@ public class Find extends CommandInterface {
 
 		boolean quiet = false;
 
-		//StringTokenizer st = new StringTokenizer(request.getArgument());
 		LinkedList<String> args = new LinkedList<String>(Arrays.asList(request.getArgument().split("\\s+")));
 
 		if (args.isEmpty()) {
