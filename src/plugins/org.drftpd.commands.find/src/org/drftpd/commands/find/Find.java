@@ -159,10 +159,8 @@ public class Find extends CommandInterface {
 				}
 				dir = GlobalContext.getGlobalContext().getSectionManager().
 						getSection(args.poll()).getBaseDirectory();
-			}
-
-			// Check if arg matches any of the loaded options
-			if (_optionsMap.containsKey(arg)) {
+			} else if (_optionsMap.containsKey(arg)) {
+				// Check if arg matches any of the loaded options
 				try {
 					OptionInterface option = _optionsMap.get(arg);
 					option.exec(arg, getArgs(args), params);
@@ -171,6 +169,7 @@ public class Find extends CommandInterface {
 					return new CommandResponse(500, e.getMessage());
 				}
 			} else if (_actionsMap.containsKey(arg)) {
+				// Check if arg matches any of the loaded actions
 				if (!checkCustomPermission(request, arg.toLowerCase(), "*")) {
 					return new CommandResponse(500, "You do not have the proper permissions for " + arg);
 				}
@@ -182,6 +181,9 @@ public class Find extends CommandInterface {
 					logger.error("Action = " + arg, e);
 					return new CommandResponse(500, e.getMessage());
 				}
+			} else {
+				// Switch doesn't exist
+				throw new ImproperUsageException();
 			}
 		}
 
