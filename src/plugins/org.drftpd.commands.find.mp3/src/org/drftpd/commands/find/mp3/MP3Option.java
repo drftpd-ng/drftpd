@@ -65,7 +65,7 @@ public class MP3Option implements OptionInterface {
 				} else if (range[0] != null) {
 					queryParams.setMinYear(Integer.valueOf(range[0]));
 				} else if (range[1] != null) {
-					queryParams.setMinYear(0); // We dont want to search for negative values
+					queryParams.setMinYear(1); // We dont want to search for years <= zero
 					queryParams.setMaxYear(Integer.valueOf(range[1]));
 				}
 			} catch (NumberFormatException e) {

@@ -164,7 +164,7 @@ public class Find extends CommandInterface {
 					OptionInterface option = _optionsMap.get(arg);
 					option.exec(arg, getArgs(args), params);
 				} catch (Exception e) {
-					logger.error("Option = " + arg, e);
+					logger.debug("Option = " + arg, e);
 					return new CommandResponse(500, e.getMessage());
 				}
 			} else if (_actionsMap.containsKey(arg)) {
@@ -177,7 +177,7 @@ public class Find extends CommandInterface {
 					action.initialize(arg, getArgs(args));
 					actions.add(action);
 				} catch (Exception e) {
-					logger.error("Action = " + arg, e);
+					logger.debug("Action = " + arg, e);
 					return new CommandResponse(500, e.getMessage());
 				}
 			} else {

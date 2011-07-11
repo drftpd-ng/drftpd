@@ -17,6 +17,7 @@
  */
 package org.drftpd.vfs.index.lucene.extensions.mp3;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
@@ -61,13 +62,14 @@ public class MP3DataExtension implements IndexDataExtensionInterface {
 			FIELD_TITLE.setValue("");
 			FIELD_ARTIST.setValue("");
 			FIELD_ALBUM.setValue("");
-			FIELD_YEAR.setIntValue(0);
+			FIELD_YEAR.setIntValue(-1);
 		} else {
 			FIELD_GENRE.setValue(id3Tag.getGenre());
 			FIELD_TITLE.setValue(id3Tag.getTitle());
 			FIELD_ARTIST.setValue(id3Tag.getArtist());
 			FIELD_ALBUM.setValue(id3Tag.getAlbum());
-			FIELD_YEAR.setIntValue(Integer.parseInt(id3Tag.getYear()));
+			FIELD_YEAR.setIntValue(NumberUtils.isDigits(id3Tag.getYear()) ?
+					Integer.parseInt(id3Tag.getYear()) : -1);
 		}
 	}
 
