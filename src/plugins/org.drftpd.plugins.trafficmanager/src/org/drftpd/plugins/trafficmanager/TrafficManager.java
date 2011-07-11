@@ -151,36 +151,6 @@ public class TrafficManager implements PluginInterface {
 			}
 		}
 	}
-
-	
-	
-	/*
-	 * 				if (trafficType.getType() == 1) {
-					// Kick
-					if (event.getConn() != null) {
-						event.getConn().printOutput(new FtpReply(426, trafficmanagerconf.getReason()));
-						if (event.isStor()) {
-							event.getConn().abortCommand();
-						}
-						event.getConn().stop();
-					}
-				} else if (trafficmanagerconf.getType() == 2) {
-					// Ban
-					event.getUser().getKeyedMap().setObject(UserManagement.BAN_TIME,new Date(System.currentTimeMillis() + (trafficmanagerconf.getBanTime())));
-					event.getUser().getKeyedMap().setObject(UserManagement.BAN_REASON, trafficmanagerconf.getReason());
-					event.getUser().commit();					
-					
-					if (event.getConn() != null) {
-						event.getConn().printOutput(new FtpReply(426, trafficmanagerconf.getReason()));
-						if (event.isStor()) {
-							event.getConn().abortCommand();
-						}						
-						event.getConn().stop();
-					}
-				} else {
-					// do nothing
-				}
-	 */
 }
 
 
