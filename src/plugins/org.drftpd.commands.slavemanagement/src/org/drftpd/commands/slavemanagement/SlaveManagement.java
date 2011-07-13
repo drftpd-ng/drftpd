@@ -387,6 +387,9 @@ public class SlaveManagement extends CommandInterface {
 			}
 			return new CommandResponse(501, session.jprintf(_bundle,
 					_keyPrefix+"slave.delmask.failed", env, request.getUser()));
+		} else if (command.equalsIgnoreCase("shutdown")) {
+			rslave.shutdown();
+			return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		}
 		throw new ImproperUsageException();
 	}
