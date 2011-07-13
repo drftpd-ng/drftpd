@@ -44,6 +44,8 @@ help.specific ${command} <SLAVENAME> ADDMASK <ident@host>
 help.specific Add a host mask that the specified slave is allowed to connect from.
 help.specific ${command} <SLAVENAME> DELMASK <ident@host>
 help.specific Remove a host mask that the specified slave is allowed to connect from.
+help.specific ${command} <SLAVENAME> SHUTDOWN
+help.specific Notify the specified slave to initiate a shutdown (and potentially restart).
 }
 
 SITE ADDSLAVE {
