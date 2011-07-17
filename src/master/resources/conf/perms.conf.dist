@@ -56,6 +56,11 @@ allow_connections *
 # PASV commands
 #pasv_addr 1.1.1.1
 
+# If you have (an) ftp bouncer(s), you have to put their IP(s) here so that drftpd
+# knows if the connection is from a bouncer or a regular user.
+# Either in IPv4 address or hostname format.
+#bouncer_ips 1.2.3.4 another.bouncer.dynamicip.net static.bouncer.com
+
 # SSL/TLS enforcements.
 userrejectsecure        !*
 userrejectinsecure      !*
