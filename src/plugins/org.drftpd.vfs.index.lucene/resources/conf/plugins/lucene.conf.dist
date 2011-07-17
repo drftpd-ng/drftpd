@@ -56,4 +56,5 @@ backup_interval=120
 # Number of backups to be kept.
 # DrFTPd will delete the older backups automagically in order to keep your backup smaller.
 # Keeping, at least, two copies is always a good approach.
+# Setting this value to 0 will disable backups
 max_backups=2

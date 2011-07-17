@@ -43,7 +43,7 @@ public class LuceneBackupThread  extends Thread {
 	private boolean _stop;
 	private boolean _isRunning;
 	
-	private int _maxNumberBackup;
+	protected int _maxNumberBackup;
 	private int _backupInterval;
 	private long _lastBackup;
 	

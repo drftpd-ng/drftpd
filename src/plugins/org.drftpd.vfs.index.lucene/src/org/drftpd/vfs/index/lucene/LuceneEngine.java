@@ -219,7 +219,9 @@ public class LuceneEngine implements IndexEngineInterface {
 
 		Runtime.getRuntime().addShutdownHook(new Thread(new IndexShutdownHookRunnable(), "IndexSaverThread"));
 		_maintenanceThread.start();
-		_backupThread.start();
+		if (_backupThread._maxNumberBackup > 0) {
+			_backupThread.start();
+		}
 
 		_listener = new IndexingVirtualFileSystemListener();
 		_listener.init();
