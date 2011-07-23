@@ -144,7 +144,7 @@ public class Find extends CommandInterface {
 				}
 				try {
 					int newLimit = Integer.parseInt(args.poll());
-					if (newLimit < maxLimit) {
+					if (newLimit > 0 && newLimit < maxLimit) {
 						limit = newLimit;
 					} else {
 						limit = maxLimit;

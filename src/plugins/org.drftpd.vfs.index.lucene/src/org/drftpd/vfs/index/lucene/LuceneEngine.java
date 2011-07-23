@@ -49,6 +49,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TotalHitCountCollector;
 import org.apache.lucene.search.regex.RegexQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Scorer;
@@ -737,6 +738,12 @@ public class LuceneEngine implements IndexEngineInterface {
 
 			iReader = IndexReader.open(_iWriter, true);
 			iSearcher = new IndexSearcher(iReader);
+			if (limit == 0) {
+				TotalHitCountCollector totalHitCountCollector = new TotalHitCountCollector();
+				iSearcher.search(query, totalHitCountCollector);
+				limit = totalHitCountCollector.getTotalHits();
+				logger.debug("Found " + limit + " inode match(es) in the index, using this as limit.");
+			}
 			TopFieldCollector topFieldCollector = TopFieldCollector.create(SORT, limit, true, false, false, false);
 			iSearcher.search(query, topFieldCollector);
 

@@ -2,6 +2,7 @@
 # This parameter limits the number of hits a search can return.
 # The bigger this number is the more cpu/io/memory Lucene will use.
 # Default (100) seems reasonable enough, change it on your own risk.
+# A value of 0 will return all matches in the index, *NOT RECOMMENDED*
 #
 # More info: http://wiki.apache.org/lucene-java/ImproveSearchingSpeed
 max_hits=100
