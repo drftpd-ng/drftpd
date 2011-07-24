@@ -217,11 +217,12 @@ public class VFSPermissions {
 		StringBuilder sb = new StringBuilder();
 
 		HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get("privpath");
-		LinkedList<PathPermission> perms = map.get("privpath");
-
-		if (perms.isEmpty()) {
+		if (map == null) {
+			// No privpath rules found, return null
 			return null;
 		}
+
+		LinkedList<PathPermission> perms = map.get("privpath");
 
 		sb.append('(');
 
