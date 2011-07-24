@@ -190,10 +190,14 @@ public class Find extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
+		String privPathRegex;
 		if (request.getProperties().getProperty("observe.privpath","true").equalsIgnoreCase("true")) {
-			params.setPrivPathRegex(getVFSPermissions().getPrivPathRegex(user));
+			privPathRegex = getVFSPermissions().getPrivPathRegex(user);
 		} else {
-			params.setPrivPathRegex(getVFSPermissions().getPrivPathRegex());
+			privPathRegex = getVFSPermissions().getPrivPathRegex();
+		}
+		if (privPathRegex != null) {
+			params.setPrivPathRegex(privPathRegex);
 		}
 
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();

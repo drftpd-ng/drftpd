@@ -63,7 +63,10 @@ public class Search extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		params.setPrivPathRegex(getPrivPathRegex(request));
+		String privPathRegex = getPrivPathRegex(request);
+		if (privPathRegex != null) {
+			params.setPrivPathRegex(privPathRegex);
+		}
 
 		if (request.getProperties().getProperty("exact","false").equals("true")) {
 			params.setExact(request.getArgument());
@@ -89,7 +92,10 @@ public class Search extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		params.setPrivPathRegex(getPrivPathRegex(request));
+		String privPathRegex = getPrivPathRegex(request);
+		if (privPathRegex != null) {
+			params.setPrivPathRegex(privPathRegex);
+		}
 
 		if (request.getProperties().getProperty("exact","false").equals("true")) {
 			params.setExact(request.getArgument());
