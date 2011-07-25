@@ -32,7 +32,6 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
-import org.drftpd.vfs.perms.VFSPermissions;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
@@ -63,11 +62,6 @@ public class Search extends CommandInterface {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		String privPathRegex = getPrivPathRegex(request);
-		if (privPathRegex != null) {
-			params.setPrivPathRegex(privPathRegex);
-		}
-
 		if (request.getProperties().getProperty("exact","false").equals("true")) {
 			params.setExact(request.getArgument());
 		} else {
@@ -81,40 +75,8 @@ public class Search extends CommandInterface {
 			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 
 		int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
+		params.setLimit(0); // Get all results, we filter out hidden inodes later
 
-		return search(request, params, limit);
-	}
-
-	public CommandResponse doDUPE(CommandRequest request) throws ImproperUsageException {
-		if (!request.hasArgument()) {
-			throw new ImproperUsageException();
-		}
-
-		AdvancedSearchParams params = new AdvancedSearchParams();
-
-		String privPathRegex = getPrivPathRegex(request);
-		if (privPathRegex != null) {
-			params.setPrivPathRegex(privPathRegex);
-		}
-
-		if (request.getProperties().getProperty("exact","false").equals("true")) {
-			params.setExact(request.getArgument());
-		} else {
-			params.setName(request.getArgument());
-		}
-		
-		String type = request.getProperties().getProperty("type");
-		if (type != null && type.equals("d"))
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		else if (type != null && type.equals("f"))
-			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-
-		int limit = Integer.parseInt(request.getProperties().getProperty("limit","5"));
-
-		return search(request, params, limit);
-	}
-
-	private CommandResponse search(CommandRequest request, AdvancedSearchParams params, int limit) {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -136,12 +98,10 @@ public class Search extends CommandInterface {
 
 		CommandResponse response = new CommandResponse(200, "Search complete");
 
-		if (inodes.isEmpty()) {
-			response.addComment(session.jprintf(_bundle,_keyPrefix+"search.empty", env, user.getName()));
-			return response;
-		}
-
 		LinkedList<String> responses = new LinkedList<String>();
+
+		boolean observePrivPath = request.getProperties().
+				getProperty("observe.privpath","true").equalsIgnoreCase("true");
 		
 		InodeHandle inode;
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
@@ -150,6 +110,9 @@ public class Search extends CommandInterface {
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
+				if ((observePrivPath && inode.isHidden(user)) || (!observePrivPath && inode.isHidden(null))) {
+					continue;
+				}
 				env.add("name", inode.getName());
 				env.add("path", inode.getPath());
 				env.add("owner", inode.getUsername());
@@ -167,7 +130,7 @@ public class Search extends CommandInterface {
 		}
 
 		env.add("limit", limit);
-		env.add("results", inodes.size());
+		env.add("results", responses.size());
 		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
 
 		for (String line : responses) {
@@ -175,14 +138,5 @@ public class Search extends CommandInterface {
 		}
 
 		return response;
-	}
-
-	private static String getPrivPathRegex(CommandRequest request) {
-		VFSPermissions VFSperm = GlobalContext.getConfig().getVFSPermissions();
-		User user = request.getSession().getUserNull(request.getUser());
-		if (request.getProperties().getProperty("observe.privpath","true").equalsIgnoreCase("true")) {
-			return VFSperm.getPrivPathRegex(user);
-		}
-		return VFSperm.getPrivPathRegex();
 	}
 }

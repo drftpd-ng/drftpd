@@ -141,10 +141,4 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.find" point-id="PreHook" id="doDupePerm">
-		<parameter id="ParentMethod" value="doDUPE" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
-		<parameter id="HookMethod" value="doPermissionCheck" />
-		<parameter id="Priority" value="1" />
-	</extension>
 </plugin>

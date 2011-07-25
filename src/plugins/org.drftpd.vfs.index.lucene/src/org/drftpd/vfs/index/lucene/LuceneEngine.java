@@ -719,10 +719,6 @@ public class LuceneEngine implements IndexEngineInterface {
 				}
 			}
 
-			if (params.getPrivPathRegex() != null) {
-				query.add(makeFullPathRegexQueryFromString(params.getPrivPathRegex()), Occur.MUST_NOT);
-			}
-
 			int limit = _maxHitsNumber;
 
 			if (params.getLimit() != null) {
@@ -742,6 +738,9 @@ public class LuceneEngine implements IndexEngineInterface {
 				TotalHitCountCollector totalHitCountCollector = new TotalHitCountCollector();
 				iSearcher.search(query, totalHitCountCollector);
 				limit = totalHitCountCollector.getTotalHits();
+				if (limit == 0) {
+					return inodes;
+				}
 				logger.debug("Found " + limit + " inode match(es) in the index, using this as limit.");
 			}
 			TopFieldCollector topFieldCollector = TopFieldCollector.create(SORT, limit, true, false, false, false);

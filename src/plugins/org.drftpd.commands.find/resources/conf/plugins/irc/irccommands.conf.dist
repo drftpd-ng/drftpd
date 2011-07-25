@@ -67,7 +67,7 @@ output source
 dupe {
 plugin org.drftpd.commands.find
 class Search
-method doDUPE
+method doSEARCH
 perms *
 limit 5
 # When set to false it will only find stuff publicly available, if true it will honor the privpath rules

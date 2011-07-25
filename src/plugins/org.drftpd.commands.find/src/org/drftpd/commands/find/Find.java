@@ -52,7 +52,6 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
-import org.drftpd.vfs.perms.VFSPermissions;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 
@@ -190,15 +189,7 @@ public class Find extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		String privPathRegex;
-		if (request.getProperties().getProperty("observe.privpath","true").equalsIgnoreCase("true")) {
-			privPathRegex = getVFSPermissions().getPrivPathRegex(user);
-		} else {
-			privPathRegex = getVFSPermissions().getPrivPathRegex();
-		}
-		if (privPathRegex != null) {
-			params.setPrivPathRegex(privPathRegex);
-		}
+		params.setLimit(0); // Get all results, we filter out hidden inodes later
 
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
@@ -226,6 +217,8 @@ public class Find extends CommandInterface {
 
 		LinkedList<String> responses = new LinkedList<String>();
 		int results = 0;
+		boolean observePrivPath = request.getProperties().
+				getProperty("observe.privpath","true").equalsIgnoreCase("true");
 		
 		InodeHandle inode;
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
@@ -234,6 +227,9 @@ public class Find extends CommandInterface {
 			try {
 				inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey().
 						substring(0, item.getKey().length()-1)) : new FileHandle(item.getKey());
+				if ((observePrivPath && inode.isHidden(user)) || (!observePrivPath && inode.isHidden(null))) {
+					continue;
+				}
 				env.add("name", inode.getName());
 				env.add("path", inode.getPath());
 				env.add("owner", inode.getUsername());
@@ -260,7 +256,7 @@ public class Find extends CommandInterface {
 		}
 
 		env.add("limit", limit);
-		env.add("results", inodes.size());
+		env.add("results", results);
 		response.addComment(session.jprintf(_bundle,_keyPrefix+"find.header", env, user.getName()));
 
 		for (String line : responses) {
@@ -268,10 +264,6 @@ public class Find extends CommandInterface {
 		}
 
 		return response;
-	}
-
-	private static VFSPermissions getVFSPermissions() {
-		return GlobalContext.getConfig().getVFSPermissions();
 	}
 
 	/**

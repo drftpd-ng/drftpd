@@ -317,18 +317,21 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		return GlobalContext.getConfig().getVFSPermissions();
 	}
 	
-	protected static void checkHiddenPath(InodeHandle inode, User user) throws FileNotFoundException {	
-		if (user == null) {
-			throw new FileNotFoundException("Denied, unable to check perms against 'null' user");
-		}
-		
+	protected static void checkHiddenPath(InodeHandle inode, User user) throws FileNotFoundException {		
 		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle) inode : inode.getParent();
-		
+
 		if (getVFSPermissions().checkPathPermission("privpath", user, dir, false, true)) {
 			// this has to mirror what is said in
 			// VirtualFileSystemDirectory.getInodeByName()
 			throw new FileNotFoundException("FileNotFound: " + inode.getName()
 					+ " does not exist");
+		}
+
+		if (!inode.isDirectory()) {
+			if (getVFSPermissions().checkPathPermission("privpath", user, inode, false, true)) {
+				throw new FileNotFoundException("FileNotFound: " + inode.getName()
+						+ " does not exist");
+			}
 		}
 	}
 	

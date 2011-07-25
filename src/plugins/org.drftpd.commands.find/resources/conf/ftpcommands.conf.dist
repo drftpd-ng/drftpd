@@ -59,7 +59,7 @@ help.specific ${command} <word> [word ..]
 SITE DUPE {
 plugin org.drftpd.commands.find
 class Search
-method doDUPE
+method doSEARCH
 perms *
 limit 50
 # Search for: d = directories & f = files (comment to search for all)

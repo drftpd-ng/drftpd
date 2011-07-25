@@ -316,27 +316,47 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 	
 	/**
+	 * This method *does* check for hiddens paths.
 	 * @return true if the dir has offline files.
 	 * @throws FileNotFoundException
 	 */
-	public boolean hasOfflineFiles() throws FileNotFoundException {
-		return getOfflineFiles().size() != 0;
+	public boolean hasOfflineFiles(User user) throws FileNotFoundException {
+		return getOfflineFiles(user).size() != 0;
 	}
-	
+
 	/**
+	 * This method does not check for hidden paths.
+	 * @return true if the dir has offline files.
+	 * @throws FileNotFoundException
+	 */
+	public boolean hasOfflineFilesUnchecked() throws FileNotFoundException {
+		return getOfflineFilesUnchecked().size() != 0;
+	}
+
+	/**
+	 * This method *does* check for hiddens paths.
 	 * @return a set containing only the offline files of this dir.
 	 * @throws FileNotFoundException
 	 */
-	private Set<FileHandle> getOfflineFiles() throws FileNotFoundException {
-		Set<FileHandle> allFiles = getFilesUnchecked();
+	private Set<FileHandle> getOfflineFiles(User user) throws FileNotFoundException {
+		Set<FileHandle> allFiles = user == null ? getFilesUnchecked() : getFiles(user);
 		Set<FileHandle> offlineFiles = new LinkedHashSet<FileHandle>(allFiles.size());
-		
+
 		for (FileHandle file : allFiles) {
 			if (!file.isAvailable())
 				offlineFiles.add(file);
 		}
-		
+
 		return offlineFiles;
+	}
+
+	/**
+	 * This method does not check for hidden paths.
+	 * @return a set containing only the offline files of this dir.
+	 * @throws FileNotFoundException
+	 */
+	private Set<FileHandle> getOfflineFilesUnchecked() throws FileNotFoundException {
+		return getOfflineFiles(null);
 	}
 
 	/**
