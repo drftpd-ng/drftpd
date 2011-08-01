@@ -95,6 +95,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private transient boolean _isAvailable;
 
+	private transient boolean _isRemerging;
+
 	protected transient int _errors;
 
 	private transient long _lastDownloadSending = 0;
@@ -464,6 +466,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return isAvailable();
 	}
 
+	/**
+	 * @return true if the slave is online but a slave remerge is running
+	 */
+	public boolean isRemerging() {
+		return _isRemerging;
+	}
+
 	public void processQueue() throws IOException, SlaveUnavailableException {
 		// no for-each loop, needs iter.remove()
 		for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter
@@ -518,6 +527,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	public void setAvailable(boolean available) {
 		_isAvailable = available;
+	}
+
+	public void setRemerging(boolean remerging) {
+		_isRemerging = remerging;
 	}
 
 	protected void makeAvailableAfterRemerge() {

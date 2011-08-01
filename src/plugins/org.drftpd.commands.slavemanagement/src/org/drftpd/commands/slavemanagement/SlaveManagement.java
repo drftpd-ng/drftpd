@@ -213,10 +213,11 @@ public class SlaveManagement extends CommandInterface {
 		if (rslave.isOnline()) {
 			if (!rslave.isAvailable()) {
 				response.addComment(session.jprintf(_bundle, _keyPrefix+"slave.remerging", env, request.getUser()));
-			} else {            		
+			} else {
 				try {
 					SlaveStatus status = rslave.getSlaveStatus();
 					fillEnvWithSlaveStatus(env, status);
+					env.add("status", rslave.isRemerging() ? "REMERGING" : "ONLINE");
 					response.addComment(session.jprintf(_bundle, _keyPrefix+"slave.online", env, request.getUser()));
 				} catch (SlaveUnavailableException e) {
 					// should never happen since we tested slave status w/ isOnline and isAvaiable.
@@ -247,18 +248,25 @@ public class SlaveManagement extends CommandInterface {
 			"Slave is still merging from initial connect");
 		}
 
+		if (rslave.isRemerging()) {
+			return new CommandResponse(200,
+			"Slave is still remerging by a previous remerge command");
+		}
+
+		rslave.setRemerging(true);
 		try { 
 			rslave.fetchResponse(SlaveManager.getBasicIssuer().issueRemergeToSlave(rslave, 
 					request.getCurrentDirectory().getPath(), false, 0L, 0L), 0); 
 		} catch (RemoteIOException e) { 
-			rslave.setOffline("IOException during remerge()"); 
-
+			rslave.setOffline("IOException during remerge()");
 
 			return new CommandResponse(200, "IOException during remerge()");
 		} catch (SlaveUnavailableException e) {
 			rslave.setOffline("Slave Unavailable during remerge()");
 
 			return new CommandResponse(200, "Slave Unavailable during remerge()");
+		} finally {
+			rslave.setRemerging(false);
 		}
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
