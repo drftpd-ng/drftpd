@@ -160,7 +160,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 
 	private int getDizTotal(String dizString) {
 		int total = 0;
-		String regex = "[\\[\\(\\<\\:\\s][0-9oOxX\\*]*/([0-9oOxX]*[0-9])[\\]\\)\\>\\s]";
+		String regex = "[\\[\\(\\<\\:\\s][0-9oOxX\\*]*/([0-9oOxX]*[0-9oO])[\\]\\)\\>\\s]";
 		Pattern p = Pattern.compile(regex);
 
 		// Compare the diz file to the pattern compiled above
