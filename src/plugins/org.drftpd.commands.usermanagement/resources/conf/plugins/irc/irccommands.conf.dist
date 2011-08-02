@@ -50,7 +50,7 @@ chpass {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
 method doSITE_CHPASS
-perms =siteop
+perms =gadmin =siteop
 help Change password for a user
 help.specific ${command} <user> <password>
 input all

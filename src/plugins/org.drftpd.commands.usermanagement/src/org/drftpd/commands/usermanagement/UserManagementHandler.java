@@ -969,6 +969,10 @@ public class UserManagementHandler extends CommandInterface {
 		try {
 			User myUser = GlobalContext.getGlobalContext().getUserManager()
 					.getUserByName(args[0]);
+			if (session.getUserNull(request.getUser()).isGroupAdmin()
+					&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			}
 			myUser.setPassword(args[1]);
 			myUser.commit();
 			logger.info("'" + session.getUserNull(request.getUser()).getName()
