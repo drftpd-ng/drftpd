@@ -66,6 +66,8 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	protected Map<String,Object> _untypedPluginMap = new TreeMap<String,Object>();
 
 	protected long _lastModified;
+	
+	protected long _creationTime;
 
 	private transient boolean _inodeLoaded;
 	
@@ -127,6 +129,13 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	public long getLastModified() {
 		return _lastModified;
+	}
+	
+	/**
+	 * @return when the file was created.
+	 */
+	public long getCreationTime() {
+		return _creationTime;
 	}
 
 	/**
@@ -274,6 +283,19 @@ public abstract class VirtualFileSystemInode implements Commitable {
 			if (isInodeLoaded()) {
 				commit();
 				getVFS().notifyLastModifiedChanged(this,_lastModified);
+			}
+		}
+	}
+	
+	/**
+	 * @param created
+	 * Set when the file was created.
+	 */
+	public void setCreationTime(long created) {
+		if (_creationTime != created) {
+			_creationTime = created;
+			if (isInodeLoaded()) {
+				commit();
 			}
 		}
 	}

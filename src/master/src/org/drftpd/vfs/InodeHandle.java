@@ -199,6 +199,10 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		return getInode().getLastModified();
 	}
 	
+	public long creationTime() throws FileNotFoundException {
+		return getInode().getCreationTime();
+	}
+	
 	public String toString() {
 		try {
 			return getInode().toString();
