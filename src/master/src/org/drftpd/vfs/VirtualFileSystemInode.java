@@ -83,6 +83,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		_username = user;
 		_group = group;
 		_lastModified = System.currentTimeMillis();
+		_creationTime = _lastModified;
 	}
 
 	/**
