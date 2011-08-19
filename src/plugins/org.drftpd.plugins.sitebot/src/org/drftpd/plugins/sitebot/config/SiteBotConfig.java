@@ -101,6 +101,8 @@ public class SiteBotConfig {
 	private String _user;
 
 	private String _userModes;
+	
+	private long _delayAfterNickserv;
 
 	public SiteBotConfig(Properties cfg) {
 		readProperties(cfg);
@@ -144,6 +146,9 @@ public class SiteBotConfig {
 		_nickservRegNew = cfg.getProperty("services.nickserv.register.new").equalsIgnoreCase("true");
 		_nickservRegNick = cfg.getProperty("services.nickserv.register.nick");
 		_nickservRegPassword = cfg.getProperty("services.nickserv.register.password");
+		
+		_delayAfterNickserv = new Long(cfg.getProperty("services.nickserv.delayafter","0"));
+		
 		_chanservEnabled = cfg.getProperty("services.chanserv.enable").equalsIgnoreCase("true");
 		for (int i = 1;; i++) {
 			String chanservInvite = cfg.getProperty("services.chanserv.invite."+i);
@@ -245,6 +250,10 @@ public class SiteBotConfig {
 
 	public long getMessageDelay() {
 		return _messageDelay;
+	}
+	
+	public long getDelayAfterNickserv() {
+		return _delayAfterNickserv;
 	}
 
 	public String getName() {

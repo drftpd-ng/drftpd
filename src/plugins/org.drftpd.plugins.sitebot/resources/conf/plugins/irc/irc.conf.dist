@@ -74,6 +74,10 @@ services.nickserv.register.password=somepass
 # Email address to use when registering the nickname
 services.nickserv.register.email=drftpd@drftpd.org
 
+# Delay for X milliseconds after sending the Nickserv Command for
+# Nickserv to catch up before invite/join's (0 = ignore)
+services.nickserv.delayafter=0
+
 # Use CHANSERV to invite the bot into channels, as many channels as
 # desired can be listed here
 services.chanserv.invite.1=#channel1

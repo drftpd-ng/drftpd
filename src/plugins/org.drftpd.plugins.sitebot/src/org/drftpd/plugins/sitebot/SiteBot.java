@@ -1006,20 +1006,34 @@ public class SiteBot implements ReplyConstants, Runnable {
 			doNickservCommands();
 		}
 
-		// Check if chanserv is wanted
-		if (_config.getChanservEnabled()) {
-			doChanservInvites();
-		}
-
 		// Set any user mode changes asked for
 		if (_config.getUserModes() != null) {
 			sendRawLine("MODE " + getNick() + " " + _config.getUserModes());
+		}		
+
+		slowDown();
+		
+		// Check if chanserv is wanted
+		if (_config.getChanservEnabled()) {
+			doChanservInvites();
 		}
 
 		// Join channels
 		joinChannels();
 	}
 
+	private void slowDown() {
+		if (_config.getDelayAfterNickserv() > 0) {
+			try {
+				logger.debug("Delaying for '" + _config.getDelayAfterNickserv() + "' milliseconds, Started");
+				Thread.sleep(_config.getDelayAfterNickserv());
+				
+			} catch (InterruptedException e) {
+			}
+			logger.debug("Delaying for '" + _config.getDelayAfterNickserv() + "' milliseconds, Completed");
+		}
+	}
+	
 	private void joinChannels() {
 		for (ChannelConfig chan : _config.getChannels()) {
 			Blowfish cipher = null;
