@@ -21,6 +21,10 @@
 	<extension-point id="Announce">
 		<parameter-def id="Class" type="string" />
 	</extension-point>
+	
+	<extension-point id="Listener">
+		<parameter-def id="Class" type="string" />
+	</extension-point>
 
 	<extension plugin-id="master" point-id="Plugin" id="Sitebot">
 		<parameter id="Class" value="org.drftpd.plugins.sitebot.SiteBotWrapper"/>

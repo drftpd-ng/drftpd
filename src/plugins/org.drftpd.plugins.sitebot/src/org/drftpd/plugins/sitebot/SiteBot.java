@@ -138,6 +138,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private AnnounceConfig _announceConfig = null;
 	private ArrayList<String> _eventTypes = new ArrayList<String>();
 
+	// ArrayList to hold Listeners
+	private ArrayList<ListenerInterface> _listeners = new ArrayList<ListenerInterface>();	
+	
 	// Default settings for the PircBot.
 	private String _version;
 	private String _nick = null;
@@ -216,6 +219,9 @@ public class SiteBot implements ReplyConstants, Runnable {
 		// Find and start announcers
 		loadAnnouncers(_confDir);
 
+		// Find all Bot Listeners
+		loadListeners();
+		
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -443,6 +449,12 @@ public class SiteBot implements ReplyConstants, Runnable {
 		}
 		else {
 			this.sendRawLine("JOIN " + chanName);
+		}
+	}
+	
+	private void sendtoListener(String channel, String sender, String hostname, String message) {
+		for (ListenerInterface listener :  new ArrayList<ListenerInterface>(_listeners)) {
+			listener.handleInput(this.getBotName(),channel,sender,hostname,message);
 		}
 	}
 
@@ -1318,6 +1330,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 		if (message.startsWith(_config.getCommandTrigger())) {
 			handleCommand(channel, sender, sender+"!"+login+"@"+hostname, message, true);
 		}
+		
+		sendtoListener(channel,sender,sender+"!"+login+"@"+hostname, message);
 	}
 
 	/**
@@ -1372,6 +1386,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 		if (message.startsWith(_config.getCommandTrigger())) {
 			handleCommand(null, sender, sender+"!"+login+"@"+hostname, message, false);
 		}
+		
+		sendtoListener(null,sender,sender+"!"+login+"@"+hostname, message);
 	}
 
 
@@ -2948,6 +2964,19 @@ public class SiteBot implements ReplyConstants, Runnable {
 		return _config;
 	}
 
+	private void loadListeners() {
+		_listeners = new ArrayList<ListenerInterface>();
+		try {
+			List<ListenerInterface> loadedListeners = CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Listener", "Class");
+			for (ListenerInterface listener : loadedListeners) {
+				_listeners.add(listener);
+				logger.debug("Loading sitebot listener from plugin "+CommonPluginUtils.getPluginIdForObject(listener));
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for org.drftpd.plugins.sitebot extension point 'Listener', possibly the " + "org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
+		}
+	}	
+	
 	private void loadAnnouncers(String confDir) {
 		try {
 			List<AbstractAnnouncer> loadedAnnouncers =
@@ -3041,6 +3070,17 @@ public class SiteBot implements ReplyConstants, Runnable {
 				_announceConfig.reload();
 			}
 		}
+		
+		// Remove unloaded listeneres
+		Set<ListenerInterface> unloadedListeners = MasterPluginUtils.getUnloadedExtensionObjects(this, "Listener", event, _listeners);
+		if (!unloadedListeners.isEmpty()) {
+			for (Iterator<ListenerInterface> iter = _listeners.iterator(); iter.hasNext();) {
+				ListenerInterface listener = iter.next();
+				if (unloadedListeners.contains(listener)) {
+					iter.remove();
+				}
+			}
+		}
 	}
 
 	@EventSubscriber
@@ -3066,6 +3106,17 @@ public class SiteBot implements ReplyConstants, Runnable {
 			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.plugins.sitebot extension point 'Announce'"+
 					", possibly the org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
+		
+		// Activate new Loaded Listeners
+		try {
+			List<ListenerInterface> loadedListeners = MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.plugins.sitebot", "Listener", "Class", event);
+			for (ListenerInterface listener : loadedListeners) {
+				logger.debug("Loading sitebot announcer provided by plugin "+CommonPluginUtils.getPluginIdForObject(listener));
+				_listeners.add(listener);
+			}
+		} catch (IllegalArgumentException e) {
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.plugins.sitebot extension point 'Listener', possibly the org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
+		}	
 	}
 
 	@EventSubscriber
