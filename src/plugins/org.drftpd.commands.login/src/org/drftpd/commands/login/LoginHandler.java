@@ -144,7 +144,7 @@ public class LoginHandler extends CommandInterface {
         }
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Failed");
-        return new CommandResponse(530, conn.jprintf(_bundle, _keyPrefix+"pass.fail", request.getUser()));
+        return new CommandResponse(530, conn.jprintf(_bundle, _keyPrefix+"pass.fail", request.getUser() == null ? request.getSession().getObject(BaseFtpConnection.FAILEDUSERNAME,"") : request.getUser()));
     }
 
     /**
