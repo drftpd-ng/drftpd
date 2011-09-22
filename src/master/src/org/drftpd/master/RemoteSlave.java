@@ -729,7 +729,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 */
 	public AsyncResponse fetchResponse(String index)
 			throws SlaveUnavailableException, RemoteIOException {
-		return fetchResponse(index, 60 * 1000);
+		return fetchResponse(index, getActualTimeout());
 	}
 
 	/**
