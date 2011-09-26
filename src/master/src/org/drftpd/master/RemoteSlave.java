@@ -682,7 +682,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private void start() {
 		Thread t = new Thread(this);
 		t.setName("RemoteSlave - " + getName());
-		t.setPriority(Thread.MAX_PRIORITY);
 		t.start();
 	}
 
