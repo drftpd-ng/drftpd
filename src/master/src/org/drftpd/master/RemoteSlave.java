@@ -682,6 +682,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private void start() {
 		Thread t = new Thread(this);
 		t.setName("RemoteSlave - " + getName());
+		t.setPriority(Thread.MAX_PRIORITY);
 		t.start();
 	}
 
@@ -1129,7 +1130,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void setRenameQueue(LinkedList<QueuedOperation> renameQueue) {
-		_renameQueue = renameQueue;
+		if (renameQueue == null) {
+			_renameQueue = new LinkedList<QueuedOperation>();
+		} else {
+			_renameQueue = renameQueue;
+		}
 	}
 
 	public void shutdown() {
