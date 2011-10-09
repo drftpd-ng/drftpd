@@ -536,6 +536,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	protected void makeAvailableAfterRemerge() {
 		// TODO move lastconnect time set to here
 		setAvailable(true);
+		setRemerging(false);
 		logger.info("Slave added: '" + getName() + "' status: " + _status);
 		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
 	}
@@ -658,6 +659,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_errors = 0;
 		_lastNetworkError = System.currentTimeMillis();
 		_initRemergeCompleted = false;
+		setRemerging(true);
 		
 		try {
 			GlobalContext.getGlobalContext().getSlaveManager().getProtocolCentral().handshakeWithSlave(this);
