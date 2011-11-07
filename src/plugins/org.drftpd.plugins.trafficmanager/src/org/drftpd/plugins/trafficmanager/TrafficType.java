@@ -142,21 +142,16 @@ public abstract class TrafficType {
 		return _dn;
 	}
 	
-	protected void checkDelete(FileHandle file) {
+	protected boolean doDelete(FileHandle file) {
 		if (!Boolean.parseBoolean(GlobalContext.getConfig().getMainProperties().getProperty("delete.upload.on.abort", "false"))) {
 			try {
 				file.deleteUnchecked();
 			} catch (FileNotFoundException e) {
 				// FileDeleted - Ignore
 			}
-		} else {
-			try {
-				wait(1000);
-				// Wait for Master to finish command
-			} catch (InterruptedException e) {
-				
-			}
+			return true;
 		}
+		return false;
 	}
 	
 	public abstract void doAction(User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slaveName);
