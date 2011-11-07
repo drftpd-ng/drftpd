@@ -77,4 +77,58 @@
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GMONTHDNPerm">
+		<parameter id="ParentMethod" value="doSITE_GMONTHDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GMONTHUPPerm">
+		<parameter id="ParentMethod" value="doSITE_GMONTHUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GWKDNPerm">
+		<parameter id="ParentMethod" value="doSITE_GWKDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GWKUPPerm">
+		<parameter id="ParentMethod" value="doSITE_GWKUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GDAYDNPerm">
+		<parameter id="ParentMethod" value="doSITE_GDAYDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GDAYUPPerm">
+		<parameter id="ParentMethod" value="doSITE_GDAYUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GALDNPerm">
+		<parameter id="ParentMethod" value="doSITE_GALDN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_GALUPPerm">
+		<parameter id="ParentMethod" value="doSITE_GALUP" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.transferstatistics" point-id="PreHook" id="doSITE_TRAFFICPerm">
+		<parameter id="ParentMethod" value="doSITE_TRAFFIC" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
 </plugin>
