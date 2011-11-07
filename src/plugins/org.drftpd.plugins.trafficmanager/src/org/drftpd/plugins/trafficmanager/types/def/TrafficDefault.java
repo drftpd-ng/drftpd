@@ -23,6 +23,7 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.plugins.trafficmanager.TrafficType;
 import org.drftpd.plugins.trafficmanager.TrafficTypeEvent;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.FileHandle;
 
 /**
  * @author CyBeR
@@ -36,11 +37,11 @@ public class TrafficDefault extends TrafficType {
 	}
 
 	@Override
-	public void doAction(User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slavename) {
+	public void doAction(User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slavename) {
 		/*
 		 * Don't do anything, just publish Event for announce.
 		 */
-		GlobalContext.getEventService().publishAsync(new TrafficTypeEvent(getType(),user,path,file,isStor,minspeed,speed,transfered,slavename));
+		GlobalContext.getEventService().publishAsync(new TrafficTypeEvent(getType(),user,file,isStor,minspeed,speed,transfered,slavename));
 	}
 
 }

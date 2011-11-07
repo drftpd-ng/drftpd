@@ -16,15 +16,18 @@
  */
 package org.drftpd.plugins.trafficmanager;
 
+import java.io.FileNotFoundException;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.GlobalContext;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.FileHandle;
 
 /**
  * @author CyBeR
@@ -91,7 +94,6 @@ public abstract class TrafficType {
 		
 		_up = p.getProperty(confnum + ".up","false").trim().equalsIgnoreCase("true") ? true : false;
 		_dn = p.getProperty(confnum + ".dn","false").trim().equalsIgnoreCase("true") ? true : false;		
-        
 	}
 	
 	protected String getName() {
@@ -138,8 +140,25 @@ public abstract class TrafficType {
 
 	protected boolean getDownload() {
 		return _dn;
-	}		
+	}
 	
-	public abstract void doAction(User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slaveName);
+	protected void checkDelete(FileHandle file) {
+		if (!Boolean.parseBoolean(GlobalContext.getConfig().getMainProperties().getProperty("delete.upload.on.abort", "false"))) {
+			try {
+				file.deleteUnchecked();
+			} catch (FileNotFoundException e) {
+				// FileDeleted - Ignore
+			}
+		} else {
+			try {
+				wait(1000);
+				// Wait for Master to finish command
+			} catch (InterruptedException e) {
+				
+			}
+		}
+	}
+	
+	public abstract void doAction(User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, BaseFtpConnection conn, String slaveName);
 
 }

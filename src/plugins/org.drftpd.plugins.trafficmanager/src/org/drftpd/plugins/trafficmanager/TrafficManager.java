@@ -143,8 +143,8 @@ public class TrafficManager implements PluginInterface {
 			if ((event.isStor() && trafficType.getUpload()) || (!event.isStor() && trafficType.getDownload())) {
 				// Check if Include/Exclude path are allowed
 				// And check perms are correct
-				if ((trafficType.checkInclude(event.getPath())) && (!trafficType.checkExclude(event.getPath())) && (trafficType.getPerms().check(event.getUser()))) {
-					trafficType.doAction(event.getUser(),event.getPath(),event.getFile(),event.isStor(),event.getMinSpeed(),event.getSpeed(),event.getTransfered(),event.getConn(),event.getSlaveName());
+				if ((trafficType.checkInclude(event.getFile().getParent().getPath())) && (!trafficType.checkExclude(event.getFile().getParent().getPath())) && (trafficType.getPerms().check(event.getUser()))) {
+					trafficType.doAction(event.getUser(),event.getFile(),event.isStor(),event.getMinSpeed(),event.getSpeed(),event.getTransfered(),event.getConn(),event.getSlaveName());
 					// Return since we only want one action to run
 					return;
 				}

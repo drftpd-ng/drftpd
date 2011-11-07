@@ -17,6 +17,7 @@
 package org.drftpd.plugins.trafficmanager;
 
 import org.drftpd.usermanager.User;
+import org.drftpd.vfs.FileHandle;
 
 /**
 * @author CyBeR
@@ -26,18 +27,16 @@ public class TrafficTypeEvent {
 
 	private String _type;
 	private User _user;
-	private String _path;
-	private String _file;
+	private FileHandle _file;
 	private boolean _isStor;
 	private long _minspeed;
 	private long _speed;
 	private long _transfered;
 	private String _slavename;
 	
-	public TrafficTypeEvent(String type, User user, String path, String file, boolean isStor, long minspeed, long speed, long transfered, String slavename) {
+	public TrafficTypeEvent(String type, User user, FileHandle file, boolean isStor, long minspeed, long speed, long transfered, String slavename) {
 		_type = type;
 		_user = user;
-		_path = path;
 		_file = file;
 		_isStor = isStor;
 		_minspeed = minspeed;
@@ -54,11 +53,7 @@ public class TrafficTypeEvent {
 		return _user;
 	}
 	
-	public String getPath() {
-		return _path;
-	}
-	
-	public String getFile() {
+	public FileHandle getFile() {
 		return _file;
 	}
 

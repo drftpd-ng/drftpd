@@ -71,8 +71,8 @@ public class TrafficDefaultAnnouncer extends AbstractAnnouncer {
 				ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 				
 				env.add("nickname",event.getUser().getName());
-				env.add("file",event.getFile());
-				env.add("path",event.getPath());
+				env.add("file",event.getFile().getName());
+				env.add("path",event.getFile().getParent().getPath());
 				env.add("slave",event.getSlaveName());
 				
 				env.add("transfered",Bytes.formatBytes(event.getTransfered()));
