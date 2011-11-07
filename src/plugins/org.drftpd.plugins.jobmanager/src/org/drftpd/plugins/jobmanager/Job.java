@@ -281,7 +281,7 @@ public class Job {
 	 * returns true if this job has nothing more to send and the delete operation has finished
 	 */
 	public boolean isDone() {
-		return _transferNum == 0 && _deleteDone;
+		return _transferNum <= 0 && _deleteDone;
 	}
 
 	public boolean isTransferring() {
@@ -321,6 +321,7 @@ public class Job {
 					"Job cannot have a destSlaveSet of size 0 with transferNum > 0 - File: '" + getFile() + "' File Slaves: '" + getFile().getSlaveNames().toString() + "'" );
 		}
 		if (_transferNum <= 0) {
+			_transferNum = 0;
 			cleanup();
 		}
 	}
