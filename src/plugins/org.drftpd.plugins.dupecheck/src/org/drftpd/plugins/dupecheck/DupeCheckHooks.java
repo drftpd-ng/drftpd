@@ -38,6 +38,7 @@ import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
@@ -87,7 +88,7 @@ public class DupeCheckHooks implements PreHookInterface {
 	 */
 	public CommandRequestInterface doDupeCheckMKD(CommandRequest request) {
 		if (request.hasArgument()) {
-			String dirname = request.getCurrentDirectory().getNonExistentDirectoryHandle(request.getArgument()).getName();
+			String dirname = request.getCurrentDirectory().getNonExistentDirectoryHandle(VirtualFileSystem.fixPath(request.getArgument())).getName();
 			if (((_type == 2) || (_type == 3)) && (!checkFile(dirname))) {
 				return doDupeCheck(request,dirname);
 			}
@@ -100,7 +101,7 @@ public class DupeCheckHooks implements PreHookInterface {
 	 */
 	public CommandRequestInterface doDupeCheckSTOR(CommandRequest request) {
 		if (request.hasArgument()) {
-			String filename = request.getCurrentDirectory().getNonExistentFileHandle(request.getArgument()).getName();
+			String filename = request.getCurrentDirectory().getNonExistentFileHandle(VirtualFileSystem.fixPath(request.getArgument())).getName();
 			if (((_type == 1) || (_type == 3)) && (!checkFile(filename))) {
 				return doDupeCheck(request,filename);
 			}
