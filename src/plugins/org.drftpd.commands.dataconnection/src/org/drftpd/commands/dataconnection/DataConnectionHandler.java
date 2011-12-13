@@ -950,6 +950,7 @@ public class DataConnectionHandler extends CommandInterface {
 			TransferStatus status = null;
 			CommandResponse response = null;
 			boolean transferEnded = false;
+			boolean slowDenied = false;
 
 			//transfer
 			try {
@@ -1015,13 +1016,13 @@ public class DataConnectionHandler extends CommandInterface {
 				transferEnded = true;
 			} catch (IOException ex) {          	                
 				boolean fxpDenied = false;
-				boolean slowDenied = false;
 
 				if (ex instanceof TransferFailedException) {
 					if (ex.getCause() instanceof TransferSlowException) {
 						TransferSlowException tse = (TransferSlowException) ex.getCause();
+						status = tse.getStatus();
 						slowDenied = true;
-						GlobalContext.getEventService().publish(new SlowTransferEvent(user,ts.getTransferFile(),isStor,conn,request.getObjectLong(MIN_XFER_SPEED),tse.getStatus().getXferSpeed(), tse.getStatus().getTransfered(),ts.getTransferSlave().getName()));
+						transferEnded = true;
 						response = new CommandResponse(426, "You are transfering too slow");	
 					} else if (ex.getCause() instanceof TransferDeniedException) {
 						fxpDenied = true;
@@ -1093,6 +1094,10 @@ public class DataConnectionHandler extends CommandInterface {
 				}
 			}
 
+			if (slowDenied) {
+				GlobalContext.getEventService().publish(new SlowTransferEvent(user,ts.getTransferFile(),isStor,conn,request.getObjectLong(MIN_XFER_SPEED),status.getXferSpeed(), status.getTransfered(),ts.getTransferSlave().getName()));
+			}
+			
 			return response;
 		} finally {
 			// A simple catch all to delete any 0-byte uploaded files as these could be left around if
