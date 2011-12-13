@@ -173,7 +173,7 @@ public class Slave {
 				_s.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"),0));
 				_bindIP = PropertyHelper.getProperty(p, "bind.ip",null);
 			} catch (IOException e) {
-				throw new SSLUnavailableException("Unable To Bind Port Correctly");
+				throw new IOException("Unable To Bind Port Correctly");
 			}
 		}
 		
