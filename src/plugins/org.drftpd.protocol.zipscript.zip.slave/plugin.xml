@@ -22,18 +22,21 @@
 		<library id="findbugs-annotations" path="../../../lib/findbugs-annotations-1.3.9.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="truezip-file" path="../../../lib/truezip-file-7.1.4.jar" type="code">
+		<library id="commons-compress" path="../../../lib/commons-compress-1.3.jar" type="code">
+			<export prefix="*" />
+		</library>		
+		<library id="truezip-file" path="../../../lib/truezip-file-7.4.3.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="truezip-kernel" path="../../../lib/truezip-kernel-7.1.4.jar" type="code">
+		<library id="truezip-kernel" path="../../../lib/truezip-kernel-7.4.3.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="truezip-driver-file" path="../../../lib/truezip-driver-file-7.1.4.jar" type="code">
+		<library id="truezip-driver-file" path="../../../lib/truezip-driver-file-7.4.3.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="truezip-driver-zip" path="../../../lib/truezip-driver-zip-7.1.4.jar" type="code">
+		<library id="truezip-driver-zip" path="../../../lib/truezip-driver-zip-7.4.3.jar" type="code">
 			<export prefix="*" />
-		</library>
+		</library>	
 	</runtime>
 			
 	<extension plugin-id="slave" point-id="Handler" id="ZipCRCHandler">

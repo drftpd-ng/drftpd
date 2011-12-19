@@ -66,8 +66,8 @@ public class ZipscriptZipHandler extends AbstractHandler {
 			InputStream entryStream = null;
 			zipFile = new TFile(slave.getRoots().getFile(path), 
 					new TArchiveDetector("zip", new CheckedZipDriver(IOPoolLocator.SINGLETON)));
-			TFile[] zipEntries = zipFile.listFiles();
-			if (zipEntries == null) {
+			TFile[] zipEntries = zipFile.listFiles(TArchiveDetector.NULL);
+			if ((zipEntries == null) || (zipEntries.length == 0)) {
 				integrityOk = false;
 			} else {
 				for (TFile entry : zipEntries) {
