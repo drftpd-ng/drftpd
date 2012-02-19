@@ -127,7 +127,7 @@ public class Archive implements PluginInterface {
 		initTypes();
 		
 		_props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("archive.conf");
-		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,"cycletime", "30"));
+		_cycleTime = 60000 * Long.parseLong(PropertyHelper.getProperty(_props,"cycletime", "30").trim());
 		
 		if (_runHandler != null) {
 			_runHandler.cancel();
@@ -141,7 +141,8 @@ public class Archive implements PluginInterface {
 				
 				String type;
 				while ((type = PropertyHelper.getProperty(_props, count + ".type",null)) != null) {
-					SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section",""));
+					type = type.trim();
+					SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(PropertyHelper.getProperty(_props, count + ".section","").trim());
 					ArchiveType archiveType = getArchiveType(count,type,sec,_props);
 					if (archiveType != null) {
 						new ArchiveHandler(archiveType).start();

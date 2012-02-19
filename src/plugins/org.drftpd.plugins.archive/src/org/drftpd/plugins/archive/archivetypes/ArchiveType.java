@@ -459,10 +459,10 @@ public abstract class ArchiveType {
 	 */
 	private void setProperties(Properties properties) {
 		_failedDirs = new ArrayList<String>();
-		_archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".archiveafter","0"));
-		_numOfSlaves = Integer.parseInt(properties.getProperty(_confnum + ".numofslaves", "0"));
-		_repeat = Integer.parseInt(properties.getProperty(_confnum + ".repeat", "1"));
-		_scansubdirs = properties.getProperty(_confnum + ".scansubdirs", "0").equals("1");
+		_archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".archiveafter","0").trim());
+		_numOfSlaves = Integer.parseInt(properties.getProperty(_confnum + ".numofslaves", "0").trim());
+		_repeat = Integer.parseInt(properties.getProperty(_confnum + ".repeat", "1").trim());
+		_scansubdirs = properties.getProperty(_confnum + ".scansubdirs", "0").trim().equals("1");
 		if (_repeat < 1) {
 			_repeat = 1;
 		}
@@ -471,7 +471,7 @@ public abstract class ArchiveType {
 		/*
 		 * Grabs archiveRegex property to check if archive dir matches.  If empty, archives all dirs
 		 */
-		_archiveRegex = properties.getProperty(_confnum+ ".archiveregex",".*");
+		_archiveRegex = properties.getProperty(_confnum+ ".archiveregex",".*").trim();
 		try {
 			Pattern.compile(_archiveRegex);
 		} catch (PatternSyntaxException e) {
@@ -487,7 +487,7 @@ public abstract class ArchiveType {
 		_destinationDirectory = null;
 		_moveRelease = false;
 		_archiveDirType = "";
-		String _moveToDirProp = properties.getProperty(_confnum + ".todirectory",""); 
+		String _moveToDirProp = properties.getProperty(_confnum + ".todirectory","").trim(); 
 		if (_moveToDirProp != "") {
 			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(_moveToDirProp);
 	        if (sec.getName().isEmpty()) {
@@ -520,7 +520,7 @@ public abstract class ArchiveType {
 		        /*
 		         * If a dir/section is selected, check to see if a specific type of subdir needs to be created.
 		         */
-	        	_archiveDirType = properties.getProperty(_confnum + ".todirectorytype","");
+	        	_archiveDirType = properties.getProperty(_confnum + ".todirectorytype","").trim();
 		        
 	        }
 		}
@@ -535,6 +535,7 @@ public abstract class ArchiveType {
 			} catch (NullPointerException e) {
 				break; // done
 			}
+			slavename = slavename.trim();
 
 			try {
 				RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
@@ -552,7 +553,7 @@ public abstract class ArchiveType {
 		 */
 		_moveReleaseOnly = ((_slaveList.isEmpty()) && (_moveRelease));
 		
-		_priority = Integer.parseInt(properties.getProperty(_confnum + ".priority", "3"));
+		_priority = Integer.parseInt(properties.getProperty(_confnum + ".priority", "3").trim());
 	}
 
 	/*
