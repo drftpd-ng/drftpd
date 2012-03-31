@@ -37,6 +37,9 @@
 		<library id="truezip-driver-zip" path="../../../lib/truezip-driver-zip-7.4.3.jar" type="code">
 			<export prefix="*" />
 		</library>	
+		<library id="truezip-swing" path="../../../lib/truezip-swing-7.4.3.jar" type="code">
+   			<export prefix="*" />
+		</library>   
 	</runtime>
 			
 	<extension plugin-id="slave" point-id="Handler" id="ZipCRCHandler">
