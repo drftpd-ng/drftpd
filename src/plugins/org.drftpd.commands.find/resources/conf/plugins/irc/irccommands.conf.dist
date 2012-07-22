@@ -17,7 +17,7 @@ help.specific ${command} <options> <actions>
 help.specific Options: -user <user> | -group <group> | -f[ile] | -d[ir] | -section <section>
 help.specific Options: -slaves <slave[ slave ..]> | -age <start date>:<end date>
 help.specific Options: -0byte | -size <min size>:<max size> | -nbrofslaves <min>:<max>
-help.specific Options: -sort <field> <asc|desc> | -quiet | -limit <number>
+help.specific Options: -sort "<field> <asc|desc>" | -random | -quiet | -limit <number>
 help.specific Options: -regex <pattern> | -exact <name> | -name <word[ word ..]> | -endswith <name>
 help.specific Actions: -print | -printf <format[ format ..]> | -wipe | -delete
 help.specific Actions: -nuke <multiplier> [reason] | -unnuke [reason]

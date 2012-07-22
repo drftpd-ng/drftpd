@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.TreeSet;
@@ -45,6 +46,8 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.FieldComparator;
+import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.PrefixQuery;
@@ -409,6 +412,18 @@ public class LuceneEngine implements IndexEngineInterface {
 				new SortField("fullPath", SortField.STRING, order));
 	}
 
+	private void setSortFieldRandom() {
+		SORT.setSort(new SortField(
+				"",
+				new FieldComparatorSource() {
+					@Override
+					public FieldComparator<Integer> newComparator(String fieldname, int numHits, int sortPos, boolean reversed) throws IOException {
+						return new RandomOrderFieldComparator();
+					}
+				}
+		));
+	}
+
 	/* {@inheritDoc} */
 	public void addInode(ImmutableInodeHandle inode) throws IndexException {
 		try {
@@ -703,7 +718,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				query.add(makeFullNameReversePrefixQueryFromString(params.getEndsWith()), Occur.MUST);
 			}
 
-			if (params.getSortField() != null) {
+			if (params.getSortField() != null && params.getSortOrder() != null) {
 				if (params.getSortField().equalsIgnoreCase("lastModified") ||
 						params.getSortField().equalsIgnoreCase("size")) {
 					setSortField(params.getSortField(), SortField.LONG, params.getSortOrder());
@@ -717,6 +732,10 @@ public class LuceneEngine implements IndexEngineInterface {
 				} else {
 					setSortField(params.getSortOrder());
 				}
+			} else if (params.getSortOrder() == null) {
+				setSortFieldRandom();
+			} else {
+				setSortField(params.getSortOrder());
 			}
 
 			int limit = _maxHitsNumber;
@@ -996,5 +1015,41 @@ public class LuceneEngine implements IndexEngineInterface {
 			logger.debug("Saving index...");
 			closeAll();
 		}
+	}
+
+	/**
+	 * Custom FieldComparator to get a random result from index
+	 */
+	public class RandomOrderFieldComparator extends FieldComparator<Integer> {
+
+		private final Random random = new Random();
+
+		@Override
+		public int compare(int slot1, int slot2) {
+			return random.nextInt();
+		}
+
+		@Override
+		public int compareBottom(int doc) throws IOException {
+			return random.nextInt();
+		}
+
+		@Override
+		public void copy(int slot, int doc) throws IOException {
+		}
+
+		@Override
+		public void setBottom(int bottom) {
+		}
+
+		@Override
+		public void setNextReader(IndexReader reader, int docBase) throws IOException {
+		}
+
+		@Override
+		public Integer value(int slot) {
+			return random.nextInt();
+		}
+
 	}
 }

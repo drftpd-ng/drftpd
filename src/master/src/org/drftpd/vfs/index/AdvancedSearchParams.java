@@ -49,7 +49,7 @@ public class AdvancedSearchParams {
 	private Integer _minSlaves;
 	private Integer _maxSlaves;
 	private String _sortField;
-	private boolean _sortOrder = false;
+	private Boolean _sortOrder = false;
 	private Integer _limit;
 	private KeyedMap<Key<?>, Object> _extensionMap;
 
@@ -117,7 +117,7 @@ public class AdvancedSearchParams {
 		_sortField = sortField;
 	}
 
-	public void setSortOrder(boolean sortOrder) {
+	public void setSortOrder(Boolean sortOrder) {
 		_sortOrder = sortOrder;
 	}
 
@@ -189,7 +189,7 @@ public class AdvancedSearchParams {
 		return _sortField;
 	}
 
-	public boolean getSortOrder() {
+	public Boolean getSortOrder() {
 		return _sortOrder;
 	}
 

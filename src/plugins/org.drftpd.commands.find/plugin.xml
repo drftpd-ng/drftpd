@@ -90,6 +90,14 @@
 		<parameter id="ClassName" value="org.drftpd.commands.find.option.TypeOption"/>
 		<parameter id="OptionName" value="D"/>
 	</extension>
+    <extension plugin-id="org.drftpd.commands.find" point-id="Option" id="SortOption">
+        <parameter id="ClassName" value="org.drftpd.commands.find.option.SortOption"/>
+        <parameter id="OptionName" value="Sort"/>
+    </extension>
+    <extension plugin-id="org.drftpd.commands.find" point-id="Option" id="RandomSortOption">
+        <parameter id="ClassName" value="org.drftpd.commands.find.option.SortOption"/>
+        <parameter id="OptionName" value="Random"/>
+    </extension>
 	<!-- End Options -->
 
 	<!-- Actions -->
