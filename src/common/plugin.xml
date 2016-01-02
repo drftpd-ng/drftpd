@@ -31,7 +31,7 @@
 		<library id="common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="junit" path="../../lib/junit-4.8.2.jar" type="code">
+		<library id="junit" path="../../lib/junit-4.12.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="log4j" path="../../lib/log4j-1.2.17.jar" type="code">
