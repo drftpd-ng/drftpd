@@ -34,7 +34,7 @@
 		<library id="junit" path="../../lib/junit-4.8.2.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="log4j" path="../../lib/log4j-1.2.16.jar" type="code">
+		<library id="log4j" path="../../lib/log4j-1.2.17.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="oro" path="../../lib/jakarta-oro-2.0.8.jar" type="code">
