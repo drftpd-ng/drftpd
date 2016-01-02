@@ -40,7 +40,7 @@
 		<library id="oro" path="../../lib/jakarta-oro-2.0.8.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-logging" path="../../lib/commons-logging-1.1.1.jar" type="code">
+		<library id="commons-logging" path="../../lib/commons-logging-1.2.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="jpf" path="../../lib/jpf-1.5.1.jar" type="code">
