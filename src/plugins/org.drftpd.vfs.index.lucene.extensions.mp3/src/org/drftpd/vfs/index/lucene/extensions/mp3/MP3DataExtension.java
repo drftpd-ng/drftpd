@@ -17,7 +17,7 @@
  */
 package org.drftpd.vfs.index.lucene.extensions.mp3;
 
-import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
