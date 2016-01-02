@@ -19,7 +19,7 @@
 	</requires>
 	<runtime>
 		<library id="org.drftpd.protocol.zipscript.zip.slave" path="classes/" type="code" />
-		<library id="findbugs-annotations" path="../../../lib/findbugs-annotations-1.3.9.jar" type="code">
+		<library id="findbugs-annotations" path="../../../lib/findbugs-annotations-2.0.3.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="commons-compress" path="../../../lib/commons-compress-1.3.jar" type="code">
