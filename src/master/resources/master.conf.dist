@@ -62,6 +62,12 @@ indexingengine=org.drftpd.vfs.index.lucene
 #cipher.9=SSL_RSA_WITH_NULL_MD5
 #cipher.10=SSL_RSA_WITH_NULL_SHA
 
+# enabled protocols
+# if left empty, default set will be used
+#protocol.1=TLSv1
+#protocol.2=TLSv1.1
+#protocol.3=TLSv1.2
+
 # Slave remerge throttling thresholds, do not modify these
 # unless you know what you are doing
 remerge.pause.threshold=250

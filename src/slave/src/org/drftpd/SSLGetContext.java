@@ -57,7 +57,7 @@ public class SSLGetContext {
 		if (ctx != null)
 			return ctx; // reuse previous SSLContext
 
-		ctx = SSLContext.getInstance("TLS");
+		ctx = SSLContext.getInstance("TLSv1.2");
 
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
@@ -77,8 +77,13 @@ public class SSLGetContext {
 		ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
 		String[] ciphers = ctx.createSSLEngine().getSupportedCipherSuites();
 		logger.info("Supported ciphers are as follows:");
-		for (int x = 0; x<ciphers.length; x++) {
-			logger.info(ciphers[x]);
+		for (String cipher : ciphers) {
+			logger.info(cipher);
+		}
+		String[] protocols = ctx.createSSLEngine().getSupportedProtocols();
+		logger.info("Supported protocols are as follows:");
+		for (String protocol : protocols) {
+			logger.info(protocol);
 		}
 /*		for (String cipher : ciphers) {
 			logger.info(cipher);

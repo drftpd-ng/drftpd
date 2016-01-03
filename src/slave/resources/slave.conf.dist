@@ -61,6 +61,12 @@ diskselection=org.drftpd.slave.diskselection.filter
 #cipher.9=SSL_RSA_WITH_NULL_MD5
 #cipher.10=SSL_RSA_WITH_NULL_SHA
 
+# enabled protocols
+# if left empty, default set will be used
+#protocol.1=TLSv1
+#protocol.2=TLSv1.1
+#protocol.3=TLSv1.2
+
 # Setting this to true will make this slave perform
 # a full remerge when connecting to a master irrespective
 # of any partial remerge settings on the master

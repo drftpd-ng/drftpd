@@ -127,6 +127,10 @@ public class DataConnectionHandler extends CommandInterface {
 			if (cipherSuites != null && cipherSuites.length > 0) {
 				s2.setEnabledCipherSuites(GlobalContext.getConfig().getCipherSuites());
 			}
+			String[] sslProtocols = GlobalContext.getConfig().getSSLProtocols();
+			if (sslProtocols != null && sslProtocols.length > 0) {
+				s2.setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
+			}
 			s2.startHandshake();
 			conn.authDone();
 		} catch (IOException e) {
@@ -210,7 +214,7 @@ public class DataConnectionHandler extends CommandInterface {
 			ts.setLocalPassiveConnection(pc);
 		} else {
 			RemoteSlave slave = null;
-			ConnectInfo ci = null;
+			ConnectInfo ci;
 			if (ts.isPASVDownload()) {
 				while (slave == null) {
 					try {
@@ -319,7 +323,7 @@ public class DataConnectionHandler extends CommandInterface {
 	 * where h1 is the high order 8 bits of the internet host address.
 	 */
 	public CommandResponse doPORT(CommandRequest request) {
-		InetAddress clientAddr = null;
+		InetAddress clientAddr;
 
 		// argument check
 		if (!request.hasArgument()) {
@@ -433,7 +437,7 @@ public class DataConnectionHandler extends CommandInterface {
 		}
 	
 		if (cmd.equals("RETR")) {
-			FileHandle file = null;
+			FileHandle file;
 			try {
 				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
 			} catch (FileNotFoundException e) {

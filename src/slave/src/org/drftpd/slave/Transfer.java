@@ -266,7 +266,7 @@ public class Transfer {
 				_checksum = new CRC32();
 				_out = new CheckedOutputStream(_out, _checksum);
 			}
-			accept(_slave.getCipherSuites(), _slave.getBufferSize());
+			accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getBufferSize());
 			
 			if (!checkMasks(inetAddress, _sock.getInetAddress())) {
 				throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
@@ -317,7 +317,7 @@ public class Transfer {
 			}
 
 			_in.skip(resumePosition);
-			accept(_slave.getCipherSuites(), _slave.getBufferSize());
+			accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getBufferSize());
 
 			if (!checkMasks(inetAddress, _sock.getInetAddress())) {
 				throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
@@ -357,8 +357,8 @@ public class Transfer {
 		}
 	}
 
-	private void accept(String[] cipherSuites, int bufferSize) throws IOException {
-		_sock = _conn.connect(cipherSuites, bufferSize);
+	private void accept(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
+		_sock = _conn.connect(cipherSuites, sslProtocols, bufferSize);
 
 		_conn = null;
 	}

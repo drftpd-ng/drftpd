@@ -79,6 +79,7 @@ public class ConfigManager implements ConfigInterface {
 	private int _maxUsersExempt = 0;
 	
 	private String[] _cipherSuites = null;
+	private String[] _sslProtocols = null;
 	
 	/**
 	 * Reload all VFSPermHandlers and ConfigHandlers.
@@ -89,6 +90,7 @@ public class ConfigManager implements ConfigInterface {
 		loadConfigHandlers();
 		loadMainProperties();
 		parseCipherSuites();
+		parseSSLProtocols();
 		
 		initializeKeyedMap();
 		
@@ -180,6 +182,23 @@ public class ConfigManager implements ConfigInterface {
 			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
 		}
 	}
+
+	private void parseSSLProtocols() {
+		ArrayList<String> sslProtocols = new ArrayList<String>();
+		for (int x = 1;; x++) {
+			String sslProtocol = _mainCfg.getProperty("protocol." + x);
+			if (sslProtocol != null) {
+				sslProtocols.add(sslProtocol);
+			} else {
+				break;
+			}
+		}
+		if (sslProtocols.size() == 0) {
+			_sslProtocols = null;
+		} else {
+			_sslProtocols = sslProtocols.toArray(new String[sslProtocols.size()]);
+		}
+	}
 	
 	/**
 	 * Initializes the KeyedMap.
@@ -240,7 +259,7 @@ public class ConfigManager implements ConfigInterface {
 					String[] temp = st.nextToken().split("-");
 					_portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
 				} else if (drct.equals("hide_ips")) {
-					_hideIps = st.nextToken().equalsIgnoreCase("true") ? true : false;
+					_hideIps = st.nextToken().equalsIgnoreCase("true");
 				} else if (drct.equals("allow_connections")) {
 					getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
 				} else if (drct.equals("allow_connections_deny_reason")) {
@@ -394,5 +413,9 @@ public class ConfigManager implements ConfigInterface {
 
 	public String[] getCipherSuites() {
 		return _cipherSuites;
+	}
+
+	public String[] getSSLProtocols() {
+		return _sslProtocols;
 	}
 }

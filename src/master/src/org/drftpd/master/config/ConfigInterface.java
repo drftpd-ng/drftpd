@@ -75,4 +75,6 @@ public interface ConfigInterface {
 	public String getPasvAddress() throws NullPointerException;
 
 	public String[] getCipherSuites();
+
+	public String[] getSSLProtocols();
 }

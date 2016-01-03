@@ -43,6 +43,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocket;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -268,6 +269,10 @@ public class SiteBot implements ReplyConstants, Runnable {
 			}
 			else {
 				socket = _factory.createSocket(_server, _port, InetAddress.getByName(bindAddress), 0);
+			}
+			String[] sslProtocols = GlobalContext.getConfig().getSSLProtocols();
+			if (sslProtocols != null && sslProtocols.length > 0) {
+				((SSLSocket)socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
 			}
 			logger.info("*** Connected to server.");
 		}

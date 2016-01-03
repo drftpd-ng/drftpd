@@ -118,10 +118,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 					"Error creating directories: " + slavePathFile));
 		}
 
-		String[] slavepaths = slavePathFile.list();
-
-		for (int i = 0; i < slavepaths.length; i++) {
-			String slavepath = slavepaths[i];
+		for (String slavepath : slavePathFile.list()) {
 
 			if (!slavepath.endsWith(".xml")) {
 				continue;
@@ -154,7 +151,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			throw new NullPointerException();
 		}
 
-		RemoteSlave rslave = null;
+		RemoteSlave rslave;
 		XMLDecoder in = null;
 
 		try {
@@ -203,7 +200,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	}
 
 	public void delSlave(String slaveName) {
-		RemoteSlave rslave = null;
+		RemoteSlave rslave;
 
 		try {
 			rslave = getRemoteSlave(slaveName);
@@ -233,8 +230,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			Long size;
 
 			try {
-				size = Long.valueOf(rslave.getSlaveStatusAvailable()
-						.getDiskSpaceAvailable());
+				size = rslave.getSlaveStatusAvailable().getDiskSpaceAvailable();
 			} catch (SlaveUnavailableException e) {
 				continue;
 			}
@@ -402,9 +398,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		Socket socket = null;
 
 		while (true) {
-			RemoteSlave rslave = null;
-			ObjectInputStream in = null;
-			ObjectOutputStream out = null;
+			RemoteSlave rslave;
+			ObjectInputStream in;
+			ObjectOutputStream out;
 
 			try {
 				socket = _serverSocket.accept();
@@ -412,6 +408,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				if (socket instanceof SSLSocket) {
 					if (GlobalContext.getConfig().getCipherSuites() != null) {
 						((SSLSocket) socket).setEnabledCipherSuites(GlobalContext.getConfig().getCipherSuites());
+					}
+					if (GlobalContext.getConfig().getSSLProtocols() != null) {
+						((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
 					}
 					((SSLSocket) socket).setUseClientMode(false);
 					((SSLSocket) socket).startHandshake();
@@ -507,13 +506,13 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	 * for a response and handles errors on each slave Use
 	 * RemoteSlave.simpleDelete(path) if you want to delete files
 	 * 
-	 * @param file
+	 * @param directory
 	 */
 	public void deleteOnAllSlaves(DirectoryHandle directory) {
 		HashMap<RemoteSlave, String> slaveMap = new HashMap<RemoteSlave, String>();
 		Collection<RemoteSlave> slaves = new ArrayList<RemoteSlave>(_rslaves.values());
 		for (RemoteSlave rslave : slaves) {
-			String index = null;
+			String index;
 			try {
 				AbstractBasicIssuer basicIssuer = (AbstractBasicIssuer) getIssuerForClass(AbstractBasicIssuer.class); 
 				index = basicIssuer.issueDeleteToSlave(rslave, directory.getPath());

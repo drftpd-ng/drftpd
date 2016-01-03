@@ -54,7 +54,7 @@ public class ActiveConnection extends Connection {
 		_useSSLClientHandshake = useSSLClientHandshake;
 	}
 
-	public Socket connect(String[] cipherSuites, int bufferSize) throws IOException {
+	public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
 		logger.debug("Connecting to " + _addr.getAddress().getHostAddress() + ":" +
 				+ _addr.getPort());
 
@@ -73,6 +73,9 @@ public class ActiveConnection extends Connection {
 			setSockOpts(sslsock);
 			if (cipherSuites != null && cipherSuites.length != 0) {
 				sslsock.setEnabledCipherSuites(cipherSuites);
+			}
+			if (sslProtocols != null && sslProtocols.length != 0) {
+				sslsock.setEnabledProtocols(sslProtocols);
 			}
 			sslsock.setUseClientMode(_useSSLClientHandshake);
 			sslsock.startHandshake();

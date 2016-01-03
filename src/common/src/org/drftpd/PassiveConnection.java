@@ -62,7 +62,7 @@ public class PassiveConnection extends Connection {
 		_serverSocket.setSoTimeout(TIMEOUT);
 	}
 
-	public Socket connect(String[] cipherSuites, int bufferSize) throws IOException {
+	public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
 		// bufferSize has already been set on the ServerSocket
 		// just need to accept this param to comply with the Connection class
 		
@@ -95,6 +95,9 @@ public class PassiveConnection extends Connection {
 			SSLSocket sslsock = (SSLSocket) sock;
 			if (cipherSuites != null && cipherSuites.length != 0) {
 				sslsock.setEnabledCipherSuites(cipherSuites);
+			}
+			if (sslProtocols != null && sslProtocols.length != 0) {
+				sslsock.setEnabledProtocols(sslProtocols);
 			}
 			sslsock.setUseClientMode(_useSSLClientMode);
 			sslsock.startHandshake();
