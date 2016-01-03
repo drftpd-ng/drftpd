@@ -1,16 +1,23 @@
 # Introduction
 
 DrFTPD is a Distributed FTP server written in java, it's unique because it doesn't handle transfers like normal FTP servers. DrFTPD is set up with a master and a collection of file transfer slaves that handle the file transfers, you can have as many file transfer slaves as you like. Some names that could be used to describe this is ftp site merger, ftp cluster, ftp grid or multi site bnc, but the only accurate term is "distributed ftp daemon."
+
 What is unique with DrFTPD is that it works with existing FTP client software, you can use the FTP client application you're used to and make site-to-site (FXP) transfers with normal FTP servers. The only exception to DrFTPD is with passive (PASV) mode. For this the client needs to support the PRET command. PRET is already supported in several of the most widely used FTP clients. You can often do without PASV mode unless you are behind a firewall which you don't have access to or you need to FXP with another DrFTPD server or a server which doesn't support PASV.
+
 If you merge 10 100mbit sites, you don't get a 1gbit site but you get a 10x100mbit site. What this means is that the aggregate bandwidth is 1000 mbit but a single transfer will never go above 100mbit.
 
 ## Filesystem
 DrFTPD's approach to the file system and file transfers is what makes it unique. Each file can, and will, end up on a different transfer slave.
+
 DrFTPD uses transfer slaves for all file storage and transfers, it supports but doesn't require a file transfer slave to be run locally. The master therefore uses very little bandwidth. FTP control connection, data connections for file listings and instructions to the slaves, are the only operations that consume bandwidth on the master.
+
 The master has a filelist that keeps track of which slaves have which files and information about those files. A file can exist on multiple slaves for redundancy and more bandwidth.
+
 When a slave is started, it gathers a filelist and sends the entire list to the master. The master merges this list with it's existing file list and makes sure that it's in-sync with it's existing file list by adding and removing files to it's own list.
 Because the master doesn't have any files locally, modifications to the virtual filesystem cannot be done easily from outside of the drftpd application.
+
 Neither the master or the slaves need root privileges. The virtual filesystem contained on the master of which slaves files reside on is the authoritative source for information about the files. Items like lastModified, size, user, and group, are all kept on the master. The slave does however require exclusive write access to the storage area, otherwise it will become unsynced with the master filelist and errors can occur.
+
 The slave is kept thin/dumb and isn't told anything about users. It simply processes the instructions that are given to the master and knows nothing about the ftp protocol. This is an advantage as it simplifies administration of the slaves.
 
 
@@ -37,36 +44,36 @@ Generial info follows:
 - Download and install a java runtime environment 7 (JRE) or java development kit 7 (JDK) on the slaves.
 
 You can get ORACLE's JDK here: http://www.oracle.com/technetwork/java/javase/downloads/index.html
+
 If you want to utilize blowfish in your environment also download Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 7. You will need to manually replace the files local_policy.jar and US_export_policy.jar in your java/jre/lib/security folder.
 
 ### Problems
-- Ensure that JAVA_HOME is configured. You can check this using "echo %JAVA_HOME%" on Windows platform or using "echo $JAVA_HOME" on *nix
-- *nix If you encounter problems like "master.sh: line 11: exec: java: not found", you need to add the java binary to your PATH environment variable. Edit your /etc/profile or .bashrc (for current user only) and add PATH=$PATH:$JAVA_HOME/bin at the bottom. Make sure that your enviroment variable $JAVA_HOME is set correctly.
-- Windows If you encounter problems like " 'JAVA' is not recognized as an internal or external command, operable program or batch file.". You also need to add the java binary to your PATH environment variable. You can do this in Windows in your System Properties under the Advanced Tab, there is a button Environment Variables, edit your PATH variable accordingly.
+- Ensure that JAVA_HOME is configured. <br />You can check this using "echo %JAVA_HOME%" on Windows platform or using "echo $JAVA_HOME" on *nix
+- *nix If you encounter problems like "master.sh: line 11: exec: java: not found". <br />You need to add the java binary to your PATH environment variable. Edit your /etc/profile or .bashrc (for current user only) and add PATH=$PATH:$JAVA_HOME/bin at the bottom. Make sure that your enviroment variable $JAVA_HOME is set correctly.
+- Windows If you encounter problems like " 'JAVA' is not recognized as an internal or external command, operable program or batch file.". <br />You also need to add the java binary to your PATH environment variable. You can do this in Windows in your System Properties under the Advanced Tab, there is a button Environment Variables, edit your PATH variable accordingly.
 
 These are issues with your Operating System/Java Install and not related to DrFTPD. 
 
 ## Install ant
-Compiling DrFTPD is required to use the software.
-To allow you to compile java you will need to install ANT or ECLIPSE.
-You can find the installation documentation here: http://ant.apache.org/manual/install.html
+Compiling DrFTPD is required to use the software. <br />
+To allow you to compile java you will need to install ANT or ECLIPSE. <br />
+You can find the installation documentation here: http://ant.apache.org/manual/install.html <br />
 
 ### Problems
-- Ensure that ANT_HOME is configured. You can check this using "echo %ANT_HOME%" on Windows platform or using "echo $ANT_HOME" on *nix
+- Ensure that ANT_HOME is configured. <br />You can check this using "echo %ANT_HOME%" on Windows platform or using "echo $ANT_HOME" on *nix
 
 ## Downloading DrFTPD
 Download DrFTPD from https://github.com/drftpd-ng/drftpd3
 
 ### Details
-- Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
+Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
 git clone hhttps://github.com/drftpd-ng/drftpd3.git
 unzip master.zip
 rm master.zip
 ```
 
-# Build DrFTPD #
-----------------
+## Build DrFTPD
 DrFTPD version 3 comes with an installer. Using this installer you are able to choose which components that should be compiled. 
 
 Start the installer 
@@ -96,6 +103,7 @@ Details to come...!!!
 
 ## Plugins
 Plugins and code modifications of DrFTPD versions prior 3.0.0 will not work. You need to use plugins designed for version 3.0.0.
+
 Unofficial plugins can be found here http://drftpd.org/forums/viewforum.php?f=26
 
 ### Installation instructions
@@ -157,14 +165,14 @@ This can go anywhere in said file.
 
 # FAQ 
 
-- java.lang.Error: failed instanciating SAX parser
-    You did not setup JAVA and ANT correctly. Check if ANT and JAVA commands execute the right Java version
+- java.lang.Error: failed instanciating SAX parser<br />
+You did not setup JAVA and ANT correctly. Check if ANT and JAVA commands execute the right Java version
 
-- org.drftpd.exceptions.SSLUnavailableException: Secure connections to slave required but SSL isn't available
-    You did not setup JAVA correctly. Check if the KEYTOOL is the one from your used Java version and if you generated and copyed the drftpd.key
+- org.drftpd.exceptions.SSLUnavailableException: Secure connections to slave required but SSL isn't available<br />
+You did not setup JAVA correctly. Check if the KEYTOOL is the one from your used Java version and if you generated and copyed the drftpd.key
 
-- Exception in thread "main" java.lang.UnsatisfiedLinkError: /..../libTerminal.so
-    You are likely trying to build on a x64 OS. Basically you will need to replace wrapper with a 64bit version, and java sdk 64bit .... and libTerminal.so has to be compiled for 64bit aswell. Search on libTerminal.so where you can test a few versions that people have uploaded on the forum (or compile your own).
+- Exception in thread "main" java.lang.UnsatisfiedLinkError: /..../libTerminal.so<br />
+You are likely trying to build on a x64 OS. Basically you will need to replace wrapper with a 64bit version, and java sdk 64bit .... and libTerminal.so has to be compiled for 64bit aswell. Search on libTerminal.so where you can test a few versions that people have uploaded on the forum (or compile your own).
 
 
 # Online Help 
