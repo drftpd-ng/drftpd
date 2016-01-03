@@ -3,7 +3,7 @@
 <project name="DRFTPD Installer Project Helper" basedir=".">
 
 	<property name="build.debug" value="true" />
-	<property name="build.javac" value="1.6" />
+	<property name="build.javac" value="1.7" />
 	<property name="build.optimize" value="false" />
 	<property name="build.verbose" value="true" />
 
