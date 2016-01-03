@@ -92,7 +92,7 @@ For DrFTPD to use the correct libs/bin for your system(32/64) you must create so
 Example for linux x86-32 (replace with correct files for your system)
 ```
 cd bin/
-ln -s wrapper/wrapper-linux-x86-32 wrapper
+ln -s wrappers/wrapper-linux-x86-32 wrapper
 cd ../lib
 ln -s libwrapper/libwrapper-linux-x86-32.so libwrapper.so
 ln -s libTerminal-x86-32.so libTerminal.so
