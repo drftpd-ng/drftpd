@@ -19,12 +19,10 @@
 package org.drftpd.master;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -44,7 +42,7 @@ public class CommitManager {
 
 	private static CommitManager _instance;
 
-	private ConcurrentHashMap<Commitable, Date> _commitMap;
+	private ConcurrentLinkedQueue<CommitableWrapper> _commitQueue;
 	private boolean _isStarted;
 	private AtomicInteger _queueSize;
 	private volatile boolean _drainQueue;
@@ -54,7 +52,7 @@ public class CommitManager {
 	 * Private constructor in order to make this class a Singleton.
 	 */
 	private CommitManager() {
-		_commitMap = new ConcurrentHashMap<Commitable, Date>();
+		_commitQueue = new ConcurrentLinkedQueue<CommitableWrapper>();
 		_queueSize = new AtomicInteger();
 	}
 
@@ -88,11 +86,11 @@ public class CommitManager {
 	 * @param object
 	 */
 	public void add(Commitable object) {
-		if (_commitMap.containsKey(object)) {
+		if (contains(object)) {
 			return;
 			// object already queued to write
 		}
-		_commitMap.put(object, new Date());
+		_commitQueue.offer(new CommitableWrapper(object));
 		_queueSize.incrementAndGet();
 	}
 	
@@ -102,11 +100,16 @@ public class CommitManager {
 	 * @return true if the object was removed from the CommitQueue, false otherwise.
 	 */
 	public boolean remove(Commitable object) {
-		boolean removed = _commitMap.remove(object) != null;
-		if (removed) {
-			_queueSize.decrementAndGet();
+		if (object == null) return false;
+		for (Iterator<CommitableWrapper> iter = _commitQueue.iterator(); iter.hasNext();) {
+			CommitableWrapper cw = iter.next();
+			if (cw != null && cw.equals(object)) {
+				iter.remove();
+				_queueSize.decrementAndGet();
+				return true;
+			}
 		}
-		return removed;
+		return false;
 	}
 	
 	/**
@@ -114,7 +117,13 @@ public class CommitManager {
 	 * @return true if the object is present on the CommitQueue, false otherwise.
 	 */
 	public boolean contains(Commitable object) {
-		return _commitMap.containsKey(object);
+		if (object == null) return false;
+		for (CommitableWrapper cw : _commitQueue) {
+			if (cw != null && cw.equals(object)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -130,7 +139,7 @@ public class CommitManager {
 	 * @param object
 	 */
 	public void flushImmediate(Commitable object) {
-		if (_commitMap.containsKey(object)) {
+		if (contains(object)) {
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			writeCommitable(object);
@@ -148,7 +157,6 @@ public class CommitManager {
 		if (_commitThread != null) {
 			_commitThread.interrupt();
 		}
-		return;
 	}
 
 	private long getCommitDelay() {
@@ -164,11 +172,13 @@ public class CommitManager {
 		while (true) {
 			long delay = getCommitDelay();
 			long time = System.currentTimeMillis() - delay;
-			for (Iterator<Entry<Commitable, Date>> iter = _commitMap.entrySet()
-					.iterator(); iter.hasNext();) {
-				Entry<Commitable, Date> entry = iter.next();
-				if (entry.getValue().getTime() < time || _drainQueue) {
-					writeCommitable(entry.getKey());
+			for (Iterator<CommitableWrapper> iter = _commitQueue.iterator(); iter.hasNext();) {
+				CommitableWrapper cw = iter.next();
+				if (cw.getTime() < time || _drainQueue) {
+					if (writeCommitable(cw.getCommitable())) {
+						iter.remove();
+						_queueSize.decrementAndGet();
+					}
 				}
 			}
 			
@@ -179,12 +189,10 @@ public class CommitManager {
 		}
 	}
 
-	private void writeCommitable(Commitable item) {
+	private boolean writeCommitable(Commitable item) {
 		try {
 			item.writeToDisk();
-			if (_commitMap.remove(item) != null) {
-				_queueSize.decrementAndGet();
-			}
+			return true;
 		} catch (IOException e) {
 			logger.error("Error writing object to disk - "
 					+ item.descriptiveName(), e);
@@ -192,6 +200,7 @@ public class CommitManager {
 			logger.error("Error writing object to disk - "
 					+ item.descriptiveName(), e);
 		}
+		return false;
 	}
 
 	private class CommitHandler implements Runnable {
@@ -203,6 +212,39 @@ public class CommitManager {
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			Thread.currentThread().setName("CommitHandler");
 			processAllLoop();
+		}
+	}
+
+	/**
+	 * Creates a wrapping object for the Commitable object and current time.
+	 */
+	private class CommitableWrapper {
+		private Commitable _object;
+		private long _time;
+
+		private CommitableWrapper(Commitable object) {
+			_object = object;
+			_time = System.currentTimeMillis();
+		}
+
+		public Commitable getCommitable() {
+			return _object;
+		}
+
+		public long getTime() {
+			return _time;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == this) return true;
+			if (obj == null) return false;
+			return (obj instanceof Commitable) && _object.equals(obj);
+		}
+
+		@Override
+		public int hashCode() {
+			return _object.hashCode();
 		}
 	}
 }

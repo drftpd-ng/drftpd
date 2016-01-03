@@ -22,13 +22,14 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.XMLEncoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.drftpd.GlobalContext;
@@ -44,9 +45,9 @@ import org.drftpd.stats.StatsInterface;
 public class VirtualFileSystemFile extends VirtualFileSystemInode implements StatsInterface  {
 
 	protected static final Collection<String> transientListFile = Arrays
-			.asList(new String[] { "name", "parent", "xfertime", "checksum",
+			.asList("name", "parent", "xfertime", "checksum",
 					"downloadedBytes", "downloadedFiles", "downloadedTime",
-					"uploadedBytes", "uploadedFiles", "uploadedTime"});
+					"uploadedBytes", "uploadedFiles", "uploadedTime");
 	// the following fields AREN'T transient, they're simply stored in the
 	// KeyedMap instead of as their own independent javabeans element
 	//
@@ -67,10 +68,10 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	
 	public static final Key<Long> DOWNLOADDURATION = new Key<Long>(VirtualFileSystemFile.class, 
 			"dlduration");
-	
-	private transient ArrayList<RemoteTransfer> _uploads = new ArrayList<RemoteTransfer>(1);
-	
-	private transient ArrayList<RemoteTransfer> _downloads = new ArrayList<RemoteTransfer>(1);
+
+	private transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<RemoteTransfer>();
+
+	private transient Queue<RemoteTransfer> _downloads = new ConcurrentLinkedQueue<RemoteTransfer>();
 
 	private long _size;
 
@@ -85,13 +86,13 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	
 	@Override
 	public String toString() {
-		StringBuffer ret = new StringBuffer();
-		ret.append("File" + super.toString() + "[slaves=");
+		StringBuilder ret = new StringBuilder();
+		ret.append("File").append(super.toString()).append("[slaves=");
 		for (String slave : getSlaves()) {
-			ret.append(slave + ",");
+			ret.append(slave).append(",");
 		}
 		ret.replace(ret.length() - 1, ret.length(), "]");
-		ret.append("[xfertime="+getXfertime()+"]");
+		ret.append("[xfertime=").append(getXfertime()).append("]");
 		return ret.toString();
 	}
 
@@ -190,11 +191,11 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 			logger.error("I don't know what to do here", e);
 			throw new RuntimeException(e);
 		}
-		for (int x = 0; x < pdArr.length; x++) {
+		for (PropertyDescriptor pd : pdArr) {
 			// logger.debug("PropertyDescriptor - VirtualFileSystemFile - "
-			// + pdArr[x].getDisplayName());
-			if (transientListFile.contains(pdArr[x].getName())) {
-				pdArr[x].setValue("transient", Boolean.TRUE);
+			// + pd.getDisplayName());
+			if (transientListFile.contains(pd.getName())) {
+				pd.setValue("transient", Boolean.TRUE);
 			}
 		}
 		// needed to create a VFSFile object during unserialization
@@ -245,27 +246,19 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	}
 	
 	public void addUpload(RemoteTransfer transfer) {
-		synchronized (_uploads) {
-			_uploads.add(transfer);
-		}
+		_uploads.add(transfer);
 	}
 	
 	public void addDownload(RemoteTransfer transfer) {
-		synchronized (_downloads) {
-			_downloads.add(transfer);
-		}
+		_downloads.add(transfer);
 	}
 	
 	public void removeUpload(RemoteTransfer transfer) {
-		synchronized (_uploads) {
-			_uploads.remove(transfer);
-		}
+		_uploads.remove(transfer);
 	}
 	
 	public void removeDownload(RemoteTransfer transfer) {
-		synchronized (_downloads) {
-			_downloads.remove(transfer);
-		}
+		_downloads.remove(transfer);
 	}
 	
 	protected void abortTransfers(String reason) {
@@ -280,31 +273,26 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	protected void abortDownloads(String reason) {
 		abortTransfers(_downloads, reason);
 	}
-	
-	private void abortTransfers(ArrayList<RemoteTransfer> transfers, String reason) {
-		synchronized (transfers) {
-			for (RemoteTransfer transfer :  new ArrayList<RemoteTransfer>(transfers)) {
-				transfer.abort(reason);
-				transfers.remove(transfer);
-			}
+
+	private void abortTransfers(Queue<RemoteTransfer> transfers, String reason) {
+		for (RemoteTransfer transfer :  transfers) {
+			transfer.abort(reason);
+			transfers.remove(transfer);
 		}
 	}
-	
-	private boolean isTransferring(ArrayList<RemoteTransfer> transfers) {
-		synchronized (transfers) {
-			for (RemoteTransfer transfer : new ArrayList<RemoteTransfer>(transfers)) {
-				try {
-					if (!transfer.getTransferStatus().isFinished()) {
-						return true;
-					}
-					// transfer is done
-				} catch (TransferFailedException e) {
-					// this one failed but another might be transferring
-					
+
+	private boolean isTransferring(Queue<RemoteTransfer> transfers) {
+		for (RemoteTransfer transfer : transfers) {
+			try {
+				if (!transfer.getTransferStatus().isFinished()) {
+					return true;
 				}
+				// transfer is done
+			} catch (TransferFailedException e) {
+				// this one failed but another might be transferring
 			}
-			return false;
 		}
+		return false;
 	}
 	
 	public boolean isDownloading() {
@@ -366,9 +354,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 		return getXfertime();
 	}
 
-	public void setDownloadedBytes(long bytes) {
-		return;	
-	}
+	public void setDownloadedBytes(long bytes) {}
 
 	public void setDownloadedFiles(int files) {
 		getKeyedMap().incrementInt(DOWNLOADEDTIMES);
@@ -385,27 +371,21 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 * @see org.drftpd.stats.StatsInterface#setUploadedBytes(long)
 	 * Equals to file size.
 	 */
-	public void setUploadedBytes(long bytes) {
-		return;
-	}
+	public void setUploadedBytes(long bytes) {}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.drftpd.stats.StatsInterface#setUploadedFiles(int)
 	 * Useless since a file cannot be uploaded more than once.
 	 */
-	public void setUploadedFiles(int files) {
-		return;
-	}
+	public void setUploadedFiles(int files) {}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.drftpd.stats.StatsInterface#setUploadedTime(long)
 	 * Equals to setXfertime().
 	 */
-	public void setUploadedTime(long millis) {
-		return;
-	}
+	public void setUploadedTime(long millis) {}
 
 	@Override
 	public long getSize() {
