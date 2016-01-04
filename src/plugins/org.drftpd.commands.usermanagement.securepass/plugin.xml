@@ -1,0 +1,53 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
+<plugin id="org.drftpd.commands.usermanagement.securepass" version="3.0.0">
+        <attributes>
+                <attribute id="DefaultBuild" value="true" />
+        </attributes>
+        <requires>
+                <import plugin-id="org.drftpd.commands.usermanagement" exported="true" />
+                <import plugin-id="master" exported="true" reverse-lookup="true" />
+        </requires>
+        <runtime>
+                <library id="org.drftpd.commands.usermanagement.securepass" path="classes/" type="code">
+                        <export prefix="*" />
+                </library>
+        </runtime>
+
+        <extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+        <extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" /> 
+ 
+        <extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="SecurePassADDUSERPreCheck">
+                <parameter id="ParentMethod" value="doSITE_ADDUSER" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.securepass.hooks.SecurePassHooks" />
+                <parameter id="HookMethod" value="doSecurePassADDUSERPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+ 
+        <extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="SecurePassGADDUSERPreCheck">
+                <parameter id="ParentMethod" value="doSITE_GADDUSER" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.securepass.hooks.SecurePassHooks" />
+                <parameter id="HookMethod" value="doSecurePassGADDUSERPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+
+        <extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="SecurePassCHPASSPreCheck">
+                <parameter id="ParentMethod" value="doSITE_CHPASS" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.securepass.hooks.SecurePassHooks" />
+                <parameter id="HookMethod" value="doSecurePassCHPASSPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+        
+		<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="SecurePassPASSWDPreCheck">
+                <parameter id="ParentMethod" value="doSITE_PASSWD" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.securepass.hooks.SecurePassHooks" />
+                <parameter id="HookMethod" value="doSecurePassPASSWDPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+ 
+        <extension plugin-id="master" point-id="Plugin" id="SecurePassManager">
+			<parameter id="Class" value="org.drftpd.commands.usermanagement.securepass.SecurePassManager"/>
+		</extension>
+		
+</plugin>

@@ -1,0 +1,19 @@
+##############################################################################
+##                            SECUREPASS                                    ##
+##                                                                          ##
+##        Length  LowerCase  UperCase  Numeric  Special  Perms              ##
+##                                                                          ##
+##   Ident : Length required for password (0 for none)                      ##
+##   LowerCase: How many lower case letters required (0 for none)           ##
+##   UpperCase: How many upper case letters required (0 for none)           ##
+##   Numeric: How many numers required (0 for none)                         ##
+##   Special: How many special characters required (0 for none)             ##
+##   Perms: Users who this policy applies to                                ##
+##                                                                          ##
+##   eg:                                                                    ##
+##   securepass     5   1   1   1   1   *          |  aA1a$@                ##
+##   securepass     10   2   2   0   0   =group1   |  aaaaAAAAaA            ##
+##############################################################################
+#           LENGTH  LOWERCASE  UPPERCASE  NUMBERIC  SPECIAL  PERMS
+securepass    5        2          2          1         0       *
+securepass    7        2          2          2         2       =siteop
