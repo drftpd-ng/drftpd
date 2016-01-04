@@ -1,0 +1,10 @@
+################################################################################
+#	Top Trial
+#
+#	These attributes are for the Top Trial Type:
+#
+#	x.list = Default number of users to list in !top/!cut (Default = 10)
+#	x.keep = Maximum users to keep in this period (Default = 10)
+#	x.min = Minimum amount in GB that user has to pass (Optional)
+#
+################################################################################
