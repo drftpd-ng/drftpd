@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.speedtest" version="3.0.0">
+	<doc>
+		<doc-text>This plugin listens for uploads in specified paths and announce result to irc.
+			After file is completed it is immediately removed.</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
+		<import plugin-id="master" exported="true" />
+	</requires>
+	
+	<runtime>
+		<library id="org.drftpd.plugins.speedtest" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="SpeedTestAnnounce">
+		<parameter id="Class" value="org.drftpd.plugins.speedtest.announce.SpeedTestAnnouncer" />
+	</extension>
+
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="SpeedTestSTORPostHook">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.speedtest.SpeedTest" />
+		<parameter id="HookMethod" value="doSTORPostHook" />
+		<parameter id="Priority" value="1" />
+	</extension>
+</plugin>

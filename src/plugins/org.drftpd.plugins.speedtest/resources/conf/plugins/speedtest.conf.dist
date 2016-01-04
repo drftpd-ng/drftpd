@@ -1,0 +1,2 @@
+# Specify paths for speedtest, all subdirs of this path is considered a SPEEDTEST dir.
+path.1=/REQUEST/SPEEDTEST
