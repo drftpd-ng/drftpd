@@ -1,0 +1,21 @@
+approve {
+plugin org.drftpd.commands.approve
+class ApproveCommands
+method doSITE_APPROVE
+perms =siteop
+help Approve release even though rules say it should get nuked
+help.specific ${command} [path]
+input all
+output source
+}
+
+remapprove {
+plugin org.drftpd.commands.approve
+class ApproveCommands
+method doSITE_REMAPPROVE
+perms =siteop
+help Removes Approval of release
+help.specific ${command} [path]
+input all
+output source
+}
