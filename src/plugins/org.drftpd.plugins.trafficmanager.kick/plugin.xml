@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
+<plugin id="org.drftpd.plugins.trafficmanager.kick" version="3.0.0">
+	<doc>
+		<doc-text> This plugin provides Kick to the Traffic Manager</doc-text>
+	</doc>
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.plugins.trafficmanager" exported="true" />
+	</requires>
+
+	<runtime>
+		<library id="org.drftpd.plugins.trafficmanager.types.kick" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension plugin-id="org.drftpd.plugins.trafficmanager" point-id="TrafficType" id="TrafficKick">
+		<parameter id="ClassName" value="org.drftpd.plugins.trafficmanager.types.kick.TrafficKick"/>
+		<parameter id="TypeName" value="Kick"/>
+	</extension>
+	
+</plugin>
+
