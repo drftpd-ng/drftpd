@@ -1,0 +1,6 @@
+# To specify where the autonuke announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#autonuke.path.1=/path/subpath/*
+#autonuke.path.1.destination=public
+#autonuke.section.1=*
+#autonuke.section.1.destination=public

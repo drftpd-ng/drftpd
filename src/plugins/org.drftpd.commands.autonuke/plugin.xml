@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.autonuke" version="3.0.0">
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.approve.metadata" exported="true" />
+        <import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.nuke" exported="true" />
+        <import plugin-id="org.drftpd.commands.nuke.metadata" exported="true" />
+        <import plugin-id="org.drftpd.commands.zipscript" exported="true" />
+        <import plugin-id="org.drftpd.commands.zipscript.zip" exported="true" />
+        <import plugin-id="org.drftpd.sections.conf" exported="true" />
+		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
+        <import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.autonuke" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension-point id="Config">
+		<parameter-def id="ConfigName" type="string" />
+		<parameter-def id="ClassName" type="string" />
+	</extension-point>
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
+	<!-- Configs -->
+	<extension plugin-id="org.drftpd.commands.autonuke" point-id="Config" id="IncompleteConfig">
+		<parameter id="ClassName" value="org.drftpd.commands.autonuke.IncompleteConfig"/>
+		<parameter id="ConfigName" value="Incomplete"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.autonuke" point-id="Config" id="MissingConfig">
+		<parameter id="ClassName" value="org.drftpd.commands.autonuke.MissingConfig"/>
+		<parameter id="ConfigName" value="Missing"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.autonuke" point-id="Config" id="EmptyConfig">
+		<parameter id="ClassName" value="org.drftpd.commands.autonuke.EmptyConfig"/>
+		<parameter id="ConfigName" value="Empty"/>
+	</extension>
+	<!-- End Configs -->
+
+    <extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="AutoNukeHandler" />
+	
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="AutoNukeAnnounce">
+		<parameter id="Class" value="org.drftpd.commands.autonuke.announce.AutoNukeAnnouncer" />
+	</extension>
+
+    <extension plugin-id="org.drftpd.commands.autonuke" point-id="PreHook" id="doSITE_AUTONUKESPerm">
+		<parameter id="ParentMethod" value="doSITE_AUTONUKES" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+    <extension plugin-id="org.drftpd.commands.autonuke" point-id="PreHook" id="doSITE_DELQUEUEPerm">
+		<parameter id="ParentMethod" value="doSITE_DELQUEUE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+    <extension plugin-id="org.drftpd.commands.autonuke" point-id="PreHook" id="doSITE_ANSCANPerm">
+		<parameter id="ParentMethod" value="doSITE_AUTONUKESCAN" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.autonuke" point-id="PreHook" id="doSITE_APPROVEPerm">
+		<parameter id="ParentMethod" value="doSITE_APPROVE" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+
+    <extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="AutoNukeCheckDir">
+		<parameter id="ParentMethod" value="doMKD" />
+		<parameter id="HookClass" value="org.drftpd.commands.autonuke.AutoNukeHook" />
+		<parameter id="HookMethod" value="doMKDPostHook" />
+		<parameter id="Priority" value="1000" />
+	</extension>
+    <extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="AutoNukeRMDCleanup">
+		<parameter id="ParentMethod" value="doRMD" />
+		<parameter id="HookClass" value="org.drftpd.commands.autonuke.AutoNukeHook" />
+		<parameter id="HookMethod" value="doAutoNukeCleanupHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+    <extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="AutoNukeWIPECleanup">
+		<parameter id="ParentMethod" value="doSITE_WIPE" />
+		<parameter id="HookClass" value="org.drftpd.commands.autonuke.AutoNukeHook" />
+		<parameter id="HookMethod" value="doAutoNukeCleanupHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+
+	<extension plugin-id="master" point-id="Plugin" id="AutoNukeManager">
+		<parameter id="Class" value="org.drftpd.commands.autonuke.AutoNukeManager"/>
+	</extension>
+</plugin>

@@ -1,0 +1,32 @@
+autonukes {
+plugin org.drftpd.commands.autonuke
+class AutoNukeCommands
+method doSITE_AUTONUKES
+perms =siteop
+help Show AutoNuke queue
+help.specific ${command} [section]
+input all
+output source
+}
+
+delqueue {
+plugin org.drftpd.commands.autonuke
+class AutoNukeCommands
+method doSITE_DELQUEUE
+perms =siteop
+help Delete one/all item(s) from AutoNuke queue
+help.specific ${command} [path]
+input all
+output source
+}
+
+autonukescan {
+plugin org.drftpd.commands.autonuke
+class AutoNukeCommands
+method doSITE_AUTONUKESCAN
+perms =siteop
+help Manual AutoNuke scan
+help.specific ${command} [path]
+input all
+output source
+}

@@ -1,0 +1,154 @@
+##############
+## AutoNuke ##
+##############
+
+## Nuke user (User account to use when nuking dir)
+user=drftpd
+
+## Debug mode: No nuking, output to drftpd.log instead
+## but still sends info to IRC. Reloading the site in debug mode will clear
+## any autonukes in memory. 
+debug=true
+
+## Exclude sections (comma separated)
+exclude.sections=PRE,REQUESTS,ARCHIVE
+
+## Exclude release directories (Regex)
+exclude.dirs=^(?i)((\\[NUKED\\]).*|SORTED|SINGLES)$
+
+## Skip the release if any of these sub directories exist (Regex)
+exclude.subdirs=^(?i)(Approved.by).*$
+
+## ----------------------------------------
+## AUTONUKE CONFIGURATION SETTINGS [GLOBAL]
+## ----------------------------------------
+##
+## (All optional settings gets the default value if omitted)
+##
+## x.type
+##
+## Below are the buildt in config types available.
+## However others could be added later by third party developers.
+## In that case refer to their documentation for available commands.
+##
+## Incomplete               - if the release is incomplete (SFV/DIZ)
+##
+## Missing                  - the release is missing a file/directory (regex)
+##                            (see sample configs below)
+##
+## Empty                    - nothing in the directory.
+##
+##
+## [OPTIONAL] x.section (DEFAULT=*)
+## Use * if you want it to be valid for all sections except excluded
+## or use commas to separate (MP3,XViD) make sure no spaces are in between.
+##
+## [OPTIONAL] x.minage (DEFAULT=120)
+## At least how old (in minutes) should the release be before checking it?
+## Set this to skip new releases.
+##
+## [OPTIONAL] x.maxage (DEFAULT=20160)
+## If the release is older than this (in minutes), skip it.
+##
+## [OPTIONAL] x.dated <SECTION>:<DAYS BACK>[,<SECTION>:<DAYS BACK>,...] (DEFAULT="")
+## If the section being checked is dated, check only X days back, including
+## today. So 2 = Today and Yesterday. If you're using a weekly format, do
+## multiples of 7.
+##
+## [OPTIONAL] x.dated.format (DEFAULT=MMdd)
+## Date format on dated directories
+##
+## [OPTIONAL] x.subdirs (DEFAULT="")
+## When defined it will see if there are any sub directories inside.
+## If any are found and they match, then they will be
+## used to check against the type. So with x.type=empty it will nuke any
+## matching subdirectories that are empty.
+##
+## [OPTIONAL] x.nuke.delay (DEFAULT=720)
+## Using the current time, give them this much time until it gets nuked. The
+## final nuke time is the sum of the nuke delay and the last modified date, so
+## if that is older than the current time then it is an old release and should
+## be nuked immediately.
+##
+## [OPTIONAL] x.nuke.reason (DEFAULT="autonuke")
+## The reason for nuking.
+##
+## [OPTIONAL] x.nuke.mult (DEFAULT=1)
+## Nuke Multiplier.
+##
+## [OPTIONAL] x.irc (DEFAULT="")
+## When a release is found to be nuked it will send this to IRC.
+## Users can see the current list with !autonukes.
+## If dir is older than last modified date + nuke delay this message wont be sent
+## as it will get nuked directly anyway
+##
+## --------------------------------------------
+## AUTONUKE CONFIGURATION SETTINGS [Incomplete]
+## --------------------------------------------
+##
+## [OPTIONAL] x.min.percent (DEFAULT=0)
+## The minimum allowed percentage. If set to zero(default) release must be complete,
+## else it will get nuked.
+##
+## -----------------------------------------
+## AUTONUKE CONFIGURATION SETTINGS [Missing]
+## -----------------------------------------
+##
+## x.missing
+## Regular expression. If the regex doesn't match any file or directory release will get nuked.
+##
+## ----------------------
+## IRC VARIABLES [GLOBAL]
+## ----------------------
+## ${dir} - directory being scanned
+## ${path} - full path of this directory
+## ${user} - directory owner
+## ${group} - owners group
+## ${timeleft} - time remaining until nuke
+## ${section} - section of this directory
+## ${dirsize} - the size of the dir to be nuked
+##
+## ----------------------------------
+## IRC VARIABLES [Incomplete]
+## ----------------------------------
+## ${var1} - number of files missing
+## ${var2} - percent of files missing
+## ${var3} - current number of files present
+## ${var4} - total number of files
+## ${var5} - percent of total files
+
+## Scan for Incomplete
+1.type=Incomplete
+1.dated=0DAY:2,MP3:2
+1.subdirs=^(?i)(cd|disk).*$
+1.irc=${color}04${bold}iNCOMPLETE${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}Complete:${bold} ${color}08${var5}%${coloroff} ${color}14/${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+1.nuke.reason=auto.incomplete
+1.nuke.mult=3
+
+## Scan for Empty
+2.type=Empty
+2.dated=0DAY:2,MP3:2
+2.subdirs=^(?i)(cd|disk).*$
+2.irc=${color}04${bold}EMPTY${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+2.nuke.reason=auto.empty
+
+## Scans for Missing files/directories
+#
+# 3.type=Missing
+# 3.missing=^(?i).+.nfo$
+# 3.dated=0DAY:2,MP3:2
+# 3.irc=${color}04${bold}NO NFO${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+# 3.nuke.reason=auto.missing.nfo
+#
+# 4.type=Missing
+# 4.missing=^(?i).+.m3u$
+# 4.section=MP3
+# 4.dated=MP3:2
+# 4.irc=${color}04${bold}NO M3U${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+# 4.nuke.reason=auto.missing.m3u
+#
+# 5.type=Missing
+# 5.missing=^(?i)sample$
+# 5.section=XViD
+# 5.irc=${color}04${bold}NO SAMPLE${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+# 5.nuke.reason=auto.missing.sample
