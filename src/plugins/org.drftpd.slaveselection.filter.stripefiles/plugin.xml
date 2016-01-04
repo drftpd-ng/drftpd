@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id$ -->
+<plugin id="org.drftpd.slaveselection.filter.stripefiles" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides a Stripefiles filter for Slave Selection</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DenyUnload" value="false" />
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+		<import plugin-id="org.drftpd.slaveselection.filter" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.slaveselection.filter.stripefiles" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<!-- Filters -->
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="StripefilesFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.stripefiles.StripefilesFilter"/>
+		<parameter id="FilterName" value="Stripefiles"/>
+	</extension>
+</plugin>
