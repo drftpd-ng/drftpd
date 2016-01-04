@@ -1,0 +1,3 @@
+# To specify where the autofreespace announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#autofreespace.destination=public

@@ -1,0 +1,26 @@
+# times are represented in minutes
+# 10080 = 1 week
+# 43200 = 1 month
+
+# smallest number of time in between cycles
+cycleTime=10080
+
+# AutoFreeSpace will try to keep each slave above this number
+keepFree=100GB
+
+# do not delete files with this following names (regex)
+#excluded.file.1=.*speedtest.*
+
+# only announce, no delete
+announce.only=true
+
+# Only one option can be set to true
+# Delete files only based on time rather then time+keepFree
+delete.on.date=false
+# Delete files only based on space rather than time+keepFree
+delete.on.space=false
+
+# do not delete releases younger than X minutes
+1.section=SECTION
+1.wipeAfter=43200
+

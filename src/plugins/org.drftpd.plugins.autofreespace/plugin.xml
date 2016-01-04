@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.autofreespace" version="3.0.0">
+    <doc>
+		<doc-text>This plug-in allows you to always get a minimum amount of space free on each slave</doc-text>
+	</doc>
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+        <import plugin-id="master" exported="true"/>
+		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.autofreespace" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+   	<extension plugin-id="master" point-id="Plugin" id="AutoFreeSpace">
+		<parameter id="Class" value="org.drftpd.plugins.autofreespace.AutoFreeSpace"/>
+	</extension>
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="AFSAnnounce">
+		<parameter id="Class" value="org.drftpd.plugins.autofreespace.announce.AFSAnnouncer" />
+	</extension>
+</plugin>
+	
