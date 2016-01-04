@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-09-17 09:59:15Z CyBeR $ -->
+<plugin id="org.drftpd.usermanager.encryptedjavabeans" version="3.0.0">
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+		<attribute id="DefaultBuild" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" reverse-lookup="true" exported="true"/>
+		<import plugin-id="org.drftpd.usermanager.javabeans" reverse-lookup="true" exported="true"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.usermanager.encryptedjavabeans" path="classes/" type="code">
+				<export prefix="*" />
+		</library>
+	</runtime>
+	<extension plugin-id="master" point-id="UserManager" id="EncryptedBeanUserManager">
+		<parameter id="Class" value="org.drftpd.usermanager.encryptedjavabeans.EncryptedBeanUserManager" />
+	</extension>
+</plugin>

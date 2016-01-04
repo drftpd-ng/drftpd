@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: build.xml 1925 2009-06-15 21:46:05Z tdsoul $ -->
+<project name="org.drftpd.usermanager.encryptedjavabeans"
+         default="build">
+	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.usermanager.encryptedjavabeans" />
+	<property name="plugin.family" value="plugins/master" />
+	<target name="build">
+		<buildplugin />
+	</target>
+	<target name="clean">
+		<cleanplugin />
+	</target>
+</project>
