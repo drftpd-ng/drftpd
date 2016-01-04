@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z djb61 $ -->
+<plugin id="org.drftpd.slaveselection.filter.maxtransfers" version="3.0.0">
+	<doc>
+		<doc-text>(Optional) - This plugin provides Slave Selection Filters. </doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DenyUnload" value="false" />
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+<!--		<import plugin-id="master" exported="true" /> -->
+		<import plugin-id="org.drftpd.slaveselection.filter" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.slaveselection.filter.maxtransfers" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+<!--	<extension plugin-id="master" point-id="SlaveSelection" id="SlaveSelectionFilter">
+		<parameter id="Class" value="org.drftpd.slaveselection.filter.SlaveSelectionManager"/>
+	</extension> -->
+	
+	<!-- Filters -->
+	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MaxtransfersPerslaveFilter">
+		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.maxtransfers.MaxtransfersPerslaveFilter"/>
+		<parameter id="FilterName" value="MaxtransfersPerslave"/>
+	</extension>
+</plugin>
