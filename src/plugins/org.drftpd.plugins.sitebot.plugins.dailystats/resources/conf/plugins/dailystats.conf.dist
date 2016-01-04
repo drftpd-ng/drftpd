@@ -1,0 +1,24 @@
+################################################################################
+#   This display's Daily/Weekly/Monthy Reports to IRC
+#
+#	dayup = Show day up report (true/false)
+#	daydn = Show day down report (true/false)
+#	wkup = Show week up report (true/false)
+#	wkdn = Show week down report (true/false)
+#	mnup = Show month up report (true/false)
+#	mndn = Show month down report (true/false)
+#	showzero = Show users with 0 bytes (true/false)
+#	outputnum = Number of users to output per display
+#	exempt = users/groups to exempt
+#
+################################################################################
+
+dayup=true
+daydn=true
+wkup=true
+wkdn=true
+mnup=true
+mndn=true
+showzero=true
+outputnum=5
+exempt=
