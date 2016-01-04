@@ -1,0 +1,30 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.zipscript.flac.slave" version="3.0.0">
+	<doc>
+		<doc-text>(Zipscript) - This plugin provides Protocol Extensions for Zipscript (.flac/vorbis metadata) on the Slave Side</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptFlacProtocol" />
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.commands.zipscript.flac" />
+		</attribute>
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.flac.common" />
+		<import plugin-id="slave" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.zipscript.flac.slave" path="classes/" type="code" />
+		<library id="jflac" path="../../../lib/jflac-1.3.jar" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+			
+	<extension plugin-id="slave" point-id="Handler" id="FlacFileHandler">
+		<parameter id="Name" value="flacfile" />
+		<parameter id="Class" value="org.drftpd.protocol.zipscript.flac.slave.ZipscriptFlacHandler" />
+		<parameter id="Method" value="handleFlacFile" />
+	</extension>
+</plugin>

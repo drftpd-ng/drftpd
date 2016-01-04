@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="org.drftpd.plugins.sitebot.announce.zipscript.flac"
+         default="build">
+	<property name="plugin.family" value="plugins/master" />
+	<target name="build">
+		<buildplugin />
+	</target>
+	<target name="clean">
+		<cleanplugin />
+	</target>
+</project>

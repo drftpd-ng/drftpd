@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.vfs.index.lucene.extensions.flac" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides queries flac metadata in the lucene index</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.flac.common" exported="true" />
+		<import plugin-id="org.drftpd.vfs.index.lucene" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.vfs.index.lucene.extensions.flac" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension plugin-id="org.drftpd.vfs.index.lucene" point-id="IndexData" id="FlacDataExtension">
+		<parameter id="Class" value="org.drftpd.vfs.index.lucene.extensions.flac.FlacDataExtension"/>
+	</extension>
+	<extension plugin-id="org.drftpd.vfs.index.lucene" point-id="QueryTerm" id="FlacQueryExtension">
+		<parameter id="Class" value="org.drftpd.vfs.index.lucene.extensions.flac.FlacQueryExtension"/>
+	</extension>
+</plugin>

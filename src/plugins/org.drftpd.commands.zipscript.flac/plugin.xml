@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.zipscript.flac" version="3.0.0">
+	<doc>
+		<doc-text>(Zipscript) - This plugin provides flac vorbis information for new uploads</doc-text>
+	</doc>
+
+	<requires>
+		<import plugin-id="org.drftpd.protocol.zipscript.flac.master" exported="true" />
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.commands.list" exported="true" />
+		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.zipscript.flac" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDFlacStats">
+		<parameter id="ParentMethod" value="doCWD" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.flac.hooks.ZipscriptFlacPostHook" />
+		<parameter id="HookMethod" value="doZipscriptCWDFlacHook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptDELEFlacHook">
+		<parameter id="ParentMethod" value="doDELE" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.flac.hooks.ZipscriptFlacPostHook" />
+		<parameter id="HookMethod" value="doZipscriptDELEFlacHook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORFlacStats">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.commands.zipscript.flac.hooks.ZipscriptFlacPostHook" />
+		<parameter id="HookMethod" value="doZipscriptSTORFlacHook" />
+		<parameter id="Priority" value="12" />
+	</extension>
+
+	<extension plugin-id="org.drftpd.commands.zipscript" point-id="ListStatusBarProvider" id="ListFlacStatusBarProvider">
+		<parameter id="Class" value="org.drftpd.commands.zipscript.flac.list.ZipscriptFlacStatusBar" />
+	</extension>
+</plugin>

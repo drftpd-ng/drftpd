@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="org.drftpd.protocol.zipscript.flac.common"
+         default="build">
+	<property name="plugin.family" value="plugins/common" />
+	<target name="build">
+		<buildplugin />
+	</target>
+	<target name="clean">
+		<cleanplugin />
+	</target>
+</project>

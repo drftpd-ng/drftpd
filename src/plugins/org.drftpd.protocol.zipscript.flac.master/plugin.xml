@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.zipscript.flac.master" version="3.0.0">
+	<doc>
+		<doc-text>(Zipscript) - This plugin provides Protocol Extensions for Zipscript (.flac/vorbis metadata) on the Master Side</doc-text>
+	</doc>
+
+	<attributes>
+		<attribute id="ProtocolName" value="ZipscriptFlacProtocol" />
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.protocol.zipscript.flac.slave" />
+		</attribute>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+		<import plugin-id="org.drftpd.protocol.zipscript.flac.common" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.zipscript.flac.master" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension plugin-id="master" point-id="ProtocolExtension" id="ZipscriptFlacProtocol">
+		<parameter id="IssuerClass" value="org.drftpd.protocol.zipscript.flac.master.ZipscriptFlacIssuer" />
+	</extension>
+</plugin>
