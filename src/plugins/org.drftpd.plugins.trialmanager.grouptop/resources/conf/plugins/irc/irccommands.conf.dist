@@ -1,0 +1,22 @@
+gpassed {
+plugin org.drftpd.plugins.trialmanager.grouptop
+class TrialManagerCommands
+method doGPASSED
+perms *
+help Lists If User Has Passed Trial
+help.specific ${command} <User>
+input all
+output source
+}
+
+gtop {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doTOP
+perms *
+help Lists All Users In Trial Period
+help.specific ${command} <num>
+input all
+output source
+}
+
