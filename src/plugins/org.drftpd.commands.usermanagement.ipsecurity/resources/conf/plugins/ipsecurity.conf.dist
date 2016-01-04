@@ -1,0 +1,25 @@
+##############################################################################
+##                         IPSECURITY                                       ##
+##                                                                          ##
+##          Ident  Octets  Hostmask  Num/ip  Perms                          ##
+##                                                                          ##
+##   Ident : 1 for required, 0 for not required                             ##
+##   octets: String representitive of ips allowed to add.                   ##
+##           Must be 4 sets, or it will fail:   eg: X.X.*.*                 ##
+##   hostmask: Can user add *.isprovider.com, 1 for yes, 0 for no           ##
+##             Uses setup of octets:  eg: *.*.X.X = *.*.ispname.com         ##
+##   Num/Ip: Number of ip's allowed per user account, 0 is unlimited        ##
+##   Perms: Users who this policy applies to                                ##
+##                                                                          ##
+##   eg:                                                                    ##
+##   ipsecurity     0  X.X.X.*  0  3  =group1    |   *@X.X.X.*              ##
+##   ipsecurity     1  X.X.*.*  0  3  =group1    |   ident@X.X.*.*          ##
+##   ipsecurity     0  *.X.X.X  0  3  =group1    |   *@*.X.X.X              ##
+##   ipsecurity     0  *.X.X.X  1  3  *          |   *@*.isp.ispname.com    ##
+##############################################################################
+#             IDENT     OCTETS    HOSTMASK  NUMIP  PERMS	
+ipsecurity      0       X.X.X.*      0        3      *
+ipsecurity      0       *.X.X.X      0        3      *
+ipsecurity      1       X.X.*.*      0        3      *
+ipsecurity      1       *.*.X.X      1        3      *
+ipsecurity      1       X.X.X.X      0        3      =siteop

@@ -1,0 +1,54 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
+<plugin id="org.drftpd.commands.usermanagement.ipsecurity" version="3.0.0">
+        <attributes>
+                <attribute id="DefaultBuild" value="true" />
+        </attributes>
+        <requires>
+                <import plugin-id="org.drftpd.commands.usermanagement" exported="true" />
+                <import plugin-id="org.drftpd.commands.slavemanagement" exported="true" />
+                <import plugin-id="master" exported="true" reverse-lookup="true" />
+        </requires>
+        <runtime>
+                <library id="org.drftpd.commands.usermanagement.ipsecurity" path="classes/" type="code">
+                        <export prefix="*" />
+                </library>
+        </runtime>
+        
+        <extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+        <extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+ 
+        <extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="IpSecurityADDUSERPreCheck">
+                <parameter id="ParentMethod" value="doSITE_ADDUSER" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.ipsecurity.hooks.IpSecurityHooks" />
+                <parameter id="HookMethod" value="doIpSecurityADDUSERPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+ 
+        <extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="IpSecurityGADDUSERPreCheck">
+                <parameter id="ParentMethod" value="doSITE_GADDUSER" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.ipsecurity.hooks.IpSecurityHooks" />
+                <parameter id="HookMethod" value="doIpSecurityGADDUSERPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+ 
+        <extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="IpSecurityADDIPPreCheck">
+                <parameter id="ParentMethod" value="doSITE_ADDIP" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.ipsecurity.hooks.IpSecurityHooks" />
+                <parameter id="HookMethod" value="doIpSecurityADDIPPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+        
+        <extension plugin-id="org.drftpd.commands.slavemanagement" point-id="PreHook" id="IpSecuritySLAVEPreCheck">
+                <parameter id="ParentMethod" value="doSITE_SLAVE" />
+                <parameter id="HookClass" value="org.drftpd.commands.usermanagement.ipsecurity.hooks.IpSecurityHooks" />
+                <parameter id="HookMethod" value="doIpSecuritySLAVEPreCheck" />
+                <parameter id="Priority" value="1" />
+        </extension>
+
+		<extension plugin-id="master" point-id="Plugin" id="IpSecurityManager">
+			<parameter id="Class" value="org.drftpd.commands.usermanagement.ipsecurity.IpSecurityManager"/>
+		</extension>
+        
+</plugin>
