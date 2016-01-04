@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.sitebot.announce.trafficmanager.ban" version="3.0.0">
+	<doc>
+		<doc-text>(Sitebot) - This plugin provides TrafficManager (Ban Type) announcements for Sitebot</doc-text>
+	</doc>
+
+	<requires>
+		<import plugin-id="org.drftpd.plugins.trafficmanager.ban" />
+		<import plugin-id="org.drftpd.plugins.sitebot" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.sitebot.announce.trafficmanager.ban" path="classes/" type="code" />
+	</runtime>
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="TrafficManagerAnnounce">
+		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.trafficmanager.ban.TrafficBanAnnouncer" />
+	</extension>
+</plugin>

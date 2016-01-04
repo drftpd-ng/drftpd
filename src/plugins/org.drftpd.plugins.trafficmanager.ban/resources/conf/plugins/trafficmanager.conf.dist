@@ -1,0 +1,10 @@
+################################################################################
+#	Ban
+#
+#	This will ban the user for a slow transfer
+#
+#	x.reason = Ban reason
+#	x.bantime = Time in seconds to ban user (Default 300)
+#	x.kickall = Kick all connections or just current (True/False) (Default true)
+#
+################################################################################

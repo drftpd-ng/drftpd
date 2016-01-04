@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id: build.xml 2072 2010-09-18 22:01:23Z djb61 $ -->
+<project name="org.drftpd.plugins.trafficmanager.ban"
+         default="build">
+	<property name="plugin.family" value="plugins/master" />
+	<target name="build">
+		<buildplugin />
+	</target>
+	<target name="clean">
+		<cleanplugin />
+	</target>
+</project>
