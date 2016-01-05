@@ -1,0 +1,64 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2484 2011-07-09 10:25:43Z scitz0 $ -->
+<plugin id="org.drftpd.commands.find.tvmaze" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides TvMaze metadata query options for find.</doc-text>
+	</doc>
+	<requires>
+		<import plugin-id="org.drftpd.commands.find" exported="true" />
+        <import plugin-id="org.drftpd.commands.tvmaze" exported="false" />
+		<import plugin-id="org.drftpd.vfs.index.lucene.extensions.tvmaze" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.find.tvmaze" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<!-- Options -->
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeNameOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvName"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeGenreOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvGenre"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeSeasonOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvSeason"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeNumberOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvNumber"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeTypeOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvType"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeStatusOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvStatus"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeLanguageOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvLanguage"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeCountryOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvCountry"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="TvMazeNetworkOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeOption"/>
+		<parameter id="OptionName" value="TvNetwork"/>
+	</extension>
+	<!-- End Options -->
+
+    <!-- Actions -->
+    <extension plugin-id="org.drftpd.commands.find" point-id="Action" id="TvMazeAction">
+        <parameter id="ClassName" value="org.drftpd.commands.find.tvmaze.TvMazeAction"/>
+        <parameter id="ActionName" value="PrintTvMaze"/>
+    </extension>
+    <!-- End Actions -->
+</plugin>

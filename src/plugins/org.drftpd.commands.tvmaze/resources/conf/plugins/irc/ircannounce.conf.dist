@@ -1,0 +1,6 @@
+# To specify where the tvmaze announces for MKD and PRE will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#tvmaze.path.1=/path/subpath/*
+#tvmaze.path.1.destination=public
+#tvmaze.section.1=*
+#tvmaze.section.1.destination=public

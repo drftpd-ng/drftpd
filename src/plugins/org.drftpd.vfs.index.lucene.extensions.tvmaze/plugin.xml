@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2484 2011-07-09 10:25:43Z scitz0 $ -->
+<plugin id="org.drftpd.vfs.index.lucene.extensions.tvmaze" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides queries tvmaze metadata in the lucene index</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.commands.tvmaze.metadata" exported="true" />
+		<import plugin-id="org.drftpd.vfs.index.lucene" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.vfs.index.lucene.extensions.tvmaze" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension plugin-id="org.drftpd.vfs.index.lucene" point-id="IndexData" id="TvMazeDataExtension">
+		<parameter id="Class" value="org.drftpd.vfs.index.lucene.extensions.tvmaze.TvMazeDataExtension"/>
+	</extension>
+	<extension plugin-id="org.drftpd.vfs.index.lucene" point-id="QueryTerm" id="TvMazeQueryExtension">
+		<parameter id="Class" value="org.drftpd.vfs.index.lucene.extensions.tvmaze.TvMazeQueryExtension"/>
+	</extension>
+</plugin>

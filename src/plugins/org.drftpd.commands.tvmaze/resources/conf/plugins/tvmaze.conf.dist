@@ -1,0 +1,34 @@
+# TvMaze Configuration #
+########################
+
+# Sections plugin should announce TvMAze info on races/pre, separate with ;
+race.sections=TV-HD;TV-SD
+
+# Search for release on site on ep search, separate sections with ;
+search.release=true
+search.hd.section=TV-HD
+search.sd.section=TV-SD
+
+# Dirs to exclude. (regex)
+# Only dirs matching "(\w+\.){3,}\w+-\w+" pattern will pass so only add dirs to exclude that also matchi this pattern.
+exclude=
+
+# Filter for release namn to parse out real tv series name, separate with ; (regex)
+filter=
+
+# Date and time format for show info
+date.show=yyyy-MM-dd
+time.show=EEEE, HH:mm
+
+# Timezone to use for all dates and times
+timezone=-05:00
+
+# Random delay interval between tvmaze parses
+delay.start=0
+delay.end=5
+
+# Enable TvMaze bar?
+tvmazebar.enabled=true
+# TvMaze bar as directory(true) or file(false)?
+tvmazebar.directory=true
+

@@ -1,0 +1,43 @@
+tv {
+plugin org.drftpd.commands.tvmaze
+class TvMaze
+method doSITE_TV
+perms *
+help Search for a tv show (-v for verbose output)
+help.specific ${command} [-v] <nameofshow> [episodenumber]
+input all
+output source
+}
+
+createtv {
+plugin org.drftpd.commands.tvmaze
+class TvMaze
+method doSITE_CREATETV
+perms =siteop
+help Create TvMaze metadata for all shows below current dir
+help.specific ${command} [path]
+input all
+output source
+}
+
+removetv {
+plugin org.drftpd.commands.tvmaze
+class TvMaze
+method doSITE_REMOVETV
+perms =siteop
+help Remove TvMaze metadata for all shows below current dir
+help.specific ${command} [path]
+input all
+output source
+}
+
+tvqueue {
+plugin org.drftpd.commands.tvmaze
+class TvMaze
+method doSITE_TVQUEUE
+perms =siteop
+help Show number of items in the queue to be processed
+help.specific ${command}
+input all
+output source
+}

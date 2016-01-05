@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.tvmaze.metadata" version="3.1.0">
+    <attributes>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+    <requires>
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.tvmaze.metadata" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+</plugin>

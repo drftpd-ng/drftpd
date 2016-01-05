@@ -1,0 +1,7 @@
+log4j.logger.org.drftpd.commands.tvmaze=WARN, tvmaze
+log4j.additivity.org.drftpd.commands.tvmaze=false
+
+log4j.appender.tvmaze=org.apache.log4j.FileAppender
+log4j.appender.tvmaze.File=logs/tvmaze.log
+log4j.appender.tvmaze.layout=org.apache.log4j.PatternLayout
+log4j.appender.tvmaze.layout.ConversionPattern=%p %d{ISO8601} - [%t] - %m%n
