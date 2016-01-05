@@ -1,0 +1,31 @@
+# 0/1/2/3
+# 0 = show both successful and failed
+# 1 = don't show anything
+# 2 = show only successful
+# 3 = show only failed
+
+# Login hooks #
+PASS=0
+IDNT=0
+USER=0
+
+# Site hooks #
+ADDIP=0
+ADDUSER=0
+BAN=0
+CHANGE=0
+CHGRP=0
+CHPASS=0
+DELIP=0
+DELUSER=0
+GADDUSER=0
+GIVE=0
+GRPREN=0
+KICK=0
+PASSWD=0
+PURGE=0
+READD=0
+RENUSER=0
+TAGLINE=0
+TAKE=0
+UNBAN=0
