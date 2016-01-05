@@ -1,0 +1,56 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2484 2011-07-09 10:25:43Z scitz0 $ -->
+<plugin id="org.drftpd.commands.find.imdb" version="3.0.0">
+	<doc>
+		<doc-text>This plugin provides IMDB metadata query options for find.</doc-text>
+	</doc>
+	<requires>
+		<import plugin-id="org.drftpd.commands.find" exported="true" />
+        <import plugin-id="org.drftpd.commands.imdb" exported="false" />
+		<import plugin-id="org.drftpd.vfs.index.lucene.extensions.imdb" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.find.imdb" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<!-- Options -->
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBTitleOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
+		<parameter id="OptionName" value="IMDBTitle"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBDirectorOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
+		<parameter id="OptionName" value="IMDBDirector"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBGenreOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
+		<parameter id="OptionName" value="IMDBGenre"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBVotesOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
+		<parameter id="OptionName" value="IMDBVotes"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBRatingOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
+		<parameter id="OptionName" value="IMDBRating"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBYearOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
+		<parameter id="OptionName" value="IMDBYear"/>
+	</extension>
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBScreensOption">
+		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
+		<parameter id="OptionName" value="IMDBScreens"/>
+	</extension>
+	<!-- End Options -->
+
+    <!-- Actions -->
+    <extension plugin-id="org.drftpd.commands.find" point-id="Action" id="IMDBAction">
+        <parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBAction"/>
+        <parameter id="ActionName" value="PrintIMDB"/>
+    </extension>
+    <!-- End Actions -->
+</plugin>

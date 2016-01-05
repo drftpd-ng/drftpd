@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.imdb.slave" version="3.0.0">
+	<attributes>
+		<attribute id="ProtocolName" value="IMDBProtocol"/>
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.commands.imdb" />
+		</attribute>
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.imdb.common" />
+		<import plugin-id="slave" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.imdb.slave" path="classes/" type="code">
+		</library>
+	</runtime>
+			
+	<extension plugin-id="slave" point-id="Handler" id="IMDBfileHandler">
+		<parameter id="Name" value="imdbfile" />
+		<parameter id="Class" value="org.drftpd.protocol.imdb.slave.IMDBHandler" />
+		<parameter id="Method" value="handleIMDBFile" />
+	</extension>
+</plugin>

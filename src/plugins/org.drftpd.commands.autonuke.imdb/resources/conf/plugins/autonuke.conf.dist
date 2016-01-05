@@ -1,0 +1,28 @@
+##
+## -----------------------------------------
+## AUTONUKE CONFIGURATION SETTINGS [IMDB]
+## -----------------------------------------
+##
+## x.imdb.field
+## The IMDB field to check, valid settings are:
+## Title Year Director Genre Plot Votes Rating Screens Limited
+##
+## x.imdb.operator
+## The mathematical operator to use when comparing the metadata against value specified.
+## Fields this setting must be specified for are:
+## Year Votes Rating Screens
+## All non-digit characters are removed so for example a rating of 6.7 will be 67.
+##
+## x.imdb.value
+## The value to compare against.
+## Could be either a regular expression(if string comparison) or
+## a digit value.
+##
+
+## Example configuration, nuke release if it has an IMDB rating below 7.0
+# x.type=IMDB
+# x.imdb.field=Rating
+# x.imdb.operator=<
+# x.imdb.value=70
+# x.irc=${color}04${bold}IMDB${bold}${coloroff} - Rating below 7.0 ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+# x.nuke.reason=auto.imdb.rating.below.7.0

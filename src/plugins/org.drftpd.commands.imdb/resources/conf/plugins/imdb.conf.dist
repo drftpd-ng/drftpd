@@ -1,0 +1,23 @@
+# Sections plugin should announce TvMAze info on races/pre, separate with ;
+race.sections=MOVIE-SD;MOVIE-HD
+
+# Search for release on site on imdb search, separate sections with ;
+search.release=true
+search.hd.sections=MOVIE-HD
+search.sd.sections=MOVIE-SD
+
+# Random delay interval between imdb parses
+delay.start=2
+delay.end=5
+
+# Enable IMDB bar?
+imdbbar.enabled=true
+# IMDB bar as directory(true) or file(false)?
+imdbbar.directory=true
+
+# Stripe these words from search string (regex), separated with ;
+imdb.filter=
+
+# Dirs to exclude. (regex)
+# Only dirs matching "(\w+\.){3,}\w+-\w+" pattern will pass so only add dirs to exclude that also match this pattern.
+exclude=

@@ -1,0 +1,6 @@
+# To specify where the imdb announces for NFO upload will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#imdb.path.1=/path/subpath/*
+#imdb.path.1.destination=public
+#imdb.section.1=*
+#imdb.section.1.destination=public

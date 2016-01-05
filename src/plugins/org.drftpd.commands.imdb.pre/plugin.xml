@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.imdb.pre" version="3.0.0">
+	<doc>
+		<doc-text>This plugin fires IMDB event on PRE if dir has IMDB metadata.</doc-text>
+	</doc>
+	<attributes>
+        <attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+        <import plugin-id="org.drftpd.commands.imdb" exported="true" />
+        <import plugin-id="org.drftpd.commands.pre" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.imdb.pre" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
+	<extension plugin-id="org.drftpd.commands.pre" point-id="PostHook" id="IMDBPREPostHook">
+		<parameter id="ParentMethod" value="doSITE_PRE" />
+		<parameter id="HookClass" value="org.drftpd.commands.imdb.pre.IMDBPREPostHook" />
+		<parameter id="HookMethod" value="doPostHook" />
+		<parameter id="Priority" value="100" />
+	</extension>
+</plugin>

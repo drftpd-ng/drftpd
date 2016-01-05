@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.autonuke.imdb" version="3.0.0">
+	<attributes>
+		<attribute id="DenyUnload" value="false" />
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+		<import plugin-id="org.drftpd.commands.autonuke" exported="true" />
+		<import plugin-id="org.drftpd.protocol.imdb.common" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.commands.autonuke.imdb" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	<!-- Configs -->
+	<extension plugin-id="org.drftpd.commands.autonuke" point-id="Config" id="IMDBConfig">
+		<parameter id="ClassName" value="org.drftpd.commands.autonuke.imdb.IMDBConfig"/>
+		<parameter id="ConfigName" value="IMDB"/>
+	</extension>
+</plugin>
