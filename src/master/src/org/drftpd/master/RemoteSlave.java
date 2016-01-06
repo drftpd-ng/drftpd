@@ -836,9 +836,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					// handled below
 				}
 
-				if (pingIndex == null
-						&& ((getActualTimeout() / 4 < (System
-								.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout() / 4 < (System
+				if ((getActualTimeout() > (System.currentTimeMillis() - _lastResponseReceived))
+						&& ((getActualTimeout() / 2 < (System
+								.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout() / 2 < (System
 								.currentTimeMillis() - _lastCommandSent)))) {
 					pingIndex = SlaveManager.getBasicIssuer().issuePingToSlave(this);
 				} else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
