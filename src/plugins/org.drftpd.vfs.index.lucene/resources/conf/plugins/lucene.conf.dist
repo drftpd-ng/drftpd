@@ -50,6 +50,9 @@ optimize_interval=15
 native_locking=true
 
 # Backup configuration
+# Should backups be made.
+do_backups=true
+
 # Interval before creating a new backup of the index, in minutes.
 # Do not set this too low, it's advisable to set this +60 minutes.
 backup_interval=120

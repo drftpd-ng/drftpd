@@ -32,7 +32,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.TreeSet;
-
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -277,8 +276,10 @@ public class LuceneEngine implements IndexEngineInterface {
 		_maintenanceThread.setOptimizationInterval(optimizeInterval);
 
 		// in minutes, convert it!
+		boolean doBackups = cfg.getProperty("do_backups", "true").equals("true");
 		int interval = Integer.parseInt(cfg.getProperty("backup_interval", "120")) * 60 * 1000;
 		int maxNumber = Integer.parseInt(cfg.getProperty("max_backups", "2"));
+		_backupThread.setDoBackups(doBackups);
 		_backupThread.setBackupInterval(interval);
 		_backupThread.setMaximumNumberBackup(maxNumber);
 	}

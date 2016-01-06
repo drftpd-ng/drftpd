@@ -44,6 +44,7 @@ public class LuceneBackupThread  extends Thread {
 	private boolean _isRunning;
 	
 	protected int _maxNumberBackup;
+	private boolean _doBackups;
 	private int _backupInterval;
 	private long _lastBackup;
 	
@@ -77,30 +78,32 @@ public class LuceneBackupThread  extends Thread {
 				}
 			}
 
-			// locking the writer object so that noone can use it.
-			// this might be useful.
-			synchronized (_engine.getWriter()) {
-				setRunning(true);
+			if (_doBackups) {
+				// locking the writer object so that noone can use it.
+				// this might be useful.
+				synchronized (_engine.getWriter()) {
+					setRunning(true);
 
-				String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
-				File f = new File(BACKUP_DIRNAME + "/" + dateTxt);
+					String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
+					File f = new File(BACKUP_DIRNAME + "/" + dateTxt);
 
-				try {
-					if (!f.mkdirs()) {
-						throw new IOException("Impossible to create backup directory, not enough permissions.");
+					try {
+						if (!f.mkdirs()) {
+							throw new IOException("Impossible to create backup directory, not enough permissions.");
+						}
+
+						// creating the destination directory.
+						FSDirectory bkpDirectory = FSDirectory.open(f);
+
+						for (String file : _engine.getStorage().listAll()) {
+							_engine.getStorage().copy(bkpDirectory, file, file);
+						}
+
+						logger.debug("A backup of the index was created successfully.");
+						updateLastBackupTime();
+					} catch (IOException e) {
+						logger.error(e, e);
 					}
-
-					// creating the destination directory.
-					FSDirectory bkpDirectory = FSDirectory.open(f);
-
-					for (String file : _engine.getStorage().listAll()) {
-						_engine.getStorage().copy(bkpDirectory, file, file);
-					}
-					
-					logger.debug("A backup of the index was created successfully.");
-					updateLastBackupTime();
-				} catch (IOException e) {
-					logger.error(e, e);
 				}
 			}
 
@@ -149,6 +152,14 @@ public class LuceneBackupThread  extends Thread {
 	 */
 	protected long getLastBackup() {
 		return _lastBackup;
+	}
+	
+	/**
+	 * Set whether backup should run
+	 * @param status
+	 */
+	protected void setDoBackups(boolean status) {
+		_doBackups = status;
 	}
 	
 	/**
