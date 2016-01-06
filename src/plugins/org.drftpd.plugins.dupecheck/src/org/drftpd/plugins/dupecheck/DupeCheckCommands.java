@@ -53,7 +53,7 @@ public class DupeCheckCommands extends CommandInterface {
         }
         
         String arg = st.nextToken();
-        if (arg.length() < 3) {
+        if (arg.length() < 1) {
         	throw new ImproperUsageException();
         }
         
