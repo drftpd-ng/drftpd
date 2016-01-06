@@ -166,25 +166,52 @@ public class JobManagerCommandHandler extends CommandInterface {
 					env.add("speed", Bytes.formatBytes(job.getSpeed()));
 					env.add("progress", Bytes.formatBytes(job.getProgress()));
 					try {
-						env.add("total", Bytes.formatBytes(job.getFile()
-								.getSize()));
+						env.add("total", Bytes.formatBytes(job.getFile().getSize()));
 					} catch (FileNotFoundException e) {
 						env.add("total", "0");
 					}
 					env.add("srcslave", job.getSourceSlave().getName());
 					env.add("destslave", job.getDestinationSlave().getName());
-					response.addComment(request.getSession().jprintf(_bundle, env,
-							_keyPrefix + "listjobrunning"));
+					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "listjobrunning"));
 				} else {
-					response.addComment(request.getSession().jprintf(_bundle, env,
-							_keyPrefix + "listjobwaiting"));
+					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "listjobwaiting"));
 				}
 			}
 		}
 		env = new ReplacerEnvironment();
 		env.add("total", treeSet.size());
-		response.addComment(request.getSession().jprintf(_bundle, env,
-				_keyPrefix + "sizeofjobs"));
+		response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "sizeofjobs"));
+		return response;
+	}
+	
+	public CommandResponse doLISTRUNNINGJOBS(CommandRequest request) {
+
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		ReplacerEnvironment env = new ReplacerEnvironment();
+		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		treeSet.addAll(getJobManager().getAllJobsFromQueue());
+
+		for (Job job : treeSet) {
+			env.add("job", job.getFile().getPath());
+			env.add("count", job.getIndex());
+			synchronized (job) {
+				if (job.isTransferring()) {
+					env.add("speed", Bytes.formatBytes(job.getSpeed()));
+					env.add("progress", Bytes.formatBytes(job.getProgress()));
+					try {
+						env.add("total", Bytes.formatBytes(job.getFile().getSize()));
+					} catch (FileNotFoundException e) {
+						env.add("total", "0");
+					}
+					env.add("srcslave", job.getSourceSlave().getName());
+					env.add("destslave", job.getDestinationSlave().getName());
+					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "listjobrunning"));
+				}
+			}
+		}
+		env = new ReplacerEnvironment();
+		env.add("total", treeSet.size());
+		response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "sizeofjobs"));
 		return response;
 	}
 

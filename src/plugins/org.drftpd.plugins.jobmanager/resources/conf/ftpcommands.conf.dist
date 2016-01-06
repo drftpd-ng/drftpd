@@ -20,6 +20,15 @@ help List the current jobs queued by the JobManager.
 help.specific List the current jobs queued by the JobManager by index #
 }
 
+SITE LISTRUNNINGJOBS {
+plugin org.drftpd.plugins.jobmanager
+class JobManagerCommandHandler
+method doLISTRUNNINGJOBS
+perms =siteop
+help List the current jobs queued by the JobManager.
+help.specific List the current jobs queued by the JobManager by index #
+}
+
 SITE REMOVEJOB {
 plugin org.drftpd.plugins.jobmanager
 class JobManagerCommandHandler
