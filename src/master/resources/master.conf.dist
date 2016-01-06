@@ -101,3 +101,7 @@ european.cal=false
 #   SSD = 1000 (higher values should help in a longer SSD Lifespan
 #   RAMDISK = 500
 #disk.commit.delay=10000
+
+# This can filter you 'site slaves' or '!slaves' output
+# Filter matches from the first characters .startsWith()
+#default.slave.output=race

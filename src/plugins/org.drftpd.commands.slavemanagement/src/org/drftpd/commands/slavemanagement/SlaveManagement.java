@@ -17,6 +17,7 @@
  */
 package org.drftpd.commands.slavemanagement;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,10 +32,12 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.event.SlaveEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.CommitManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.Session;
 import org.drftpd.master.SlaveManager;
@@ -103,7 +106,7 @@ public class SlaveManagement extends CommandInterface {
 			ssm = (SlaveSelectionManager) GlobalContext.getGlobalContext().getSlaveSelectionManager();
 		} catch (ClassCastException e) {
 			return new CommandResponse(500,
-			"You are attempting to test filter.SlaveSelectionManager yet you're using def.SlaveSelectionManager");
+					"You are attempting to test filter.SlaveSelectionManager yet you're using def.SlaveSelectionManager");
 		}
 		CommandResponse response = new CommandResponse(500, "***End of SlaveSelection output***");
 		Collection<Filter> filters = ssm.getFilterChain(type).getFilters();
@@ -151,16 +154,35 @@ public class SlaveManagement extends CommandInterface {
 	 */
 	public CommandResponse doSITE_SLAVES(CommandRequest request) {
 		boolean showMore = request.hasArgument() &&
-		(request.getArgument().equalsIgnoreCase("more"));
+				(request.getArgument().equalsIgnoreCase("more"));
 
 		Collection<RemoteSlave> slaves = GlobalContext.getGlobalContext().getSlaveManager().getSlaves();
 		CommandResponse response = new CommandResponse(200, "OK, " + slaves.size() + " slaves listed.");
 
+		String slavestofind = GlobalContext.getConfig().getMainProperties().getProperty("default.slave.output");
 		int slavesFound = 0;
+		String type;
+		if(request.hasArgument()){
+			type=request.getArgument().toLowerCase();
+		} else if (!slavestofind.isEmpty())
+		{
+			type = slavestofind;
+		} else {
+			type="all";
+		}
+
 		for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
+			String name=rslave.getName().toLowerCase();
+
+			if((!name.startsWith(type))&&(!type.equals("all")))
+			{
+				continue;
+			}
+
 			response = addSlaveStatus(request, response, showMore, rslave);
 			slavesFound = slavesFound + 1;
 		}
+
 		if (slavesFound == 0) {
 			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"slave.none", null, request.getUser()));
 		}
@@ -222,7 +244,7 @@ public class SlaveManagement extends CommandInterface {
 				} catch (SlaveUnavailableException e) {
 					// should never happen since we tested slave status w/ isOnline and isAvaiable.
 					throw new RuntimeException("There's a bug somewhere in the code, the slave was available now it isn't.", e);
-				}   
+				}
 			}
 		} else {
 			response.addComment(session.jprintf(_bundle, _keyPrefix+"slave.offline", env, request.getUser()));
@@ -245,19 +267,19 @@ public class SlaveManagement extends CommandInterface {
 
 		if (!rslave.isAvailable()) {
 			return new CommandResponse(200,
-			"Slave is still merging from initial connect");
+					"Slave is still merging from initial connect");
 		}
 
 		if (rslave.isRemerging()) {
 			return new CommandResponse(200,
-			"Slave is still remerging by a previous remerge command");
+					"Slave is still remerging by a previous remerge command");
 		}
 
 		rslave.setRemerging(true);
-		try { 
-			rslave.fetchResponse(SlaveManager.getBasicIssuer().issueRemergeToSlave(rslave, 
-					request.getCurrentDirectory().getPath(), false, 0L, 0L), 0); 
-		} catch (RemoteIOException e) { 
+		try {
+			rslave.fetchResponse(SlaveManager.getBasicIssuer().issueRemergeToSlave(rslave,
+					request.getCurrentDirectory().getPath(), false, 0L, 0L), 0);
+		} catch (RemoteIOException e) {
 			rslave.setOffline("IOException during remerge()");
 
 			return new CommandResponse(200, "IOException during remerge()");
@@ -266,6 +288,8 @@ public class SlaveManagement extends CommandInterface {
 
 			return new CommandResponse(200, "Slave Unavailable during remerge()");
 		} finally {
+			String message = ("Remerge queueprocess finished");
+			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
 			rslave.setRemerging(false);
 		}
 
@@ -481,6 +505,12 @@ public class SlaveManagement extends CommandInterface {
 		env.add("disktotal", Bytes.formatBytes(status.getDiskSpaceCapacity()));
 		env.add("diskfree", Bytes.formatBytes(status.getDiskSpaceAvailable()));
 		env.add("diskused", Bytes.formatBytes(status.getDiskSpaceUsed()));
+		try {
+			env.add("slavesonline",""+GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves().size());
+		} catch (NoAvailableSlaveException e) {
+			env.add("slavesonline","0");
+		}
+		env.add("slavestotal", ""+GlobalContext.getGlobalContext().getSlaveManager().getSlaves().size());
 
 		if (status.getDiskSpaceCapacity() == 0) {
 			env.add("diskfreepercent", "n/a");
@@ -496,7 +526,7 @@ public class SlaveManagement extends CommandInterface {
 		env.add("xfersdown", "" + status.getTransfersSending());
 
 		env.add("throughput", Bytes.formatBytes(status.getThroughput()) + "/s");
-		env.add("throughputup",	Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
+		env.add("throughputup", Bytes.formatBytes(status.getThroughputReceiving()) + "/s");
 		env.add("throughputdown", Bytes.formatBytes(status.getThroughputSending()) + "/s");
 	}
 
@@ -508,7 +538,57 @@ public class SlaveManagement extends CommandInterface {
 		SlaveStatus status = GlobalContext.getGlobalContext().getSlaveManager().getAllStatus();
 		fillEnvWithSlaveStatus(env, status);
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"diskfree", env, request.getUser()));
+		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix + "diskfree", env, request.getUser()));
 		return response;
 	}
+
+
+	public CommandResponse doRemergeque(CommandRequest request) throws ImproperUsageException {
+        String slavestofind = GlobalContext.getConfig().getMainProperties().getProperty("default.slave.output");
+        String slave;
+        if(request.hasArgument()){
+            slave=request.getArgument().toLowerCase();
+        } else if (!slavestofind.isEmpty())
+        {
+            slave = slavestofind;
+        } else {
+            slave="all";
+        }
+
+		ArrayList<String> arr = new ArrayList<String>();
+
+		for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
+			if(!rslave.getName().contains(slave) && !slave.equals("all")) {
+				continue;
+			}
+
+			int size = rslave.doRemergequeue();
+			if (!rslave.isOnline())
+			{
+				arr.add(rslave.getName() +" is offline");
+			}
+			else if (!rslave.isRemerging())
+			{
+				arr.add(rslave.getName() +" remergeque is complete");
+			}
+			else if (size > 0)
+			{
+				arr.add(rslave.getName() +" remergeque size is " + size);
+			}
+			else
+			{
+				arr.add(rslave.getName() +" remergeque size is 0 but remerge is ongoing");
+			}
+		}
+		arr.add("Total commit:" + CommitManager.getCommitManager().getQueueSize());
+
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		for (String str : arr) {
+			response.addComment(str);
+		}
+
+		return response;
+	}
+
 }
+

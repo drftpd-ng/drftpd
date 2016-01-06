@@ -1236,6 +1236,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 	}
 
+	public int doRemergequeue() {
+			return _remergeQueue.size();
+	}
+
 	private class RemergeThread extends Thread {
 
 		public RemergeThread(String slaveName) {

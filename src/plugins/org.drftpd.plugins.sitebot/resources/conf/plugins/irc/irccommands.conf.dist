@@ -426,3 +426,13 @@ help Abort all commands being run by the user issuing the abort
 input all
 output source
 }
+
+remergeque {
+plugin org.drftpd.commands.slavemanagement
+class SlaveManagement
+method doRemergeque
+perms =siteop
+help displays remergeque status
+input public
+output source
+}
