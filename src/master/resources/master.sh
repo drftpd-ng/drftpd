@@ -117,6 +117,9 @@ then
     WRAPPER_CONF=$REALDIR/$WRAPPER_CONF
 fi
 
+# Create logs dir if not present
+mkdir -p "$REALDIR/logs"
+
 # Process ID
 ANCHORFILE="$PIDDIR/$APP_NAME.anchor"
 PIDFILE="$PIDDIR/$APP_NAME.pid"
@@ -137,14 +140,28 @@ then
     fi
 fi
 
+TREXE="/usr/bin/tr"
+if [ ! -x "$TREXE" ]
+then
+    TREXE="/bin/tr"
+    if [ ! -x "$TREXE" ]
+    then
+        eval echo `gettext 'Unable to locate "tr".'`
+        eval echo `gettext 'Please report this message along with the location of the command on your system.'`
+        exit 1
+    fi
+fi
 # Resolve the os
-DIST_OS=`uname -s | tr [:upper:] [:lower:] | tr -d [:blank:]`
+DIST_OS=`uname -s | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
 case "$DIST_OS" in
     'sunos')
         DIST_OS="solaris"
         ;;
     'hp-ux' | 'hp-ux64')
+        # HP-UX needs the XPG4 version of ps (for -o args)
         DIST_OS="hpux"
+        UNIX95=""
+        export UNIX95   
         ;;
     'darwin')
         DIST_OS="macosx"
@@ -152,34 +169,101 @@ case "$DIST_OS" in
     'unix_sv')
         DIST_OS="unixware"
         ;;
+    'os/390')
+        DIST_OS="zos"
+        ;;
 esac
 
 # Resolve the architecture
-DIST_ARCH=`uname -p | tr [:upper:] [:lower:] | tr -d [:blank:]`
-if [ "$DIST_ARCH" = "unknown" ]
+if [ "$DIST_OS" = "macosx" ]
 then
-    DIST_ARCH=`uname -m | tr [:upper:] [:lower:] | tr -d [:blank:]`
+    OS_VER=`sw_vers | grep 'ProductVersion:' | grep -o '[0-9]*\.[0-9]*\.[0-9]*'`
+    DIST_ARCH="universal"
+    if [[ "$OS_VER" < "10.5.0" ]]
+    then
+        DIST_BITS="32"
+    else
+        DIST_BITS="64"
+    fi
+    APP_PLIST_BASE=${PLIST_DOMAIN}.${APP_NAME}
+    APP_PLIST=${APP_PLIST_BASE}.plist
+else
+    DIST_ARCH=
+    DIST_ARCH=`uname -p 2>/dev/null | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
+    if [ "X$DIST_ARCH" = "X" ]
+    then
+        DIST_ARCH="unknown"
+    fi
+    if [ "$DIST_ARCH" = "unknown" ]
+    then
+        DIST_ARCH=`uname -m 2>/dev/null | $TREXE "[A-Z]" "[a-z]" | $TREXE -d ' '`
+    fi
+    case "$DIST_ARCH" in
+        'athlon' | 'i386' | 'i486' | 'i586' | 'i686')
+            DIST_ARCH="x86"
+            if [ "${DIST_OS}" = "solaris" ] ; then
+                DIST_BITS=`isainfo -b`
+            else
+                DIST_BITS="32"
+            fi
+            ;;
+        'amd64' | 'x86_64')
+            DIST_ARCH="x86"
+            DIST_BITS="64"
+            ;;
+        'ia32')
+            DIST_ARCH="ia"
+            DIST_BITS="32"
+            ;;
+        'ia64' | 'ia64n' | 'ia64w')
+            DIST_ARCH="ia"
+            DIST_BITS="64"
+            ;;
+        'ip27')
+            DIST_ARCH="mips"
+            DIST_BITS="32"
+            ;;
+        'power' | 'powerpc' | 'power_pc' | 'ppc64')
+            if [ "${DIST_ARCH}" = "ppc64" ] ; then
+                DIST_BITS="64"
+            else
+                DIST_BITS="32"
+            fi
+            DIST_ARCH="ppc"
+            if [ "${DIST_OS}" = "aix" ] ; then
+                if [ `getconf KERNEL_BITMODE` -eq 64 ]; then
+                    DIST_BITS="64"
+                else
+                    DIST_BITS="32"
+                fi
+            fi
+            ;;
+        'pa_risc' | 'pa-risc')
+            DIST_ARCH="parisc"
+            if [ `getconf KERNEL_BITS` -eq 64 ]; then
+                DIST_BITS="64"
+            else
+                DIST_BITS="32"
+            fi    
+            ;;
+        'sun4u' | 'sparcv9' | 'sparc')
+            DIST_ARCH="sparc"
+            DIST_BITS=`isainfo -b`
+            ;;
+        '9000/800' | '9000/785')
+            DIST_ARCH="parisc"
+            if [ `getconf KERNEL_BITS` -eq 64 ]; then
+                DIST_BITS="64"
+            else
+                DIST_BITS="32"
+            fi
+            ;;
+        '2064' | '2066' | '2084' | '2086' | '2094' | '2096' | '2097' | '2098' | '2817')
+            DIST_ARCH="390"
+            DIST_BITS="64"
+            ;;
+    esac
 fi
-case "$DIST_ARCH" in
-    'amd64' | 'athlon' | 'ia32' | 'ia64' | 'i386' | 'i486' | 'i586' | 'i686' | 'x86_64')
-        DIST_ARCH="x86"
-        ;;
-    'ip27')
-        DIST_ARCH="mips"
-        ;;
-    'power' | 'powerpc' | 'power_pc' | 'ppc64')
-        DIST_ARCH="ppc"
-        ;;
-    'pa_risc' | 'pa-risc')
-        DIST_ARCH="parisc"
-        ;;
-    'sun4u' | 'sparcv9')
-        DIST_ARCH="sparc"
-        ;;
-    '9000/800')
-        DIST_ARCH="parisc"
-        ;;
-esac
 
 outputFile() {
     if [ -f "$1" ]
@@ -191,62 +275,69 @@ outputFile() {
 }
 
 # Decide on the wrapper binary to use.
-# If a 32-bit wrapper binary exists then it will work on 32 or 64 bit
-#  platforms, if the 64-bit binary exists then the distribution most
-#  likely wants to use long names.  Otherwise, look for the default.
-# For macosx, we also want to look for universal binaries.
-WRAPPER_TEST_CMD="$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-32"
-if [ -x "$WRAPPER_TEST_CMD" ]
+# If the bits of the OS could be detected, we will try to look for the
+#  binary with the correct bits value.  If it doesn't exist, fall back
+#  and look for the 32-bit binary.  If that doesn't exist either then
+#  look for the default.
+WRAPPER_TEST_CMD=""
+if [ -f "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-$DIST_BITS" ]
 then
-    WRAPPER_CMD="$WRAPPER_TEST_CMD"
-else
-    if [ "$DIST_OS" = "macosx" ]
+    WRAPPER_TEST_CMD="$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-$DIST_BITS"
+    if [ ! -x "$WRAPPER_TEST_CMD" ]
     then
-        WRAPPER_TEST_CMD="$WRAPPER_CMD-$DIST_OS-universal-32"
-        if [ -x "$WRAPPER_TEST_CMD" ]
-        then
-            WRAPPER_CMD="$WRAPPER_TEST_CMD"
-        else
-            WRAPPER_TEST_CMD="$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-64"
-            if [ -x "$WRAPPER_TEST_CMD" ]
-            then
-                WRAPPER_CMD="$WRAPPER_TEST_CMD"
-            else
-                WRAPPER_TEST_CMD="$WRAPPER_CMD-$DIST_OS-universal-64"
-                if [ -x "$WRAPPER_TEST_CMD" ]
-                then
-                    WRAPPER_CMD="$WRAPPER_TEST_CMD"
-                else
-                    if [ ! -x "$WRAPPER_CMD" ]
-                    then
-                        echo "Unable to locate any of the following binaries:"
-                        outputFile "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-32"
-                        outputFile "$WRAPPER_CMD-$DIST_OS-universal-32"
-                        outputFile "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-64"
-                        outputFile "$WRAPPER_CMD-$DIST_OS-universal-64"
-                        outputFile "$WRAPPER_CMD"
-                        exit 1
-                    fi
-                fi
-            fi
-        fi
+        chmod +x "$WRAPPER_TEST_CMD" 2>/dev/null
+    fi
+    if [ -x "$WRAPPER_TEST_CMD" ]
+    then 
+        WRAPPER_CMD="$WRAPPER_TEST_CMD"
     else
-        WRAPPER_TEST_CMD="$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-64"
-        if [ -x "$WRAPPER_TEST_CMD" ]
-        then
-            WRAPPER_CMD="$WRAPPER_TEST_CMD"
-        else
-            if [ ! -x "$WRAPPER_CMD" ]
-            then
-                echo "Unable to locate any of the following binaries:"
-                outputFile "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-32"
-                outputFile "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-64"
-                outputFile "$WRAPPER_CMD"
-                exit 1
-            fi
-        fi
+        outputFile "$WRAPPER_TEST_CMD"
+        WRAPPER_TEST_CMD=""
     fi
 fi
+if [ -f "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-32" -a -z "$WRAPPER_TEST_CMD" ]
+then
+    WRAPPER_TEST_CMD="$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-32"
+    if [ ! -x "$WRAPPER_TEST_CMD" ]
+    then
+        chmod +x "$WRAPPER_TEST_CMD" 2>/dev/null
+    fi
+    if [ -x "$WRAPPER_TEST_CMD" ]
+    then 
+        WRAPPER_CMD="$WRAPPER_TEST_CMD"
+    else
+        outputFile "$WRAPPER_TEST_CMD"
+        WRAPPER_TEST_CMD=""
+    fi
+fi
+if [ -f "$WRAPPER_CMD" -a -z "$WRAPPER_TEST_CMD" ]
+then
+    WRAPPER_TEST_CMD="$WRAPPER_CMD"
+    if [ ! -x "$WRAPPER_TEST_CMD" ]
+    then
+        chmod +x "$WRAPPER_TEST_CMD" 2>/dev/null
+    fi
+    if [ -x "$WRAPPER_TEST_CMD" ]
+    then 
+        WRAPPER_CMD="$WRAPPER_TEST_CMD"
+    else
+        outputFile "$WRAPPER_TEST_CMD"
+        WRAPPER_TEST_CMD=""
+    fi
+fi
+if [ -z "$WRAPPER_TEST_CMD" ]
+then
+    eval echo `gettext 'Unable to locate any of the following binaries:'`
+    outputFile "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-$DIST_BITS"
+    if [ ! "$DIST_BITS" = "32" ]
+    then
+        outputFile "$WRAPPER_CMD-$DIST_OS-$DIST_ARCH-32"
+    fi
+    outputFile "$WRAPPER_CMD"
+
+    exit 1
+fi
+
 
 # Build the nice clause
 if [ "X$PRIORITY" = "X" ]
@@ -546,3 +637,4 @@ case "$1" in
 esac
 
 exit 0
+

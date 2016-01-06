@@ -10,19 +10,61 @@
 		<attribute id="DefaultBuild" value="true" />
 		<attribute id="MustBuild" value="true" />
 		<attribute id="Native">
-			<attribute id="Native1" value="lib/libwrapper.so">
+			<attribute id="Native1" value="lib/libwrapper-linux-x86-32.so">
 				<attribute id="Executable" value="false" />
 			</attribute>
-			<attribute id="Native2" value="lib/wrapper.dll">
+			<attribute id="Native2" value="lib/libwrapper-linux-x86-64.so">
 				<attribute id="Executable" value="false" />
 			</attribute>
-			<attribute id="Native3" value="lib/wrapper.jar">
+			<attribute id="Native3" value="lib/libwrapper-freebsd-x86-32.so">
 				<attribute id="Executable" value="false" />
 			</attribute>
-			<attribute id="Native4" value="bin/wrapper">
+			<attribute id="Native4" value="lib/libwrapper-freebsd-x86-64.so">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native5" value="lib/libwrapper-macosx-universal-32.jnilib">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native6" value="lib/libwrapper-macosx-universal-64.jnilib">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native7" value="lib/libwrapper-solaris-x86-32.so">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native8" value="lib/libwrapper-solaris-x86-64.so">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native9" value="lib/wrapper-windows-x86-32.dll">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native10" value="lib/wrapper.jar">
+				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native11" value="bin/wrapper-linux-x86-32">
 				<attribute id="Executable" value="true" />
 			</attribute>
-			<attribute id="Native5" value="bin/wrapper.exe">
+			<attribute id="Native12" value="bin/wrapper-linux-x86-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native13" value="bin/wrapper-freebsd-x86-32">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native14" value="bin/wrapper-freebsd-x86-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native15" value="bin/wrapper-macosx-universal-32">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native16" value="bin/wrapper-macosx-universal-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native17" value="bin/wrapper-solaris-x86-32">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native18" value="bin/wrapper-solaris-x86-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native19" value="bin/wrapper-windows-x86-32.exe">
 				<attribute id="Executable" value="false" />
 			</attribute>
 		</attribute>

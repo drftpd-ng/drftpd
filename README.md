@@ -86,18 +86,6 @@ Start the installer
 build.bat
 ```
 
-## 32/64 bit OS (*nix)
-For DrFTPD to use the correct libs/bin for your system(32/64) you must create some symbolic links.
-
-Example for linux x86-32 (replace with correct files for your system)
-```
-cd bin/
-ln -s wrappers/wrapper-linux-x86-32 wrapper
-cd ../lib
-ln -s libwrapper/libwrapper-linux-x86-32.so libwrapper.so
-ln -s libTerminal-x86-32.so libTerminal.so
-```
-
 ## Master configuration
 Details to come...!!!
 
