@@ -53,369 +53,378 @@ import org.drftpd.vfs.perms.VFSPermissions;
  * @version $Id$
  */
 public class ConfigManager implements ConfigInterface {
-	private static final Logger logger = Logger.getLogger(ConfigManager.class);
-	private static final File permsFile = new File("conf/perms.conf");
-	private static final File mainFile = new File("master.conf");
-	
-	private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS 
-							= new Key<Hashtable<String, ArrayList<PathPermission>>>(ConfigManager.class, "pathPerms");
-	private static final Key<Hashtable<String, Permission>> PERMS 
-							= new Key<Hashtable<String, Permission>>(ConfigManager.class, "perms");
+    private static final Logger logger = Logger.getLogger(ConfigManager.class);
+    private static final File permsFile = new File("conf/perms.conf");
+    private static final File mainFile = new File("master.conf");
 
-	private HashMap<String, ConfigContainer> _directivesMap;
-	private KeyedMap<Key<?>, Object> _keyedMap;
-	private Properties _mainCfg;
-	
-	private VFSPermissions _vfsPerms;
-	
-	private ArrayList<InetAddress> _bouncerIps;
-	private String _loginPrompt = GlobalContext.VERSION + " http://drftpd.org";
-	private String _allowConnectionsDenyReason = "";
-	private String _pasvAddr = null;
-	private PortRange _portRange = new PortRange(0); 
-	private boolean _hideIps = true;
-	
-	private int _maxUsersTotal = Integer.MAX_VALUE;
-	private int _maxUsersExempt = 0;
-	
-	private String[] _cipherSuites = null;
-	private String[] _sslProtocols = null;
-	
-	/**
-	 * Reload all VFSPermHandlers and ConfigHandlers.
-	 * Also re-read the config files.
-	 */
-	public void reload() {
-		loadVFSPermissions();
-		loadConfigHandlers();
-		loadMainProperties();
-		parseCipherSuites();
-		parseSSLProtocols();
-		
-		initializeKeyedMap();
-		
-		_bouncerIps = new ArrayList<InetAddress>();
-		
-		readConf();
-	}
-	
-	private void loadVFSPermissions() {
-		_vfsPerms = new VFSPermissions();
-	}
-	
-	/**
-	 * @return the VFSPermission object.
-	 * @see VFSPermissions
-	 */
-	public VFSPermissions getVFSPermissions() {
-		return _vfsPerms;
-	}
-	
-	/**
-	 * Returns the KeyedMap that allow dynamic and persistent storage of the loaded permissions.<br>
-	 * For a better understanding see how does the 'msgpath' directive works.
-	 * @see DefaultConfigHandler 
-	 * @see DefaultConfigPostHook
-	 */
-	public KeyedMap<Key<?>, Object> getKeyedMap() {
-		return _keyedMap;
-	}
-	
-	/**
-	 * Load all connected handlers.
-	 */
-	private void loadConfigHandlers() {
-		_directivesMap = new HashMap<String, ConfigContainer>();
+    private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
+            = new Key<Hashtable<String, ArrayList<PathPermission>>>(ConfigManager.class, "pathPerms");
+    private static final Key<Hashtable<String, Permission>> PERMS
+            = new Key<Hashtable<String, Permission>>(ConfigManager.class, "perms");
 
-		try {
-			List<PluginObjectContainer<ConfigHandler>> loadedDirectives = 
-				CommonPluginUtils.getPluginObjectsInContainer(this, "master", "ConfigHandler", "Class", "Method",
-						new Class[] { String.class, StringTokenizer.class });
-			for (PluginObjectContainer<ConfigHandler> container : loadedDirectives) {
-				String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
-				if (_directivesMap.containsKey(directive)) {
-					logger.debug("A handler for "+ directive +" already loaded, check your plugin.xml's");
-					continue;
-				}
-				ConfigContainer cc = new ConfigContainer(container.getPluginObject(), container.getPluginMethod());				
-				_directivesMap.put(directive, cc);
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for master extension point 'Directive', possibly the master"
-					+" extension point definition has changed in the plugin.xml",e);
-		}
-	}
-	
-	/**
-	 * Reads 'master.conf' and save it in a Properties object.
-	 * @see #getMainProperties()
-	 */
-	private void loadMainProperties() {
-		FileInputStream is = null;
-		try {
-			_mainCfg = new Properties();
-			is = new FileInputStream(mainFile);
-			_mainCfg.load(is);
-		} catch (IOException e) {
-			logger.error("Unable to read "+mainFile.getPath(), e);
-		} finally {
-			if (is != null) {
-				try { is.close(); }
-				catch (IOException e) { }
-			}
-		}
-	}
-	
-	private void parseCipherSuites() {
-		ArrayList<String> cipherSuites = new ArrayList<String>();
-		for (int x = 1;; x++) {
-			String cipherSuite = _mainCfg.getProperty("cipher." + x);
-			if (cipherSuite != null) {
-				cipherSuites.add(cipherSuite);
-			} else {
-				break;
-			}
-		}
-		if (cipherSuites.size() == 0) {
-			_cipherSuites = null;
-		} else {
-			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
-		}
-	}
+    private String hideInStats="";
 
-	private void parseSSLProtocols() {
-		ArrayList<String> sslProtocols = new ArrayList<String>();
-		for (int x = 1;; x++) {
-			String sslProtocol = _mainCfg.getProperty("protocol." + x);
-			if (sslProtocol != null) {
-				sslProtocols.add(sslProtocol);
-			} else {
-				break;
-			}
-		}
-		if (sslProtocols.size() == 0) {
-			_sslProtocols = null;
-		} else {
-			_sslProtocols = sslProtocols.toArray(new String[sslProtocols.size()]);
-		}
-	}
-	
-	/**
-	 * Initializes the KeyedMap.
-	 * @see #getKeyedMap()
-	 */
-	private void initializeKeyedMap() {
-		_keyedMap = new KeyedMap<Key<?>, Object>();
-		
-		_keyedMap.setObject(PATHPERMS, new Hashtable<String, ArrayList<PathPermission>>());
-		_keyedMap.setObject(PERMS, new Hashtable<String, Permission>());
-	}
-	
-	private Hashtable<String, ArrayList<PathPermission>> getPathPermsMap() {
-		return _keyedMap.getObject(PATHPERMS, null);
-	}
-	
-	private Hashtable<String, Permission> getPermissionsMap() {
-		return _keyedMap.getObject(PERMS, null);
-	}
-	
-	/**
-	 * @return a Properties object containing all data loaded from 'master.conf'.
-	 */
-	public Properties getMainProperties() {
-		return _mainCfg;
-	}
-	
-	/**
-	 * Reads 'conf/perms.conf' handling what can be handled, ignoring what's does not have an available handler.
-	 */
-	private void readConf() {
-		LineNumberReader in = null;
-		try {
-			in = new LineNumberReader(new FileReader(permsFile));
-			String line;
-			
-			while ((line = in.readLine()) != null) {				
-				StringTokenizer st = new StringTokenizer(line);
-				
-				if (line.startsWith("#") || !st.hasMoreTokens()) {
-					continue;
-				}
-				
-				String drct = st.nextToken().toLowerCase();
-				
+    private HashMap<String, ConfigContainer> _directivesMap;
+    private KeyedMap<Key<?>, Object> _keyedMap;
+    private Properties _mainCfg;
+
+    private VFSPermissions _vfsPerms;
+
+    private ArrayList<InetAddress> _bouncerIps;
+    private String _loginPrompt = GlobalContext.VERSION + " http://drftpd.org";
+    private String _allowConnectionsDenyReason = "";
+    private String _pasvAddr = null;
+    private PortRange _portRange = new PortRange(0);
+    private boolean _hideIps = true;
+
+    private int _maxUsersTotal = Integer.MAX_VALUE;
+    private int _maxUsersExempt = 0;
+
+    private String[] _cipherSuites = null;
+    private String[] _sslProtocols = null;
+
+    /**
+     * Reload all VFSPermHandlers and ConfigHandlers.
+     * Also re-read the config files.
+     */
+    public void reload() {
+        loadVFSPermissions();
+        loadConfigHandlers();
+        loadMainProperties();
+        parseCipherSuites();
+        parseSSLProtocols();
+
+        initializeKeyedMap();
+
+        _bouncerIps = new ArrayList<InetAddress>();
+
+        readConf();
+    }
+
+    private void loadVFSPermissions() {
+        _vfsPerms = new VFSPermissions();
+    }
+
+    /**
+     * @return the VFSPermission object.
+     * @see VFSPermissions
+     */
+    public VFSPermissions getVFSPermissions() {
+        return _vfsPerms;
+    }
+
+    /**
+     * Returns the KeyedMap that allow dynamic and persistent storage of the loaded permissions.<br>
+     * For a better understanding see how does the 'msgpath' directive works.
+     * @see DefaultConfigHandler
+     * @see DefaultConfigPostHook
+     */
+    public KeyedMap<Key<?>, Object> getKeyedMap() {
+        return _keyedMap;
+    }
+
+    /**
+     * Load all connected handlers.
+     */
+    private void loadConfigHandlers() {
+        _directivesMap = new HashMap<String, ConfigContainer>();
+
+        try {
+            List<PluginObjectContainer<ConfigHandler>> loadedDirectives =
+                    CommonPluginUtils.getPluginObjectsInContainer(this, "master", "ConfigHandler", "Class", "Method",
+                            new Class[] { String.class, StringTokenizer.class });
+            for (PluginObjectContainer<ConfigHandler> container : loadedDirectives) {
+                String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
+                if (_directivesMap.containsKey(directive)) {
+                    logger.debug("A handler for "+ directive +" already loaded, check your plugin.xml's");
+                    continue;
+                }
+                ConfigContainer cc = new ConfigContainer(container.getPluginObject(), container.getPluginMethod());
+                _directivesMap.put(directive, cc);
+            }
+        } catch (IllegalArgumentException e) {
+            logger.error("Failed to load plugins for master extension point 'Directive', possibly the master"
+                    +" extension point definition has changed in the plugin.xml",e);
+        }
+    }
+
+    /**
+     * Reads 'master.conf' and save it in a Properties object.
+     * @see #getMainProperties()
+     */
+    private void loadMainProperties() {
+        FileInputStream is = null;
+        try {
+            _mainCfg = new Properties();
+            is = new FileInputStream(mainFile);
+            _mainCfg.load(is);
+        } catch (IOException e) {
+            logger.error("Unable to read "+mainFile.getPath(), e);
+        } finally {
+            if (is != null) {
+                try { is.close(); }
+                catch (IOException e) { }
+            }
+        }
+    }
+
+    private void parseCipherSuites() {
+        ArrayList<String> cipherSuites = new ArrayList<String>();
+        for (int x = 1;; x++) {
+            String cipherSuite = _mainCfg.getProperty("cipher." + x);
+            if (cipherSuite != null) {
+                cipherSuites.add(cipherSuite);
+            } else {
+                break;
+            }
+        }
+        if (cipherSuites.size() == 0) {
+            _cipherSuites = null;
+        } else {
+            _cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
+        }
+    }
+
+    private void parseSSLProtocols() {
+        ArrayList<String> sslProtocols = new ArrayList<String>();
+        for (int x = 1;; x++) {
+            String sslProtocol = _mainCfg.getProperty("protocol." + x);
+            if (sslProtocol != null) {
+                sslProtocols.add(sslProtocol);
+            } else {
+                break;
+            }
+        }
+        if (sslProtocols.size() == 0) {
+            _sslProtocols = null;
+        } else {
+            _sslProtocols = sslProtocols.toArray(new String[sslProtocols.size()]);
+        }
+    }
+
+    /**
+     * Initializes the KeyedMap.
+     * @see #getKeyedMap()
+     */
+    private void initializeKeyedMap() {
+        _keyedMap = new KeyedMap<Key<?>, Object>();
+
+        _keyedMap.setObject(PATHPERMS, new Hashtable<String, ArrayList<PathPermission>>());
+        _keyedMap.setObject(PERMS, new Hashtable<String, Permission>());
+    }
+
+    private Hashtable<String, ArrayList<PathPermission>> getPathPermsMap() {
+        return _keyedMap.getObject(PATHPERMS, null);
+    }
+
+    private Hashtable<String, Permission> getPermissionsMap() {
+        return _keyedMap.getObject(PERMS, null);
+    }
+
+    /**
+     * @return a Properties object containing all data loaded from 'master.conf'.
+     */
+    public Properties getMainProperties() {
+        return _mainCfg;
+    }
+
+    /**
+     * Reads 'conf/perms.conf' handling what can be handled, ignoring what's does not have an available handler.
+     */
+    private void readConf() {
+        LineNumberReader in = null;
+        try {
+            in = new LineNumberReader(new FileReader(permsFile));
+            String line;
+
+            while ((line = in.readLine()) != null) {
+                StringTokenizer st = new StringTokenizer(line);
+
+                if (line.startsWith("#") || !st.hasMoreTokens()) {
+                    continue;
+                }
+
+                String drct = st.nextToken().toLowerCase();
+
 				/*
 				 * Built-in directives.
 				 */
-		
-				if (drct.equals("login_prompt")) {
-					_loginPrompt = line.substring("login_prompt".length()).trim();
-				} else if (drct.equals("max_users")) {
-					_maxUsersTotal = Integer.parseInt(st.nextToken());
-					_maxUsersExempt = Integer.parseInt(st.nextToken());
-				} else if (drct.equals("pasv_addr")) {
-					_pasvAddr = st.nextToken();
-				} else if (drct.equals("pasv_ports")) {
-					String[] temp = st.nextToken().split("-");
-					_portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
-				} else if (drct.equals("hide_ips")) {
-					_hideIps = st.nextToken().equalsIgnoreCase("true");
-				} else if (drct.equals("allow_connections")) {
-					getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
-				} else if (drct.equals("allow_connections_deny_reason")) {
-					_allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
-				
-				} else if (drct.equals("exempt")) {
-					getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
-				} else if (drct.equals("bouncer_ips")) {
-					ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
-					while (st.hasMoreTokens()) {
-						ips.add(InetAddress.getByName(st.nextToken()));
-					}
-					_bouncerIps = ips;
-				} else {
-					handleLine(drct, st);
-				}			
-			}
-		} catch (IOException e) {
-			logger.info("Unable to parse "+permsFile.getName(), e);
-		} finally {
-			if (in != null) {
-				try { in.close(); }
-				catch (IOException e) { }
-			}
-		}
-	}
-	
-	private void handleLine(String directive, StringTokenizer st) {
-		try {
-			getVFSPermissions().handleLine(directive, st);
-			return; // successfully handled by VFSPermissions, stop!
-		} catch (UnsupportedOperationException e) {
-			// could not be handled by VFSPermissions, let's try the other ones!
-		}
-		
-		ConfigContainer cc = _directivesMap.get(directive);
-		
-		if (cc == null) {
-			logger.debug("No handler found for '"+ directive+"' ignoring line");
-			return;
-		}
-		
-		try {
-			cc.getMethod().invoke(cc.getInstance(), directive, st);
-		} catch (Exception e) {
-			logger.debug("Error while handling directive: "+directive, e);
-		}
-	}
 
-	public void addPathPermission(String directive, PathPermission perm) {
-		ArrayList<PathPermission> list;
-		if (!getPathPermsMap().containsKey(directive)) {
-			list = new ArrayList<PathPermission>();
-			getPathPermsMap().put(directive, list);
-		} else {
-			list = getPathPermsMap().get(directive);
-		}
-		
-		list.add(perm);
-	}
+                if (drct.equals("login_prompt")) {
+                    _loginPrompt = line.substring("login_prompt".length()).trim();
+                } else if (drct.equals("max_users")) {
+                    _maxUsersTotal = Integer.parseInt(st.nextToken());
+                    _maxUsersExempt = Integer.parseInt(st.nextToken());
+                } else if (drct.equals("pasv_addr")) {
+                    _pasvAddr = st.nextToken();
+                } else if (drct.equals("pasv_ports")) {
+                    String[] temp = st.nextToken().split("-");
+                    _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
+                } else if (drct.equals("hide_ips")) {
+                    _hideIps = st.nextToken().equalsIgnoreCase("true");
+                } else if (drct.equals("allow_connections")) {
+                    getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
+                } else if (drct.equals("allow_connections_deny_reason")) {
+                    _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
 
+                } else if (drct.equals("exempt")) {
+                    getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
+                } else if (drct.equals("bouncer_ips")) {
+                    ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
+                    while (st.hasMoreTokens()) {
+                        ips.add(InetAddress.getByName(st.nextToken()));
+                    }
+                    _bouncerIps = ips;
+                } else if (drct.equals("hideinstats")) {
+                    while (st.hasMoreTokens())
+                        hideInStats=hideInStats+st.nextToken()+" ";
+                } else {
+                    handleLine(drct, st);
+                }
+            }
+        } catch (IOException e) {
+            logger.info("Unable to parse "+permsFile.getName(), e);
+        } finally {
+            if (in != null) {
+                try { in.close(); }
+                catch (IOException e) { }
+            }
+        }
+    }
 
-	public boolean checkPathPermission(String directive, User user, DirectoryHandle path) {
-		return checkPathPermission(directive, user, path, false);
-	}
+    private void handleLine(String directive, StringTokenizer st) {
+        try {
+            getVFSPermissions().handleLine(directive, st);
+            return; // successfully handled by VFSPermissions, stop!
+        } catch (UnsupportedOperationException e) {
+            // could not be handled by VFSPermissions, let's try the other ones!
+        }
+
+        ConfigContainer cc = _directivesMap.get(directive);
+
+        if (cc == null) {
+            logger.debug("No handler found for '"+ directive+"' ignoring line");
+            return;
+        }
+
+        try {
+            cc.getMethod().invoke(cc.getInstance(), directive, st);
+        } catch (Exception e) {
+            logger.debug("Error while handling directive: "+directive, e);
+        }
+    }
+
+    public void addPathPermission(String directive, PathPermission perm) {
+        ArrayList<PathPermission> list;
+        if (!getPathPermsMap().containsKey(directive)) {
+            list = new ArrayList<PathPermission>();
+            getPathPermsMap().put(directive, list);
+        } else {
+            list = getPathPermsMap().get(directive);
+        }
+
+        list.add(perm);
+    }
 
 
-	public boolean checkPathPermission(String directive, User user, 
-			DirectoryHandle path, boolean defaults) {
-		ArrayList<PathPermission> perms = getPathPermsMap().get(directive);
-		
-		if (perms != null && !perms.isEmpty()) {
-			for (PathPermission perm : perms) {
-				if (perm.checkPath(path)) {
-					return perm.check(user);
-				}
-			}
-		}
-		
-		return defaults;
-	}
+    public boolean checkPathPermission(String directive, User user, DirectoryHandle path) {
+        return checkPathPermission(directive, user, path, false);
+    }
 
-	public void addPermission(String directive, Permission permission) {
-		boolean alreadyExists = getPermissionsMap().containsKey(directive);
-		
-		if (alreadyExists) {
-			// TODO what's best replace the existing one or keep it? 
-			logger.info("The directive '"+directive+"' is already on the permission map, check out your "+permsFile.getName());
-			return;
-		}
-		
-		getPermissionsMap().put(directive, permission);
-	}
-	
-	public boolean checkPermission(String key, User user) {
-		Permission perm = getPermissionsMap().get(key);
-		return (perm == null) ? false : perm.check(user);
-	}
 
-	public List<InetAddress> getBouncerIps() {
-		return _bouncerIps;
-	}
+    public boolean checkPathPermission(String directive, User user,
+                                       DirectoryHandle path, boolean defaults) {
+        ArrayList<PathPermission> perms = getPathPermsMap().get(directive);
 
-	public boolean getHideIps() {	
-		return _hideIps;
-	}
+        if (perms != null && !perms.isEmpty()) {
+            for (PathPermission perm : perms) {
+                if (perm.checkPath(path)) {
+                    return perm.check(user);
+                }
+            }
+        }
 
-	public String getLoginPrompt() {
-		return _loginPrompt;
-	}
-	
-	public String getAllowConnectionsDenyReason() {
-		return _allowConnectionsDenyReason;
-	}
-	
-	public int getMaxUsersExempt() {
-		return _maxUsersExempt;
-	}
+        return defaults;
+    }
 
-	public int getMaxUsersTotal() {
-		return _maxUsersTotal;
-	}
+    public void addPermission(String directive, Permission permission) {
+        boolean alreadyExists = getPermissionsMap().containsKey(directive);
 
-	public String getPasvAddress() throws NullPointerException {
-		if (_pasvAddr == null) 
-			throw new NullPointerException("pasv_addr not configured");
-		return _pasvAddr;
-	}
+        if (alreadyExists) {
+            // TODO what's best replace the existing one or keep it?
+            logger.info("The directive '"+directive+"' is already on the permission map, check out your "+permsFile.getName());
+            return;
+        }
 
-	public PortRange getPortRange() {
-		return _portRange;
-	}
-	
-	public boolean isLoginAllowed(User user) {
-		Permission perm = getPermissionsMap().get("allow_connections");
-		
-		if (perm == null) {
-			return true;
-		}
-		return perm.check(user);
-	}
+        getPermissionsMap().put(directive, permission);
+    }
 
-	public boolean isLoginExempt(User user) {
-		Permission perm = getPermissionsMap().get("exempt");
-		
-		if (perm == null) {
-			return true;
-		}
-		return perm.check(user);
-	}
+    public boolean checkPermission(String key, User user) {
+        Permission perm = getPermissionsMap().get(key);
+        return (perm == null) ? false : perm.check(user);
+    }
 
-	public String[] getCipherSuites() {
-		return _cipherSuites;
-	}
+    public List<InetAddress> getBouncerIps() {
+        return _bouncerIps;
+    }
 
-	public String[] getSSLProtocols() {
-		return _sslProtocols;
-	}
+    public boolean getHideIps() {
+        return _hideIps;
+    }
+
+    public String getLoginPrompt() {
+        return _loginPrompt;
+    }
+
+    public String getAllowConnectionsDenyReason() {
+        return _allowConnectionsDenyReason;
+    }
+
+    public int getMaxUsersExempt() {
+        return _maxUsersExempt;
+    }
+
+    public int getMaxUsersTotal() {
+        return _maxUsersTotal;
+    }
+
+    public String getPasvAddress() throws NullPointerException {
+        if (_pasvAddr == null)
+            throw new NullPointerException("pasv_addr not configured");
+        return _pasvAddr;
+    }
+
+    public PortRange getPortRange() {
+        return _portRange;
+    }
+
+    public boolean isLoginAllowed(User user) {
+        Permission perm = getPermissionsMap().get("allow_connections");
+
+        if (perm == null) {
+            return true;
+        }
+        return perm.check(user);
+    }
+
+    public boolean isLoginExempt(User user) {
+        Permission perm = getPermissionsMap().get("exempt");
+
+        if (perm == null) {
+            return true;
+        }
+        return perm.check(user);
+    }
+
+    public String[] getCipherSuites() {
+        return _cipherSuites;
+    }
+
+    public String[] getSSLProtocols() {
+        return _sslProtocols;
+    }
+
+    public String getHideInStats() {
+        return hideInStats;
+    }
 }

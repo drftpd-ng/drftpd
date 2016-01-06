@@ -69,3 +69,6 @@ denydatauncrypted       !*
 
 #hide ips in logs?
 hide_ips false
+
+# hide users or group from shown in stats outputs
+hideinstats     =deleted =exempt

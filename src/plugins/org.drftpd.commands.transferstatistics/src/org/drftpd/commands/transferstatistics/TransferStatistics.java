@@ -242,6 +242,16 @@ public class TransferStatistics extends CommandInterface  {
 			}
 		}
 
+		Permission perm = new Permission(Permission.makeUsers(new StringTokenizer(GlobalContext.getConfig().getHideInStats())));
+
+		for (Iterator<User> iter = users.iterator(); iter.hasNext();) {
+			User user = iter.next();
+
+			if (perm.check(user)) {
+				iter.remove();
+			}
+		}
+
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ArrayList<User> users2 = new ArrayList<User>(users);
 		Collections.sort(users2, new UserComparator(type));
