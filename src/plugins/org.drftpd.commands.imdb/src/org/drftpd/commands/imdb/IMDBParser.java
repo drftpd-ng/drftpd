@@ -96,6 +96,7 @@ public class IMDBParser {
 	}
 	
 	public void doNFO(String url) {
+		_url = url;
 		_foundMovie = getInfo();
 	}
 	
