@@ -37,7 +37,10 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+/**
+ * @author surface
+ * @version $Id$
+ */
 
 /**
  * Example slaveselection entry:
