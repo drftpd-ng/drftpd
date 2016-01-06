@@ -1,0 +1,33 @@
+# PREInfo Configuration #
+#########################
+
+# Time in seconds after pre it should messure site bw (comma separated).
+# Its the time between the messurements you should specify.
+# x.times : Ex: 10,10,40 => 10s after pre, 20s after pre and 60s after pre.
+# x.interval : interval in mb, if rls is in the interval announce, else dont. * for all
+# x.count.avg : Count avarage bw of the top #nbr bw messures or * for all
+1.times=30,10,10,10,10,10,10,30
+1.interval=0:200
+1.count.avg=*
+2.times=30,20,20,20,20,20,20,30
+2.interval=200:500
+2.count.avg=*
+3.times=30,30,30,30,30,30,30,30
+3.interval=500:1000
+3.count.avg=*
+4.times=30,30,30,30,30,30,30,30,30,30
+4.interval=1000:2000
+4.count.avg=*
+5.times=30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30,30
+5.interval=2000:*
+5.count.avg=*
+
+# Sections it should show pre info for (comma separated or * for all sections).
+sections=*
+
+# Pre's to exclude from info fetching (Regex).
+exclude=(?i).+\.(iNTERNAL|iNT)[-_.].+
+
+# If true it will check each transfer to see if its download from the pre dir and
+# only count speed from these. If false it will count total site bw.
+real.speed=false

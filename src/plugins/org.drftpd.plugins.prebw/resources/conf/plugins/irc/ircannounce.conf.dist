@@ -1,0 +1,6 @@
+# To specify where the prebw announces will appear rather than just using your
+# default channels, uncomment the next line and set them there.
+#prebw.path.1=/path/subpath/*
+#prebw.path.1.destination=public
+#prebw.section.1=*
+#prebw.section.1.destination=public

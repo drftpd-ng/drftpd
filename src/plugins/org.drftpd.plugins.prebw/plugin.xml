@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.prebw" version="1.5.0">
+    <doc>
+		<doc-text>Displays pre stats on irc</doc-text>
+	</doc>
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+        <import plugin-id="org.drftpd.commands.pre" exported="true" />
+        <import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.prebw" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+    <extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="PREBWAnnounce">
+		<parameter id="Class" value="org.drftpd.plugins.prebw.announce.PREBWAnnouncer" />
+	</extension>
+
+	<extension plugin-id="org.drftpd.commands.pre" point-id="PostHook" id="PREBWPostHook">
+		<parameter id="ParentMethod" value="doSITE_PRE" />
+		<parameter id="HookClass" value="org.drftpd.plugins.prebw.PREBWPostHook" />
+		<parameter id="HookMethod" value="doPREPostHook" />
+		<parameter id="Priority" value="1" />
+	</extension>
+
+    <extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="PREBWRETRPostHook">
+		<parameter id="ParentMethod" value="doRETR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.prebw.PREBWPostHook" />
+		<parameter id="HookMethod" value="doRETRPostHook" />
+		<parameter id="Priority" value="10" />
+	</extension>
+</plugin>
