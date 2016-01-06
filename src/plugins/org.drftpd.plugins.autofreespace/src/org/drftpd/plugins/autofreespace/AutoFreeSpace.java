@@ -79,8 +79,8 @@ public class AutoFreeSpace implements PluginInterface {
 		String name;
 		long minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree"));
 		long cycleTime = Long.parseLong(p.getProperty("cycleTime")) * 60000;
-		deleteOnDate = Boolean.valueOf(p.getProperty("delete.on.date"));
-		deleteOnSpace = Boolean.valueOf(p.getProperty("delete.on.space"));
+		deleteOnDate = Boolean.valueOf(p.getProperty("delete.on.date")).booleanValue();
+		deleteOnSpace = Boolean.valueOf(p.getProperty("delete.on.space")).booleanValue();
 		long wipeAfter;
 
 		while((name=PropertyHelper.getProperty(p,id + ".section", null)) != null) {
@@ -106,6 +106,7 @@ public class AutoFreeSpace implements PluginInterface {
 		private ArrayList<String> _excludeFiles;
 		private HashMap<String,Section> _sections;
 		private long _minFreeSpace;
+		private ArrayList<String> checkedReleases = new ArrayList<String>();
 
 		public MrCleanit(ArrayList<String> excludeFiles, long minFreeSpace, HashMap<String,Section> sections) {
 			_excludeFiles = excludeFiles;
@@ -213,7 +214,7 @@ public class AutoFreeSpace implements PluginInterface {
 					long _archiveAfter=section.getWipeAfter();
 
 					if (oldest == null || file.creationTime() < oldest.creationTime()) {
-						if (age > _archiveAfter) {
+						if (age > _archiveAfter && !checkedReleases.contains(file.getName())) {
 							oldest = file;
 							logger.debug("AUTODELETE: New oldest file: " + oldest.getName() + ", oldest in section " + si.getName());
 						} else if (deleteOnSpace) {
@@ -240,10 +241,11 @@ public class AutoFreeSpace implements PluginInterface {
 
 					if (deleteOnDate) {
 						try {
-							InodeHandle oldestRelease;
+							InodeHandle oldestRelease = null;
 							while ((oldestRelease = getOldestRelease(remoteSlave)) != null) {
 								GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
 								if (_onlyAnnounce) {
+									checkedReleases.add(oldestRelease.getName());
 									continue;
 								}
 								oldestRelease.deleteUnchecked();
@@ -273,7 +275,7 @@ public class AutoFreeSpace implements PluginInterface {
 
 							while (freespace < _minFreeSpace) {
 	
-								InodeHandle oldestRelease;
+								InodeHandle oldestRelease = null;
 	
 								try {
 									oldestRelease = getOldestRelease(remoteSlave);
