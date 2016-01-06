@@ -116,6 +116,15 @@ input private
 output source
 }
 
+unident {
+plugin org.drftpd.plugins.sitebot
+class commands.UserHandler
+method doUNIdent
+help Associates an irc nick with a ftp user
+input private
+output source
+}
+
 bnc {
 plugin org.drftpd.commands.textoutput
 class Textoutput
@@ -424,15 +433,5 @@ method doABOR
 perms *
 help Abort all commands being run by the user issuing the abort
 input all
-output source
-}
-
-remergeque {
-plugin org.drftpd.commands.slavemanagement
-class SlaveManagement
-method doRemergeque
-perms =siteop
-help displays remergeque status
-input public
 output source
 }

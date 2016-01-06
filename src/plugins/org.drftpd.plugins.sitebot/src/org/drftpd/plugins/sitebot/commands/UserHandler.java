@@ -105,6 +105,33 @@ public class UserHandler extends CommandInterface {
 		return null;
 	}
 
+        public CommandResponse doUNIdent(CommandRequest request) throws ImproperUsageException {
+                StringTokenizer st = new StringTokenizer(request.getArgument());
+                if (st.countTokens() < 1) {
+                        throw new ImproperUsageException();
+                }
+
+                String username = st.nextToken();
+
+                User user;
+                try {
+                        user = GlobalContext.getGlobalContext().getUserManager().getUserByName(username);
+                } catch (NoSuchUserException e) {
+                        logger.warn(username + " " + e.getMessage(), e);
+                        return null;
+                } catch (UserFileException e) {
+                        logger.warn("Error loading userfile for "+username, e);
+                        return null;
+                }
+
+				user.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
+				user.commit();
+				logger.info("Unset IRC ident for "+user.getName()+"");
+				request.getSession().printOutput("Unset IRC ident for "+user.getName()+"");
+                return null;
+        }
+
+
 	public CommandResponse doInvite(CommandRequest request) throws ImproperUsageException {
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 		if (st.countTokens() < 2) {
