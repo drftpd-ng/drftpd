@@ -171,6 +171,15 @@ help Permanently remove a user from the site
 help.specific ${command} <username>
 }
 
+SITE DELPURGE {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DELPURGE
+perms =gadmin =siteop
+help Permanently remove a user from the site
+help.specific ${command} <username>
+}
+
 SITE READD {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler

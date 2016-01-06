@@ -178,6 +178,17 @@ input all
 output source
 }
 
+delpurge {
+plugin org.drftpd.commands.usermanagement
+class UserManagementHandler
+method doSITE_DELPURGE
+perms =gadmin =siteop
+help Permanently remove a user from the site
+help.specific ${command} <username>
+input all
+output source
+}
+
 readd {
 plugin org.drftpd.commands.usermanagement
 class UserManagementHandler
