@@ -78,7 +78,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 			String section = preInfo.getSection().getName();
 			env.add("dir", dir.getName());
 			env.add("section", section);
-			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
+			//env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
 			StringBuilder bw = new StringBuilder();
 			String delim = ReplacerUtils.jprintf(_keyPrefix+".prebw.bw.separator", env, _bundle).trim();
 			for (String messure : preInfo.getMessures().keySet()) {
@@ -100,7 +100,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 				ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 				tmpenv.add("dir", dir);
 				tmpenv.add("section", section);
-				tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
+				//tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
 				leechers.append(ReplacerUtils.jprintf(_keyPrefix+".prebw.leechtop.empty",
 						tmpenv, _bundle));
 			} else {
@@ -112,7 +112,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 					ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 					tmpenv.add("dir", dir);
 					tmpenv.add("section", section);
-					tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
+					//tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
 					tmpenv.add("username", u.getName());
 					tmpenv.add("group", u.getGroup());
 					tmpenv.add("bytes", Bytes.formatBytes(u.getBytes()));
