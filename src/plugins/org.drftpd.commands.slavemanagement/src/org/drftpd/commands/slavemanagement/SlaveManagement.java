@@ -161,20 +161,18 @@ public class SlaveManagement extends CommandInterface {
 
 		String slavestofind = GlobalContext.getConfig().getMainProperties().getProperty("default.slave.output");
 		int slavesFound = 0;
-		String type;
+		String slave = "all";
 		if(request.hasArgument()){
-			type=request.getArgument().toLowerCase();
-		} else if (!slavestofind.isEmpty())
+			slave=request.getArgument().toLowerCase();
+		} else if (slavestofind != null)
 		{
-			type = slavestofind;
-		} else {
-			type="all";
+			slave = slavestofind;
 		}
 
 		for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
 			String name=rslave.getName().toLowerCase();
 
-			if((!name.startsWith(type))&&(!type.equals("all")))
+			if((!name.startsWith(slave))&&(!slave.equals("all")))
 			{
 				continue;
 			}
@@ -543,16 +541,14 @@ public class SlaveManagement extends CommandInterface {
 	}
 
 
-	public CommandResponse doRemergeque(CommandRequest request) throws ImproperUsageException {
+	public CommandResponse doRemergequeue(CommandRequest request) throws ImproperUsageException {
         String slavestofind = GlobalContext.getConfig().getMainProperties().getProperty("default.slave.output");
-        String slave;
+        String slave = "all";
         if(request.hasArgument()){
             slave=request.getArgument().toLowerCase();
-        } else if (!slavestofind.isEmpty())
+        } else if (slavestofind != null)
         {
             slave = slavestofind;
-        } else {
-            slave="all";
         }
 
 		ArrayList<String> arr = new ArrayList<String>();
