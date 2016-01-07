@@ -207,7 +207,7 @@ public class ZipscriptCommands extends CommandInterface {
 							status = "ZEROBYTE";
 							if (deleteZeroByte) {
 								try {
-									file.RescandeleteUnchecked();
+									file.deleteUnchecked();
 									status += " - deleted";
 								} catch (FileNotFoundException e4) {
 									// File already gone, all is good
@@ -228,7 +228,7 @@ public class ZipscriptCommands extends CommandInterface {
 							try {
 								/* TODO if the user is rescanning and cannot delete the file
 								 * what's the real point of rescanning? correct me if i'm wrong (fr0w) */
-								file.RescandeleteUnchecked();
+								file.deleteUnchecked();
 							} catch (FileNotFoundException e4) {
 								// File already gone, all is good
 							}
@@ -250,106 +250,6 @@ public class ZipscriptCommands extends CommandInterface {
 		}
 		return response;
 	}
-
-	/*
-	public boolean doSlave_RESCAN(String startPath) {
-		boolean recursive = false;
-		boolean forceRescan = true;
-		boolean deleteBad = true;
-		boolean deleteZeroByte = true;
-		boolean quiet = false;
-
-		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
-		if (startPath != null) {
-			boolean validPath = false;
-			try {
-				if (InodeHandle.isDirectory(startPath)) {
-					dirs.add(new DirectoryHandle(startPath));
-					validPath = true;
-				}
-			} catch (FileNotFoundException e) {
-				// Do nothing, the valid path check will deal with this
-			}
-			if (!validPath) {
-				return false;
-			}
-		}
-
-		while (dirs.size() > 0) {
-			DirectoryHandle workingDir = dirs.poll();
-
-			SFVInfo workingSfv = null;
-			ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(workingDir);
-			boolean sfvFound = false;
-			try {
-				workingSfv = sfvData.getSFVInfo();
-				sfvFound = true;
-			} catch (FileNotFoundException e2) {
-				// Need to carry on anyway but skip sfv checking, this allows any extensions to run
-			} catch (IOException e2) {
-				// Unable to read sfv in this dir, silently ignore so not to add
-				// useless output in recursive mode
-				continue;
-			} catch (NoAvailableSlaveException e2) {
-				new AsyncResponseSiteBotMessage("No available slave with sfv for: "+workingDir.getPath());
-				continue;
-			} catch (SlaveUnavailableException e2) {
-				new AsyncResponseSiteBotMessage("No available slave with sfv for: "+workingDir.getPath());
-				continue;
-			}
-			if (sfvFound) {
-				for (Entry<String,Long> sfvEntry : workingSfv.getEntries().entrySet()) {
-					FileHandle file = null;
-					Long sfvChecksum = sfvEntry.getValue();
-					String sfvEntryName = sfvEntry.getKey();
-					Long fileChecksum = 0L;
-					Long fileSize = 0L;
-					String status;
-					try {
-						file = workingDir.getFileUnchecked(sfvEntryName);
-						fileSize = file.getSize();
-						if (forceRescan) {
-							fileChecksum = file.getCheckSumFromSlave();
-						} else {
-							fileChecksum = file.getCheckSum();
-						}
-					} catch (FileNotFoundException e3) {
-						continue;
-					} catch (NoAvailableSlaveException e3) {
-						continue;
-					} catch (ObjectNotValidException e3) {
-						new AsyncResponseSiteBotMessage("SFV: " + Checksum.formatChecksum(sfvChecksum) +
-							" SLAVE: " + sfvEntryName + " INVALID VFS ENTRY");
-						logger.error("Type error found in VFS, expected file " + sfvEntryName + " and found something else",e3);
-						continue;
-					}
-					if (fileChecksum == 0L) {
-						if (fileSize == 0L) {
-							if (deleteZeroByte) {
-								try {
-									file.RescandeleteUnchecked();
-								} catch (FileNotFoundException e4) {
-									// File already gone, all is good
-								}
-							}
-						}
-					} else {
-						if (deleteBad) {
-							try {
-								// TODO if the user is rescanning and cannot delete the file
-								// what's the real point of rescanning? correct me if i'm wrong (fr0w)
-								file.RescandeleteUnchecked();
-							} catch (FileNotFoundException e4) {
-								// File already gone, all is good
-							}
-						}
-					}
-				}
-			}
-		}
-		return true;
-	}
-	*/
 
 	@EventSubscriber @Override
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
