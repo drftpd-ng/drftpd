@@ -197,6 +197,8 @@ public class PluginBuildListener implements SubBuildListener {
 			} else {
 				timeString.append(" second");
 			}
+		} else {
+			timeString.append("under one second");
 		}
 		writeLog(timeString.toString());
 		if (be.getException() != null && _config.getPrintTrace()) {

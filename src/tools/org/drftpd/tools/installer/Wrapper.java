@@ -20,8 +20,10 @@ package org.drftpd.tools.installer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
+import org.drftpd.tools.installer.auto.AutoInstaller;
 import org.drftpd.tools.installer.console.ConsoleInstaller;
 import org.drftpd.tools.installer.swing.SwingInstaller;
 
@@ -41,26 +43,66 @@ public class Wrapper {
 			logger.fatal("Exception whilst parsing plugins: ",e);
 			System.exit(0);
 		}
-		String input = "";
-		InputStreamReader isr = new InputStreamReader(System.in);
-		BufferedReader br = new BufferedReader(isr);
+
 		ConfigReader cr = new ConfigReader();
 		InstallerConfig config = cr.getConfig();
 
+		if (userChoice("Automatically build using saved build.conf settings")) {
+			if (config.getPluginSelections().isEmpty()) {
+				// Failed to load build.conf, exit with error
+				System.out.println("\n---> Error loading build.conf! <---\n\n" +
+						"Create a valid build configuration before running the automated build or\n" +
+						"launch and build using the console/gui installer once first\n" +
+						"to generate a valid build.conf file.");
+				return;
+			}
+
+			ArrayList<String> oldPlugins = PluginTools.getMissingPlugins(parser.getRegistry(), config);
+			ArrayList<String> newPlugins = PluginTools.getUnconfiguredPlugins(parser.getRegistry(), config);
+			if (!oldPlugins.isEmpty() || !newPlugins.isEmpty()) {
+				System.out.println("\n---> Plugins installed does not match plugins configured <---");
+				if (!oldPlugins.isEmpty()) {
+					System.out.println("\n# Configured plugins not available any more in src #");
+					for (String pId : oldPlugins) {
+						System.out.println(pId);
+					}
+				}
+				if (!newPlugins.isEmpty()) {
+					System.out.println("\n# Installed plugins not configured #");
+					for (String pId : newPlugins) {
+						System.out.println(pId);
+					}
+				}
+				if (!userChoice("\nContinue with build anyway")) {
+					System.out.println("\nBuild aborted!");
+					return;
+				}
+			}
+			boolean cleanOnly = userChoice("Only clean, no build");
+			AutoInstaller installer = new AutoInstaller(parser.getRegistry(), config, cleanOnly);
+		} else {
+			if (userChoice("Launch installer in GUI mode")) {
+				SwingInstaller installer = new SwingInstaller(parser.getRegistry(), config);
+				installer.setVisible(true);
+			} else {
+				ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry(), config);
+				installer.show();
+			}
+		}
+	}
+
+	private static boolean userChoice(String question) {
+		InputStreamReader isr = new InputStreamReader(System.in);
+		BufferedReader br = new BufferedReader(isr);
+		String input = "";
 		do {
-			System.out.print("Launch installer in GUI mode (y/n): ");
+			System.out.print(question + " (y/n): ");
 			try {
 				input = br.readLine();
 			} catch (IOException e) {
 				// Not an issue we'll just retry
 			}
 		} while (input != null && !input.equalsIgnoreCase("y") && !input.equalsIgnoreCase("n"));
-		if (input.equalsIgnoreCase("y")) {
-			SwingInstaller installer = new SwingInstaller(parser.getRegistry(),config);
-			installer.setVisible(true);
-		} else if (input.equalsIgnoreCase("n")) {
-			ConsoleInstaller installer = new ConsoleInstaller(parser.getRegistry(),config);
-			installer.show();
-		}
+		return input.equalsIgnoreCase("y");
 	}
 }

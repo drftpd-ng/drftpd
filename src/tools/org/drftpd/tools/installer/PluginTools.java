@@ -116,6 +116,36 @@ public class PluginTools {
 			}
 		}
 	}
+
+	public static ArrayList<String> getMissingPlugins(PluginRegistry pr, InstallerConfig config) {
+		ArrayList<String> plugins = new ArrayList<String>();
+		for (String pId : config.getPluginSelections().keySet()) {
+			boolean foundPlugin = false;
+			for (PluginDescriptor pd : pr.getPluginDescriptors()) {
+				if (pd.getId().equals(pId)) {
+					//Configured plugin found
+					foundPlugin = true;
+					break;
+				}
+			}
+			if (!foundPlugin) {
+				//Configured plugin not installed
+				plugins.add(pId);
+			}
+		}
+		return plugins;
+	}
+
+	public static ArrayList<String> getUnconfiguredPlugins(PluginRegistry pr, InstallerConfig config) {
+		ArrayList<String> plugins = new ArrayList<String>();
+		for (PluginDescriptor pd : pr.getPluginDescriptors()) {
+			if (!config.getPluginSelections().containsKey(pd.getId())) {
+				//Installed plugin not found in build configuration
+				plugins.add(pd.getId());
+			}
+		}
+		return plugins;
+	}
 }
 
 @SuppressWarnings("serial")
