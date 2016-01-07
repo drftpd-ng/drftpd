@@ -100,6 +100,12 @@ public class PassiveConnection extends Connection {
 				sslsock.setEnabledProtocols(sslProtocols);
 			}
 			sslsock.setUseClientMode(_useSSLClientMode);
+			int oldTimeout = sslsock.getSoTimeout();
+			if (oldTimeout == 0) {
+				sslsock.setSoTimeout(15000);
+			} else {
+				sslsock.setSoTimeout(oldTimeout);
+			}
 			sslsock.startHandshake();
 		}
 
