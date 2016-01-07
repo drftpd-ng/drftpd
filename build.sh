@@ -112,4 +112,4 @@ ln -s $SOURCE lib/$TARGET
 
 ant -buildfile installer.xml build
 LIBS=`echo ./lib/*.jar | tr ' ' ':'`
-$JAVA_BIN -cp "$LIBS:$TOOLS_JAR" -Djava.library.path=lib -Dlog4j.configuration=file:log4j-build.properties -Dincludes="src/*/plugin.xml,src/plugins/*/plugin.xml" org.drftpd.tools.installer.Wrapper $1
+$JAVA_BIN -cp "$LIBS:$TOOLS_JAR" -Djava.library.path=lib -Dlog4j.configuration=file:log4j-build.properties -Dincludes="src/*/plugin.xml,src/plugins/*/plugin.xml" org.drftpd.tools.installer.Wrapper "$@"
