@@ -702,6 +702,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				} else {
 					return index;
 				}
+				if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
+					setOffline("Index pool exhausted and no response from slave in "
+							+ (System.currentTimeMillis() - _lastResponseReceived)
+							+ " milliseconds");
+					throw new SlaveUnavailableException();
+				}
 			} catch (InterruptedException e1) {
 			}
 		}
@@ -840,6 +846,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 						&& ((getActualTimeout() / 2 < (System
 								.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout() / 2 < (System
 								.currentTimeMillis() - _lastCommandSent)))) {
+					if (pingIndex != null) {
+						logger.error("Ping lost, no response from slave, sending new ping to slave");
+						_indexPool.push(pingIndex);
+					}
 					pingIndex = SlaveManager.getBasicIssuer().issuePingToSlave(this);
 				} else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
 					setOffline("Slave seems to have gone offline, have not received a response in "
