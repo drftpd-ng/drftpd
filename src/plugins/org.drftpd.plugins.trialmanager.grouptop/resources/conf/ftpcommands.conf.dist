@@ -1,0 +1,10 @@
+SITE GPASSED {
+plugin org.drftpd.plugins.trialmanager
+class TrialManagerCommands
+method doPASSED
+perms *
+help Lists If User Has Passed Trial
+help.specific ${command} <Group>
+input all
+output source
+}
