@@ -203,20 +203,44 @@ public class GroupTop extends TrialType {
 			}
 		}
 
+		/*
+		 * Gets the Groups and members
+		 */
+        MyGroupPosition stat = null;
+        String groupname = "";
+        ArrayList<User> users = getUsers();
+        ArrayList<MyGroupPosition> grpList = new ArrayList<MyGroupPosition>();
+        long minPercentage = getTop() / 100 * getMinPercent();
+        for (User user : users) {
+            groupname=user.getGroup();
+            for (MyGroupPosition stat2 : grpList) {
+                if (stat2.getGroupname().equals(groupname)) {
+                    stat=stat2;
+                    break;
+                }
+            }
+
+            if (stat==null) {
+                stat = new MyGroupPosition(groupname,0,0,0,0,0);
+                grpList.add(stat);
+            }
+
+            stat.updateBytes(user.getUploadedBytesForPeriod(getPeriod()));
+            stat.updateMembers(1);
+
+            stat=null;
+        }
+
+        Collections.sort(grpList);
+
 		ReplacerEnvironment env2 = new ReplacerEnvironment();
 		env2.add("name", getName());
-		env2.add("min",Bytes.formatBytes(getMin()));
+		env2.add("min", Bytes.formatBytes(getMin()));
 		env2.add("period", getPeriodStr());
 		env2.add("time",getRemainingTime());
 		env2.add("keep",getKeep());
 		env2.add("percent", getMinPercent());
-
-
-		ArrayList<User> users = getUsers();
-		ArrayList<MyGroupPosition> grpList = new ArrayList<MyGroupPosition>();
-
-		MyGroupPosition stat = null;
-		String groupname = "";
+        env2.add("grps", grpList.size());
 
 		if (top) {
 			if (getMin() > 0) {
@@ -231,29 +255,6 @@ public class GroupTop extends TrialType {
 				response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "cut.header", env2, requestuser));
 			}
 		}
-
-		long minPercentage = getTop() / 100 * getMinPercent();
-		for (User user : users) {
-			groupname=user.getGroup();
-			for (MyGroupPosition stat2 : grpList) {
-				if (stat2.getGroupname().equals(groupname)) {
-					stat=stat2;
-					break;
-				}
-			}
-			
-			if (stat==null) {
-				stat = new MyGroupPosition(groupname,0,0,0,0,0);
-				grpList.add(stat);
-			}
-
-			stat.updateBytes(user.getUploadedBytesForPeriod(getPeriod()));
-			stat.updateMembers(1);
-
-			stat=null;
-		}
-
-		Collections.sort(grpList);
 
 		int i=1;
 		for (MyGroupPosition grp : grpList) {
@@ -366,7 +367,7 @@ public class GroupTop extends TrialType {
 		env2.add("grpname",group);
 
 		if (grp==null) {
-			response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "gpassed.nosuchgroup", env2, requestuser));
+			response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "passed.nosuchgroup", env2, requestuser));
 			return response;
 		}
 
@@ -382,9 +383,9 @@ public class GroupTop extends TrialType {
 		long minPercentage = getTop() / 100 * getMinPercent();
 
 		if ((i < getKeep()) && (uploaded >= (getMin()*grp.getMembers())) && (uploaded >= minPercentage)) {
-			response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "gpassed.passed.header", env2, requestuser));
+			response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "passed.passed.header", env2, requestuser));
 		} else {
-			response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "gpassed.failed.header", env2, requestuser));
+			response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "passed.failed.header", env2, requestuser));
 		}
 
 		int count = 0;
@@ -401,9 +402,9 @@ public class GroupTop extends TrialType {
 				env.add("time", getRemainingTime());
 				
 				if ((count < getKeep()) && (uploaded >= getMin())) {
-					response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "gpassed.passed", env, requestuser));					
+					response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "passed.passed", env, requestuser));
 				} else {
-					response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "gpassed.failed", env, requestuser));
+					response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "passed.failed", env, requestuser));
 				}				
 				
 			}
@@ -423,7 +424,7 @@ public class GroupTop extends TrialType {
 		@Override
 		public int compareTo(GroupPosition o) {
 			MyGroupPosition mo = (MyGroupPosition) o;
-	                long thisVal = getBytes()/getMembers();
+            long thisVal = getBytes()/getMembers();
 			long anotherVal = mo.getBytes()/mo.getMembers();
 			return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0 : (-1)));
 		}
