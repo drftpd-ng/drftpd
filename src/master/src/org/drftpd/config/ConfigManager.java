@@ -261,7 +261,7 @@ public class ConfigManager implements ConfigInterface {
                     String[] temp = st.nextToken().split("-");
                     _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
                 } else if (drct.equals("hide_ips")) {
-					_hideIps = st.nextToken().equalsIgnoreCase("true") ? true : false;
+                    _hideIps = st.nextToken().equalsIgnoreCase("true");
                 } else if (drct.equals("allow_connections")) {
                     getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
                 } else if (drct.equals("allow_connections_deny_reason")) {
@@ -348,7 +348,7 @@ public class ConfigManager implements ConfigInterface {
     }
 
     public void addPermission(String directive, Permission permission) {
-		boolean alreadyExists = getPermissionsMap().containsKey(directive);
+        boolean alreadyExists = getPermissionsMap().containsKey(directive);
 
         if (alreadyExists) {
             // TODO what's best replace the existing one or keep it?
