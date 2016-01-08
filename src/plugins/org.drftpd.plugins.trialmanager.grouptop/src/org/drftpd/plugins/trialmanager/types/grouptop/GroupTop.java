@@ -42,15 +42,15 @@ public class GroupTop extends TrialType {
 	private int _keep;	
 	private long _min;
 	private String _keyPrefix;
-	private int _minPerc;
+	private int _minPercent;
 	
 	public GroupTop(Properties p, int confnum, String type) {
 		super(p, confnum, type);
 		
 		try {
-			_minPerc = Integer.parseInt(p.getProperty(confnum+".perc","-1").trim());
+			_minPercent = Integer.parseInt(p.getProperty(confnum + ".percent", "0").trim());
 		} catch (NumberFormatException e) {
-			throw new RuntimeException("Invalid minimum percentange for " + confnum	+ ".perc - Skipping Config");
+			throw new RuntimeException("Invalid minimum percentange for " + confnum + ".percent - Skipping Config");
 		}
 
 		try {
@@ -87,8 +87,8 @@ public class GroupTop extends TrialType {
 		return _min;
 	}
 
-	public int getMinPerc() {
-		return _minPerc;
+	public int getMinPercent() {
+		return _minPercent;
 	}
 	
 	private void handlePassed(User user) {
@@ -149,7 +149,7 @@ public class GroupTop extends TrialType {
 	public void doTrial() {
 		int passed = 0;
 
-		long minPercentage=getTop()/100*getMinPerc();
+		long minPercentage = getTop() / 100 * getMinPercent();
 
 		ArrayList<User> users = getUsers();
 		for (User user : users) {
@@ -209,7 +209,8 @@ public class GroupTop extends TrialType {
 		env2.add("period", getPeriodStr());
 		env2.add("time",getRemainingTime());
 		env2.add("keep",getKeep());
-		env2.add("perc",getMinPerc());
+		env2.add("percent", getMinPercent());
+
 
 		ArrayList<User> users = getUsers();
 		ArrayList<MyGroupPosition> grpList = new ArrayList<MyGroupPosition>();
@@ -231,7 +232,7 @@ public class GroupTop extends TrialType {
 			}
 		}
 
-		long minPercentage=getTop()/100*getMinPerc();
+		long minPercentage = getTop() / 100 * getMinPercent();
 		for (User user : users) {
 			groupname=user.getGroup();
 			for (MyGroupPosition stat2 : grpList) {
@@ -376,8 +377,9 @@ public class GroupTop extends TrialType {
 		env2.add("size", grp.getMembers());
 		env2.add("upBytesPU", Bytes.formatBytes(grp.getBytes()/grp.getMembers()));
 		env2.add("rank",i);
+		env2.add("percent", getMinPercent());
 
-		long minPercentage=getTop()/100*getMinPerc();
+		long minPercentage = getTop() / 100 * getMinPercent();
 
 		if ((i < getKeep()) && (uploaded >= (getMin()*grp.getMembers())) && (uploaded >= minPercentage)) {
 			response.addComment(request.getSession().jprintf(bundle,_keyPrefix + "gpassed.passed.header", env2, requestuser));
