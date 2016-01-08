@@ -78,13 +78,6 @@ public class ActiveConnection extends Connection {
 				sslsock.setEnabledProtocols(sslProtocols);
 			}
 			sslsock.setUseClientMode(_useSSLClientHandshake);
-			int oldTimeout = sslsock.getSoTimeout();
-			if (oldTimeout == 0) {
-				sslsock.setSoTimeout(15000);
-			} else {
-				sslsock.setSoTimeout(oldTimeout);
-			}
-
 			sslsock.startHandshake();
 			_sock = sslsock;
 		} else {
