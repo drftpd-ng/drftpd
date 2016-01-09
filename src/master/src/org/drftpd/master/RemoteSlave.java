@@ -395,6 +395,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		
 		String remergeMode = GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode");
 		boolean partialRemerge = false;
+		boolean instantOnline = false;
 		if (remergeMode == null) {
 			logger.error("Slave partial remerge undefined in master.conf, defaulting to \"off\"");
 		} else {
@@ -414,14 +415,20 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					logger.warn("Slave partial remerge mode set to \"off\" as lastOnline time is undefined, this may " +
 							" resolve itself automatically on next slave connection");
 				}
+			} else if (remergeMode.equalsIgnoreCase("instant")) {
+				instantOnline = true;
+				setAvailable(true);
+				logger.info("Slave added: '" + getName() + "' status: " + _status);
+				GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
 			}
 		}
 		String remergeIndex;
 		if (partialRemerge) {
-			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", true, skipAgeCutoff,
-					System.currentTimeMillis());
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", true, skipAgeCutoff, System.currentTimeMillis(), false);
+		} else if (instantOnline) {
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L, true);
 		} else {
-			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L);
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L, false);
 		}
 
 		try {
@@ -538,10 +545,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	protected void makeAvailableAfterRemerge() {
         setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
-        setAvailable(true);
-        setRemerging(false);
-        logger.info("Slave added: '" + getName() + "' status: " + _status);
-        GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
+        if (GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode").equalsIgnoreCase("instant")) {
+            setRemerging(false);
+            GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", "Remerge queueprocess finished", this));
+        } else {
+            setAvailable(true);
+            setRemerging(false);
+            logger.info("Slave added: '" + getName() + "' status: " + _status);
+            GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
+        }
     }
 
 	public final void setLastDirection(char direction, long l) {
