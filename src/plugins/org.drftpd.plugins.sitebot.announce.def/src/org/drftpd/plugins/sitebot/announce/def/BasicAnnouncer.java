@@ -32,6 +32,7 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.event.InviteEvent;
+import org.drftpd.event.MasterEvent;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
@@ -109,7 +110,17 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".addslave", env, _bundle), "addslave");
 		} else if (event.getCommand().equals("DELSLAVE")) {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".delslave", env, _bundle), "delslave");
+                } else if (event.getCommand().equals("MSGSLAVE")) {
+                        outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgslave", env, _bundle), "msgslave");
 		}
+	}
+
+	@EventSubscriber
+	public void onMasterEvent(MasterEvent event) {
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("message", event.getMessage());
+
+        outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgmaster", env, _bundle), "msgmaster");
 	}
 
 	@EventSubscriber

@@ -46,16 +46,7 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
-import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.slave.async.AsyncResponse;
-import org.drftpd.slave.async.AsyncResponseChecksum;
-import org.drftpd.slave.async.AsyncResponseDiskStatus;
-import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.slave.async.AsyncResponseMaxPath;
-import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSSLCheck;
-import org.drftpd.slave.async.AsyncResponseTransfer;
-import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.slave.async.*;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 /**
@@ -73,8 +64,11 @@ public class BasicHandler extends AbstractHandler {
 	// map works these are run against separate object instances.
 	private static AtomicBoolean remergePaused = new AtomicBoolean();
 	private static Object remergeWaitObj = new Object();
-			
-	public BasicHandler(SlaveProtocolCentral central) {
+
+	private int remergeDepth=0;
+    private int remergeConcurrentDepth=0;
+
+    public BasicHandler(SlaveProtocolCentral central) {
 		super(central);
 	}
 
@@ -227,18 +221,23 @@ public class BasicHandler extends AbstractHandler {
 				}
 				Date cutoffDate = new Date(skipAgeCutoff);
 				logger.info("Partial remerge enabled, skipping all files last modified before " + cutoffDate.toString());
-			} else {
+				sendResponse(new AsyncResponseSiteBotMessage("Partial remerge enabled, skipping all files last modified before " + cutoffDate.toString()));
+            } else {
 				logger.info("Partial remerge disabled, performing full remerge");
+				sendResponse(new AsyncResponseSiteBotMessage("Partital remerge disabled, performing full remerge"));
 			}
 			if (getSlaveObject().concurrentRootIteration()) {
+				sendResponse(new AsyncResponseSiteBotMessage("Starting to merge with roots concurrently"));
 				handleRemergeRecursiveConcurrent(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
 			} else {
+				sendResponse(new AsyncResponseSiteBotMessage("Starting to merge"));
 				handleRemergeRecursive2(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
 			}
 
 			return new AsyncResponse(ac.getIndex());
 		} catch (Throwable e) {
 			logger.error("Exception during merging", e);
+			sendResponse(new AsyncResponseSiteBotMessage("Exception during merging"));
 
 			return new AsyncResponseException(ac.getIndex(), e);
 		}
@@ -246,6 +245,7 @@ public class BasicHandler extends AbstractHandler {
 
 	private void handleRemergeRecursive2(RootCollection rootCollection,
 			String path, boolean partialRemerge, long skipAgeCutoff) {
+		remergeDepth++;
 		while (remergePaused.get()) {
 			synchronized(remergeWaitObj) {
 				try {
@@ -274,22 +274,22 @@ public class BasicHandler extends AbstractHandler {
 			} catch (FileNotFoundException e) {
 				// something is screwy, we just found the file, it has to exist
 				// race condition i guess, stop deleting files outside drftpd!
-				logger.error("Error getting file " + path
+				logger.error("Error getting file " + fullPath
 						+ " even though we just listed it, check permissions",
 						e);
+				sendResponse(new AsyncResponseSiteBotMessage("Error getting file " + fullPath + " check permissions"));
 				continue;
 			}
 			try {
 				if (file.isSymbolicLink()) {
 					// ignore it, but log an error
-					logger.warn("You have a symbolic link " + fullPath
-							+ " -- these are ignored by drftpd");
+					logger.warn("You have a symbolic link " + fullPath + " -- these are ignored by drftpd");
+					sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link " + fullPath + " -- these are ignored by drftpd"));
 					continue;
 				}
 			} catch (IOException e) {
-				logger
-						.warn("You have a symbolic link that couldn't be read at "
-								+ fullPath + " -- these are ignored by drftpd");
+				logger.warn("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drftpd");
+				sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link thacouldn't be read at " + fullPath + " -- these are ignored by drftpd"));
 				continue;
 			}
 			if (partialRemerge && file.lastModified() > skipAgeCutoff) {
@@ -306,10 +306,15 @@ public class BasicHandler extends AbstractHandler {
 		} else {
 			logger.debug("Skipping send of " + path + " as no files changed since last merge");
 		}
+
+		if(--remergeDepth==0) {
+			sendResponse(new AsyncResponseSiteBotMessage("Merge done"));
+		}
 	}
 
 	private void handleRemergeRecursiveConcurrent(RootCollection rootCollection,
 			String path, boolean partialRemerge, long skipAgeCutoff) {
+		remergeConcurrentDepth++;
 		while (remergePaused.get()) {
 			synchronized(remergeWaitObj) {
 				try {
@@ -337,14 +342,13 @@ public class BasicHandler extends AbstractHandler {
 			try {
 				if (file.isSymbolicLink()) {
 					// ignore it, but log an error
-					logger.warn("You have a symbolic link " + fullPath
-							+ " -- these are ignored by drftpd");
+					logger.warn("You have a symbolic link " + fullPath + " -- these are ignored by drftpd");
+					sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link " + fullPath + " -- these are ignored by drftpd"));
 					continue;
 				}
 			} catch (IOException e) {
-				logger
-						.warn("You have a symbolic link that couldn't be read at "
-								+ fullPath + " -- these are ignored by drftpd");
+				logger.warn("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drftpd");
+				sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drfptd"));
 				continue;
 			}
 			if (partialRemerge && file.lastModified() > skipAgeCutoff) {
@@ -360,6 +364,10 @@ public class BasicHandler extends AbstractHandler {
 			logger.debug("Sending " + path + " to the master");
 		} else {
 			logger.debug("Skipping send of " + path + " as no files changed since last merge");
+		}
+
+		if(--remergeConcurrentDepth==0) {
+			sendResponse(new AsyncResponseSiteBotMessage("Merge done"));
 		}
 	}
 	

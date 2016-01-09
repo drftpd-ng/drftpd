@@ -75,6 +75,7 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSSLCheck;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
 import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
 import org.drftpd.util.HostMask;
@@ -429,10 +430,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 		putRemergeQueue(new RemergeMessage(this));
 
-		// TODO move lastConnect time setting to makeAvailableAfterRemerge()
-		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
 		_initRemergeCompleted = true;
 		if (_remergePaused.get()) {
+			String message = ("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
+			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
 			logger.debug("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
 			SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
 			_remergePaused.set(false);
@@ -534,12 +535,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	protected void makeAvailableAfterRemerge() {
-		// TODO move lastconnect time set to here
-		setAvailable(true);
-		setRemerging(false);
-		logger.info("Slave added: '" + getName() + "' status: " + _status);
-		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
-	}
+        setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
+        setAvailable(true);
+        setRemerging(false);
+        logger.info("Slave added: '" + getName() + "' status: " + _status);
+        GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
+    }
 
 	public final void setLastDirection(char direction, long l) {
 		switch (direction) {
@@ -580,10 +581,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 			setOffline("IOException deleting file, check logs for specific error");
 			addQueueDelete(path);
-			logger
-					.error(
-							"IOException deleting file, file will be deleted when slave comes online",
-							e);
+			logger.error("IOException deleting file, file will be deleted when slave comes online",	e);
 		} catch (SlaveUnavailableException e) {
 			// Already offline and we ARE successful in deleting the file
 			addQueueDelete(path);
@@ -712,8 +710,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			}
 		}
 
-		throw new SlaveUnavailableException(
-				"Slave was offline or went offline while fetching an index");
+		throw new SlaveUnavailableException("Slave was offline or went offline while fetching an index");
 	}
 
 	public int fetchMaxPathFromIndex(String maxPathIndex) throws SlaveUnavailableException {
@@ -759,14 +756,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			}
 
 			if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait)) {
-				setOffline("Slave has taken too long while waiting for reply "
-						+ index);
+				setOffline("Slave has taken too long while waiting for reply " + index);
 			}
 		}
 
 		if (!isOnline()) {
-			throw new SlaveUnavailableException(
-					"Slave went offline while processing command");
+			throw new SlaveUnavailableException("Slave went offline while processing command");
 		}
 
 		AsyncResponse rar = _indexWithCommands.remove(index);
@@ -779,13 +774,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				throw new RemoteIOException((IOException) t);
 			}
 
-			logger
-					.error(
-							"Exception on slave that is unable to be handled by the master",
-							t);
+			logger.error("Exception on slave that is unable to be handled by the master", t);
 			setOffline("Exception on slave that is unable to be handled by the master");
-			throw new SlaveUnavailableException(
-					"Exception on slave that is unable to be handled by the master");
+			throw new SlaveUnavailableException("Exception on slave that is unable to be handled by the master");
 		}
 		return rar;
 	}
@@ -793,8 +784,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public synchronized String getPASVIP() throws SlaveUnavailableException {
 		if (!isOnline())
 			throw new SlaveUnavailableException();
-		return getProperty("pasv_addr", _socket.getInetAddress()
-				.getHostAddress());
+		return getProperty("pasv_addr", _socket.getInetAddress().getHostAddress());
 	}
 
 	public int getPort() {
@@ -924,6 +914,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 							&& pingIndex.equals(ar.getIndex())) {
 						fetchResponse(pingIndex);
 						pingIndex = null;
+					} else if (ar.getIndex().equals("SiteBotMessage")) {
+						String message = ((AsyncResponseSiteBotMessage) ar).getMessage();
+						GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
 					} else {
 						synchronized (_commandMonitor) {
 							_commandMonitor.notifyAll();
@@ -989,6 +982,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			GlobalContext.getEventService().publishAsync(
 					new SlaveEvent("DELSLAVE", reason, this));
 		}
+		else {
+			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", reason, this));
+		}
 
 		setAvailable(false);
 	}
@@ -1038,8 +1034,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				if (obj instanceof AsyncResponse) {
 					return (AsyncResponse) obj;
 				}
-				logger.error("Throwing away an unexpected class - "
-						+ obj.getClass().getName() + " - " + obj);
+				logger.error("Throwing away an unexpected class - " + obj.getClass().getName() + " - " + obj);
 			}
 		}
 	}
@@ -1072,8 +1067,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			out.reset();
 		} catch (IOException e) {
 			logger.error("error in sendCommand()", e);
-			throw new SlaveUnavailableException(
-					"error sending command (exception already handled)", e);
+			throw new SlaveUnavailableException("error sending command (exception already handled)", e);
 		}
 		_lastCommandSent = System.currentTimeMillis();
 	}
@@ -1124,8 +1118,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public boolean isMemberOf(String string) {
-		StringTokenizer st = new StringTokenizer(getProperty("keywords", ""),
-				" ");
+		StringTokenizer st = new StringTokenizer(getProperty("keywords", "")," ");
 
 		while (st.hasMoreElements()) {
 			if (st.nextToken().equals(string)) {
@@ -1183,9 +1176,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		XMLEncoder out = null;
 		try {
 
-			out = new XMLEncoder(new SafeFileOutputStream(
-					(getGlobalContext().getSlaveManager().getSlaveFile(this
-							.getName()))));
+			out = new XMLEncoder(new SafeFileOutputStream((getGlobalContext().getSlaveManager().getSlaveFile(this.getName()))));
 			out.setExceptionListener(new ExceptionListener() {
 				public void exceptionThrown(Exception e) {
 					logger.warn("", e);
@@ -1198,11 +1189,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			out.setPersistenceDelegate(RemoteSlave.class,
 					new DefaultPersistenceDelegate(new String[] { "name" }));
 			out.setPersistenceDelegate(QueuedOperation.class,
-					new DefaultPersistenceDelegate(new String[] { "source",
-							"destination" }));
+					new DefaultPersistenceDelegate(new String[] { "source","destination" }));
 			try {
-				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(
-						RemoteSlave.class).getPropertyDescriptors();
+				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(RemoteSlave.class).getPropertyDescriptors();
 				ArrayList<String> transientList = new ArrayList<String>();
 				transientList.addAll(Arrays.asList(transientFields));
 				for (PropertyDescriptor pd : pdArr) {
@@ -1229,7 +1218,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public ObjectOutputStream getOutputStream() {
 		return _sout;
 	}
-	
+
 	public ObjectInputStream getInputStream() {
 		return _sin;
 	}
