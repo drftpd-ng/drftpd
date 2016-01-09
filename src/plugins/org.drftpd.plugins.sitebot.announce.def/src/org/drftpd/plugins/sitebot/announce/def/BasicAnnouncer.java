@@ -118,6 +118,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("user", event.getUser().getName());
 			env.add("nick", event.getIrcNick());
+			env.add("group", event.getUser().getGroup());
 			if (event.getCommand().equals("INVITE")) {
 				outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".invite.success", env, _bundle), "invite");
 				for (ChannelConfig chan : _config.getBot().getConfig().getChannels()) {
