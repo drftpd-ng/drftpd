@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
@@ -46,7 +47,17 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.TransferStatus;
-import org.drftpd.slave.async.*;
+import org.drftpd.slave.async.AsyncCommandArgument;
+import org.drftpd.slave.async.AsyncResponse;
+import org.drftpd.slave.async.AsyncResponseChecksum;
+import org.drftpd.slave.async.AsyncResponseDiskStatus;
+import org.drftpd.slave.async.AsyncResponseException;
+import org.drftpd.slave.async.AsyncResponseMaxPath;
+import org.drftpd.slave.async.AsyncResponseRemerge;
+import org.drftpd.slave.async.AsyncResponseSSLCheck;
+import org.drftpd.slave.async.AsyncResponseTransfer;
+import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 /**
@@ -64,6 +75,14 @@ public class BasicHandler extends AbstractHandler {
 	// map works these are run against separate object instances.
 	private static AtomicBoolean remergePaused = new AtomicBoolean();
 	private static Object remergeWaitObj = new Object();
+
+	// Vars for threaded remerge
+	private static final int maxMergeThreads = 10;
+	private HandleRemergeRecursiveThread[] mergeThreads;
+	private AtomicInteger threadMergeCount = new AtomicInteger(0);
+	private static Object threadMergeWaitObj = new Object();
+	private ArrayList<String> threadMergeDepth = new ArrayList<String>();
+	private static Object threadMergeDepthWaitObj = new Object();
 
 	private int remergeDepth=0;
     private int remergeConcurrentDepth=0;
@@ -226,12 +245,49 @@ public class BasicHandler extends AbstractHandler {
 				logger.info("Partial remerge disabled, performing full remerge");
 				sendResponse(new AsyncResponseSiteBotMessage("Partital remerge disabled, performing full remerge"));
 			}
-			if (getSlaveObject().concurrentRootIteration()) {
+
+			if (getSlaveObject().threadedRemerge()) {
+				if (threadMergeCount.get() == 0) {
+					// Create worker threads
+					mergeThreads = new HandleRemergeRecursiveThread[maxMergeThreads];
+					for (int i = 0; i < maxMergeThreads; i++) {
+						mergeThreads[i] = new HandleRemergeRecursiveThread(getSlaveObject().getRoots(), partialRemerge, skipAgeCutoff, i + 1);
+						mergeThreads[i].start();
+					}
+					sendResponse(new AsyncResponseSiteBotMessage("Starting to merge with threads"));
+					HandleRemergeRecursiveThread thread = getRemergeThread();
+					thread.setPathAndRun(argsArray[0]);
+				} else {
+					sendResponse(new AsyncResponseSiteBotMessage("Merge already running, wait for it to finish"));
+				}
+			} else if (getSlaveObject().concurrentRootIteration()) {
 				sendResponse(new AsyncResponseSiteBotMessage("Starting to merge with roots concurrently"));
 				handleRemergeRecursiveConcurrent(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
 			} else {
 				sendResponse(new AsyncResponseSiteBotMessage("Starting to merge"));
 				handleRemergeRecursive2(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
+			}
+
+			// Make sure we dont make the slave avalible online until the whole filesystem is sent
+			if (getSlaveObject().threadedRemerge()) {
+				while (threadMergeCount.get() != 0) {
+					synchronized(threadMergeWaitObj) {
+						try {
+							threadMergeWaitObj.wait(5000);
+						} catch (InterruptedException e) {
+							// Either we have been woken properly in which case we will exit the
+							// loop or we have not in which case we will wait again.
+						}
+					}
+
+					if (threadMergeCount.get() == 0) {
+						// Tell all worker threads to exit, where done with the merge.
+						for (int i = 0; i < maxMergeThreads; i++) {
+							mergeThreads[i].exit();
+						}
+						break;
+					}
+				}
 			}
 
 			return new AsyncResponse(ac.getIndex());
@@ -240,6 +296,274 @@ public class BasicHandler extends AbstractHandler {
 			sendResponse(new AsyncResponseSiteBotMessage("Exception during merging"));
 
 			return new AsyncResponseException(ac.getIndex(), e);
+		}
+	}
+
+	private class HandleRemergeRecursiveThread extends Thread {
+		private RootCollection rootCollection = null;
+		private String path = null;
+		private boolean partialRemerge = false;
+		private boolean localRun = false;
+		private long skipAgeCutoff = 0L;
+		private volatile boolean available = true;
+		private volatile boolean exit = false;
+		private Object localWaitObj = new Object();
+
+		public HandleRemergeRecursiveThread(RootCollection rootCollection, boolean partialRemerge, long skipAgeCutoff, int threadNumber) {
+			super("RemergeThread-" + threadNumber);
+			this.rootCollection = rootCollection;
+			this.partialRemerge = partialRemerge;
+			this.skipAgeCutoff = skipAgeCutoff;
+		}
+
+		public void run() {
+			while (true) {
+				while (remergePaused.get()) {
+					synchronized(remergeWaitObj) {
+						try {
+							remergeWaitObj.wait();
+						} catch (InterruptedException e) {
+							// Either we have been woken properly in which case we will exit the
+							// loop or we have not in which case we will wait again.
+						}
+					}
+				}
+
+				while (path == null) {
+					if (exit) {
+						return;
+					}
+					synchronized(localWaitObj) {
+						try {
+							localWaitObj.wait(2000);
+						} catch (InterruptedException e) {
+							// Either we have been woken properly in which case we will exit the
+							// loop or we have not in which case we will wait again.
+						}
+					}
+				}
+
+				TreeSet<String> inodes = rootCollection.getLocalInodes(path);
+				ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+				ArrayList<String> dirList = new ArrayList<String>();
+
+				boolean inodesModified = false;
+				long pathLastModified = rootCollection.getLastModifiedForPath(path);
+				// Need to check the last modified of the parent itself to detect where
+				// files have been deleted but none changed or added
+				if (partialRemerge &&  pathLastModified > skipAgeCutoff) {
+					inodesModified = true;
+				}
+
+
+				for (String inode : inodes) {
+					String fullPath = path + "/" + inode;
+					PhysicalFile file;
+					try {
+						file = rootCollection.getFile(fullPath);
+					} catch (FileNotFoundException e) {
+						// something is screwy, we just found the file, it has to exist
+						// race condition i guess, stop deleting files outside drftpd!
+						logger.error("Error getting file " + fullPath
+								+ " even though we just listed it, check permissions",
+								e);
+						sendResponse(new AsyncResponseSiteBotMessage("Error getting file " + fullPath + " check permissions"));
+						continue;
+					}
+					try {
+					if (file.isSymbolicLink()) {
+							// ignore it, but log an error
+							logger.warn("You have a symbolic link " + fullPath
+									+ " -- these are ignored by drftpd");
+							sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link " + fullPath + " -- these are ignored by drftpd"));
+							continue;
+						}
+					} catch (IOException e) {
+						logger
+								.warn("You have a symbolic link that couldn't be read at "
+										+ fullPath + " -- these are ignored by drftpd");
+							sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drftpd"));
+						continue;
+					}
+					if (partialRemerge && file.lastModified() > skipAgeCutoff) {
+						inodesModified = true;
+					}
+					if (file.isDirectory()) {
+						dirList.add(fullPath + "/");
+
+						HandleRemergeRecursiveThread thread = null;
+						if(!inode.equalsIgnoreCase("sample") && !inode.equalsIgnoreCase("subs")) {
+							thread = getRemergeThread();
+							if (thread != null) {
+								thread.setPathAndRun(fullPath);
+							}
+						}
+
+						if (thread == null) {
+							// Local run, either there where no threads available or it matched sample or subs
+							// This emulates the recursive behavior of the "normal" remerge process
+							// See handleRemergeRecursive2
+							boolean restoreRun = localRun;
+							String oldPath = path;
+							path = fullPath;
+							if (localRun == false) {
+								localRun = true;
+							}
+							run();
+							path = oldPath;
+							localRun = restoreRun;
+						}
+					}
+					// this collects files and sends it to master
+					//TODO check if file is in getMultipleRoots.
+					// if true, diff checksum
+					// if differ, throw MSGSLAVE with info and continue remerge
+					/**
+					try {
+						logger.error("MULTIROOTS going to try to get roots for file " + file.toString());
+						rootCollection.getMultipleRootsForFile(file.toString());
+						logger.error("MULTIROOTS done");
+						List<Root> roots = rootCollection.getRootList();
+						logger.error("MULTIROOTS root size for file " + file.toString() + " " + roots.size());
+						Iterator<Root> it = roots.iterator();
+						long lastCrc=0;
+						while(it.hasNext()) {
+							Root root=it.next();
+							logger.error("MULTIROOTS checking root " + root.getPath());
+							long crc=0;
+							try {
+								crc = getSlaveObject().checkSum(root.getFile().getPath());
+								logger.error("MULTIROOTS checking file with crc " + crc);
+							} catch (IOException e) {
+								logger.error("MULTIROOTS: IOException when checking crc for file in multiple roots");
+							}
+							if(crc!=lastCrc) {
+								logger.error("MULTIROOTS mismatch crc " + crc + ":" + lastCrc);
+							}
+							lastCrc=crc;
+						}
+					} catch (FileNotFoundException e) {
+						// This is good, means that file only exists in one root
+						logger.error("MULTIROOTS FIOLE NOT FOUND " + e);
+						fileList.add(new LightRemoteInode(file));
+						continue;
+					}
+					*/
+					fileList.add(new LightRemoteInode(file));
+				}
+
+				if (!partialRemerge || inodesModified) {
+					for (String dir : dirList) {
+						waitForDepth(dir);
+					}
+					sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
+					logger.debug("Sending " + path + " to the master");
+				} else {
+					logger.debug("Skipping send of " + path + " as no files changed since last merge");
+				}
+				updateDepth(path + "/");
+
+				if (localRun == false) {
+					available();
+				} else {
+					return;
+				}
+
+				if (threadMergeCount.get() == 0) {
+					sendResponse(new AsyncResponseSiteBotMessage("Merge done"));
+					synchronized(threadMergeWaitObj) {
+						threadMergeWaitObj.notifyAll();
+					}
+					threadMergeDepth.clear();
+				}
+			}
+		}
+
+		public boolean isAvailable() {
+			return available;
+		}
+
+		private void available() {
+			path = null;
+			threadMergeCount.decrementAndGet();
+			available = true;
+		}
+
+		public void unavailable() {
+			available = false;
+			threadMergeCount.incrementAndGet();
+		}
+
+		public void setPathAndRun(String path) {
+			this.path = path;
+			synchronized(localWaitObj) {
+				localWaitObj.notify();
+			}
+		}
+
+		public void exit() {
+			exit = true;
+			synchronized(localWaitObj) {
+				localWaitObj.notify();
+			}
+		}
+	}
+
+	private HandleRemergeRecursiveThread getRemergeThread() {
+		synchronized(mergeThreads) {
+			for (int i = 0; i < maxMergeThreads; i++) {
+				if (mergeThreads[i].isAvailable()) {
+					mergeThreads[i].unavailable();
+					return mergeThreads[i];
+				}
+			}
+		}
+		return null;
+	}
+
+	private void updateDepth(String path) {
+		boolean add = true;
+		synchronized(threadMergeDepth) {
+			for (String dir : threadMergeDepth) {
+				if (path.startsWith(dir)) {
+					dir = path;
+					add = false;
+					break;
+				}
+
+				if (dir.startsWith(path)) {
+					add = false;
+					break;
+				}
+			}
+
+			if (add == true) {
+				threadMergeDepth.add(path);
+			}
+		}
+
+		synchronized(threadMergeDepthWaitObj) {
+			threadMergeDepthWaitObj.notifyAll();
+		}
+	}
+
+	private void waitForDepth(String path) {
+		while(true) {
+			synchronized(threadMergeDepth) {
+				for (String dir : threadMergeDepth) {
+					if (dir.startsWith(path)) {
+						return;
+					}
+				}
+			}
+
+			synchronized(threadMergeDepthWaitObj) {
+				try {
+					threadMergeDepthWaitObj.wait(2000);
+				} catch (InterruptedException e) {
+					// We have been woken up, check if the path is there now.
+				}
+			}
 		}
 	}
 

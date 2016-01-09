@@ -100,6 +100,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	protected transient int _errors;
 
+	private transient int _prevSocketTimeout;
+
 	private transient long _lastDownloadSending = 0;
 
 	protected transient long _lastNetworkError;
@@ -849,22 +851,23 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				}
 
 				if (isOnline() && !isAvailable() && !_initRemergeCompleted) {
-					int queueSize = CommitManager.getCommitManager().getQueueSize();
 					if (_remergePaused.get()) {
-						// Do we need to resume
-						if (queueSize <= Integer.parseInt(GlobalContext.getConfig()
-								.getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
+						// Do we need to resume?
+						if (_remergeQueue.size() <= Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
+							_socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
 							SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
 							_remergePaused.set(false);
-							logger.debug("Issued remerge resume to slave, current commit queue is " + queueSize);
-						}
+							logger.debug("Issued remerge resume to slave, current remerge queue is " + _remergeQueue.size());
+                        }
 					} else {
-						// Do we need to pause
-						if (queueSize > Integer.parseInt(GlobalContext.getConfig()
-								.getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
+						// Do we need to pause?
+						if (_remergeQueue.size() > Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
 							SlaveManager.getBasicIssuer().issueRemergePauseToSlave(this);
+							_prevSocketTimeout = _socket.getSoTimeout();
+							// Set lower timeout so it reacts faster when queueSize goes back down
+							_socket.setSoTimeout(100);
 							_remergePaused.set(true);
-							logger.debug("Issued remerge pause to slave, current commit queue is " + queueSize);
+							logger.debug("Issued remerge pause to slave, current remerge queue is " + _remergeQueue.size());
 						}
 					}
 				}
@@ -1224,6 +1227,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	private void putRemergeQueue(RemergeMessage message) {
+		logger.debug("REMERGE: putting message into queue");
 		try {
 			_remergeQueue.put(message);
 		} catch (InterruptedException e) {
@@ -1249,13 +1253,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			while (true) {
 				RemergeMessage msg;
 				try {
+					logger.info("REMERGE SIZE: " + _remergeQueue.size());
 					msg = _remergeQueue.take();
 				} catch (InterruptedException e) {
-					logger.info("", e);
+					logger.debug("REMERGE QUE: fault in node from queue with exception " + e.getMessage());
 					continue;
 				}
 
 				if (msg.isCompleted()) {
+					logger.info("REMERGE: queue finished");
 					msg.getRslave().makeAvailableAfterRemerge();
 					break;
 				}
