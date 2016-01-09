@@ -125,6 +125,10 @@ public class SectionManager implements SectionManagerInterface {
 			return _dir.getName();
 		}
 
+		public String getColor() {
+			return "15";
+		}
+
 		public String getPath() {
 			return _dir.getPath();
 		}
