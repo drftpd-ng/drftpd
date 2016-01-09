@@ -29,6 +29,7 @@ import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
 import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
 import org.drftpd.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
+import org.drftpd.GlobalContext;
 
 /**
  * @author djb61
@@ -72,6 +73,8 @@ public class MP3Announcer extends AbstractAnnouncer {
 			// Check if this is the first mp3 in this dir
 			if (event.isFirst()) {
 				ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+				env.add("section", writer.getSectionName(event.getDir()));
+				env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDir()).getColor());
 				MP3Info mp3Info = event.getMP3Info();
 				ID3Tag id3 = mp3Info.getID3Tag();
 				if (id3 != null) {

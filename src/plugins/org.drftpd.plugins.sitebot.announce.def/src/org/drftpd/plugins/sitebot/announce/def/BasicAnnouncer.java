@@ -36,6 +36,7 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+import org.drftpd.GlobalContext;
 
 /**
  * @author djb61
@@ -154,6 +155,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 		env.add("user", direvent.getUser().getName());
 		env.add("group", direvent.getUser().getGroup());
 		env.add("section", writer.getSectionName(dir));
+		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
 		env.add("path", writer.getPath(dir));
 	}
 }
