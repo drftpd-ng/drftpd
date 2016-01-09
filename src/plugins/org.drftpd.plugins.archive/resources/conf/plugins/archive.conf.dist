@@ -7,6 +7,7 @@
 #   X.type = (Required) - ArchiveTypeName
 #   X.section = (Required) - Section To Archive From
 #   X.archiveafter = (Optional) - Archive Releases After X minutes
+#   X.ignoreafter = (Optional) - Don't archive releases if older than X minutes
 #   X.repeat = (Optional) - How many times to check Section during 1 cycle
 #   X.scansubdirs = (Optional) - Used to scan subdirs of section instead of section dirs.  (eg. MP3)
 #   X.archiveregex = (Optional) - Which folders to archive using regex
