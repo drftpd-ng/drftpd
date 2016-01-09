@@ -50,7 +50,7 @@ public class ConstantMirroring extends ArchiveType {
         int size = 0;
         
 		if (_slaveList.isEmpty()) {
-		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseToSpecificSlave for conf number " + confnum);
+		    throw new NullPointerException("Cannot continue, 0 destination slaves found for ConstantMirroring for conf number " + confnum);
 		}        
 		size = _slaveList.size();
         
