@@ -21,6 +21,9 @@ master.slaveSSL=false
 # Show offline files? [true/false]
 files.offline.enabled=true
 
+# Delete collision files? [true/false]
+delete.collision.files=false
+
 # Advanced settings. #
 # Do not touch it if you don't know what you are doing. #
 
