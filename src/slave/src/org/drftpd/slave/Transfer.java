@@ -55,7 +55,7 @@ public class Transfer {
 	private char _direction;
 
 	private long _finished = 0;
-	
+
 	private ThrottledInputStream _int;
 
 	private InputStream _in;
@@ -81,11 +81,11 @@ public class Transfer {
 	public static final char TRANSFER_UNKNOWN = 'U';
 
 	private String _pathForUpload = null;
-	
+
 	private static final String separator = "/";
-	
+
 	private long _minSpeed = 0L;
-	
+
 	private long _maxSpeed = 0L;
 
 	/**
@@ -222,19 +222,19 @@ public class Transfer {
 
 		return (int) (_transfered / ((float) elapsed / (float) 1000));
 	}
-	
+
 	public long getMinSpeed() {
 		return _minSpeed;
 	}
-	
+
 	public long getMaxSpeed() {
 		return _maxSpeed;
 	}
-	
+
 	public void setMinSpeed(long minSpeed) {
 		_minSpeed = minSpeed;
 	}
-	
+
 	public void setMaxSpeed(long maxSpeed) {
 		_maxSpeed = maxSpeed;
 	}
@@ -267,7 +267,7 @@ public class Transfer {
 				_out = new CheckedOutputStream(_out, _checksum);
 			}
 			accept(_slave.getCipherSuites(), _slave.getSSLProtocols(), _slave.getBufferSize());
-			
+
 			if (!checkMasks(inetAddress, _sock.getInetAddress())) {
 				throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
 			}
@@ -322,7 +322,7 @@ public class Transfer {
 			if (!checkMasks(inetAddress, _sock.getInetAddress())) {
 				throw new TransferDeniedException("The IP that connected to the Socket was not the one that was expected.");
 			}
-			
+
 			_out = _sock.getOutputStream();
 			synchronized (this) {
 				_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
@@ -365,24 +365,24 @@ public class Transfer {
 
 	/**
 	 * Call sock.connect() and start sending.
-	 * 
+	 *
 	 * Read about buffers here:
 	 * http://groups.google.com/groups?hl=sv&lr=&ie=UTF-8&oe=UTF-8&threadm=9eomqe%24rtr%241%40to-gate.itd.utech.de&rnum=22&prev=/groups%3Fq%3Dtcp%2Bgood%2Bbuffer%2Bsize%26start%3D20%26hl%3Dsv%26lr%3D%26ie%3DUTF-8%26oe%3DUTF-8%26selm%3D9eomqe%2524rtr%25241%2540to-gate.itd.utech.de%26rnum%3D22
-	 * 
+	 *
 	 * Quote: Short answer is: if memory is not limited make your buffer big;
 	 * TCP will flow control itself and only use what it needs.
-	 * 
+	 *
 	 * Longer answer: for optimal throughput (assuming TCP is not flow
 	 * controlling itself for other reasons) you want your buffer size to at
 	 * least be
-	 * 
+	 *
 	 * channel bandwidth * channel round-trip-delay.
-	 * 
+	 *
 	 * So on a long slow link, if you can get 100K bps throughput, but your
 	 * delay -s 8 seconds, you want:
-	 * 
+	 *
 	 * 100Kbps * / bits-per-byte * 8 seconds = 100 Kbytes
-	 * 
+	 *
 	 * That way TCP can keep transmitting data for 8 seconds before it would
 	 * have to stop and wait for an ack (to clear space in the buffer for new
 	 * data so it can put new TX data in there and on the line). (The idea is to
@@ -400,10 +400,10 @@ public class Transfer {
 			long currentTime = System.currentTimeMillis();
 			//max speed buffer
 			_int = new ThrottledInputStream(_in,_maxSpeed);
-			
+
 			boolean first = true;
 			long lastCheck = 0;
-			
+
 			try {
 				while (true) {
 					if (_abortReason != null) {
@@ -432,19 +432,22 @@ public class Transfer {
 						_slave.sendResponse(new AsyncResponseTransferStatus(ts));
 						currentTime = System.currentTimeMillis();
 					}
-					
+
 					// Min Speed Check
 					if (_minSpeed > 0) {
 						lastCheck = (lastCheck == 0 ? System.currentTimeMillis() : lastCheck);
 						long delay = System.currentTimeMillis() - lastCheck;
-						if (first ? delay >= 20000 : delay >= 10000) {
+
+						// This is used to check speedkick delays and its running 2 passes of a combined time of both values
+						// TODO delay value should be set in trafficmanager.conf and defined in seconds to then be converted into two passes in ms
+						if (first ? delay >= 5000 : delay >= 5000) {
 							first = false;
 							if (getXferSpeed() < _minSpeed) {
 								throw new TransferSlowException("Transfer was aborted - '" + String.valueOf(getXferSpeed() + "' is < '" + _minSpeed + "'"), getTransferStatus());
 							}
 						}
 					}
-					
+
 					_transfered += count;
 					_out.write(buff, 0, count);
 				}
@@ -463,10 +466,10 @@ public class Transfer {
 											// issueListenToSlave()/issueConnectToSlave()
 		}
 	}
-	
+
 	private boolean checkMasks(String maskString, InetAddress connectedAddress) {
 		HostMask mask = new HostMask(maskString);
-		
+
 		try {
 			return mask.matchesHost(connectedAddress);
 		} catch (MalformedPatternException e) {
