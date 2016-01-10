@@ -195,12 +195,7 @@ public class EncryptedBeanUser extends BeanUser {
 				case 4: pass = Encrypt(password,"SHA-256"); setEncryption(4); break;
 				case 5: pass = Encrypt(password,"SHA-384"); setEncryption(5); break;
 				case 6: pass = Encrypt(password,"SHA-512"); setEncryption(6); break;
-				case 7: logger.debug("Using bcrypt to set new password");
-						String salt = BCrypt.gensalt(_workload);
-						logger.debug("Salt = " + salt);
-						pass = BCrypt.hashpw(password, salt);
-						logger.debug("New encrypted password = " + pass);
-						setEncryption(7); break;
+				case 7: pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload)); setEncryption(7); break;
 				default: pass = password; setEncryption(0); break;
 			}
 

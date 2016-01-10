@@ -7,4 +7,4 @@
 ##						none, clear, empty = No ecrpytion					##
 ##  																		##
 ##############################################################################
-passcrypt=sha-512
+passcrypt=bcrypt
