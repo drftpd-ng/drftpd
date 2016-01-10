@@ -74,7 +74,7 @@ public abstract class ArchiveType {
 
 	// Used For: number of slaves to archive too
 	protected int _numOfSlaves;
-	
+
 	// Uses For: setting priority vs other archives/jobs
 	protected int _priority;
 	
@@ -706,17 +706,14 @@ public abstract class ArchiveType {
 			try {
 				DirectoryHandle toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + fromDir.getName());
 				if (type != null) {
-					toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type + VirtualFileSystem.separator + fromDir.getName());					
+					toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type + VirtualFileSystem.separator + fromDir.getName());
 				}
 
-				
-				if (!toInode.exists()) {
-					fromDir.renameToUnchecked(toInode);
-					_destinationDirectory = toInode;
-					return true;
-				}
-				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because it already exists at destination");
-				
+
+                fromDir.renameToUnchecked(toInode);
+                _destinationDirectory = toInode;
+                return true;
+
 			} catch (FileExistsException e) {
 				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because it already exists at destination"); 
 			} catch (FileNotFoundException e) {
