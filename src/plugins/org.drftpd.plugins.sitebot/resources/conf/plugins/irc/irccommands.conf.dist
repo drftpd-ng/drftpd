@@ -436,10 +436,10 @@ input all
 output source
 }
 
-remergeque {
+remergequeue {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
-method doRemergeque
+method doRemergequeue
 perms =siteop
 help displays remergeque status
 input public

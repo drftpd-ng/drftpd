@@ -565,15 +565,15 @@ public class SlaveManagement extends CommandInterface {
 			}
 			else if (!rslave.isRemerging())
 			{
-				arr.add(rslave.getName() +" remergeque is complete");
+				arr.add(rslave.getName() +" remergequeue is complete");
 			}
 			else if (size > 0)
 			{
-				arr.add(rslave.getName() +" remergeque size is " + size);
+				arr.add(rslave.getName() +" remergequeue size is " + size);
 			}
 			else
 			{
-				arr.add(rslave.getName() +" remergeque size is 0 but remerge is ongoing");
+				arr.add(rslave.getName() +" remergequeue size is 0 but remerge is ongoing");
 			}
 		}
 		arr.add("Total commit:" + CommitManager.getCommitManager().getQueueSize());
