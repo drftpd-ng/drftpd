@@ -28,8 +28,8 @@ delete.collision.files=false
 # Do not touch it if you don't know what you are doing. #
 
 # The name of the UserManager's plugin.
-# Default is: org.drftpd.usermanager.javabeans
-usermanager=org.drftpd.usermanager.javabeans
+# Default is: org.drftpd.usermanager.encryptedjavabeans
+usermanager=org.drftpd.usermanager.encryptedjavabeans
 
 # The name of the CommandManager's plugin.
 # Default is: org.drftpd.commandmanager

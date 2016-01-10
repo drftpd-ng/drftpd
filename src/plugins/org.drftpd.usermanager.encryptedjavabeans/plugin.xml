@@ -14,6 +14,9 @@
 		<library id="org.drftpd.usermanager.encryptedjavabeans" path="classes/" type="code">
 				<export prefix="*" />
 		</library>
+		<library id="jbcrypt" path="../../../lib/jBCrypt-0.4.jar" type="code">
+			<export prefix="*" />
+		</library>
 	</runtime>
 	<extension plugin-id="master" point-id="UserManager" id="EncryptedBeanUserManager">
 		<parameter id="Class" value="org.drftpd.usermanager.encryptedjavabeans.EncryptedBeanUserManager" />
