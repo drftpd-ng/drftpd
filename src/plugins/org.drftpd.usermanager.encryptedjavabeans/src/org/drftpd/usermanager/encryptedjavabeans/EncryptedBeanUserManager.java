@@ -56,6 +56,8 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 			_passcrypt = 5;			
 		} else if (passcrypt.equalsIgnoreCase("sha-512")) {
 			_passcrypt = 6;
+		} else if (passcrypt.equalsIgnoreCase("bcrypt")) {
+			_passcrypt = 7;
 		} else {
 			_passcrypt = 0;
 		}
