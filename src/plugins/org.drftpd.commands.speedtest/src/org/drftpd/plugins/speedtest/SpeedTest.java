@@ -21,10 +21,13 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.speedtest.event.SpeedTestEvent;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.usermanager.NoSuchUserException;
@@ -33,10 +36,12 @@ import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.TreeSet;
 
 /**
  * @author scitz0
@@ -106,5 +111,39 @@ public class SpeedTest implements PostHookInterface {
 				break;
 			}
 		}
+	}
+
+	public CommandResponse doSITE_SPEEDTEST(CommandRequest request) throws ImproperUsageException {
+		if (!request.hasArgument()) {
+			throw new ImproperUsageException();
+		}
+
+		String slaveName = request.getArgument().trim();
+		boolean allSlaves = slaveName.equalsIgnoreCase("*");
+
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+
+		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>();
+		try {
+			if (allSlaves) {
+				slaves.addAll(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
+			} else {
+				slaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
+			}
+		} catch (ObjectNotFoundException e) {
+			response.addComment("Slave not found, check spelling!");
+			return response;
+		}
+
+		for (RemoteSlave slave : slaves) {
+			TreeSet<SpeedTestServer> closestServers = SpeedTestUtils.getClosetsServers(slave);
+			while(!closestServers.isEmpty()) {
+				SpeedTestServer server = closestServers.pollFirst();
+				response.addComment("Server: " + server.getName() + " / " + server.getCountry() + " (" + server.getId() + ")");
+			}
+		}
+
+		return response;
 	}
 }
