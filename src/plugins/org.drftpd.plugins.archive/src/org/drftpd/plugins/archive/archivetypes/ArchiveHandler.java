@@ -64,6 +64,17 @@ public class ArchiveHandler extends Thread {
 		return new ArrayList<Job>(_jobs);
 	}
 
+    public ArrayList getThreadByName(String threadName) {
+        ArrayList<Thread> threadArrayList = new ArrayList<Thread>();
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            if (t.getName().equals(threadName)) {
+                threadArrayList.add(t);
+            }
+        }
+
+        return threadArrayList;
+    }
+
 	/*
 	 * Thread for ArchiveHandler
 	 * This will go through and find the oldest non archived dir, then try and archive it
@@ -72,6 +83,14 @@ public class ArchiveHandler extends Thread {
 	 * This also throws events so they can be caught for sitebot announcing.
 	 */
 	public void run() {
+        // Prevent spawning more than 1 active threads
+        ArrayList<Thread>  threadArrayList = getThreadByName(this.getName());
+        if (threadArrayList.size() > 1)
+        {
+            // A thread is already running lets skip this cycle
+            return;
+        }
+
 		long curtime = System.currentTimeMillis();
 		for (int i=0; i<_archiveType.getRepeat(); i++) {
 			if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
