@@ -276,7 +276,8 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
              */
 
 			//throw new FileExistsException(toInode.getPath() + " already exists");
-		} else if (toInode.exists() && toInode.isDirectory() && getInode().isDirectory()) {
+        } else if (getInode().getPath() != toInode.getPath()
+                && toInode.exists() && toInode.isDirectory() && getInode().isDirectory()) {
 			VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory)getInode();
 			Set<InodeHandle> dirInodes = dir.getInodes();
 			Iterator<InodeHandle> it = dirInodes.iterator();
