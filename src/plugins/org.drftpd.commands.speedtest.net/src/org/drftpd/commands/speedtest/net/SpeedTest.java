@@ -78,7 +78,7 @@ public class SpeedTest extends CommandInterface {
 		}
 		if (args.length == 2 && !allSlaves && args[1].equals("-list")) {
 			listservers = true;
-		} else if (args.length == 2 && !allSlaves) {
+		} else if (args.length == 2 && args[1].matches("\\d+")) {
 			testServerID = Integer.parseInt(args[1]);
 		} else if (args.length != 1) {
 			throw new ImproperUsageException();
