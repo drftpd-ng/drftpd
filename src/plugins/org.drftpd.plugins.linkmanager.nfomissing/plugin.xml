@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
+<plugin id="org.drftpd.plugins.linkmanager.nfomissing" version="3.0.0">
+	<doc>
+		<doc-text> This plugin provides NfoMissing to the Link Manager</doc-text>
+	</doc>
+    <attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.plugins.linkmanager" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+
+	<runtime>
+		<library id="org.drftpd.plugins.linkmanager.types.nfomissing" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension plugin-id="org.drftpd.plugins.linkmanager" point-id="LinkType" id="NFOMissing">
+		<parameter id="ClassName" value="org.drftpd.plugins.linkmanager.types.nfomissing.NFOMissing"/>
+		<parameter id="TypeName" value="NFOMissing"/>
+	</extension>	
+	
+	<extension plugin-id="master" point-id="Plugin" id="NFOMissinganager">
+		<parameter id="Class" value="org.drftpd.plugins.linkmanager.types.nfomissing.NFOMissingManager"/>
+	</extension>
+	
+</plugin>

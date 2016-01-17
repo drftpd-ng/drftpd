@@ -1,0 +1,20 @@
+################################################################################
+#	NFOMISSING:
+#
+#	This will find all directories excluding the REGEX set that do not
+#	have an NFO and place a create a link to said directory in /_NO_NFO_
+#
+#	x.addparentdir is used for only adding a missing link to folders
+#	that have a match here, or a folder with no subfolders.
+#	IE: /section1/sub-section1/rls1 - we don't want a no-nfo for sub-section1
+#
+#	x.type=NFOMISSING
+#	x.dirname=/_NO_NFO_
+#	x.section=*
+#	x.exclude=^/(.*)/(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$
+#	x.sectionexclude=^(?i)(pre|staff|speedtests)$
+#	x.deleteon=*
+#	x.linkname=(no-nfo)-${dirname}
+#	x.addparentdir=^(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$
+#
+################################################################################
