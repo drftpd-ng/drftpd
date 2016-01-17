@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -45,6 +44,7 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.vfs.ObjectNotValidException;
 
 /**
  * @author CyBeR
@@ -245,8 +245,7 @@ public abstract class ArchiveType {
 
 		DirectoryHandle oldestDir = null;
 		long oldestDirCT = 0;
-		for (Iterator<DirectoryHandle> iter = oldDirs.iterator(); iter
-				.hasNext();) {
+		for (Iterator<DirectoryHandle> iter = oldDirs.iterator(); iter.hasNext();) {
 			DirectoryHandle temp = iter.next();
 
 			if (oldestDir == null) {
@@ -704,10 +703,50 @@ public abstract class ArchiveType {
 			}
 
 			try {
-				DirectoryHandle toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + fromDir.getName());
+				DirectoryHandle toInode;
 				if (type != null) {
-					toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type + VirtualFileSystem.separator + fromDir.getName());
-				}
+                    String toDir = null;
+                    if (_archiveDirType.startsWith("rls:")) {
+                        /**
+                         * Here we will fix ${rls} and "icorrect issue"
+                         * toDir may not be same format as first created dir, hence we want to read the
+                         * vfs archive dir instead of relying on content in 'type'
+                         */
+
+                        String[] paths = type.split("/");
+                        String maindir = paths[0];
+                        String season = null;
+                        if (paths.length > 1) {
+                            season = paths[1];
+                        }
+
+                        DirectoryHandle inode = new DirectoryHandle(_archiveToFolder.getPath());
+                        try {
+                            toDir = inode.getDirectoryUnchecked(_archiveToFolder.getPath() + VirtualFileSystem.separator + maindir).getPath();
+
+                            if (season != null) {
+                                toDir = toDir + VirtualFileSystem.separator + season;
+                            }
+
+                        } catch (FileNotFoundException e) {
+                            logger.error("Failed getting DirectoryHandle for somedir ");
+                        } catch (ObjectNotValidException e) {
+                            logger.error("Failed getting DirectoryHandle for somedir");
+                        }
+                    }
+
+                    if (toDir != null)
+                    {
+                        toInode = new DirectoryHandle(toDir + VirtualFileSystem.separator + fromDir.getName());
+                    }
+                    else {
+                        toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type + VirtualFileSystem.separator + fromDir.getName());
+                    }
+                }
+                else
+                {
+                    toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + fromDir.getName());
+                }
 
 
                 fromDir.renameToUnchecked(toInode);
@@ -824,8 +863,12 @@ public abstract class ArchiveType {
 			}
 			return "UNKNOWN";
 		}
-		
-		logger.warn("No valid type found for: " + type);
+
+        if (type != "")
+        {
+            logger.warn("No valid type found for: " + type);
+        }
+
 		return null;
 	}
 
