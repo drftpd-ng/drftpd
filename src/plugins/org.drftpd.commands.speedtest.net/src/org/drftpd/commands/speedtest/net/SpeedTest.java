@@ -18,12 +18,15 @@
 package org.drftpd.commands.speedtest.net;
 
 import org.apache.log4j.Logger;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.sitebot.SiteBot;
@@ -35,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -51,13 +55,39 @@ public class SpeedTest extends CommandInterface {
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 	private HashSet<SpeedTestServer> _servers;
+	private char _unit;
+	private String _unitSuffix;
 	private static final DecimalFormat _numberFormat = new DecimalFormat("#.00");
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
+		// Subscribe to events
+		AnnotationProcessor.process(this);
 		_bundle = cManager.getResourceBundle();
 		_keyPrefix = this.getClass().getName()+".";
 		_servers = SpeedTestUtils.getClosetsServers();
+		readConfig();
+	}
+
+	/**
+	 * Reads 'conf/plugins/speedtest.net.conf'
+	 */
+	private void readConfig() {
+		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("speedtest.net");
+
+		String unit = props.getProperty("distance.unit", "K");
+		_unit = unit.length() == 0 ? 'K' : unit.charAt(0);
+		if (_unit != 'M' && _unit != 'N') {
+			_unit = 'K';
+		}
+		switch (_unit) {
+			case 'K': _unitSuffix = "km";
+				break;
+			case 'M': _unitSuffix = "mi";
+				break;
+			case 'N': _unitSuffix = "nmi";
+				break;
+		}
 	}
 
 	public CommandResponse doSITE_SPEEDTEST(CommandRequest request) throws ImproperUsageException {
@@ -72,9 +102,12 @@ public class SpeedTest extends CommandInterface {
 		boolean allSlaves = slaveName.equals("*");
 		boolean listservers = false;
 
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+
 		if (args[0].equals("-refresh")) {
 			_servers = SpeedTestUtils.getClosetsServers();
-			return new CommandResponse(200, "speedtest.net server list updated!");
+			return new CommandResponse(200, request.getSession().jprintf(
+					_bundle, _keyPrefix+"servers.refresh", env, request.getUser()));
 		}
 		if (args.length == 2 && !allSlaves && args[1].equals("-list")) {
 			listservers = true;
@@ -85,12 +118,12 @@ public class SpeedTest extends CommandInterface {
 		}
 
 		if (_servers == null) {
-			return new CommandResponse(500, "No test servers cashed, check log for warn message!");
+			return new CommandResponse(500, request.getSession().jprintf(
+					_bundle, _keyPrefix+"servers.null", env, request.getUser()));
 		} else if (_servers.isEmpty()) {
-			return new CommandResponse(500, "Could not find any servers, refresh list with -refresh");
+			return new CommandResponse(500, request.getSession().jprintf(
+					_bundle, _keyPrefix+"servers.empty", env, request.getUser()));
 		}
-
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
 		ArrayList<RemoteSlave> rslaves = new ArrayList<RemoteSlave>();
 		try {
@@ -100,7 +133,9 @@ public class SpeedTest extends CommandInterface {
 				rslaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
 			}
 		} catch (ObjectNotFoundException e) {
-			return new CommandResponse(500, slaveName + " not found, check spelling!");
+			env.add("slave.name", slaveName);
+			return new CommandResponse(500, request.getSession().jprintf(
+					_bundle, _keyPrefix+"slavename.error", env, request.getUser()));
 		}
 
 		HashMap<String, SpeedTestServer> usedServers = new HashMap<String, SpeedTestServer>();
@@ -110,16 +145,18 @@ public class SpeedTest extends CommandInterface {
 		List<Future<SpeedTestInfo>> slaveThreadList = new ArrayList<Future<SpeedTestInfo>>();
 
 		for (RemoteSlave rslave : rslaves) {
+			env.add("slave.name", rslave.getName());
 			if (!rslave.isOnline()) {
-				request.getSession().printOutput(500, rslave.getName() + " is offline, unable to run speed test");
+				request.getSession().printOutput(500, request.getSession().jprintf(
+						_bundle, _keyPrefix+"slave.offline", env, request.getUser()));
 				break;
 			}
 			HashMap<String, SpeedTestServer> testServers = new HashMap<String, SpeedTestServer>();
 
 			SlaveLocation slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
 			if (slaveLocation.getLatitude() == 0 || slaveLocation.getLongitude() == 0) {
-				request.getSession().printOutput(500, "Failed getting " + rslave.getName() +
-						" location from freegeoip.net");
+				request.getSession().printOutput(500, request.getSession().jprintf(
+						_bundle, _keyPrefix+"slave.geoip.error", env, request.getUser()));
 			}
 
 			slaveLocations.put(rslave.getName(), slaveLocation);
@@ -135,12 +172,13 @@ public class SpeedTest extends CommandInterface {
 				while(!closestServers.isEmpty() && i < 5) {
 					SpeedTestServer server = closestServers.pollFirst();
 					if (listservers) {
-						String distance = _numberFormat.format(
+						SpeedTestUtils.addServerEnvVariables(server, env);
+						env.add("distance", _numberFormat.format(
 								SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
-										slaveLocation.getLatitude(), slaveLocation.getLongitude(), 'K'));
-						request.getSession().printOutput(rslave.getName() + " :: Server -> " +
-								server.getSponsor() + " (" + server.getCountry() + ") [" +
-								distance + " km] (" + server.getId() + ")");
+										slaveLocation.getLatitude(), slaveLocation.getLongitude(), _unit)));
+						env.add("unit", _unitSuffix);
+						request.getSession().printOutput(200, request.getSession().jprintf(
+								_bundle, _keyPrefix+"slave.server.list", env, request.getUser()));
 					} else {
 						testServers.put(server.getUrl(),server);
 					}
@@ -158,13 +196,17 @@ public class SpeedTest extends CommandInterface {
 				}
 			}
 			if (testServers.isEmpty()) {
-				request.getSession().printOutput(500, "Something went wrong, could not get test server for " + rslave.getName());
+				// Server list not empty but could not find any test server, id must not be valid
+				env.add("server.id", testServerID);
+				request.getSession().printOutput(500, request.getSession().jprintf(
+						_bundle, _keyPrefix+"server.id.error", env, request.getUser()));
 				break;
 			}
 
 			usedServers.putAll(testServers);
 
-			request.getSession().printOutput(200, "Starting test on " + rslave.getName());
+			request.getSession().printOutput(200, request.getSession().jprintf(
+					_bundle, _keyPrefix+"start.test", env, request.getUser()));
 			Callable<SpeedTestInfo> slaveThread = new SpeedTestCallable(rslave, testServers);
 			Future<SpeedTestInfo> future = executor.submit(slaveThread);
 			slaveThreadList.add(future);
@@ -176,14 +218,20 @@ public class SpeedTest extends CommandInterface {
 				SpeedTestInfo result = fut.get();
 				if (result != null && result.getURL() != null) {
 					SpeedTestServer server = usedServers.get(result.getURL());
+					server.setLatency(result.getLatency());
+					SpeedTestUtils.addServerEnvVariables(server, env);
 					SlaveLocation loc = slaveLocations.get(result.getSlaveName());
-					String distance = _numberFormat.format(
+					env.add("slave.name", result.getSlaveName());
+					env.add("slave.lat", loc.getLatitude());
+					env.add("slave.lon", loc.getLongitude());
+					env.add("distance", _numberFormat.format(
 							SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
-									loc.getLatitude(), loc.getLongitude(), 'K'));
-					request.getSession().printOutput(200, result.getSlaveName() + " :: Server -> " + server.getSponsor() + " (" + server.getCountry() + ") [" +
-							distance + " km] (" + server.getId() + ") : " + result.getLatency()+" ms");
-					request.getSession().printOutput(200, result.getSlaveName() + " :: Up -> " + _numberFormat.format(result.getUp()) +
-							" Mbit/s  <>  Down -> " + _numberFormat.format(result.getDown())+ " Mbit/s");
+									loc.getLatitude(), loc.getLongitude(), _unit)));
+					env.add("unit", _unitSuffix);
+					env.add("speed.up", _numberFormat.format(result.getUp()));
+					env.add("speed.down", _numberFormat.format(result.getDown()));
+					request.getSession().printOutput(200, request.getSession().jprintf(
+							_bundle, _keyPrefix+"slave.result", env, request.getUser()));
 				}
 			} catch (InterruptedException e) {
 				request.getSession().printOutput(500,e.getMessage());
@@ -195,5 +243,10 @@ public class SpeedTest extends CommandInterface {
 		executor.shutdown();
 
 		return null;
+	}
+
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		readConfig();
 	}
 }

@@ -20,6 +20,7 @@ package org.drftpd.commands.speedtest.net;
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.util.HttpUtils;
+import org.tanesha.replacer.ReplacerEnvironment;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -180,5 +181,18 @@ public class SpeedTestUtils {
 	}
 	private static double rad2deg(double rad) {
 		return (rad * 180 / Math.PI);
+	}
+
+	public static void addServerEnvVariables(SpeedTestServer server, ReplacerEnvironment env) {
+		env.add("server.url", server.getUrl());
+		env.add("server.name", server.getName());
+		env.add("server.country", server.getCountry());
+		env.add("server.cc", server.getCc());
+		env.add("server.sponsor", server.getSponsor());
+		env.add("server.id", server.getId());
+		env.add("server.host", server.getHost());
+		env.add("server.latency", server.getLatency());
+		env.add("server.latitude", server.getLatitude());
+		env.add("server.longitude", server.getLongitude());
 	}
 }
