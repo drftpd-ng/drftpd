@@ -78,9 +78,7 @@ public class ConnectionManager {
 		getGlobalContext().getSlaveManager().addShutdownHook();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
-
-        getGlobalContext().getSlaveManager().listForSlaves(false);
-	}
+    }
 
 	public static ConnectionManager getConnectionManager() {
 		if (_connectionManager == null) {

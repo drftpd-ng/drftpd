@@ -193,11 +193,12 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		// add shutdown hook last
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
-				logger.info("Running shutdown hook");
+                getGlobalContext().getSlaveManager().listForSlaves(false);
+                logger.info("Running shutdown hook");
 				for (RemoteSlave rslave : _rslaves.values()) {
 					rslave.shutdown();
-				}				
-			}
+				}
+            }
 		});
 	}
 
