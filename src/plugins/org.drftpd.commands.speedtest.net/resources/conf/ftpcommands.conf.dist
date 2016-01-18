@@ -1,0 +1,11 @@
+SITE SPEEDTEST {
+plugin org.drftpd.commands.speedtest.net
+class SpeedTest
+method doSITE_SPEEDTEST
+perms =siteop
+help Run a speedtest on slave against speedtest.net test servers, * for all slaves
+help.specific ${command} [<slavename> [-list] [<test server id>]] [-refresh]
+help.specific -refresh force an update of speedtest.net server list
+help.specific -list option in conjunction with slave name lists closests servers to slave location based on its IP
+help.specific An optional test server id can be specified to force test server
+}
