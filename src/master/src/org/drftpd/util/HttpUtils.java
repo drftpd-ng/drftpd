@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -35,13 +36,18 @@ import java.text.Normalizer;
  * @author scitz0
  */
 public class HttpUtils {
+	public static final String _userAgent = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0";
 
 	public static String retrieveHttpAsString(String url) throws HttpException, IOException {
-		CloseableHttpClient httpclient = HttpClients.createDefault();
 		RequestConfig requestConfig = RequestConfig.custom()
 				.setSocketTimeout(5000)
 				.setConnectTimeout(5000)
 				.setConnectionRequestTimeout(5000)
+				.setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+				.build();
+		CloseableHttpClient httpclient = HttpClients.custom()
+				.setDefaultRequestConfig(requestConfig)
+				.setUserAgent(_userAgent)
 				.build();
 		HttpGet httpGet = new HttpGet(url);
 		httpGet.setConfig(requestConfig);

@@ -17,14 +17,12 @@
  */
 package org.drftpd.commands.imdb;
 
-import java.text.Normalizer;
-
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.drftpd.plugins.sitebot.SiteBot;
 
 import org.apache.log4j.Logger;
 
+import org.drftpd.util.HttpUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
@@ -67,7 +65,7 @@ public class IMDBParser {
 		try {
 			String urlString = _searchUrl + searchString;
 
-			String data = IMDBUtils.retrieveHttpAsString(urlString);
+			String data = HttpUtils.retrieveHttpAsString(urlString);
 
 			if (data.indexOf("<b>No Matches.</b>") > 0) {
 				_foundMovie = false;
@@ -104,7 +102,7 @@ public class IMDBParser {
 		try {
 			String url = _url+"/reference";
 
-			String data = IMDBUtils.retrieveHttpAsString(url);
+			String data = HttpUtils.retrieveHttpAsString(url);
 
 			_title = parseData(data, "<div id=\"tn15title\">", "<span>");
 			_genre = parseData(data, "<h5>Genre:</h5>", "</div>").replaceAll("See more","").trim().replaceAll("\\s+","");
@@ -130,7 +128,7 @@ public class IMDBParser {
 			_limited = "";
 			try {
 				url = _url+"/business";
-				data = IMDBUtils.retrieveHttpAsString(url);
+				data = HttpUtils.retrieveHttpAsString(url);
 				String screens = parseData(data, "<h5>Opening Weekend</h5>", "<br/>");
 				if (!screens.equals("N|A") && screens.contains(" Screens)") && screens.lastIndexOf(") (") >= 0) {
 					int start = screens.lastIndexOf(") (") + 3;
@@ -174,6 +172,7 @@ public class IMDBParser {
 	private String parseData(String data, String startText, String endText) {
 		return parseData(data, startText, endText, false);
 	}
+
 	private String parseData(String data, String startText, String endText, boolean beginning) {
 		int start, end;
 		start = data.indexOf(startText);
@@ -182,28 +181,8 @@ public class IMDBParser {
 				start = start + startText.length();
 			}
 			end = data.indexOf(endText, start);
-			return htmlToString(data.substring(start, end)).trim();
+			return HttpUtils.htmlToString(data.substring(start, end)).trim();
 		}
 		return "N|A";
 	}
-	
-	private String htmlToString(String input) {
-		String str = input.replaceAll("\n","");
-		str = StringEscapeUtils.unescapeHtml4(str);
-		str = Normalizer.normalize(str, Normalizer.Form.NFD);
-		str = str.replaceAll("\\P{InBasic_Latin}", "");
-		while(str.contains("<"))
-		{
-			int startPos = str.indexOf("<");
-			int endPos = str.indexOf(">",startPos);
-			if (endPos>startPos)
-			{
-				String beforeTag = str.substring(0,startPos);
-				String afterTag = str.substring(endPos+1);
-				str = beforeTag + afterTag;
-			}
-		}
-		return str;
-	}
-
 }
