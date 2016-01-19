@@ -1,0 +1,225 @@
+################
+## NukeFilter ##
+################
+
+## Nuke user, FTP account to be used for nuking 
+## directories. This account HAS TO be existant.
+nuke.nuker=drftpd
+
+## Regex pattern to match against the directory name, if
+## pattern matches the directory name, the directory will 
+## be EXCLUDED from ALL NukeFilter checks.
+## Can be more than one regex, seperated by semicolon (;).
+nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sample|subs)$
+
+##############################################################
+## GLOBAL NUKE FILTER SETTINGS
+##
+## This applies to ALL sections, no matter if there's a
+## section specific configuration or not.
+##
+## Enable global NukeFilter?
+## global.enabled=true
+##
+## Set of strings to be filter-nuked, if a directory name 
+## CONTAINS ONLY ONE of these strings (seperated by semi-
+## colon (;)) it is scheduled to be nuked. The specified 
+## strings are processed case-insensitive. You can specify 
+## a nukex for each single string by appending ~<mult> to 
+## it. If no nukex is specified, default nukex (3x) will 
+## be used.
+## global.filter.string=
+##
+## Example: 
+## 		global.filter.string=bannedstr~7;unsexy;pretest~5
+##
+##
+## Set of strings to be enforced, if a directory name is 
+## MISSING ONLY ONE of these strings (seperated by semi-
+## colon (;)) it is scheduled to be nuked. The specified
+## strings are processed case-insensitive. You can specify
+## a nukex for each single string by appending ~<mult> to
+## it. If no nukex is specified, default nukex (3x) will
+## be used.
+## global.enforce.string=
+##
+## Example:
+##		global.enforce.string=coolest~2;even.cooler~5
+##
+##
+## Set of regular expressions to filter matching directory
+## names. If ONLY ONE of the given patterns seperated by
+## semicolon (;) is matching against the directory name, 
+## the directory is scheduled to be nuked. The specified 
+## patterns are case-sensitive by default, you can use the 
+## regex case-insensitive flag (?i) for case-insensitive 
+## matching. You can specify a nukex for each single regex
+## by appending ~<mult> to it. If no nukex is specified,
+## default nukex (3x) will be used.
+## global.filter.regex=
+##
+## NOTE: escaping of \ required, ie. \d -> \\d, \s -> \\s
+##
+## EXAMPLE:
+##		global.filter.regex=^.+REGEX\\d.+$~10;^.+TESTPRE.+$
+##
+##
+## Set of regular expressions to be enforced. If ONLY ONE 
+## of the given expressions DOES NOT MATCH against the 
+## directory name, the directory is going to be nuked. You 
+## can specify more than one regular expression, seperating
+## them by semicolon (;). The specified patterns are case-
+## insensitive by default. You can use the case-insensitive 
+## flag (?i) for case-insensitive matching. You can specify 
+## a nukex for each single regex by appending ~<mult> to it. 
+## If no nukex is given, default nukex (3x) will be used.
+## global.enforce.regex=
+##
+## NOTE: escaping of \ required, ie. \d -> \\d, \s -> \\s
+##
+## EXAMPLE:
+##		global.enforce.regex=^.+[0-9]{4}.+$;^COOL-.+$~15
+## 
+##
+## Set of years and/or year ranges to be filtered. Nuke-
+## Filter will try to extract the LAST charset in format 
+## \d\d\d\d or \d\d\dx from the directory name. If none can
+## be found the filter year check is skipped. If the dir-
+## name contained a year, its examined if either the year
+## is within a given year range (ie. 2001-1998, 1991-1994)
+## or if a given single year matches against it. Years and
+## year ranges are to be seperated by semicolon (;). You
+## can specify a nukex for each year(range) by appending
+## ~<mult> to it.
+## global.filter.year=
+##
+## NOTE: Might schedule false-postivies for nuking in 
+##		 certain cases.
+##
+## EXAMPLE:
+##		global.filter.year=2004-2008;2003-2000~2;1999~10
+##
+## FURTHERMORE:
+##		If the extracted year is in format \d\d\dx, ie. 
+##      199x, NukeFilter will process it like following:
+##      1990 filtered? no -> proceed
+##		1991 filtered? no -> proceed
+##		...
+##		1999 filtered? yes -> nuke
+##
+##		
+## Set of years to be enforced. If the directory name
+## DOES CONTAIN a year, the extracted year needs to match
+## against AT LEAST ONE of the year ranges or years,
+## otherwise the directory is going to be nuked.
+## You can specify different year ranges and/or years
+## seperating them by semicolon (;).
+## global.enforce.year=
+##
+## NOTE: You CAN NOT specify a nukex for each single 
+##		 enforced year. DO NOT append ~<mult>.
+##
+## EXAMPLE:
+##		global.enforce.year=1999-2001;2008;2003-2005
+##
+## Sets the nukex for directories failing the 
+## global.enforced.year check. If no nukex is specified, 
+## nukex will be defaulted to 3x.
+## global.enforce.year.nukex=
+##
+## EXAMPLE:
+##		global.enforce.year.nukex=5
+##
+##
+## Set of groups a directory name MAY NOT END in. You 
+## can specify different groups, seperating them with semi-
+## colon (;). If a directory name ends with ONLY ONE of the 
+## specified groups, the directory is scheduled to be nuked. 
+## Groups are matched case-insensitive. You can specify a 
+## nukex for each single group by appending ~<mult> to it.
+## global.filter.group=
+##
+## EXAMPLE:
+##		global.filter.group=GRP1~5;GROUP_iNT~10;GROUPY
+##
+##
+##
+## Set of groups to be enforced. If the directory name
+## DOES NOT END with AT LEAST ONE of the specified groups,
+## the directory is going to be nuked.
+## You can specify multiple groups, seperating them by semi-
+## colon (;).
+## global.enforce.group=
+##
+## NOTE: You can NOT specify a nukex for each single 
+## 		 enforced group. DO NOT append ~<mult>.
+##
+## EXAMPLE:
+##		global.enforce.group=COOLGRP;COOLGRP_iNT;NICEGRP
+##	
+##
+## Sets the nukex for directories failing the 
+## global.enforced.group check. If no nukex is specified, 
+## nukex will be defaulted to 3x.
+## global.enforce.group.nukex=
+##
+## EXAMPLE:
+##		global.enforce.group.nukex=5
+##
+##
+## Specifies the deadline until the nuke in seconds. If you 
+## do not set this, its default value 120s will be used.
+## This is the time the uploader has to remove the crap he 
+## uploaded before he gets nuked.
+## global.nuke.delay=
+##
+## EXAMPLE:
+##		global.nuke.delay=120
+##
+##
+##
+## Specifies the sections to be exempted from all global 
+## NukeFilter operations. You can specify multiple sections 
+## seperated by semicolon (;). Exempt sections have to be 
+## specified case-sensitive.
+## global.exempt.sections=
+##
+## EXAMPLE:
+##		global.exempt.sections=REQUESTS;ARCHiVE;SPEEDTEST;PRE
+##
+## 
+## Layout for section-specific NukeFilter settings 
+## analogical to the global ones. Make sure you increment 
+## the prepended number for each section. 
+## n.section=SECTiONNAME, section name has to be specified 
+## case-sensitive.
+## 
+##############################################################
+
+global.enabled=true
+global.filter.string=
+global.enforce.string=
+global.filter.regex=
+global.enforce.regex=
+global.filter.year=
+global.enforce.year=
+global.enforce.year.nukex=
+global.filter.group=
+global.enforce.group=
+global.enforce.group.nukex=
+global.nuke.delay=
+global.exempt.sections=
+
+### SECTION SPECIFIC NUKE FILTER SETTINGS
+1.section=
+1.filter.string=
+1.enforce.string=
+1.filter.regex=
+1.enforce.regex=
+1.filter.year=
+1.enforce.year=
+1.enforce.year.nukex=
+1.filter.group=
+1.enforce.group=
+1.enforce.group.nukex=
+1.nuke.delay=

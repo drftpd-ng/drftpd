@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.nukefilter" version="1.3.0">
+    <doc>
+		<doc-text>This plugin matches directory names against different filters right after MKD and nukes the directory if required.</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="master" exported="true" />
+		<import plugin-id="org.drftpd.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
+		<import plugin-id="org.drftpd.commands.nuke" exported="true" />
+        <import plugin-id="org.drftpd.commands.nuke.metadata" exported="true" />
+		<import plugin-id="org.drftpd.commands.approve.metadata" exported="true"/>
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.nukefilter" path="classes/" type="code">
+			<export prefix="*" />
+		</library>	
+	</runtime>
+	
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+	
+	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="NukeFilterPostHook">
+		<parameter id="ParentMethod" value="doMKD" />
+		<parameter id="HookClass" value="org.drftpd.plugins.nukefilter.NukeFilterPostHook" />
+		<parameter id="HookMethod" value="doMKDPostHook" />
+		<parameter id="Priority" value="35" />
+	</extension>
+	
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="NukeFilterAnnouncer">
+		<parameter id="Class" value="org.drftpd.plugins.nukefilter.announce.NukeFilterAnnouncer" />
+	</extension>
+	
+	<extension plugin-id="master" point-id="Plugin" id="NukeFilterManager">
+		<parameter id="Class" value="org.drftpd.plugins.nukefilter.NukeFilterManager"/>
+	</extension>
+</plugin>
