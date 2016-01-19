@@ -83,6 +83,8 @@ remerge.resume.threshold=50
 #           the slave will be remerged
 # disconnect - any files newer than the last time the Slave
 #              disconnected will be remerged (CURRENTLY BROKEN)
+# instant - throws slaves online instant and makes full remerge in background
+#				Disclaimer. It's stable, but under development
 partial.remerge.mode=off
 
 # Sets whether a partially uploaded file is deleted on the

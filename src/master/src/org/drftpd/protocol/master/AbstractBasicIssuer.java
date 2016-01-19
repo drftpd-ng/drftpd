@@ -58,8 +58,8 @@ public abstract class AbstractBasicIssuer extends AbstractIssuer {
 	public abstract String issueSendToSlave(RemoteSlave rslave, String name, char c, long position,
 			String inetAddress, TransferIndex tindex, long minSpeed, long maxSpeed) throws SlaveUnavailableException;
 
-	public abstract String issueRemergeToSlave(RemoteSlave rslave, String path, boolean partialRemerge, 
-			long skipAgeCutoff, long masterTime) throws SlaveUnavailableException;
+	public abstract String issueRemergeToSlave(RemoteSlave rslave, String path, boolean partialRemerge,
+            long skipAgeCutoff, long masterTime, boolean instantOnline) throws SlaveUnavailableException;
 
 	public abstract void issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException;
 

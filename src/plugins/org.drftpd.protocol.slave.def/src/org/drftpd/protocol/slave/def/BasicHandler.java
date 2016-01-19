@@ -231,7 +231,8 @@ public class BasicHandler extends AbstractHandler {
 		try {
 			String[] argsArray = ac.getArgsArray();
 			long skipAgeCutoff = 0L;
-			boolean partialRemerge = Boolean.parseBoolean(argsArray[1]) && !getSlaveObject().ignorePartialRemerge();
+			boolean partialRemerge = Boolean.parseBoolean(argsArray[1]) && !getSlaveObject().ignorePartialRemerge() && !Boolean.parseBoolean(argsArray[4]);
+			boolean instantOnline = Boolean.parseBoolean(argsArray[4]);
 			if (partialRemerge) {
 				skipAgeCutoff = Long.parseLong(argsArray[2]);
 				long masterTime = Long.parseLong(argsArray[3]);
@@ -241,6 +242,9 @@ public class BasicHandler extends AbstractHandler {
 				Date cutoffDate = new Date(skipAgeCutoff);
 				logger.info("Partial remerge enabled, skipping all files last modified before " + cutoffDate.toString());
 				sendResponse(new AsyncResponseSiteBotMessage("Partial remerge enabled, skipping all files last modified before " + cutoffDate.toString()));
+			} else if (instantOnline) {
+				logger.info("Instant online enabled, performing full remerge in background");
+				sendResponse(new AsyncResponseSiteBotMessage("Instant online enabled, performing full remerge in background"));
             } else {
 				logger.info("Partial remerge disabled, performing full remerge");
 				sendResponse(new AsyncResponseSiteBotMessage("Partital remerge disabled, performing full remerge"));
