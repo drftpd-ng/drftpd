@@ -862,7 +862,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					throw new SlaveUnavailableException();
 				}
 
-				if (isOnline() && !isAvailable() && !_initRemergeCompleted) {
+				if (isOnline() && !_initRemergeCompleted) {
 					if (_remergePaused.get()) {
 						// Do we need to resume?
 						if (_remergeQueue.size() <= Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
