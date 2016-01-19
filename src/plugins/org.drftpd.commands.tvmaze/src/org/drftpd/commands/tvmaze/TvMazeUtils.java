@@ -378,4 +378,14 @@ public class TvMazeUtils {
 		}
 	};
 
+	public static boolean containSection (SectionInterface section, ArrayList<SectionInterface> sectionList) {
+		boolean containsSection = false;
+		for (SectionInterface sec : sectionList) {
+			if (section.getName().equals(sec.getName())) {
+				containsSection = true;
+				break;
+			}
+		}
+		return containsSection;
+	}
 }

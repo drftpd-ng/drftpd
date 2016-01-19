@@ -48,7 +48,7 @@ public class IMDBPostHook implements PostHookInterface {
 		DirectoryHandle workingDir = request.getCurrentDirectory();
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(workingDir);
-		if (!IMDBConfig.getInstance().getRaceSections().contains(sec.getName()))
+		if (!IMDBUtils.containSection(sec, IMDBConfig.getInstance().getRaceSections()))
 			return;
 
 		// Spawn an IMDBPrintThread and exit.
