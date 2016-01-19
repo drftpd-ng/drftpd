@@ -451,7 +451,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 							"Already online"));
 					out.flush();
 					socket.close();
-					throw new IOException("Already online");
+					throw new IOException("Already online: " + slavename);
 				}
 			} catch (Exception e) {
 				if (socket != null) {
