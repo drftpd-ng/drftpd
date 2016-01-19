@@ -154,7 +154,7 @@ public class ServerStatus extends CommandInterface {
 			if (arg.equals("vm") || isAll) {
 				RuntimeMXBean rmx = ManagementFactory.getRuntimeMXBean();
 				env.add("vm.name", rmx.getVmName());
-				env.add("vm.version", rmx.getVmVersion());
+				env.add("vm.version", System.getProperty("java.version"));
 				env.add("vm.vendor", rmx.getVmVendor());
 				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.vminfo"));
 			}
