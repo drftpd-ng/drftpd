@@ -100,6 +100,7 @@ public class SpeedTest extends CommandInterface {
 		int testServerID = 0;
 		String slaveName = args[0];
 		boolean allSlaves = slaveName.equals("*");
+		boolean wildcardSlaves = slaveName.endsWith("*") && !allSlaves;
 		boolean listservers = false;
 
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -109,7 +110,7 @@ public class SpeedTest extends CommandInterface {
 			return new CommandResponse(200, request.getSession().jprintf(
 					_bundle, _keyPrefix+"servers.refresh", env, request.getUser()));
 		}
-		if (args.length == 2 && !allSlaves && args[1].equals("-list")) {
+		if (args.length == 2 && !allSlaves && !wildcardSlaves && args[1].equals("-list")) {
 			listservers = true;
 		} else if (args.length == 2 && args[1].matches("\\d+")) {
 			testServerID = Integer.parseInt(args[1]);
@@ -129,6 +130,13 @@ public class SpeedTest extends CommandInterface {
 		try {
 			if (allSlaves) {
 				rslaves.addAll(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
+			} else if (wildcardSlaves) {
+				slaveName = slaveName.substring(0,slaveName.length()-1); // Remove wildcard
+				for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
+					if (slave.getName().startsWith(slaveName)) {
+						rslaves.add(slave);
+					}
+				}
 			} else {
 				rslaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
 			}
@@ -149,7 +157,7 @@ public class SpeedTest extends CommandInterface {
 			if (!rslave.isOnline()) {
 				request.getSession().printOutput(500, request.getSession().jprintf(
 						_bundle, _keyPrefix+"slave.offline", env, request.getUser()));
-				break;
+				continue;
 			}
 			HashMap<String, SpeedTestServer> testServers = new HashMap<String, SpeedTestServer>();
 
@@ -185,7 +193,7 @@ public class SpeedTest extends CommandInterface {
 					i++;
 				}
 				if (listservers) {
-					break;
+					continue;
 				}
 			} else {
 				for (SpeedTestServer server : closestServers) {
@@ -200,7 +208,7 @@ public class SpeedTest extends CommandInterface {
 				env.add("server.id", testServerID);
 				request.getSession().printOutput(500, request.getSession().jprintf(
 						_bundle, _keyPrefix+"server.id.error", env, request.getUser()));
-				break;
+				continue;
 			}
 
 			usedServers.putAll(testServers);

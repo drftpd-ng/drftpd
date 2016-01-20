@@ -117,11 +117,11 @@ public class SpeedTestUtils {
 				}
 			}
 		} catch (UnsupportedEncodingException e) {
-			logger.error("Failed parse of xml string", e);
+			logger.error("UnsupportedEncodingException, run speedtest with -refresh option to redownload server list: " + e.getMessage());
 		} catch (XMLStreamException e) {
-			logger.error("XML prase exception: ", e);
+			logger.error("XMLStreamException, run speedtest with -refresh option to redownload server list: " + e.getMessage());
 		} catch (Exception e) {
-			logger.error("Something went wrong parsing xml string", e);
+			logger.error("Something went wrong parsing speedtest.net server list: " + e.getMessage());
 		}
 
 		return serverList;
@@ -152,11 +152,11 @@ public class SpeedTestUtils {
 				}
 			}
 		} catch (UnsupportedEncodingException e) {
-			logger.error("Failed parse of xml string", e);
+			logger.error("UnsupportedEncodingException, failed parsing slave lat/lon: " + e.getMessage());
 		} catch (XMLStreamException e) {
-			logger.error("XML prase exception: ", e);
+			logger.error("XMLStreamException, failed parsing slave lat/lon: " + e.getMessage());
 		} catch (Exception e) {
-			logger.error("Something went wrong getting slave location", e);
+			logger.error("Something went wrong getting slave location: " + e.getMessage());
 		}
 
 		return slaveLocation;
