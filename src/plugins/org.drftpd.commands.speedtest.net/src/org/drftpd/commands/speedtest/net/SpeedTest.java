@@ -181,9 +181,9 @@ public class SpeedTest extends CommandInterface {
 					SpeedTestServer server = closestServers.pollFirst();
 					if (listservers) {
 						SpeedTestUtils.addServerEnvVariables(server, env);
-						env.add("distance", _numberFormat.format(
-								SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
-										slaveLocation.getLatitude(), slaveLocation.getLongitude(), _unit)));
+						double distance = SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
+								slaveLocation.getLatitude(), slaveLocation.getLongitude(), _unit);
+						env.add("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
 						env.add("unit", _unitSuffix);
 						request.getSession().printOutput(200, request.getSession().jprintf(
 								_bundle, _keyPrefix+"slave.server.list", env, request.getUser()));
@@ -232,9 +232,9 @@ public class SpeedTest extends CommandInterface {
 					env.add("slave.name", result.getSlaveName());
 					env.add("slave.lat", loc.getLatitude());
 					env.add("slave.lon", loc.getLongitude());
-					env.add("distance", _numberFormat.format(
-							SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
-									loc.getLatitude(), loc.getLongitude(), _unit)));
+					double distance = SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
+							loc.getLatitude(), loc.getLongitude(), _unit);
+					env.add("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
 					env.add("unit", _unitSuffix);
 					env.add("speed.up", _numberFormat.format(result.getUp()));
 					env.add("speed.down", _numberFormat.format(result.getDown()));
