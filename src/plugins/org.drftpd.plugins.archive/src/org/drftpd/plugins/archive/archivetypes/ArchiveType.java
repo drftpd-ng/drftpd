@@ -220,14 +220,21 @@ public abstract class ArchiveType {
 					 */
 					logger.debug(getClass().toString() + " - Already archiving something from this path. Skip it.");
 					continue;
-				}				
-				
-				
+				}
+
 				if (_scansubdirs) {
 					for (Iterator<DirectoryHandle> iter2 = lrf.getDirectoriesUnchecked().iterator(); iter2.hasNext();) {
 						DirectoryHandle lrf2 = iter2.next();
-
-						getOldestNonArchivedDir2(oldDirs,lrf2);
+                        if (lrf2.getName().matches("(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)")) // this matches season.\d+ and datum formats number, number-number, number-number-number
+                        {
+                            for (Iterator<DirectoryHandle> iter3 = lrf2.getDirectoriesUnchecked().iterator(); iter3.hasNext();) {
+                                DirectoryHandle lrf3 = iter3.next();
+                                getOldestNonArchivedDir2(oldDirs,lrf3);
+                            }
+                        }
+                        else {
+                            getOldestNonArchivedDir2(oldDirs,lrf2);
+                        }
 					}
 				} else {
 					// we do this check so we can't move a dated dir
