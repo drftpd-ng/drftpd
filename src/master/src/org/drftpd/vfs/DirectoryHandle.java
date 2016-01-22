@@ -648,7 +648,6 @@ public class DirectoryHandle extends InodeHandle implements
 					// this is bad, links don't exist on slaves
 					// name collision
 					if (source.isFile()) {
-						createRemergedFile(source, rslave, true);
 						logger.warn("In remerging " + rslave.getName()
 								+ ", a file on the slave (" + getPath()
 								+ VirtualFileSystem.separator
@@ -694,7 +693,6 @@ public class DirectoryHandle extends InodeHandle implements
 								// the master thought the slave had the file, it's not the same size anymore, remove it
 								destinationFile.removeSlave(rslave);
 							}
-							createRemergedFile(source, rslave, true);
 							logger.warn("In remerging " + rslave.getName()
 									+ ", a file on the slave (" + getPath()
 									+ VirtualFileSystem.separator
