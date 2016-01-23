@@ -39,13 +39,21 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Handler for SpeedTest requests.
@@ -54,14 +62,78 @@ import java.util.List;
 public class SpeedTestHandler extends AbstractHandler {
 	private static final Logger logger = Logger.getLogger(SpeedTestHandler.class);
 
-	private static final int[] _sizes = {350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000};
-
-	private static final String _chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-	private static final String _payload = StringUtils.repeat(_chars, 7000);
+	private int[] _sizes = {350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000};
+	private int _sizeLoop = 4;
+	private int _downTime = 10000;
+	private int _upTime = 5000;
+	private String _payload = "";
+	private int _payloadLoop = 20;
+	private int _upThreads = 3;
+	private int _downThreads = 3;
+	private int _sleep = 100;
 	
 	public SpeedTestHandler(SlaveProtocolCentral central) {
 		super(central);
+		try {
+			readConf();
+		} catch (Exception e) {
+			logger.error("Error loading conf/plugins/speedtest.net.slave.conf :: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Load conf/plugins/speedtest.net.slave.conf
+	 * @throws Exception
+	 */
+	private void readConf() throws Exception {
+		logger.info("Loading speedtest.net slave configuration...");
+		Properties p = new Properties();
+		FileInputStream fis = null;
+		try {
+			fis = new FileInputStream("conf/plugins/speedtest.net.slave.conf");
+			p.load(fis);
+		} finally {
+			if (fis != null) {
+				fis.close();
+			}
+		}
+		if (p.getProperty("sizes") != null) {
+			String[] strArray = p.getProperty("sizes").split(",");
+			_sizes = new int[strArray.length];
+			for(int i = 0; i < strArray.length; i++) {
+				_sizes[i] = Integer.parseInt(strArray[i]);
+			}
+		}
+		if (p.getProperty("size.loop") != null) {
+			_sizeLoop = Integer.parseInt(p.getProperty("size.loop"));
+		}
+		if (p.getProperty("max.down.time") != null) {
+			_downTime = Integer.parseInt(p.getProperty("max.down.time"))*1000;
+		}
+		if (p.getProperty("max.up.time") != null) {
+			_upTime = Integer.parseInt(p.getProperty("max.up.time"))*1000;
+		}
+		String payloadString = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		if (p.getProperty("payload.string") != null) {
+			payloadString = p.getProperty("payload.string");
+		}
+		int payloadRepeat = 7000;
+		if (p.getProperty("payload.repeat") != null) {
+			payloadRepeat = Integer.parseInt(p.getProperty("payload.repeat"));
+		}
+		_payload = StringUtils.repeat(payloadString, payloadRepeat);
+		if (p.getProperty("payload.loop") != null) {
+			_payloadLoop = Integer.parseInt(p.getProperty("payload.loop"));
+		}
+		if (p.getProperty("threads.up") != null) {
+			_upThreads = Integer.parseInt(p.getProperty("threads.up"));
+		}
+		if (p.getProperty("threads.down") != null) {
+			_downThreads = Integer.parseInt(p.getProperty("threads.down"));
+		}
+		if (p.getProperty("sleep") != null) {
+			_sleep = Integer.parseInt(p.getProperty("sleep"));
+		}
 	}
 
 	public AsyncResponse handleSpeedTest(AsyncCommandArgument ac) {
@@ -98,9 +170,6 @@ public class SpeedTestHandler extends AbstractHandler {
 				.setConnectTimeout(5000)
 				.setConnectionRequestTimeout(5000)
 				.build();
-		CloseableHttpResponse response = null;
-
-		CloseableHttpClient httpClient = HttpClients.createDefault();
 
 		HttpPost httpPost = new HttpPost(url);
 		httpPost.setHeader("content-type", "application/x-www-form-urlencoded");
@@ -110,9 +179,18 @@ public class SpeedTestHandler extends AbstractHandler {
 
 		StopWatch watch = new StopWatch();
 
+		SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_upThreads];
+		for (int i = 0; i < _upThreads; i++) {
+			speedTestCallables[i] = new SpeedTestCallable();
+		}
+
+		ExecutorService executor = Executors.newFixedThreadPool(_upThreads);
+		List<Future<Long>> threadList;
+		Set<Callable<Long>> callables = new HashSet<Callable<Long>>();
+
 		int i = 2;
-		while (true) { // ul speed for payload generated for each multiplier in _multipliers
-			if (totalTime > 5000) { break; } // 5s is enough time spent on measurement
+		while (true) {
+			if (totalTime > _upTime) { break; }
 
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 			nameValuePairs.add(new BasicNameValuePair("content1",payload));
@@ -120,46 +198,38 @@ public class SpeedTestHandler extends AbstractHandler {
 				httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 			} catch (UnsupportedEncodingException e) {
 				logger.error("Unsupported encoding of payload for speedtest upload: " + e.getMessage());
+				close(executor, callables);
 				return 0;
 			}
 
-			for (int j = 0; j < 20; j++) {
-				watch.reset();
+			callables.clear();
+			for (int k = 0; k < _upThreads; k++) {
+				speedTestCallables[k].setHttpPost(httpPost);
+				callables.add(speedTestCallables[k]);
+			}
+
+			for (int j = 0; j < _payloadLoop; j++) {
 				try {
+					watch.reset();
+					Thread.sleep(_sleep);
 					watch.start();
-					response = httpClient.execute(httpPost);
+					threadList = executor.invokeAll(callables);
+					for(Future<Long> fut : threadList){
+						Long bytes = fut.get();
+						totalBytes += bytes;
+					}
 					watch.stop();
-					final int statusCode = response.getStatusLine().getStatusCode();
-					if (statusCode != HttpStatus.SC_OK) {
-						logger.error("Error " + statusCode + " for URL " + url);
-						return 0;
-					}
-
-					HttpEntity entity = response.getEntity();
-					String result = EntityUtils.toString(entity);
-					EntityUtils.consume(entity);
-					if (!result.startsWith("size=")) {
-						logger.error("Wrong return result from upload messurement from test server, " + url +
-								"\nReceived: " + result);
-						return 0;
-					}
-					totalBytes += Long.parseLong(result.replaceAll("\\D", ""));
-				} catch (Exception e) {
-					logger.error("Error for URL " + url, e);
+					totalTime += watch.getTime();
+				} catch (InterruptedException e) {
+					logger.error(e.getMessage());
+					close(executor, callables);
 					return 0;
-				} finally {
-
-					try {
-						if (response != null) {
-							response.close();
-						}
-					} catch (IOException e) {
-						// Must already be closed, ignore.
-					}
+				} catch (ExecutionException e) {
+					logger.error(e.getMessage());
+					close(executor, callables);
+					return 0;
 				}
-				long time = watch.getTime();
-				totalTime += time;
-				if (totalTime > 5000) { break; } // 5s is enough time spent on measurement
+				if (totalTime > _upTime) { break; }
 			}
 
 			if (payload.length() < 5000000) { // Increase payload size if not too big
@@ -167,16 +237,22 @@ public class SpeedTestHandler extends AbstractHandler {
 				i++;
 			}
 		}
-		try {
-			httpClient.close();
-		} catch (IOException e) {
-			// Must already be closed, ignore.
-		}
+
 		if (totalBytes == 0L || totalTime == 0L) {
+			close(executor, callables);
 			return 0;
 		}
 
+		close(executor, callables);
+
 		return (float)(((totalBytes*8)/totalTime)*1000)/1000000;
+	}
+
+	private void close(ExecutorService executor, Set<Callable<Long>> callables) {
+		for (Callable<Long> callable : callables) {
+			((SpeedTestCallable)callable).close();
+		}
+		executor.shutdown();
 	}
 
 	private float getDownloadSpeed(String url) {
@@ -188,74 +264,72 @@ public class SpeedTestHandler extends AbstractHandler {
 				.setConnectTimeout(5000)
 				.setConnectionRequestTimeout(5000)
 				.build();
-		CloseableHttpResponse response = null;
-
-		CloseableHttpClient httpClient = HttpClients.createDefault();
 
 		HttpGet httpGet = new HttpGet();
 		httpGet.setConfig(requestConfig);
+
+		SpeedTestCallable[] speedTestCallables = new SpeedTestCallable[_downThreads];
+		for (int i = 0; i < _downThreads; i++) {
+			speedTestCallables[i] = new SpeedTestCallable();
+		}
+
+		ExecutorService executor = Executors.newFixedThreadPool(_downThreads);
+		List<Future<Long>> threadList;
+		Set<Callable<Long>> callables = new HashSet<Callable<Long>>();
 
 		url = url.replace("upload.php","random");
 
 		StopWatch watch = new StopWatch();
 
 		for (int size : _sizes) { // Measure dl speed for each size in _sizes
-			if (totalTime > 10000) { break; } // 10s is enough time spent on measurement
+			if (totalTime > _downTime) { break; }
+
 			String tmpURL = url + size+"x"+size+".jpg";
 			try {
 				httpGet.setURI(new URI(tmpURL));
 			} catch (URISyntaxException e) {
 				logger.error("URI syntax error for " + tmpURL + " :: " + e.getMessage());
+				close(executor, callables);
 				return 0;
 			}
-			for (int j = 0; j < 4; j++) {
-				// Measure each size four times
-				long bytes = 0;
-				watch.reset();
+
+			callables.clear();
+			for (int k = 0; k < _downThreads; k++) {
+				speedTestCallables[k].setHttpGet(httpGet);
+				callables.add(speedTestCallables[k]);
+			}
+
+			for (int j = 0; j < _sizeLoop; j++) {
 				try {
-					response = httpClient.execute(httpGet);
-					final int statusCode = response.getStatusLine().getStatusCode();
-					if (statusCode != HttpStatus.SC_OK) {
-						logger.error("Error " + statusCode + " for URL " + tmpURL);
-						return 0;
-					}
-					HttpEntity entity = response.getEntity();
-					InputStream instream = entity.getContent();
-					int bufferSize = 10240;
-					byte[] buffer = new byte[bufferSize];
-					int len;
+					watch.reset();
+					Thread.sleep(_sleep);
 					watch.start();
-					while ((len = instream.read(buffer)) != -1) {
-						bytes = bytes + len;
+					threadList = executor.invokeAll(callables);
+					for(Future<Long> fut : threadList){
+						Long bytes = fut.get();
+						totalBytes += bytes;
 					}
 					watch.stop();
-					EntityUtils.consume(entity);
-				} catch (Exception e) {
-					logger.error("Error for URL " + tmpURL, e);
+					totalTime += watch.getTime();
+				} catch (InterruptedException e) {
+					logger.error(e.getMessage());
+					close(executor, callables);
 					return 0;
-				} finally {
-					try {
-						if (response != null) {
-							response.close();
-						}
-					} catch (IOException e) {
-						// Must already be closed, ignore.
-					}
+				} catch (ExecutionException e) {
+					logger.error(e.getMessage());
+					close(executor, callables);
+					return 0;
 				}
-				long time = watch.getTime();
-				totalTime += time;
-				totalBytes += bytes;
-				if (totalTime > 10000) { break; } // 10s is enough time spent on measurement
+				if (totalTime > _downTime) { break; }
 			}
 		}
-		try {
-			httpClient.close();
-		} catch (IOException e) {
-			// Must already be closed, ignore.
-		}
+
 		if (totalBytes == 0L || totalTime == 0L) {
+			close(executor, callables);
 			return 0;
 		}
+
+		close(executor, callables);
 
 		return (float)(((totalBytes*8)/totalTime)*1000)/1000000;
 	}
