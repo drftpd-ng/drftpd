@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<!-- $Id$ -->
-<plugin id="common" version="3.0.0">
+<plugin id="common" version="3.2.0">
 	<doc>
 		<doc-text>(Required) - These are the common resources between the master and slave.</doc-text>
 	</doc>	
@@ -91,7 +90,7 @@
 		<library id="jpf-boot" path="../../lib/jpf-boot-1.5.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.0.0.jar" type="code">
+		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.2.0.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="commons-lang" path="../../lib/commons-lang3-3.4.jar" type="code">

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.sitebot.announce.zipscript.flac" version="3.0.0">
+<plugin id="org.drftpd.plugins.sitebot.announce.zipscript.flac" version="3.2.0">
 	<doc>
 		<doc-text>(Sitebot) - This plugin provides Zipscript(.flac/voribs metadata) announcements for Sitebot</doc-text>
 	</doc>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: build.xml 2484 2011-07-09 10:25:43Z scitz0 $ -->
 <project name="org.drftpd.commands.find.tvmaze"
          default="build">
 	<property name="plugin.family" value="plugins/master" />

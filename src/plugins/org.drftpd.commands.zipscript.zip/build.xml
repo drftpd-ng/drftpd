@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id$ -->
 <project name="org.drftpd.commands.zipscript.zip"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
