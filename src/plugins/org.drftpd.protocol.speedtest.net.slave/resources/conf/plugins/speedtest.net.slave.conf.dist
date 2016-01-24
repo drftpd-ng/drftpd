@@ -14,7 +14,7 @@ payload.string=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
 payload.repeat=7000
 payload.loop=20
 # Total time to spend measuring upload speed (s).
-max.up.time=5
+max.up.time=8
 
 ## Download settings ##
 threads.down=3
@@ -22,4 +22,4 @@ threads.down=3
 sizes=350,500,750,1000,1500,2000,2500,3000,3500,4000
 size.loop=4
 # Total time to spend measuring download speed (s).
-max.down.time=5
+max.down.time=8

@@ -165,6 +165,8 @@ public class SpeedTestHandler extends AbstractHandler {
 		long totalTime = 0L;
 		long totalBytes = 0L;
 
+		long startTime = System.currentTimeMillis();
+
 		RequestConfig requestConfig = RequestConfig.custom()
 				.setSocketTimeout(60000)
 				.setConnectTimeout(5000)
@@ -192,7 +194,7 @@ public class SpeedTestHandler extends AbstractHandler {
 
 		int i = 2;
 		while (true) {
-			if (totalTime > _upTime) { break; }
+			if ((System.currentTimeMillis()-startTime) > _upTime) { break; }
 
 			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 			nameValuePairs.add(new BasicNameValuePair("content1",payload));
@@ -236,7 +238,7 @@ public class SpeedTestHandler extends AbstractHandler {
 						return 0;
 					}
 				}
-				if (totalTime > _upTime) { break; }
+				if ((System.currentTimeMillis()-startTime) > _upTime) { break; }
 			}
 
 			if (!limitReached) { // Increase payload size if not too big
@@ -266,6 +268,8 @@ public class SpeedTestHandler extends AbstractHandler {
 		long totalTime = 0L;
 		long totalBytes = 0L;
 
+		long startTime = System.currentTimeMillis();
+
 		RequestConfig requestConfig = RequestConfig.custom()
 				.setSocketTimeout(60000)
 				.setConnectTimeout(5000)
@@ -289,7 +293,7 @@ public class SpeedTestHandler extends AbstractHandler {
 		StopWatch watch = new StopWatch();
 
 		for (int size : _sizes) { // Measure dl speed for each size in _sizes
-			if (totalTime > _downTime) { break; }
+			if ((System.currentTimeMillis()-startTime) > _downTime) { break; }
 
 			String tmpURL = url + size+"x"+size+".jpg";
 			try {
@@ -327,7 +331,7 @@ public class SpeedTestHandler extends AbstractHandler {
 					close(executor, callables);
 					return 0;
 				}
-				if (totalTime > _downTime) { break; }
+				if ((System.currentTimeMillis()-startTime) > _downTime) { break; }
 			}
 		}
 
