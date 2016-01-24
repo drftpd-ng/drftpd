@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author scitz0
@@ -90,7 +91,7 @@ public class SpeedTestCallable implements Callable<Long> {
 				EntityUtils.consume(entity);
 			}
 		} catch (Exception e) {
-			throw e;
+			throw new ExecutionException(e);
 		} finally {
 			try {
 				if (response != null) {

@@ -188,6 +188,8 @@ public class SpeedTestHandler extends AbstractHandler {
 		List<Future<Long>> threadList;
 		Set<Callable<Long>> callables = new HashSet<Callable<Long>>();
 
+		boolean limitReached = false;
+
 		int i = 2;
 		while (true) {
 			if (totalTime > _upTime) { break; }
@@ -225,14 +227,19 @@ public class SpeedTestHandler extends AbstractHandler {
 					close(executor, callables);
 					return 0;
 				} catch (ExecutionException e) {
-					logger.error(e.getMessage());
-					close(executor, callables);
-					return 0;
+					if (e.getMessage().contains("Error code 413")) {
+						limitReached = true;
+						payload = StringUtils.repeat(_payload, i-2);
+					} else {
+						logger.error(e.getMessage());
+						close(executor, callables);
+						return 0;
+					}
 				}
 				if (totalTime > _upTime) { break; }
 			}
 
-			if (payload.length() < 5000000) { // Increase payload size if not too big
+			if (!limitReached) { // Increase payload size if not too big
 				payload = StringUtils.repeat(_payload, i);
 				i++;
 			}
@@ -277,7 +284,7 @@ public class SpeedTestHandler extends AbstractHandler {
 		List<Future<Long>> threadList;
 		Set<Callable<Long>> callables = new HashSet<Callable<Long>>();
 
-		url = url.replace("upload.php","random");
+		url = url.substring(0,url.lastIndexOf('/')+1) + "random";
 
 		StopWatch watch = new StopWatch();
 
@@ -339,7 +346,7 @@ public class SpeedTestHandler extends AbstractHandler {
 		// Measure latency for each test server
 		int lowestLatency = Integer.MAX_VALUE;
 		for (String testURL : urls) {
-			String latencyURL = testURL.replace("upload.php","latency.txt").trim();
+			String latencyURL = testURL.substring(0,testURL.lastIndexOf('/')+1) + "latency.txt";
 			int latency = messureLatency(latencyURL);
 			if (latency < lowestLatency) {
 				lowestLatency = latency;
