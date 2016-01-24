@@ -90,7 +90,7 @@ build.bat
 Details to come...!!!
 
 ## Plugins
-Plugins and code modifications of DrFTPD versions prior 3.0.0 will not work. You need to use plugins designed for version 3.0.0.
+Plugins and code modifications of DrFTPD versions prior 3.0.0 will not work. You need to use plugins designed for version 3.0.0 and above.
 
 Unofficial plugins can be found here http://drftpd.org/forums/viewforum.php?f=26
 

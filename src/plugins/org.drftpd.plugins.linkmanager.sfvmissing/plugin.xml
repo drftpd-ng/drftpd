@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<!-- $Id: plugin.xml 2026 2010-02-14 15:33:15Z CyBeR $ -->
-<plugin id="org.drftpd.plugins.linkmanager.sfvmissing" version="3.0.0">
+<plugin id="org.drftpd.plugins.linkmanager.sfvmissing" version="3.2.0">
 	<doc>
 		<doc-text> This plugin provides SFVMissing to the Link Manager</doc-text>
 	</doc>

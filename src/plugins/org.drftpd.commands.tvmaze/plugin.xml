@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.tvmaze" version="3.1.0">
+<plugin id="org.drftpd.commands.tvmaze" version="3.2.0">
     <doc>
 		<doc-text>This plugin provides IRC/FTP commands for listing information from tvmaze.com about tv shows.
 IRC announce on MKD/PRE event and tvmaze info dir in release dir is also available.</doc-text>

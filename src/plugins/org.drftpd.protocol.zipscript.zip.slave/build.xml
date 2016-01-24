@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id$ -->
 <project name="org.drftpd.protocol.zipscript.zip.slave"
          default="build">
 	<property name="plugin.family" value="plugins/slave" />
