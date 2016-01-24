@@ -37,20 +37,34 @@ public class PlainSection implements ConfigurableSectionInterface {
 	private static Logger logger = Logger.getLogger(PlainSection.class);
 
 	private String _name;
+	private String _color;
 	
 	protected DirectoryHandle _basePath;
 	
 	public PlainSection(int i, Properties p) {
-		this(PropertyHelper.getProperty(p, i + ".name"), new DirectoryHandle(PropertyHelper.getProperty(p, i+ ".path")));
+		this(PropertyHelper.getProperty(p, i + ".name"), PropertyHelper.getProperty(p, i + ".color", "15"),
+				new DirectoryHandle(PropertyHelper.getProperty(p, i+ ".path")));
 	}
 	
 	public PlainSection(String name, DirectoryHandle dir) {
 		_name = name;
+		_color = "15";
 		_basePath = dir;
 	}
+
+	public PlainSection(String name, String color, DirectoryHandle dir) {
+		_name = name;
+		_color = color;
+		_basePath = dir;
+	}
+
 	
 	public String getName() {
 		return _name;
+	}
+
+	public String getColor() {
+		return _color;
 	}
 
 	public DirectoryHandle getBaseDirectory() {

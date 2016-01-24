@@ -42,7 +42,11 @@ import org.drftpd.usermanager.User;
 public class DirectoryHandle extends InodeHandle implements
 		DirectoryHandleInterface {
 
-	public DirectoryHandle(String path) {
+    public boolean collisionhandle() {
+        return GlobalContext.getConfig().getMainProperties().getProperty("delete.collision.files", "true").equals("true");
+    }
+
+    public DirectoryHandle(String path) {
 		super(path);
 	}
 	
@@ -369,9 +373,9 @@ public class DirectoryHandle extends InodeHandle implements
 		checkHiddenPath(inode, user);
 		
 		return inode;
-	}
-	
-	public InodeHandle getInodeHandleUnchecked(String name) throws FileNotFoundException {		
+    }
+
+    public InodeHandle getInodeHandleUnchecked(String name) throws FileNotFoundException {
 		VirtualFileSystemInode inode = getInode().getInodeByName(name);
 		if (inode.isDirectory()) {
 			return new DirectoryHandle(inode.getPath());
@@ -405,7 +409,7 @@ public class DirectoryHandle extends InodeHandle implements
 			// strip off the ../
 			return getParent().getDirectoryUnchecked(name.substring(3));
 		} else if (name.equals(".")) {
-			return this;
+            return this;
 		} else if (name.startsWith("./")) {
 			return getDirectoryUnchecked(name.substring(2));
 		}
@@ -428,7 +432,7 @@ public class DirectoryHandle extends InodeHandle implements
 		return file;
 	}
 
-	public FileHandle getFileUnchecked(String name) throws FileNotFoundException,
+    public FileHandle getFileUnchecked(String name) throws FileNotFoundException,
 			ObjectNotValidException {
 		InodeHandle handle = getInodeHandleUnchecked(name);
 		if (handle.isFile()) {
@@ -438,7 +442,7 @@ public class DirectoryHandle extends InodeHandle implements
 			return link.getTargetFileUnchecked();
 		}
 		throw new ObjectNotValidException(name + " is not a file");
-	}
+    }
 	
 	public LinkHandle getLink(String name, User user) throws FileNotFoundException,
 			ObjectNotValidException {
@@ -449,7 +453,7 @@ public class DirectoryHandle extends InodeHandle implements
 		return link;
 	}
 
-	public LinkHandle getLinkUnchecked(String name) throws FileNotFoundException,
+    public LinkHandle getLinkUnchecked(String name) throws FileNotFoundException,
 			ObjectNotValidException {
 		InodeHandle handle = getInodeHandleUnchecked(name);
 		if (handle.isLink()) {
@@ -471,6 +475,10 @@ public class DirectoryHandle extends InodeHandle implements
 		// TODO Implement a Checksum queue on remerge
 		newFile.setCheckSum(0);
 	}
+
+    public void collisionHandler(LightRemoteInode lrf, RemoteSlave rslave) {
+        rslave.simpleDelete(getPath() + lrf.getPath());
+    }
 
 	public void remerge(List<LightRemoteInode> files, RemoteSlave rslave, long lastModified)
 			throws IOException {
@@ -551,14 +559,22 @@ public class DirectoryHandle extends InodeHandle implements
 							createRemergedFile(source, rslave, false);
 						} catch (FileExistsException e) {
 							// File created by another slaves thread since this thread
-							// listed the directory, just need to add this slave to the
+                            // listed the directory, just need to add this slave to the
 							// list for the file
 							try {
 								getFileUnchecked(source.getName()).addSlave(rslave);
 							} catch (ObjectNotValidException e1) {
 								// File has collided with a dir/link in VFS, create this
 								// as a collision
-								createRemergedFile(source, rslave, true);
+								if (collisionhandle()) {
+									collisionHandler(source, rslave);
+								} else {
+                                    try {
+                                        createRemergedFile(source, rslave, true);
+                                    } catch (FileExistsException e2) {
+                                    }
+                                    continue;
+                                }
 							}
 						}
 					} else {
@@ -592,15 +608,19 @@ public class DirectoryHandle extends InodeHandle implements
 						createRemergedFile(source, rslave, false);
 					} catch (FileExistsException e) {
 						// File created by another slaves thread since this thread
-						// listed the directory, just need to add this slave to the
+                        // listed the directory, just need to add this slave to the
 						// list for the file
 						try {
 							getFileUnchecked(source.getName()).addSlave(rslave);
 						} catch (ObjectNotValidException e1) {
-							// File has collided with a dir/link in VFS, create this
-							// as a collision
-							createRemergedFile(source, rslave, true);
-						}
+                            // File has collided with a dir/link in VFS, create this
+                            // as a collision
+                            if (collisionhandle()) {
+                                collisionHandler(source, rslave);
+                            } else {
+                                createRemergedFile(source, rslave, true);
+                            }
+                        }
 					}
 				} else {
 					throw new IOException(
@@ -628,14 +648,20 @@ public class DirectoryHandle extends InodeHandle implements
 					// this is bad, links don't exist on slaves
 					// name collision
 					if (source.isFile()) {
-						createRemergedFile(source, rslave, true);
 						logger.warn("In remerging " + rslave.getName()
 								+ ", a file on the slave (" + getPath()
 								+ VirtualFileSystem.separator
 								+ source.getName()
 								+ ") collided with a link on the master");
-						// set crc now?
+                        // set crc now?
+						if (collisionhandle()) {
+							collisionHandler(source, rslave);
+						} else {
+							createRemergedFile(source, rslave, true);
+						}
 					} else { // source.isDirectory()
+						// Nothing to worry about
+						// Just log it for your info and move on
 						logger.warn("In remerging " + rslave.getName()
 								+ ", a directory on the slave (" + getPath()
 								+ VirtualFileSystem.separator
@@ -660,19 +686,23 @@ public class DirectoryHandle extends InodeHandle implements
 						// handle collision
 						Set<RemoteSlave> rslaves = destinationFile.getSlaves();
 						if (rslaves.contains(rslave) && rslaves.size() == 1) {
-							// size of the file has changed, but since this is the only slave with the file, just change the size
+                            // size of the file has changed, but since this is the only slave with the file, just change the size
 							destinationFile.setSize(source.length());
 						} else {
 							if (rslaves.contains(rslave)) {
 								// the master thought the slave had the file, it's not the same size anymore, remove it
 								destinationFile.removeSlave(rslave);
 							}
-							createRemergedFile(source, rslave, true);
 							logger.warn("In remerging " + rslave.getName()
 									+ ", a file on the slave (" + getPath()
 									+ VirtualFileSystem.separator
 									+ source.getName()
 									+ ") collided with a file on the master");
+							if (collisionhandle()) {
+                                collisionHandler(source, rslave);
+                            } else {
+                                createRemergedFile(source, rslave, true);
+                            }
 						}
 					} else {
 						destinationFile.addSlave(rslave);
@@ -693,8 +723,12 @@ public class DirectoryHandle extends InodeHandle implements
 					} else {
 						// source.isFile() && destination.isDirectory()
 						// handle collision
-						createRemergedFile(source, rslave, true);
-						// set crc now?
+						if (collisionhandle()) {
+							collisionHandler(source, rslave);
+						} else {
+							createRemergedFile(source, rslave, true);
+						}
+                        // set crc now?
 					}
 				}
 				// advance both runners, they were equal

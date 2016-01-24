@@ -114,6 +114,8 @@ public class Slave {
 
 	private boolean _ignorePartialRemerge;
 
+	private boolean _threadedRemerge;
+
 	private boolean _concurrentRootIteration;
 	
 	private String _bindIP = null;
@@ -246,6 +248,7 @@ public class Slave {
 		}
 
 		_ignorePartialRemerge = p.getProperty("ignore.partialremerge", "false").equalsIgnoreCase("true");
+		_threadedRemerge = p.getProperty("threadedremerge", "false").equalsIgnoreCase("true");
 	}
 	
 	private void loadDiskSelection(Properties cfg) {
@@ -254,9 +257,7 @@ public class Slave {
 			_diskSelection = CommonPluginUtils.getSinglePluginObject(this, "slave", "DiskSelection", "Class", desiredDs,
 					new Class[] { Slave.class }, new Object[] { this });
 		} catch (Exception e) {
-			throw new RuntimeException(
-					"Cannot create instance of diskselection, check 'diskselection' in the configuration file",
-					e);
+			throw new RuntimeException("Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
 		}
 	}
 
@@ -419,19 +420,18 @@ public class Slave {
 
 			if (file.isDirectory()) {
 				if (!file.deleteRecursive()) {
-					throw new PermissionDeniedException("delete failed on "
-							+ path);
+					throw new PermissionDeniedException("delete failed on " + path);
 				}
 				logger.info("DELETEDIR: " + path);
 			} else if (file.isFile()) {
 				File dir = new PhysicalFile(file.getParentFile());
 				logger.info("DELETE: " + path);
+                logger.info("rmfile: " +file.getPath());
 				file.delete();
 
 				String [] dirList = dir.list();
 
-				while ((dirList != null) &&
-				       (dirList.length == 0)) {
+				while ((dirList != null) && (dirList.length == 0)) {
 					if (dir.getPath().length() <= root.getPath().length()) {
 						break;
 					}
@@ -439,7 +439,7 @@ public class Slave {
 					java.io.File tmpFile = dir.getParentFile();
 
 					dir.delete();
-					logger.info("rmdir: " + dir.getPath());
+					logger.info("Dir empty, rmdir: " + dir.getPath());
 
 					if (tmpFile == null) {
 						break;
@@ -497,18 +497,14 @@ public class Slave {
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e);
 			} catch (EOFException e) {
-				logger
-						.debug("Lost connection to the master, may have been kicked offline");
+				logger.debug("Lost connection to the master, may have been kicked offline");
 				return;
 			} catch (SocketTimeoutException e) {
 				// if no communication for slave.timeout (_timeout) time, than
 				// connection to the master is dead or there is a configuration
 				// error
 				if (_timeout < (System.currentTimeMillis() - lastCommandReceived)) {
-					logger
-							.error("Slave is going offline as it hasn't received any communication from the master in "
-									+ (System.currentTimeMillis() - lastCommandReceived)
-									+ " milliseconds");
+					logger.error("Slave is going offline as it hasn't received any communication from the master in " + (System.currentTimeMillis() - lastCommandReceived) + " milliseconds");
 					throw new RuntimeException(e);
 				}
 				continue;
@@ -582,13 +578,11 @@ public class Slave {
 			// !win32 && equalsignore == true on win32
 			if (tofile.exists()
 					&& !(isWin32 && fromfile.getName().equalsIgnoreCase(toName))) {
-				throw new FileExistsException("cannot rename from " + fromfile
-						+ " to " + tofile + ", destination exists");
+				throw new FileExistsException("cannot rename from " + fromfile + " to " + tofile + ", destination exists");
 			}
 
 			if (!fromfile.renameTo(tofile)) {
-				throw new PermissionDeniedException("renameTo(" + fromfile
-						+ ", " + tofile + ") failed");
+				throw new PermissionDeniedException("renameTo(" + fromfile + ", " + tofile + ") failed");
 			}
 		}
 	}
@@ -677,6 +671,10 @@ public class Slave {
 
 	public boolean ignorePartialRemerge() {
 		return _ignorePartialRemerge;
+	}
+
+	public boolean threadedRemerge() {
+		return _threadedRemerge;
 	}
 
 	public boolean concurrentRootIteration() {

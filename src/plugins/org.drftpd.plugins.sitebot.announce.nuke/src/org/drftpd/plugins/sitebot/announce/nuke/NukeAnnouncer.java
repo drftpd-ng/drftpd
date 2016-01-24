@@ -80,9 +80,10 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 		DirectoryHandle nukeDir = new DirectoryHandle(event.getPath());
 		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
 		env.add("section", section);
+		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getColor());
 		env.add("dir", nukeDir.getName());
 		env.add("path", event.getPath());
-		env.add("relpath", event.getPath().replaceAll("/"+section+"/",""));
+		env.add("relpath", event.getPath().replaceAll("/.*?"+section+"/",""));
 		env.add("user", event.getUser().getName());
 		env.add("multiplier", ""+event.getMultiplier());
 		env.add("nukedamount", Bytes.formatBytes(event.getNukedAmount()));

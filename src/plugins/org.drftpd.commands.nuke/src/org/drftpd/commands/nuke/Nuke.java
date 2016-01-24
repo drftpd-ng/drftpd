@@ -209,7 +209,7 @@ public class Nuke extends CommandInterface {
 		env.add("section", section);
 		env.add("dir", nukeDirName);
 		env.add("path", nukeDirPath);
-		env.add("relpath", nukeDirPath.replaceAll("/"+section+"/",""));
+		env.add("relpath", nukeDirPath.replaceAll("/.*?"+section+"/",""));
 		env.add("multiplier", multiplier);
 		env.add("nukedamount", Bytes.formatBytes(nd.getAmount()));
 		env.add("reason", reason);

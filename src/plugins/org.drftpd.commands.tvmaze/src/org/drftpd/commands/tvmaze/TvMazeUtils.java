@@ -23,14 +23,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpException;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.tvmaze.event.TvMazeEvent;
@@ -43,6 +35,7 @@ import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.HttpUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
@@ -178,7 +171,7 @@ public class TvMazeUtils {
 			JsonObject countryJsonObj = networkJsonObj.getAsJsonObject("country");
 			tvmazeInfo.setCountry(countryJsonObj.get("name").getAsString());
 		}
-		tvmazeInfo.setSummary(TvMazeUtils.htmlToString(jObj.get("summary").getAsString()));
+		tvmazeInfo.setSummary(HttpUtils.htmlToString(jObj.get("summary").getAsString()));
 		JsonObject linksObj = jObj.getAsJsonObject("_links");
 		if (linksObj != null) {
 			JsonObject prevEPObj = linksObj.getAsJsonObject("previousepisode");
@@ -233,7 +226,7 @@ public class TvMazeUtils {
 	}
 
 	private static JsonObject fetchEpisodeData(String epURL) throws Exception{
-		String data = TvMazeUtils.retrieveHttpAsString(epURL);
+		String data = HttpUtils.retrieveHttpAsString(epURL);
 		JsonParser jp = new JsonParser();
 		JsonElement root = jp.parse(data);
 		return root.getAsJsonObject();
@@ -248,7 +241,7 @@ public class TvMazeUtils {
 		tvEP.setNumber(jobj.get("number").getAsInt());
 		tvEP.setAirDate(jobj.get("airstamp").getAsString());
 		tvEP.setRuntime(jobj.get("runtime").getAsInt());
-		tvEP.setSummary(htmlToString(jobj.get("summary").getAsString()));
+		tvEP.setSummary(HttpUtils.htmlToString(jobj.get("summary").getAsString()));
 		return tvEP;
 	}
 
@@ -273,33 +266,6 @@ public class TvMazeUtils {
 		return formatter.print(period);
 	}
 
-	public static String retrieveHttpAsString(String url) throws Exception {
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		RequestConfig requestConfig = RequestConfig.custom()
-				.setSocketTimeout(5000)
-				.setConnectTimeout(5000)
-				.setConnectionRequestTimeout(5000)
-				.build();
-		HttpGet httpGet = new HttpGet(url);
-		httpGet.setConfig(requestConfig);
-		CloseableHttpResponse response = null;
-		try {
-			response = httpclient.execute(httpGet);
-			final int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode != HttpStatus.SC_OK) {
-				throw new HttpException("Error " + statusCode + " for URL " + url);
-			}
-			return EntityUtils.toString(response.getEntity());
-		} catch (IOException e) {
-			throw new Exception("Error for URL " + url, e);
-		} finally {
-			if (response != null) {
-				response.close();
-			}
-			httpclient.close();
-		}
-	}
-
 	public static String filterTitle(String title) {
 		String newTitle = title.toLowerCase();
 		//remove filtered words
@@ -314,46 +280,6 @@ public class TvMazeUtils {
 		//remove extra spaces
 		newTitle = newTitle.replaceAll("\\s+","%20");
 		return newTitle;
-	}
-
-	public static String htmlToString(String input) {
-		String str = input.replaceAll("\n", "");
-		while (str.contains("<")) {
-			int startPos = str.indexOf("<");
-			int endPos = str.indexOf(">", startPos);
-			if (endPos > startPos) {
-				String beforeTag = str.substring(0, startPos);
-				String afterTag = str.substring(endPos + 1);
-				str = beforeTag + afterTag;
-			}
-		}
-
-		String mbChar;
-		String mbs = "&#(\\d+);";
-		StringBuffer sb = new StringBuffer();
-		Pattern pat = Pattern.compile(mbs);
-		Matcher mat = pat.matcher(str);
-
-		while (mat.find()) {
-			mbChar = getMbCharStr(mat.group(1));
-			mat.appendReplacement(sb, mbChar);
-		}
-		mat.appendTail(sb);
-		return new String(sb);
-	}
-
-	private static String getMbCharStr(String digits) {
-		char[] cha = new char[1];
-
-		try {
-			int val = Integer.parseInt(digits);
-			char ch = (char) val;
-			cha[0] = ch;
-		} catch (Exception e) {
-			System.err.println("Error from getMbCharStr:");
-			e.printStackTrace(System.err);
-		}
-		return new String(cha);
 	}
 
 	public static ArrayList<DirectoryHandle> findReleases(DirectoryHandle sectionDir, User user, String showName, int season, int number) throws FileNotFoundException {
@@ -435,6 +361,7 @@ public class TvMazeUtils {
 			}
 			env.add("release", dir.getName());
 			env.add("section", section.getName());
+			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
 			GlobalContext.getEventService().publishAsync(new TvMazeEvent(env, dir));
 		}
 	}
@@ -451,4 +378,14 @@ public class TvMazeUtils {
 		}
 	};
 
+	public static boolean containSection (SectionInterface section, ArrayList<SectionInterface> sectionList) {
+		boolean containsSection = false;
+		for (SectionInterface sec : sectionList) {
+			if (section.getName().equals(sec.getName())) {
+				containsSection = true;
+				break;
+			}
+		}
+		return containsSection;
+	}
 }

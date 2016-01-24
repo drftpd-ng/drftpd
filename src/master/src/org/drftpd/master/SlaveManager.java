@@ -92,6 +92,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	
 	private MasterProtocolCentral _central;
 
+    private boolean _listForSlaves = true;
+
 	public SlaveManager() {
 		
 	}
@@ -191,11 +193,12 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		// add shutdown hook last
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
-				logger.info("Running shutdown hook");
+                getGlobalContext().getSlaveManager().listForSlaves(false);
+                logger.info("Running shutdown hook");
 				for (RemoteSlave rslave : _rslaves.values()) {
 					rslave.shutdown();
-				}				
-			}
+				}
+            }
 		});
 	}
 
@@ -381,6 +384,10 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		return false;
 	}
 
+    public void listForSlaves(boolean portOpen) {
+        _listForSlaves = portOpen;
+    }
+
 	public void run() {
 		try {
 			if (_sslSlaves) {
@@ -397,7 +404,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 
 		Socket socket = null;
 
-		while (true) {
+		while (_listForSlaves) {
 			RemoteSlave rslave;
 			ObjectInputStream in;
 			ObjectOutputStream out;
@@ -444,7 +451,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 							"Already online"));
 					out.flush();
 					socket.close();
-					throw new IOException("Already online");
+					throw new IOException("Already online: " + slavename);
 				}
 			} catch (Exception e) {
 				if (socket != null) {
@@ -536,9 +543,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 						.setOffline("IOException deleting file, check logs for specific error");
 				rslave.addQueueDelete(directory.getPath());
 				logger
-						.error(
-								"IOException deleting file, file will be deleted when slave comes online",
-								e);
+                        .error(
+                                "IOException deleting file, file will be deleted when slave comes online",
+                                e);
 				rslave.addQueueDelete(directory.getPath());
 			}
 		}

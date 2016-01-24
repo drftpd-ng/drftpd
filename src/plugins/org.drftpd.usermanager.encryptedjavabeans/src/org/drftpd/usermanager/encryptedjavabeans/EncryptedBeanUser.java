@@ -20,10 +20,11 @@ package org.drftpd.usermanager.encryptedjavabeans;
 import org.apache.log4j.Logger;
 import org.drftpd.usermanager.javabeans.BeanUser;
 import org.drftpd.usermanager.javabeans.BeanUserManager;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.UnsupportedEncodingException; 
-import java.security.MessageDigest; 
-import java.security.NoSuchAlgorithmException; 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @author CyBeR
@@ -35,6 +36,9 @@ public class EncryptedBeanUser extends BeanUser {
 	private transient EncryptedBeanUserManager _um;
 	
 	private int _encryption = 0;
+
+	// BCrypt workload to use when generating password hashes.
+	private static int _workload = 12;
 		
 	/*
 	 * Converts BeanUser to EncryptedBeanUser
@@ -144,18 +148,26 @@ public class EncryptedBeanUser extends BeanUser {
 	 */
 	@Override
 	public boolean checkPassword(String password) {
-		String _password = this.getPassword();
+		String storedPassword = this.getPassword();
+		String encryptedPassword;
 		boolean result = false;
 		password = password.trim();
 
 		switch (getEncryption()) {
-			case 1: if (Encrypt(password,"MD2").equals(_password)) result = true; break;
-			case 2: if (Encrypt(password,"MD5").equals(_password)) result = true; break;
-			case 3: if (Encrypt(password,"SHA-1").equals(_password)) result = true; break;
-			case 4: if (Encrypt(password,"SHA-256").equals(_password)) result = true; break;
-			case 5: if (Encrypt(password,"SHA-384").equals(_password)) result = true; break;
-			case 6: if (Encrypt(password,"SHA-512").equals(_password)) result = true; break;
-			default: if (password.equals(_password)) result = true; break;
+			case 1: encryptedPassword = Encrypt(password,"MD2");
+				if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true; break;
+			case 2: encryptedPassword = Encrypt(password,"MD5");
+				if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true; break;
+			case 3: encryptedPassword = Encrypt(password,"SHA-1");
+				if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true; break;
+			case 4: encryptedPassword = Encrypt(password,"SHA-256");
+				if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true; break;
+			case 5: encryptedPassword = Encrypt(password,"SHA-384");
+				if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true; break;
+			case 6: encryptedPassword = Encrypt(password,"SHA-512");
+				if (encryptedPassword != null && encryptedPassword.equals(storedPassword)) result = true; break;
+			case 7: if (BCrypt.checkpw(password, storedPassword)) result = true; break;
+			default: if (password.equals(storedPassword)) result = true; break;
 		}
 
 		if (getEncryption() != _um.getPasscrypt()) {
@@ -175,7 +187,7 @@ public class EncryptedBeanUser extends BeanUser {
 	@Override
 	public void setPassword(String password) {
 		if (((getEncryption() == 0) || (!password.equalsIgnoreCase(getPassword()))) && (_um != null)) {
-			String pass = "";
+			String pass;
 			switch (_um.getPasscrypt()) {
 				case 1: pass = Encrypt(password,"MD2"); setEncryption(1); break;
 				case 2: pass = Encrypt(password,"MD5"); setEncryption(2); break;
@@ -183,14 +195,17 @@ public class EncryptedBeanUser extends BeanUser {
 				case 4: pass = Encrypt(password,"SHA-256"); setEncryption(4); break;
 				case 5: pass = Encrypt(password,"SHA-384"); setEncryption(5); break;
 				case 6: pass = Encrypt(password,"SHA-512"); setEncryption(6); break;
+				case 7: pass = BCrypt.hashpw(password, BCrypt.gensalt(_workload)); setEncryption(7); break;
 				default: pass = password; setEncryption(0); break;
 			}
 
-			if (pass.length() < 2) {
-				logger.debug("Failed To Set Password, Length Too Short");
-			} else {
-				super.setPassword(pass);
-			}			
+			if (pass != null) {
+				if (pass.length() < 2) {
+					logger.debug("Failed To Set Password, Length Too Short");
+				} else {
+					super.setPassword(pass);
+				}
+			}
 		} else {
 			super.setPassword(password);
 		}
@@ -205,9 +220,8 @@ public class EncryptedBeanUser extends BeanUser {
     	try {
 	    	MessageDigest md;
 	    	md = MessageDigest.getInstance(type);
-	    	byte[] hash = new byte[40];
 	    	md.update(text.getBytes("iso-8859-1"), 0, text.length());
-	    	hash = md.digest();
+			byte[] hash = md.digest();
 	    	return convertToHex(hash);
     	} catch (NoSuchAlgorithmException e) {
     		logger.debug("Encrypt - NoSuchAlgorithm",e);

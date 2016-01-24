@@ -55,16 +55,12 @@ public class TvMazePostHook implements PostHookInterface {
 			return;
 		}
 
-		if (!TvMazeUtils.isRelease(workingDir.getName())) {
-			return;
-		}
+		if (!TvMazeUtils.isRelease(workingDir.getName())) return;
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(workingDir);
-		if (!TvMazeConfig.getInstance().getRaceSections().contains(sec.getName()))
-			return;
+		if (!TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getRaceSections())) return;
 
-		if (workingDir.getName().matches(TvMazeConfig.getInstance().getExclude()))
-			return;
+		if (workingDir.getName().matches(TvMazeConfig.getInstance().getExclude())) return;
 
 		// Spawn a TvMazePrintThread and exit.
 		// This so its not stalling MKD

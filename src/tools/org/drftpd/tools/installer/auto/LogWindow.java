@@ -24,9 +24,12 @@ import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginBuilderThread;
 
 import java.io.BufferedReader;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PipedInputStream;
+import java.io.PrintStream;
 
 public class LogWindow implements LogWindowInterface {
 
@@ -38,6 +41,7 @@ public class LogWindow implements LogWindowInterface {
 	private PluginBuilder _builder;
 	private int _pluginCount;
 	private boolean _cleanOnly;
+	private PrintStream _defaultOut;
 
 	public LogWindow(PipedInputStream logInput, InstallerConfig config, int pluginCount, boolean cleanOnly) {
 		_fileLogEnabled = config.getFileLogging();
@@ -45,6 +49,8 @@ public class LogWindow implements LogWindowInterface {
 		_logInput = logInput;
 		_pluginCount = pluginCount;
 		_cleanOnly = cleanOnly;
+		//Create a reference to original System.out as it will be reassigned by PluginBuildListener
+		_defaultOut = new PrintStream(new FileOutputStream(FileDescriptor.out));
 	}
 
 	public void setBuilder(PluginBuilder builder) {
@@ -72,9 +78,9 @@ public class LogWindow implements LogWindowInterface {
 
 	public void setProgress(int pluginsDone) {
 		if (_cleanOnly) {
-			System.console().writer().println("Cleaned " + pluginsDone + "/" + _pluginCount + " plugins");
+			_defaultOut.println("Cleaned " + pluginsDone + "/" + _pluginCount + " plugins");
 		} else {
-			System.console().writer().println("Built " + pluginsDone + "/" + _pluginCount + " plugins");
+			_defaultOut.println("Built " + pluginsDone + "/" + _pluginCount + " plugins");
 		}
 	}
 
@@ -94,7 +100,7 @@ public class LogWindow implements LogWindowInterface {
 							_fileLog.writeLog(logLine);
 						}
 						if (!_suppressLog) {
-							System.console().writer().println(logLine);
+							_defaultOut.println(logLine);
 						}
 					}
 				} while(logLine != null);

@@ -75,6 +75,7 @@ import org.drftpd.slave.async.AsyncResponseRemerge;
 import org.drftpd.slave.async.AsyncResponseSSLCheck;
 import org.drftpd.slave.async.AsyncResponseTransfer;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
 import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
 import org.drftpd.util.HostMask;
@@ -98,6 +99,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private transient boolean _isRemerging;
 
 	protected transient int _errors;
+
+	private transient int _prevSocketTimeout;
 
 	private transient long _lastDownloadSending = 0;
 
@@ -392,6 +395,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		
 		String remergeMode = GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode");
 		boolean partialRemerge = false;
+		boolean instantOnline = false;
 		if (remergeMode == null) {
 			logger.error("Slave partial remerge undefined in master.conf, defaulting to \"off\"");
 		} else {
@@ -411,14 +415,20 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					logger.warn("Slave partial remerge mode set to \"off\" as lastOnline time is undefined, this may " +
 							" resolve itself automatically on next slave connection");
 				}
+			} else if (remergeMode.equalsIgnoreCase("instant")) {
+				instantOnline = true;
+				setAvailable(true);
+				logger.info("Slave added: '" + getName() + "' status: " + _status);
+				GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
 			}
 		}
 		String remergeIndex;
 		if (partialRemerge) {
-			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", true, skipAgeCutoff,
-					System.currentTimeMillis());
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", true, skipAgeCutoff, System.currentTimeMillis(), false);
+		} else if (instantOnline) {
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L, true);
 		} else {
-			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L);
+			remergeIndex = SlaveManager.getBasicIssuer().issueRemergeToSlave(this, "/", false, 0L, 0L, false);
 		}
 
 		try {
@@ -429,10 +439,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 		putRemergeQueue(new RemergeMessage(this));
 
-		// TODO move lastConnect time setting to makeAvailableAfterRemerge()
-		setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
 		_initRemergeCompleted = true;
 		if (_remergePaused.get()) {
+			String message = ("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
+			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
 			logger.debug("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
 			SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
 			_remergePaused.set(false);
@@ -534,12 +544,17 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	protected void makeAvailableAfterRemerge() {
-		// TODO move lastconnect time set to here
-		setAvailable(true);
-		setRemerging(false);
-		logger.info("Slave added: '" + getName() + "' status: " + _status);
-		GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
-	}
+        setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
+        if (GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode").equalsIgnoreCase("instant")) {
+            setRemerging(false);
+            GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", "Remerge queueprocess finished", this));
+        } else {
+            setAvailable(true);
+            setRemerging(false);
+            logger.info("Slave added: '" + getName() + "' status: " + _status);
+            GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
+        }
+    }
 
 	public final void setLastDirection(char direction, long l) {
 		switch (direction) {
@@ -580,10 +595,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 			setOffline("IOException deleting file, check logs for specific error");
 			addQueueDelete(path);
-			logger
-					.error(
-							"IOException deleting file, file will be deleted when slave comes online",
-							e);
+			logger.error("IOException deleting file, file will be deleted when slave comes online",	e);
 		} catch (SlaveUnavailableException e) {
 			// Already offline and we ARE successful in deleting the file
 			addQueueDelete(path);
@@ -702,12 +714,17 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				} else {
 					return index;
 				}
+				if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
+					setOffline("Index pool exhausted and no response from slave in "
+							+ (System.currentTimeMillis() - _lastResponseReceived)
+							+ " milliseconds");
+					throw new SlaveUnavailableException();
+				}
 			} catch (InterruptedException e1) {
 			}
 		}
 
-		throw new SlaveUnavailableException(
-				"Slave was offline or went offline while fetching an index");
+		throw new SlaveUnavailableException("Slave was offline or went offline while fetching an index");
 	}
 
 	public int fetchMaxPathFromIndex(String maxPathIndex) throws SlaveUnavailableException {
@@ -753,14 +770,12 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			}
 
 			if ((wait != 0) && ((System.currentTimeMillis() - total) >= wait)) {
-				setOffline("Slave has taken too long while waiting for reply "
-						+ index);
+				setOffline("Slave has taken too long while waiting for reply " + index);
 			}
 		}
 
 		if (!isOnline()) {
-			throw new SlaveUnavailableException(
-					"Slave went offline while processing command");
+			throw new SlaveUnavailableException("Slave went offline while processing command");
 		}
 
 		AsyncResponse rar = _indexWithCommands.remove(index);
@@ -773,13 +788,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				throw new RemoteIOException((IOException) t);
 			}
 
-			logger
-					.error(
-							"Exception on slave that is unable to be handled by the master",
-							t);
+			logger.error("Exception on slave that is unable to be handled by the master", t);
 			setOffline("Exception on slave that is unable to be handled by the master");
-			throw new SlaveUnavailableException(
-					"Exception on slave that is unable to be handled by the master");
+			throw new SlaveUnavailableException("Exception on slave that is unable to be handled by the master");
 		}
 		return rar;
 	}
@@ -787,8 +798,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public synchronized String getPASVIP() throws SlaveUnavailableException {
 		if (!isOnline())
 			throw new SlaveUnavailableException();
-		return getProperty("pasv_addr", _socket.getInetAddress()
-				.getHostAddress());
+		return getProperty("pasv_addr", _socket.getInetAddress().getHostAddress());
 	}
 
 	public int getPort() {
@@ -840,6 +850,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 						&& ((getActualTimeout() / 2 < (System
 								.currentTimeMillis() - _lastResponseReceived)) || (getActualTimeout() / 2 < (System
 								.currentTimeMillis() - _lastCommandSent)))) {
+					if (pingIndex != null) {
+						logger.error("Ping lost, no response from slave, sending new ping to slave");
+						_indexPool.push(pingIndex);
+					}
 					pingIndex = SlaveManager.getBasicIssuer().issuePingToSlave(this);
 				} else if (getActualTimeout() < (System.currentTimeMillis() - _lastResponseReceived)) {
 					setOffline("Slave seems to have gone offline, have not received a response in "
@@ -848,23 +862,24 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					throw new SlaveUnavailableException();
 				}
 
-				if (isOnline() && !isAvailable() && !_initRemergeCompleted) {
-					int queueSize = CommitManager.getCommitManager().getQueueSize();
+				if (isOnline() && !_initRemergeCompleted) {
 					if (_remergePaused.get()) {
-						// Do we need to resume
-						if (queueSize <= Integer.parseInt(GlobalContext.getConfig()
-								.getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
+						// Do we need to resume?
+						if (_remergeQueue.size() <= Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.resume.threshold", "50"))) {
+							_socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
 							SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
 							_remergePaused.set(false);
-							logger.debug("Issued remerge resume to slave, current commit queue is " + queueSize);
-						}
+							logger.debug("Issued remerge resume to slave, current remerge queue is " + _remergeQueue.size());
+                        }
 					} else {
-						// Do we need to pause
-						if (queueSize > Integer.parseInt(GlobalContext.getConfig()
-								.getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
+						// Do we need to pause?
+						if (_remergeQueue.size() > Integer.parseInt(GlobalContext.getConfig().getMainProperties().getProperty("remerge.pause.threshold", "250"))) {
 							SlaveManager.getBasicIssuer().issueRemergePauseToSlave(this);
+							_prevSocketTimeout = _socket.getSoTimeout();
+							// Set lower timeout so it reacts faster when queueSize goes back down
+							_socket.setSoTimeout(100);
 							_remergePaused.set(true);
-							logger.debug("Issued remerge pause to slave, current commit queue is " + queueSize);
+							logger.debug("Issued remerge pause to slave, current remerge queue is " + _remergeQueue.size());
 						}
 					}
 				}
@@ -914,6 +929,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 							&& pingIndex.equals(ar.getIndex())) {
 						fetchResponse(pingIndex);
 						pingIndex = null;
+					} else if (ar.getIndex().equals("SiteBotMessage")) {
+						String message = ((AsyncResponseSiteBotMessage) ar).getMessage();
+						GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
 					} else {
 						synchronized (_commandMonitor) {
 							_commandMonitor.notifyAll();
@@ -979,6 +997,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			GlobalContext.getEventService().publishAsync(
 					new SlaveEvent("DELSLAVE", reason, this));
 		}
+		else {
+			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", reason, this));
+		}
 
 		setAvailable(false);
 	}
@@ -1028,8 +1049,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				if (obj instanceof AsyncResponse) {
 					return (AsyncResponse) obj;
 				}
-				logger.error("Throwing away an unexpected class - "
-						+ obj.getClass().getName() + " - " + obj);
+				logger.error("Throwing away an unexpected class - " + obj.getClass().getName() + " - " + obj);
 			}
 		}
 	}
@@ -1062,8 +1082,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			out.reset();
 		} catch (IOException e) {
 			logger.error("error in sendCommand()", e);
-			throw new SlaveUnavailableException(
-					"error sending command (exception already handled)", e);
+			throw new SlaveUnavailableException("error sending command (exception already handled)", e);
 		}
 		_lastCommandSent = System.currentTimeMillis();
 	}
@@ -1114,8 +1133,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public boolean isMemberOf(String string) {
-		StringTokenizer st = new StringTokenizer(getProperty("keywords", ""),
-				" ");
+		StringTokenizer st = new StringTokenizer(getProperty("keywords", "")," ");
 
 		while (st.hasMoreElements()) {
 			if (st.nextToken().equals(string)) {
@@ -1173,9 +1191,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		XMLEncoder out = null;
 		try {
 
-			out = new XMLEncoder(new SafeFileOutputStream(
-					(getGlobalContext().getSlaveManager().getSlaveFile(this
-							.getName()))));
+			out = new XMLEncoder(new SafeFileOutputStream((getGlobalContext().getSlaveManager().getSlaveFile(this.getName()))));
 			out.setExceptionListener(new ExceptionListener() {
 				public void exceptionThrown(Exception e) {
 					logger.warn("", e);
@@ -1188,11 +1204,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			out.setPersistenceDelegate(RemoteSlave.class,
 					new DefaultPersistenceDelegate(new String[] { "name" }));
 			out.setPersistenceDelegate(QueuedOperation.class,
-					new DefaultPersistenceDelegate(new String[] { "source",
-							"destination" }));
+					new DefaultPersistenceDelegate(new String[] { "source","destination" }));
 			try {
-				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(
-						RemoteSlave.class).getPropertyDescriptors();
+				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(RemoteSlave.class).getPropertyDescriptors();
 				ArrayList<String> transientList = new ArrayList<String>();
 				transientList.addAll(Arrays.asList(transientFields));
 				for (PropertyDescriptor pd : pdArr) {
@@ -1219,12 +1233,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public ObjectOutputStream getOutputStream() {
 		return _sout;
 	}
-	
+
 	public ObjectInputStream getInputStream() {
 		return _sin;
 	}
 
 	private void putRemergeQueue(RemergeMessage message) {
+		logger.debug("REMERGE: putting message into queue");
 		try {
 			_remergeQueue.put(message);
 		} catch (InterruptedException e) {
@@ -1250,13 +1265,15 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			while (true) {
 				RemergeMessage msg;
 				try {
+					logger.info("REMERGE SIZE: " + _remergeQueue.size());
 					msg = _remergeQueue.take();
 				} catch (InterruptedException e) {
-					logger.info("", e);
+					logger.debug("REMERGE QUE: fault in node from queue with exception " + e.getMessage());
 					continue;
 				}
 
 				if (msg.isCompleted()) {
+					logger.info("REMERGE: queue finished");
 					msg.getRslave().makeAvailableAfterRemerge();
 					break;
 				}

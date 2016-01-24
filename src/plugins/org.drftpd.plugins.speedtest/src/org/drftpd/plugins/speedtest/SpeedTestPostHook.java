@@ -24,8 +24,8 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.speedtest.event.SpeedTestEvent;
+import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -41,17 +41,17 @@ import java.util.Properties;
 /**
  * @author scitz0
  */
-public class SpeedTest implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(SpeedTest.class);
+public class SpeedTestPostHook implements PostHookInterface {
+	private static final Logger logger = Logger.getLogger(SpeedTestPostHook.class);
 
-    private ArrayList<String> _speedTestPaths = new ArrayList<String>();
+	private ArrayList<String> _speedTestPaths = new ArrayList<String>();
 
 	public void initialize(StandardCommandManager manager) {
-        loadConf();
+		loadConf();
 	}
 
-    private void loadConf() {
-        Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("speedtest.conf");
+	private void loadConf() {
+		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("speedtest.conf");
 		if (cfg == null) {
 			logger.error("conf/plugins/speedtest.conf not found");
 			return;
@@ -62,17 +62,17 @@ public class SpeedTest implements PostHookInterface {
 			if (path == null) break;
 			_speedTestPaths.add(VirtualFileSystem.fixPath(path));
 		}
-    }
+	}
 
 	public void doSTORPostHook(CommandRequest request, CommandResponse response) {
-        if (response.getCode() != 226) {
+		if (response.getCode() != 226) {
 			// STOR Failed, skip
 			return;
 		}
 
 		DirectoryHandle dir = request.getCurrentDirectory();
 
-        // Check if STOR was made in a speedtest path
+		// Check if STOR was made in a speedtest path
 		for (String stPath : _speedTestPaths) {
 			if (dir.getPath().startsWith(stPath)) {
 				// This is a SPEEDTEST dir!

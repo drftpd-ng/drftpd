@@ -1,7 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<!-- $Id$ -->
-<plugin id="master" version="3.0.0" class="org.drftpd.master.Boot">
+<plugin id="master" version="3.2.0" class="org.drftpd.master.Boot">
 	<doc>
 		<doc-text>(Required) - This is the main MASTER process to which FTP clients connect.</doc-text>
 	</doc>
@@ -21,6 +20,12 @@
 			<export prefix="*" />
 		</library>
 		<library id="commons-net" path="../../lib/commons-net-3.4.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="httpclient" path="../../lib/httpclient-4.5.1.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="httpcore" path="../../lib/httpcore-4.4.4.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="eventbus" path="../../lib/eventbus-1.4.jar" type="code">

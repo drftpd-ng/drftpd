@@ -18,6 +18,7 @@ package org.drftpd.plugins.sitebot.announce.pre;
 
 import java.util.ResourceBundle;
 
+import org.drftpd.GlobalContext;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
@@ -71,6 +72,7 @@ public class PreAnnouncer extends AbstractAnnouncer {
             env.add("name", name);
 			env.add("grpname", name.lastIndexOf("-") == -1 ? "NoGroup" : name.substring(name.lastIndexOf("-")+1));
 			env.add("section", event.getSection().getName());
+			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDir()).getColor());
 			env.add("files", event.getFiles());
 			env.add("bytes", event.getBytes());
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".pre", env, _bundle), writer);

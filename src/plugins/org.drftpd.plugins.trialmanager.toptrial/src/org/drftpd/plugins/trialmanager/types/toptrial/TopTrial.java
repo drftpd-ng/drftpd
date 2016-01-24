@@ -40,16 +40,16 @@ public class TopTrial extends TrialType {
 	private int _keep;	
 	private long _min;
 	private String _keyPrefix;
-	private int _minPerc;
+    private int _minPercent;
 
 	public TopTrial(Properties p, int confnum, String type) {
 		super(p, confnum, type);
 		
 		try {
-			_minPerc = Integer.parseInt(p.getProperty(confnum+".perc","-1").trim());
-		} catch (NumberFormatException e) {
-			throw new RuntimeException("Invalid minimum percentange for " + confnum	+ ".perc - Skipping Config");
-		}
+            _minPercent = Integer.parseInt(p.getProperty(confnum + ".percent", "0").trim());
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Invalid minimum percentange for " + confnum + ".percent - Skipping Config");
+        }
 		
 		try {
 			_list = Integer.parseInt(p.getProperty(confnum + ".list","").trim());
@@ -84,9 +84,9 @@ public class TopTrial extends TrialType {
 		return _min;
 	}
 
-	public int getMinPerc() {
-		return _minPerc;
-	}
+    public int getMinPercent() {
+        return _minPercent;
+    }
 	
 	private void handlePassed(User user) {
 		String[] commands = this.getPass().split(" ");
@@ -145,7 +145,7 @@ public class TopTrial extends TrialType {
 	@Override
 	public void doTrial() {
 		int passed = 0;
-		long minPercentage=getTop()/100*getMinPerc();
+        long minPercentage = getTop() / 100 * getMinPercent();
 
 		ArrayList<User> users = getUsers();
 		for (User user : users) {
@@ -205,7 +205,7 @@ public class TopTrial extends TrialType {
 		env2.add("period", getPeriodStr());
 		env2.add("time",getRemainingTime());
 		env2.add("keep",getKeep());
-		env2.add("perc",getMinPerc());
+        env2.add("percent", getMinPercent());
 
 		ArrayList<User> users = getUsers();
 		env2.add("racers", users.size());
@@ -225,8 +225,8 @@ public class TopTrial extends TrialType {
 		}
 
 		int i = 1;
-		long minPercentage=getTop()/100*getMinPerc();
-		for (User user : users) {
+        long minPercentage = getTop() / 100 * getMinPercent();
+        for (User user : users) {
 			if (i > list) {
 				break;
 			}

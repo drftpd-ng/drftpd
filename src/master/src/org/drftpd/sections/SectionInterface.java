@@ -29,23 +29,29 @@ public interface SectionInterface {
 	/**
 	 * @return the base directory for this section.
 	 */
-	public DirectoryHandle getBaseDirectory();
+	DirectoryHandle getBaseDirectory();
 
 	/**
 	 * @return the (current) directory for this section.
 	 */
-	public DirectoryHandle getCurrentDirectory();
+	DirectoryHandle getCurrentDirectory();
 
 	/**
 	 * @return all directories for this section. For example if this is a
 	 *         dated-dir section, it would return all dated dirs, including
 	 *         current dir.
 	 */
-	public Set<DirectoryHandle> getDirectories();
+	Set<DirectoryHandle> getDirectories();
 
 	/**
 	 * @return The name of this section
 	 */
-	public String getName();
+	String getName();
+
+	/**
+	 * @return The color of this section
+	 */
+	String getColor();
+
 
 }

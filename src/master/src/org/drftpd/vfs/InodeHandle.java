@@ -18,6 +18,7 @@ package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
 import java.util.Map;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -264,12 +265,71 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 * @throws FileNotFoundException if the source inode does not exist.
 	 */
 	public void renameToUnchecked(InodeHandle toInode) throws FileExistsException, FileNotFoundException {
-		if (toInode.exists()) {
-			throw new FileExistsException(toInode.getPath() + " already exists");
+		SlaveManager sm = getGlobalContext().getSlaveManager();
+		if (toInode.exists() && toInode.isFile()) {
+            /**
+             * not relevant here, check is done in code below, maybe should refactor this slightly!
+             * If target exists and its a file, maybe its time to check against some SFV or
+             * compare filesize and if they match delete one
+             *
+             * But mostly toInode is a directory.
+             */
+
+			//throw new FileExistsException(toInode.getPath() + " already exists");
+        } else if (!getInode().getPath().equalsIgnoreCase(toInode.getPath())
+                && toInode.exists() && toInode.isDirectory() && getInode().isDirectory()) {
+			VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory)getInode();
+			Set<InodeHandle> dirInodes = dir.getInodes();
+			Iterator<InodeHandle> it = dirInodes.iterator();
+
+            boolean merge;
+			while(it.hasNext()) {
+				InodeHandle ih = it.next();
+				if(ih.isDirectory()) {
+					DirectoryHandle subDir = new DirectoryHandle(toInode.getPath()+"/"+ih.getName());
+					ih.renameToUnchecked(subDir);
+					if(ih.exists()) {
+						ih.deleteUnchecked(); // This deletes subdir after we have moved subdircontent
+					}
+				} else {
+                    merge=false;
+					VirtualFileSystemInode inode = ih.getInode();
+					FileHandle targetInode = new FileHandle(toInode.getPath()+"/"+inode.getName());
+
+					try {
+						if(targetInode.getSize()<inode.getSize()) {
+							//TODO implement checksum against sfv
+							targetInode.deleteUnchecked();
+                            merge=true;
+						}
+					} catch (FileNotFoundException e) {
+                        merge=true;
+					}
+
+					if(merge) {
+						Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
+						for (String slaveName : slaves) {
+							try {
+								sm.getRemoteSlave(slaveName).simpleRename(inode.getPath(), toInode.getPath(), inode.getName());
+								inode.rename(toInode.getPath()+"/"+inode.getName());
+							} catch (ObjectNotFoundException e) {
+							}
+						}
+					} else {
+						ih.deleteUnchecked();
+					}
+				}
+			}
+
+			if(exists()) {
+				deleteUnchecked();
+			}
+
+			return;
 		}
+
 		String fromPath = getPath();
 		VirtualFileSystemInode inode = getInode();
-		SlaveManager sm = getGlobalContext().getSlaveManager();
 		if (inode.isFile()) {
 			Set<String> slaves = ((VirtualFileSystemFile) inode).getSlaves();
 			for (String slaveName : slaves) {
@@ -463,7 +523,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 *          If the inode for this handle does not exist
 	 */
 	public <T> T removeUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
-		return getInode().<T>removeUntypedPluginMetaData(key);
+		return getInode().removeUntypedPluginMetaData(key);
 	}
 
 	/**
@@ -482,7 +542,7 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 	 *          If the inode for this handle does not exist
 	 */
 	public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) throws FileNotFoundException {
-		return getInode().<T>getUntypedPluginMetaData(key);
+		return getInode().getUntypedPluginMetaData(key);
 	}
 
 	public Map<String,AtomicInteger> getSlaveRefCounts() throws FileNotFoundException {

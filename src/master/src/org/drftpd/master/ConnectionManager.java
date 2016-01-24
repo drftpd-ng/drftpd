@@ -78,7 +78,7 @@ public class ConnectionManager {
 		getGlobalContext().getSlaveManager().addShutdownHook();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
-	}
+    }
 
 	public static ConnectionManager getConnectionManager() {
 		if (_connectionManager == null) {
@@ -116,10 +116,7 @@ public class ConnectionManager {
 
 			try {
 				bindip = PropertyHelper.getProperty(cfg, "master.ip");
-				if (bindip.equals(""))
-					useIP = false;
-				else
-					useIP = true;
+                useIP = !bindip.equals("");
 			} catch (NullPointerException e) {
 				useIP = false;
 			}

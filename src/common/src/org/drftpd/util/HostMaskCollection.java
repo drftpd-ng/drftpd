@@ -43,7 +43,7 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 	/**
 	 * Converts an existing Collection of String-based masks to a
 	 * HostMaskCollection
-	 * 
+	 *
 	 * @param masks
 	 */
 	public HostMaskCollection(Collection<String> masks) {
@@ -126,7 +126,7 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 		String masks = "";
 
 		for (HostMask hostMask : this) {
-			masks = masks + hostMask + ", ";
+			masks = masks + hostMask + "  ";
 		}
 
 		return masks.substring(0, masks.length() - 2);

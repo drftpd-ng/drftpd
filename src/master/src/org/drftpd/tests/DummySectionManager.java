@@ -81,6 +81,9 @@ class DummySection implements SectionInterface {
 		}
 	}
 
+	public String getColor() {
+		return "DummyColor.";
+	}
 	public String getName() {
 		return "DummySection.";
 	}

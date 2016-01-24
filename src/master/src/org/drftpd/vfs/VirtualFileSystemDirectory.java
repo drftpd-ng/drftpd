@@ -47,7 +47,7 @@ import org.drftpd.exceptions.FileExistsException;
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected static final Collection<String> transientListDirectory = Arrays
-	.asList(new String[] { "name", "parent", "files"});
+	.asList("name", "parent", "files");
 
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = 
 		new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
@@ -77,6 +77,10 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		if (updateLastModified && 
 				(getLastModified() < inode.getLastModified() || _placeHolderLastModified)) {
 			setLastModified(inode.getLastModified());
+		}
+		if (getCreationTime() > inode.getLastModified() ||
+                getCreationTime() > inode.getCreationTime()) {
+			setCreationTime(inode.getCreationTime() > inode.getLastModified() ? inode.getLastModified() : inode.getCreationTime());
 		}
 		addSize(inode.getSize());
 		addChildSlaveRefCounts(inode, inode.getSlaveRefCounts());
@@ -209,6 +213,9 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.setName(name);
 		inode.setParent(this);
 		if (setLastModified) {
+			if (inode.getCreationTime() > lastModified) {
+				inode.setCreationTime(lastModified);
+			}
 			inode.setLastModified(lastModified);
 		}
 		inode.commit();

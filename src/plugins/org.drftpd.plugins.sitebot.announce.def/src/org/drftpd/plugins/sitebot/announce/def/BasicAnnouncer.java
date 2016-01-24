@@ -32,10 +32,12 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.event.InviteEvent;
+import org.drftpd.event.MasterEvent;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+import org.drftpd.GlobalContext;
 
 /**
  * @author djb61
@@ -108,7 +110,17 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".addslave", env, _bundle), "addslave");
 		} else if (event.getCommand().equals("DELSLAVE")) {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".delslave", env, _bundle), "delslave");
+                } else if (event.getCommand().equals("MSGSLAVE")) {
+                        outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgslave", env, _bundle), "msgslave");
 		}
+	}
+
+	@EventSubscriber
+	public void onMasterEvent(MasterEvent event) {
+		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		env.add("message", event.getMessage());
+
+        outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgmaster", env, _bundle), "msgmaster");
 	}
 
 	@EventSubscriber
@@ -117,6 +129,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("user", event.getUser().getName());
 			env.add("nick", event.getIrcNick());
+			env.add("group", event.getUser().getGroup());
 			if (event.getCommand().equals("INVITE")) {
 				outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".invite.success", env, _bundle), "invite");
 				for (ChannelConfig chan : _config.getBot().getConfig().getChannels()) {
@@ -154,6 +167,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 		env.add("user", direvent.getUser().getName());
 		env.add("group", direvent.getUser().getGroup());
 		env.add("section", writer.getSectionName(dir));
+		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
 		env.add("path", writer.getPath(dir));
 	}
 }

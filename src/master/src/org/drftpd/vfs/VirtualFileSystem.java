@@ -231,13 +231,11 @@ public class VirtualFileSystem {
 		}
 		XMLDecoder xmlDec = null;
 		try {
-			xmlDec = new XMLDecoder(new BufferedInputStream(
-					new FileInputStream(fullPath)));
+			xmlDec = new XMLDecoder(new BufferedInputStream(new FileInputStream(fullPath)));
 			xmlDec.setExceptionListener(new VFSExceptionListener(fullPath));
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
-			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec
-					.readObject();
+			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec.readObject();
 			Thread.currentThread().setContextClassLoader(prevCL);
 			inode.setName(getLast(path));
 			if (inode.isDirectory()) {
@@ -266,23 +264,19 @@ public class VirtualFileSystem {
 				} else {
 					// the parent is a Directory on the REAL filesystem and
 					// a something else on our virtual one...
-					throw new FileNotFoundException(
-							"You're filesystem is really messed up");
+					throw new FileNotFoundException("You're filesystem is really messed up");
 				}
 			}
 			if (realDirectory != null && realDirectory.exists()) {
 				// let's create the .dirProperties file from what we know since
 				// it should be there
-				parentInode.createDirectoryRaw(getLast(path), "drftpd",
-						"drftpd");
+				parentInode.createDirectoryRaw(getLast(path), "drftpd", "drftpd");
 				return parentInode.getInodeByName(getLast(path));
 			}
 			if (corruptedXMLFile) {
 				// we already deleted the file, but we need to tell the parent
 				// directory that it doesn't exist anymore
-				logger
-						.debug("Error loading " + fullPath + ", deleting file",
-								e);
+				logger.debug("Error loading " + fullPath + ", deleting file", e);
 				parentInode.removeMissingChild(getLast(path));
 			}
 			throw new FileNotFoundException();

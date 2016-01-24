@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.protocol.speedtest.net.master" version="3.2.0">
+	<attributes>
+		<attribute id="ProtocolName" value="SpeedTestProtocol"/>
+		<attribute id="ImplicitDependencies">
+			<attribute id="Dependency1" value="org.drftpd.protocol.speedtest.net.slave" />
+		</attribute>
+		<attribute id="DenyUnload" value="true" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.speedtest.net.common" exported="true" />
+		<import plugin-id="master" exported="true" reverse-lookup="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.protocol.speedtest.net.master" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension plugin-id="master" point-id="ProtocolExtension" id="SpeedTestProtocol">
+		<parameter id="IssuerClass" value="org.drftpd.protocol.speedtest.net.master.SpeedTestIssuer" />
+	</extension>
+</plugin>

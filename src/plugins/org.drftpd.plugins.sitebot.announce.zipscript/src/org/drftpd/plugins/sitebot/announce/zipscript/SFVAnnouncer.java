@@ -349,6 +349,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 		env.add("user", direvent.getUser().getName());
 		env.add("group", direvent.getUser().getGroup());
 		env.add("section", writer.getSectionName(dir));
+		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
 		env.add("path", writer.getPath(dir));
 
 		TransferEvent event;

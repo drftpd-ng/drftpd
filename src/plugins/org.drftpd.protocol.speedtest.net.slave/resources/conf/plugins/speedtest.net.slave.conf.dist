@@ -1,0 +1,25 @@
+## Slave configuration for speedtest.net plugin ##
+##################################################
+
+# If you dont know what you are doing leave values at their default setting.
+
+# Thread sleep time between runs (ms)
+sleep=100
+
+## Upload settings ##
+threads.up=3
+# Total payload for upload is payload string repated x number of times.
+# Increased with time after each payload looped x times.
+payload.string=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ
+payload.repeat=7000
+payload.loop=20
+# Total time to spend measuring upload speed (s).
+max.up.time=8
+
+## Download settings ##
+threads.down=3
+# Download sizes to test and loop each size x times.
+sizes=350,500,750,1000,1500,2000,2500,3000,3500,4000
+size.loop=4
+# Total time to spend measuring download speed (s).
+max.down.time=8

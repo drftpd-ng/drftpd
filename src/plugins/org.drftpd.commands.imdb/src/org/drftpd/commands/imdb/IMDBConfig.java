@@ -27,7 +27,6 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -39,12 +38,12 @@ public class IMDBConfig {
 
 	private static final Logger logger = Logger.getLogger(IMDBConfig.class);
 
-	private ArrayList<String> _rSections = new ArrayList<String>();
-	private ArrayList<String> _sSDSections = new ArrayList<String>();
-	private ArrayList<String> _sHDSections = new ArrayList<String>();
+	private ArrayList<SectionInterface> _rSections = new ArrayList<SectionInterface>();
+	private ArrayList<SectionInterface> _sSDSections = new ArrayList<SectionInterface>();
+	private ArrayList<SectionInterface> _sHDSections = new ArrayList<SectionInterface>();
 	private int _startDelay, _endDelay;
 	private String _exclude;
-	private String[] _filters;
+	private ArrayList<String> _filters = new ArrayList<String>();
 	private boolean _bar_enabled, _bar_directory, _sRelease;
 
 	private IMDBThread _imdbThread = new IMDBThread();
@@ -70,12 +69,9 @@ public class IMDBConfig {
 			logger.fatal("conf/plugins/imdb.conf not found");
 			return;
 		}
-		_rSections.clear();
-		_rSections.addAll(Arrays.asList(cfg.getProperty("race.sections", "").split(";")));
-		_sSDSections.clear();
-		_sSDSections.addAll(Arrays.asList(cfg.getProperty("search.sd.sections", "").split(";")));
-		_sHDSections.clear();
-		_sHDSections.addAll(Arrays.asList(cfg.getProperty("search.hd.sections", "").split(";")));
+		addSectionsFromConf(cfg, "race.section.", _rSections);
+		addSectionsFromConf(cfg, "search.sd.section.", _sSDSections);
+		addSectionsFromConf(cfg, "search.hd.section.", _sHDSections);
 		_sRelease = cfg.getProperty("search.release", "false").equalsIgnoreCase("true");
 		_exclude = cfg.getProperty("exclude","");
 		_startDelay = Integer.parseInt(cfg.getProperty("delay.start","5"));
@@ -85,20 +81,37 @@ public class IMDBConfig {
 			_startDelay = 5;
 			_endDelay = 10;
 		}
-		_filters = cfg.getProperty("filter","").split(";");
+		_filters.clear();
+		for (int i = 1;; i++) {
+			String filter = cfg.getProperty("filter."+i);
+			if (filter == null) break;
+			_filters.add(filter);
+		}
 		_bar_enabled = cfg.getProperty("imdbbar.enabled", "true").equalsIgnoreCase("true");
 		_bar_directory = cfg.getProperty("imdbbar.directory", "true").equalsIgnoreCase("true");
 	}
 
-	public ArrayList<String> getRaceSections() {
+	private void addSectionsFromConf(Properties cfg, String prop, ArrayList<SectionInterface> sections) {
+		sections.clear();
+		for (int i = 1;; i++) {
+			String section = cfg.getProperty(prop+i);
+			if (section == null) break;
+			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(section);
+			if (!sec.getBaseDirectory().getPath().equals(GlobalContext.getGlobalContext().getRoot().getPath())) {
+				sections.add(sec);
+			}
+		}
+	}
+
+	public ArrayList<SectionInterface> getRaceSections() {
 		return _rSections;
 	}
 
-	public ArrayList<String> getSDSections() {
+	public ArrayList<SectionInterface> getSDSections() {
 		return _sSDSections;
 	}
 
-	public ArrayList<String> getHDSections() {
+	public ArrayList<SectionInterface> getHDSections() {
 		return _sHDSections;
 	}
 
@@ -106,7 +119,9 @@ public class IMDBConfig {
 		return _sRelease;
 	}
 
-	public String getExclude() { return _exclude; }
+	public String getExclude() {
+		return _exclude;
+	}
 
 	public int getStartDelay() {
 		return _startDelay;
@@ -116,7 +131,9 @@ public class IMDBConfig {
 		return _endDelay;
 	}
 
-	public String[] getFilters() { return _filters; }
+	public ArrayList<String> getFilters() {
+		return _filters;
+	}
 
 	public boolean barEnabled() {
 		return _bar_enabled;
@@ -126,13 +143,21 @@ public class IMDBConfig {
 		return _bar_directory;
 	}
 
-	public IMDBThread getIMDBThread() {return _imdbThread; }
+	public IMDBThread getIMDBThread() {
+		return _imdbThread;
+	}
 
-	public DirectoryHandle getDirToProcess() { return _parseQueue.poll(); }
+	public DirectoryHandle getDirToProcess() {
+		return _parseQueue.poll();
+	}
 
-	public int getQueueSize() { return _parseQueue.size(); }
+	public int getQueueSize() {
+		return _parseQueue.size();
+	}
 
-	public void addDirToProcessQueue(DirectoryHandle dir) { _parseQueue.add(dir); }
+	public void addDirToProcessQueue(DirectoryHandle dir) {
+		_parseQueue.add(dir);
+	}
 
 	/**
 	 * Method called whenever an inode is created.
@@ -143,21 +168,17 @@ public class IMDBConfig {
 	 */
 	@EventSubscriber
 	public void inodeCreated(VirtualFileSystemInodeCreatedEvent event) {
-		if (!event.getInode().isFile())
-			return;
+		if (!event.getInode().isFile())	return;
 
 		String fileName = event.getInode().getName().toLowerCase();
-		if (!fileName.endsWith(".nfo") || fileName.endsWith("imdb.nfo"))
-			return;
+		if (!fileName.endsWith(".nfo") || fileName.endsWith("imdb.nfo")) return;
 
 		DirectoryHandle parentDir = event.getInode().getParent();
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(parentDir);
-		if (!getRaceSections().contains(sec.getName()))
-			return;
+		if (!IMDBUtils.containSection(sec, getRaceSections())) return;
 
-		if (parentDir.getName().matches(getExclude()))
-			return;
+		if (parentDir.getName().matches(getExclude())) return;
 
 		logger.debug("Dir added to process queue for IMDB data: " + parentDir.getPath());
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="org.drftpd.plugins.speedtest"
-         default="build">
+		 default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">
 		<buildplugin />

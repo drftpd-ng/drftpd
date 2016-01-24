@@ -28,7 +28,6 @@ import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
 import org.joda.time.DateTimeZone;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -40,10 +39,10 @@ public class TvMazeConfig {
 
 	private static final Logger logger = Logger.getLogger(TvMaze.class);
 
-	private ArrayList<String> _rSections = new ArrayList<String>();
-	private ArrayList<String> _sHDSections = new ArrayList<String>();
-	private ArrayList<String> _sSDSections = new ArrayList<String>();
-	private String[] _filters;
+	private ArrayList<SectionInterface> _rSections = new ArrayList<SectionInterface>();
+	private ArrayList<SectionInterface> _sHDSections = new ArrayList<SectionInterface>();
+	private ArrayList<SectionInterface> _sSDSections = new ArrayList<SectionInterface>();
+	private ArrayList<String> _filters = new ArrayList<String>();
 	private String _date, _time, _exclude;
 	private DateTimeZone _dtz;
 	private int _startDelay, _endDelay;
@@ -72,17 +71,19 @@ public class TvMazeConfig {
 			logger.fatal("conf/plugins/tvmaze.conf not found");
 			return;
 		}
-		_filters = cfg.getProperty("filter","").split(";");
+		_filters.clear();
+		for (int i = 1;; i++) {
+			String filter = cfg.getProperty("filter."+i);
+			if (filter == null) break;
+			_filters.add(filter);
+		}
 		_date = cfg.getProperty("date.show","yyyy-MM-dd");
 		_time = cfg.getProperty("time.show","EEEE, HH:mm");
 		_dtz = cfg.getProperty("timezone") == null ? DateTimeZone.getDefault() : DateTimeZone.forID(cfg.getProperty("timezone"));
 		_exclude = cfg.getProperty("exclude","");
-		_rSections.clear();
-		_rSections.addAll(Arrays.asList(cfg.getProperty("race.sections", "").split(";")));
-		_sHDSections.clear();
-		_sHDSections.addAll(Arrays.asList(cfg.getProperty("search.hd.section", "").split(";")));
-		_sSDSections.clear();
-		_sSDSections.addAll(Arrays.asList(cfg.getProperty("search.sd.section", "").split(";")));
+		addSectionsFromConf(cfg, "race.section.", _rSections);
+		addSectionsFromConf(cfg, "search.sd.section.", _sSDSections);
+		addSectionsFromConf(cfg, "search.hd.section.", _sHDSections);
 		_sRelease = cfg.getProperty("search.release", "false").equalsIgnoreCase("true");
 		_startDelay = Integer.parseInt(cfg.getProperty("delay.start","5"));
 		_endDelay = Integer.parseInt(cfg.getProperty("delay.end","10"));
@@ -95,19 +96,31 @@ public class TvMazeConfig {
 		_bar_directory = cfg.getProperty("tvmazebar.directory", "true").equalsIgnoreCase("true");
 	}
 
-	public String[] getFilters() {
+	private void addSectionsFromConf(Properties cfg, String prop, ArrayList<SectionInterface> sections) {
+		sections.clear();
+		for (int i = 1;; i++) {
+			String section = cfg.getProperty(prop+i);
+			if (section == null) break;
+			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(section);
+			if (!sec.getBaseDirectory().getPath().equals(GlobalContext.getGlobalContext().getRoot().getPath())) {
+				sections.add(sec);
+			}
+		}
+	}
+
+	public ArrayList<String> getFilters() {
 		return _filters;
 	}
 
-	public ArrayList<String> getRaceSections() {
+	public ArrayList<SectionInterface> getRaceSections() {
 		return _rSections;
 	}
 
-	public ArrayList<String> getHDSections() {
+	public ArrayList<SectionInterface> getHDSections() {
 		return _sHDSections;
 	}
 
-	public ArrayList<String> getSDSections() {
+	public ArrayList<SectionInterface> getSDSections() {
 		return _sSDSections;
 	}
 
@@ -145,13 +158,21 @@ public class TvMazeConfig {
 		return _bar_directory;
 	}
 
-	public TvMazeThread getTvMazeThread() {return _tvmazeThread; }
+	public TvMazeThread getTvMazeThread() {
+		return _tvmazeThread;
+	}
 
-	public DirectoryHandle getDirToProcess() { return _parseQueue.poll(); }
+	public DirectoryHandle getDirToProcess() {
+		return _parseQueue.poll();
+	}
 
-	public int getQueueSize() { return _parseQueue.size(); }
+	public int getQueueSize() {
+		return _parseQueue.size();
+	}
 
-	public void addDirToProcessQueue(DirectoryHandle dir) { _parseQueue.add(dir); }
+	public void addDirToProcessQueue(DirectoryHandle dir) {
+		_parseQueue.add(dir);
+	}
 
 	/**
 	 * Method called whenever an inode is created.
@@ -162,21 +183,16 @@ public class TvMazeConfig {
 	 */
 	@EventSubscriber
 	public void inodeCreated(VirtualFileSystemInodeCreatedEvent event) {
-		if (!event.getInode().isDirectory())
-			return;
+		if (!event.getInode().isDirectory()) return;
 
 		DirectoryHandle dir = (DirectoryHandle)event.getInode();
 
-		if (!TvMazeUtils.isRelease(dir.getName())) {
-			return;
-		}
+		if (!TvMazeUtils.isRelease(dir.getName())) return;
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-		if (!getRaceSections().contains(sec.getName()))
-			return;
+		if (!TvMazeUtils.containSection(sec, getRaceSections())) return;
 
-		if (dir.getName().matches(getExclude()))
-			return;
+		if (dir.getName().matches(getExclude())) return;
 
 		logger.debug("Dir added to process queue for TvMaze data: " + dir.getPath());
 

@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.commands.speedtest.net" version="3.2.0">
+	<doc>
+		<doc-text>Provides FTP/IRC command to speedtest slaves against speedtest.net.
+		</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	
+	<requires>
+		<import plugin-id="org.drftpd.protocol.speedtest.net.master" exported="true" />
+		<import plugin-id="org.drftpd.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
+		<import plugin-id="master" exported="true" />
+	</requires>
+	
+	<runtime>
+		<library id="org.drftpd.commands.speedtest.net" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+
+	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="SpeedTestHandler" />
+
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+
+	<extension plugin-id="org.drftpd.commands.speedtest.net" point-id="PreHook" id="doSITE_SPEEDTESTPerm">
+		<parameter id="ParentMethod" value="doSITE_SPEEDTEST" />
+		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookMethod" value="doPermissionCheck" />
+		<parameter id="Priority" value="1" />
+	</extension>
+</plugin>

@@ -79,8 +79,7 @@ public class Job {
 		_destSlaves = slaves;
 	}
 
-	public Job(FileHandle file, Collection<String> destSlaves,
-			int priority, int transferNum) {
+	public Job(FileHandle file, Collection<String> destSlaves, int priority, int transferNum) {
 		this(file, destSlaves, priority, transferNum, false);
 	}
 	
@@ -104,8 +103,7 @@ public class Job {
 		_destSlaves = null;
 	}
 
-	public Job(FileHandle file, Collection<String> destSlaves,
-			int priority, int transferNum, boolean onlyCountOnlineSlaves) {
+	public Job(FileHandle file, Collection<String> destSlaves, int priority, int transferNum, boolean onlyCountOnlineSlaves) {
 		this(file, priority, transferNum);
 		_destSlaves = new HashSet<String>(destSlaves);
 		_onlyCountOnlineSlaves = onlyCountOnlineSlaves;
@@ -144,16 +142,15 @@ public class Job {
 					}
 				}
 				// remove slaves if they aren't online and we have too many copies
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile()
-					.getSlaves())) {
-				if (getFile().getSlaves().size() <= _originalTransferNum) {
-					return;
-				}
-				if (!rslave.isAvailable()) {
-					rslave.simpleDelete(getFile().getPath());
-					getFile().removeSlave(rslave);
-				}
-			}
+				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile().getSlaves())) {
+                    if (getFile().getSlaves().size() <= _originalTransferNum) {
+                        return;
+                    }
+                    if (!rslave.isAvailable()) {
+                        rslave.simpleDelete(getFile().getPath());
+                        getFile().removeSlave(rslave);
+                    }
+                }
 				// remove slaves if they are online and we have too many copies
 				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile().getSlaves())) {
 					if (getFile().getSlaves().size() <= _originalTransferNum) {
@@ -312,14 +309,13 @@ public class Job {
 		if (_destSlaves.contains(slave.getName())) {
 			_transferNum--;
 		} else {
-			throw new IllegalArgumentException("Slave " + slave.getName()
-					+ " does not exist as a destination slave for job " + this);
+			throw new IllegalArgumentException("Slave " + slave.getName() + " does not exist as a destination slave for job " + this);
 		}
 
 		if (getSlavesToTransferTo().isEmpty() && (_transferNum > 0)) {
-			throw new IllegalStateException(
-					"Job cannot have a destSlaveSet of size 0 with transferNum > 0 - File: '" + getFile() + "' File Slaves: '" + getFile().getSlaveNames().toString() + "'" );
+			throw new IllegalStateException("Job cannot have a destSlaveSet of size 0 with transferNum > 0 - File: '" + getFile() + "' File Slaves: '" + getFile().getSlaveNames().toString() + "'" );
 		}
+
 		if (_transferNum <= 0) {
 			_transferNum = 0;
 			cleanup();
@@ -396,8 +392,7 @@ public class Job {
 				} catch (NoAvailableSlaveException e4) {
 					// File exists locally, but I can't verify it's checksum
 					// Accept the new one since there's no cached checksum
-					logger
-							.debug("Accepting file because there's no local checksum");
+					logger.debug("Accepting file because there's no local checksum");
 					// successful transfer
 					getFile().setCheckSum(remoteChecksum);
 					logSuccess();
@@ -408,24 +403,27 @@ public class Job {
 					// successful transfer
 					logSuccess();
 				} else {
-					logger
-							.debug("Checksum did not match, removing offending file");
+					logger.debug("Checksum did not match, removing offending file");
 					destSlave.simpleDelete(getFile().getPath());
 				}
 				return;
 			}
-			logger.error("Error on slave during slave2slave transfer", e);
+			logger.error("Error on DestinationSlaveException during slave2slave transfer from "
+                    + sourceSlave.getName()
+                    + " to " + destSlave.getName(),
+                    e);
 			destSlave.simpleDelete(getFile().getPath());
 		} catch (SourceSlaveException e) {
 			if (e.getCause() instanceof FileNotFoundException) {
-				logger.warn("Caught FileNotFoundException in sending "
-						+ getFile().getName() + " from "
-						+ sourceSlave.getName() + " to " + destSlave.getName(),
-						e);
+				logger.warn("Caught FileNotFoundException in sending " + getFile().getName()
+                                + " from " + sourceSlave.getName()
+                                + " to " + destSlave.getName(), e);
 				getFile().removeSlave(sourceSlave);
 				return;
 			}
-			logger.error("Error on slave during slave2slave transfer", e);
+			logger.error("Error on SourceSlaveException during slave2slave transfer from "
+                    + sourceSlave.getName()
+                    + " to " + destSlave.getName(), e);
 		} catch (SlaveException e) {
 			throw new RuntimeException(
 					"SlaveException was not of type DestinationSlaveException or SourceSlaveException");
@@ -439,10 +437,7 @@ public class Job {
 		try {
 			getFile().addSlave(getDestinationSlave());
 		} catch (FileNotFoundException e) {
-			logger
-					.error(
-							"File was sent with the JobManager but the file was deleted or moved during the send",
-							e);
+			logger.error("File was sent with the JobManager but the file was deleted or moved during the send", e);
 		}
 		logger.debug("Sent file " + getFile().getName() + " from "
 				+ getSourceSlave().getName() + " to "
@@ -497,10 +492,9 @@ public class Job {
 			}
         } catch (FileNotFoundException e) {
         	// couldn't find find...not good...but assume all is well.
-        }	
-		
-        if (numofslaves > 0)
-        	return false;
-		return true;
-	}
+        }
+
+        return numofslaves <= 0;
+
+    }
 }

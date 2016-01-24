@@ -26,6 +26,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
+import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
 import org.drftpd.protocol.zipscript.mp3.common.async.AsyncResponseMP3Info;
 import org.drftpd.protocol.zipscript.mp3.master.ZipscriptMP3Issuer;
 import org.drftpd.slave.RemoteIOException;
@@ -48,10 +49,13 @@ public class ZipscriptVFSDataMP3 {
 		_setDir = false;
 	}
 
-	public MP3Info getMP3Info() throws IOException, FileNotFoundException, NoAvailableSlaveException {
+	public MP3Info getMP3Info() throws IOException, NoAvailableSlaveException {
 		try {
 			MP3Info mp3info = getMP3InfoFromInode(_inode);
-			return mp3info;
+			ID3Tag id3 = mp3info.getID3Tag();
+			if (id3 != null && id3.getGenre().length() > 0 && id3.getYear().length() > 0) {
+				return mp3info;
+			}
 		} catch (KeyNotFoundException e1) {
 			// bah, let's load it
 		}
@@ -60,6 +64,7 @@ public class ZipscriptVFSDataMP3 {
 			// Find the info for the first mp3 file we come across and use that
 			DirectoryHandle dir = (DirectoryHandle) _inode;
 			MP3Info mp3info = null;
+			ID3Tag id3 = null;
 			for (FileHandle file : dir.getFilesUnchecked()) {
 				if (file.getName().toLowerCase().endsWith(".mp3") && file.getSize() > 0 && file.getXfertime() != -1) {
 					RemoteSlave rslave = file.getASlaveForFunction();
@@ -67,7 +72,10 @@ public class ZipscriptVFSDataMP3 {
 					try {
 						index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
 						mp3info = fetchMP3InfoFromIndex(rslave, index);
-						break;
+						id3 = mp3info.getID3Tag();
+						if (id3 != null && id3.getGenre().length() > 0 && id3.getYear().length() > 0) {
+							break;
+						}
 					} catch (SlaveUnavailableException e) {
 						// okay, it went offline while trying, try next file
 					} catch (RemoteIOException e) {
@@ -83,6 +91,7 @@ public class ZipscriptVFSDataMP3 {
 		} else if (_inode instanceof FileHandle) {
 			FileHandle file = (FileHandle) _inode;
 			MP3Info mp3info = null;
+			ID3Tag id3 = null;
 			if (file.getSize() > 0 && file.getXfertime() != -1) {
 				for (int i = 0; i < 5; i++) {
 					RemoteSlave rslave = file.getASlaveForFunction();
@@ -90,7 +99,12 @@ public class ZipscriptVFSDataMP3 {
 					try {
 						index = getMP3Issuer().issueMP3FileToSlave(rslave, file.getPath());
 						mp3info = fetchMP3InfoFromIndex(rslave, index);
-						break;
+						id3 = mp3info.getID3Tag();
+						if (id3 != null && id3.getGenre().length() > 0 && id3.getYear().length() > 0) {
+							break;
+						} else {
+							mp3info = null;
+						}
 					} catch (SlaveUnavailableException e) {
 						// okay, it went offline while trying, continue
 						continue;

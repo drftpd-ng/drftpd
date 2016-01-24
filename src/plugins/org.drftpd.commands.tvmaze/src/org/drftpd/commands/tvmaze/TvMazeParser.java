@@ -26,6 +26,7 @@ import com.google.gson.JsonParser;
 import org.apache.http.HttpException;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.util.HttpUtils;
 
 /**
  * @author lh
@@ -83,7 +84,7 @@ public class TvMazeParser {
 				newSearchString += "&embed=episodes";
 			}
 
-			String data = TvMazeUtils.retrieveHttpAsString(newSearchString);
+			String data = HttpUtils.retrieveHttpAsString(newSearchString);
 
 			JsonParser jp = new JsonParser();
 			JsonElement root = jp.parse(data);

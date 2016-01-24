@@ -26,6 +26,8 @@ import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.event.MasterEvent;
+import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
@@ -39,7 +41,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class IndexManager extends CommandInterface {
-
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 	
@@ -51,6 +52,7 @@ public class IndexManager extends CommandInterface {
 
 	public CommandResponse doRebuildIndex(CommandRequest request) {
 		CommandResponse response = new CommandResponse(200, "Index rebuilt");
+		GlobalContext.getEventService().publishAsync(new MasterEvent("MSGMASTER","Started rebuilding index"));
 
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		try {
@@ -61,9 +63,16 @@ public class IndexManager extends CommandInterface {
 			return new CommandResponse(550, e.getMessage());
 		}
 
+		String message = ("Index rebuilt, entries in the index: " + ie.getStatus().get("inodes"));
+		GlobalContext.getEventService().publishAsync(new MasterEvent("MSGMASTER", message));
+		
 		response.addComment("Entries in the index: " + ie.getStatus().get("inodes"));
-
-		return response;
+	
+		Session session = request.getSession();
+		if (session instanceof BaseFtpConnection) {
+			return response;
+		}
+		return null;
 	}
 	
 	public CommandResponse doIndexStatus(CommandRequest request) {
@@ -89,6 +98,7 @@ public class IndexManager extends CommandInterface {
 		Session session = request.getSession();
 		User user = session.getUserNull(request.getUser());
 		CommandResponse response = new CommandResponse(200, "Index refreshed");
+		GlobalContext.getEventService().publishAsync(new MasterEvent("MSGMASTER","Started refreshing index"));
 		boolean quiet = false;
 		if (request.getArgument().equalsIgnoreCase("-q")) {
 			quiet = true;
@@ -129,6 +139,13 @@ public class IndexManager extends CommandInterface {
 			}
 		}
 
-		return response;
+		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
+		String message = ("Index refreshed, entries in the index: " + ie.getStatus().get("inodes"));
+		GlobalContext.getEventService().publishAsync(new MasterEvent("MSGMASTER", message));
+
+		if (session instanceof BaseFtpConnection) {
+			return response;
+		}
+		return null;
 	}
 }

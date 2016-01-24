@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- $Id: build.xml 1925 2009-06-15 21:46:05Z tdsoul $ -->
 <project name="org.drftpd.protocol.imdb.common"
          default="build">
 	<property name="plugin.family" value="plugins/common" />

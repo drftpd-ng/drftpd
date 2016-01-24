@@ -17,14 +17,6 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.apache.http.HttpStatus;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.imdb.event.IMDBEvent;
@@ -184,37 +176,6 @@ public class IMDBUtils {
 		return m.find();
 	}
 
-	public static String retrieveHttpAsString(String url) throws Exception {
-		RequestConfig requestConfig = RequestConfig.custom()
-				.setSocketTimeout(5000)
-				.setConnectTimeout(5000)
-				.setConnectionRequestTimeout(5000)
-				.setCookieSpec(CookieSpecs.IGNORE_COOKIES)
-				.build();
-		CloseableHttpClient httpclient = HttpClients.custom()
-				.setDefaultRequestConfig(requestConfig)
-				.setUserAgent("Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36")
-				.build();
-
-		HttpGet httpGet = new HttpGet(url);
-		CloseableHttpResponse response = null;
-		try {
-			response = httpclient.execute(httpGet);
-			final int statusCode = response.getStatusLine().getStatusCode();
-			if (statusCode != HttpStatus.SC_OK) {
-				throw new Exception("Error " + statusCode + " for URL " + url);
-			}
-			return EntityUtils.toString(response.getEntity());
-		} catch (IOException e) {
-			throw new Exception("Error for URL " + url, e);
-		} finally {
-			if (response != null) {
-				response.close();
-			}
-			httpclient.close();
-		}
-	}
-
 	public static ArrayList<DirectoryHandle> findReleases(DirectoryHandle sectionDir, User user, String title, int year) throws FileNotFoundException {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
@@ -259,4 +220,14 @@ public class IMDBUtils {
 		return releases;
 	}
 
+	public static boolean containSection (SectionInterface section, ArrayList<SectionInterface> sectionList) {
+		boolean containsSection = false;
+		for (SectionInterface sec : sectionList) {
+			if (section.getName().equals(sec.getName())) {
+				containsSection = true;
+				break;
+			}
+		}
+		return containsSection;
+	}
 }

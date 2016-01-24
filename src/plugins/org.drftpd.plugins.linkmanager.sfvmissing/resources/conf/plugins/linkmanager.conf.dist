@@ -1,0 +1,19 @@
+################################################################################
+#	SFVMISSING:
+#
+#	This will find all directories excluding the REGEX set that do not
+#	have an SFV and place a create a link to said directory in /_NO_SFV_
+#
+#	x.addparentdir is used for removing links to no-sfv files if CD1 exists
+#	IE: /section1/rls1/cd1 - we don't want a no-sfv for rls1
+#
+#	x.type=SFVMISSING
+#	x.dirname=/_NO_SFV_
+#	x.section=*
+#	x.exclude=^/(.*)/(?i)(sample|nfofix|subs)$
+#	x.sectionexclude=^(?i)(pre|staff|speedtests)$
+#	x.deleteon=*
+#	x.linkname=(no-sfv)-${section}-${dirname}
+#	x.addparentdir=^(?i)(((cd|dvd|dis[ck])[1-9]))$
+#
+################################################################################

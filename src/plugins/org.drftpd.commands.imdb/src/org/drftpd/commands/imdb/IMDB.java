@@ -89,24 +89,22 @@ public class IMDB extends CommandInterface {
 				ArrayList<DirectoryHandle> results = new ArrayList<DirectoryHandle>();
 
 				try {
-					for (String section : IMDBConfig.getInstance().getHDSections()) {
+					for (SectionInterface section : IMDBConfig.getInstance().getHDSections()) {
 						results.addAll(IMDBUtils.findReleases(
-								GlobalContext.getGlobalContext().getSectionManager().getSection(section).getCurrentDirectory(),
-								request.getSession().getUserNull(request.getUser()),
+								section.getBaseDirectory(), request.getSession().getUserNull(request.getUser()),
 								imdb.getTitle(), imdb.getYear()));
 					}
-					for (String section : IMDBConfig.getInstance().getSDSections()) {
+					for (SectionInterface section : IMDBConfig.getInstance().getSDSections()) {
 						results.addAll(IMDBUtils.findReleases(
-								GlobalContext.getGlobalContext().getSectionManager().getSection(section).getCurrentDirectory(),
-								request.getSession().getUserNull(request.getUser()),
+								section.getBaseDirectory(), request.getSession().getUserNull(request.getUser()),
 								imdb.getTitle(), imdb.getYear()));
 					}
 					for (DirectoryHandle dir : results) {
 						SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-						if (IMDBConfig.getInstance().getHDSections().contains(sec.getName())) {
+						if (IMDBUtils.containSection(sec, IMDBConfig.getInstance().getHDSections())) {
 							env.add("foundHD","Yes");
 						}
-						if (IMDBConfig.getInstance().getSDSections().contains(sec.getName())) {
+						if (IMDBUtils.containSection(sec, IMDBConfig.getInstance().getSDSections())) {
 							env.add("foundSD","Yes");
 						}
 					}
@@ -184,7 +182,7 @@ public class IMDB extends CommandInterface {
 				if (!nfo.isHidden(user)) {
 					// Check if valid section
 					SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(nfo.getParent());
-					if (IMDBConfig.getInstance().getRaceSections().contains(sec.getName())) {
+					if (IMDBUtils.containSection(sec, IMDBConfig.getInstance().getRaceSections())) {
 						DirectoryHandle parent = nfo.getParent();
 						IMDBInfo imdbInfo = IMDBUtils.getIMDBInfo(parent, false);
 						if (imdbInfo == null || imdbInfo.getMovieFound()) {

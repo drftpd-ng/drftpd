@@ -111,24 +111,22 @@ public class TvMaze extends CommandInterface {
 						ArrayList<DirectoryHandle> results = new ArrayList<DirectoryHandle>();
 
 						try {
-							for (String section : TvMazeConfig.getInstance().getHDSections()) {
+							for (SectionInterface section : TvMazeConfig.getInstance().getHDSections()) {
 								results.addAll(TvMazeUtils.findReleases(
-										GlobalContext.getGlobalContext().getSectionManager().getSection(section).getCurrentDirectory(),
-										request.getSession().getUserNull(request.getUser()),
+										section.getCurrentDirectory(), request.getSession().getUserNull(request.getUser()),
 										tvmaze.getTvShow().getName(), tvEP.getSeason(), tvEP.getNumber()));
 							}
-							for (String section : TvMazeConfig.getInstance().getSDSections()) {
+							for (SectionInterface section : TvMazeConfig.getInstance().getSDSections()) {
 								results.addAll(TvMazeUtils.findReleases(
-										GlobalContext.getGlobalContext().getSectionManager().getSection(section).getCurrentDirectory(),
-										request.getSession().getUserNull(request.getUser()),
+										section.getCurrentDirectory(), request.getSession().getUserNull(request.getUser()),
 										tvmaze.getTvShow().getName(), tvEP.getSeason(), tvEP.getNumber()));
 							}
 							for (DirectoryHandle dir : results) {
 								SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-								if (TvMazeConfig.getInstance().getHDSections().contains(sec.getName())) {
+								if (TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getHDSections())) {
 									env.add("foundHD","Yes");
 								}
-								if (TvMazeConfig.getInstance().getSDSections().contains(sec.getName())) {
+								if (TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getSDSections())) {
 									env.add("foundSD","Yes");
 								}
 							}
@@ -192,20 +190,25 @@ public class TvMaze extends CommandInterface {
 
 	private void parseTvMazeDirs(DirectoryHandle dir, CommandRequest request) {
 		if (request.getSession().isAborted()) { return; }
-		if (TvMazeUtils.isRelease(dir.getName())) {
-			TvMazeInfo tvmazeInfo = TvMazeUtils.getTvMazeInfo(dir);
-			if (tvmazeInfo != null) {
-				ReplacerEnvironment env = TvMazeUtils.getShowEnv(tvmazeInfo);
-				env.add("dirname", dir.getName());
-				env.add("dirpath", dir.getPath());
-				request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.add", env, request.getUser()));
-				try {
-					// Sleep for randomly generated seconds specified in conf
-					Thread.sleep(TvMazeUtils.randomNumber());
-				} catch (InterruptedException ie) {
-					// Thread interrupted
+		try {
+			if (!dir.isHidden(request.getUserObject()) && TvMazeUtils.isRelease(dir.getName())) {
+				TvMazeInfo tvmazeInfo = TvMazeUtils.getTvMazeInfo(dir);
+				if (tvmazeInfo != null) {
+					ReplacerEnvironment env = TvMazeUtils.getShowEnv(tvmazeInfo);
+					env.add("dirname", dir.getName());
+					env.add("dirpath", dir.getPath());
+					request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.add", env, request.getUser()));
+					try {
+						// Sleep for randomly generated seconds specified in conf
+						Thread.sleep(TvMazeUtils.randomNumber());
+					} catch (InterruptedException ie) {
+						// Thread interrupted
+					}
 				}
 			}
+		} catch (Exception e) {
+			// Failed to get user, log and continue
+			logger.warn(e.getMessage());
 		}
 		if (request.getSession().isAborted()) { return; }
 		try {
@@ -252,7 +255,7 @@ public class TvMaze extends CommandInterface {
 	private void removeMetaDataRecursive(DirectoryHandle dir, CommandRequest request) {
 		if (request.getSession().isAborted()) { return; }
 		try {
-			if (dir.removePluginMetaData(TvMazeInfo.TVMAZEINFO) != null) {
+			if (!dir.isHidden(request.getUserObject()) && dir.removePluginMetaData(TvMazeInfo.TVMAZEINFO) != null) {
 				ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("dirname", dir.getName());
 				env.add("dirpath", dir.getPath());
@@ -260,6 +263,9 @@ public class TvMaze extends CommandInterface {
 			}
 		} catch(FileNotFoundException e) {
 			// No inode to remove tvmaze info from
+		} catch (Exception e) {
+			// Failed to get user, log and continue
+			logger.warn(e.getMessage());
 		}
 		try {
 			for(DirectoryHandle subdir : dir.getDirectories(request.getUserObject())) {
@@ -276,29 +282,30 @@ public class TvMaze extends CommandInterface {
 
 	private ArrayList<DirectoryHandle> getDirsToCheck(CommandRequest request, DirectoryHandle dir) {
 		ArrayList<DirectoryHandle> dirsToCheck = new ArrayList<DirectoryHandle>();
-		ArrayList<String> joinedSectionList = TvMazeConfig.getInstance().getRaceSections();
-		for (String section : TvMazeConfig.getInstance().getHDSections()) {
+		ArrayList<SectionInterface> joinedSectionList = TvMazeConfig.getInstance().getRaceSections();
+		for (SectionInterface section : TvMazeConfig.getInstance().getHDSections()) {
 			if (!joinedSectionList.contains(section)) {
 				joinedSectionList.add(section);
 			}
 		}
-		for (String section : TvMazeConfig.getInstance().getSDSections()) {
+		for (SectionInterface section : TvMazeConfig.getInstance().getSDSections()) {
 			if (!joinedSectionList.contains(section)) {
 				joinedSectionList.add(section);
 			}
 		}
 		if (dir.isRoot()) {
-			for (String section : joinedSectionList) {
+			for (SectionInterface section : joinedSectionList) {
 				try {
-					dirsToCheck.add(dir.getDirectory(section, request.getUserObject()));
+					dirsToCheck.add(dir.getDirectory(section.getBaseDirectory().getPath(), request.getUserObject()));
 				} catch (Exception e) {
 					logger.warn("Failed getting DirectoryHandle for section " + section);
 				}
 			}
 		} else {
 			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-			if (joinedSectionList.contains(sec.getName()))
+			if (TvMazeUtils.containSection(sec, joinedSectionList)) {
 				dirsToCheck.add(dir);
+			}
 		}
 		return dirsToCheck;
 	}
