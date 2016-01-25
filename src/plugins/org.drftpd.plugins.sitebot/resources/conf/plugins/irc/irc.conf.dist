@@ -7,7 +7,7 @@
 # Each server is defined by host (the hostname or IP of the server), the port to
 # connect to, the password for the server (if required) and whether to connect
 # using ssl or not.
-server.1.host=irc.cabnet.se
+server.1.host=127.0.0.1
 server.1.port=6667
 server.1.password=
 server.1.use_ssl=false
