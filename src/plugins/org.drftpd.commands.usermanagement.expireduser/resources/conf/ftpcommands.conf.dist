@@ -1,0 +1,17 @@
+SITE SETEXPIRE {
+plugin org.drftpd.commands.usermanagement.expireduser
+class ExpiredUser
+method doSITE_SETEXPIRE
+perms =siteop
+help Sets expiry date for User <yyyy-MM-dd>
+help.specific ${command} <username> <expiry-date>
+}
+
+SITE REMOVEEXPIRE {
+plugin org.drftpd.commands.usermanagement.expireduser
+class ExpiredUser
+method doSITE_REMOVEEXPIRE
+perms =siteop
+help Removes expiry date for User
+help.specific ${command} <username>
+}
