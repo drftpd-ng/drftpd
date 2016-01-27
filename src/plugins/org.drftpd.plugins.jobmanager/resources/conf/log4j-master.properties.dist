@@ -5,4 +5,4 @@ log4j.additivity.org.drftpd.plugins.jobmanager=false
 log4j.appender.jobmanager=org.apache.log4j.FileAppender
 log4j.appender.jobmanager.File=logs/jobmanager.log
 log4j.appender.jobmanager.layout=org.apache.log4j.PatternLayout
-log4j.appender.jobmanager.layout.ConversionPattern=%p %d{dd MMM yyyy HH:mm:ss} [%t] %c %x - %m%n
+log4j.appender.jobmanager.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
