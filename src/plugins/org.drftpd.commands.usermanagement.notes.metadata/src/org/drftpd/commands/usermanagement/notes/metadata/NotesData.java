@@ -24,7 +24,6 @@ import java.util.ArrayList;
 
 /**
  * @author CyBeR
- * @version $id$
  */
 @SuppressWarnings("serial")
 public class NotesData implements Serializable {
