@@ -289,7 +289,7 @@ public class Slave {
 		Thread.currentThread().setName("Slave Main Thread");
 
 		Properties p = new Properties();
-		FileInputStream fis = new FileInputStream("slave.conf");
+		FileInputStream fis = new FileInputStream("conf/slave.conf");
 		p.load(fis);
 		fis.close();
 

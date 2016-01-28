@@ -48,12 +48,12 @@ PIDDIR="."
 #-----------------------------------------------------------------------------
 
 # Slave roots
-if [ ! -e "slave.conf" ]; then
-    echo "No slave.conf not found, can not continue."
+if [ ! -e "conf/slave.conf" ]; then
+    echo "conf/slave.conf not found, can not continue."
     exit 1
 fi
 getroots() {
-    for r in `cat slave.conf |grep "^slave\.root\."`; do
+    for r in `cat conf/slave.conf |grep "^slave\.root\."`; do
         fs=`echo $r |awk -F '=' '{ print $2 }'`
         dev_size=`df -P -B M $fs |tail -1 |awk '{ print $1":"$2 }'`
         echo $r":"$dev_size

@@ -55,7 +55,7 @@ import org.drftpd.vfs.perms.VFSPermissions;
 public class ConfigManager implements ConfigInterface {
     private static final Logger logger = Logger.getLogger(ConfigManager.class);
     private static final File permsFile = new File("conf/perms.conf");
-    private static final File mainFile = new File("master.conf");
+    private static final File mainFile = new File("conf/master.conf");
 
     private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
             = new Key<Hashtable<String, ArrayList<PathPermission>>>(ConfigManager.class, "pathPerms");
