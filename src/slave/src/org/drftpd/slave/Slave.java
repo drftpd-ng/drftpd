@@ -30,10 +30,12 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.CRC32;
@@ -148,13 +150,19 @@ public class Slave {
 		}
 
 		ArrayList<String> cipherSuites = new ArrayList<String>();
-		for (int x = 1;; x++) {
-			String cipherSuite = p.getProperty("cipher." + x);
-			if (cipherSuite != null) {
-				cipherSuites.add(cipherSuite);
-			} else {
-				break;
+		List<String> supportedCipherSuites;
+		try {
+			supportedCipherSuites = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites());
+			for (int x = 1;; x++) {
+				String cipherSuite = p.getProperty("cipher." + x);
+				if (cipherSuite != null && supportedCipherSuites.contains(cipherSuite)) {
+					cipherSuites.add(cipherSuite);
+				} else {
+					break;
+				}
 			}
+		} catch (Exception e) {
+			logger.error("Unable to get supported cipher suites, using default.", e);
 		}
 		if (cipherSuites.size() == 0) {
 			_cipherSuites = null;
@@ -163,13 +171,19 @@ public class Slave {
 		}
 
 		ArrayList<String> sslProtocols = new ArrayList<String>();
-		for (int x = 1;; x++) {
-			String sslProtocol = p.getProperty("protocol." + x);
-			if (sslProtocol != null) {
-				sslProtocols.add(sslProtocol);
-			} else {
-				break;
+		List<String> supportedSSLProtocols;
+		try {
+			supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
+			for (int x = 1;; x++) {
+				String sslProtocol = p.getProperty("protocol." + x);
+				if (sslProtocol != null && supportedSSLProtocols.contains(sslProtocol)) {
+					sslProtocols.add(sslProtocol);
+				} else {
+					break;
+				}
 			}
+		} catch (Exception e) {
+			logger.error("Unable to get supported SSL protocols, using default.", e);
 		}
 		if (sslProtocols.size() == 0) {
 			_sslProtocols = null;

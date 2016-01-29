@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -43,6 +44,8 @@ import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.perms.VFSPermissions;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * Handles the loading of 'master.conf' and 'conf/perms.conf'<br>
@@ -170,9 +173,17 @@ public class ConfigManager implements ConfigInterface {
 
     private void parseCipherSuites() {
         ArrayList<String> cipherSuites = new ArrayList<String>();
+        List<String> supportedCipherSuites;
+        try {
+            supportedCipherSuites = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites());
+        } catch (Exception e) {
+            logger.error("Unable to get supported cipher suites, using default.", e);
+            _cipherSuites = null;
+            return;
+        }
         for (int x = 1;; x++) {
             String cipherSuite = _mainCfg.getProperty("cipher." + x);
-            if (cipherSuite != null) {
+            if (cipherSuite != null && supportedCipherSuites.contains(cipherSuite)) {
                 cipherSuites.add(cipherSuite);
             } else {
                 break;
@@ -187,9 +198,17 @@ public class ConfigManager implements ConfigInterface {
 
     private void parseSSLProtocols() {
         ArrayList<String> sslProtocols = new ArrayList<String>();
+        List<String> supportedSSLProtocols;
+        try {
+            supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
+        } catch (Exception e) {
+            logger.error("Unable to get supported SSL protocols, using default.", e);
+            _sslProtocols = null;
+            return;
+        }
         for (int x = 1;; x++) {
             String sslProtocol = _mainCfg.getProperty("protocol." + x);
-            if (sslProtocol != null) {
+            if (sslProtocol != null && supportedSSLProtocols.contains(sslProtocol)) {
                 sslProtocols.add(sslProtocol);
             } else {
                 break;
