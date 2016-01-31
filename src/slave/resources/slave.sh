@@ -15,6 +15,7 @@
 # Application
 APP_NAME="slave"
 APP_LONG_NAME="DrFTPD Slave"
+SLAVE_CONF="$( cd $(dirname $0) ; pwd -P )/conf/slave.conf"
 
 # Wrapper
 WRAPPER_CMD="bin/wrapper"
@@ -48,12 +49,12 @@ PIDDIR="."
 #-----------------------------------------------------------------------------
 
 # Slave roots
-if [ ! -e "conf/slave.conf" ]; then
-    echo "conf/slave.conf not found, can not continue."
+if [ ! -e $SLAVE_CONF ]; then
+    echo "$SLAVE_CONF not found, can not continue."
     exit 1
 fi
 getroots() {
-    for r in `cat conf/slave.conf |grep "^slave\.root\."`; do
+    for r in `cat $SLAVE_CONF |grep "^slave\.root\."`; do
         fs=`echo $r |awk -F '=' '{ print $2 }'`
         dev_size=`df -P -B M $fs |tail -1 |awk '{ print $1":"$2 }'`
         echo $r":"$dev_size
