@@ -1,0 +1,6 @@
+##################
+## Pre Unmirror ##
+##################
+
+## Value in minutes, 0 to disable
+pre.unmirror.time=60

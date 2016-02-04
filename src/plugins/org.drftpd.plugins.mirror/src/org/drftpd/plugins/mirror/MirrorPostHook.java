@@ -27,11 +27,13 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.ReloadEvent;
+import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.plugins.jobmanager.JobManager;
+import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.FileHandle;
 
 import java.util.ArrayList;
@@ -47,7 +49,6 @@ public class MirrorPostHook implements PostHookInterface {
 	private ArrayList<MirrorSetting> _settings;
 
 	public void initialize(StandardCommandManager manager) {
-		logger.info("Starting Mirror plugin");
 		_settings = new ArrayList<MirrorSetting>();
 		loadConf();
 		// Subscribe to events
@@ -206,5 +207,18 @@ public class MirrorPostHook implements PostHookInterface {
 	@EventSubscriber
 	public void onReloadEvent(ReloadEvent event) {
 		loadConf();
+	}
+
+	@EventSubscriber
+	public void onUnloadPluginEvent(UnloadPluginEvent event) {
+		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
+		for (String pluginExtension : event.getParentPlugins()) {
+			int pointIndex = pluginExtension.lastIndexOf("@");
+			String pluginName = pluginExtension.substring(0, pointIndex);
+			if (pluginName.equals(currentPlugin)) {
+				AnnotationProcessor.unprocess(this);
+				return;
+			}
+		}
 	}
 }

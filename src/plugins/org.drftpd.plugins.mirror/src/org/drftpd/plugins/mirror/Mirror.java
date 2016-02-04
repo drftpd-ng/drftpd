@@ -27,30 +27,20 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.event.ReloadEvent;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 /**
  * @author lh
  */
 public class Mirror extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(Mirror.class);
-	private ResourceBundle _bundle;
-	private String _keyPrefix;
 	private ArrayList<String> _excludePaths;
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
-		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName() + ".";
 		_excludePaths = new ArrayList<String>();
 		loadConf();
 		// Subscribe to events
@@ -83,52 +73,14 @@ public class Mirror extends CommandInterface {
 			return new CommandResponse(500, "Failed getting requested directory: " + e.getMessage());
 		}
 		try {
-			unMirrorDir(dir, request.getUserObject());
+			MirrorUtils.unMirrorDir(dir, request.getUserObject(), _excludePaths);
 		} catch (Exception e) {
 			return new CommandResponse(500, "Unmirror error: " + e.getMessage());
 		}
 		return new CommandResponse(200, "Directory successfully unmirrored!");
 	}
 
-	private void unMirrorDir(DirectoryHandle dir, User user) throws FileNotFoundException {
-		for (String excludePath : _excludePaths) {
-			if (dir.getPath().matches(excludePath)) {
-				// Skip this dir
-				return;
-			}
-		}
-		for (InodeHandle inode : dir.getInodeHandles(user)) {
-			if (inode.isFile()) {
-				boolean skipFile = false;
-				for (String excludePath : _excludePaths) {
-					if (inode.getPath().matches(excludePath)) {
-						// Skip this file
-						skipFile = true;
-						break;
-					}
-				}
-				if (!skipFile) unMirrorFile((FileHandle) inode);
-			} else if (inode.isDirectory()) {
-				unMirrorDir((DirectoryHandle) inode, user);
-			}
-		}
-	}
 
-	private void unMirrorFile(FileHandle file) {
-		try {
-			boolean first = true;
-			for (RemoteSlave slave : file.getSlaves()) {
-				if (first) {
-					first = false;
-				} else {
-					slave.simpleDelete(file.getPath());
-					file.removeSlave(slave);
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// Just ignore, file doesn't exist any more
-		}
-	}
 
 	@EventSubscriber
 	public void onReloadEvent(ReloadEvent event) {
