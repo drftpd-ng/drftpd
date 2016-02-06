@@ -192,17 +192,27 @@ public class TvMaze extends CommandInterface {
 		if (request.getSession().isAborted()) { return; }
 		try {
 			if (!dir.isHidden(request.getUserObject()) && TvMazeUtils.isRelease(dir.getName())) {
-				TvMazeInfo tvmazeInfo = TvMazeUtils.getTvMazeInfo(dir);
+				boolean cache = false;
+				TvMazeInfo tvmazeInfo = TvMazeUtils.getTvMazeInfoFromCache(dir);
+				if (tvmazeInfo != null) {
+					cache = true;
+				} else {
+					tvmazeInfo = TvMazeUtils.getTvMazeInfo(dir);
+				}
 				if (tvmazeInfo != null) {
 					ReplacerEnvironment env = TvMazeUtils.getShowEnv(tvmazeInfo);
 					env.add("dirname", dir.getName());
 					env.add("dirpath", dir.getPath());
-					request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.add", env, request.getUser()));
-					try {
-						// Sleep for randomly generated seconds specified in conf
-						Thread.sleep(TvMazeUtils.randomNumber());
-					} catch (InterruptedException ie) {
-						// Thread interrupted
+					if (cache) {
+						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.cache", env, request.getUser()));
+					} else {
+						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.add", env, request.getUser()));
+						try {
+							// Sleep for randomly generated seconds specified in conf
+							Thread.sleep(TvMazeUtils.randomNumber());
+						} catch (InterruptedException ie) {
+							// Thread interrupted
+						}
 					}
 				}
 			}

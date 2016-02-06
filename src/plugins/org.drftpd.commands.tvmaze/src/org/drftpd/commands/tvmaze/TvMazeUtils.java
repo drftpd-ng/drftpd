@@ -332,6 +332,11 @@ public class TvMazeUtils {
 				))*1000;
 	}
 
+	public static TvMazeInfo getTvMazeInfoFromCache(DirectoryHandle dir) {
+		TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
+		return tvmazeData.getTvMazeInfoFromCache();
+	}
+
 	public static TvMazeInfo getTvMazeInfo(DirectoryHandle dir) {
 		TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
 		try {
