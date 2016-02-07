@@ -76,7 +76,7 @@ public class Request extends CommandInterface {
 	private void readConfig() {
 		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("request");
 		
-		_requestPath = props.getProperty("request.dirpath", "/requests/");
+		_requestPath = props.getProperty("request.dirpath", "/REQUESTS/");
 		_createRequestPath = Boolean.parseBoolean(props.getProperty("request.createpath", "false"));
 		
 		_reqFilledPrefix = props.getProperty("reqfilled.prefix", "FILLED-for.");

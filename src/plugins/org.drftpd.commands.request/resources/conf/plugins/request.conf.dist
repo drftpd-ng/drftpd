@@ -1,5 +1,5 @@
 # Request path
-request.dirpath=/requests
+request.dirpath=/REQUESTS
 
 # Creates 'request.dirpath' if it does not exist.
 request.createpath=true
