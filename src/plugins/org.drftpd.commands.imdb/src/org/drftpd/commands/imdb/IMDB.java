@@ -185,21 +185,31 @@ public class IMDB extends CommandInterface {
 					if (IMDBUtils.containSection(sec, IMDBConfig.getInstance().getRaceSections())) {
 						DirectoryHandle parent = nfo.getParent();
 						IMDBInfo imdbInfo = IMDBUtils.getIMDBInfo(parent, false);
-						if (imdbInfo == null || imdbInfo.getMovieFound()) {
+						if (imdbInfo == null) {
 							continue;
 						}
-						IMDBUtils.addMetadata(imdbInfo, parent);
 						env.add("dirname", parent.getName());
 						env.add("dirpath", parent.getPath());
 						env.add("filename", nfo.getName());
 						env.add("filepath", nfo.getPath());
-						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix +
-								"createimdb.add", env, request.getUser()));
-						try {
-							// Sleep for randomly generated seconds specified in conf
-							Thread.sleep(IMDBUtils.randomNumber());
-						} catch (InterruptedException ie) {
-							// Thread interrupted
+						if (imdbInfo.getMovieFound()) {
+							request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix +
+									"createimdb.cache", env, request.getUser()));
+						} else {
+							IMDBUtils.addMetadata(imdbInfo, parent);
+							if (imdbInfo.getMovieFound()) {
+								request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix +
+										"createimdb.add", env, request.getUser()));
+							} else {
+								request.getSession().printOutput(500, request.getSession().jprintf(_bundle, _keyPrefix +
+										"createimdb.fail", env, request.getUser()));
+							}
+							try {
+								// Sleep for randomly generated seconds specified in conf
+								Thread.sleep(IMDBUtils.randomNumber());
+							} catch (InterruptedException ie) {
+								// Thread interrupted
+							}
 						}
 					}
 				}
