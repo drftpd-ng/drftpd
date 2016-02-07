@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -254,9 +255,9 @@ public class ListHandler extends CommandInterface {
 				}
 			}
 			ListElementsContainer container = null;
-
+			boolean slavenames = request.getProperties().getProperty("slavenames","false").equalsIgnoreCase("true");
 			try {
-				container = listElements(directoryFile, conn, request.getUser());
+				container = listElements(directoryFile, conn, request.getUser(), slavenames);
 			} catch (IOException e) {
 				logger.error(e);
 				return new CommandResponse(450, e.getMessage());
@@ -270,7 +271,7 @@ public class ListHandler extends CommandInterface {
 			try {
 				if (isStat || isList) {
 					os.write("total 0" + NEWLINE);
-					os.write(toList(container.getElements(), fulldate));
+					os.write(toList(container.getElements(), fulldate, slavenames));
 				} else {
 					os.write(toMLST(container.getElements(),request.getArgument()));
 				}
@@ -290,7 +291,7 @@ public class ListHandler extends CommandInterface {
 		}
 	}
 
-	protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user) throws IOException {
+	protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user, boolean slavenames) throws IOException {
 		ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
 		ArrayList<InodeHandle> tempFileList = new ArrayList<InodeHandle>(dir.getInodeHandles(session.getUserNull(user)));
 		ArrayList<InodeHandleInterface> listFiles = container.getElements();
@@ -308,7 +309,8 @@ public class ListHandler extends CommandInterface {
 						env.add("ofilename", element.getName());
 						String oFileName = session.jprintf(_bundle, _keyPrefix+"files.offline.filename", env, user);
 	
-						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
+						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(),
+								slavenames ? getSlaveList((FileHandle)element) : element.getGroup(), element.lastModified(), element.getSize()));
 						numTotal++;
 					}
 				} catch (IOException e) {
@@ -412,7 +414,7 @@ public class ListHandler extends CommandInterface {
 		return output.toString();
 	}
 
-	private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate) {
+	private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate, boolean slavenames) {
 		StringBuilder output = new StringBuilder();
 
 		for (InodeHandleInterface inode : listElements) {
@@ -430,7 +432,12 @@ public class ListHandler extends CommandInterface {
 				line.append(DELIM);
 				line.append(padToLength(inode.getUsername(), 8));
 				line.append(DELIM);
-				line.append(padToLength(inode.getGroup(), 8));
+				if (inode.isFile() && slavenames && inode instanceof FileHandle) {
+					// Replace group name with a list of all slaves file exist on.
+					line.append(padToLength(getSlaveList((FileHandle)inode), 8));
+				} else {
+					line.append(padToLength(inode.getGroup(), 8));
+				}
 				line.append(DELIM);
 				line.append(inode.getSize());
 				line.append(DELIM);
@@ -447,6 +454,16 @@ public class ListHandler extends CommandInterface {
 			}
 		}
 		return output.toString();
+	}
+
+	private String getSlaveList(FileHandle file) {
+		String slaveList = "";
+		try {
+			slaveList = StringUtils.join(file.getSlaveNames(), ",");
+		} catch (FileNotFoundException e) {
+			//File removed
+		}
+		return slaveList;
 	}
 
 	protected void addPermission(InodeHandleInterface inode, StringBuilder output) throws FileNotFoundException {
