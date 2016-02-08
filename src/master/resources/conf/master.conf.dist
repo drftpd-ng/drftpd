@@ -65,11 +65,17 @@ indexingengine=org.drftpd.vfs.index.lucene
 #cipher.9=SSL_RSA_WITH_NULL_MD5
 #cipher.10=SSL_RSA_WITH_NULL_SHA
 
+# Excluded ciphers
+# Useful if cipher suite is left empty to allow all ciphers and
+# then just exclude specific ciphers not wanted.
+# Regex match to more easily disable a type of cipher
+cipher.excl.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV)_.*
+
 # enabled protocols
 # if left empty, default set will be used
-#protocol.1=TLSv1
-#protocol.2=TLSv1.1
-#protocol.3=TLSv1.2
+protocol.1=TLSv1
+protocol.2=TLSv1.1
+protocol.3=TLSv1.2
 
 # Slave remerge throttling thresholds, do not modify these
 # unless you know what you are doing

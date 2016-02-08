@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -172,47 +173,61 @@ public class ConfigManager implements ConfigInterface {
     }
 
     private void parseCipherSuites() {
-        ArrayList<String> cipherSuites = new ArrayList<String>();
-        List<String> supportedCipherSuites;
+        List<String> cipherSuites = new ArrayList<String>();
+        ArrayList<String> supportedCipherSuites = new ArrayList<String>();
         try {
-            supportedCipherSuites = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites());
+			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
+            for (int x = 1;; x++) {
+                String cipherSuite = _mainCfg.getProperty("cipher." + x);
+                if (cipherSuite == null) {
+                    break;
+                } else if (supportedCipherSuites.contains(cipherSuite)) {
+                    cipherSuites.add(cipherSuite);
+                }
+            }
         } catch (Exception e) {
             logger.error("Unable to get supported cipher suites, using default.", e);
-            _cipherSuites = null;
-            return;
         }
-        for (int x = 1;; x++) {
-            String cipherSuite = _mainCfg.getProperty("cipher." + x);
-            if (cipherSuite != null && supportedCipherSuites.contains(cipherSuite)) {
-                cipherSuites.add(cipherSuite);
-            } else {
-                break;
+        if (supportedCipherSuites.size() == 0) {
+            _cipherSuites = null;
+        } else if (cipherSuites.size() == 0) {
+            // Cipher suites not specified, add all supported and remove excluded
+            for (int x = 1;; x++) {
+                String exclCipherSuite = _mainCfg.getProperty("cipher.excl." + x);
+                if (exclCipherSuite == null) {
+                    break;
+                } else if (exclCipherSuite.trim().length() == 0) {
+                    continue;
+                }
+                Iterator<String> i = supportedCipherSuites.iterator();
+                while (i.hasNext()) {
+                    String cipherSuite = i.next();
+                    if (cipherSuite.matches(exclCipherSuite)) {
+                        i.remove();
+                    }
+                }
             }
-        }
-        if (cipherSuites.size() == 0) {
-            _cipherSuites = null;
+            _cipherSuites = supportedCipherSuites.toArray(new String[supportedCipherSuites.size()]);
         } else {
             _cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
         }
     }
 
     private void parseSSLProtocols() {
-        ArrayList<String> sslProtocols = new ArrayList<String>();
+        List<String> sslProtocols = new ArrayList<String>();
         List<String> supportedSSLProtocols;
         try {
             supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
+            for (int x = 1;; x++) {
+                String sslProtocol = _mainCfg.getProperty("protocol." + x);
+                if (sslProtocol == null) {
+                    break;
+                } else if (supportedSSLProtocols.contains(sslProtocol)) {
+                    sslProtocols.add(sslProtocol);
+                }
+            }
         } catch (Exception e) {
             logger.error("Unable to get supported SSL protocols, using default.", e);
-            _sslProtocols = null;
-            return;
-        }
-        for (int x = 1;; x++) {
-            String sslProtocol = _mainCfg.getProperty("protocol." + x);
-            if (sslProtocol != null && supportedSSLProtocols.contains(sslProtocol)) {
-                sslProtocols.add(sslProtocol);
-            } else {
-                break;
-            }
         }
         if (sslProtocols.size() == 0) {
             _sslProtocols = null;

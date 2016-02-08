@@ -149,37 +149,55 @@ public class Slave {
 			_sslProtocols = null;
 		}
 
-		ArrayList<String> cipherSuites = new ArrayList<String>();
-		List<String> supportedCipherSuites;
+		List<String> cipherSuites = new ArrayList<String>();
+		ArrayList<String> supportedCipherSuites = new ArrayList<String>();
 		try {
-			supportedCipherSuites = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites());
+			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
 			for (int x = 1;; x++) {
 				String cipherSuite = p.getProperty("cipher." + x);
-				if (cipherSuite != null && supportedCipherSuites.contains(cipherSuite)) {
-					cipherSuites.add(cipherSuite);
-				} else {
+				if (cipherSuite == null) {
 					break;
+				} else if (supportedCipherSuites.contains(cipherSuite)) {
+					cipherSuites.add(cipherSuite);
 				}
 			}
 		} catch (Exception e) {
 			logger.error("Unable to get supported cipher suites, using default.", e);
 		}
-		if (cipherSuites.size() == 0) {
+		if (supportedCipherSuites.size() == 0) {
 			_cipherSuites = null;
+		} else if (cipherSuites.size() == 0) {
+			// Cipher suites not specified, add all supported and remove excluded
+			for (int x = 1;; x++) {
+				String exclCipherSuite = p.getProperty("cipher.excl." + x);
+				if (exclCipherSuite == null) {
+					break;
+				} else if (exclCipherSuite.trim().length() == 0) {
+					continue;
+				}
+				Iterator<String> i = supportedCipherSuites.iterator();
+				while (i.hasNext()) {
+					String cipherSuite = i.next();
+					if (cipherSuite.matches(exclCipherSuite)) {
+						i.remove();
+					}
+				}
+			}
+			_cipherSuites = supportedCipherSuites.toArray(new String[supportedCipherSuites.size()]);
 		} else {
 			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
 		}
 
-		ArrayList<String> sslProtocols = new ArrayList<String>();
+		List<String> sslProtocols = new ArrayList<String>();
 		List<String> supportedSSLProtocols;
 		try {
 			supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
 			for (int x = 1;; x++) {
 				String sslProtocol = p.getProperty("protocol." + x);
-				if (sslProtocol != null && supportedSSLProtocols.contains(sslProtocol)) {
-					sslProtocols.add(sslProtocol);
-				} else {
+				if (sslProtocol == null) {
 					break;
+				} else if (supportedSSLProtocols.contains(sslProtocol)) {
+					sslProtocols.add(sslProtocol);
 				}
 			}
 		} catch (Exception e) {
