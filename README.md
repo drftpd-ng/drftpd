@@ -68,7 +68,7 @@ Download DrFTPD from https://github.com/drftpd-ng/drftpd3
 ### Details
 Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
-git clone hhttps://github.com/drftpd-ng/drftpd3.git
+git clone https://github.com/drftpd-ng/drftpd3.git
 unzip master.zip
 rm master.zip
 ```
@@ -114,7 +114,7 @@ Copy the slave.zip file from your master to the server that you plan to run the 
 chmod 744 slave.sh
 chmod 744 bin/wrapper
 ```
-- Copy slave.conf.dist to slave.conf
+- Copy conf/slave.conf.dist to conf/slave.conf
 - Copy conf/wrapper-slave.conf.dist to conf/wrapper-slave.conf
 - Copy conf/diskselection.conf.dist to conf/diskselection.conf
 - Edit slave.conf

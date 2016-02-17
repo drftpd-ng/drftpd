@@ -22,12 +22,6 @@ IRC announce on NFO upload and imdb info in directory metadata.</doc-text>
 		<library id="org.drftpd.commands.imdb" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="httpclient" path="../../../lib/httpclient-4.5.1.jar" type="code">
-			<export prefix="*" />
-		</library>
-		<library id="httpcore" path="../../../lib/httpcore-4.4.4.jar" type="code">
-			<export prefix="*" />
-		</library>
 	</runtime>
 	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
 	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />

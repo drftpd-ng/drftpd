@@ -17,6 +17,7 @@
  */
 package org.drftpd.commands.speedtest.net;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -65,7 +66,7 @@ public class SpeedTest extends CommandInterface {
 		AnnotationProcessor.process(this);
 		_bundle = cManager.getResourceBundle();
 		_keyPrefix = this.getClass().getName()+".";
-		_servers = SpeedTestUtils.getClosetsServers();
+		_servers = null;
 		readConfig();
 	}
 
@@ -108,6 +109,12 @@ public class SpeedTest extends CommandInterface {
 		if (args[0].equals("-refresh")) {
 			_servers = SpeedTestUtils.getClosetsServers();
 			return new CommandResponse(200, request.getSession().jprintf(
+					_bundle, _keyPrefix+"servers.refresh", env, request.getUser()));
+		}
+		if (_servers == null) {
+			// First run?, load server list
+			_servers = SpeedTestUtils.getClosetsServers();
+			request.getSession().printOutput(200, request.getSession().jprintf(
 					_bundle, _keyPrefix+"servers.refresh", env, request.getUser()));
 		}
 		if (args.length == 2 && !allSlaves && !wildcardSlaves && args[1].equals("-list")) {
@@ -161,10 +168,21 @@ public class SpeedTest extends CommandInterface {
 			}
 			HashMap<String, SpeedTestServer> testServers = new HashMap<String, SpeedTestServer>();
 
-			SlaveLocation slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
-			if (slaveLocation.getLatitude() == 0 || slaveLocation.getLongitude() == 0) {
-				request.getSession().printOutput(500, request.getSession().jprintf(
-						_bundle, _keyPrefix+"slave.geoip.error", env, request.getUser()));
+			SlaveLocation slaveLocation = new SlaveLocation();
+			String lat = rslave.getProperty("lat");
+			String lon = rslave.getProperty("lon");
+			if (lat != null && NumberUtils.isParsable(lat)) {
+				slaveLocation.setLatitude(Double.parseDouble(lat));
+			}
+			if (lon != null && NumberUtils.isParsable(lon)) {
+				slaveLocation.setLongitude(Double.parseDouble(lon));
+			}
+			if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
+				slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
+				if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
+					request.getSession().printOutput(500, request.getSession().jprintf(
+							_bundle, _keyPrefix + "slave.geoip.error", env, request.getUser()));
+				}
 			}
 
 			slaveLocations.put(rslave.getName(), slaveLocation);
@@ -250,7 +268,7 @@ public class SpeedTest extends CommandInterface {
 		//shut down the executor service now
 		executor.shutdown();
 
-		return null;
+		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
 	@EventSubscriber

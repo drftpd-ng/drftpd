@@ -21,6 +21,9 @@
 		<library id="org.drftpd.commands.speedtest.net" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
+		<library id="gson" path="../../../lib/gson-2.5.jar" type="code">
+			<export prefix="*" />
+		</library>
 	</runtime>
 
 	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="SpeedTestHandler" />

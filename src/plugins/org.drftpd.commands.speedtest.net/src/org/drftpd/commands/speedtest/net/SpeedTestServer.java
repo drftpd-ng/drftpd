@@ -17,6 +17,9 @@
  */
 package org.drftpd.commands.speedtest.net;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 /**
  * @author scitz0
  */
@@ -123,5 +126,27 @@ public class SpeedTestServer {
 
 	public void setLatency(int latency) {
 		this.latency = latency;
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31).
+				append(getId()).
+				append(getUrl()).
+				toHashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof SpeedTestServer))
+			return false;
+		if (obj == this)
+			return true;
+
+		SpeedTestServer sts = (SpeedTestServer) obj;
+		return new EqualsBuilder().
+				append(id, sts.getId()).
+				append(url, sts.getUrl()).
+				isEquals();
 	}
 }
