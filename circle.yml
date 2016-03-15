@@ -2,7 +2,29 @@ machine:
   java:
     version: oraclejdk7
 
+dependencies:
+  pre:
+    # Create build.conf so the drftpd installer doesn't ask for it.
+    - mv build.conf_cirleci build.conf
+    # Build drftpd
+    - sh build.sh -a
+  
+  post:  
+    # Start drftpd master
+    - sh master.sh start:
+        background: true
+    # Add drftpd slave
+    - lftp 127.0.0.1:2121 -u drftpd,drftpd -e 'set net:reconnect-interval-base 5;set net:reconnect-interval-multiplier 0;site addslave drftpd && site slave drftpd addmask *@127.0.0.1 && exit'
+    # Start drftpd slave
+    - sh slave.sh start:
+        background: true
+
 
 test:
   override:
-    - sh build.sh
+    # Connect to localhost as user drftpd check the slave called drftpd is online.
+    #- lftp 127.0.0.1:2121 -u drftpd,drftpd -e "site slaves&&exit"
+    - "lftp 127.0.0.1:2121 -u drftpd,drftpd -e 'site slaves&&exit'|grep '200- drftpd: ONLINE'"
+    #- bash -c 'lftp 127.0.0.1:2121 -u drftpd,drftpd -e "site slaves&&exit"|grep "200- drftpd: ONLINE"'
+    #- lftp 127.0.0.1:2121 -u drftpd,drftpd -e "site slaves&&exit"|grep "200- drftpd: ONLINE"
+    # | grep "200- drftpd: ONLINE"
