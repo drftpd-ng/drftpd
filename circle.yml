@@ -1,0 +1,8 @@
+machine:
+  java:
+    version: oraclejdk7
+
+
+test:
+  override:
+    - sh build.sh
