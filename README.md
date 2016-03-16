@@ -1,3 +1,5 @@
+![CirleCI Build Status](https://circleci.com/gh/drftpd/drftpd3/tree/master.svg?style=shield&circle-token=:circle-token)
+
 # Introduction
 
 DrFTPD is a Distributed FTP server written in java, it's unique because it doesn't handle transfers like normal FTP servers. DrFTPD is set up with a master and a collection of file transfer slaves that handle the file transfers, you can have as many file transfer slaves as you like. Some names that could be used to describe this is ftp site merger, ftp cluster, ftp grid or multi site bnc, but the only accurate term is "distributed ftp daemon."
