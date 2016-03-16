@@ -23,8 +23,4 @@ dependencies:
 test:
   override:
     # Connect to localhost as user drftpd check the slave called drftpd is online.
-    #- lftp 127.0.0.1:2121 -u drftpd,drftpd -e "site slaves&&exit"
     - "lftp 127.0.0.1:2121 -u drftpd,drftpd -e 'site slaves&&exit'|grep '200- drftpd: ONLINE'"
-    #- bash -c 'lftp 127.0.0.1:2121 -u drftpd,drftpd -e "site slaves&&exit"|grep "200- drftpd: ONLINE"'
-    #- lftp 127.0.0.1:2121 -u drftpd,drftpd -e "site slaves&&exit"|grep "200- drftpd: ONLINE"
-    # | grep "200- drftpd: ONLINE"
