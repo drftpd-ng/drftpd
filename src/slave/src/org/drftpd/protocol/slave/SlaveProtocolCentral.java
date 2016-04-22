@@ -171,6 +171,7 @@ public class SlaveProtocolCentral {
 			ar = (AsyncResponse) m.invoke(ah, new Object[]{ ac });
 		} catch (Exception e) {
 			logger.error("Unable to invoke: " + m.toGenericString(), e);
+			logger.error("Invokation failed due to: " + m.toGenericString(), e.getCause());
 			return new AsyncResponseException(ac.getIndex(), new Exception("Unable to invoke the proper handler", e));
 		}
 		
