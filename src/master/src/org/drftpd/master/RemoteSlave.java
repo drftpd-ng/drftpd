@@ -40,6 +40,7 @@ import java.util.LinkedList;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -124,7 +125,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	
 	private KeyedMap<Key<?>, Object> _transientKeyedMap;
 
-	private LinkedList<QueuedOperation> _renameQueue;
+	private ConcurrentLinkedDeque<QueuedOperation> _renameQueue;
 
 	private transient LinkedBlockingDeque<String> _indexPool;
 
@@ -153,7 +154,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_keysAndValues = new Properties();
 		_transientKeyedMap = new KeyedMap<Key<?>, Object>();
 		_ipMasks = new HostMaskCollection();
-		_renameQueue = new LinkedList<QueuedOperation>();
+		_renameQueue = new ConcurrentLinkedDeque<QueuedOperation>();
 		_remergePaused = new AtomicBoolean();
 		_remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
 		_commandMonitor = new Object();
@@ -484,10 +485,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void processQueue() throws IOException, SlaveUnavailableException {
-		// no for-each loop, needs iter.remove()
-		for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter
-				.hasNext();) {
-			QueuedOperation item = iter.next();
+		QueuedOperation item = null;
+		while ((item = _renameQueue.poll()) != null) {
 			String sourceFile = item.getSource();
 			String destFile = item.getDestination();
 
@@ -499,23 +498,18 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 						throw e.getCause();
 					}
 				} finally {
-					iter.remove();
 					commit();
 				}
 			} else { // rename
-				String fileName = destFile
-						.substring(destFile.lastIndexOf("/") + 1);
-				String destDir = destFile.substring(0, destFile
-						.lastIndexOf("/"));
+				String fileName = destFile.substring(destFile.lastIndexOf("/") + 1);
+				String destDir = destFile.substring(0, destFile.lastIndexOf("/"));
 				try {
-					fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, sourceFile, destDir,
-							fileName));
+					fetchResponse(SlaveManager.getBasicIssuer().issueRenameToSlave(this, sourceFile, destDir, fileName));
 				} catch (RemoteIOException e) {
 					if (!(e.getCause() instanceof FileNotFoundException)) {
 						throw e.getCause();
 					}
 				} finally {
-					iter.remove();
 					commit();
 				}
 			}
@@ -1144,13 +1138,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return false;
 	}
 
-	public LinkedList<QueuedOperation> getRenameQueue() {
+	public ConcurrentLinkedDeque<QueuedOperation> getRenameQueue() {
 		return _renameQueue;
 	}
 
-	public void setRenameQueue(LinkedList<QueuedOperation> renameQueue) {
+	public void setRenameQueue(ConcurrentLinkedDeque<QueuedOperation> renameQueue) {
 		if (renameQueue == null) {
-			_renameQueue = new LinkedList<QueuedOperation>();
+			_renameQueue = new ConcurrentLinkedDeque<QueuedOperation>();
 		} else {
 			_renameQueue = renameQueue;
 		}
