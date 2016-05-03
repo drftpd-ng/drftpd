@@ -57,8 +57,8 @@ public class TvMazeVFSData {
 		} catch (KeyNotFoundException e1) {
 			// bah, let's load it
 		} catch (FileNotFoundException e) {
-			// the previous nfo file is no longer of type VirtualFileSystemFile
-			_dir.removePluginMetaData(TvMazeInfo.TVMAZEINFO);
+			// Directory removed, just return
+			return null;
 		}
 
 		// Fetch info from TvMaze

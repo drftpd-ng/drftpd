@@ -20,6 +20,7 @@ package org.drftpd.commands.tvmaze;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -34,7 +35,8 @@ import org.drftpd.util.HttpUtils;
 public class TvMazeParser {
 	private static final Logger logger = Logger.getLogger(TvMazeParser.class); 
 
-	private static final String _searchUrl = "http://api.tvmaze.com/singlesearch/shows?q=";
+	private static final String _searchUrl = "http://api.tvmaze.com/search/shows?q=";
+	private static final String _showUrl = "http://api.tvmaze.com/shows/";
 	
 	public TvMazeParser() {
 	}
@@ -75,34 +77,71 @@ public class TvMazeParser {
 				// Remove season/episode from search string
 				newSearchString = newSearchString.substring(0,newSearchString.toLowerCase().indexOf(m2.group(1))).trim();
 			}
+			int index = -1;
+			// Match year
+			String year = "";
+			Pattern p3 = Pattern.compile(".*[\\s|\\.](\\d{4}).*");
+			Matcher m3 = p3.matcher(newSearchString.toLowerCase());
+			if (m3.find()) {
+				year = m3.group(1);
+				index = newSearchString.toLowerCase().indexOf(m3.group(1));
+			}
+			// Match common country codes
+			//TODO: Make this configurable
+			String countrycode = "";
+			Pattern p4 = Pattern.compile(".*[\\s|\\.](uk|gb|us|ca|au)([\\s|\\.].*)?$");
+			Matcher m4 = p4.matcher(newSearchString.toLowerCase());
+			if (m4.find()) {
+				countrycode = m4.group(1).toUpperCase();
+				// TvMaze use GB instead of UK
+				if (countrycode.equals("UK")) countrycode = "GB";
+				int countrycodeindex = newSearchString.toLowerCase().indexOf(m4.group(1));
+				if (index == -1 || countrycodeindex < index) index = countrycodeindex;
+			}
+			if (index >= 0) {
+				newSearchString = newSearchString.substring(0,index).trim();
+			}
 
 			newSearchString = TvMazeUtils.filterTitle(newSearchString);
 
 			newSearchString = _searchUrl + newSearchString;
 
-			if (season >= 0) {
-				newSearchString += "&embed=episodes";
-			}
-
 			String data = HttpUtils.retrieveHttpAsString(newSearchString);
 
 			JsonParser jp = new JsonParser();
 			JsonElement root = jp.parse(data);
-			JsonObject rootobj = root.getAsJsonObject();
-
-			if (rootobj == null) {
+			if (!root.isJsonArray()) {
 				_error = "No Show Results Were Found For \"" + searchString + "\"";
+				logger.info(_error);
 				return null;
 			}
+
+			String id = TvMazeUtils.getBestMatch(root.getAsJsonArray(), year, countrycode);
+
+			if (id == null) {
+				_error = "No show matched search criteria [show=" + searchString + ",year="+ year + ",country=" + countrycode + "]";
+				logger.info(_error);
+				return null;
+			}
+
+			newSearchString = _showUrl + id;
+
+			if (season >= 0) {
+				newSearchString += "?embed=episodes";
+			}
+
+			data = HttpUtils.retrieveHttpAsString(newSearchString);
+			root = jp.parse(data);
+			JsonObject rootobj = root.getAsJsonObject();
 
 			return TvMazeUtils.createTvMazeInfo(rootobj, season, number);
 
 		} catch (HttpException e) {
 			// Ignore stack trace for HttpException and just log error message as an info
-			_error = e.getMessage();
+			_error = e.getMessage() + " [" + searchString + "]";
 			logger.info(_error);
 		} catch (Exception e) {
-			_error = e.getMessage();
+			_error = e.getMessage() + " [" + searchString + "]";
 			logger.error(_error,e);
 		}
 		return null;
