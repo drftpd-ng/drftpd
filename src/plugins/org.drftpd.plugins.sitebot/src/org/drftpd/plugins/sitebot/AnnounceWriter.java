@@ -20,7 +20,7 @@ package org.drftpd.plugins.sitebot;
 import java.util.ArrayList;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.plugins.sitebot.config.GlobPathMatcher;
+import org.drftpd.plugins.sitebot.config.PathMatcher;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -30,13 +30,13 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class AnnounceWriter {
 
-	private GlobPathMatcher _matcher;
+	private PathMatcher _matcher;
 
 	private ArrayList<OutputWriter> _writers;
 
 	private String _sectionName;
 
-	public AnnounceWriter(GlobPathMatcher matcher, ArrayList<OutputWriter> writers, String sectionName) {
+	public AnnounceWriter(PathMatcher matcher, ArrayList<OutputWriter> writers, String sectionName) {
 		_matcher = matcher;
 		_writers = writers;
 		_sectionName = sectionName;

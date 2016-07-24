@@ -19,32 +19,45 @@ package org.drftpd.plugins.sitebot.config;
 
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.vfs.DirectoryHandle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
  * @author djb61
  * @version $Id$
  */
-public class GlobPathMatcher {
+public class PathMatcher {
 
-	private Pattern _pat;
+	private org.apache.oro.text.regex.Pattern _globPat;
+	private Pattern _regexPat;
+
+	private boolean _regex;
 
 	private String _pathPattern;
 
-	public GlobPathMatcher(String pathPattern) throws MalformedPatternException {
-		_pat = new GlobCompiler().compile(pathPattern);
+	public PathMatcher(String pathPattern, boolean regex) throws MalformedPatternException {
+		if (regex) {
+			_regexPat = Pattern.compile(pathPattern, Pattern.CASE_INSENSITIVE);
+		} else {
+			_globPat = new GlobCompiler().compile(pathPattern);
+		}
+		_regex = regex;
 		_pathPattern = pathPattern;
 	}
 
 	public boolean checkPath(DirectoryHandle file) {
 		String path = file.getPath().concat("/");
 
-		Perl5Matcher m = new Perl5Matcher();
-
-		return m.matches(path, _pat);
+		if (_regex) {
+			Matcher m = _regexPat.matcher(path);
+			return m.matches();
+		} else {
+			Perl5Matcher m = new Perl5Matcher();
+			return m.matches(path, _globPat);
+		}
 	}
 
 	public String getPathSuffix() {

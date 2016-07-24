@@ -87,9 +87,10 @@ public class AnnounceConfig {
 				if (writers.size() == 0) {
 					continue;
 				}
-				GlobPathMatcher matcher;
+				boolean useRegex = Boolean.parseBoolean(cfg.getProperty(type+".path."+i+".regex", "false"));
+				PathMatcher matcher;
 				try {
-					matcher = new GlobPathMatcher(pathPattern);
+					matcher = new PathMatcher(pathPattern, useRegex);
 				} catch (MalformedPatternException e) {
 					logger.warn("Bad entry "+type+"."+i+".path in sitebot announce conf");
 					continue;
