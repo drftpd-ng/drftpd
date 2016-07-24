@@ -67,7 +67,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 
 	public String[] getEventTypes() {
 		String[] types = {"mkdir","rmdir","wipe","addslave",
-				"delslave","store","invite"};
+				"delslave","msgslave","store","invite"};
 		return types;
 	}
 	
@@ -110,8 +110,8 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".addslave", env, _bundle), "addslave");
 		} else if (event.getCommand().equals("DELSLAVE")) {
 			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".delslave", env, _bundle), "delslave");
-                } else if (event.getCommand().equals("MSGSLAVE")) {
-                        outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgslave", env, _bundle), "msgslave");
+		} else if (event.getCommand().equals("MSGSLAVE")) {
+			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgslave", env, _bundle), "msgslave");
 		}
 	}
 
