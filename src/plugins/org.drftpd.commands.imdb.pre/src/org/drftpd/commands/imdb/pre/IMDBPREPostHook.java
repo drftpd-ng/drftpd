@@ -24,6 +24,7 @@ import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.imdb.IMDBConfig;
 import org.drftpd.commands.imdb.IMDBPrintThread;
+import org.drftpd.commands.imdb.IMDBUtils;
 import org.drftpd.commands.pre.Pre;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
@@ -50,7 +51,7 @@ public class IMDBPREPostHook implements PostHookInterface {
 		}
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(preDir);
-		if (!IMDBConfig.getInstance().getRaceSections().contains(sec.getName().toLowerCase()))
+		if (!IMDBUtils.containSection(sec, IMDBConfig.getInstance().getRaceSections()))
 			return;
 
 		if (preDir.getName().matches(IMDBConfig.getInstance().getExclude()))
