@@ -188,8 +188,13 @@ public class MirrorPostHook implements PostHookInterface {
 			}
 		}
 
-		getJobManager().addJobToQueue(new Job(file, mirrorSlaves, activeSetting.getPriority(),
-				activeSetting.getNbrOfMirrors()));
+		if (activeSetting.getNbrOfMirrors() <= mirrorSlaves.size()) {
+			// We got enough slaves, proceed and add job to queue
+			getJobManager().addJobToQueue(new Job(file, mirrorSlaves, activeSetting.getPriority(),
+					activeSetting.getNbrOfMirrors()));
+		} else {
+			logger.debug("Not adding " + file.getPath() + " to job queue, not enough slaves available.");
+		}
 	}
 
 	/*
