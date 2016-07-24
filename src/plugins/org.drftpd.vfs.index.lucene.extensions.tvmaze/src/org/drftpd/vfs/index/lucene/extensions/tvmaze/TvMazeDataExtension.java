@@ -80,7 +80,7 @@ public class TvMazeDataExtension implements IndexDataExtensionInterface {
 				FIELD_SEASON.setIntValue(tvmazeInfo.getEPList()[0].getSeason());
 				FIELD_NUMBER.setIntValue(tvmazeInfo.getEPList()[0].getNumber());
 			}
-			FIELD_TYPE.setValue(tvmazeInfo.getName());
+			FIELD_TYPE.setValue(tvmazeInfo.getType());
 			FIELD_STATUS.setValue(tvmazeInfo.getStatus());
 			FIELD_LANGUAGE.setValue(tvmazeInfo.getLanguage());
 			FIELD_COUNTRY.setValue(tvmazeInfo.getCountry());
