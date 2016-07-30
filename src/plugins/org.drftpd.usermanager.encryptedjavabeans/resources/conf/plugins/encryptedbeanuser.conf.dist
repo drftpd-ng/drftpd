@@ -1,7 +1,7 @@
 ##############################################################################
 ##	     			ENCRYPTED USER PASSWORDS                                ##
 ##  																		##
-## 		Encrypt User Passwords In .xml File									##
+## 		Encrypt User Passwords In json File									##
 ##  																		##
 ##		Valid Options: md2, md5, sha-1, sha-256, sha-384, sha-512, bcrypt	##
 ##						none, clear, empty = No ecrpytion					##

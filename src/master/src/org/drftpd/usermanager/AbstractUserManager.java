@@ -106,7 +106,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public User create(String username) throws UserFileException {
 		try {
 			getUserByName(username);
-			// bad, .xml file already exists.
+			// bad, .json file already exists.
 			throw new FileExistsException("User " +username+ " already exists");
 		} catch (IOException e) {
 			// bad, some I/O error ocurred.

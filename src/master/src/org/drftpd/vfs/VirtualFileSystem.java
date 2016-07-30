@@ -17,8 +17,6 @@
  */
 package org.drftpd.vfs;
 
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -26,14 +24,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
+import com.cedarsoftware.util.io.JsonIoException;
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.event.VirtualFileSystemEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
@@ -221,22 +225,19 @@ public class VirtualFileSystem {
 	protected VirtualFileSystemInode loadInode(String path)
 			throws FileNotFoundException {
 		String fullPath = fileSystemPath + path;
-		//logger.debug("Loading inode - " + fullPath);
-		File xmlFile = new File(fullPath);
+		logger.debug("Loading inode - " + fullPath);
+		File jsonFile = new File(fullPath);
 		File realDirectory = null;
-		if (xmlFile.isDirectory()) {
-			realDirectory = xmlFile;
+		if (jsonFile.isDirectory()) {
+			realDirectory = jsonFile;
 			fullPath = fullPath + separator + dirName;
-			xmlFile = new File(fullPath);
+			jsonFile = new File(fullPath);
 		}
-		XMLDecoder xmlDec = null;
+		InputStream in = null;
 		try {
-			xmlDec = new XMLDecoder(new BufferedInputStream(new FileInputStream(fullPath)));
-			xmlDec.setExceptionListener(new VFSExceptionListener(fullPath));
-			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
-			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec.readObject();
-			Thread.currentThread().setContextClassLoader(prevCL);
+			in = new BufferedInputStream(new FileInputStream(fullPath));
+			JsonReader reader = new JsonReader(in);
+			VirtualFileSystemInode inode = (VirtualFileSystemInode) reader.readObject();
 			inode.setName(getLast(path));
 			if (inode.isDirectory()) {
 				VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
@@ -245,10 +246,10 @@ public class VirtualFileSystem {
 			inode.inodeLoadCompleted();
 			return inode;
 		} catch (Exception e) {
-			boolean corruptedXMLFile = xmlFile.exists();
-			if (corruptedXMLFile) {
+			boolean corruptedJsonFile = jsonFile.exists();
+			if (corruptedJsonFile) {
 				// parsing error! Let's get rid of the offending bugger
-				xmlFile.delete();
+				jsonFile.delete();
 			}
 			// if this object is the Root object, let's create it and get outta
 			// here
@@ -273,7 +274,7 @@ public class VirtualFileSystem {
 				parentInode.createDirectoryRaw(getLast(path), "drftpd", "drftpd");
 				return parentInode.getInodeByName(getLast(path));
 			}
-			if (corruptedXMLFile) {
+			if (corruptedJsonFile) {
 				// we already deleted the file, but we need to tell the parent
 				// directory that it doesn't exist anymore
 				logger.debug("Error loading " + fullPath + ", deleting file", e);
@@ -281,8 +282,11 @@ public class VirtualFileSystem {
 			}
 			throw new FileNotFoundException();
 		} finally {
-			if (xmlDec != null) {
-				xmlDec.close();
+			try {
+				if (in != null)
+					in.close();
+			} catch (IOException e) {
+				logger.error("Error closing input stream when loading vfs inode " + fullPath, e);
 			}
 		}
 	}
@@ -337,7 +341,7 @@ public class VirtualFileSystem {
 	 */
 	protected void writeInode(VirtualFileSystemInode inode) {
 		String fullPath = getRealPath(inode.getPath());
-		XMLEncoder enc = null;
+		OutputStream out = null;
 		try {
 			if (inode instanceof VirtualFileSystemRoot) {
 				new File(fileSystemPath).mkdirs();
@@ -348,19 +352,24 @@ public class VirtualFileSystem {
 			} else {
 				new File(getRealPath(inode.getParent().getPath())).mkdirs();
 			}
-			enc = new XMLEncoder(new BufferedOutputStream(
-					new SafeFileOutputStream(fullPath)));
-			inode.setupXML(enc);
-			enc.setExceptionListener(new VFSExceptionListener(fullPath));
-			enc.writeObject(inode);
+			out = new BufferedOutputStream(new SafeFileOutputStream(fullPath));
+			Map<String,Object> params = new HashMap<>();
+			params.put(JsonWriter.PRETTY_PRINT, true);
+			JsonWriter writer = new JsonWriter(out, params);
+			writer.write(inode);
+			logger.debug("Wrote fullPath " + fullPath);
 		} catch (IOException e) {
 			logger.error("Unable to write " + fullPath + " to disk", e);
+		} catch (JsonIoException e) {
+			logger.error("Unable to write " + fullPath + " to disk", e);
 		} finally {
-			if (enc != null) {
-				enc.close();
+			try {
+				if (out != null)
+					out.close();
+			} catch (IOException e) {
+				logger.error("Unable to close OutputStream when writing " + fullPath + " to disk", e);
 			}
 		}
-		logger.debug("Wrote fullPath " + fullPath);
 	}
 
 	/**

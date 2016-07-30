@@ -34,6 +34,9 @@
 		<library id="wrapper" path="../../lib/wrapper.jar" type="code">
 			<export prefix="*" />
 		</library>
+		<library id="json-io" path="../../lib/json-io-4.5.0.jar" type="code">
+			<export prefix="*" />
+		</library>
 	</runtime>
 	<extension-point id="UserManager">
 		<parameter-def id="Class" type="string" />

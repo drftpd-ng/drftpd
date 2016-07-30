@@ -17,18 +17,8 @@
  */
 package org.drftpd.vfs;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.Encoder;
-import java.beans.Expression;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PersistenceDelegate;
-import java.beans.PropertyDescriptor;
-import java.beans.XMLEncoder;
 import java.io.FileNotFoundException;
 import java.lang.ref.SoftReference;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -45,9 +35,6 @@ import org.drftpd.exceptions.FileExistsException;
  * @see org.drftpd.vfs.DirectoryHandle
  */
 public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
-
-	protected static final Collection<String> transientListDirectory = Arrays
-	.asList("name", "parent", "files");
 
 	private transient TreeMap<String, SoftReference<VirtualFileSystemInode>> _files = 
 		new CaseInsensitiveTreeMap<String, SoftReference<VirtualFileSystemInode>>();
@@ -355,42 +342,6 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		for (String file : files) {
 			_files.put(file, null);
 		}
-	}
-
-	/**
-	 * Configure the serialization of the Directory.
-	 */
-	@Override
-	protected void setupXML(XMLEncoder enc) {
-		super.setupXML(enc);
-
-		PropertyDescriptor[] pdArr;
-		try {
-			pdArr = Introspector.getBeanInfo(VirtualFileSystemDirectory.class)
-			.getPropertyDescriptors();
-		} catch (IntrospectionException e) {
-			logger.error("I don't know what to do here", e);
-			throw new RuntimeException(e);
-		}
-		for (int x = 0; x < pdArr.length; x++) {
-			//logger.debug("PropertyDescriptor - VirtualFileSystemDirectory - " + pdArr[x].getDisplayName());
-			if (transientListDirectory.contains(pdArr[x].getName())) {
-				pdArr[x].setValue("transient", Boolean.TRUE);
-			}
-		}
-		enc.setPersistenceDelegate(VirtualFileSystemDirectory.class,
-				new DefaultPersistenceDelegate(new String[] { "username",
-				"group" }));
-		enc.setPersistenceDelegate(AtomicInteger.class, 
-				new PersistenceDelegate() {
-			protected Expression instantiate(Object oldInstance, Encoder out) {
-				AtomicInteger ai = (AtomicInteger) oldInstance;
-				return new Expression(oldInstance,
-						oldInstance.getClass(),
-						"new",
-						new Object[] { ai.get() });
-			}
-		});
 	}
 
 	@Override

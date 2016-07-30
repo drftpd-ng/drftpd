@@ -17,28 +17,25 @@
  */
 package org.drftpd.usermanager.javabeans;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.ExceptionListener;
 import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import com.cedarsoftware.util.io.JsonReader;
 import org.apache.log4j.Logger;
-import org.drftpd.dynamicdata.Key;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.util.HostMask;
 import org.drftpd.util.CommonPluginUtils;
 
 /**
@@ -80,8 +77,8 @@ public class BeanUserManager extends AbstractUserManager {
 		
 		logger.debug("Creating users map...");
 		for (String filename : getUserpathFile().list()) {
-			if (filename.endsWith(".xml")) {
-				String username = filename.substring(0, filename.length()-4);
+			if (filename.endsWith(".xml") || filename.endsWith(".json")) {
+				String username = filename.substring(0, filename.lastIndexOf('.'));
 				_users.put(username, null); // the user exists, loading it is useless right now.
 			}
 		}
@@ -118,16 +115,53 @@ public class BeanUserManager extends AbstractUserManager {
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
 	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
+		InputStream in = null;
+		try {
+			in = new BufferedInputStream(new FileInputStream(getUserFile(userName)));
+			logger.debug("Loading '"+userName+"' Json data from disk.");
+			JsonReader reader = new JsonReader(in);
+			BeanUser user = (BeanUser) reader.readObject();
+			user.setUserManager(this);
+			return user;
+		} catch (FileNotFoundException e) {
+			// Lets see if there is a legacy xml user file to load
+			return loadXMLUser(userName);
+		} catch (Exception e) {
+			throw new UserFileException("Error loading " + userName, e);
+		} finally {
+			try {
+				if (in != null)
+					in.close();
+			} catch (IOException e) {
+				throw new UserFileException("Error loading " + userName, e);
+			}
+		}
+	}
+
+	/**
+	 * Legacy XML loader used to convert users to json schema.
+	 * @param userName
+	 * @throws NoSuchUserException, if there's no such user w/ this Username.
+	 * Meaning that the userfile does not exists.
+	 * @throws UserFileException, if an error (i/o) occured while loading data.
+	 */
+	private User loadXMLUser(String userName) throws NoSuchUserException, UserFileException {
 		XMLDecoder xd = null;
 		try {
-			BeanUser user = null;
-			xd = new XMLDecoder(new FileInputStream(getUserFile(userName)));
-			logger.debug("Loading '"+userName+"' data from disk.");
+			BeanUser user;
+			File xmlUserFile = getXMLUserFile(userName);
+			xd = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlUserFile)));
+			logger.debug("Loading '"+userName+"' XML data from disk.");
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			user = (BeanUser) xd.readObject();
 			Thread.currentThread().setContextClassLoader(prevCL);
 			user.setUserManager(this);
+			// Commit new json userfile and delete old xml
+			user.commit();
+			if (!xmlUserFile.delete()) {
+				logger.error("Failed to delete old xml userfile: " + xmlUserFile.getName());
+			}
 			return user;
 		} catch (FileNotFoundException e) {
 			throw new NoSuchUserException("No such user: '"+userName+"'", e);
@@ -206,30 +240,15 @@ public class BeanUserManager extends AbstractUserManager {
 		u.commit();
 	}
 
-	/**
-	 * Sets up the XMLEnconder.
-	 */
-	public XMLEncoder getXMLEncoder(OutputStream out) {
-		XMLEncoder e = new XMLEncoder(out);
-		e.setExceptionListener(new ExceptionListener() {
-			public void exceptionThrown(Exception e1) {
-				logger.error("", e1);
-			}
-		});
-		e.setPersistenceDelegate(BeanUser.class,
-				new DefaultPersistenceDelegate(new String[] { "name" }));
-		e.setPersistenceDelegate(Key.class, new DefaultPersistenceDelegate(
-				new String[] { "owner", "key" }));
-		e.setPersistenceDelegate(HostMask.class,
-				new DefaultPersistenceDelegate(new String[] { "mask" }));
-		return e;
-	}
-
 	protected final File getUserpathFile() {
 		return _userpathFile;
 	}	
 
 	protected final File getUserFile(String username) {
+		return new File(_userpath + username + ".json");
+	}
+
+	private File getXMLUserFile(String username) {
 		return new File(_userpath + username + ".xml");
 	}
 }

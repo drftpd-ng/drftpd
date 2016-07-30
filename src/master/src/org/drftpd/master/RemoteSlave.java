@@ -17,26 +17,20 @@
  */
 package org.drftpd.master;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.ExceptionListener;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.beans.XMLEncoder;
+import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +40,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.cedarsoftware.util.io.JsonIoException;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
@@ -79,7 +75,6 @@ import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
 import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
-import org.drftpd.util.HostMask;
 import org.drftpd.util.HostMaskCollection;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -90,8 +85,6 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class RemoteSlave extends ExtendedTimedStats implements Runnable, Comparable<RemoteSlave>,
 		Entity, Commitable {
-	private final String[] transientFields = { "available",
-			"lastDownloadSending", "lastUploadReceiving" };
 
 	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
 
@@ -115,7 +108,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private transient int _maxPath;
 
-	private transient String _name;
+	private String _name;
 
 	private transient DiskStatus _status;
 
@@ -123,7 +116,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private Properties _keysAndValues;
 	
-	private KeyedMap<Key<?>, Object> _transientKeyedMap;
+	private transient KeyedMap<Key<?>, Object> _transientKeyedMap;
 
 	private ConcurrentLinkedDeque<QueuedOperation> _renameQueue;
 
@@ -1182,45 +1175,21 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void writeToDisk() throws IOException {
-		XMLEncoder out = null;
+		OutputStream out = null;
 		try {
-
-			out = new XMLEncoder(new SafeFileOutputStream((getGlobalContext().getSlaveManager().getSlaveFile(this.getName()))));
-			out.setExceptionListener(new ExceptionListener() {
-				public void exceptionThrown(Exception e) {
-					logger.warn("", e);
-				}
-			});
-			out.setPersistenceDelegate(Key.class,
-					new DefaultPersistenceDelegate(new String[] { "owner", "key" }));
-			out.setPersistenceDelegate(HostMask.class,
-					new DefaultPersistenceDelegate(new String[] { "mask" }));
-			out.setPersistenceDelegate(RemoteSlave.class,
-					new DefaultPersistenceDelegate(new String[] { "name" }));
-			out.setPersistenceDelegate(QueuedOperation.class,
-					new DefaultPersistenceDelegate(new String[] { "source","destination" }));
-			try {
-				PropertyDescriptor[] pdArr = Introspector.getBeanInfo(RemoteSlave.class).getPropertyDescriptors();
-				ArrayList<String> transientList = new ArrayList<String>();
-				transientList.addAll(Arrays.asList(transientFields));
-				for (PropertyDescriptor pd : pdArr) {
-					if (transientList.contains(pd.getName())) {
-						pd.setValue("transient", Boolean.TRUE);
-					}
-				}
-			} catch (IntrospectionException e1) {
-				logger.error("I don't know what to do here", e1);
-				throw new RuntimeException(e1);
-			}
-			out.writeObject(this);
+			out = new BufferedOutputStream(new SafeFileOutputStream(
+					(getGlobalContext().getSlaveManager().getSlaveFile(this.getName()))));
+			Map<String,Object> params = new HashMap<>();
+			params.put(JsonWriter.PRETTY_PRINT, true);
+			JsonWriter writer = new JsonWriter(out, params);
+			writer.write(this);
 			logger.debug("Wrote slavefile for " + this.getName());
-		} catch (IOException ex) {
+		} catch (JsonIoException e) {
 			throw new RuntimeException("Error writing slavefile for "
-					+ this.getName() + ": " + ex.getMessage(), ex);
+					+ this.getName() + ": " + e.getMessage(), e);
 		} finally {
-			if (out != null) {
+			if (out != null)
 				out.close();
-			}
 		}
 	}
 
