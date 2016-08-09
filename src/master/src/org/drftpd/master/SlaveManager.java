@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -44,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.net.ssl.SSLSocket;
 
+import com.cedarsoftware.util.io.JsonReader;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
@@ -122,12 +124,11 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 
 		for (String slavepath : slavePathFile.list()) {
 
-			if (!slavepath.endsWith(".xml")) {
+			if (!slavepath.endsWith(".xml") && !slavepath.endsWith(".json")) {
 				continue;
 			}
 
-			String slavename = slavepath.substring(0, slavepath.length()
-					- ".xml".length());
+			String slavename = slavepath.substring(0, slavepath.lastIndexOf('.'));
 
 			try {
 				getSlaveByNameUnchecked(slavename);
@@ -152,14 +153,43 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		if (slavename == null) {
 			throw new NullPointerException();
 		}
+		InputStream in = null;
+		try {
+			in = new BufferedInputStream(new FileInputStream(getSlaveFile(slavename)));
+			logger.debug("Loading slave '"+slavename+"' Json data from disk.");
+			JsonReader reader = new JsonReader(in);
+			RemoteSlave rslave = (RemoteSlave) reader.readObject();
+			if (rslave.getName().equals(slavename)) {
+				_rslaves.put(slavename,rslave);
+				return rslave;
+			}
+			logger.warn("Tried to lookup a slave with the same name, different case", new Throwable());
+			throw new ObjectNotFoundException();
+		} catch (FileNotFoundException e) {
+			// Lets see if there is a legacy xml slave file to load
+			return getSlaveByXMLNameUnchecked(slavename);
+		} catch (Exception e) {
+			throw new FatalException("Error loading " + slavename + " : " + e.getMessage(), e);
+		} finally {
+			try {
+				if (in != null)
+					in.close();
+			} catch (IOException e) {
+				logger.error("Error closing stream loading json slave file for " + slavename, e);
+			}
+		}
 
+	}
+
+	private RemoteSlave getSlaveByXMLNameUnchecked(String slavename)
+			throws ObjectNotFoundException {
 		RemoteSlave rslave;
 		XMLDecoder in = null;
 
 		try {
-			in = new XMLDecoder(new FileInputStream(
-					getSlaveFile(slavename)));
-
+			File xmlSlaveFile = getXMLSlaveFile(slavename);
+			in = new XMLDecoder(new FileInputStream(xmlSlaveFile));
+			logger.debug("Loading slave '"+slavename+"' XML data from disk.");
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			rslave = (RemoteSlave) in.readObject();
@@ -167,12 +197,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 
 			if (rslave.getName().equals(slavename)) {
 				_rslaves.put(slavename,rslave);
+				// Commit new json slave file and delete old xml
+				rslave.commit();
+				if (!xmlSlaveFile.delete()) {
+					logger.error("Failed to delete old xml slave file: " + xmlSlaveFile.getName());
+				}
 				return rslave;
 			}
-			logger
-					.warn(
-							"Tried to lookup a slave with the same name, different case",
-							new Throwable());
+			logger.warn("Tried to lookup a slave with the same name, different case", new Throwable());
 			throw new ObjectNotFoundException();
 		} catch (FileNotFoundException e) {
 			throw new ObjectNotFoundException(e);
@@ -186,6 +218,10 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	}
 
 	protected File getSlaveFile(String slavename) {
+		return new File(slavePath + slavename + ".json");
+	}
+
+	protected File getXMLSlaveFile(String slavename) {
 		return new File(slavePath + slavename + ".xml");
 	}
 

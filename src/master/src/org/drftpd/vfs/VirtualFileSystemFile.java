@@ -17,13 +17,7 @@
  */
 package org.drftpd.vfs;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.beans.XMLEncoder;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
@@ -43,16 +37,6 @@ import org.drftpd.stats.StatsInterface;
  * Lowest representation of a File object.
  */
 public class VirtualFileSystemFile extends VirtualFileSystemInode implements StatsInterface  {
-
-	protected static final Collection<String> transientListFile = Arrays
-			.asList("name", "parent", "xfertime", "checksum",
-					"downloadedBytes", "downloadedFiles", "downloadedTime",
-					"uploadedBytes", "uploadedFiles", "uploadedTime");
-	// the following fields AREN'T transient, they're simply stored in the
-	// KeyedMap instead of as their own independent javabeans element
-	//
-	// xfertime, checksum, downloadedBytes, downloadedFiles, downloadedTime,
-	// uploadedBytes, uploadedFiles, uploadedTime
 
 	public static final Key<Long> CRC = new Key<Long>(VirtualFileSystemFile.class, "checksum");
 
@@ -174,34 +158,6 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	public void setChecksum(long checksum) {
 		getKeyedMap().setObject(CRC, checksum);
 		commit();
-	}
-
-	/**
-	 * Configure the serialization of the File.
-	 */
-	@Override
-	protected void setupXML(XMLEncoder enc) {
-		super.setupXML(enc);
-		
-		PropertyDescriptor[] pdArr;
-		try {
-			pdArr = Introspector.getBeanInfo(VirtualFileSystemFile.class)
-					.getPropertyDescriptors();
-		} catch (IntrospectionException e) {
-			logger.error("I don't know what to do here", e);
-			throw new RuntimeException(e);
-		}
-		for (PropertyDescriptor pd : pdArr) {
-			// logger.debug("PropertyDescriptor - VirtualFileSystemFile - "
-			// + pd.getDisplayName());
-			if (transientListFile.contains(pd.getName())) {
-				pd.setValue("transient", Boolean.TRUE);
-			}
-		}
-		// needed to create a VFSFile object during unserialization
-		enc.setPersistenceDelegate(VirtualFileSystemFile.class,
-				new DefaultPersistenceDelegate(new String[] { "username",
-						"group", "size", "slaves" }));
 	}
 
 	/**

@@ -27,14 +27,14 @@ DrFTPD 3 installation requires a number of steps before you can utilize the soft
 To give an overview of the installation process the different steps are listed below in this section.
 
 On the master you will need to:
-- Install Sun JAVA 1.7
+- Install ORACLE JAVA 1.8
 - Install ANT or Eclipse on the master
 - Add needed plugins that are not present
 - Compile the software using setup wizard
 - Configure .conf files
 
 On the slaves you will need to:
-- Install Sun JAVA 1.7
+- Install ORACLE JAVA 1.8
 - Copy slave.zip to a slave from the master
 - Configure slave.conf
 
