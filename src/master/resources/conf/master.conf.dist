@@ -14,7 +14,7 @@ master.bindport=1099
 master.port=2121
 
 # If you want master to establish a secure connection with the slaves
-# set this option to 'true'. (You must have a valid 'drftpd.key').
+# set this option to 'true'. (You must have a valid 'drftpd.key' in userdata folder).
 # Default: false
 master.slaveSSL=false
 

@@ -47,7 +47,7 @@ import org.drftpd.util.CommonPluginUtils;
  */
 public class BeanUserManager extends AbstractUserManager {
 
-	private static final String _userpath = "users/javabeans/";
+	private static final String _userpath = "userdata/users/javabeans/";
 	private static final File _userpathFile = new File(_userpath);
 
 	protected static final Logger logger = Logger

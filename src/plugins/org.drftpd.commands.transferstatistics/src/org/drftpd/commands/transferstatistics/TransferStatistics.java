@@ -262,9 +262,9 @@ public class TransferStatistics extends CommandInterface  {
 				request.getUser());
 		if (headerText.equals(headerBundleKey)) {
 			try {
-				addTextToResponse(response, "text/" + type + "_header.txt");
+				addTextToResponse(response, "userdata/text/" + type + "_header.txt");
 			} catch (IOException ioe) {
-				logger.warn("Error reading " + "text/" + type + "_header.txt", ioe);
+				logger.warn("Error reading " + "userdata/text/" + type + "_header.txt", ioe);
 			}
 		} else {
 			response.addComment(headerText);
@@ -325,9 +325,9 @@ public class TransferStatistics extends CommandInterface  {
 				request.getUser());
 		if (footerText.equals(footerBundleKey)) {
 			try {
-				addTextToResponse(response, "text/" + type + "_footer.txt");
+				addTextToResponse(response, "userdata/text/" + type + "_footer.txt");
 			} catch (IOException ioe) {
-				logger.warn("Error reading " + "text/" + type + "_footer.txt", ioe);
+				logger.warn("Error reading " + "userdata/text/" + type + "_footer.txt", ioe);
 			}
 		} else {
 			response.addComment(footerText);

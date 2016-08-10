@@ -65,7 +65,7 @@ public class UserFileConverter {
 		}
 		
 		System.out.println("Converting "+userFiles.length+" user files");
-		File outputDir = new File(_installDir+File.separator+"users"+File.separator+"javabeans");
+		File outputDir = new File(_installDir+File.separator+"userdata"+File.separator+"users"+File.separator+"javabeans");
 		if (!outputDir.exists()) {
 			if (!outputDir.mkdirs()) {
 				System.out.println("Abandoning conversion as target dir could not be created");

@@ -73,7 +73,7 @@ public class VirtualFileSystem {
 
 	public static final String dirName = ".dirProperties";
 
-	public static final String fileSystemPath = "files";
+	public static final String fileSystemPath = "userdata/vfs";
 
 	private static final Logger logger = Logger.getLogger(VirtualFileSystem.class);
 

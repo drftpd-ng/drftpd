@@ -62,6 +62,8 @@ public class NukeBeans {
 
 	protected static final Logger logger = Logger.getLogger(NukeBeans.class);
 
+	private static final String _nukebeansPath = "userdata";
+
 	private static NukeBeans _nukeBeans = null;
 
 	private LRUMap<String, NukeData> _nukes = new LRUMap<String, NukeData>(200);
@@ -186,7 +188,7 @@ public class NukeBeans {
 	public void commit() throws IOException {
 		OutputStream out = null;
 		try {
-			out = new BufferedOutputStream(new SafeFileOutputStream("nukebeans.json"));
+			out = new BufferedOutputStream(new SafeFileOutputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
 			Map<String,Object> params = new HashMap<>();
 			params.put(JsonWriter.PRETTY_PRINT, true);
 			JsonWriter writer = new JsonWriter(out, params);
@@ -236,7 +238,7 @@ public class NukeBeans {
 	private void loadLRUMap() {
 		InputStream in = null;
 		try {
-			in = new BufferedInputStream(new FileInputStream("nukebeans.json"));
+			in = new BufferedInputStream(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
 			JsonReader reader = new JsonReader(in);
 			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) reader.readObject();
 			logger.debug("Loaded log from .xml, size: " + nukees.size());
@@ -264,7 +266,7 @@ public class NukeBeans {
 		// de-serializing the Hashtable.
 		XMLDecoder xd = null;
 		try {
-			xd = new XMLDecoder(new FileInputStream("nukebeans.xml"));
+			xd = new XMLDecoder(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"));
 
 			switchClassLoaders();
 			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) xd.readObject();

@@ -131,7 +131,7 @@ class Textoutput
 method doTEXT_OUTPUT
 perms *
 help Displays the site bnc details
-file text/bnc.txt
+file userdata/text/bnc.txt
 input public
 output source
 }
@@ -142,7 +142,7 @@ class Textoutput
 method doTEXT_OUTPUT
 perms *
 help Displays the site affils
-file text/affils.txt
+file userdata/text/affils.txt
 input public
 output source
 }
