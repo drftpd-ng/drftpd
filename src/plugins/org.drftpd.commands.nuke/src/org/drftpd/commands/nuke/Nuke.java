@@ -205,8 +205,9 @@ public class Nuke extends CommandInterface {
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
-		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
-		env.add("section", section);
+		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir);
+		env.add("section", section.getName());
+		env.add("sectioncolor", section.getColor());
 		env.add("dir", nukeDirName);
 		env.add("path", nukeDirPath);
 		env.add("relpath", nukeDirPath.replaceAll("/.*?"+section+"/",""));
@@ -270,6 +271,7 @@ public class Nuke extends CommandInterface {
 
 		if (response.getComment().isEmpty()) {
 			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nukes.empty.section", env, request.getUser()));
 		}
 
@@ -412,8 +414,9 @@ public class Nuke extends CommandInterface {
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
-		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
-		env.add("section", section);
+		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir);
+		env.add("section", section.getName());
+		env.add("sectioncolor", section.getColor());
 		env.add("dir", nukeDir.getName());
 		env.add("path", nukeDir.getPath());
 		env.add("relpath", nukeDir.getPath().replaceAll("/"+section+"/",""));

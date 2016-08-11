@@ -117,6 +117,7 @@ public class IMDBUtils {
 			ReplacerEnvironment env = getEnv(imdbInfo);
 			env.add("release", dir.getName());
 			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			GlobalContext.getEventService().publishAsync(new IMDBEvent(env, dir));
 		}
 	}

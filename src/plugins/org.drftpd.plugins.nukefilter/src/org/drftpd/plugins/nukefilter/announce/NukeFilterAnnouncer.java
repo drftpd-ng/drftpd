@@ -53,6 +53,7 @@ public class NukeFilterAnnouncer extends AbstractAnnouncer {
 			env.add("path", nfni.getPath());
 			env.add("delay", String.valueOf(nfni.getDelay()));
 			env.add("section", nfni.getSectionName());
+			env.add("sectioncolor", nfni.getSectionColor());
 			env.add("element", nfni.getElement());
 			env.add("nukex", String.valueOf(nfni.getNukex()));
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+event.getIRCString(), env, _bundle), writer);

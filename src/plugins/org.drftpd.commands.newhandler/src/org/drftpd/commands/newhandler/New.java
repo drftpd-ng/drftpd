@@ -145,6 +145,9 @@ public class New extends CommandInterface {
 					}
 					env.add("pos", "" + pos);
 					env.add("name", allSections ? dir.getPath() : dir.getName());
+					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+					env.add("section", section.getName());
+					env.add("sectioncolor", section.getColor());
 					env.add("diruser", dir.getUsername());
 					env.add("files", "" + dir.getInodeHandles(user).size());
 					env.add("size", Bytes.formatBytes(dir.getSize()));

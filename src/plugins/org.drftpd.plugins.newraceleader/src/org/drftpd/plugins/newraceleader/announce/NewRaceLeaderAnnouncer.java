@@ -24,6 +24,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.newraceleader.event.NewRaceLeaderEvent;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
@@ -76,6 +77,7 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("store.newraceleader", event.getDirectory());
 		if (writer != null) {
 			env.add("section",writer.getSectionName(event.getDirectory()));
+			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDirectory()).getColor());
 			env.add("dir",writer.getPath(event.getDirectory()));
 
 			env.add("path",event.getDirectory().getPath());

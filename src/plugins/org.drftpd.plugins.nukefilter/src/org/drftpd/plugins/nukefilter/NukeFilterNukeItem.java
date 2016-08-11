@@ -39,6 +39,11 @@ public class NukeFilterNukeItem {
 		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
 		return section.getName();
 	}
+
+	public String getSectionColor() {
+		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+		return section.getColor();
+	}
 	
 	public String getReason() {
 		return reason;
