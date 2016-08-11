@@ -7,4 +7,4 @@ if not exist "%USERDATA%" (
     goto :eof
   )
 )
-keytool -genkeypair -alias ec -keyalg EC -keysize 256 -sigalg SHA256withECDSA -alias drftpd -dname CN=drftpd -keypass drftpd -keystore "%USERDATA%drftpd.key" -storepass drftpd
+keytool -genkeypair -keyalg EC -keysize 256 -sigalg SHA256withECDSA -alias drftpd -dname CN=drftpd -keypass drftpd -keystore "%USERDATA%drftpd.key" -storepass drftpd
