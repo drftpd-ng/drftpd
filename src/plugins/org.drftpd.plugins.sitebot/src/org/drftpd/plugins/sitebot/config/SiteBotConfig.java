@@ -167,7 +167,8 @@ public class SiteBotConfig {
 			String chanKey = cfg.getProperty("channel."+i+".chankey");
 			String chanPerms = cfg.getProperty("channel."+i+".perms");
 			String blowKey = cfg.getProperty("channel."+i+".blowkey");
-			_channels.add(new ChannelConfig(chanName,blowKey,chanKey,chanPerms));
+			String blowMode = cfg.getProperty("channel."+i+".blowmode", "cbc");
+			_channels.add(new ChannelConfig(chanName,blowKey,blowMode,chanKey,chanPerms));
 		}
 		_commandTrigger = cfg.getProperty("command.trigger");
 		_channelAutoJoin = cfg.getProperty("channel.autojoin").equalsIgnoreCase("true");

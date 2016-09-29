@@ -41,9 +41,11 @@ public class UserDetails {
 
 	private SiteBot _bot;
 
-	private Blowfish _cipher = null;
+	private BlowfishManager _cipher = null;
 
 	private String _blowKey = null;
+
+	private String _blowMode = null;
 
 	private String _ftpUser = null;
 
@@ -76,7 +78,7 @@ public class UserDetails {
 		_ftpUser = ftpUser;
 	}
 
-	protected Blowfish getBlowCipher() {
+	protected BlowfishManager getBlowCipher() {
 		// If we don't have a cipher for this user then check again as they may have set
 		// one on site since we last checked.
 		if (_cipher == null) {
@@ -85,9 +87,10 @@ public class UserDetails {
 		return _cipher;
 	}
 
-	protected void setBlowCipher(String blowKey) {
-		_cipher = new Blowfish(blowKey);
+	protected void setBlowCipher(String blowKey, String blowMode) {
+		_cipher = new BlowfishManager(blowKey, blowMode);
 		_blowKey = blowKey;
+		_blowMode = blowMode;
 		// If we don't know who the user is then try to find them first
 		if (_ftpUser == null) {
 			getDetailsFromDB();
@@ -132,17 +135,19 @@ public class UserDetails {
 					String userKeysString = user.getKeyedMap().getObject(BLOWKEY);
 					String[] userKeys = userKeysString.split(",");
 					String userKey = "";
+					String userKeyMode = "";
 					for (int i = 0; i < userKeys.length;i++) {
 						if (userKeys[i].startsWith(_bot.getBotName() + "|")) {
 							String[] botKey = userKeys[i].split("\\|");
 							if (botKey.length > 1) {
 								userKey = botKey[1];
+                                userKeyMode = botKey.length > 2 ? botKey[2] : BlowfishManager.ECB; //Compatibility
 								break;
 							}
 						}
 					}
 					if (!userKey.equals("")) {
-						setBlowCipher(userKey);
+						setBlowCipher(userKey, userKeyMode);
 					} else {
 						_bot.initiateDH1080(_nick);
 					}
@@ -173,6 +178,8 @@ public class UserDetails {
 				userKey.append(_bot.getBotName());
 				userKey.append("|");
 				userKey.append(_blowKey);
+				userKey.append("|");
+				userKey.append(_blowMode);
 				foundOld = true;
 			} else {
 				userKey.append(userKeys[i]);
@@ -188,7 +195,9 @@ public class UserDetails {
 			userKey.append(_bot.getBotName());
 			userKey.append("|");
 			userKey.append(_blowKey);
-		}
+            userKey.append("|");
+            userKey.append(_blowMode);
+        }
 		user.getKeyedMap().setObject(BLOWKEY, userKey.toString());
 		user.commit();
 	}
@@ -204,7 +213,7 @@ public class UserDetails {
 	protected void setIdent(String ident) {
 		String existIdentString = "";
 		User user;
-		
+
 		try {
 			user = GlobalContext.getGlobalContext().getUserManager().getUserByName(_ftpUser);
 		} catch (NoSuchUserException e) {
