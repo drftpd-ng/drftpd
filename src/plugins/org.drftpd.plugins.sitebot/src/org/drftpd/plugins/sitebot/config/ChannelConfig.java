@@ -32,13 +32,16 @@ public class ChannelConfig {
 
 	private String _blowKey;
 
+	private String _blowMode;
+
 	private String _chanKey;
 
 	private Permission _perms;
 
-	public ChannelConfig(String name, String blowKey, String chanKey, String perms) {
+	public ChannelConfig(String name, String blowKey, String blowMode, String chanKey, String perms) {
 		_name = name;
 		_blowKey = blowKey;
+		_blowMode = blowMode;
 		_chanKey = chanKey;
 		_perms = new Permission(Permission.makeUsers(new StringTokenizer(perms)));
 	}
@@ -49,6 +52,10 @@ public class ChannelConfig {
 
 	public String getBlowKey() {
 		return _blowKey;
+	}
+
+	public String getBlowMode() {
+		return _blowMode;
 	}
 
 	public String getChanKey() {

@@ -28,7 +28,7 @@ public class OutputWriter {
 
 	private static final String LINESEP = System.getProperty("line.separator");
 
-	private Blowfish _cipher;
+	private BlowfishManager _cipher;
 
 	private boolean _blowfishEnabled;
 
@@ -42,7 +42,7 @@ public class OutputWriter {
 		// Empty constructor for extending classes
 	}
 
-	public OutputWriter(SiteBot bot, String output, Blowfish cipher) {
+	public OutputWriter(SiteBot bot, String output, BlowfishManager cipher) {
 		_bot = bot;
 		_output = output;
 		_cipher = cipher;
@@ -67,13 +67,13 @@ public class OutputWriter {
 			}
 		}
 	}
-	
+
 	public void reload() {
 		_blowfishEnabled = _bot.getConfig().getBlowfishEnabled();
 		_maxOutputLen = getMaxLineLength();
 	}
 
-	protected void updateCipher(Blowfish cipher) {
+	protected void updateCipher(BlowfishManager cipher) {
 		_cipher = cipher;
 	}
 
@@ -93,7 +93,7 @@ public class OutputWriter {
 		if (_blowfishEnabled) {
 			maxLen = ((maxLen / 12) * 8) - 4;
 		}
-		
+
 		return maxLen;
 	}
 }
