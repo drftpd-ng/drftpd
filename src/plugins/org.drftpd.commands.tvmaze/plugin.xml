@@ -21,10 +21,10 @@ IRC announce on MKD/PRE event and tvmaze info dir in release dir is also availab
 		<library id="org.drftpd.commands.tvmaze" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="gson" path="../../../lib/gson-2.5.jar" type="code">
+		<library id="gson" path="../../../lib/gson-2.7.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="joda-time" path="../../../lib/joda-time-2.9.1.jar" type="code">
+		<library id="joda-time" path="../../../lib/joda-time-2.9.4.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
