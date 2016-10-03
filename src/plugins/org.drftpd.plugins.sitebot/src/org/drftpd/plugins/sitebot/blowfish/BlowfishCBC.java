@@ -10,11 +10,11 @@
 */
 package org.drftpd.plugins.sitebot.blowfish;
 
+import org.apache.commons.net.util.Base64;
+
 import java.security.SecureRandom;
 import javax.crypto.*;
 import javax.crypto.spec.*;
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 /**
  * BlowfishM CBC
@@ -68,7 +68,7 @@ public class BlowfishCBC extends Blowfish {
         }
 
         //1- decrypt with BASE64 decoder
-        byte[] base64Decoded = new BASE64Decoder().decodeBuffer(textToDecrypt);
+        byte[] base64Decoded = Base64.decodeBase64(textToDecrypt);
 
         //2- decrypt the string
         IvParameterSpec oIV = new IvParameterSpec(INIT_IV);
@@ -85,7 +85,7 @@ public class BlowfishCBC extends Blowfish {
         byte[] lFinalDecoded = new byte[lFinalIndex];
         System.arraycopy(lDecoded, 8, lFinalDecoded, 0, lFinalIndex);
 
-        //5- Return the formated String
+        //5- Return the formatted String
         return new String(lFinalDecoded, ENCODED_CHARSET);
     }
 
@@ -105,7 +105,7 @@ public class BlowfishCBC extends Blowfish {
         byte[] lEncoded = getCipher().doFinal(lFinalToDecrypt);
 
         //4- Encode with BASE64 encoder
-        String base64Encoded = new BASE64Encoder().encodeBuffer(lEncoded);
+        String base64Encoded = Base64.encodeBase64StringUnChunked(lEncoded);
 
         //5- Return the result
         return CBC_PREFIX.concat(base64Encoded);
