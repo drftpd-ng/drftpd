@@ -164,4 +164,4 @@ You are likely trying to build on a x64 OS. Basically you will need to replace w
 
 
 # Online Help 
-If you use IRC, connect to EFnet and join #drftpd-eu, #drftpd-develop. Alternatively use the forum (http://forum.drftpd.org/).
+If you use IRC, connect to EFnet and join #drftpd.eu, #drftpd-develop. Alternatively use the forum (http://forum.drftpd.org/).
