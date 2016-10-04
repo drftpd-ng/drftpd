@@ -31,8 +31,8 @@ wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-master.propertie
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-master.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
-wrapper.java.additional.4=-XX:+UseAES
-wrapper.java.additional.4=-XX:+UseAESIntrinsics
+wrapper.java.additional.5=-XX:+UseAES
+wrapper.java.additional.6=-XX:+UseAESIntrinsics
 
 #--- Uncommenting the following (And changing X to next number), 
 #--- causes DR to create a memory dump if out of memory
