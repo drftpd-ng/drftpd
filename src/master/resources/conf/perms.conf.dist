@@ -63,9 +63,9 @@ allow_connections *
 
 # SSL/TLS enforcements.
 userrejectsecure        !*
-userrejectinsecure      !*
-denydiruncrypted        !*
-denydatauncrypted       !*
+userrejectinsecure      *
+denydiruncrypted        *
+denydatauncrypted       *
 
 #hide ips in logs?
 hide_ips false
