@@ -17,7 +17,7 @@ master.host=localhost
 #port to connect to the master
 master.bindport=1099
 #Set the master to use SSL for slave connections as well
-slave.masterSSL=false
+slave.masterSSL=true
 
 #pasv port range
 #slave.portfrom=30000
@@ -25,7 +25,6 @@ slave.masterSSL=false
 
 #BIND IP - This will bind SLAVE ip to this address
 #bind.ip=
-
 
 # Enable checksums for uploads
 # [ true | false ]
