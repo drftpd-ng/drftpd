@@ -34,8 +34,6 @@ wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-slave.properties
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-slave.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
-wrapper.java.additional.5=-XX:+UseAES
-wrapper.java.additional.6=-XX:+UseAESIntrinsics
 
 # Uncommenting the following time will increase initial startup time but should
 # improve performance once running. This option requires you to have a full JDK
