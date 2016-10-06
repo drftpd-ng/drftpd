@@ -8,14 +8,14 @@ wrapper.java.command=java
 # Working Dir
 wrapper.working.dir=../
 
-# Java Main class.  This class must implement the WrapperListener interface
-#  or guarantee that the WrapperManager class is initialized.  Helper
-#  classes are provided to do this for you.  See the Integration section
-#  of the documentation for details.
+# Java Main class. This class must implement the WrapperListener interface
+# or guarantee that the WrapperManager class is initialized. Helper
+# classes are provided to do this for you. See the Integration section
+# of the documentation for details.
 wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 
-# Java Classpath (include wrapper.jar)  Add class path elements as
-#  needed starting from 1
+# Java Classpath (include wrapper.jar) Add class path elements as
+# needed starting from 1
 wrapper.java.classpath.1=lib/wrapper.jar
 wrapper.java.classpath.2=lib/jpf-1.5.1.jar
 wrapper.java.classpath.3=lib/jpf-boot-1.5.1.jar
@@ -31,6 +31,9 @@ wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-master.propertie
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-master.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
+wrapper.java.additional.5=-XX:+UseAES
+wrapper.java.additional.6=-XX:+UseAESIntrinsics
+
 #--- Uncommenting the following (And changing X to next number), 
 #--- causes DR to create a memory dump if out of memory
 #wrapper.java.additional.X=-XX:+HeapDumpOnOutOfMemoryError
@@ -56,7 +59,6 @@ wrapper.java.additional.4=-XX:+UnsyncloadClass
 #--- Uncommenting the following (And changing X to next number), will change ouput side from ASCII(false) to Binary(true)
 #--- This will change file size to base 2
 #wrapper.java.additional.X=-Dbytes.binary=true
-
 
 # ---------------------------------------
 # Enable below if you wish to monitor the memory that drftpd uses, the 
@@ -138,4 +140,3 @@ wrapper.ntservice.starttype=AUTO_START
 # Allow the service to interact with the desktop.
 # [ true | false ]
 wrapper.ntservice.interactive=false
-

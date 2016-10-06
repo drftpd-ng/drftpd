@@ -26,7 +26,6 @@ slave.masterSSL=true
 #BIND IP - This will bind SLAVE ip to this address
 #bind.ip=
 
-
 # Enable checksums for uploads
 # [ true | false ]
 enableuploadchecksums=true
