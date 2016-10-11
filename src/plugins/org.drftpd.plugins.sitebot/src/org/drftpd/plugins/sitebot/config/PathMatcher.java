@@ -64,4 +64,20 @@ public class PathMatcher {
 		int index = _pathPattern.lastIndexOf('/');
 		return _pathPattern.substring(0,index);
 	}
+
+	public String getRelativePath(DirectoryHandle file) {
+		if (_regex) {
+			String path = file.getPath().concat("/");
+			Matcher m = _regexPat.matcher(path);
+			if (m.group("announce") != null) {
+				return m.group("announce");
+			}
+			else if (m.group("truncate") != null) {
+				return file.getPath().substring(m.group("truncate").length());
+			}
+			return path;
+		} else {
+			return file.getPath().substring(getPathSuffix().length()+1);
+		}
+	}
 }
