@@ -241,7 +241,7 @@ public class NukeBeans {
 			in = new BufferedInputStream(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
 			JsonReader reader = new JsonReader(in);
 			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) reader.readObject();
-			logger.debug("Loaded log from .xml, size: " + nukees.size());
+			logger.debug("Loaded log from .json, size: " + nukees.size());
 			_nukeBeans.setLRUMap(nukees);
 		} catch (FileNotFoundException e) {
 			// Lets see if there is a legacy xml nuke log to load
