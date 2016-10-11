@@ -69,11 +69,23 @@ public class PathMatcher {
 		if (_regex) {
 			String path = file.getPath().concat("/");
 			Matcher m = _regexPat.matcher(path);
-			if (m.group("announce") != null) {
-				return m.group("announce");
-			}
-			else if (m.group("truncate") != null) {
-				return file.getPath().substring(m.group("truncate").length());
+			if (m.matches()) {
+				try {
+					String announce = m.group("announce");
+					if (announce != null) {
+						return announce;
+					}
+				} catch (IllegalArgumentException e) {
+					// No "announce" group specified in regex, this is fine
+				}
+				try {
+					String truncate = m.group("truncate");
+					if (truncate != null) {
+						return file.getPath().substring(truncate.length());
+					}
+				} catch (IllegalArgumentException e) {
+					// No "truncate" group specified in regex, this is fine
+				}
 			}
 			return path;
 		} else {
