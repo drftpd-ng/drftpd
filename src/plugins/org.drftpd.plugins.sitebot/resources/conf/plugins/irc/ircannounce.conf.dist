@@ -35,6 +35,15 @@
 # The regex value(true/false) for path determines if regex style matching
 # is to be used, else glob matching. Use double backslashes to escape character.
 # Regex pattern is case insensitive.
+# A named regex group of either "truncate" or "announce" has to be included in
+# the regex string if you want to exclude parts of the path in the announce.
+# The former to exclude this part from the announce and the
+# latter to specificaly include only this part in the annonce.
+# Example:
+# default.path.1=^(?<truncate>/SECTION1/\\d{4}/).+
+# default.path.1.destination=#irc-channel
+# default.path.1.displayname=SECTION1
+# default.path.1.regex=true
 #
 # When looking for somewhere to announce an event the bot will start with the
 # first path rule for the event type, then proceed to the second path rule.
