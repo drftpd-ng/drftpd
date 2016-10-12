@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -36,11 +37,11 @@ import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
+import org.apache.commons.collections4.map.LRUMap;
 import org.drftpd.Bytes;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.misc.LRUMap;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.VirtualFileSystem;
 
@@ -66,8 +67,9 @@ public class NukeBeans {
 
 	private static NukeBeans _nukeBeans = null;
 
-	private LRUMap<String, NukeData> _nukes = new LRUMap<String, NukeData>(200);
-	
+	@SuppressWarnings("unchecked")
+	private Map<String, NukeData> _nukes = (Map<String, NukeData>) Collections.synchronizedMap(new LRUMap(200));
+
 	private ClassLoader _prevCL;
 
 	/**
@@ -77,7 +79,7 @@ public class NukeBeans {
 	 * @throws ObjectNotFoundException,
 	 *             if not object is found.
 	 */
-	public synchronized NukeData get(String path)
+	public NukeData get(String path)
 			throws ObjectNotFoundException {
 		NukeData ne = _nukes.get(path);
 		if (ne == null)
@@ -101,7 +103,7 @@ public class NukeBeans {
 	 * @param path
 	 * @param nd
 	 */
-	public synchronized void add(String path, NukeData nd) {
+	public void add(String path, NukeData nd) {
 		_nukes.put(path, nd);
 		try {
 			commit();
@@ -118,7 +120,7 @@ public class NukeBeans {
 	 * @throws ObjectNotFoundException,
 	 *             if this path is not on the nukelog.
 	 */
-	public synchronized void remove(String path) throws ObjectNotFoundException {
+	public void remove(String path) throws ObjectNotFoundException {
 		NukeData ne = _nukes.remove(path);
 		if (ne == null)
 			throw new ObjectNotFoundException("No nukelog for: " + path);
@@ -133,7 +135,7 @@ public class NukeBeans {
 	/**
 	 * @return all NukeData Objects stored on the TreeMap.
 	 */
-	public synchronized Collection<NukeData> getAll() {
+	public Collection<NukeData> getAll() {
 		return _nukes.values();
 	}
 
@@ -157,9 +159,9 @@ public class NukeBeans {
 
 	/**
 	 * @param path
-	 * @return true if the given path is on the nukelog or false if it isnt.
+	 * @return true if the given path is on the nukelog or false if it isn't.
 	 */
-	public synchronized NukeData findPath(String path) {
+	public NukeData findPath(String path) {
 		try {
 			return get(path);
 		} catch (ObjectNotFoundException e) {
@@ -169,9 +171,9 @@ public class NukeBeans {
 
 	/**
 	 * @param name
-	 * @return true if the given name is in the nukelog or false if it isnt.
+	 * @return true if the given name is in the nukelog or false if it isn't.
 	 */
-	public synchronized NukeData findName(String name) {
+	public NukeData findName(String name) {
 		for (NukeData nd : getAll()) {
 			if (VirtualFileSystem.getLast(nd.getPath()).equals(name)) {
 				return nd;
@@ -310,7 +312,7 @@ public class NukeBeans {
 			int multiplier = 3;
 			long nukedAmount = multiplier * size;
 			String reason = "Testing";
-			Map<String, Long> nukees = new Hashtable<String, Long>();
+			Map<String, Long> nukees = new Hashtable<>();
 			nukees.put("test"+i, nukedAmount);
 
 			// actual NukeEvent
