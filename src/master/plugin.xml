@@ -19,6 +19,9 @@
 		<library id="replacer" path="../../lib/replacer.jar" type="code">
 			<export prefix="*" />
 		</library>
+		<library id="commons-collections4" path="../../lib/commons-collections4-4.1.jar" type="code">
+			<export prefix="*" />
+		</library>
 		<library id="commons-net" path="../../lib/commons-net-3.5.jar" type="code">
 			<export prefix="*" />
 		</library>
