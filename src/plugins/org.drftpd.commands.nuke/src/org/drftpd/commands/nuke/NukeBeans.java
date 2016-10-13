@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -67,8 +66,7 @@ public class NukeBeans {
 
 	private static NukeBeans _nukeBeans = null;
 
-	@SuppressWarnings("unchecked")
-	private Map<String, NukeData> _nukes = (Map<String, NukeData>) Collections.synchronizedMap(new LRUMap(200));
+	private Map<String, NukeData> _nukes = null;
 
 	private ClassLoader _prevCL;
 
@@ -79,7 +77,7 @@ public class NukeBeans {
 	 * @throws ObjectNotFoundException,
 	 *             if not object is found.
 	 */
-	public NukeData get(String path)
+	public synchronized NukeData get(String path)
 			throws ObjectNotFoundException {
 		NukeData ne = _nukes.get(path);
 		if (ne == null)
@@ -103,7 +101,7 @@ public class NukeBeans {
 	 * @param path
 	 * @param nd
 	 */
-	public void add(String path, NukeData nd) {
+	public synchronized void add(String path, NukeData nd) {
 		_nukes.put(path, nd);
 		try {
 			commit();
@@ -120,7 +118,7 @@ public class NukeBeans {
 	 * @throws ObjectNotFoundException,
 	 *             if this path is not on the nukelog.
 	 */
-	public void remove(String path) throws ObjectNotFoundException {
+	public synchronized void remove(String path) throws ObjectNotFoundException {
 		NukeData ne = _nukes.remove(path);
 		if (ne == null)
 			throw new ObjectNotFoundException("No nukelog for: " + path);
@@ -135,7 +133,7 @@ public class NukeBeans {
 	/**
 	 * @return all NukeData Objects stored on the TreeMap.
 	 */
-	public Collection<NukeData> getAll() {
+	public synchronized Collection<NukeData> getAll() {
 		return _nukes.values();
 	}
 
@@ -161,7 +159,7 @@ public class NukeBeans {
 	 * @param path
 	 * @return true if the given path is on the nukelog or false if it isn't.
 	 */
-	public NukeData findPath(String path) {
+	public synchronized NukeData findPath(String path) {
 		try {
 			return get(path);
 		} catch (ObjectNotFoundException e) {
@@ -173,7 +171,7 @@ public class NukeBeans {
 	 * @param name
 	 * @return true if the given name is in the nukelog or false if it isn't.
 	 */
-	public NukeData findName(String name) {
+	public synchronized NukeData findName(String name) {
 		for (NukeData nd : getAll()) {
 			if (VirtualFileSystem.getLast(nd.getPath()).equals(name)) {
 				return nd;
@@ -218,7 +216,7 @@ public class NukeBeans {
 	}
 
 	/**
-	 * Creates a new instance of NukeBeans. De-serialize the .xml.
+	 * Creates a new instance of NukeBeans. De-serialize the .json/xml.
 	 */
 
 	public static void newInstance() {
@@ -229,7 +227,7 @@ public class NukeBeans {
 	/**
 	 * @param nukes
 	 */
-	public void setLRUMap(LRUMap<String, NukeData> nukes) {
+	public void setLRUMap(Map<String, NukeData> nukes) {
 		_nukes = nukes;
 	}
 
@@ -238,16 +236,16 @@ public class NukeBeans {
 	 */
 	@SuppressWarnings("unchecked")
 	private void loadLRUMap() {
+		Map<String, NukeData> nukees = new LRUMap(200);
 		InputStream in = null;
 		try {
 			in = new BufferedInputStream(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
 			JsonReader reader = new JsonReader(in);
-			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) reader.readObject();
+			nukees.putAll((Map<String, NukeData>)reader.readObject());
 			logger.debug("Loaded log from .json, size: " + nukees.size());
-			_nukeBeans.setLRUMap(nukees);
 		} catch (FileNotFoundException e) {
 			// Lets see if there is a legacy xml nuke log to load
-			loadXMLLRUMap();
+			loadXMLLRUMap(nukees);
 		} finally {
 			try {
 				if (in != null)
@@ -255,6 +253,7 @@ public class NukeBeans {
 			} catch (IOException e) {
 				logger.error("Error closing stream loading json nuke log file", e);
 			}
+			_nukeBeans.setLRUMap(nukees);
 		}
 	}
 
@@ -263,7 +262,7 @@ public class NukeBeans {
 	 * Deserializes the Nukelog Map.
 	 */
 	@SuppressWarnings("unchecked")
-	private void loadXMLLRUMap() {
+	private void loadXMLLRUMap(Map<String, NukeData> nukees) {
 		saveClassLoader();
 		// de-serializing the Hashtable.
 		XMLDecoder xd = null;
@@ -271,10 +270,9 @@ public class NukeBeans {
 			xd = new XMLDecoder(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"));
 
 			switchClassLoaders();
-			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) xd.readObject();
+			nukees.putAll((Map<String, NukeData>)xd.readObject());
 
 			logger.debug("Loaded log from .xml, size: " + nukees.size());
-			_nukeBeans.setLRUMap(nukees);
 		} catch (FileNotFoundException e) {
 			// nukelog does not exists yet.
 		} finally {
