@@ -157,3 +157,32 @@ exclude.subdirs=^(?i)(Approved.by).*$
 # 6.section=XViD
 # 6.irc=${color}04${bold}NO PROOF${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
 # 6.nuke.reason=auto.missing.proof
+
+##
+## -----------------------------------------
+## AUTONUKE CONFIGURATION SETTINGS [IMDB]
+## -----------------------------------------
+##
+## x.imdb.field
+## The IMDB field to check, valid settings are:
+## Title Year Language Country Director Genre Plot Votes Rating Screens Limited
+##
+## x.imdb.operator
+## The mathematical operator to use when comparing the metadata against value specified.
+## Fields this setting must be specified for are:
+## Year Votes Rating Screens
+## All non-digit characters are removed so for example a rating of 6.7 will be 67.
+##
+## x.imdb.value
+## The value to compare against.
+## Could be either a regular expression(if string comparison) or
+## a digit value.
+##
+
+## Example configuration, nuke release if it has an IMDB rating below 5.0
+#7.type=IMDB
+#7.imdb.field=Rating
+#7.imdb.operator=<
+#7.imdb.value=50
+#7.irc=${color}04${bold}IMDB${bold}${coloroff} - Rating below 5.0 ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+#7.nuke.reason=auto.imdb.rating.below.5.0
