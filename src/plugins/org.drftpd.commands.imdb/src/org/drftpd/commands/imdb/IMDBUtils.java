@@ -54,6 +54,8 @@ public class IMDBUtils {
 
 	public static void setInfo(IMDBInfo imdbInfo, IMDBParser imdbParser) {
 		imdbInfo.setTitle(imdbParser.getTitle());
+		imdbInfo.setLanguage(imdbParser.getLanguage());
+		imdbInfo.setCountry(imdbParser.getCountry());
 		imdbInfo.setYear(imdbParser.getYear());
 		imdbInfo.setDirector(imdbParser.getDirector());
 		imdbInfo.setGenre(imdbParser.getGenre());
@@ -68,6 +70,8 @@ public class IMDBUtils {
 	public static ReplacerEnvironment getEnv(IMDBInfo imdbInfo) {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("title", imdbInfo.getTitle());
+		env.add("language", imdbInfo.getLanguage());
+		env.add("country", imdbInfo.getCountry());
 		env.add("director", imdbInfo.getDirector());
 		env.add("genre", imdbInfo.getGenre());
 		env.add("plot", imdbInfo.getPlot());

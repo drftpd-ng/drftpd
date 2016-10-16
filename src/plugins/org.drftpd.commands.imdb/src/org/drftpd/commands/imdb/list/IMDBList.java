@@ -46,6 +46,8 @@ public class IMDBList implements AddListElementsInterface {
 				if (imdbInfo.getMovieFound()) {
 					ReplacerEnvironment env = new ReplacerEnvironment();
 					env.add("title", imdbInfo.getTitle());
+					env.add("language", imdbInfo.getLanguage());
+					env.add("country", imdbInfo.getCountry());
 					env.add("year", imdbInfo.getYear() != null ? imdbInfo.getYear() : "9999");
 					env.add("director", imdbInfo.getDirector());
 					env.add("genre", imdbInfo.getGenre());
