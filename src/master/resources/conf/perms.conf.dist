@@ -1,15 +1,14 @@
-# is displayed as the site tagline on first connection
-# leave it alone and you will see the version following by link
-#login_prompt DrFTPD 3.2.0 http://drftpd.org
+# is displayed as the site tagline on first connection.
+# Leave it alone and you will see the version following by link.
+#login_prompt DrFTPD 3.2.0 https://github.com/drftpd-ng/drftpd3
 
-# Max number of connections
+# Max number of connections :
 # Example:
 #  max_users	<max_logins> <max_exempted>
 #  max_users	100	10
 #  exempt	=siteop
 # Above would allow normal users to connect until there are 100 concurrent users.
 # siteop's would be able to connect until there are 110 concurrent users.
-
 max_users	100	10
 exempt		=siteop
 
@@ -34,7 +33,7 @@ rename			*	=siteop
 
 privpath 		/hidden_path/*	=siteop
 
-# hide the user that's is inside the given dir.
+# Hide the user that's is inside the given dir.
 hideinwho 		/hidden_path/*	*
 
 # Appends the message contained in the file to the
@@ -54,7 +53,7 @@ allow_connections *
 
 # To be used if your master does not report the correct outside ip for
 # PASV commands
-#pasv_addr 1.1.1.1
+#pasv_addr xxx.xxx.xxx.xxx
 
 # If you have (an) ftp bouncer(s), you have to put their IP(s) here so that drftpd
 # knows if the connection is from a bouncer or a regular user.
@@ -67,8 +66,63 @@ userrejectinsecure      *
 denydiruncrypted        *
 denydatauncrypted       *
 
-#hide ips in logs?
+# Hide ips in logs?
 hide_ips false
 
 # hide users or group from shown in stats outputs
 hideinstats     =deleted =exempt
+
+# Don't update files and bytes on transfers
+#nostatsup      /pre/*  *
+#nostatsdn      /pre/*  *
+
+# Control credit ratio on uploads (0 = no credits)
+#creditcheck <path> <ratio> <=group/-user>
+
+# Control credit ratio on downloads (0 = no credits)
+#creditloss <path> <ratio> <=group/-user>
+
+# Allows pre in /pre/* to group siteop
+pre	/pre/* =siteop
+
+################################################################################
+#   These are Regex Implementations of user permissions on the site 
+#
+#   makedirex   - Create Directory Permission
+#   uploadex    - Upload Permission
+#   downloadex  - Download Permission
+#   deleteex    - Delete Permission
+#   deleteownex - Delete Own Permission
+#   renameex    - Rename Permission
+#   renameownex - Rename Own Permission
+#   privpathex  - Private Path Permission
+#
+#	Examples:
+#
+#	makedirex ^/SECTION1/.*(sectionkeyword1|sectionkeyword2).*$ !*
+#	uploadex ^.*(sitekeyword1|sitekeyword2).*$ !*
+#
+################################################################################
+
+# Prevents people sending blah(12).nfo etc
+uploadex (.*)\([0-9]{1,4}\)\.[a-z0-9]{3}$ !*
+uploadex (\([0-9]+\)\.)nfo !*
+uploadex \.date !*
+uploadex \.message !*
+
+# Filter nfo's from being uploaded into certain directory names
+uploadex /((?:(?:cd|dis[ck])[a-f0-9]+|sample|subs|covers|cover|extra|extras|sub|proof/).*\.nfo)$ !*
+
+# Filter sfv's in Covers/Sample dirs 
+uploadex /((?:sample|subs|covers|cover|extra|extras|sub|proof)/.*\.sfv)$ !*
+
+# Only allow filenames with the defined allowed chars 
+uploadex ([^/a-z0-9()._-]) !*
+
+# Only allow dirnames with the defined allowed chars 
+makedirex ([^/a-z0-9()._-]) !*
+
+# The below directives allow you to manage
+# who can FXP *from* and *to* this FTP.
+#deny_upfxp * *
+#deny_dnfxp * * 

@@ -2,7 +2,7 @@
 ## AutoNuke ##
 ##############
 
-## Nuke user (User account to use when nuking dir)
+## Nuke user (User account to use when nuking dir).
 user=drftpd
 
 ## Debug mode: No nuking, output to drftpd.log instead
@@ -10,13 +10,13 @@ user=drftpd
 ## any autonukes in memory. 
 debug=true
 
-## Exclude sections (comma separated)
+## Exclude sections (comma separated).
 exclude.sections=PRE,REQUESTS,ARCHIVE
 
-## Exclude release directories (Regex)
+## Exclude release directories (Regex).
 exclude.dirs=^(?i)((\\[NUKED\\]).*|SORTED|SINGLES)$
 
-## Skip the release if any of these sub directories exist (Regex)
+## Skip the release if any of these sub directories exist (Regex).
 exclude.subdirs=^(?i)(Approved.by).*$
 
 ## ----------------------------------------
@@ -37,7 +37,6 @@ exclude.subdirs=^(?i)(Approved.by).*$
 ##                            (see sample configs below)
 ##
 ## Empty                    - nothing in the directory.
-##
 ##
 ## [OPTIONAL] x.section (DEFAULT=*)
 ## Use * if you want it to be valid for all sections except excluded
@@ -80,7 +79,7 @@ exclude.subdirs=^(?i)(Approved.by).*$
 ## When a release is found to be nuked it will send this to IRC.
 ## Users can see the current list with !autonukes.
 ## If dir is older than last modified date + nuke delay this message wont be sent
-## as it will get nuked directly anyway
+## as it will get nuked directly anyway.
 ##
 ## --------------------------------------------
 ## AUTONUKE CONFIGURATION SETTINGS [Incomplete]
@@ -152,3 +151,9 @@ exclude.subdirs=^(?i)(Approved.by).*$
 # 5.section=XViD
 # 5.irc=${color}04${bold}NO SAMPLE${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
 # 5.nuke.reason=auto.missing.sample
+#
+# 6.type=Missing
+# 6.missing=^(?i)proof$
+# 6.section=XViD
+# 6.irc=${color}04${bold}NO PROOF${bold}${coloroff} ${color}14->${coloroff} ${bold}${path}${bold} ${color}14[${coloroff} ${bold}AutoNuke:${bold} ${color}10${timeleft}${coloroff} ${color}14]${coloroff}
+# 6.nuke.reason=auto.missing.proof
