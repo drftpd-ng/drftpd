@@ -103,7 +103,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
 
 	protected static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
-	protected static final String INDEX_DIR = "index";
+	protected static final String INDEX_DIR = "userdata/index";
 
 	private static final Document INDEX_DOCUMENT = new Document();
 

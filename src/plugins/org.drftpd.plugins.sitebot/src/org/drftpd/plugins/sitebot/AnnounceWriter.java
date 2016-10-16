@@ -78,7 +78,7 @@ public class AnnounceWriter {
 		if (_matcher != null && _sectionName != null) {
 			// Here we need to rewrite the path to make it relative
 			// to the pseudo section
-			return dir.getPath().substring(_matcher.getPathSuffix().length()+1);
+			return _matcher.getRelativePath(dir);
 		}
 		// Return path relative to section
 		// Special case to handle directories in the root

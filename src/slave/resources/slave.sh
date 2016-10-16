@@ -21,6 +21,9 @@ SLAVE_CONF="conf/slave.conf"
 WRAPPER_CMD="bin/wrapper"
 WRAPPER_CONF="conf/wrapper-slave.conf"
 
+# Validroots
+VALIDROOTS="conf/.validroots"
+
 # Priority at which to run the wrapper.  See "man nice" for valid priorities.
 #  nice is only used if a priority is specified.
 PRIORITY=
@@ -139,21 +142,21 @@ getroots() {
 ROOTS=$(getroots)
 
 initroots() {
-    printf "$ROOTS" > .validroots
+    printf "$ROOTS" > "$VALIDROOTS"
 }
 
-if [ ! -e ".validroots" ]; then
+if [ ! -e "$VALIDROOTS" ]; then
     echo "First run? no valid roots file found, running initroots."
     initroots
 fi
 
 compareroots() {
-    if [ ! -e ".validroots" ]; then
+    if [ ! -e "$VALIDROOTS" ]; then
         echo "Valid roots not found."
         exit 1
     fi
 
-    tmp=`cat .validroots`
+    tmp=`cat $VALIDROOTS`
     if [ "$tmp" != "$ROOTS" ]; then
         echo "root(s) for drftpd do not matchup anymore."
         echo "======== root(s) in file ========"

@@ -31,6 +31,7 @@ import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.prebw.event.PREBWEvent;
 import org.drftpd.plugins.prebw.PreInfo;
 import org.drftpd.plugins.prebw.UserInfo;
+import org.drftpd.sections.SectionInterface;
 import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -75,10 +76,10 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			String section = preInfo.getSection().getName();
+			SectionInterface section = preInfo.getSection();
 			env.add("dir", dir.getName());
-			env.add("section", section);
-			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
+			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			StringBuilder bw = new StringBuilder();
 			String delim = ReplacerUtils.jprintf(_keyPrefix+".prebw.bw.separator", env, _bundle).trim();
 			for (String messure : preInfo.getMessures().keySet()) {
@@ -99,8 +100,8 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 			if (leechCount == 0 || preInfo.getUsers().isEmpty()) {
 				ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 				tmpenv.add("dir", dir);
-				tmpenv.add("section", section);
-				tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
+				tmpenv.add("section", section.getName());
+				tmpenv.add("sectioncolor", section.getColor());
 				leechers.append(ReplacerUtils.jprintf(_keyPrefix+".prebw.leechtop.empty",
 						tmpenv, _bundle));
 			} else {
@@ -111,8 +112,8 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 						break;
 					ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 					tmpenv.add("dir", dir);
-					tmpenv.add("section", section);
-					tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
+					tmpenv.add("section", section.getName());
+					tmpenv.add("sectioncolor", section.getColor());
 					tmpenv.add("username", u.getName());
 					tmpenv.add("group", u.getGroup());
 					tmpenv.add("bytes", Bytes.formatBytes(u.getBytes()));

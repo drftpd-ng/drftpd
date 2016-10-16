@@ -57,6 +57,7 @@ public class Sections extends CommandInterface {
         
         for (SectionInterface section : sections) {
             env.add("section", section.getName());
+			env.add("sectioncolor", section.getName());
             env.add("path", section.getCurrentDirectory().getPath());
             response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"section", env, request.getUser()));
         }

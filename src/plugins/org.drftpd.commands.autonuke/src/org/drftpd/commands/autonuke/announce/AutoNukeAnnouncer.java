@@ -25,6 +25,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.Bytes;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
@@ -75,7 +76,9 @@ public class AutoNukeAnnouncer extends AbstractAnnouncer {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("dir", dir.getName());
 			env.add("path", dir.getPath());
-			env.add("section", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getName());
+			SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			try {
 				env.add("user", dir.getUsername());
 				env.add("group", dir.getGroup());

@@ -77,7 +77,9 @@ public class AutoNukeCommands extends CommandInterface {
 		boolean foundItem = false;
 		for (NukeItem ni : DirsToNuke.getDirsToNuke().get()) {
 			if (ni.getDir().getPath().startsWith(request.getArgument(), 1)) {
-				env.add("section", GlobalContext.getGlobalContext().getSectionManager().lookup(ni.getDir()).getName());
+				SectionInterface niSection = GlobalContext.getGlobalContext().getSectionManager().lookup(ni.getDir());
+				env.add("section", niSection.getName());
+				env.add("sectioncolor", niSection.getColor());
 				env.add("dir", ni.getDir().getName());
 				env.add("path", ni.getDir().getPath());
 				env.add("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
@@ -91,6 +93,7 @@ public class AutoNukeCommands extends CommandInterface {
 
 		if (!foundItem && !DirsToNuke.getDirsToNuke().empty()) {
 			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			env.add("nbrtotal", ""+DirsToNuke.getDirsToNuke().size());
 			response.addComment(session.jprintf(
 					_bundle, _keyPrefix+"autonukes.section.empty", request.getUser()));
@@ -170,6 +173,7 @@ public class AutoNukeCommands extends CommandInterface {
         for (SectionInterface section : sectionsToCheck) {
 			DirectoryHandle sectionRoot = section.getBaseDirectory();
 			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			request.getSession().printOutput(200, request.getSession().jprintf(
 					_bundle, _keyPrefix+"autonukescan.start", env, request.getUser()));
 

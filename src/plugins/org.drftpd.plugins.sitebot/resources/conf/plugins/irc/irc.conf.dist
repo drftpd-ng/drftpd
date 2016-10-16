@@ -116,11 +116,13 @@ blowfish.unencrypted.reason=Unencrypted text is not permitted
 channel.1=#drftpd-test
 channel.1.perms=*
 channel.1.blowkey=drftpd
+channel.1.blowmode=cbc
 #channel.1.chankey=drftpd
 
 #channel.2=#drftpd-test2
 #channel.2.perms=!=iND *
 #channel.2.blowkey=drftpd2
+#channel.2.blowmode=ecb
 #channel.2.chankey=drftpd
 
 # Auto join a channel when invited, for security reasons the bot even with this

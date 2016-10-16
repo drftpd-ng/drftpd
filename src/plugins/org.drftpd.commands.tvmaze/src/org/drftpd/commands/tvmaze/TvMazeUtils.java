@@ -417,7 +417,7 @@ public class TvMazeUtils {
 			}
 			env.add("release", dir.getName());
 			env.add("section", section.getName());
-			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
+			env.add("sectioncolor", section.getColor());
 			GlobalContext.getEventService().publishAsync(new TvMazeEvent(env, dir));
 		}
 	}

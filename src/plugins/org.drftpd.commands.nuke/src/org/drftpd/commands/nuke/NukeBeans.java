@@ -36,11 +36,11 @@ import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
+import org.apache.commons.collections4.map.LRUMap;
 import org.drftpd.Bytes;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.misc.LRUMap;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.VirtualFileSystem;
 
@@ -62,10 +62,12 @@ public class NukeBeans {
 
 	protected static final Logger logger = Logger.getLogger(NukeBeans.class);
 
+	private static final String _nukebeansPath = "userdata";
+
 	private static NukeBeans _nukeBeans = null;
 
-	private LRUMap<String, NukeData> _nukes = new LRUMap<String, NukeData>(200);
-	
+	private Map<String, NukeData> _nukes = null;
+
 	private ClassLoader _prevCL;
 
 	/**
@@ -155,7 +157,7 @@ public class NukeBeans {
 
 	/**
 	 * @param path
-	 * @return true if the given path is on the nukelog or false if it isnt.
+	 * @return true if the given path is on the nukelog or false if it isn't.
 	 */
 	public synchronized NukeData findPath(String path) {
 		try {
@@ -167,7 +169,7 @@ public class NukeBeans {
 
 	/**
 	 * @param name
-	 * @return true if the given name is in the nukelog or false if it isnt.
+	 * @return true if the given name is in the nukelog or false if it isn't.
 	 */
 	public synchronized NukeData findName(String name) {
 		for (NukeData nd : getAll()) {
@@ -186,7 +188,7 @@ public class NukeBeans {
 	public void commit() throws IOException {
 		OutputStream out = null;
 		try {
-			out = new BufferedOutputStream(new SafeFileOutputStream("nukebeans.json"));
+			out = new BufferedOutputStream(new SafeFileOutputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
 			Map<String,Object> params = new HashMap<>();
 			params.put(JsonWriter.PRETTY_PRINT, true);
 			JsonWriter writer = new JsonWriter(out, params);
@@ -214,7 +216,7 @@ public class NukeBeans {
 	}
 
 	/**
-	 * Creates a new instance of NukeBeans. De-serialize the .xml.
+	 * Creates a new instance of NukeBeans. De-serialize the .json/xml.
 	 */
 
 	public static void newInstance() {
@@ -225,7 +227,7 @@ public class NukeBeans {
 	/**
 	 * @param nukes
 	 */
-	public void setLRUMap(LRUMap<String, NukeData> nukes) {
+	public void setLRUMap(Map<String, NukeData> nukes) {
 		_nukes = nukes;
 	}
 
@@ -234,16 +236,16 @@ public class NukeBeans {
 	 */
 	@SuppressWarnings("unchecked")
 	private void loadLRUMap() {
+		Map<String, NukeData> nukees = new LRUMap(200);
 		InputStream in = null;
 		try {
-			in = new BufferedInputStream(new FileInputStream("nukebeans.json"));
+			in = new BufferedInputStream(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
 			JsonReader reader = new JsonReader(in);
-			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) reader.readObject();
-			logger.debug("Loaded log from .xml, size: " + nukees.size());
-			_nukeBeans.setLRUMap(nukees);
+			nukees.putAll((Map<String, NukeData>)reader.readObject());
+			logger.debug("Loaded log from .json, size: " + nukees.size());
 		} catch (FileNotFoundException e) {
 			// Lets see if there is a legacy xml nuke log to load
-			loadXMLLRUMap();
+			loadXMLLRUMap(nukees);
 		} finally {
 			try {
 				if (in != null)
@@ -251,6 +253,7 @@ public class NukeBeans {
 			} catch (IOException e) {
 				logger.error("Error closing stream loading json nuke log file", e);
 			}
+			_nukeBeans.setLRUMap(nukees);
 		}
 	}
 
@@ -259,18 +262,17 @@ public class NukeBeans {
 	 * Deserializes the Nukelog Map.
 	 */
 	@SuppressWarnings("unchecked")
-	private void loadXMLLRUMap() {
+	private void loadXMLLRUMap(Map<String, NukeData> nukees) {
 		saveClassLoader();
 		// de-serializing the Hashtable.
 		XMLDecoder xd = null;
 		try {
-			xd = new XMLDecoder(new FileInputStream("nukebeans.xml"));
+			xd = new XMLDecoder(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"));
 
 			switchClassLoaders();
-			LRUMap<String, NukeData> nukees = (LRUMap<String, NukeData>) xd.readObject();
+			nukees.putAll((Map<String, NukeData>)xd.readObject());
 
 			logger.debug("Loaded log from .xml, size: " + nukees.size());
-			_nukeBeans.setLRUMap(nukees);
 		} catch (FileNotFoundException e) {
 			// nukelog does not exists yet.
 		} finally {
@@ -308,7 +310,7 @@ public class NukeBeans {
 			int multiplier = 3;
 			long nukedAmount = multiplier * size;
 			String reason = "Testing";
-			Map<String, Long> nukees = new Hashtable<String, Long>();
+			Map<String, Long> nukees = new Hashtable<>();
 			nukees.put("test"+i, nukedAmount);
 
 			// actual NukeEvent

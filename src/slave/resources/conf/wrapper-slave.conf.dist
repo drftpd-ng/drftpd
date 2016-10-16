@@ -26,7 +26,6 @@ wrapper.java.classpath.6=lib/drftpd-jpf-3.2.0.jar
 #URLBootStrap (more options further down, need to comment out item 3 above)
 #wrapper.java.classpath.3=classes/
 
-
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib
 
@@ -35,6 +34,7 @@ wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-slave.properties
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-slave.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
+
 # Uncommenting the following time will increase initial startup time but should
 # improve performance once running. This option requires you to have a full JDK
 # installed, not simply a JRE.
@@ -118,4 +118,3 @@ wrapper.ntservice.starttype=AUTO_START
 # Allow the service to interact with the desktop.
 # [ true | false ]
 wrapper.ntservice.interactive=false
-

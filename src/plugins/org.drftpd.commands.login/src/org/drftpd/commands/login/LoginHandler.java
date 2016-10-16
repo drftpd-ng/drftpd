@@ -134,7 +134,7 @@ public class LoginHandler extends CommandInterface {
             CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, _keyPrefix+"pass.success", request.getUser()));
             
             try {
-                addTextToResponse(response, "text/welcome.txt");
+                addTextToResponse(response, "userdata/text/welcome.txt");
             } catch (IOException e) {
                 // Not mandatory to have a welcome text, so if it is not present silently ignore
             }

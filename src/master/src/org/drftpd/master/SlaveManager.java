@@ -74,7 +74,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	private static final Logger logger = Logger.getLogger(SlaveManager.class
 			.getName());
 
-	private static final String slavePath = "slaves/";
+	private static final String slavePath = "userdata/slaves/";
 
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 
