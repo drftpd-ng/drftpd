@@ -3,28 +3,28 @@
 ### Slave settings ###
 ######################
 
-#What you set the name as with "site addslave <slavename>" on the master
+# What you set the name as with "site addslave <slavename>" on the master.
 slave.name=drftpd
 
-#root to serve contents from, is automatically created
+# Root to serve contents from, is automatically created.
 slave.root.1=site
-#you can use several roots for striping files across
-#several harddrives without using RAID or similar.
+# You can use several roots for striping files across
+# several harddrives without using RAID or similar.
 #slave.root.2=d:/
 
 # Master host/ip
 master.host=localhost
-#port to connect to the master
+# Port to connect to the master
 master.bindport=1099
-#Set the master to use SSL for slave connections as well
+# Set the master to use SSL for slave connections as well
 slave.masterSSL=true
 
-#pasv port range
+# Pasv port range
 #slave.portfrom=30000
 #slave.portto=33000
 
-#BIND IP - This will bind SLAVE ip to this address
-#bind.ip=
+# BIND IP - This will bind SLAVE ip to this address.
+#bind.ip=xxx.xxx.xxx.xxx
 
 
 # Enable checksums for uploads
@@ -35,11 +35,11 @@ enableuploadchecksums=true
 # [ true | false ]
 enabledownloadchecksums=true
 
-#bufferSize set at 0 lets the kernel handle the buffer sizes
+# BufferSize set at 0 lets the kernel handle the buffer sizes
 bufferSize=0
 
-# This is the maximum the slave will wait for the master
-# timeout on the slave (on the master side) should be equal
+# This is the maximum the slave will wait for the master.
+# Timeout on the slave (on the master side) should be equal.
 # "site slave <slavename> set timeout <value>
 # 60000 = one minute
 slave.timeout=60000
@@ -48,27 +48,21 @@ slave.timeout=60000
 # If doesn't know what that means, do NOT change this.
 diskselection=org.drftpd.slave.diskselection.filter
 
-# enabled cipher suites
-# if left empty, default set will be used
-#cipher.1=TLS_RSA_WITH_AES_128_CBC_SHA
-#cipher.2=SSL_RSA_WITH_DES_CBC_SHA
-#cipher.3=SSL_DHE_RSA_WITH_DES_CBC_SHA
-#cipher.4=SSL_DHE_DSS_WITH_DES_CBC_SHA
-#cipher.5=SSL_RSA_EXPORT_WITH_RC4_40_MD5
-#cipher.6=SSL_RSA_EXPORT_WITH_DES40_CBC_SHA
-#cipher.7=SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA
-#cipher.8=SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA
-#cipher.9=SSL_RSA_WITH_NULL_MD5
-#cipher.10=SSL_RSA_WITH_NULL_SHA
+# Enabled cipher suites
+# If left empty, default set will be used.
+# Use whitelist to add specific chiphers to use.
+# All supported ciphers not included in whitelist will be removed.
+# Use blacklist to exclude ciphers.
+# Blacklist can be combined with whitelist, if no whitelist rule(s) are
+# specified blacklist will exclude from default set.
+# Blacklist has precedence over whitelist.
+# Both blacklist and whitelist use regular expression pattern.
+# Multiple whitelist/blacklist rules are supported.
+#cipher.whitelist.1=
+cipher.blakclist.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV)_.*
 
-# Excluded ciphers
-# Useful if cipher suite is left empty to allow all ciphers and
-# then just exclude specific ciphers not wanted.
-# Regex match to more easily disable a type of cipher
-cipher.excl.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV)_.*
-
-# enabled protocols
-# if left empty, default set will be used
+# Enabled protocols
+# If left empty, default set will be used
 protocol.1=TLSv1
 protocol.2=TLSv1.1
 protocol.3=TLSv1.2
