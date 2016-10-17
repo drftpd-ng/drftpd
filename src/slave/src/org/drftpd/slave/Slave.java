@@ -150,40 +150,55 @@ public class Slave {
 		}
 
 		List<String> cipherSuites = new ArrayList<String>();
-		ArrayList<String> supportedCipherSuites = new ArrayList<String>();
+		List<String> supportedCipherSuites = new ArrayList<String>();
 		try {
 			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
-			for (int x = 1;; x++) {
-				String cipherSuite = p.getProperty("cipher." + x);
-				if (cipherSuite == null) {
-					break;
-				} else if (supportedCipherSuites.contains(cipherSuite)) {
-					cipherSuites.add(cipherSuite);
-				}
-			}
 		} catch (Exception e) {
 			logger.error("Unable to get supported cipher suites, using default.", e);
 		}
-		if (supportedCipherSuites.size() == 0) {
-			_cipherSuites = null;
-		} else if (cipherSuites.size() == 0) {
-			// Cipher suites not specified, add all supported and remove excluded
-			for (int x = 1;; x++) {
-				String exclCipherSuite = p.getProperty("cipher.excl." + x);
-				if (exclCipherSuite == null) {
-					break;
-				} else if (exclCipherSuite.trim().length() == 0) {
-					continue;
-				}
-				Iterator<String> i = supportedCipherSuites.iterator();
-				while (i.hasNext()) {
-					String cipherSuite = i.next();
-					if (cipherSuite.matches(exclCipherSuite)) {
-						i.remove();
-					}
+		// Parse cipher suite whitelist rules
+		boolean whitelist = false;
+		for (int x = 1;; x++) {
+			String whitelistPattern = p.getProperty("cipher.whitelist." + x);
+			if (whitelistPattern == null) {
+				break;
+			} else if (whitelistPattern.trim().length() == 0) {
+				continue;
+			}
+			if (!whitelist) whitelist = true;
+			for (String cipherSuite : supportedCipherSuites) {
+				if (cipherSuite.matches(whitelistPattern)) {
+					cipherSuites.add(cipherSuite);
 				}
 			}
-			_cipherSuites = supportedCipherSuites.toArray(new String[supportedCipherSuites.size()]);
+		}
+		if (cipherSuites.isEmpty()) {
+			// No whitelist rule or whitelist pattern bad, add default set
+			cipherSuites.addAll(supportedCipherSuites);
+			if (whitelist) {
+				// There are at least one whitelist pattern specified
+				logger.warn("Bad whitelist pattern, no matching ciphers found. " +
+						"Adding default cipher set before continuing with blacklist check");
+			}
+		}
+		// Parse cipher suite blacklist rules and remove matching ciphers from set
+		for (int x = 1;; x++) {
+			String blacklistPattern = p.getProperty("cipher.blacklist." + x);
+			if (blacklistPattern == null) {
+				break;
+			} else if (blacklistPattern.trim().isEmpty()) {
+				continue;
+			}
+			Iterator<String> i = cipherSuites.iterator();
+			while (i.hasNext()) {
+				String cipherSuite = i.next();
+				if (cipherSuite.matches(blacklistPattern)) {
+					i.remove();
+				}
+			}
+		}
+		if (cipherSuites.isEmpty()) {
+			_cipherSuites = null;
 		} else {
 			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
 		}
