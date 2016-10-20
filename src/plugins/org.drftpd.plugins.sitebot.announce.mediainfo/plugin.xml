@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.sitebot.announce.mediainfo" version="3.1.0">
+	<doc>
+		<doc-text>(Sitebot) - This plugin provides mediainfo announcements for Sitebot</doc-text>
+	</doc>
+	<attributes>
+		<attribute id="DefaultBuild" value="false" />
+		<attribute id="MustBuild" value="false" />
+	</attributes>
+	<requires>
+		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
+		<import plugin-id="org.drftpd.plugins.mediainfo" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.sitebot.announce.mediainfo" path="classes/" type="code">
+			<export prefix="*" />
+		</library>
+	</runtime>
+	
+	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="MediaInfoAnnounce">
+		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.mediainfo.MediaInfoAnnouncer" />
+	</extension>
+</plugin>
