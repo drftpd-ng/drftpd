@@ -84,39 +84,16 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 	}
 
 	public String[] getEventTypes() {
-		String[] types = {"pre","store.complete","store.first","store.halfway","store.nfo","store.race"};
-		return types;
+		return new String[]{"pre","store.complete","store.first","store.halfway","store.race"};
 	}
 	
 	public void setResourceBundle(ResourceBundle bundle) {
 		_bundle = bundle;
 	}
-
-	@EventSubscriber
-	public void onDirectoryFtpEvent(DirectoryFtpEvent dirEvent) {
-		if ("PRE".equals(dirEvent.getCommand())) {
-			outputDirectoryEvent(dirEvent, "pre");
-		} else if ("STOR".equals(dirEvent.getCommand())) {
-			outputDirectorySTOR((TransferEvent) dirEvent);
-		}
-	}
 	
 	@EventSubscriber
 	public void onSFVMemberTransferEvent(SFVMemberTransferEvent sfvEvent) {
 		outputSFVMemberSTOR(sfvEvent);
-	}
-
-	private void outputDirectorySTOR(TransferEvent fileevent) {
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-
-		// ANNOUNCE NFO FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".nfo")) {
-			AnnounceWriter writer = _config.getPathWriter("store.nfo", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.nfo", env, _bundle), writer);
-			}
-		}
 	}
 
 	private void outputSFVMemberSTOR(SFVMemberTransferEvent sfvEvent) {
@@ -333,16 +310,6 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 		}
 	}
 
-	private void outputDirectoryEvent(DirectoryFtpEvent direvent, String type) {
-		AnnounceWriter writer = _config.getPathWriter(type, direvent.getDirectory());
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			fillEnvSection(env, direvent, writer, false);
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+type, env, _bundle), writer);
-		}
-	}
-
 	private void fillEnvSection(ReplacerEnvironment env,
 			DirectoryFtpEvent direvent, AnnounceWriter writer, boolean isFile) {
 		DirectoryHandle dir = direvent.getDirectory();
@@ -407,21 +374,6 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 			} catch (Exception e1) {
 				// Failed to get sfv data, safe to continue, that data
 				// will just not be available
-			}
-			if (event.getCommand().equals("PRE")) {
-				for (DirectoryHandle subdir : dir.getDirectoriesUnchecked()) {
-					try {
-						sfvData = new ZipscriptVFSDataSFV(subdir);
-						sfvinfo = sfvData.getSFVInfo();
-						totalsfv += 1;
-						totalfiles += sfvinfo.getSize();
-						totalbytes += SFVTools.getSFVTotalBytes(subdir,sfvData);
-						totalxfertime += SFVTools.getSFVTotalXfertime(subdir,sfvData);
-					} catch (Exception e1) {
-						// Failed to get sfv data, safe to continue, that data
-						// will just not be available
-					}
-				}
 			}
 			if (totalsfv > 0) {
 				env.add("totalfiles", "" + totalfiles);

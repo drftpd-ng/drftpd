@@ -23,6 +23,7 @@ import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.config.PathMatcher;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author djb61
@@ -74,22 +75,23 @@ public class AnnounceWriter {
 		return _sectionName;
 	}
 
-	public String getPath(DirectoryHandle dir) {
+	public String getPath(InodeHandle inode) {
 		if (_matcher != null && _sectionName != null) {
 			// Here we need to rewrite the path to make it relative
 			// to the pseudo section
-			return _matcher.getRelativePath(dir);
+			return _matcher.getRelativePath(inode);
 		}
 		// Return path relative to section
 		// Special case to handle directories in the root
-		if (dir.getParent().isRoot()) {
-			return dir.getPath().substring(1);
+		if (inode.getParent().isRoot()) {
+			return inode.getPath().substring(1);
 		}
+		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle)inode : inode.getParent();
 		DirectoryHandle sectionBase = 
 			GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getBaseDirectory();
 		if (sectionBase.isRoot()) {
-			return dir.getPath().substring(1);
+			return inode.getPath().substring(1);
 		}
-		return dir.getPath().substring(sectionBase.getPath().length()+1);
+		return inode.getPath().substring(sectionBase.getPath().length()+1);
 	}
 }
