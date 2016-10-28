@@ -1,0 +1,7 @@
+# To specify where the announce for this file extension will appear
+# rather than just using your default channels.
+# Example (replace xxx with extension type):
+#store.xxx.path.1=/path/subpath/*
+#store.xxx.path.1.destination=public
+#store.xxx.section.1=*
+#store.xxx.section.1.destination=public

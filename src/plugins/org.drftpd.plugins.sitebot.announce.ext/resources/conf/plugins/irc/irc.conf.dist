@@ -1,0 +1,5 @@
+# File extensions to announce (space separated)
+# Loaded on plugin start and is NOT updated on reload
+# To update list reload plugin or restart master to load new configuration.
+# Add the extension in irc core.theme output like nfo example
+store.extensions=nfo

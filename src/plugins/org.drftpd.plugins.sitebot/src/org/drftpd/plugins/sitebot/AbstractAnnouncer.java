@@ -28,6 +28,16 @@ import org.drftpd.plugins.sitebot.config.AnnounceConfig;
  */
 public abstract class AbstractAnnouncer {
 
+	private String _confDir;
+
+	protected void setConfDir(String confDir) {
+		_confDir = confDir;
+	}
+
+	protected String getConfDir() {
+		return _confDir;
+	}
+
 	protected abstract void initialise(AnnounceConfig config, ResourceBundle bundle);
 
 	protected abstract void stop();
