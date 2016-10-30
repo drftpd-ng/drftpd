@@ -50,8 +50,8 @@ public class PathMatcher {
 		_pathPattern = pathPattern;
 	}
 
-	public boolean checkPath(DirectoryHandle file) {
-		String path = file.getPath().concat("/");
+	public boolean checkPath(InodeHandle inode) {
+		String path = inode.isDirectory() ? inode.getPath().concat("/") : inode.getPath();
 
 		if (_regex) {
 			Matcher m = _regexPat.matcher(path);

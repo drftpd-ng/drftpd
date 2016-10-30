@@ -15,9 +15,11 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.announce.ext;
+package org.drftpd.plugins.sitebot.announce.store;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -27,6 +29,7 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.event.DirectoryFtpEvent;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
@@ -37,9 +40,9 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-public class ExtAnnouncer extends AbstractAnnouncer {
+public class StoreAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = Logger.getLogger(ExtAnnouncer.class);
+	private static final Logger logger = Logger.getLogger(StoreAnnouncer.class);
 
 	private AnnounceConfig _config;
 
@@ -47,12 +50,14 @@ public class ExtAnnouncer extends AbstractAnnouncer {
 
 	private String _keyPrefix;
 
-	private String[] _extensions;
+	private List<String> _storeGroups;
 	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
 		_keyPrefix = this.getClass().getName();
+		_storeGroups = new ArrayList<>();
+		loadConf();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -61,17 +66,26 @@ public class ExtAnnouncer extends AbstractAnnouncer {
 		AnnotationProcessor.unprocess(this);
 	}
 
-	public String[] getEventTypes() {
-		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()
-				.getPropertiesForPlugin(getConfDir()+"/irc.conf");
-		_extensions = cfg.getProperty("store.extensions","").toLowerCase().split("\\s");
+	@EventSubscriber
+	public void onReloadEvent(ReloadEvent event) {
+		loadConf();
+	}
 
-		String[] extTypes = new String[_extensions.length];
-		int i = 0;
-		for (String ext : _extensions) {
-			extTypes[i] = "store."+ext;
+	private void loadConf() {
+		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()
+				.getPropertiesForPlugin(getConfDir()+"/ircannounce.conf");
+		_storeGroups.clear();
+		for (int i = 1;; i++) {
+			String storeGroupPattern = cfg.getProperty("store.path." + i);
+			if (storeGroupPattern == null) {
+				break;
+			}
+			_storeGroups.add(storeGroupPattern);
 		}
-		return extTypes;
+	}
+
+	public String[] getEventTypes() {
+		return new String[]{"store"};
 	}
 	
 	public void setResourceBundle(ResourceBundle bundle) {
@@ -88,12 +102,13 @@ public class ExtAnnouncer extends AbstractAnnouncer {
 	private void outputDirectorySTOR(TransferEvent event) {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-		for (String ext : _extensions) {
-			if (event.getTransferFile().getName().toLowerCase().endsWith("."+ext)) {
-				AnnounceWriter writer = _config.getPathWriter("store."+ext, event.getDirectory());
+		for (String storeGroupPattern : _storeGroups) {
+			if (event.getTransferFile().getName().toLowerCase().matches(storeGroupPattern)) {
+				// There is a store.path.x that match this file, lets get PathWriter
+				AnnounceWriter writer = _config.getPathWriter("store", event.getTransferFile());
 				if (writer != null) {
 					fillEnvSection(env, event, writer);
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store."+ext, env, _bundle), writer);
+					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store", env, _bundle), writer);
 				}
 			}
 		}
@@ -108,6 +123,10 @@ public class ExtAnnouncer extends AbstractAnnouncer {
 		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
 		env.add("path", writer.getPath(dir));
 		env.add("file", file.getName());
+		String ext = getFileExtension(file);
+		env.add("ext", ext);
+		env.add("extLowerCase", ext.toLowerCase());
+		env.add("extUpperCase", ext.toUpperCase());
 		try {
 			env.add("size", Bytes.formatBytes(file.getSize()));
 			long xferSpeed = 0L;
@@ -117,6 +136,15 @@ public class ExtAnnouncer extends AbstractAnnouncer {
 			env.add("speed",Bytes.formatBytes(xferSpeed * 1000) + "/s");
 		} catch (FileNotFoundException e) {
 			// The file no longer exists, just fail out of the method
+		}
+	}
+
+	private String getFileExtension(FileHandle file) {
+		String fileName = file.getName();
+		if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
+			return fileName.substring(fileName.lastIndexOf(".") + 1);
+		} else {
+			return "";
 		}
 	}
 }
