@@ -47,8 +47,8 @@ public class AnnounceWriter {
 		return _writers;
 	}
 
-	public boolean pathMatches(DirectoryHandle dir) {
-		return _matcher.checkPath(dir);
+	public boolean pathMatches(InodeHandle inode) {
+		return _matcher.checkPath(inode);
 	}
 
 	public boolean sectionMatches(DirectoryHandle dir) {

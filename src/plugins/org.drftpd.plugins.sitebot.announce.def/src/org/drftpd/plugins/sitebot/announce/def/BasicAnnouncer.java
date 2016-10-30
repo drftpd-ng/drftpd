@@ -66,9 +66,8 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 	}
 
 	public String[] getEventTypes() {
-		String[] types = {"mkdir","rmdir","wipe","addslave",
-				"delslave","msgslave","store","invite"};
-		return types;
+		return new String[]{"mkdir","rmdir","wipe","addslave",
+				"delslave","msgslave", "msgmaster","invite"};
 	}
 	
 	public void setResourceBundle(ResourceBundle bundle) {

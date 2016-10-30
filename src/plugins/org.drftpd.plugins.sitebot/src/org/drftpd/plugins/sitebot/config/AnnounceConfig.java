@@ -25,6 +25,7 @@ import org.drftpd.plugins.sitebot.NullOutputWriter;
 import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -167,7 +168,7 @@ public class AnnounceConfig {
 		return writer;
 	}
 
-	public AnnounceWriter getPathWriter(String type, DirectoryHandle path) {
+	public AnnounceWriter getPathWriter(String type, InodeHandle path) {
 		ArrayList<AnnounceWriter> aWriters;
 		// First check path filters for this type
 		aWriters = _pathWriters.get(type);
@@ -182,7 +183,7 @@ public class AnnounceConfig {
 		aWriters = _sectionWriters.get(type);
 		if (aWriters != null) {
 			for (AnnounceWriter writer : aWriters) {
-				if (writer.sectionMatches(path)) {
+				if (writer.sectionMatches(path.isDirectory() ? (DirectoryHandle)path : path.getParent())) {
 					return writer;
 				}
 			}
@@ -200,7 +201,7 @@ public class AnnounceConfig {
 		aWriters = _sectionWriters.get("default");
 		if (aWriters != null) {
 			for (AnnounceWriter writer : aWriters) {
-				if (writer.sectionMatches(path)) {
+				if (writer.sectionMatches(path.isDirectory() ? (DirectoryHandle)path : path.getParent())) {
 					return writer;
 				}
 			}
