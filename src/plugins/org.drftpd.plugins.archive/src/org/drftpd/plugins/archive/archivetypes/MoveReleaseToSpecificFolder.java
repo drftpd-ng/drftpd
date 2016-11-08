@@ -30,43 +30,43 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author CyBeR
  */
 public class MoveReleaseToSpecificFolder extends ArchiveType {
-	
+
 	/*
 	 * Constructor:
 	 */
 	public MoveReleaseToSpecificFolder(Archive archive, SectionInterface section, Properties props, int confnum) {
 		super(archive, section, props, confnum);
 	}
-	
+
 	/*
 	 *  Not needed cause we are just moving slaves
 	 */
 	@Override
 	public HashSet<RemoteSlave> findDestinationSlaves() {
-	    return null;
+		return null;
 	}
 
 	/*
 	 * Checks if files are archived to the right slave, however not needed - return true.
 	 */
-    protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-        return true;
-    }
+	protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+		return true;
+	}
 
-    /*
-     *  Setting this to true will ONLY move the dir and not archive to a different slave 
-     */
+	/*
+	 *  Setting this to true will ONLY move the dir and not archive to a different slave
+	 */
 	@Override
-    public boolean moveReleaseOnly() {
-    	return true;
-    }	
-	
-    /*
-     * Outs this as a string to show what is being archived.
-     */
+	public boolean moveReleaseOnly() {
+		return true;
+	}
+
+	/*
+	 * Outs this as a string to show what is being archived.
+	 */
 	@Override
-    public String toString() {
-        return "MoveReleaseToSpecificFolder=[directory=[" + getDirectory().getPath() + "]dest=[" + _archiveToFolder.getPath() + "]]";
-    }	
+	public String toString() {
+		return "MoveReleaseToSpecificFolder=[directory=[" + getDirectory().getPath() + "]dest=[" + _archiveToFolder.getPath() + "]]";
+	}
 
 }
