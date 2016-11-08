@@ -755,8 +755,11 @@ public abstract class ArchiveType {
 					toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + fromDir.getName());
 				}
 
-
+				// Copy modifiedTime
+				long time = fromDir.lastModified();
 				fromDir.renameToUnchecked(toInode);
+				toInode.setLastModified(time);
+
 				_destinationDirectory = toInode;
 				return true;
 
