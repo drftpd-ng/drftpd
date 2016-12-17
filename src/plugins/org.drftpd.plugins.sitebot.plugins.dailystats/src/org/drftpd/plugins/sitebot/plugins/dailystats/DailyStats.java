@@ -44,12 +44,6 @@ public class DailyStats implements UserResetHookInterface {
 	private static Logger logger = Logger.getLogger(DailyStats.class);
 
 	private boolean _showzero = false;
-	private boolean _dayup = false;
-	private boolean _daydn = false;
-	private boolean _mndn = false;
-	private boolean _mnup = false;
-	private boolean _wkdn = false;
-	private boolean _wkup = false;
 	private int _outputnum;
 	private String[] _exempt;
 
@@ -68,12 +62,6 @@ public class DailyStats implements UserResetHookInterface {
 			return;
 		}
 
-		_dayup = cfg.getProperty("dayup","false").equalsIgnoreCase("true");
-		_daydn = cfg.getProperty("daydn","false").equalsIgnoreCase("true");
-		_mnup = cfg.getProperty("mnup","false").equalsIgnoreCase("true");
-		_mndn = cfg.getProperty("mndn","false").equalsIgnoreCase("true");
-		_wkup = cfg.getProperty("wkup","false").equalsIgnoreCase("true");
-		_wkdn = cfg.getProperty("wkdn","false").equalsIgnoreCase("true");
 		_showzero = cfg.getProperty("showzero","false").equalsIgnoreCase("true");
 		_outputnum = Integer.parseInt(cfg.getProperty("outputnum","5"));
 		_exempt = cfg.getProperty("exempt", "").toLowerCase().split(" ");
@@ -144,32 +132,20 @@ public class DailyStats implements UserResetHookInterface {
 	}
 
 	public void resetDay(Date d) {
-		if (_dayup) {
-			GlobalContext.getEventService().publishAsync(new StatsEvent("dayup",getStats("dayup")));
-		}
-		if (_daydn) {
-			GlobalContext.getEventService().publishAsync(new StatsEvent("daydn",getStats("daydn")));
-		}
+		GlobalContext.getEventService().publishAsync(new StatsEvent("dayup",getStats("dayup")));
+		GlobalContext.getEventService().publishAsync(new StatsEvent("daydn",getStats("daydn")));
 	}
 
 	public void resetWeek(Date d) {
-		if (_wkup) {
-			GlobalContext.getEventService().publishAsync(new StatsEvent("wkup",getStats("wkup")));
-		}
-		if (_wkdn) {
-			GlobalContext.getEventService().publishAsync(new StatsEvent("wkdn",getStats("wkdn")));
-		}
+		GlobalContext.getEventService().publishAsync(new StatsEvent("wkup",getStats("wkup")));
+		GlobalContext.getEventService().publishAsync(new StatsEvent("wkdn",getStats("wkdn")));
 		// Uncomment this if you want day stats at the end of the week also
 		// resetDay(d)
 	}
 
 	public void resetMonth(Date d) {
-		if (_mnup) {
-			GlobalContext.getEventService().publishAsync(new StatsEvent("monthup",getStats("monthup")));
-		}
-		if (_mndn) {
-			GlobalContext.getEventService().publishAsync(new StatsEvent("monthdn",getStats("monthdn")));
-		}
+		GlobalContext.getEventService().publishAsync(new StatsEvent("monthup",getStats("monthup")));
+		GlobalContext.getEventService().publishAsync(new StatsEvent("monthdn",getStats("monthdn")));
 		// Uncomment this if you want day stats at the end of the month also.
 		// If you want week stats when the end of a week coincides with the end of a month
 		// then you'll have to do some work on the date passed to check this and then
