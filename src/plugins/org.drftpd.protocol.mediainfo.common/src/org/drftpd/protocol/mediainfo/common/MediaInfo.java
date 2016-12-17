@@ -17,7 +17,9 @@
  */
 package org.drftpd.protocol.mediainfo.common;
 
+import com.coremedia.iso.IsoFile;
 import org.apache.log4j.Logger;
+import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
 
 import java.io.BufferedReader;
@@ -41,13 +43,20 @@ public class MediaInfo implements Serializable {
 
 	private String _fileName = "";
 	private long _checksum;
+	private boolean _sampleOk = true;
+	private long _actFileSize = 0L;
+	private long _calFileSize = 0L;
+	private String _realFormat = "";
+	private String _uploadedFormat = "";
+
+	private HashMap<String,String> _generalInfo = null;
 
 	private ArrayList<HashMap<String,String>> _videoInfos = new ArrayList<HashMap<String,String>>();
 	private ArrayList<HashMap<String,String>> _audioInfos = new ArrayList<HashMap<String,String>>();
 	private ArrayList<HashMap<String,String>> _subInfos = new ArrayList<HashMap<String,String>>();
 
 	/**
-	 * Constructor for MediaInfoMKV
+	 * Constructor for MediaInfo
 	 */
 	public MediaInfo() {	}
 	
@@ -63,6 +72,48 @@ public class MediaInfo implements Serializable {
 	}
 	public long getChecksum() {
 		return _checksum;
+	}
+
+	public void setSampleOk(boolean value) {
+		_sampleOk = value;
+	}
+	public boolean getSampleOk() {
+		return _sampleOk;
+	}
+
+	public void setActFileSize(long value) {
+		_actFileSize = value;
+	}
+	public long getActFileSize() {
+		return _actFileSize;
+	}
+
+	public void setCalFileSize(long value) {
+		_calFileSize = value;
+	}
+	public long getCalFileSize() {
+		return _calFileSize;
+	}
+
+	public void setRealFormat(String realFormat) {
+		_realFormat = realFormat;
+	}
+	public String getRealFormat() {
+		return _realFormat;
+	}
+
+	public void setUploadedFormat(String uploadedFormat) {
+		_uploadedFormat = uploadedFormat;
+	}
+	public String getUploadedFormat() {
+		return _uploadedFormat;
+	}
+
+	public void setGeneralInfo(HashMap<String,String> generalInfo) {
+		_generalInfo = generalInfo;
+	}
+	public HashMap<String,String> getGeneralInfo() {
+		return _generalInfo;
 	}
 
 	public void setVideoInfos(ArrayList<HashMap<String,String>> videoInfos) {
@@ -98,10 +149,13 @@ public class MediaInfo implements Serializable {
 	public static MediaInfo getMediaInfoFromFile(File file) throws IOException {
 		MediaInfo mediaInfo = new MediaInfo();
 
-		Pattern pSection = Pattern.compile("^(Video|Audio|Text|Chapters)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
+		String filePath = file.getAbsolutePath();
+		mediaInfo.setActFileSize(file.length());
+
+		Pattern pSection = Pattern.compile("^(General|Video|Audio|Text|Chapters)( #\\d+)?$", Pattern.CASE_INSENSITIVE);
 		Pattern pValue = Pattern.compile("^(.*?)\\s+: (.*)$", Pattern.CASE_INSENSITIVE);
 
-		ProcessBuilder builder = new ProcessBuilder("mediainfo", file.getAbsolutePath());
+		ProcessBuilder builder = new ProcessBuilder("mediainfo", filePath);
 		Process pDD = builder.start();
 		BufferedReader stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
 
@@ -119,6 +173,8 @@ public class MediaInfo implements Serializable {
 						mediaInfo.addAudioInfo(props);
 					} else if (section.toLowerCase().startsWith("text")) {
 						mediaInfo.addSubInfo(props);
+					} else if (section.toLowerCase().startsWith("general")) {
+						mediaInfo.setGeneralInfo(props);
 					}
 					section = line;
 					props = new HashMap<String,String>();
@@ -137,6 +193,8 @@ public class MediaInfo implements Serializable {
 			mediaInfo.addAudioInfo(props);
 		} else if (section.toLowerCase().startsWith("text")) {
 			mediaInfo.addSubInfo(props);
+		} else if (section.toLowerCase().startsWith("general")) {
+			mediaInfo.setGeneralInfo(props);
 		}
 
 		stdout.close();
@@ -151,7 +209,110 @@ public class MediaInfo implements Serializable {
 			logger.error("ERROR: mediainfo process interrupted");
 		}
 		pDD.destroy();
+
+		String realFormat;
+		if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("Format") != null) {
+			realFormat = getRealFormat(mediaInfo.getGeneralInfo().get("Format"));
+		} else {
+			realFormat = getFileExtension(filePath);
+		}
+
+		// Calculate valid filesize for mp4, mkv and avi
+		if (realFormat.equals("MP4")) {
+			IsoFile isoFile = new IsoFile(filePath);
+			if (isoFile.getSize() != mediaInfo.getActFileSize()) {
+				mediaInfo.setSampleOk(false);
+				mediaInfo.setCalFileSize(isoFile.getSize());
+			}
+		} else if (realFormat.equals("MKV")) {
+			builder = new ProcessBuilder("mkvalidator", "--quiet", "--no-warn", filePath);
+			builder.redirectErrorStream(true);
+			pDD = builder.start();
+			stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
+			while ((line = stdout.readLine()) != null) {
+				if (line.contains("ERR042")) {
+					mediaInfo.setSampleOk(false);
+					for (String word : line.split("\\s")) {
+						if (word.matches("^\\d+$")) {
+							mediaInfo.setCalFileSize(Long.parseLong(word));
+							break;
+						}
+					}
+				}
+			}
+			stdout.close();
+			try {
+				pDD.waitFor();
+			} catch (InterruptedException e) {
+				logger.error("ERROR: mkvalidator process interrupted");
+			}
+			pDD.destroy();
+		} else if (realFormat.equals("AVI")) {
+			if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("File size") != null &&
+					!mediaInfo.getVideoInfos().isEmpty() && mediaInfo.getVideoInfos().get(0) != null &&
+					mediaInfo.getVideoInfos().get(0).containsKey("Stream size") &&
+					!mediaInfo.getAudioInfos().isEmpty() && mediaInfo.getAudioInfos().get(0) != null &&
+					mediaInfo.getAudioInfos().get(0).containsKey("Stream size")) {
+				HashMap videodata = mediaInfo.getVideoInfos().get(0);
+				HashMap audiodata = mediaInfo.getAudioInfos().get(0);
+				String[] videoStream = (mediaInfo.getVideoInfos().get(0).get("Stream size")).split("\\s");
+				String[] audioStream = (mediaInfo.getAudioInfos().get(0).get("Stream size")).split("\\s");
+				long videoStreamSize = 0L;
+				long audioStreamSize = 0L;
+				long fileSizeFromMediainfo = Bytes.parseBytes(mediaInfo.getGeneralInfo().get("File size").replaceAll("\\s",""));
+				if (videoStream.length >= 2) {
+					videoStreamSize = Bytes.parseBytes(videoStream[0]+videoStream[1]);
+				}
+				if (audioStream.length >= 2) {
+					audioStreamSize = Bytes.parseBytes(audioStream[0]+audioStream[1]);
+				}
+				if (videoStreamSize + audioStreamSize > fileSizeFromMediainfo) {
+					mediaInfo.setSampleOk(false);
+					mediaInfo.setCalFileSize(videoStreamSize + audioStreamSize);
+				}
+			} else {
+				// No audio or video stream available/readable
+				mediaInfo.setSampleOk(false);
+				mediaInfo.setCalFileSize(0L);
+			}
+		}
+
+		// Check container format type
+		if (filePath.toUpperCase().endsWith(".MP4")) {
+			if (!realFormat.equals("MP4")) {
+				mediaInfo.setRealFormat(realFormat);
+				mediaInfo.setUploadedFormat("MP4");
+			}
+		} else if (filePath.toUpperCase().endsWith(".MKV")) {
+			if (!realFormat.equals("MKV")) {
+				mediaInfo.setRealFormat(realFormat);
+				mediaInfo.setUploadedFormat("MKV");
+			}
+		} else if (filePath.toUpperCase().endsWith(".AVI")) {
+			if (!realFormat.equals("AVI")) {
+				mediaInfo.setRealFormat(realFormat);
+				mediaInfo.setUploadedFormat("AVI");
+			}
+		}
 		
 		return mediaInfo;
+	}
+
+	private static String getFileExtension(String fileName) {
+		if (fileName.indexOf('.') == -1) {
+			// No extension on file
+			return null;
+		} else {
+			return fileName.substring(fileName.lastIndexOf('.')+1).toUpperCase();
+		}
+	}
+	private static String getRealFormat(String format) {
+		String realFormat = format;
+		if (format.equals("MPEG-4")) {
+			realFormat = "MP4";
+		} else if (format.equals("Matroska")) {
+			realFormat = "MKV";
+		}
+		return realFormat;
 	}
 }

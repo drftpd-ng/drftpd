@@ -18,6 +18,7 @@ package org.drftpd.plugins.sitebot.announce.mediainfo;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.mediainfo.MediaInfoUtils;
 import org.drftpd.plugins.mediainfo.event.MediaInfoEvent;
@@ -81,6 +82,31 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 			env.add("filename",mediaInfo.getFileName());
 			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
 			env.add("section",sec.getName());
+			env.add("sectioncolor", sec.getColor());
+			String sample_ok = "";
+			if (!mediaInfo.getSampleOk()) {
+				env.add("real_filesize", Bytes.formatBytes(mediaInfo.getActFileSize(), true));
+				if (mediaInfo.getCalFileSize() == 0L) {
+					sample_ok = ReplacerUtils.jprintf(_keyPrefix+".mediainfo.unreadable", env, _bundle);
+				} else {
+					env.add("cal_filesize", Bytes.formatBytes(mediaInfo.getCalFileSize(), true));
+					sample_ok = ReplacerUtils.jprintf(_keyPrefix+".mediainfo.nok", env, _bundle);
+				}
+			} else {
+				if (!mediaInfo.getRealFormat().isEmpty()) {
+					if (!mediaInfo.getRealFormat().equals("AVI")) {
+						sample_ok = ReplacerUtils.jprintf(_keyPrefix+".mediainfo.ok", env, _bundle);
+					}
+				} else if (!mediaInfo.getFileName().toLowerCase().endsWith(".avi")) {
+					sample_ok = ReplacerUtils.jprintf(_keyPrefix+".mediainfo.ok", env, _bundle);
+				}
+			}
+			if (!mediaInfo.getRealFormat().isEmpty()) {
+				env.add("real_format", mediaInfo.getRealFormat());
+				env.add("renamed_format", mediaInfo.getUploadedFormat());
+				sample_ok += " " + ReplacerUtils.jprintf(_keyPrefix+".mediainfo.type.missmatch", env, _bundle);
+			}
+			env.add("sample_ok", sample_ok);
 
 			String ext = MediaInfoUtils.getFileExtension(mediaInfo.getFileName());
 			if (ext != null) {
@@ -95,7 +121,6 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 					if (!videoInfo.containsKey("Language")) {
 						env.add("v_Language", "Unknown");
 					}
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".mediainfo."+ext+".video", env, _bundle), writer);
 				}
 
 				if (!mediaInfo.getAudioInfos().isEmpty()) {
@@ -117,7 +142,6 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 					if (audioLanguages.length() != 0) {
 						env.add("a_Languages", audioLanguages.substring(0,audioLanguages.length()-3));
 					}
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".mediainfo."+ext+".audio", env, _bundle), writer);
 				}
 
 				StringBuilder subs = new StringBuilder();
@@ -131,6 +155,15 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 				}
 				if (subs.length() != 0) {
 					env.add("s_Languages", subs.substring(0,subs.length()-3));
+				}
+
+				if (!mediaInfo.getVideoInfos().isEmpty()) {
+					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".mediainfo."+ext+".video", env, _bundle), writer);
+				}
+				if (!mediaInfo.getAudioInfos().isEmpty()) {
+					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".mediainfo."+ext+".audio", env, _bundle), writer);
+				}
+				if (subs.length() != 0) {
 					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".mediainfo."+ext+".sub", env, _bundle), writer);
 				}
 			}
