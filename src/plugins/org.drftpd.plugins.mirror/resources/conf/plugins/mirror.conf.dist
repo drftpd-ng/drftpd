@@ -26,6 +26,7 @@
 ## x.excludePath.y (regex) (optional)
 ##
 ## Valid slaves to mirror file on, else all is valid
+## Slave(s) file exist on are added automatically
 ## x.slaves (optional) (space separated)
 ##
 ## If no valid slaves are specified with x.slaves all
