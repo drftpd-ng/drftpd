@@ -47,8 +47,6 @@ public class MediaInfoHandler extends AbstractHandler {
 	}
 
 	private MediaInfo getMediaInfo(Slave slave, String path) throws IOException {
-		File file = slave.getRoots().getFile(path);
-		MediaInfo mediaInfo = MediaInfo.getMediaInfoFromFile(file);
-		return mediaInfo;
+		return MediaInfo.getMediaInfoFromFile(slave.getRoots().getFile(path));
 	}
 }

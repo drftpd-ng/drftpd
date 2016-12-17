@@ -29,11 +29,6 @@ public class AsyncResponseMediaInfo extends AsyncResponse {
 
 	public AsyncResponseMediaInfo(String index, MediaInfo mediaInfo) {
 		super(index);
-
-		if (mediaInfo == null) {
-			throw new IllegalArgumentException("mediaInfo cannot be null");
-		}
-
 		_mediaInfo = mediaInfo;
 	}
 

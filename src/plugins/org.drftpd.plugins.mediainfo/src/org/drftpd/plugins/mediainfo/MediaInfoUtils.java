@@ -45,6 +45,7 @@ public class MediaInfoUtils {
 
 	public static String fixOutput(String value) {
 		value = value.replaceAll("pixels", "");
+		value = value.replaceAll("channels", "ch");
 		value = value.replaceAll(" ", "");
 		return value;
 	}

@@ -73,6 +73,9 @@ public class MediaInfoVFSData {
 			} catch (RemoteIOException e) {
 				throw new IOException(e.getMessage());
 			}
+			if (info == null) {
+				throw new IOException("Failed to run mediainfo on media file");
+			}
 			info.setChecksum(_file.getCheckSum());
 			info.setFileName(_file.getName());
 			_file.addPluginMetaData(MediaInfo.MEDIAINFO, info);

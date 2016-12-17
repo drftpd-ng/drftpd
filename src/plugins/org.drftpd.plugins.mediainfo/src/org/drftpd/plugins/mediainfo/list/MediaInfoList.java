@@ -137,32 +137,26 @@ public class MediaInfoList implements AddListElementsInterface {
 			MediaInfo mediaInfo = mediaData.getMediaInfo();
 
 			ArrayList<String> mediaBarEntries = new ArrayList<String>();
-
+			ReplacerEnvironment env = new ReplacerEnvironment();
 			for (HashMap<String,String> props : mediaInfo.getVideoInfos()) {
-				ReplacerEnvironment env = new ReplacerEnvironment();
 				for (Map.Entry<String,String> field : props.entrySet()) {
 					String value = field.getValue();
 					value = MediaInfoUtils.fixOutput(value);
-					env.add(field.getKey(), value);
+					env.add("v_"+field.getKey(), value);
 				}
 				if (!props.containsKey("Language")) {
 					env.add("Language", "Unknown");
 				}
-				mediaBarEntries.add(container.getSession().jprintf(bundle,
-					keyPrefix+ext+"bar.video",env,container.getUser()));
 			}
 			for (HashMap<String,String> props : mediaInfo.getAudioInfos()) {
-				ReplacerEnvironment env = new ReplacerEnvironment();
 				for (Map.Entry<String,String> field : props.entrySet()) {
 					String value = field.getValue();
 					value = MediaInfoUtils.fixOutput(value);
-					env.add(field.getKey(), value);
+					env.add("a_"+field.getKey(), value);
 				}
 				if (!props.containsKey("Language")) {
-					env.add("Language", "Unknown");
+					env.add("a_Language", "Unknown");
 				}
-				mediaBarEntries.add(container.getSession().jprintf(bundle,
-					keyPrefix+ext+"bar.audio",env,container.getUser()));
 			}
 			StringBuilder subs = new StringBuilder();
 			for (HashMap<String,String> props : mediaInfo.getSubInfos()) {
@@ -174,10 +168,22 @@ public class MediaInfoList implements AddListElementsInterface {
 				}
 			}
 			if (subs.length() != 0) {
-				ReplacerEnvironment env = new ReplacerEnvironment();
-				env.add("Languages", subs.substring(0,subs.length()-1));
+				env.add("s_Languages", subs.substring(0,subs.length()-1));
+			} else {
+				env.add("s_Languages", "NA");
+			}
+
+			if (!mediaInfo.getVideoInfos().isEmpty()) {
 				mediaBarEntries.add(container.getSession().jprintf(bundle,
-					keyPrefix+ext+"bar.sub",env,container.getUser()));
+						keyPrefix+ext+"bar.video",env,container.getUser()));
+			}
+			if (!mediaInfo.getAudioInfos().isEmpty()) {
+				mediaBarEntries.add(container.getSession().jprintf(bundle,
+						keyPrefix+ext+"bar.audio",env,container.getUser()));
+			}
+			if (subs.length() != 0) {
+				mediaBarEntries.add(container.getSession().jprintf(bundle,
+						keyPrefix+ext+"bar.sub",env,container.getUser()));
 			}
 
 			return mediaBarEntries;
