@@ -89,4 +89,10 @@ public class TransferEvent extends DirectoryFtpEvent {
 	public FileHandle getTransferFile() {
 		return _file;
 	}
+
+	@Override
+	public String toString() {
+		return getClass().getName() + "[user=" + getUser() + ",cmd="
+				+ getCommand() + ",type=" + _type + ",file=" + _file.getPath() + "]";
+	}
 }
