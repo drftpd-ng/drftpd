@@ -65,22 +65,16 @@ public class SpeedTestPostHook implements PostHookInterface {
 	}
 
 	public void doSTORPostHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// STOR Failed, skip
-			return;
-		}
-
 		DirectoryHandle dir = request.getCurrentDirectory();
 
 		// Check if STOR was made in a speedtest path
 		for (String stPath : _speedTestPaths) {
 			if (dir.getPath().startsWith(stPath)) {
-				// This is a SPEEDTEST dir!
-
 				FileHandle file = response.getObject(DataConnectionHandler.TRANSFER_FILE, null);
 				TransferStatus status = response.getObject(DataConnectionHandler.XFER_STATUS, null);
 				RemoteSlave rslave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE, null);
-				if (file != null && status != null && rslave != null) {
+
+				if (response.getCode() == 226 && file != null && status != null && rslave != null) {
 					User user;
 					try {
 						user = request.getUserObject();
@@ -95,15 +89,16 @@ public class SpeedTestPostHook implements PostHookInterface {
 					}
 					GlobalContext.getEventService().publishAsync(new SpeedTestEvent
 							(file.getPath(), rslave.getName(), status, user));
-
-					// Just delete file, credits have not been changed yet
+				}
+				// Remove file regardless if STOR failed or not if still there
+				if (file != null) {
 					try {
 						file.deleteUnchecked();
 					} catch (FileNotFoundException e) {
-						// Deleted already?
+						// Deleted already
 					}
 				}
-				break;
+				return;
 			}
 		}
 	}
