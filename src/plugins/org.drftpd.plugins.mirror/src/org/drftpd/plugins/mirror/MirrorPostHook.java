@@ -36,6 +36,7 @@ import org.drftpd.plugins.jobmanager.JobManager;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.FileHandle;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Properties;
@@ -105,12 +106,6 @@ public class MirrorPostHook implements PostHookInterface {
 						logger.error("Slave name invalid in mirror config ("+i+"): " + slaveName);
 					}
 				}
-				if (setting.getNbrOfMirrors() > slaveList.size()) {
-					logger.error("Mirror configuration error, slave count must be >= nbrOfMirrors\n" +
-							i + ".nbrOfMirrors = " + setting.getNbrOfMirrors() + " > " +
-							i + ".slaves = " + slaveList.size());
-					continue;
-				}
 				setting.setSlaves(slaveList);
 			}
 			String excludeSlaves = cfg.getProperty(i + ".excludeSlaves");
@@ -167,14 +162,27 @@ public class MirrorPostHook implements PostHookInterface {
 		if (activeSetting == null) return;
 
 		HashSet<String> mirrorSlaves = new HashSet<String>();
+		try {
+			// Add slave(s) file already exist on
+			for (String existingSlave : file.getSlaveNames()) {
+				mirrorSlaves.add(existingSlave);
+			}
+		} catch (FileNotFoundException e) {
+			// file deleted, no problem, just exit
+			return;
+		}
 		if (activeSetting.getSlaves() != null) {
 			for (RemoteSlave slave : activeSetting.getSlaves()) {
-				mirrorSlaves.add(slave.getName());
+				if (!mirrorSlaves.contains(slave.getName())) {
+					mirrorSlaves.add(slave.getName());
+				}
 			}
 		} else {
 			try {
 				for (RemoteSlave slave : GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
-					mirrorSlaves.add(slave.getName());
+					if (!mirrorSlaves.contains(slave.getName())) {
+						mirrorSlaves.add(slave.getName());
+					}
 				}
 			} catch (NoAvailableSlaveException e) {
 				// No need to continue
