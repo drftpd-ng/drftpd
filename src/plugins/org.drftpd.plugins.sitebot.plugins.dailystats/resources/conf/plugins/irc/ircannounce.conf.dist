@@ -1,3 +1,9 @@
 # To specify where the daily stats announces will appear rather than just using your
 # default channels, uncomment the next line and set them there.
-#dailystats.destination=public
+# Redirect output to null to disable announce
+#dailystats.dayup.destination=public
+#dailystats.daydn.destination=public
+#dailystats.wkup.destination=public
+#dailystats.wkdn.destination=public
+#dailystats.monthup.destination=public
+#dailystats.monthdn.destination=public
