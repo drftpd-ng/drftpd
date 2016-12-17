@@ -154,6 +154,8 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 							fillEnvSection(env, sfvEvent, writer, true);
 							env.add("filesleft",
 									Integer.toString(sfvStatus.getMissing()));
+							env.add("percentdone", Integer.toString(
+									(sfvStatus.getPresent() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
 							sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.race", env, _bundle), writer);
 						}
 					}
