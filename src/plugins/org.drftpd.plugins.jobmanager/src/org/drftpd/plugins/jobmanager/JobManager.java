@@ -299,7 +299,14 @@ public class JobManager implements PluginInterface {
 	}
 
 	public synchronized void removeJobFromQueue(Job job) {
-		_queuedJobSet.remove(job);
+		// A TreeSet inserts/removes according to the results of Comparable, not .equals()/.hashCode()!
+		for (Iterator<Job> iter = _queuedJobSet.iterator(); iter.hasNext();) {
+			Job tempJob = iter.next();
+			if (tempJob.equals(job)) {
+				iter.remove();
+				return;
+			}
+		}
 	}
 
 	public void startJobs() {
