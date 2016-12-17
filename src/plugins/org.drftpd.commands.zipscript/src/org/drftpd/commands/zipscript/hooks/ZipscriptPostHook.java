@@ -150,14 +150,14 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		String transferFileName = transferFile.getName();
 		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
 		logger.debug("Running zipscript on stored file " + transferFileName +
-				" with CRC of " + checksum);
+				" with CRC of " + Checksum.formatChecksum(checksum));
 		if (!transferFileName.toLowerCase().endsWith(".sfv")) {
 			try {
 				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(transferFile.getParent());
 				SFVInfo sfv = sfvData.getSFVInfo();
 				Long sfvChecksum = sfv.getEntries().get(transferFile.getName());
 
-				/*If no exceptions are thrown means that the sfv is avaible and has a entry
+				/*If no exceptions are thrown means that the sfv is available and has a entry
 				 * for that file.
 				 * With this certain, we can assume that files that have CRC32 = 0 either is a
 				 * 0byte file (bug!) or checksummed transfers are disabled(size is different
@@ -169,7 +169,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 				} else if (checksum == sfvChecksum) {
 					// Good! transfer checksum matches sfv checksum
 					response.addComment("checksum match: SLAVE/SFV:" +
-							Long.toHexString(checksum));
+							Checksum.formatChecksum(checksum));
 					if (transferFile.exists()) {
 						try {
 							BaseFtpConnection conn = (BaseFtpConnection)request.getSession();
@@ -190,6 +190,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 					if (transferFile.getSize() == 0) {
 						// The file has checksum = 0 and the size = 0 
 						// then it should be deleted.
+						logger.debug("0Byte File, Deleting...");
 						response.addComment("0Byte File, Deleting...");
 						transferFile.deleteUnchecked();
 					} else
@@ -197,9 +198,12 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 						// meaning that we are not using checked transfers.
 						response.addComment("checksum match: SLAVE/SFV: DISABLED");
 				} else {
+					logger.debug("checksum mismatch: SLAVE: " +
+							Checksum.formatChecksum(checksum) + " SFV: " +
+							Checksum.formatChecksum(sfvChecksum) + " - deleting file");
 					response.addComment("checksum mismatch: SLAVE: " +
-							Long.toHexString(checksum) + " SFV: " +
-							Long.toHexString(sfvChecksum));
+							Checksum.formatChecksum(checksum) + " SFV: " +
+							Checksum.formatChecksum(sfvChecksum));
 					response.addComment(" deleting file");
 					response.setMessage("Checksum mismatch, deleting file");
 					transferFile.deleteUnchecked();
