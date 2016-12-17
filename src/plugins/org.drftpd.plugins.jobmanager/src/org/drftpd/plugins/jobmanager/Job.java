@@ -17,11 +17,7 @@
 package org.drftpd.plugins.jobmanager;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 
 import org.apache.log4j.Logger;
@@ -462,11 +458,22 @@ public class Job {
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object arg0) {
-		if (arg0 instanceof Job) {
-			return _file == ((Job) arg0)._file;
+		if (!(arg0 instanceof Job)) {
+			return false;
 		}
-		return super.equals(arg0);
+		Job compareMe = (Job) arg0;
+		return _file.equals(compareMe._file);
+	}
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return _file.hashCode();
 	}
 
 	public long getIndex() {
@@ -483,10 +490,11 @@ public class Job {
 	 * on at least "_trasnferNum" of them.
 	 */
 	public boolean checkIfArchived() {
-		int numofslaves = _transferNum;
+		int numofslaves = _originalTransferNum;
         try {
         	for (String destslave : _destSlaves) {
-				if (destslave.equals(getFile().getSlaveNames())) {
+				if (getFile().getSlaveNames().contains(destslave)) {
+					// File exist on destination slave
 					numofslaves--;
 				}
 			}
