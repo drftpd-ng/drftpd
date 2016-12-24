@@ -315,6 +315,7 @@ public class BasicHandler extends AbstractHandler {
 			this.rootCollection = rootCollection;
 			this.partialRemerge = partialRemerge;
 			this.skipAgeCutoff = skipAgeCutoff;
+			this.setPriority(Thread.MIN_PRIORITY);
 		}
 
 		public void run() {
