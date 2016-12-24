@@ -37,6 +37,8 @@ public class LightRemoteInode implements Serializable, InodeHandleInterface {
 
 	private long _length;
 
+	private Long _checksum;
+
 	private boolean _isDirectory;
 	
 	private String _username = "drftpd";
@@ -132,5 +134,13 @@ public class LightRemoteInode implements Serializable, InodeHandleInterface {
 
 	public String getPath() {
 		return Slave.separator + getName();
+	}
+
+	public Long getChecksum() {
+		return _checksum;
+	}
+
+	public void setChecksum(long checksum) {
+		_checksum = checksum;
 	}
 }

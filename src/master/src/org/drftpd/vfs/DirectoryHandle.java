@@ -471,9 +471,11 @@ public class DirectoryHandle extends InodeHandle implements
 		}
 		FileHandle newFile = createFileUnchecked(name, "drftpd", "drftpd",
 				rslave, lrf.lastModified(), true, lrf.length());
-		//newFile.setCheckSum(rslave.getCheckSumForPath(newFile.getPath()));
-		// TODO Implement a Checksum queue on remerge
-		newFile.setCheckSum(0);
+		if (lrf.getChecksum() != null) {
+			newFile.setCheckSum(lrf.getChecksum());
+		} else {
+			newFile.setCheckSum(0);
+		}
 	}
 
     public void collisionHandler(LightRemoteInode lrf, RemoteSlave rslave) {
@@ -671,23 +673,36 @@ public class DirectoryHandle extends InodeHandle implements
 				} else if (source.isFile() && destination.isFile()) {
 					// both files
 					FileHandle destinationFile = (FileHandle) destination;
-/*					long sourceCRC = rslave.getCheckSumForPath(getPath()
-							+ VirtualFileSystem.separator + source.getName());
+					Long sourceCRC = source.getChecksum();
 					long destinationCRC;
 					try {
-						destinationCRC = destinationFile.getCheckSum();
-					} catch (NoAvailableSlaveException e) {
+						destinationCRC = destinationFile.getCheckSumCached();
+					} catch (FileNotFoundException e) {
 						destinationCRC = 0L;
 					}
-*/					
-					
-					if (source.length() != destinationFile.getSize()) {
-//							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
+
+					boolean crcMatch;
+					if (sourceCRC == null) {
+						// checksum on remerge either disabled on slave or failed to get checksum for file, assume ok
+						crcMatch = true;
+					} else if (destinationCRC == 0L && source.length() == destinationFile.getSize()) {
+						// source file and dest file same size but no crc found in vfs, set crc from source and mark as ok
+						crcMatch = true;
+						destinationFile.setCheckSum(sourceCRC);
+					} else {
+						crcMatch = sourceCRC == destinationCRC;
+					}
+
+					if (source.length() != destinationFile.getSize() || !crcMatch) {
 						// handle collision
 						Set<RemoteSlave> rslaves = destinationFile.getSlaves();
 						if (rslaves.contains(rslave) && rslaves.size() == 1) {
                             // size of the file has changed, but since this is the only slave with the file, just change the size
 							destinationFile.setSize(source.length());
+							// update crc for file from source if valid
+							if (sourceCRC != null) {
+								destinationFile.setCheckSum(sourceCRC);
+							}
 						} else {
 							if (rslaves.contains(rslave)) {
 								// the master thought the slave had the file, it's not the same size anymore, remove it

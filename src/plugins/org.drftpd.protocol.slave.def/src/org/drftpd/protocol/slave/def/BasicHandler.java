@@ -24,7 +24,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -103,7 +102,7 @@ public class BasicHandler extends AbstractHandler {
 	public AsyncResponse handleAbort(AsyncCommandArgument ac) {
 		TransferIndex ti = new TransferIndex(Integer.parseInt(ac.getArgsArray()[0]));
 		
-		HashMap<TransferIndex, Transfer> transfers = getSlaveObject().getTransferMap();
+		Map<TransferIndex, Transfer> transfers = getSlaveObject().getTransferMap();
 
 		if (!transfers.containsKey(ti)) {
 			return null;
@@ -143,10 +142,8 @@ public class BasicHandler extends AbstractHandler {
 				getSlaveObject().delete(mapPathToRenameQueue(ac.getArgs()));
 			} catch (PermissionDeniedException e) {
 				if (Slave.isWin32) {
-					synchronized (getSlaveObject().getRenameQueue()) {
-						getSlaveObject().getRenameQueue()
-								.add(new QueuedOperation(ac.getArgs(), null));
-					}
+					getSlaveObject().getRenameQueue()
+							.add(new QueuedOperation(ac.getArgs(), null));
 				} else {
 					throw e;
 				}
@@ -453,7 +450,7 @@ public class BasicHandler extends AbstractHandler {
 						continue;
 					}
 					*/
-					fileList.add(new LightRemoteInode(file));
+					fileList.add(getLRI(file));
 				}
 
 				if (!partialRemerge || inodesModified) {
@@ -511,6 +508,19 @@ public class BasicHandler extends AbstractHandler {
 				localWaitObj.notify();
 			}
 		}
+	}
+
+	private LightRemoteInode getLRI(PhysicalFile file) {
+		LightRemoteInode lri = new LightRemoteInode(file);
+		if (getSlaveObject().getRemergeChecksums() && file.isFile()) {
+			try {
+				lri.setChecksum(getSlaveObject().checkSum(file));
+			} catch (IOException e) {
+				// log and continue
+				logger.warn("IOException when checking crc for " + file.getPath() + " :: " + e.getMessage());
+			}
+		}
+		return lri;
 	}
 
 	private HandleRemergeRecursiveThread getRemergeThread() {
@@ -626,7 +636,7 @@ public class BasicHandler extends AbstractHandler {
 			if (file.isDirectory()) {
 				handleRemergeRecursive2(rootCollection, fullPath, partialRemerge, skipAgeCutoff);
 			}
-			fileList.add(new LightRemoteInode(file));
+			fileList.add(getLRI(file));
 		}
 		if (!partialRemerge || inodesModified) {
 			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
@@ -685,7 +695,7 @@ public class BasicHandler extends AbstractHandler {
 			if (file.isDirectory()) {
 				handleRemergeRecursiveConcurrent(rootCollection, fullPath, partialRemerge, skipAgeCutoff);
 			}
-			fileList.add(new LightRemoteInode(file));
+			fileList.add(getLRI(file));
 		}
 		if (!partialRemerge || inodesModified) {
 			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
@@ -715,9 +725,7 @@ public class BasicHandler extends AbstractHandler {
 					} else {
 						simplePath = toDir + "/" + toFile;
 					}
-					synchronized (getSlaveObject().getRenameQueue()) {
-						getSlaveObject().getRenameQueue().add(new QueuedOperation(from, simplePath));
-					}
+					getSlaveObject().getRenameQueue().add(new QueuedOperation(from, simplePath));
 				} else {
 					throw e;
 				}

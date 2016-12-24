@@ -30,6 +30,7 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
@@ -41,11 +42,15 @@ import org.drftpd.slave.async.AsyncResponseDiskStatus;
 import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.util.HostMask;
 
+import javax.net.ssl.SSLSocket;
+
 /**
  * @author zubov
  * @version $Id$
  */
 public class Transfer {
+	private static final Logger logger = Logger.getLogger(Transfer.class);
+
 	private String _abortReason = null;
 
 	private CRC32 _checksum = null;
@@ -197,13 +202,11 @@ public class Transfer {
 	private Transfer getUploadForPath(String path)
 			throws ObjectNotFoundException {
 		for (Transfer transfer : _slave.getTransfersList()) {
-			synchronized (transfer) {
-				if (!transfer.isReceivingUploading()) {
-					continue;
-				}
-				if (transfer._pathForUpload.equalsIgnoreCase(path)) {
-					return transfer;
-				}
+			if (!transfer.isReceivingUploading()) {
+				continue;
+			}
+			if (transfer._pathForUpload.equalsIgnoreCase(path)) {
+				return transfer;
 			}
 		}
 		throw new ObjectNotFoundException("Transfer not found");
@@ -277,7 +280,7 @@ public class Transfer {
 				_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
 			}
 
-			System.out.println(dirname + "/" + filename);
+			logger.info("UL: " + dirname + "/" + filename + getNegotiatedSSLString());
 			transfer(null);
 			_slave.sendResponse(new AsyncResponseDiskStatus(_slave
 					.getDiskStatus()));
@@ -328,7 +331,7 @@ public class Transfer {
 				_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
 			}
 
-			System.out.println("DL:" + path);
+			logger.info("DL: " + path + getNegotiatedSSLString());
 			try {
 				transfer(getUploadForPath(path));
 			} catch (ObjectNotFoundException e) {
@@ -355,6 +358,16 @@ public class Transfer {
 				}
 			}
 		}
+	}
+
+	private String getNegotiatedSSLString() {
+		String finalSSLNegotiation = "";
+		if (_sock instanceof SSLSocket) {
+			String protocol = ((SSLSocket)_sock).getSession().getProtocol();
+			String cipher = ((SSLSocket)_sock).getSession().getCipherSuite();
+			finalSSLNegotiation = " SSL: Protocol=" + protocol + " Cipher=" + cipher;
+		}
+		return finalSSLNegotiation;
 	}
 
 	private void accept(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
@@ -454,7 +467,7 @@ public class Transfer {
 
 				_out.flush();
 			} catch (IOException e) {
-				if (e instanceof TransferFailedException || e instanceof TransferSlowException) {
+				if (e instanceof TransferFailedException) {
 					throw e;
 				}
 				throw new TransferFailedException(e, getTransferStatus());
