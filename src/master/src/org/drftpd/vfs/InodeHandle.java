@@ -51,7 +51,11 @@ public abstract class InodeHandle implements InodeHandleInterface, Comparable<In
 		if (path == null || !path.startsWith(VirtualFileSystem.separator)) {
 			throw new IllegalArgumentException("InodeHandle needs an absolute path, argument was [" + path + "]");
 		}
-		_path = path;
+		if (path.length() > VirtualFileSystem.separator.length() && path.endsWith(VirtualFileSystem.separator)) {
+			_path = path.substring(0, path.lastIndexOf(VirtualFileSystem.separator));
+		} else {
+			_path = path;
+		}
 	}
 	
 	public int compareTo(InodeHandle handle) {
