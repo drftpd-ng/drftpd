@@ -212,9 +212,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 				response.addComment(
 				"zipscript - SFV unavailable, slave(s) with .sfv file is offline");
 			} catch (FileNotFoundException e) {
-				response.addComment(
-						"zipscript - SFV unavailable, IO error: " +
-						e.getMessage());
+				// No sfv found in parent dir for this file, skip check
 			} catch (IOException e) {
 				response.addComment(
 						"zipscript - SFV unavailable, IO error: " +
