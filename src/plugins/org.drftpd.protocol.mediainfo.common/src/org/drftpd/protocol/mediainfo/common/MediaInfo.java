@@ -282,16 +282,19 @@ public class MediaInfo implements Serializable {
 			if (!realFormat.equals("MP4")) {
 				mediaInfo.setRealFormat(realFormat);
 				mediaInfo.setUploadedFormat("MP4");
+				mediaInfo.setSampleOk(false);
 			}
 		} else if (filePath.toUpperCase().endsWith(".MKV")) {
 			if (!realFormat.equals("MKV")) {
 				mediaInfo.setRealFormat(realFormat);
 				mediaInfo.setUploadedFormat("MKV");
+				mediaInfo.setSampleOk(false);
 			}
 		} else if (filePath.toUpperCase().endsWith(".AVI")) {
 			if (!realFormat.equals("AVI")) {
 				mediaInfo.setRealFormat(realFormat);
 				mediaInfo.setUploadedFormat("AVI");
+				mediaInfo.setSampleOk(false);
 			}
 		}
 		
