@@ -226,6 +226,7 @@ public class BasicHandler extends AbstractHandler {
 
 	public AsyncResponse handleRemerge(AsyncCommandArgument ac) {
 		try {
+			Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 			String[] argsArray = ac.getArgsArray();
 			long skipAgeCutoff = 0L;
 			boolean partialRemerge = Boolean.parseBoolean(argsArray[1]) && !getSlaveObject().ignorePartialRemerge() && !Boolean.parseBoolean(argsArray[4]);
