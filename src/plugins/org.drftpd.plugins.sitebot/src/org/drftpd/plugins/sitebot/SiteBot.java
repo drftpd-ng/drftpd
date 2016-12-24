@@ -1315,6 +1315,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 					return;
 				}
 				message = _ciphers.get(channel).decrypt(message);
+				logger.debug("Decrypted message: " + message);
 			} else {
 				// means we got an unencrypted line from a chan that should be encrypted
 				if (_config.getBlowfishPunish()) {
