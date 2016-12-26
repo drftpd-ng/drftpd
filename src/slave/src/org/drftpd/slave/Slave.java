@@ -101,8 +101,6 @@ public class Slave {
 
 	private boolean _uploadChecksums;
 
-	private boolean _remergeChecksums;
-
 	private PortRange _portRange;
 
 	private Set<QueuedOperation> _renameQueue = null;
@@ -278,7 +276,6 @@ public class Slave {
 
 		_uploadChecksums = p.getProperty("enableuploadchecksums", "true").equals("true");
 		_downloadChecksums = p.getProperty("enabledownloadchecksums", "true").equals("true");
-		_remergeChecksums = p.getProperty("enableremergechecksums", "true").equals("true");
 		_bufferSize = Integer.parseInt(p.getProperty("bufferSize", "0"));
 
 		_concurrentRootIteration = p.getProperty("concurrent.root.iteration", "false").equalsIgnoreCase("true");
@@ -429,7 +426,7 @@ public class Slave {
 		CRC32 crc32 = new CRC32();
 		try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
 				new FileInputStream(file)), crc32)){
-			byte[] buf = new byte[4096];
+			byte[] buf = new byte[16384];
 			while (in.read(buf) != -1) {
 			}
 			return crc32.getValue();
@@ -516,10 +513,6 @@ public class Slave {
 
 	public boolean getUploadChecksums() {
 		return _uploadChecksums;
-	}
-
-	public boolean getRemergeChecksums() {
-		return _remergeChecksums;
 	}
 
 	private AsyncResponse handleCommand(AsyncCommandArgument ac) {

@@ -38,6 +38,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.CommitManager;
+import org.drftpd.master.RemergeMessage;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.Session;
 import org.drftpd.master.SlaveManager;
@@ -286,6 +287,17 @@ public class SlaveManagement extends CommandInterface {
 
 			return new CommandResponse(200, "Slave Unavailable during remerge()");
 		} finally {
+			// Wait for remerge and crc queues to drain
+			while (!rslave.getRemergeQueue().isEmpty() && !rslave.getCRCQueue().isEmpty()) {
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) { }
+			}
+
+			// set remerge and crc threads to status finished so that threads may terminate cleanly
+			rslave.setCRCThreadFinished();
+			rslave.putRemergeQueue(new RemergeMessage(rslave));
+
 			String message = ("Remerge queueprocess finished");
 			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
 			rslave.setRemerging(false);

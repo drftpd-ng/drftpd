@@ -35,10 +35,6 @@ enableuploadchecksums=true
 # [ true | false ]
 enabledownloadchecksums=true
 
-# Enable checksums on remerge
-# [ true | false ]
-enableremergechecksums=true
-
 # BufferSize set at 0 lets the kernel handle the buffer sizes
 bufferSize=0
 
