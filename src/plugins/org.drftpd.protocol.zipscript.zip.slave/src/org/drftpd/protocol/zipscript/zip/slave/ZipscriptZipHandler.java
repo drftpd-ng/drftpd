@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import org.apache.log4j.Logger;
 import org.drftpd.util.Base64;
 
 import org.drftpd.protocol.slave.AbstractHandler;
@@ -55,6 +56,7 @@ import org.drftpd.slave.async.AsyncResponse;
  * @version $Id$
  */
 public class ZipscriptZipHandler extends AbstractHandler {
+	private static final Logger logger = Logger.getLogger(ZipscriptZipHandler.class);
 
 	public ZipscriptZipHandler(SlaveProtocolCentral central) {
 		super(central);
@@ -102,17 +104,18 @@ public class ZipscriptZipHandler extends AbstractHandler {
 				});
 			}
 			if (files.get() == 0) {
-				throw new IOException("Zip file empty: " + path);
+				throw new IOException("Zip file empty");
 			}
-		} catch (IOException e) {
+		} catch (Throwable t) {
 			integrityOk = false;
+			logger.debug("Error validating integrity of " + path + " : " + t.getMessage());
 		}
 
 		return integrityOk;
 	}
 
 	private void calculateChecksum(Path file) throws IOException {
-		final byte[] buff = new byte[4096];
+		final byte[] buff = new byte[16384];
 		try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
 				Files.newInputStream(file)), new CRC32())) {
 			while (in.read(buff) != -1) {
@@ -156,8 +159,8 @@ public class ZipscriptZipHandler extends AbstractHandler {
 					}
 				});
 			}
-		} catch (IOException e) {
-			// ignore
+		} catch (Throwable t) {
+			logger.debug("Error getting diz info from " + path + " : " + t.getMessage());
 		}
 
 		return dizInfo;
