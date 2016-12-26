@@ -76,6 +76,11 @@ protocol.3=TLSv1.2
 remerge.pause.threshold=250
 remerge.resume.threshold=50
 
+# Enable checksums on remerge
+# Gets checksum from slave for remerged files missing checksum in VFS
+# [ true | false ]
+enableremergechecksums=false
+
 # Slave partial remerge functionality
 # There are three possible settings for this mode:
 # off - a full remerge will be performed on connect

@@ -452,7 +452,7 @@ public class BasicHandler extends AbstractHandler {
 						continue;
 					}
 					*/
-					fileList.add(getLRI(file));
+					fileList.add(new LightRemoteInode(file));
 				}
 
 				if (!partialRemerge || inodesModified) {
@@ -510,19 +510,6 @@ public class BasicHandler extends AbstractHandler {
 				localWaitObj.notify();
 			}
 		}
-	}
-
-	private LightRemoteInode getLRI(PhysicalFile file) {
-		LightRemoteInode lri = new LightRemoteInode(file);
-		if (getSlaveObject().getRemergeChecksums() && file.isFile()) {
-			try {
-				lri.setChecksum(getSlaveObject().checkSum(file));
-			} catch (IOException e) {
-				// log and continue
-				logger.warn("IOException when checking crc for " + file.getPath() + " :: " + e.getMessage());
-			}
-		}
-		return lri;
 	}
 
 	private HandleRemergeRecursiveThread getRemergeThread() {
@@ -638,7 +625,7 @@ public class BasicHandler extends AbstractHandler {
 			if (file.isDirectory()) {
 				handleRemergeRecursive2(rootCollection, fullPath, partialRemerge, skipAgeCutoff);
 			}
-			fileList.add(getLRI(file));
+			fileList.add(new LightRemoteInode(file));
 		}
 		if (!partialRemerge || inodesModified) {
 			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
@@ -697,7 +684,7 @@ public class BasicHandler extends AbstractHandler {
 			if (file.isDirectory()) {
 				handleRemergeRecursiveConcurrent(rootCollection, fullPath, partialRemerge, skipAgeCutoff);
 			}
-			fileList.add(getLRI(file));
+			fileList.add(new LightRemoteInode(file));
 		}
 		if (!partialRemerge || inodesModified) {
 			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
