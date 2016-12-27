@@ -19,6 +19,8 @@ package org.drftpd.commands.nuke;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
@@ -304,17 +306,19 @@ public class Nuke extends CommandInterface {
 
         DirectoryHandle currentDir = request.getCurrentDirectory();
 		User user = session.getUserNull(request.getUser());
-		String toName = st.nextToken();
+		String path = VirtualFileSystem.fixPath(st.nextToken());
+		String toName;
 		String toDir;
 		String nukeName;
 
-		if (!toName.startsWith(VirtualFileSystem.separator)) {
-			// Not a full path, let's make it one and append [NUKED]- if needed.
-			if (toName.startsWith("[NUKED]-")) {
-				nukeName = toName;
-				toName = toName.substring(8);
+		if (!path.startsWith(VirtualFileSystem.separator)) {
+			// Not a full path, let's make it one and append nuke prefix if needed.
+			if (path.startsWith(NukeUtils._nukePrefix)) {
+				nukeName = path;
+				toName = path.substring(NukeUtils._nukePrefix.length());
 			} else {
-				nukeName = "[NUKED]-" + toName;
+				toName = path;
+				nukeName = NukeUtils._nukePrefix + path;
             }
 			if (request.getCurrentDirectory().isRoot()) {
 				boolean searchIndex = request.getProperties().getProperty("search","true").
@@ -364,15 +368,14 @@ public class Nuke extends CommandInterface {
 				toDir = currentDir.getPath() + VirtualFileSystem.separator;
 			}
 		} else {
-			// Full path to Nuked dir provided, append [NUKED]- if needed.
-			toDir = VirtualFileSystem.fixPath(toName);
-			toName = toDir.substring(toDir.lastIndexOf(VirtualFileSystem.separator)+1);
-			toDir = toDir.substring(0,toDir.lastIndexOf(VirtualFileSystem.separator)+1);
-			if (toName.startsWith("[NUKED]-")) {
+			// Full path to Nuked dir provided, append nuke prefix if needed.
+			toDir = VirtualFileSystem.stripLast(path) + VirtualFileSystem.separator;
+			toName = VirtualFileSystem.getLast(path);
+			if (toName.startsWith(NukeUtils._nukePrefix)) {
 				nukeName = toName;
-				toName = toName.substring(8);
+				toName = toName.substring(NukeUtils._nukePrefix.length());
 			} else {
-				nukeName = "[NUKED]-" + toName;
+				nukeName = NukeUtils._nukePrefix + toName;
 			}
         }
 
@@ -455,40 +458,29 @@ public class Nuke extends CommandInterface {
 
 		if (NukeBeans.getNukeBeans().getAll().isEmpty()) {
 			response.addComment("Nukelog empty.");
+			return response;
 		}
 
-		ArrayList<String> entriesToRemove = new ArrayList<String>();
-
-        for (NukeData nd : NukeBeans.getNukeBeans().getAll()) {
-			// Construct new path with [NUKED]-
-			String newPath = VirtualFileSystem.fixPath(nd.getPath());
-			String fixedName = "[NUKED]-" + newPath.substring(newPath.lastIndexOf(VirtualFileSystem.separator)+1);
-			newPath = newPath.substring(0,newPath.lastIndexOf(VirtualFileSystem.separator)+1) + fixedName;
-
+		int deleted = 0;
+		for (Iterator<Map.Entry<String, NukeData>> it =
+			 	NukeBeans.getNukeBeans().getNukes().entrySet().iterator(); it.hasNext();) {
+			Map.Entry<String, NukeData> nukeEntry = it.next();
+			// Construct new path with nuke prefix
+			String newPath = NukeUtils.getPathWithNukePrefix(VirtualFileSystem.fixPath(nukeEntry.getKey()));
 			try {
 				request.getCurrentDirectory().getDirectoryUnchecked(newPath);
-				// Still here? .. all ok then, just continue with next item in nukelog
 			} catch (FileNotFoundException e) {
 				// Dir was deleted/wiped, lets remove it from nukelog.
-				// Add path to list so we can delete it after going through entire nukelog
-				entriesToRemove.add(nd.getPath());
+				it.remove();
+				deleted++;
 			} catch (ObjectNotValidException e) {
 				return new CommandResponse(550, newPath + " is not a directory");
 			}
-        }
+		}
 
-		if (entriesToRemove.isEmpty()) {
+		if (deleted == 0) {
 			response.addComment("No entries to delete from nukelog.");
 		} else {
-			int deleted = 0;
-			for (String path : entriesToRemove) {
-				try {
-					NukeBeans.getNukeBeans().remove(path);
-					deleted++;
-				} catch (ObjectNotFoundException e) {
-					response.addComment("Error removing nukelog entry: " + path);
-				}
-			}
 			response.addComment("Removed " + deleted + " invalid entries from the nukelog.");
 		}
 
