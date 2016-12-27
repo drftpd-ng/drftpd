@@ -138,6 +138,13 @@ public class NukeBeans {
 	}
 
 	/**
+	 * @return nukes map.
+	 */
+	public synchronized Map<String, NukeData> getNukes() {
+		return _nukes;
+	}
+
+	/**
 	 * This method iterate through the Map of the users which have been nuked on
 	 * the NukeData.getPath(), and create a List<Nukee> Object. See:
 	 * net.sf.drftpd.Nukee for more info.
@@ -146,7 +153,7 @@ public class NukeBeans {
 	 * @return
 	 */
 	public static List<NukedUser> getNukeeList(NukeData nd) {
-		ArrayList<NukedUser> list = new ArrayList<NukedUser>();
+		ArrayList<NukedUser> list = new ArrayList<>();
 		for (Map.Entry<String,Long> entry : nd.getNukees().entrySet()) {
 			String user = entry.getKey();
 			Long l = entry.getValue();
