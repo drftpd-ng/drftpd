@@ -92,6 +92,8 @@ public class Slave {
 	private boolean _downloadChecksums;
 
 	private RootCollection _roots;
+
+	private Socket _socket;
 	
 	private ObjectInputStream _sin;
 
@@ -118,6 +120,8 @@ public class Slave {
 	private boolean _concurrentRootIteration;
 	
 	private String _bindIP = null;
+
+	private boolean _online;
 
 	protected Slave() {
 	}
@@ -226,16 +230,15 @@ public class Slave {
 			throw new SSLUnavailableException("Secure connection to master enabled but SSL isn't ready");
 		}
 
-		Socket s;
 		if (sslMaster) {
-			s = _ctx.getSocketFactory().createSocket();
+			_socket = _ctx.getSocketFactory().createSocket();
 		} else {
-			s = new Socket();
+			_socket = new Socket();
 		}
 
 		if (PropertyHelper.getProperty(p, "bind.ip",null) != null) {
 			try {
-				s.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"),0));
+				_socket.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"),0));
 				_bindIP = PropertyHelper.getProperty(p, "bind.ip",null);
 			} catch (IOException e) {
 				throw new IOException("Unable To Bind Port Correctly");
@@ -247,26 +250,26 @@ public class Slave {
 		} catch (NullPointerException e) {
 			_timeout = actualTimeout;
 		}
-		s.setSoTimeout(socketTimeout);
-		s.connect(addr);
-		if (s instanceof SSLSocket) {
+		_socket.setSoTimeout(socketTimeout);
+		_socket.connect(addr);
+		if (_socket instanceof SSLSocket) {
 			if (getCipherSuites() != null) {
-				((SSLSocket) s).setEnabledCipherSuites(getCipherSuites());
+				((SSLSocket) _socket).setEnabledCipherSuites(getCipherSuites());
 			}
 			if (getSSLProtocols() != null) {
-				((SSLSocket) s).setEnabledProtocols(getSSLProtocols());
+				((SSLSocket) _socket).setEnabledProtocols(getSSLProtocols());
 			}
-			((SSLSocket) s).setUseClientMode(true);
+			((SSLSocket) _socket).setUseClientMode(true);
 			
 			try {
-				((SSLSocket) s).startHandshake();
+				((SSLSocket) _socket).startHandshake();
 			} catch (SSLHandshakeException e) {
 				throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.", e);
 			}
 		}
-		_sout = new ObjectOutputStream(new BufferedOutputStream(s.getOutputStream()));
+		_sout = new ObjectOutputStream(new BufferedOutputStream(_socket.getOutputStream()));
 		_sout.flush();
-		_sin = new ObjectInputStream(new BufferedInputStream(s.getInputStream()));
+		_sin = new ObjectInputStream(new BufferedInputStream(_socket.getInputStream()));
 
 		_central = new SlaveProtocolCentral(this);
 		
@@ -349,7 +352,46 @@ public class Slave {
 		} catch (Throwable t) {
 			logger.fatal("Error, check config on master for this slave");
 		}
-		s.listenForCommands();
+		s.setOnline(true);
+		try {
+			s.listenForCommands();
+		} finally {
+			s.shutdown();
+		}
+	}
+
+	public void shutdown() {
+		if (_sin != null) {
+			try {
+				_sin.close();
+			} catch (IOException e) {
+			}
+			_sin = null;
+		}
+		if (_sout != null) {
+			try {
+				_sout.flush();
+				_sout.close();
+			} catch (IOException e) {
+			}
+			_sout = null;
+		}
+		if (_socket != null) {
+			try {
+				_socket.close();
+			} catch (IOException e) {
+			}
+			_socket = null;
+		}
+		setOnline(false);
+	}
+
+	public void setOnline(boolean online) {
+		_online = online;
+	}
+
+	public boolean isOnline() {
+		return _online;
 	}
 
 	public class FileLockRunnable implements Runnable {
