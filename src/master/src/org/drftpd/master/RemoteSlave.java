@@ -980,10 +980,37 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	private void setOfflineReal(String reason) {
+		// If remerging and remerge is paused, wake it
+		if (_isRemerging) {
+			if (_remergePaused.get()) {
+				try {
+					SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
+				} catch (SlaveUnavailableException e) {
+					// Socket already closed to slave, ignore.
+				}
+				_remergePaused.set(false);
+			}
+			_isRemerging = false;
+		}
 		// If the slave is still processing the remerge queue clear all
 		// outstanding entries
 		_remergeQueue.clear();
 		_crcQueue.clear();
+		if (_sin != null) {
+			try {
+				_sin.close();
+			} catch (IOException e) {
+			}
+			_sin = null;
+		}
+		if (_sout != null) {
+			try {
+				_sout.flush();
+				_sout.close();
+			} catch (IOException e) {
+			}
+			_sout = null;
+		}
 		if (_socket != null) {
 			setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
 			try {
@@ -992,8 +1019,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			}
 			_socket = null;
 		}
-		_sin = null;
-		_sout = null;
 		if (_indexWithCommands != null)
 			_indexWithCommands.clear();
 		if (_transfers != null)
@@ -1260,10 +1285,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			_crcThread = new CrcThread(getName());
 			_crcThread.start();
 		}
-	}
-
-	public int doRemergequeue() {
-			return _remergeQueue.size();
 	}
 
 	private class RemergeThread extends Thread {

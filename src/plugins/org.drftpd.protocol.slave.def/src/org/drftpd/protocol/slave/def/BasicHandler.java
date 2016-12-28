@@ -273,6 +273,10 @@ public class BasicHandler extends AbstractHandler {
 			// Make sure we dont make the slave avalible online until the whole filesystem is sent
 			if (getSlaveObject().threadedRemerge()) {
 				while (threadMergeCount.get() != 0) {
+					if (!getSlaveObject().isOnline()) {
+						// Slave has shut down, no need to continue with remerge
+						return null;
+					}
 					synchronized(threadMergeWaitObj) {
 						try {
 							threadMergeWaitObj.wait(5000);
@@ -321,10 +325,14 @@ public class BasicHandler extends AbstractHandler {
 
 		public void run() {
 			while (true) {
-				while (remergePaused.get()) {
+				if (!getSlaveObject().isOnline()) {
+					// Slave has shut down, no need to continue with remerge
+					return;
+				}
+				while (remergePaused.get() && getSlaveObject().isOnline()) {
 					synchronized(remergeWaitObj) {
 						try {
-							remergeWaitObj.wait();
+							remergeWaitObj.wait(5000);
 						} catch (InterruptedException e) {
 							// Either we have been woken properly in which case we will exit the
 							// loop or we have not in which case we will wait again.
@@ -333,7 +341,7 @@ public class BasicHandler extends AbstractHandler {
 				}
 
 				while (path == null) {
-					if (exit) {
+					if (exit || !getSlaveObject().isOnline()) {
 						return;
 					}
 					synchronized(localWaitObj) {
@@ -552,6 +560,10 @@ public class BasicHandler extends AbstractHandler {
 
 	private void waitForDepth(String path) {
 		while(true) {
+			if (!getSlaveObject().isOnline()) {
+				// Slave has shut down, no need to continue with remerge
+				return;
+			}
 			synchronized(threadMergeDepth) {
 				for (String dir : threadMergeDepth) {
 					if (dir.startsWith(path)) {
@@ -573,10 +585,14 @@ public class BasicHandler extends AbstractHandler {
 	private void handleRemergeRecursive2(RootCollection rootCollection,
 			String path, boolean partialRemerge, long skipAgeCutoff) {
 		remergeDepth++;
-		while (remergePaused.get()) {
+		if (!getSlaveObject().isOnline()) {
+			// Slave has shut down, no need to continue with remerge
+			return;
+		}
+		while (remergePaused.get() && getSlaveObject().isOnline()) {
 			synchronized(remergeWaitObj) {
 				try {
-					remergeWaitObj.wait();
+					remergeWaitObj.wait(5000);
 				} catch (InterruptedException e) {
 					// Either we have been woken properly in which case we will exit the
 					// loop or we have not in which case we will wait again.
@@ -642,10 +658,14 @@ public class BasicHandler extends AbstractHandler {
 	private void handleRemergeRecursiveConcurrent(RootCollection rootCollection,
 			String path, boolean partialRemerge, long skipAgeCutoff) {
 		remergeConcurrentDepth++;
-		while (remergePaused.get()) {
+		if (!getSlaveObject().isOnline()) {
+			// Slave has shut down, no need to continue with remerge
+			return;
+		}
+		while (remergePaused.get() && getSlaveObject().isOnline()) {
 			synchronized(remergeWaitObj) {
 				try {
-					remergeWaitObj.wait();
+					remergeWaitObj.wait(5000);
 				} catch (InterruptedException e) {
 					// Either we have been woken properly in which case we will exit the
 					// loop or we have not in which case we will wait again.
@@ -762,13 +782,8 @@ public class BasicHandler extends AbstractHandler {
 	
 	public AsyncResponse handleShutdown(AsyncCommandArgument ac) {
 		logger.info("The master has requested that I shutdown");
+		getSlaveObject().shutdown();
 		WrapperManager.stop(0);
-		return null;
-	}
-	
-	public AsyncResponse handleError(AsyncCommandArgument ac) {
-		System.err.println("error - " + ac);
-		System.exit(0);
 		return null;
 	}
 
