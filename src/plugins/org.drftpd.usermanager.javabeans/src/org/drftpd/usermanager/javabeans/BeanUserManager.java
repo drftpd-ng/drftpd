@@ -115,11 +115,9 @@ public class BeanUserManager extends AbstractUserManager {
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
 	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
-		InputStream in = null;
-		try {
-			in = new BufferedInputStream(new FileInputStream(getUserFile(userName)));
+		try (InputStream in = new FileInputStream(getUserFile(userName));
+			 JsonReader reader = new JsonReader(in)) {
 			logger.debug("Loading '"+userName+"' Json data from disk.");
-			JsonReader reader = new JsonReader(in);
 			BeanUser user = (BeanUser) reader.readObject();
 			user.setUserManager(this);
 			return user;
@@ -128,13 +126,6 @@ public class BeanUserManager extends AbstractUserManager {
 			return loadXMLUser(userName);
 		} catch (Exception e) {
 			throw new UserFileException("Error loading " + userName, e);
-		} finally {
-			try {
-				if (in != null)
-					in.close();
-			} catch (IOException e) {
-				throw new UserFileException("Error loading " + userName, e);
-			}
 		}
 	}
 
@@ -146,11 +137,9 @@ public class BeanUserManager extends AbstractUserManager {
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
 	private User loadXMLUser(String userName) throws NoSuchUserException, UserFileException {
-		XMLDecoder xd = null;
-		try {
+		File xmlUserFile = getXMLUserFile(userName);
+		try (XMLDecoder xd = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlUserFile)))) {
 			BeanUser user;
-			File xmlUserFile = getXMLUserFile(userName);
-			xd = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlUserFile)));
 			logger.debug("Loading '"+userName+"' XML data from disk.");
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
@@ -167,9 +156,6 @@ public class BeanUserManager extends AbstractUserManager {
 			throw new NoSuchUserException("No such user: '"+userName+"'", e);
 		} catch (Exception e) {
 			throw new UserFileException("Error loading " + userName, e);
-		} finally {
-			if (xd != null)
-				xd.close();
 		}
 	}
 	

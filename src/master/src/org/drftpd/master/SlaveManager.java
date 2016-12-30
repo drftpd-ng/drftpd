@@ -153,11 +153,9 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		if (slavename == null) {
 			throw new NullPointerException();
 		}
-		InputStream in = null;
-		try {
-			in = new BufferedInputStream(new FileInputStream(getSlaveFile(slavename)));
+		try (InputStream in = new FileInputStream(getSlaveFile(slavename));
+			 JsonReader reader = new JsonReader(in)) {
 			logger.debug("Loading slave '"+slavename+"' Json data from disk.");
-			JsonReader reader = new JsonReader(in);
 			RemoteSlave rslave = (RemoteSlave) reader.readObject();
 			if (rslave.getName().equals(slavename)) {
 				_rslaves.put(slavename,rslave);
@@ -170,25 +168,14 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			return getSlaveByXMLNameUnchecked(slavename);
 		} catch (Exception e) {
 			throw new FatalException("Error loading " + slavename + " : " + e.getMessage(), e);
-		} finally {
-			try {
-				if (in != null)
-					in.close();
-			} catch (IOException e) {
-				logger.error("Error closing stream loading json slave file for " + slavename, e);
-			}
 		}
-
 	}
 
 	private RemoteSlave getSlaveByXMLNameUnchecked(String slavename)
 			throws ObjectNotFoundException {
 		RemoteSlave rslave;
-		XMLDecoder in = null;
-
-		try {
-			File xmlSlaveFile = getXMLSlaveFile(slavename);
-			in = new XMLDecoder(new FileInputStream(xmlSlaveFile));
+		File xmlSlaveFile = getXMLSlaveFile(slavename);
+		try (XMLDecoder in = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlSlaveFile)))) {
 			logger.debug("Loading slave '"+slavename+"' XML data from disk.");
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
@@ -210,10 +197,6 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			throw new ObjectNotFoundException(e);
 		} catch (Exception e) {
 			throw new FatalException("Error loading " + slavename, e);
-		} finally {
-			if (in != null) {
-				in.close();
-			}
 		}
 	}
 

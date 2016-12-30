@@ -18,8 +18,6 @@
 package org.drftpd.commands.nuke;
 
 import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -193,18 +191,13 @@ public class NukeBeans {
 	 * @throws IOException
 	 */
 	public void commit() throws IOException {
-		OutputStream out = null;
-		try {
-			out = new BufferedOutputStream(new SafeFileOutputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
-			Map<String,Object> params = new HashMap<>();
-			params.put(JsonWriter.PRETTY_PRINT, true);
-			JsonWriter writer = new JsonWriter(out, params);
+		Map<String,Object> params = new HashMap<>();
+		params.put(JsonWriter.PRETTY_PRINT, true);
+		try (OutputStream out = new SafeFileOutputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
+			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(_nukes);
-		} catch (JsonIoException e) {
+		} catch (IOException | JsonIoException e) {
 			throw new IOException(e.getMessage());
-		} finally {
-			if (out != null)
-				out.close();
 		}
 	}
 
@@ -244,24 +237,17 @@ public class NukeBeans {
 	@SuppressWarnings("unchecked")
 	private void loadLRUMap() {
 		Map<String, NukeData> nukees = new LRUMap(200);
-		InputStream in = null;
-		try {
-			in = new BufferedInputStream(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json"));
-			JsonReader reader = new JsonReader(in);
+		try (InputStream in = new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
+			 JsonReader reader = new JsonReader(in);) {
 			nukees.putAll((Map<String, NukeData>)reader.readObject());
 			logger.debug("Loaded log from .json, size: " + nukees.size());
 		} catch (FileNotFoundException e) {
 			// Lets see if there is a legacy xml nuke log to load
 			loadXMLLRUMap(nukees);
-		} finally {
-			try {
-				if (in != null)
-					in.close();
-			} catch (IOException e) {
-				logger.error("Error closing stream loading json nuke log file", e);
-			}
-			_nukeBeans.setLRUMap(nukees);
+		} catch (IOException e) {
+			logger.error("IOException reading json nuke log file", e);
 		}
+		_nukeBeans.setLRUMap(nukees);
 	}
 
 	/**
@@ -272,19 +258,13 @@ public class NukeBeans {
 	private void loadXMLLRUMap(Map<String, NukeData> nukees) {
 		saveClassLoader();
 		// de-serializing the Hashtable.
-		XMLDecoder xd = null;
-		try {
-			xd = new XMLDecoder(new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"));
-
+		try (XMLDecoder xd = new XMLDecoder(new FileInputStream(
+				_nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"))) {
 			switchClassLoaders();
 			nukees.putAll((Map<String, NukeData>)xd.readObject());
-
 			logger.debug("Loaded log from .xml, size: " + nukees.size());
 		} catch (FileNotFoundException e) {
 			// nukelog does not exists yet.
-		} finally {
-			if (xd != null)
-				xd.close();
 		}
 		setPreviousClassLoader();
 	}
