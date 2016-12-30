@@ -18,8 +18,11 @@
 package org.drftpd.commands.request;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -38,6 +41,7 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.ListUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
@@ -56,6 +60,8 @@ public class Request extends CommandInterface {
 	private String _reqFilledPrefix;
 	private String _requestPrefix;
 
+	private ArrayList<Pattern> _requestDenyRegex;
+
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
 
@@ -64,6 +70,8 @@ public class Request extends CommandInterface {
 		
     	_bundle = cManager.getResourceBundle();
     	_keyPrefix = this.getClass().getName()+".";
+
+		_requestDenyRegex = new ArrayList<>();
     	
     	readConfig();
     	
@@ -81,6 +89,15 @@ public class Request extends CommandInterface {
 		
 		_reqFilledPrefix = props.getProperty("reqfilled.prefix", "FILLED-for.");
 		_requestPrefix = props.getProperty("request.prefix", "REQUEST-by.");
+
+		_requestDenyRegex.clear();
+		int i = 1;
+		String regex = props.getProperty("request.deny."+i);
+		while(regex != null){
+			Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+			_requestDenyRegex.add(p);
+			regex = props.getProperty("request.deny."+i++);
+		}
 	}
 	
 	/**
@@ -178,6 +195,15 @@ public class Request extends CommandInterface {
 
 		User user = session.getUserNull(request.getUser());
 		String requestName = request.getArgument().trim();
+		if (!ListUtils.isLegalFileName(requestName)) {
+			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+		}
+		for (Pattern regex : _requestDenyRegex) {
+			Matcher m = regex.matcher(requestName);
+			if (m.find()) {
+				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			}
+		}
 		String createdDirName = _requestPrefix + user.getName() + "-" + requestName;
 		DirectoryHandle requestDir = getRequestDirectory(request);
 		
