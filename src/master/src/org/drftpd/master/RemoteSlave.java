@@ -17,7 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -1234,22 +1233,17 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return getName();
 	}
 
-	public void writeToDisk() throws IOException {
-		OutputStream out = null;
-		try {
-			out = new BufferedOutputStream(new SafeFileOutputStream(
-					(getGlobalContext().getSlaveManager().getSlaveFile(this.getName()))));
-			Map<String,Object> params = new HashMap<>();
-			params.put(JsonWriter.PRETTY_PRINT, true);
-			JsonWriter writer = new JsonWriter(out, params);
+	public void writeToDisk() {
+		Map<String,Object> params = new HashMap<>();
+		params.put(JsonWriter.PRETTY_PRINT, true);
+		try (OutputStream out = new SafeFileOutputStream(
+				getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
+			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(this);
 			logger.debug("Wrote slavefile for " + this.getName());
-		} catch (JsonIoException e) {
+		} catch (IOException | JsonIoException e) {
 			throw new RuntimeException("Error writing slavefile for "
 					+ this.getName() + ": " + e.getMessage(), e);
-		} finally {
-			if (out != null)
-				out.close();
 		}
 	}
 
