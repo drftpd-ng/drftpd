@@ -134,7 +134,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
 
-	private transient AtomicBoolean _remergePaused;
+	public transient AtomicBoolean _remergePaused;
 	
 	private transient boolean _initRemergeCompleted;
 
@@ -440,9 +440,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			throw new IOException(e.getMessage());
 		}
 
-		if (_crcThread != null && _crcThread.isAlive()) {
-			_crcThread.setFinished();
-		}
+		setCRCThreadFinished();
 		putRemergeQueue(new RemergeMessage(this));
 
 		if (_remergePaused.get()) {

@@ -297,22 +297,34 @@ public class SlaveManagement extends CommandInterface {
 			rslave.setOffline("Slave Unavailable during remerge()");
 
 			return new CommandResponse(200, "Slave Unavailable during remerge()");
-		} finally {
-			// Wait for remerge and crc queues to drain
-			while (!rslave.getRemergeQueue().isEmpty() && !rslave.getCRCQueue().isEmpty()) {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) { }
-			}
-
-			// set remerge and crc threads to status finished so that threads may terminate cleanly
-			rslave.setCRCThreadFinished();
-			rslave.putRemergeQueue(new RemergeMessage(rslave));
-
-			String message = ("Remerge queueprocess finished");
-			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
-			rslave.setRemerging(false);
 		}
+
+		// set remerge and crc threads to status finished so that threads may terminate cleanly
+		rslave.setCRCThreadFinished();
+		rslave.putRemergeQueue(new RemergeMessage(rslave));
+
+		// Wait for remerge and crc queues to drain
+		while (!rslave.getRemergeQueue().isEmpty() && !rslave.getCRCQueue().isEmpty()) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) { }
+		}
+
+		if (rslave._remergePaused.get()) {
+			String message = "Remerge was paused on slave after completion, issuing resume so not to break manual remerges";
+			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
+			try {
+				SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(rslave);
+				rslave._remergePaused.set(false);
+			} catch (SlaveUnavailableException e) {
+				rslave.setOffline("Slave Unavailable during remerge()");
+				return new CommandResponse(200, "Slave Unavailable during remerge()");
+			}
+		}
+
+		String message = ("Remerge queueprocess finished");
+		GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
+		rslave.setRemerging(false);
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
