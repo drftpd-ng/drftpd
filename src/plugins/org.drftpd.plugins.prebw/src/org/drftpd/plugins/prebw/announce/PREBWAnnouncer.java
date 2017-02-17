@@ -20,7 +20,6 @@ import java.util.ResourceBundle;
 import java.util.Collections;
 import java.util.Comparator;
 
-import org.drftpd.GlobalContext;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -95,34 +94,34 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 			}
 			env.add("bw", bw);
 			StringBuilder leechers = new StringBuilder();
-			int leechCount = Integer.parseInt(ReplacerUtils.jprintf(_keyPrefix+
-					".prebw.leechtop.count", new ReplacerEnvironment(), _bundle));
-			if (leechCount == 0 || preInfo.getUsers().isEmpty()) {
-				ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-				tmpenv.add("dir", dir);
-				tmpenv.add("section", section.getName());
-				tmpenv.add("sectioncolor", section.getColor());
-				leechers.append(ReplacerUtils.jprintf(_keyPrefix+".prebw.leechtop.empty",
-						tmpenv, _bundle));
-			} else {
-				Collections.sort(preInfo.getUsers(), new UserComparator());
-				int i = 0;
-				for (UserInfo u : preInfo.getUsers()) {
-					if (i == leechCount)
-						break;
+			if (event.getLeechtopCount() != 0) {
+				if (preInfo.getUsers().isEmpty()) {
 					ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-					tmpenv.add("dir", dir);
+					tmpenv.add("dir", dir.getName());
 					tmpenv.add("section", section.getName());
 					tmpenv.add("sectioncolor", section.getColor());
-					tmpenv.add("username", u.getName());
-					tmpenv.add("group", u.getGroup());
-					tmpenv.add("bytes", Bytes.formatBytes(u.getBytes()));
-					tmpenv.add("files", u.getFiles());
-					tmpenv.add("avgspeed", Bytes.formatBytes(u.getAvgSpeed())+"/s");
-					tmpenv.add("topspeed", Bytes.formatBytes(u.getTopSpeed())+"/s");
-					leechers.append(ReplacerUtils.jprintf(_keyPrefix+".prebw.leechtop.format",
+					leechers.append(ReplacerUtils.jprintf(_keyPrefix + ".prebw.leechtop.empty",
 							tmpenv, _bundle));
-					i++;
+				} else {
+					Collections.sort(preInfo.getUsers(), new UserComparator());
+					int i = 0;
+					for (UserInfo u : preInfo.getUsers()) {
+						if (i == event.getLeechtopCount())
+							break;
+						ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+						tmpenv.add("dir", dir);
+						tmpenv.add("section", section.getName());
+						tmpenv.add("sectioncolor", section.getColor());
+						tmpenv.add("username", u.getName());
+						tmpenv.add("group", u.getGroup());
+						tmpenv.add("bytes", Bytes.formatBytes(u.getBytes()));
+						tmpenv.add("files", u.getFiles());
+						tmpenv.add("avgspeed", Bytes.formatBytes(u.getAvgSpeed()) + "/s");
+						tmpenv.add("topspeed", Bytes.formatBytes(u.getTopSpeed()) + "/s");
+						leechers.append(ReplacerUtils.jprintf(_keyPrefix + ".prebw.leechtop.format",
+								tmpenv, _bundle));
+						i++;
+					}
 				}
 			}
 			env.add("leechtop", leechers);
