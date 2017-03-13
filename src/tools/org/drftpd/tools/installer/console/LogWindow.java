@@ -146,7 +146,7 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 	public String getUserDir() {
 		JFileChooser userFileChooser = new JFileChooser(new File(System.getProperty("user.dir")));
 		userFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		userFileChooser.setDialogTitle("Select directory DrFTPd 2.0 is installed in");
+		userFileChooser.setDialogTitle("Select directory DrFTPD 3.2.0 is installed in");
 		int result = userFileChooser.showOpenDialog(this);
 		if (result == JFileChooser.APPROVE_OPTION) {
 			return userFileChooser.getSelectedFile().getPath();
