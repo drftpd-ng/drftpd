@@ -11,10 +11,10 @@
 		<library id="org.drftpd.protocol.mediainfo.common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="mediainfo-aspectjrt" path="../../../lib/aspectjrt-1.8.9.jar" type="code">
+		<library id="mediainfo-aspectjrt" path="../../../lib/aspectjrt-1.8.10.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="mediainfo-isoparser" path="../../../lib/isoparser-1.1.21.jar" type="code">
+		<library id="mediainfo-isoparser" path="../../../lib/isoparser-1.1.22.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
