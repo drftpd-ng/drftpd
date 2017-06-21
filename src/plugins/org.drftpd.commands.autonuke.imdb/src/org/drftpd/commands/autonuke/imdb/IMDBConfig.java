@@ -36,6 +36,10 @@ public class IMDBConfig extends Config {
 			IMDBInfo imdbInfo = dir.getPluginMetaData(IMDBInfo.IMDBINFO);
 			if (_field.equalsIgnoreCase("Title")) {
 				return _operator.equals("!") == imdbInfo.getTitle().matches(_value);
+			} else if (_field.equalsIgnoreCase("Language")) {
+				return _operator.equals("!") == imdbInfo.getLanguage().matches(_value);
+			} else if (_field.equalsIgnoreCase("Country")) {
+				return _operator.equals("!") == imdbInfo.getCountry().matches(_value);
 			} else if (_field.equalsIgnoreCase("Year")) {
 				return !handleDigitComparison(imdbInfo.getYear());
 			} else if (_field.equalsIgnoreCase("Director")) {
