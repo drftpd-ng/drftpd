@@ -17,8 +17,6 @@
  */
 package org.drftpd.vfs;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -233,10 +231,8 @@ public class VirtualFileSystem {
 			fullPath = fullPath + separator + dirName;
 			jsonFile = new File(fullPath);
 		}
-		InputStream in = null;
-		try {
-			in = new BufferedInputStream(new FileInputStream(fullPath));
-			JsonReader reader = new JsonReader(in);
+		try (InputStream in = new FileInputStream(fullPath);
+			 JsonReader reader = new JsonReader(in)) {
 			VirtualFileSystemInode inode = (VirtualFileSystemInode) reader.readObject();
 			inode.setName(getLast(path));
 			if (inode.isDirectory()) {
@@ -257,7 +253,7 @@ public class VirtualFileSystem {
 				return createRootDirectory();
 			}
 
-			VirtualFileSystemDirectory parentInode = null;
+			VirtualFileSystemDirectory parentInode;
 			{
 				VirtualFileSystemInode inode = getInodeByPath(stripLast(path));
 				if (inode.isDirectory()) {
@@ -281,13 +277,6 @@ public class VirtualFileSystem {
 				parentInode.removeMissingChild(getLast(path));
 			}
 			throw new FileNotFoundException();
-		} finally {
-			try {
-				if (in != null)
-					in.close();
-			} catch (IOException e) {
-				logger.error("Error closing input stream when loading vfs inode " + fullPath, e);
-			}
 		}
 	}
 
@@ -341,34 +330,23 @@ public class VirtualFileSystem {
 	 */
 	protected void writeInode(VirtualFileSystemInode inode) {
 		String fullPath = getRealPath(inode.getPath());
-		OutputStream out = null;
-		try {
-			if (inode instanceof VirtualFileSystemRoot) {
-				new File(fileSystemPath).mkdirs();
-				fullPath = fullPath + separator + dirName;
-			} else if (inode.isDirectory()) {
-				new File(fullPath).mkdirs();
-				fullPath = fullPath + separator + dirName;
-			} else {
-				new File(getRealPath(inode.getParent().getPath())).mkdirs();
-			}
-			out = new BufferedOutputStream(new SafeFileOutputStream(fullPath));
-			Map<String,Object> params = new HashMap<>();
-			params.put(JsonWriter.PRETTY_PRINT, true);
-			JsonWriter writer = new JsonWriter(out, params);
+		if (inode instanceof VirtualFileSystemRoot) {
+			new File(fileSystemPath).mkdirs();
+			fullPath = fullPath + separator + dirName;
+		} else if (inode.isDirectory()) {
+			new File(fullPath).mkdirs();
+			fullPath = fullPath + separator + dirName;
+		} else {
+			new File(getRealPath(inode.getParent().getPath())).mkdirs();
+		}
+		Map<String,Object> params = new HashMap<>();
+		params.put(JsonWriter.PRETTY_PRINT, true);
+		try (OutputStream out = new SafeFileOutputStream(fullPath);
+			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(inode);
 			logger.debug("Wrote fullPath " + fullPath);
-		} catch (IOException e) {
+		} catch (IOException | JsonIoException e) {
 			logger.error("Unable to write " + fullPath + " to disk", e);
-		} catch (JsonIoException e) {
-			logger.error("Unable to write " + fullPath + " to disk", e);
-		} finally {
-			try {
-				if (out != null)
-					out.close();
-			} catch (IOException e) {
-				logger.error("Unable to close OutputStream when writing " + fullPath + " to disk", e);
-			}
 		}
 	}
 

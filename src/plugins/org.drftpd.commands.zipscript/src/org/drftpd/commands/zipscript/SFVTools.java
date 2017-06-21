@@ -100,11 +100,24 @@ public class SFVTools {
 		CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
 		for (FileHandle file : dir.getFilesUnchecked()) {
 			if (file.isFile() && sfvEntries.containsKey(file.getName())) {
-				if (!file.isUploading()) {
-					present++;
-				}
-				if (!file.isAvailable()) {
-					offline++;
+				try {
+					// file.isUploading() returns true if sent to additional slaves with jobmanager
+					// The checksum control should be enough to verify successful upload
+					//if (!file.isUploading()) {
+						// Verify checksum of file
+						try {
+							if (file.getCheckSum() == sfvEntries.get(file.getName())) {
+								present++;
+							}
+						} catch (NoAvailableSlaveException e) {
+							// Unable to get a slave for checksum, caught by check below
+						}
+					//}
+					if (!file.isAvailable()) {
+						offline++;
+					}
+				} catch (FileNotFoundException e) {
+					// Ignore, marked as missing
 				}
 			}
 		}

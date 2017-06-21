@@ -1315,6 +1315,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 					return;
 				}
 				message = _ciphers.get(channel).decrypt(message);
+				logger.debug("Decrypted message: " + message);
 			} else {
 				// means we got an unencrypted line from a chan that should be encrypted
 				if (_config.getBlowfishPunish()) {
@@ -2976,6 +2977,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			List<AbstractAnnouncer> loadedAnnouncers =
 				CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Announce", "Class");
 			for (AbstractAnnouncer announcer : loadedAnnouncers) {
+				announcer.setConfDir(_confDir);
 				_announcers.add(announcer);
 				logger.debug("Loading sitebot announcer from plugin "
 						+CommonPluginUtils.getPluginIdForObject(announcer));
@@ -3086,6 +3088,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			for (AbstractAnnouncer announcer : loadedAnnouncers) {
 				logger.debug("Loading sitebot announcer provided by plugin "
 						+CommonPluginUtils.getPluginIdForObject(announcer));
+				announcer.setConfDir(_confDir);
 				announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
 				_announcers.add(announcer);
 				for (String type : announcer.getEventTypes()) {

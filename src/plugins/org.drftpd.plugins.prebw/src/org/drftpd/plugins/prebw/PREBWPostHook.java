@@ -50,6 +50,7 @@ public class PREBWPostHook implements PostHookInterface {
     private String _exclude;
     private String[] _sections;
 	private boolean _realSpeed;
+	private int _leechtopCount;
 
     public void initialize(StandardCommandManager manager) {
         logger.info("Starting PREBW plugin");
@@ -69,6 +70,7 @@ public class PREBWPostHook implements PostHookInterface {
         _sections = cfg.getProperty("sections", "").split(";");
 		_exclude = cfg.getProperty("exclude", "");
 		_realSpeed = cfg.getProperty("real.speed", "false").equalsIgnoreCase("true");
+		_leechtopCount = Integer.parseInt(cfg.getProperty("prebw.leechtop.count", "3"));
 		for (int i = 1;; i++) {
 			String times = cfg.getProperty(i + ".times");
 			if (times == null) break;
@@ -214,7 +216,7 @@ public class PREBWPostHook implements PostHookInterface {
 					_preInfo.setMessures(prebwTimeTotal+"s", Bytes.formatBytes(speed)+"/s");
 				}
 				_preInfo.setMtime(prebwTimeTotal);
-				GlobalContext.getEventService().publishAsync(new PREBWEvent(_preInfo));
+				GlobalContext.getEventService().publishAsync(new PREBWEvent(_preInfo, _leechtopCount));
 				PreInfos.getPreInfosSingleton().getPreInfos().remove(_preInfo);
 			} catch(NumberFormatException ex) {
 				logger.warn("",ex);

@@ -32,12 +32,13 @@ import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -76,7 +77,7 @@ public class Slave {
 
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 
-	protected static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
+	private static final int actualTimeout = 60000; // one minute, evaluated on a SocketTimeout
 
 	public static final String separator = "/";
 
@@ -92,13 +93,13 @@ public class Slave {
 
 	private RootCollection _roots;
 
-	private Socket _s;
+	private Socket _socket;
 	
 	private ObjectInputStream _sin;
 
 	private ObjectOutputStream _sout;
 
-	private HashMap<TransferIndex, Transfer> _transfers;
+	private Map<TransferIndex, Transfer> _transfers;
 
 	private boolean _uploadChecksums;
 
@@ -107,8 +108,6 @@ public class Slave {
 	private Set<QueuedOperation> _renameQueue = null;
 
 	private int _timeout;
-
-	private boolean _sslMaster;
 	
 	private SlaveProtocolCentral _central;
 	
@@ -121,6 +120,8 @@ public class Slave {
 	private boolean _concurrentRootIteration;
 	
 	private String _bindIP = null;
+
+	private boolean _online;
 
 	protected Slave() {
 	}
@@ -138,7 +139,7 @@ public class Slave {
 		String slavename = PropertyHelper.getProperty(p, "slave.name");
 
 		if (isWin32) {
-			_renameQueue = new HashSet<QueuedOperation>();
+			_renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<QueuedOperation, Boolean>());
 		}
 
 		try {
@@ -149,46 +150,61 @@ public class Slave {
 			_sslProtocols = null;
 		}
 
-		List<String> cipherSuites = new ArrayList<String>();
-		ArrayList<String> supportedCipherSuites = new ArrayList<String>();
+		List<String> cipherSuites = new ArrayList<>();
+		List<String> supportedCipherSuites = new ArrayList<>();
 		try {
 			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
-			for (int x = 1;; x++) {
-				String cipherSuite = p.getProperty("cipher." + x);
-				if (cipherSuite == null) {
-					break;
-				} else if (supportedCipherSuites.contains(cipherSuite)) {
-					cipherSuites.add(cipherSuite);
-				}
-			}
 		} catch (Exception e) {
 			logger.error("Unable to get supported cipher suites, using default.", e);
 		}
-		if (supportedCipherSuites.size() == 0) {
-			_cipherSuites = null;
-		} else if (cipherSuites.size() == 0) {
-			// Cipher suites not specified, add all supported and remove excluded
-			for (int x = 1;; x++) {
-				String exclCipherSuite = p.getProperty("cipher.excl." + x);
-				if (exclCipherSuite == null) {
-					break;
-				} else if (exclCipherSuite.trim().length() == 0) {
-					continue;
-				}
-				Iterator<String> i = supportedCipherSuites.iterator();
-				while (i.hasNext()) {
-					String cipherSuite = i.next();
-					if (cipherSuite.matches(exclCipherSuite)) {
-						i.remove();
-					}
+		// Parse cipher suite whitelist rules
+		boolean whitelist = false;
+		for (int x = 1;; x++) {
+			String whitelistPattern = p.getProperty("cipher.whitelist." + x);
+			if (whitelistPattern == null) {
+				break;
+			} else if (whitelistPattern.trim().length() == 0) {
+				continue;
+			}
+			if (!whitelist) whitelist = true;
+			for (String cipherSuite : supportedCipherSuites) {
+				if (cipherSuite.matches(whitelistPattern)) {
+					cipherSuites.add(cipherSuite);
 				}
 			}
-			_cipherSuites = supportedCipherSuites.toArray(new String[supportedCipherSuites.size()]);
+		}
+		if (cipherSuites.isEmpty()) {
+			// No whitelist rule or whitelist pattern bad, add default set
+			cipherSuites.addAll(supportedCipherSuites);
+			if (whitelist) {
+				// There are at least one whitelist pattern specified
+				logger.warn("Bad whitelist pattern, no matching ciphers found. " +
+						"Adding default cipher set before continuing with blacklist check");
+			}
+		}
+		// Parse cipher suite blacklist rules and remove matching ciphers from set
+		for (int x = 1;; x++) {
+			String blacklistPattern = p.getProperty("cipher.blacklist." + x);
+			if (blacklistPattern == null) {
+				break;
+			} else if (blacklistPattern.trim().isEmpty()) {
+				continue;
+			}
+			Iterator<String> i = cipherSuites.iterator();
+			while (i.hasNext()) {
+				String cipherSuite = i.next();
+				if (cipherSuite.matches(blacklistPattern)) {
+					i.remove();
+				}
+			}
+		}
+		if (cipherSuites.isEmpty()) {
+			_cipherSuites = null;
 		} else {
 			_cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
 		}
 
-		List<String> sslProtocols = new ArrayList<String>();
+		List<String> sslProtocols = new ArrayList<>();
 		List<String> supportedSSLProtocols;
 		try {
 			supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
@@ -209,20 +225,20 @@ public class Slave {
 			_sslProtocols = sslProtocols.toArray(new String[sslProtocols.size()]);
 		}
 
-		_sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
-		if (_sslMaster && _ctx == null) {
+		boolean sslMaster = p.getProperty("slave.masterSSL", "false").equalsIgnoreCase("true");
+		if (sslMaster && _ctx == null) {
 			throw new SSLUnavailableException("Secure connection to master enabled but SSL isn't ready");
 		}
 
-		if (_sslMaster) {
-			_s = _ctx.getSocketFactory().createSocket();
+		if (sslMaster) {
+			_socket = _ctx.getSocketFactory().createSocket();
 		} else {
-			_s = new Socket();
+			_socket = new Socket();
 		}
 
 		if (PropertyHelper.getProperty(p, "bind.ip",null) != null) {
 			try {
-				_s.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"),0));
+				_socket.bind(new InetSocketAddress(PropertyHelper.getProperty(p, "bind.ip"),0));
 				_bindIP = PropertyHelper.getProperty(p, "bind.ip",null);
 			} catch (IOException e) {
 				throw new IOException("Unable To Bind Port Correctly");
@@ -234,26 +250,26 @@ public class Slave {
 		} catch (NullPointerException e) {
 			_timeout = actualTimeout;
 		}
-		_s.setSoTimeout(socketTimeout);
-		_s.connect(addr);
-		if (_s instanceof SSLSocket) {
+		_socket.setSoTimeout(socketTimeout);
+		_socket.connect(addr);
+		if (_socket instanceof SSLSocket) {
 			if (getCipherSuites() != null) {
-				((SSLSocket) _s).setEnabledCipherSuites(getCipherSuites());
+				((SSLSocket) _socket).setEnabledCipherSuites(getCipherSuites());
 			}
 			if (getSSLProtocols() != null) {
-				((SSLSocket) _s).setEnabledProtocols(getSSLProtocols());
+				((SSLSocket) _socket).setEnabledProtocols(getSSLProtocols());
 			}
-			((SSLSocket) _s).setUseClientMode(true);
+			((SSLSocket) _socket).setUseClientMode(true);
 			
 			try {
-				((SSLSocket) _s).startHandshake();
+				((SSLSocket) _socket).startHandshake();
 			} catch (SSLHandshakeException e) {
 				throw new SSLUnavailableException("Handshake failure, maybe master isn't SSL ready or SSL is disabled.", e);
 			}
 		}
-		_sout = new ObjectOutputStream(new BufferedOutputStream(_s.getOutputStream()));
+		_sout = new ObjectOutputStream(new BufferedOutputStream(_socket.getOutputStream()));
 		_sout.flush();
-		_sin = new ObjectInputStream(new BufferedInputStream(_s.getInputStream()));
+		_sin = new ObjectInputStream(new BufferedInputStream(_socket.getInputStream()));
 
 		_central = new SlaveProtocolCentral(this);
 		
@@ -269,7 +285,7 @@ public class Slave {
 		_roots = getDefaultRootBasket(p);
 		loadDiskSelection(p);
 
-		_transfers = new HashMap<TransferIndex, Transfer>();
+		_transfers = new ConcurrentHashMap<>();
 
 		try {
 			int minport = Integer.parseInt(p.getProperty("slave.portfrom"));
@@ -298,7 +314,7 @@ public class Slave {
 	}
 	
 	public RootCollection getDefaultRootBasket(Properties cfg) throws IOException {
-		ArrayList<Root> roots = new ArrayList<Root>();
+		ArrayList<Root> roots = new ArrayList<>();
 
 		for (int i = 1; true; i++) {
 			String rootString = cfg.getProperty("slave.root." + i);
@@ -336,7 +352,46 @@ public class Slave {
 		} catch (Throwable t) {
 			logger.fatal("Error, check config on master for this slave");
 		}
-		s.listenForCommands();
+		s.setOnline(true);
+		try {
+			s.listenForCommands();
+		} finally {
+			s.shutdown();
+		}
+	}
+
+	public void shutdown() {
+		if (_sin != null) {
+			try {
+				_sin.close();
+			} catch (IOException e) {
+			}
+			_sin = null;
+		}
+		if (_sout != null) {
+			try {
+				_sout.flush();
+				_sout.close();
+			} catch (IOException e) {
+			}
+			_sout = null;
+		}
+		if (_socket != null) {
+			try {
+				_socket.close();
+			} catch (IOException e) {
+			}
+			_socket = null;
+		}
+		setOnline(false);
+	}
+
+	public void setOnline(boolean online) {
+		_online = online;
+	}
+
+	public boolean isOnline() {
+		return _online;
 	}
 
 	public class FileLockRunnable implements Runnable {
@@ -348,45 +403,43 @@ public class Slave {
 						_transfers.wait(5000);
 					} catch (InterruptedException e) {
 					}
-					synchronized (_renameQueue) {
-						for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter
-								.hasNext();) {
-							QueuedOperation qo = iter.next();
-							if (qo.getDestination() == null) { // delete
-								try {
-									delete(qo.getSource());
-									// delete successful
-									iter.remove();
-								} catch (PermissionDeniedException e) {
-									// keep it in the queue
-								} catch (FileNotFoundException e) {
-									iter.remove();
-								} catch (IOException e) {
-									throw new RuntimeException("Win32 stinks",
-											e);
-								}
-							} else { // rename
-								String fileName = qo.getDestination()
-										.substring(
-												qo.getDestination()
-														.lastIndexOf("/") + 1);
-								String destDir = qo.getDestination()
-										.substring(
-												0,
-												qo.getDestination()
-														.lastIndexOf("/"));
-								try {
-									rename(qo.getSource(), destDir, fileName);
-									// rename successful
-									iter.remove();
-								} catch (PermissionDeniedException e) {
-									// keep it in the queue
-								} catch (FileNotFoundException e) {
-									iter.remove();
-								} catch (IOException e) {
-									throw new RuntimeException("Win32 stinks",
-											e);
-								}
+					for (Iterator<QueuedOperation> iter = _renameQueue.iterator(); iter
+							.hasNext();) {
+						QueuedOperation qo = iter.next();
+						if (qo.getDestination() == null) { // delete
+							try {
+								delete(qo.getSource());
+								// delete successful
+								iter.remove();
+							} catch (PermissionDeniedException e) {
+								// keep it in the queue
+							} catch (FileNotFoundException e) {
+								iter.remove();
+							} catch (IOException e) {
+								throw new RuntimeException("Win32 stinks",
+										e);
+							}
+						} else { // rename
+							String fileName = qo.getDestination()
+									.substring(
+											qo.getDestination()
+													.lastIndexOf("/") + 1);
+							String destDir = qo.getDestination()
+									.substring(
+											0,
+											qo.getDestination()
+													.lastIndexOf("/"));
+							try {
+								rename(qo.getSource(), destDir, fileName);
+								// rename successful
+								iter.remove();
+							} catch (PermissionDeniedException e) {
+								// keep it in the queue
+							} catch (FileNotFoundException e) {
+								iter.remove();
+							} catch (IOException e) {
+								throw new RuntimeException("Win32 stinks",
+										e);
 							}
 						}
 					}
@@ -402,31 +455,23 @@ public class Slave {
 	}
 
 	public void addTransfer(Transfer transfer) {
-		synchronized (_transfers) {
-			_transfers.put(transfer.getTransferIndex(), transfer);
-		}
+		_transfers.put(transfer.getTransferIndex(), transfer);
 	}
 
 	public long checkSum(String path) throws IOException {
-		logger.debug("Checksumming: " + path);
+		return checkSum(_roots.getFile(path));
+	}
 
-		CheckedInputStream in = null;
+	public long checkSum(PhysicalFile file) throws IOException {
+		logger.debug("Checksumming: " + file.getPath());
 
-		try {
-			CRC32 crc32 = new CRC32();
-			in = new CheckedInputStream(new FileInputStream(_roots
-					.getFile(path)), crc32);
-
-			byte[] buf = new byte[4096];
-
+		CRC32 crc32 = new CRC32();
+		try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
+				new FileInputStream(file)), crc32)){
+			byte[] buf = new byte[16384];
 			while (in.read(buf) != -1) {
 			}
-
 			return crc32.getValue();
-		} finally {
-			if (in != null) {
-				in.close();
-			}
 		}
 	}
 
@@ -459,7 +504,9 @@ public class Slave {
 				File dir = new PhysicalFile(file.getParentFile());
 				logger.info("DELETE: " + path);
                 logger.info("rmfile: " +file.getPath());
-				file.delete();
+				if (!file.delete()) {
+					throw new PermissionDeniedException("delete failed on " + path);
+				}
 
 				String [] dirList = dir.list();
 
@@ -470,7 +517,9 @@ public class Slave {
 
 					java.io.File tmpFile = dir.getParentFile();
 
-					dir.delete();
+					if (!dir.delete()) {
+						throw new PermissionDeniedException("delete failed on " + path);
+					}
 					logger.info("Dir empty, rmdir: " + dir.getPath());
 
 					if (tmpFile == null) {
@@ -501,9 +550,7 @@ public class Slave {
 	}
 
 	public Transfer getTransfer(TransferIndex index) {
-		synchronized (_transfers) {
-			return _transfers.get(index);
-		}
+		return _transfers.get(index);
 	}
 
 	public boolean getUploadChecksums() {
@@ -568,25 +615,30 @@ public class Slave {
 		if (!isWin32) { // there is no renameQueue
 			return path;
 		}
-		synchronized (_renameQueue) {
-			for (QueuedOperation qo : _renameQueue) {
-				if (qo.getDestination() == null) {
-					continue;
-				}
-				if (qo.getDestination().equals(path)) {
-					return qo.getSource();
-				}
+		for (QueuedOperation qo : _renameQueue) {
+			if (qo.getDestination() == null) {
+				continue;
 			}
-			return path;
+			if (qo.getDestination().equals(path)) {
+				return qo.getSource();
+			}
 		}
+		return path;
 	}
 
 	public void removeTransfer(Transfer transfer) {
-		synchronized (_transfers) {
+		// Synchronization only needed for Win32 to notify FileLockThread
+		if (isWin32) {
+			synchronized (_transfers) {
+				if (_transfers.remove(transfer.getTransferIndex()) == null) {
+					throw new IllegalStateException();
+				}
+				_transfers.notifyAll();
+			}
+		} else {
 			if (_transfers.remove(transfer.getTransferIndex()) == null) {
 				throw new IllegalStateException();
 			}
-			_transfers.notifyAll();
 		}
 	}
 
@@ -602,9 +654,12 @@ public class Slave {
 			}
 
 			File toDir = root.getFile(toDirPath);
-			toDir.mkdirs();
-
 			File tofile = new File(toDir.getPath() + File.separator + toName);
+
+			if (!toDir.exists()	&& !toDir.mkdirs()) {
+				throw new PermissionDeniedException("renameTo(" + fromfile + ", " + tofile +
+						") failed to create destination folder");
+			}
 
 			// !win32 == true on linux
 			// !win32 && equalsignore == true on win32
@@ -646,9 +701,7 @@ public class Slave {
 	 * @return The current list of Transfer objects
 	 */
 	public ArrayList<Transfer> getTransfersList() {
-		synchronized (_transfers) {
-			return new ArrayList<Transfer>(_transfers.values());
-		}
+		return new ArrayList<>(_transfers.values());
 	}
 
 	public String[] getCipherSuites() {
@@ -667,10 +720,8 @@ public class Slave {
 		return _sslProtocols;
 	}
 	
-	public HashMap<TransferIndex, Transfer> getTransferMap() {
-		synchronized (_transfers) {
-			return new HashMap<TransferIndex, Transfer>(_transfers);
-		}
+	public Map<TransferIndex, Transfer> getTransferMap() {
+		return _transfers;
 	}
 	
 	public SSLContext getSSLContext() {

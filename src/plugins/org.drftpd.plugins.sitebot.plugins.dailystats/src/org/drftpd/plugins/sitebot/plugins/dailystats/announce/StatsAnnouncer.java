@@ -56,7 +56,8 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 	}
 
 	public String[] getEventTypes() {
-		String[] types = {"dailystats"};
+		String[] types = {"dailystats.daydn", "dailystats.dayup", "dailystats.wkdn",
+				"dailystats.wkup", "dailystats.monthdn", "dailystats.monthup"};
 		return types;
 	}
 	
@@ -66,11 +67,34 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 
 	@EventSubscriber
 	public void onStatsEvent(StatsEvent event) {
-		AnnounceWriter writer = _config.getSimpleWriter("dailystats");
+		String statsType = event.getType();
+		AnnounceWriter writer;
+		switch (statsType) {
+			case "dayup":
+				writer = _config.getSimpleWriter("dailystats.dayup");
+				break;
+			case "daydn":
+				writer = _config.getSimpleWriter("dailystats.daydn");
+				break;
+			case "wkup":
+				writer = _config.getSimpleWriter("dailystats.wkup");
+				break;
+			case "wkdn":
+				writer = _config.getSimpleWriter("dailystats.wkdn");
+				break;
+			case "monthup":
+				writer = _config.getSimpleWriter("dailystats.monthup");
+				break;
+			case "monthdn":
+				writer = _config.getSimpleWriter("dailystats.monthdn");
+				break;
+			default:
+				writer = null;
+		}
+
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
 			Collection<UserStats> outputStats = event.getOutputStats();
-			String statsType = event.getType();
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType, env, _bundle), writer);
 			int count = 1;

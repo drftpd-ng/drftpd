@@ -109,83 +109,12 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 	private void outputDirectorySTOR(TransferEvent fileevent) {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 
-		//  ANNOUNCE NFO FILE
+		// ANNOUNCE NFO FILE
 		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".nfo")) {
 			AnnounceWriter writer = _config.getPathWriter("store.nfo", fileevent.getDirectory());
 			if (writer != null) {
 				fillEnvSection(env, fileevent, writer, true); 
 				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.nfo", env, _bundle), writer);
-			}
-		}
-		// ANNOUNCE SFV FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".sfv")) {
-			AnnounceWriter writer = _config.getPathWriter("store.sfv", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.sfv", env, _bundle), writer);
-			}
-		}
-		
-		// ANNOUNCE M3U FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".m3u")) {
-			AnnounceWriter writer = _config.getPathWriter("store.m3u", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.m3u", env, _bundle), writer);
-			}
-		}
-		
-		// ANNOUNCE DIZ FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".diz")) {
-			AnnounceWriter writer = _config.getPathWriter("store.diz", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.diz", env, _bundle), writer);
-			}
-		}
-		
-		// ANNOUNCE JPG FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".jpg")) {
-			AnnounceWriter writer = _config.getPathWriter("store.jpg", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.jpg", env, _bundle), writer);
-			}
-		}
-		
-		// ANNOUNCE AVI FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".avi")) {
-			AnnounceWriter writer = _config.getPathWriter("store.avi", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.avi", env, _bundle), writer);
-			}
-		}
-		
-		// ANNOUNCE MKV FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".mkv")) {
-			AnnounceWriter writer = _config.getPathWriter("store.mkv", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.mkv", env, _bundle), writer);
-			}
-		}
-		
-		// ANNOUNCE MP4 FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".mp4")) {
-			AnnounceWriter writer = _config.getPathWriter("store.mp4", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.mp4", env, _bundle), writer);
-			}
-		}
-		
-		// ANNOUNCE VOB FILE
-		if (fileevent.getTransferFile().getName().toLowerCase().endsWith(".vob")) {
-			AnnounceWriter writer = _config.getPathWriter("store.vob", fileevent.getDirectory());
-			if (writer != null) {
-				fillEnvSection(env, fileevent, writer, true); 
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.vob", env, _bundle), writer);
 			}
 		}
 	}

@@ -31,3 +31,6 @@ exclude=(?i).+\.(iNTERNAL|iNT)[-_.].+
 # If true it will check each transfer to see if its download from the pre dir and
 # only count speed from these. If false it will count total site bw.
 real.speed=false
+
+# Max number of users to list on irc announce (0 = disable announce)
+prebw.leechtop.count=3

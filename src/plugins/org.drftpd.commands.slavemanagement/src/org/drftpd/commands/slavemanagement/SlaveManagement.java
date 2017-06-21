@@ -38,6 +38,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.CommitManager;
+import org.drftpd.master.RemergeMessage;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.Session;
 import org.drftpd.master.SlaveManager;
@@ -191,12 +192,32 @@ public class SlaveManagement extends CommandInterface {
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
 		}
+		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		boolean showMore = false;
 		StringTokenizer arguments = new StringTokenizer(request.getArgument());
 		String slaveName = arguments.nextToken();
+		RemoteSlave rslave;
+		try {
+			rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
+		} catch (ObjectNotFoundException e) {
+			ReplacerEnvironment env = new ReplacerEnvironment();
+			env.add("slavename", slaveName);
+			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"slave.notfound", env, request.getUser()));
+			return response;
+		}
 		if (arguments.hasMoreTokens()) {
-			if (arguments.nextToken().equalsIgnoreCase("more")) {
+			String option = arguments.nextToken();
+			if (option.equalsIgnoreCase("more")) {
 				showMore = true;
+			} else if (option.equalsIgnoreCase("queues")) {
+				ReplacerEnvironment env = new ReplacerEnvironment();
+				env.add("slavename", slaveName);
+				env.add("renamesize", rslave.getRenameQueue().size());
+				env.add("remergesize", rslave.getRemergeQueue().size());
+				env.add("remergecrcsize", rslave.getCRCQueue().size());
+				response.addComment(request.getSession().jprintf(_bundle,
+						_keyPrefix+"slave.queues", env, request.getUser()));
+				return response;
 			} else {
 				throw new ImproperUsageException();
 			}
@@ -204,16 +225,7 @@ public class SlaveManagement extends CommandInterface {
 		if (arguments.hasMoreTokens()) {
 			throw new ImproperUsageException();
 		}
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		try {
-			RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
-			response = addSlaveStatus(request, response, showMore, rslave);
-		} catch (ObjectNotFoundException e) {
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			env.add("slavename", slaveName);
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"slave.notfound", env, request.getUser()));
-		}
-		return response;
+		return addSlaveStatus(request, response, showMore, rslave);
 	}
 
 	private CommandResponse addSlaveStatus(CommandRequest request, CommandResponse response, boolean showMore, RemoteSlave rslave) {
@@ -285,11 +297,34 @@ public class SlaveManagement extends CommandInterface {
 			rslave.setOffline("Slave Unavailable during remerge()");
 
 			return new CommandResponse(200, "Slave Unavailable during remerge()");
-		} finally {
-			String message = ("Remerge queueprocess finished");
-			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
-			rslave.setRemerging(false);
 		}
+
+		// set remerge and crc threads to status finished so that threads may terminate cleanly
+		rslave.setCRCThreadFinished();
+		rslave.putRemergeQueue(new RemergeMessage(rslave));
+
+		// Wait for remerge and crc queues to drain
+		while (!rslave.getRemergeQueue().isEmpty() && !rslave.getCRCQueue().isEmpty()) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) { }
+		}
+
+		if (rslave._remergePaused.get()) {
+			String message = "Remerge was paused on slave after completion, issuing resume so not to break manual remerges";
+			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
+			try {
+				SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(rslave);
+				rslave._remergePaused.set(false);
+			} catch (SlaveUnavailableException e) {
+				rslave.setOffline("Slave Unavailable during remerge()");
+				return new CommandResponse(200, "Slave Unavailable during remerge()");
+			}
+		}
+
+		String message = ("Remerge queueprocess finished");
+		GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, rslave));
+		rslave.setRemerging(false);
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
@@ -420,6 +455,13 @@ public class SlaveManagement extends CommandInterface {
 		} else if (command.equalsIgnoreCase("shutdown")) {
 			rslave.shutdown();
 			return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+		} else if (command.equalsIgnoreCase("queues")) {
+			env.add("renamesize", rslave.getRenameQueue().size());
+			env.add("remergesize", rslave.getRemergeQueue().size());
+			env.add("remergecrcsize", rslave.getCRCQueue().size());
+			response.addComment(session.jprintf(_bundle,
+					_keyPrefix+"slave.queues", env, request.getUser()));
+			return response;
 		}
 		throw new ImproperUsageException();
 	}
@@ -554,25 +596,31 @@ public class SlaveManagement extends CommandInterface {
 		ArrayList<String> arr = new ArrayList<String>();
 
 		for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
-			if(!rslave.getName().contains(slave) && !slave.equals("all")) {
+			String name=rslave.getName().toLowerCase();
+
+			if((!name.startsWith(slave))&&(!slave.equals("all"))) {
 				continue;
 			}
 
-			int size = rslave.doRemergequeue();
-			if (!rslave.isOnline())
-			{
+			int renameSize = rslave.getRenameQueue().size();
+			int remergeSize = rslave.getRemergeQueue().size();
+			int remergeCRCSize = rslave.getCRCQueue().size();
+			if (!rslave.isOnline()) {
 				arr.add(rslave.getName() +" is offline");
 			}
-			else if (!rslave.isRemerging())
-			{
-				arr.add(rslave.getName() +" remergequeue is complete");
+			else if (!rslave.isRemerging()) {
+				arr.add(rslave.getName() +" is online and not remerging");
 			}
-			else if (size > 0)
-			{
-				arr.add(rslave.getName() +" remergequeue size is " + size);
+			else if (renameSize > 0 || remergeSize > 0 || remergeCRCSize > 0) {
+				ReplacerEnvironment env = new ReplacerEnvironment();
+				env.add("slavename", rslave.getName());
+				env.add("renamesize", rslave.getRenameQueue().size());
+				env.add("remergesize", rslave.getRemergeQueue().size());
+				env.add("remergecrcsize", rslave.getCRCQueue().size());
+				arr.add((request.getSession().jprintf(_bundle,
+						_keyPrefix+"slave.queues", env, request.getUser())));
 			}
-			else
-			{
+			else {
 				arr.add(rslave.getName() +" remergequeue size is 0 but remerge is ongoing");
 			}
 		}

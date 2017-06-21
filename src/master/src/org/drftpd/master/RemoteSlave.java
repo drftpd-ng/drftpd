@@ -17,7 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -77,6 +76,7 @@ import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
 import org.drftpd.util.HostMaskCollection;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
 
 /**
  * @author mog
@@ -91,6 +91,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	private transient boolean _isAvailable;
 
 	private transient boolean _isRemerging;
+
+	private transient boolean _remergeChecksums;
 
 	protected transient int _errors;
 
@@ -132,7 +134,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private transient ConcurrentHashMap<TransferIndex, RemoteTransfer> _transfers;
 
-	private transient AtomicBoolean _remergePaused;
+	public transient AtomicBoolean _remergePaused;
 	
 	private transient boolean _initRemergeCompleted;
 
@@ -140,7 +142,11 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	private transient LinkedBlockingQueue<RemergeMessage> _remergeQueue;
 
+	private transient LinkedBlockingQueue<FileHandle> _crcQueue;
+
 	private transient RemergeThread _remergeThread;
+
+	private transient CrcThread _crcThread;
 
 	public RemoteSlave(String name) {
 		_name = name;
@@ -150,6 +156,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_renameQueue = new ConcurrentLinkedDeque<QueuedOperation>();
 		_remergePaused = new AtomicBoolean();
 		_remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
+		_crcQueue = new LinkedBlockingQueue<>();
 		_commandMonitor = new Object();
 	}
 	
@@ -388,6 +395,8 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		long skipAgeCutoff = 0L;
 		
 		String remergeMode = GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode");
+		_remergeChecksums = GlobalContext.getConfig().getMainProperties().
+				getProperty("enableremergechecksums", "false").equalsIgnoreCase("true");
 		boolean partialRemerge = false;
 		boolean instantOnline = false;
 		if (remergeMode == null) {
@@ -431,9 +440,9 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			throw new IOException(e.getMessage());
 		}
 
+		setCRCThreadFinished();
 		putRemergeQueue(new RemergeMessage(this));
 
-		_initRemergeCompleted = true;
 		if (_remergePaused.get()) {
 			String message = ("Remerge was paused on slave after completion, issuing resume so not to break manual remerges");
 			GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
@@ -475,6 +484,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	 */
 	public boolean isRemerging() {
 		return _isRemerging;
+	}
+
+	/**
+	 * @return true if CRC is to be added on remerge for files missing CRC in VFS
+	 */
+	public boolean remergeChecksums() {
+		return _remergeChecksums;
 	}
 
 	public void processQueue() throws IOException, SlaveUnavailableException {
@@ -531,6 +547,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	protected void makeAvailableAfterRemerge() {
+		_initRemergeCompleted = true;
         setProperty("lastConnect", Long.toString(System.currentTimeMillis()));
         if (GlobalContext.getConfig().getMainProperties().getProperty("partial.remerge.mode").equalsIgnoreCase("instant")) {
             setRemerging(false);
@@ -960,9 +977,37 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	private void setOfflineReal(String reason) {
+		// If remerging and remerge is paused, wake it
+		if (_isRemerging) {
+			if (_remergePaused.get()) {
+				try {
+					SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
+				} catch (SlaveUnavailableException e) {
+					// Socket already closed to slave, ignore.
+				}
+				_remergePaused.set(false);
+			}
+			_isRemerging = false;
+		}
 		// If the slave is still processing the remerge queue clear all
 		// outstanding entries
 		_remergeQueue.clear();
+		_crcQueue.clear();
+		if (_sin != null) {
+			try {
+				_sin.close();
+			} catch (IOException e) {
+			}
+			_sin = null;
+		}
+		if (_sout != null) {
+			try {
+				_sout.flush();
+				_sout.close();
+			} catch (IOException e) {
+			}
+			_sout = null;
+		}
 		if (_socket != null) {
 			setProperty("lastOnline", Long.toString(System.currentTimeMillis()));
 			try {
@@ -971,8 +1016,6 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			}
 			_socket = null;
 		}
-		_sin = null;
-		_sout = null;
 		if (_indexWithCommands != null)
 			_indexWithCommands.clear();
 		if (_transfers != null)
@@ -1135,6 +1178,20 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return _renameQueue;
 	}
 
+	public LinkedBlockingQueue<RemergeMessage> getRemergeQueue() {
+		return _remergeQueue;
+	}
+
+	public LinkedBlockingQueue<FileHandle> getCRCQueue() {
+		return _crcQueue;
+	}
+
+	public void setCRCThreadFinished() {
+		if (_crcThread != null && _crcThread.isAlive()) {
+			_crcThread.setFinished();
+		}
+	}
+
 	public void setRenameQueue(ConcurrentLinkedDeque<QueuedOperation> renameQueue) {
 		if (renameQueue == null) {
 			_renameQueue = new ConcurrentLinkedDeque<QueuedOperation>();
@@ -1174,22 +1231,17 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return getName();
 	}
 
-	public void writeToDisk() throws IOException {
-		OutputStream out = null;
-		try {
-			out = new BufferedOutputStream(new SafeFileOutputStream(
-					(getGlobalContext().getSlaveManager().getSlaveFile(this.getName()))));
-			Map<String,Object> params = new HashMap<>();
-			params.put(JsonWriter.PRETTY_PRINT, true);
-			JsonWriter writer = new JsonWriter(out, params);
+	public void writeToDisk() {
+		Map<String,Object> params = new HashMap<>();
+		params.put(JsonWriter.PRETTY_PRINT, true);
+		try (OutputStream out = new SafeFileOutputStream(
+				getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
+			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(this);
 			logger.debug("Wrote slavefile for " + this.getName());
-		} catch (JsonIoException e) {
+		} catch (IOException | JsonIoException e) {
 			throw new RuntimeException("Error writing slavefile for "
 					+ this.getName() + ": " + e.getMessage(), e);
-		} finally {
-			if (out != null)
-				out.close();
 		}
 	}
 
@@ -1201,7 +1253,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		return _sin;
 	}
 
-	private void putRemergeQueue(RemergeMessage message) {
+	public void putRemergeQueue(RemergeMessage message) {
 		logger.debug("REMERGE: putting message into queue");
 		try {
 			_remergeQueue.put(message);
@@ -1214,8 +1266,17 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 	}
 
-	public int doRemergequeue() {
-			return _remergeQueue.size();
+	public void putCRCQueue(FileHandle file) {
+		logger.debug("CRC: putting file into queue " + file.getPath());
+		try {
+			_crcQueue.put(file);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		if (_crcThread == null || !_crcThread.isAlive()) {
+			_crcThread = new CrcThread(getName());
+			_crcThread.start();
+		}
 	}
 
 	private class RemergeThread extends Thread {
@@ -1237,7 +1298,19 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 				if (msg.isCompleted()) {
 					logger.info("REMERGE: queue finished");
-					msg.getRslave().makeAvailableAfterRemerge();
+					// Wait for crc queue to finish
+					while (!_crcQueue.isEmpty()) {
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							logger.debug("REMERGE QUE: thread interrupted waiting for crc queue to drain"
+									+ " with exception " + e.getMessage());
+						}
+					}
+					if (!_initRemergeCompleted) {
+						// First remerge after slave connect
+						msg.getRslave().makeAvailableAfterRemerge();
+					}
 					break;
 				}
 
@@ -1251,6 +1324,54 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 					break;
 				}
 			}
+		}
+	}
+
+	private class CrcThread extends Thread {
+
+		private boolean _finished = false;
+
+		CrcThread(String slaveName) {
+			super("crcThread - " + slaveName);
+		}
+
+		public void run() {
+			while (true) {
+				FileHandle file;
+				try {
+					logger.info("REMERGE CRC SIZE: " + _crcQueue.size());
+					file = _crcQueue.poll(1000, TimeUnit.MILLISECONDS);
+				} catch (InterruptedException e) {
+					logger.debug("REMERGE CRC QUE: fault in node from queue with exception " + e.getMessage());
+					continue;
+				}
+				if (_finished && _crcQueue.isEmpty() && file == null) {
+					logger.info("REMERGE CRC: queue finished");
+					break;
+				}
+				if (file == null) {
+					continue;
+				}
+				long checksum;
+				try {
+					checksum = getCheckSumForPath(file.getPath());
+				} catch (IOException e) {
+					logger.error("IOException on remerge getting CRC from slave [" + getName() + ", " + file.getPath() + "]");
+					continue;
+				} catch (SlaveUnavailableException e) {
+					logger.warn("Slave went offline while processing remerge crc queue.");
+					break;
+				}
+				try {
+					file.setCheckSum(checksum);
+				} catch (FileNotFoundException e) {
+					logger.debug("File deleted while getting crc from slave " + file.getPath());
+				}
+			}
+		}
+
+		void setFinished() {
+			_finished = true;
 		}
 	}
 }

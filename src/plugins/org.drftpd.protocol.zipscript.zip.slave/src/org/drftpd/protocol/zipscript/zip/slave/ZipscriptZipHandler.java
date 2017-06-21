@@ -16,11 +16,28 @@
  */
 package org.drftpd.protocol.zipscript.zip.slave;
 
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
+import org.apache.log4j.Logger;
 import org.drftpd.util.Base64;
 
 import org.drftpd.protocol.slave.AbstractHandler;
@@ -32,13 +49,6 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 
-import de.schlichtherle.truezip.file.TArchiveDetector;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.fs.FsSyncException;
-import de.schlichtherle.truezip.fs.archive.zip.CheckedZipDriver;
-import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
-
 /**
  * Handler for Zip requests.
  *
@@ -46,7 +56,8 @@ import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
  * @version $Id$
  */
 public class ZipscriptZipHandler extends AbstractHandler {
-	
+	private static final Logger logger = Logger.getLogger(ZipscriptZipHandler.class);
+
 	public ZipscriptZipHandler(SlaveProtocolCentral central) {
 		super(central);
 	}
@@ -60,113 +71,98 @@ public class ZipscriptZipHandler extends AbstractHandler {
 		return new AsyncResponseDizInfo(ac.getIndex(),
 				getDizInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
 	}
-	
-	//Recursive check of TFile
-	private void checkFiles(TFile[] zipEntries) throws IOException {
-		InputStream entryStream = null;
-		for (TFile zipEntry : zipEntries) {
-			if (zipEntry.isDirectory()) {
-				checkFiles(zipEntry.listFiles());
-			} else {
-				try {
-					entryStream = new TFileInputStream(zipEntry);
-					byte[] buff = new byte[65536];
-					//noinspection StatementWithEmptyBody
-					while (entryStream.read(buff) != -1) {
-						// do nothing, we are only checking for crc
-					}
-				} catch (IOException e) {
-					throw new IOException(e);
-				} finally {
-					if (entryStream != null) {
-						entryStream.close();
-					}
-				}
-			}
-		}
+
+	private URI getZipURI(Slave slave, String path) throws FileNotFoundException, URISyntaxException {
+		return new URI("jar:file", slave.getRoots().getFile(path).toURI().getPath(), null);
 	}
-	
+
 	private boolean checkZipFile(Slave slave, String path) {
-		boolean integrityOk = true;
-		TFile zipFile = null;
+		URI zipURI;
 		try {
-			zipFile = new TFile(slave.getRoots().getFile(path),
-					new TArchiveDetector("zip", new CheckedZipDriver(IOPoolLocator.SINGLETON)));
-			TFile[] zipEntries = zipFile.listFiles(TArchiveDetector.NULL);
-			if ((zipEntries == null) || (zipEntries.length == 0)) {
-				integrityOk = false;
-			} else {
-				checkFiles(zipEntries);
-			}
-		} catch (IOException e) {
-			integrityOk = false;
-		} finally {
-			if (zipFile != null) {
-				try {
-					TFile.umount(zipFile, true);
-				} catch (FsSyncException e) {
-					// Already closed
-				}
-			}
+			zipURI = getZipURI(slave, path);
+		} catch (FileNotFoundException e) {
+			return false;
+		} catch (URISyntaxException e) {
+			return false;
 		}
-		
+
+		boolean integrityOk = true;
+
+		try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
+			AtomicInteger files = new AtomicInteger();
+			for(Path root : zipFs.getRootDirectories()) {
+				Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+							throws IOException {
+						if (Files.isRegularFile(file)) {
+							calculateChecksum(file);
+							files.incrementAndGet();
+						}
+						return FileVisitResult.CONTINUE;
+					}
+				});
+			}
+			if (files.get() == 0) {
+				throw new IOException("Zip file empty");
+			}
+		} catch (Throwable t) {
+			integrityOk = false;
+			logger.debug("Error validating integrity of " + path + " : " + t.getMessage());
+		}
+
 		return integrityOk;
 	}
-	
+
+	private void calculateChecksum(Path file) throws IOException {
+		final byte[] buff = new byte[16384];
+		try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(
+				Files.newInputStream(file)), new CRC32())) {
+			while (in.read(buff) != -1) {
+				// do nothing, we are only checking for crc
+			}
+		} catch (IOException e) {
+			throw new IOException("CRC check failed for " + file);
+		}
+	}
+
 	private DizInfo getDizInfo(Slave slave, String path) {
 		DizInfo dizInfo = new DizInfo();
-		TFile zipFile = null;
+		URI zipURI;
 		try {
-			InputStream entryStream = null;
-			zipFile = new TFile(slave.getRoots().getFile(path),
-					new TArchiveDetector("zip", new CheckedZipDriver(IOPoolLocator.SINGLETON)));
-			TFile[] zipEntries = zipFile.listFiles();
-			if (zipEntries != null) {
-				for (TFile entry : zipEntries) {
-					if (entry.getName().toLowerCase().equals("file_id.diz")) {
-						try {
-							entryStream = new TFileInputStream(entry);
-							byte[] buff = new byte[65536];
-							StringBuilder dizBuffer = new StringBuilder();
-							int bytesRead = 0;
-							while (bytesRead != -1) {
-								bytesRead = entryStream.read(buff);
-								if (bytesRead != -1) {
-									String dizBlock = new String(buff, 0, bytesRead, "8859_1");
-									dizBuffer.append(dizBlock);
-								}
-							}
-							String dizString = dizBuffer.toString();
+			zipURI = getZipURI(slave, path);
+		} catch (FileNotFoundException e) {
+			return dizInfo;
+		} catch (URISyntaxException e) {
+			return dizInfo;
+		}
+
+		try (FileSystem zipFs = FileSystems.newFileSystem(zipURI, Collections.emptyMap())) {
+			final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("regex:(?i).*file_id.diz");
+			for(Path root : zipFs.getRootDirectories()) {
+				Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+							throws IOException {
+						if (Files.isRegularFile(file) && matcher.matches(file)) {
+							String dizString = new String(Files.readAllBytes(file), StandardCharsets.ISO_8859_1);
 							int total = getDizTotal(dizString);
 							if (total > 0) {
 								dizInfo.setValid(true);
 								dizInfo.setTotal(total);
-								dizString = Base64.encodeToString(dizBuffer.toString().getBytes("8859_1"), Base64.RFC2045);
+								dizString = Base64.encodeToString(dizString.getBytes("8859_1"), Base64.RFC2045);
 								dizInfo.setString(dizString);
-							}
-							break;
-						} catch (IOException e) {
-							// Something wrong with the .diz entry in this file, just return with no diz info
-						} finally {
-							if (entryStream != null) {
-								entryStream.close();
+								return FileVisitResult.TERMINATE;
 							}
 						}
+						return FileVisitResult.CONTINUE;
 					}
-				}
+				});
 			}
-		} catch (IOException e) {
-			// Unable to read zip just ignore
-		} finally {
-			if (zipFile != null) {
-				try {
-					TFile.umount(zipFile, true);
-				} catch (FsSyncException e) {
-					// Already closed
-				}
-			}
+		} catch (Throwable t) {
+			logger.debug("Error getting diz info from " + path + " : " + t.getMessage());
 		}
-		
+
 		return dizInfo;
 	}
 	

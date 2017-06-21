@@ -16,3 +16,9 @@
 #	uploadex ^.*(sitekeyword1|sitekeyword2).*$ !*
 #
 ################################################################################
+
+# Allow only ASCII characters on MKD/STOR/RNTO
+makedirex [^\p{ASCII}] !*
+uploadex [^\p{ASCII}] !*
+renameex [^\p{ASCII}] !*
+renameownex [^\p{ASCII}] !*

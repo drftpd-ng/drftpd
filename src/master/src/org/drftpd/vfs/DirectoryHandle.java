@@ -471,9 +471,10 @@ public class DirectoryHandle extends InodeHandle implements
 		}
 		FileHandle newFile = createFileUnchecked(name, "drftpd", "drftpd",
 				rslave, lrf.lastModified(), true, lrf.length());
-		//newFile.setCheckSum(rslave.getCheckSumForPath(newFile.getPath()));
-		// TODO Implement a Checksum queue on remerge
 		newFile.setCheckSum(0);
+		if (rslave.remergeChecksums() && lrf.length() != 0L) {
+			rslave.putCRCQueue(newFile);
+		}
 	}
 
     public void collisionHandler(LightRemoteInode lrf, RemoteSlave rslave) {
@@ -671,18 +672,20 @@ public class DirectoryHandle extends InodeHandle implements
 				} else if (source.isFile() && destination.isFile()) {
 					// both files
 					FileHandle destinationFile = (FileHandle) destination;
-/*					long sourceCRC = rslave.getCheckSumForPath(getPath()
-							+ VirtualFileSystem.separator + source.getName());
 					long destinationCRC;
 					try {
-						destinationCRC = destinationFile.getCheckSum();
-					} catch (NoAvailableSlaveException e) {
+						destinationCRC = destinationFile.getCheckSumCached();
+					} catch (FileNotFoundException e) {
 						destinationCRC = 0L;
 					}
-*/					
-					
+
+					if (rslave.remergeChecksums() && destinationCRC == 0L && source.length() != 0L
+							&& source.length() == destinationFile.getSize()) {
+						// source file and dest file same size but no crc found in vfs, get crc from slave
+						rslave.putCRCQueue(destinationFile);
+					}
+
 					if (source.length() != destinationFile.getSize()) {
-//							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
 						// handle collision
 						Set<RemoteSlave> rslaves = destinationFile.getSlaves();
 						if (rslaves.contains(rslave) && rslaves.size() == 1) {

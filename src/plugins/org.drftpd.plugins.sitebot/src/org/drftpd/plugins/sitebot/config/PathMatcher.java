@@ -21,6 +21,8 @@ import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandle;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,8 +50,8 @@ public class PathMatcher {
 		_pathPattern = pathPattern;
 	}
 
-	public boolean checkPath(DirectoryHandle file) {
-		String path = file.getPath().concat("/");
+	public boolean checkPath(InodeHandle inode) {
+		String path = inode.isDirectory() ? inode.getPath().concat("/") : inode.getPath();
 
 		if (_regex) {
 			Matcher m = _regexPat.matcher(path);
@@ -65,9 +67,9 @@ public class PathMatcher {
 		return _pathPattern.substring(0,index);
 	}
 
-	public String getRelativePath(DirectoryHandle file) {
+	public String getRelativePath(InodeHandle inode) {
 		if (_regex) {
-			String path = file.getPath().concat("/");
+			String path = inode.getPath().concat("/");
 			Matcher m = _regexPat.matcher(path);
 			if (m.matches()) {
 				try {
@@ -81,7 +83,7 @@ public class PathMatcher {
 				try {
 					String truncate = m.group("truncate");
 					if (truncate != null) {
-						return file.getPath().substring(truncate.length());
+						return inode.getPath().substring(truncate.length());
 					}
 				} catch (IllegalArgumentException e) {
 					// No "truncate" group specified in regex, this is fine
@@ -89,7 +91,7 @@ public class PathMatcher {
 			}
 			return path;
 		} else {
-			return file.getPath().substring(getPathSuffix().length()+1);
+			return inode.getPath().substring(getPathSuffix().length()+1);
 		}
 	}
 }

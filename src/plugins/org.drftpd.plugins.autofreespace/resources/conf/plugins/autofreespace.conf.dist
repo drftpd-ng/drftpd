@@ -11,6 +11,9 @@ keepFree=100GB
 # do not delete files with this following names (regex)
 #excluded.file.1=.*speedtest.*
 
+# exclude these slaves from autowipe (space separated)
+#excluded.slaves=SLAVE1
+
 # only announce, no delete
 announce.only=true
 

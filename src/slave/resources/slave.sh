@@ -134,8 +134,8 @@ if [ ! -e "$SLAVE_CONF" ]; then
 fi
 getroots() {
     for r in `cat "$SLAVE_CONF" |grep "^slave\.root\."`; do
-        fs=`echo $r |awk -F '=' '{ print $2 }'`
-        dev_size=`df -P -B M $fs |tail -1 |awk '{ print $1":"$2 }'`
+        fs=`echo $r |gawk -F '=' '{ print $2 }'`
+        dev_size=`df -P -k $fs |tail -1 |gawk '{ print $1":"$2 }'`
         echo $r":"$dev_size
     done
 }

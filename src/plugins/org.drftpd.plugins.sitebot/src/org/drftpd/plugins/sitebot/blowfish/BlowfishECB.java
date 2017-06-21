@@ -88,16 +88,12 @@ public class BlowfishECB extends Blowfish {
 
         // Get exact length
         int length = 0;
-        while (decrypted[length] != 0x0) {
+        while (length < decrypted.length && decrypted[length] != 0x0) {
             length++;
         }
         byte[] Final = new byte[length];
         // Format & Limit the Result String
-        int i = 0;
-        while (decrypted[i] != 0x0) {
-            Final[i] = decrypted[i];
-            i++;
-        }
+        System.arraycopy(decrypted, 0, Final, 0, length);
         //Force again the encoding result string
         return new String(Final, ENCODED_CHARSET);
     }

@@ -438,6 +438,8 @@ public class LuceneEngine implements IndexEngineInterface {
 			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		} catch (IOException e) {
 			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
+		} catch (RuntimeException e) {
+			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		}
 	}
 
@@ -448,6 +450,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
 		} catch (IOException e) {
+			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
+		} catch (RuntimeException e) {
 			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
 		}
 	}
@@ -463,6 +467,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		} catch (IOException e) {
+			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
+		} catch (RuntimeException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		}
 	}
@@ -531,6 +537,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (IOException e) {
 			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
 					toInode.getPath() + " in the index", e);
+		} catch (RuntimeException e) {
+			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
+					toInode.getPath() + " in the index", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
@@ -559,6 +568,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to commit the index", e);
 		} catch (IOException e) {
+			throw new IndexException("Unable to commit the index", e);
+		} catch (RuntimeException e) {
 			throw new IndexException("Unable to commit the index", e);
 		}
 	}
@@ -778,6 +789,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (IOException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
+		} catch (RuntimeException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
+			throw new IndexException("Unable to search the index", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
@@ -850,6 +864,9 @@ public class LuceneEngine implements IndexEngineInterface {
 			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
 		} catch (IOException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
+			throw new IndexException("Unable to search the index", e);
+		} catch (RuntimeException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
 		} finally {

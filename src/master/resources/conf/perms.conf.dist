@@ -1,14 +1,15 @@
-# is displayed as the site tagline on first connection.
-# Leave it alone and you will see the version following by link.
+# Displayed as the site tagline on first connection.
+# Leave it alone and you will see the version following by link
 #login_prompt DrFTPD 3.2.0 https://github.com/drftpd-ng/drftpd3
 
-# Max number of connections :
+# Max number of connections
 # Example:
 #  max_users	<max_logins> <max_exempted>
 #  max_users	100	10
 #  exempt	=siteop
 # Above would allow normal users to connect until there are 100 concurrent users.
 # siteop's would be able to connect until there are 110 concurrent users.
+
 max_users	100	10
 exempt		=siteop
 
@@ -66,10 +67,10 @@ userrejectinsecure      *
 denydiruncrypted        *
 denydatauncrypted       *
 
-# Hide ips in logs?
+# Hide IP's in logs?
 hide_ips false
 
-# hide users or group from shown in stats outputs
+# Hide users or group from shown in stats outputs
 hideinstats     =deleted =exempt
 
 # Don't update files and bytes on transfers
@@ -84,6 +85,33 @@ hideinstats     =deleted =exempt
 
 # Allows pre in /pre/* to group siteop
 pre	/pre/* =siteop
+
+################################################################################
+#   This is to Deny Download's of files currently being Uploaded 
+#
+#	Examples:
+#
+#	denydownload /PATH* =group -user
+#	denydownload /PATH* *   
+#
+################################################################################
+
+# The below directives allow you to manage
+# who can FXP *from* and *to* this FTP.
+#deny_upfxp /PATH* =group -user
+#deny_dnfxp /PATH* *
+
+################################################################################
+#   This is to DupeCheck of files/directory's currently being Uploaded
+#
+#	DupeCheck Options located in 'dupecheck.conf'
+#
+#	Examples:
+#
+#	dupecheck /PATH* =group -user
+#	dupecheck /PATH* *   
+#
+################################################################################
 
 ################################################################################
 #   These are Regex Implementations of user permissions on the site 
@@ -104,25 +132,8 @@ pre	/pre/* =siteop
 #
 ################################################################################
 
-# Prevents people sending blah(12).nfo etc
-uploadex (.*)\([0-9]{1,4}\)\.[a-z0-9]{3}$ !*
-uploadex (\([0-9]+\)\.)nfo !*
-uploadex \.date !*
-uploadex \.message !*
-
-# Filter nfo's from being uploaded into certain directory names
-uploadex /((?:(?:cd|dis[ck])[a-f0-9]+|sample|subs|covers|cover|extra|extras|sub|proof/).*\.nfo)$ !*
-
-# Filter sfv's in Covers/Sample dirs 
-uploadex /((?:sample|subs|covers|cover|extra|extras|sub|proof)/.*\.sfv)$ !*
-
-# Only allow filenames with the defined allowed chars 
-uploadex ([^/a-z0-9()._-]) !*
-
-# Only allow dirnames with the defined allowed chars 
-makedirex ([^/a-z0-9()._-]) !*
-
-# The below directives allow you to manage
-# who can FXP *from* and *to* this FTP.
-#deny_upfxp * *
-#deny_dnfxp * * 
+# Allow only ASCII characters on MKD/STOR/RNTO
+makedirex [^\p{ASCII}] !*
+uploadex [^\p{ASCII}] !*
+renameex [^\p{ASCII}] !*
+renameownex [^\p{ASCII}] !*
