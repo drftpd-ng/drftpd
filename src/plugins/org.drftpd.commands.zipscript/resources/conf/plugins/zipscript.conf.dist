@@ -1,77 +1,52 @@
 # @version $Id$
 
-# Show status bar in dir listings [true/false]
+#show status bar in dir listings [true/false]
 statusbar.enabled=true
 
-# Type of status bar, if true then status bar will appear as a directory, if false it will appear as a file.
+#type of status bar, if true then status bar will appear as a directory, if false it will appear as a file
 statusbar.directory=true
 
-# Showing missing files [true/false]
+#showing missing files [true/false]
 files.missing.enabled=true
 
-# Set the following line to enable/disable id3tag info.
+#set the following line to enable/disable id3tag info
 cwd.id3info.enabled=true
 
-# Enable race stats [true/false]
+#enable race stats [true/false]
 cwd.racestats.enabled=true
 stor.racestats.enabled=true
 
-# Only allow files found in the sfv file [true/false]
+#only allow files found in the sfv file [true/false]
 sfv.restrict.files=true
 
-# Set the following line to enable/disable file_id.diz info.
+#set the following line to enable/disable file_id.diz info
 cwd.dizinfo.enabled=true
 
-# Disallow files before sfv [true/false]
+#disallow files before sfv [true/false]
 sfvfirst.required=true
 
 #allow files w/o extensions even if sfvfirst.required=true [true/false]
 sfvfirst.allownoext=true
 
-# Allow these file extensions even if not in an sfv file.
-allowedexts=nfo txt jpg diz mpg avi zip m3u mkv vob png mp4
+#allow these file extensions even if not in an sfv file
+allowedexts=nfo txt jpg diz mpg avi mkv mp4 zip m3u
 
-# Check paths for sfv first enforcement.
+#check paths for sfv first enforcement
 sfvfirst.pathcheck=*
 
-# Ignore paths for sfv first enforcement.
-sfvfirst.pathignore=/pre/* /requests/* */subs/ */cover/ */covers/ */sample/ */extra/ */extras/ /speedtest/*
+#ignore paths for sfv first enforcement
+sfvfirst.pathignore=/PRE/* /REQUESTS/* */Subs/ */Cover/ */Covers/
 
-# Who has their restricted by the sfv-first system ?
-# if you wanted siteop group to be exempt, put: !=siteop *
+#who has their restricted by the sfv-first system ?
+#if you wanted siteop group to be exempt, put: !=siteop *
 sfvfirst.users=*
 
-# Disallows .sfv to be uploaded if subdir of (sfvdeny.subdir.include) exists [true/false]
-sfvdeny.subdir=true
+#disallows .sfv to be uploaded if subdir of (sfvdeny.subdir.include) exists
+#true/false
+sfvdeny.subdir=false
 
-# List of the subdirs to include when searching to deny sfv upload (regex).
+#list of the subdirs to include when searching to deny sfv upload (regex)
 sfvdeny.subdir.include=.*(?i)(cd[1-9]|dvd[1-9]|dis(c|k)[1-9]).*
 
 #list of sections/dirs to exclude when searching for deny sfv upload (regex)
-sfvdeny.subdir.exclude=.*(?i)(speedtest|requests|pre).*
-
-# Check integrity of .zip files on upload [true/false]
-stor.zip.integrity.check.enabled=true
-
-# Show diz text on CWD [true/false]
-cwd.diz.info.enabled=true
-
-# Enable race stats [true/false]
-cwd.zip.racestats.enabled=true
-stor.zip.racestats.enabled=true
-
-# Maximum number of users/groups to include in race complete announce.
-irc.sfv.maxusers=10
-irc.sfv.maxgroups=10
-
-# Enable MP3 info [true/false]
-cwd.mp3info.enabled=true
-stor.mp3info.enabled=true
-
-# Maximum number of users/groups to include in race complete announce.
-irc.zip.maxusers=10
-irc.zip.maxgroups=10
-
-# Enable Flac info [true/false]
-cwd.flacinfo.enabled=true
-stor.flacinfo.enabled=true
+sfvdeny.subdir.exclude=.*(?i)(SPEEDTEST|REQUESTS|STAFF|PRE|GROUPS).*

@@ -1,19 +1,19 @@
 # IMDB Configuration #
 ######################
 
-# Sections plugin should announce IMDB info on races/pre.
+# Sections plugin should announce TvMAze info on races/pre
 # race.section.x=SECTION
 race.section.1=MOVIE-SD
 race.section.2=MOVIE-HD
 
-# Search for release on site on IMDB search.
+# Search for release on site on imdb search
 search.release=true
 # search.hd.section.x=SECTION-HD
 search.hd.section.1=MOVIE-HD
 # search.sd.section.x=SECTION-SD
 search.sd.section.1=MOVIE-SD
 
-# Random delay interval between IMDB parses.
+# Random delay interval between imdb parses
 delay.start=2
 delay.end=5
 
@@ -22,7 +22,7 @@ imdbbar.enabled=true
 # IMDB bar as directory(true) or file(false)?
 imdbbar.directory=true
 
-# Remove these words from search string (regex).
+# Remove these words from search string (regex)
 # filter.x=regex.string
 
 # Dirs to exclude. (regex)

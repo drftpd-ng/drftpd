@@ -41,8 +41,6 @@ public class IMDBInfo implements Serializable {
 	private String _director = "N|A";
     private String _genre = "N|A";
     private String _plot = "N|A";
-	private String _language = "N|A";
-	private String _country = "N|A";
     private Integer _votes;
     private Integer _rating;
 	private Integer _screens;
@@ -141,23 +139,7 @@ public class IMDBInfo implements Serializable {
     public void setPlot(String plot) {
         _plot = plot;
     }
-	
-	public String getLanguage() {
-        return _language;
-    }
 
-    public void setLanguage(String language) {
-        _language = language;
-    }
-
-	public String getCountry() {
-        return _country;
-    }
-
-    public void setCountry(String country) {
-        _country = country;
-    }
-	
     public Integer getVotes() {
         return _votes;
     }
