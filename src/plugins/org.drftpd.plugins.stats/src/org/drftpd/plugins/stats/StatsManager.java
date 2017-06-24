@@ -98,7 +98,7 @@ public class StatsManager implements PluginInterface {
 		}
 		
 		for (RatioPathPermission perm : list) {
-			if (perm.checkPath(dir)) {
+			if (perm.checkPath(dir) && perm.check(user)) {
 				return perm.getRatio();
 			}
 		}
