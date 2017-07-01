@@ -93,7 +93,7 @@
 		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.2.0.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-lang" path="../../lib/commons-lang3-3.4.jar" type="code">
+		<library id="commons-lang" path="../../lib/commons-lang3-3.6.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
