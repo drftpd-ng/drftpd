@@ -34,30 +34,33 @@ public class IMDBParser {
 	private static final String _baseUrl = "http://akas.imdb.com";
 	private static final String _searchUrl = "http://akas.imdb.com/find?s=all&q=";
 	
-	private boolean _foundMovie;
-	
 	private String _title;
+	private Integer _year;
+	private String _language;
+	private String _country;
 	private String _director;
 	private String _genre;
 	private String _plot;
-	private Integer _votes;
 	private Integer _rating;
-	private Integer _year;
+	private Integer _votes;
 	private String _url;
 	private Integer _screens;
 	private String _limited;
 	private String _searchString;
+	private boolean _foundMovie;
 	
-	public String getGenre()   	{ return foundMovie() ? _genre   	: "N|A"; }
+	public String getTitle()   	{ return foundMovie() ? _title   	: "N|A"; }
+	public Integer getYear()   	{ return foundMovie() ? _year		:  null; }
+	public String getLanguage()	{ return foundMovie() ? _language	: "N|A"; }
+	public String getCountry()	{ return foundMovie() ? _country	: "N|A"; }
 	public String getDirector() { return foundMovie() ? _director 	: "N|A"; }
+	public String getGenre()   	{ return foundMovie() ? _genre   	: "N|A"; }
 	public String getPlot()		{ return foundMovie() ? _plot		: "N|A"; }
 	public Integer getRating() 	{ return foundMovie() ? _rating  	:  null; }
-	public String getTitle()   	{ return foundMovie() ? _title   	: "N|A"; }
 	public Integer getVotes()  	{ return foundMovie() ? _votes   	:  null; }
-	public Integer getYear()   	{ return foundMovie() ? _year		:  null; }
 	public String getURL()	 	{ return foundMovie() ? _url	 	: "N|A"; }
 	public Integer getScreens()	{ return foundMovie() ? _screens 	:  null; }
-	public String getLimited() 	{ return foundMovie() ? _limited 	: "";	}
+	public String getLimited() 	{ return foundMovie() ? _limited 	: "N|A"; }
 	public boolean foundMovie()	{ return _foundMovie; }
 	
 	public void doSEARCH(String searchString) {
@@ -105,6 +108,8 @@ public class IMDBParser {
 			String data = HttpUtils.retrieveHttpAsString(url);
 
 			_title = parseData(data, "<div id=\"tn15title\">", "<span>");
+			_language = parseData(data, "<h5>Language:</h5>", "</div>").replaceAll(" ","");
+			_country = parseData(data, "<h5>Country:</h5>", "</div>");
 			_genre = parseData(data, "<h5>Genre:</h5>", "</div>").replaceAll("See more","").trim().replaceAll("\\s+","");
 			_director = parseData(data, "<h5>Director:</h5>", "</div>");
 			if (_director.equals("N|A")) {
@@ -158,6 +163,8 @@ public class IMDBParser {
 		env.add("title", getTitle());
 		env.add("director", getDirector());
 		env.add("genre", getGenre());
+		env.add("language", getLanguage());
+		env.add("country", getCountry());
 		env.add("plot", getPlot());
 		env.add("rating", getRating() != null ? getRating()/10+"."+getRating()%10 : "0");
 		env.add("votes", getVotes() != null ? getVotes() : "0");

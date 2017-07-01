@@ -49,14 +49,17 @@ public class IMDBAction implements ActionInterface {
 				sb.append("#########################################").append(")\n");
 				sb.append("# Title # - ").append(imdbInfo.getTitle()).append("\n");
 				sb.append("# Year # - ").append(imdbInfo.getYear()).append("\n");
+				sb.append("# Language # - ").append(imdbInfo.getLanguage()).append("\n");
+				sb.append("# Country # - ").append(imdbInfo.getCountry()).append("\n");
+				sb.append("# Director # - ").append(imdbInfo.getDirector()).append("\n");
 				sb.append("# Genre # - ").append(imdbInfo.getGenre()).append("\n");
+				sb.append("# Plot #\n").append(WordUtils.wrap(imdbInfo.getPlot(), 70));
 				sb.append("# Rating # - ");
 				sb.append(imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10+"/10" : "-").append("\n");
 				sb.append("# Votes # - ").append(imdbInfo.getVotes()).append("\n");
-				sb.append("# Director # - ").append(imdbInfo.getDirector()).append("\n");
-				sb.append("# Screens # - ").append(imdbInfo.getScreens()).append("\n");
 				sb.append("# URL # - ").append(imdbInfo.getURL()).append("\n");
-				sb.append("# Plot #\n").append(WordUtils.wrap(imdbInfo.getPlot(), 70));
+				sb.append("# Screens # - ").append(imdbInfo.getScreens()).append("\n");
+				sb.append("# Limited # - ").append(imdbInfo.getScreens()).append("\n");
 				return sb.toString();
 			}
 		}

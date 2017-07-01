@@ -38,13 +38,15 @@ public class IMDBInfo implements Serializable {
     // IMDB DATA
     private String _title = "N|A";
     private Integer _year;
+	private String _language = "N|A";
+	private String _country = "N|A";
 	private String _director = "N|A";
     private String _genre = "N|A";
     private String _plot = "N|A";
+	private Integer _rating;
     private Integer _votes;
-    private Integer _rating;
 	private Integer _screens;
-	private String _limited = "";
+	private String _limited = "N|A";
     private boolean _foundMovie = false;
 
 	/**
@@ -116,6 +118,22 @@ public class IMDBInfo implements Serializable {
         _year = year;
     }
 
+	public String getLanguage() {
+        return _language;
+    }
+
+	public void setLanguage(String language) {
+        _language = language;
+    }
+
+	public String getCountry() {
+        return _country;
+    }
+
+    public void setCountry(String country) {
+        _country = country;
+    }
+	
     public String getDirector() {
         return _director;
     }
@@ -132,6 +150,14 @@ public class IMDBInfo implements Serializable {
         _genre = genre;
     }
 
+    public Integer getRating() {
+        return _rating;
+    }
+
+    public void setRating(Integer rating) {
+        _rating = rating;
+    }
+
     public String getPlot() {
         return _plot;
     }
@@ -139,21 +165,13 @@ public class IMDBInfo implements Serializable {
     public void setPlot(String plot) {
         _plot = plot;
     }
-
+	
     public Integer getVotes() {
         return _votes;
     }
 
     public void setVotes(Integer votes) {
         _votes = votes;
-    }
-
-    public Integer getRating() {
-        return _rating;
-    }
-
-    public void setRating(Integer rating) {
-        _rating = rating;
     }
 
     public Integer getScreens() {
