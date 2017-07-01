@@ -22,13 +22,13 @@
 		<library id="commons-collections4" path="../../lib/commons-collections4-4.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-net" path="../../lib/commons-net-3.5.jar" type="code">
+		<library id="commons-net" path="../../lib/commons-net-3.6.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="httpclient" path="../../lib/httpclient-4.5.2.jar" type="code">
+		<library id="httpclient" path="../../lib/httpclient-4.5.3.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="httpcore" path="../../lib/httpcore-4.4.5.jar" type="code">
+		<library id="httpcore" path="../../lib/httpcore-4.4.6.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="eventbus" path="../../lib/eventbus-1.4.jar" type="code">
@@ -37,7 +37,7 @@
 		<library id="wrapper" path="../../lib/wrapper.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="json-io" path="../../lib/json-io-4.9.0.jar" type="code">
+		<library id="json-io" path="../../lib/json-io-4.9.12.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
