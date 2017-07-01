@@ -36,6 +36,10 @@ public class IMDBConfig extends Config {
 			IMDBInfo imdbInfo = dir.getPluginMetaData(IMDBInfo.IMDBINFO);
 			if (_field.equalsIgnoreCase("Title")) {
 				return _operator.equals("!") == imdbInfo.getTitle().matches(_value);
+			} else if (_field.equalsIgnoreCase("Language")) {
+				return _operator.equals("!") == imdbInfo.getLanguage().matches(_value);
+			} else if (_field.equalsIgnoreCase("Country")) {
+				return _operator.equals("!") == imdbInfo.getCountry().matches(_value);
 			} else if (_field.equalsIgnoreCase("Year")) {
 				return !handleDigitComparison(imdbInfo.getYear());
 			} else if (_field.equalsIgnoreCase("Director")) {
@@ -44,10 +48,10 @@ public class IMDBConfig extends Config {
 				return _operator.equals("!") == imdbInfo.getGenre().matches(_value);
 			} else if (_field.equalsIgnoreCase("Plot")) {
 				return _operator.equals("!") == imdbInfo.getPlot().matches(_value);
-			} else if (_field.equalsIgnoreCase("Votes")) {
-				return !handleDigitComparison(imdbInfo.getVotes());
 			} else if (_field.equalsIgnoreCase("Rating")) {
 				return !handleDigitComparison(imdbInfo.getRating());
+			} else if (_field.equalsIgnoreCase("Votes")) {
+				return !handleDigitComparison(imdbInfo.getVotes());
 			} else if (_field.equalsIgnoreCase("Screens")) {
 				return !handleDigitComparison(imdbInfo.getScreens());
 			} else if (_field.equalsIgnoreCase("Limited")) {
