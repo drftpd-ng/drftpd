@@ -38,15 +38,15 @@ public class IMDBInfo implements Serializable {
     // IMDB DATA
     private String _title = "N|A";
     private Integer _year;
-	private String _language = "N|A";
-	private String _country = "N|A";
-	private String _director = "N|A";
+    private String _language = "N|A";
+    private String _country = "N|A";
+    private String _director = "N|A";
     private String _genre = "N|A";
     private String _plot = "N|A";
-	private Integer _rating;
+    private Integer _rating;
     private Integer _votes;
-	private Integer _screens;
-	private String _limited = "N|A";
+    private Integer _screens;
+    private String _limited = "N|A";
     private boolean _foundMovie = false;
 
 	/**
