@@ -59,7 +59,7 @@ public class IMDBAction implements ActionInterface {
 				sb.append("# Votes # - ").append(imdbInfo.getVotes()).append("\n");
 				sb.append("# URL # - ").append(imdbInfo.getURL()).append("\n");
 				sb.append("# Screens # - ").append(imdbInfo.getScreens()).append("\n");
-				sb.append("# Limited # - ").append(imdbInfo.getScreens()).append("\n");
+				sb.append("# Limited # - ").append(imdbInfo.getLimited()).append("\n");
 				return sb.toString();
 			}
 		}
