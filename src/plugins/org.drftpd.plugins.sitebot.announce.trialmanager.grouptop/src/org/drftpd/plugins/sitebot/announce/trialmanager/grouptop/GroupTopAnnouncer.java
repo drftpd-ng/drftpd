@@ -56,7 +56,7 @@ public class GroupTopAnnouncer extends AbstractAnnouncer {
 	}
 
 	public String[] getEventTypes() {
-		return new String[] {"grouptop"};
+		return new String[] {"trialmanager.grouptop"};
 	}
 	
 	public void setResourceBundle(ResourceBundle bundle) {
@@ -65,7 +65,6 @@ public class GroupTopAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
 	public void onGroupTopEvent(GroupTopEvent event) {
-		if (event.getName().equalsIgnoreCase("grouptop")) {
 		AnnounceWriter writer = _config.getSimpleWriter("trialmanager.grouptop");
 		if (writer != null) {
 			ReplacerEnvironment env_header = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -94,5 +93,4 @@ public class GroupTopAnnouncer extends AbstractAnnouncer {
 			}
 		}
 	}
-   }
 }
