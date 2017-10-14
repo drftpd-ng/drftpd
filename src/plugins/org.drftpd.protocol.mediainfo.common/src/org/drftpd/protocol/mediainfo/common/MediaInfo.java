@@ -17,7 +17,7 @@
  */
 package org.drftpd.protocol.mediainfo.common;
 
-import com.coremedia.iso.IsoFile;
+import org.mp4parser.IsoFile;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
