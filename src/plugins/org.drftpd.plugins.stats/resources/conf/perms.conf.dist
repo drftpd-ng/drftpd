@@ -7,3 +7,8 @@
 
 # Control credit ratio on downloads (0 = no credits)
 #creditloss <path> <ratio> <=group/-user>
+
+# Limit UL/DL over time
+# direction : UP / DN
+# period : ALL / DAY / WEEK / MONTH
+#creditlimit <path> <direction> <period> <bytes> <=group/-user>

@@ -18,12 +18,15 @@
 package org.drftpd.plugins.stats;
 
 import java.io.FileNotFoundException;
+import java.util.Map;
 
+import org.drftpd.Bytes;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PreHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.permissions.CreditLimitPathPermission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -39,6 +42,14 @@ public class StatsPreHook implements PreHookInterface {
 	public CommandRequestInterface doRETRPreHook(CommandRequest request) {
 		DirectoryHandle dir = request.getCurrentDirectory();
 		User user = request.getSession().getUserNull(request.getUser());
+
+		CreditLimitPathPermission clc = StatsManager.getStatsManager().creditLimitCheck(dir, user, StatsHandler.DIRECTION_DN);
+		if (clc != null) {
+			request.setAllowed(false);
+			request.setDeniedResponse(new CommandResponse(550, "Credit limit for period exceeded ["+
+					Bytes.formatBytes(clc.getBytes())+"/"+clc.getPeriod()+"]"));
+			return request;
+		}
 		
 		float ratio = StatsManager.getStatsManager().getCreditLossRatio(dir, user);
 		
@@ -66,6 +77,19 @@ public class StatsPreHook implements PreHookInterface {
 			request.setDeniedResponse(new CommandResponse(550, "Argument is not a file"));
 		}
 		
+		return request;
+	}
+
+	public CommandRequestInterface doSTORPreHook(CommandRequest request) {
+		DirectoryHandle dir = request.getCurrentDirectory();
+		User user = request.getSession().getUserNull(request.getUser());
+
+		CreditLimitPathPermission clc = StatsManager.getStatsManager().creditLimitCheck(dir, user, StatsHandler.DIRECTION_UP);
+		if (clc != null) {
+			request.setAllowed(false);
+			request.setDeniedResponse(new CommandResponse(550, "Credit limit for period exceeded [" +
+					Bytes.formatBytes(clc.getBytes()) + "/" + clc.getPeriod() + "]"));
+		}
 		return request;
 	}
 

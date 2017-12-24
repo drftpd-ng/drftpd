@@ -17,8 +17,10 @@
  */
 package org.drftpd.plugins.stats;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -28,6 +30,7 @@ import org.drftpd.PluginInterface;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.UserEvent;
+import org.drftpd.permissions.CreditLimitPathPermission;
 import org.drftpd.permissions.RatioPathPermission;
 import org.drftpd.plugins.stats.metadata.StatsUserData;
 import org.drftpd.usermanager.User;
@@ -42,9 +45,11 @@ public class StatsManager implements PluginInterface {
 	private static final Logger logger = Logger.getLogger(StatsManager.class);
 
 	public static final Key<ArrayList<RatioPathPermission>> CREDITCHECK =
-    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditcheck");
+			new Key<>(StatsManager.class, "creditcheck");
     public static final Key<ArrayList<RatioPathPermission>> CREDITLOSS =
-    	new Key<ArrayList<RatioPathPermission>>(StatsManager.class, "creditloss");
+			new Key<>(StatsManager.class, "creditloss");
+	public static final Key<ArrayList<CreditLimitPathPermission>> CREDITLIMIT =
+			new Key<>(StatsManager.class, "creditlimit");
 
     public static StatsManager getStatsManager() {
     	for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
@@ -104,5 +109,45 @@ public class StatsManager implements PluginInterface {
 		}
 		
 		return defaultRatio;
+	}
+
+	public CreditLimitPathPermission creditLimitCheck(DirectoryHandle dir, User user, int direction) {
+		ArrayList<CreditLimitPathPermission> list =
+				GlobalContext.getConfig().getKeyedMap().getObject(CREDITLIMIT, null);
+
+		if (list == null) {
+			return null;
+		}
+
+		for (CreditLimitPathPermission perm : list) {
+			if (perm.checkPath(dir) && perm.check(user)) {
+				if (perm.getDirection() == direction) {
+					long bytes = 0L;
+					switch (perm.getPeriod()) {
+						case "ALL":
+							bytes = direction == StatsHandler.DIRECTION_UP ?
+									user.getUploadedBytes() : user.getDownloadedBytes();
+							break;
+						case "DAY":
+							bytes = direction == StatsHandler.DIRECTION_UP ?
+									user.getUploadedBytesDay() : user.getDownloadedBytesDay();
+							break;
+						case "WEEK":
+							bytes = direction == StatsHandler.DIRECTION_UP ?
+									user.getUploadedBytesWeek() : user.getDownloadedBytesWeek();
+							break;
+						case "MONTH":
+							bytes = direction == StatsHandler.DIRECTION_UP ?
+									user.getUploadedBytesMonth() : user.getDownloadedBytesMonth();
+							break;
+					}
+					if (bytes > perm.getBytes()) {
+						return perm;
+					}
+				}
+			}
+		}
+
+		return null;
 	}
 }
