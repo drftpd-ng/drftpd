@@ -37,7 +37,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 	private static final NumericField FIELD_VOTES = new NumericField("imdbvotes", Field.Store.YES, Boolean.TRUE);
 	private static final NumericField FIELD_RATING = new NumericField("imdbrating", Field.Store.YES, Boolean.TRUE);
 	private static final NumericField FIELD_YEAR = new NumericField("imdbyear", Field.Store.YES, Boolean.TRUE);
-	private static final NumericField FIELD_SCREENS = new NumericField("imdbscreens", Field.Store.YES, Boolean.TRUE);
+	private static final NumericField FIELD_RUNTIME = new NumericField("imdbruntime", Field.Store.YES, Boolean.TRUE);
 	
 	@Override
 	public void initializeFields(Document doc) {
@@ -47,7 +47,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 		doc.add(FIELD_VOTES);
 		doc.add(FIELD_RATING);
 		doc.add(FIELD_YEAR);
-		doc.add(FIELD_SCREENS);
+		doc.add(FIELD_RUNTIME);
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 			FIELD_VOTES.setIntValue(-1);
 			FIELD_RATING.setIntValue(-1);
 			FIELD_YEAR.setIntValue(-1);
-			FIELD_SCREENS.setIntValue(-1);
+			FIELD_RUNTIME.setIntValue(-1);
 		} else {
 			FIELD_TITLE.setValue(imdbInfo.getTitle());
 			FIELD_DIRECTOR.setValue(imdbInfo.getDirector());
@@ -73,7 +73,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 			FIELD_VOTES.setIntValue(imdbInfo.getVotes() != null ? imdbInfo.getVotes() : -1);
 			FIELD_RATING.setIntValue(imdbInfo.getRating() != null ? imdbInfo.getRating() : -1);
 			FIELD_YEAR.setIntValue(imdbInfo.getYear() != null ? imdbInfo.getYear() : -1);
-			FIELD_SCREENS.setIntValue(imdbInfo.getScreens() != null ? imdbInfo.getScreens() : -1);
+			FIELD_RUNTIME.setIntValue(imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : -1);
 		}
 	}
 

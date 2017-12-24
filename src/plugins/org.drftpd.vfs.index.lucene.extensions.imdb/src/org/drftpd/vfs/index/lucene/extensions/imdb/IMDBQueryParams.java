@@ -36,8 +36,8 @@ public class IMDBQueryParams {
 	private Integer _maxRating;
 	private Integer _minYear;
 	private Integer _maxYear;
-	private Integer _minScreens;
-	private Integer _maxScreens;
+	private Integer _minRuntime;
+	private Integer _maxRuntime;
 
 	public String getTitle() {
 		return _title;
@@ -75,12 +75,12 @@ public class IMDBQueryParams {
 		return _maxYear;
 	}
 
-	public Integer getMinScreens() {
-		return _minScreens;
+	public Integer getMinRuntime() {
+		return _minRuntime;
 	}
 
-	public Integer getMaxScreens() {
-		return _maxScreens;
+	public Integer getMaxRuntime() {
+		return _maxRuntime;
 	}
 
 	public void setTitle(String title) {
@@ -119,12 +119,12 @@ public class IMDBQueryParams {
 		_maxYear = year;
 	}
 
-	public void setMinScreens(Integer screens) {
-		_minScreens = screens;
+	public void setMinRuntime(Integer runtime) {
+		_minRuntime = runtime;
 	}
 
-	public void setMaxScreens(Integer screens) {
-		_maxScreens = screens;
+	public void setMaxRuntime(Integer runtime) {
+		_maxRuntime = runtime;
 	}
 
 }

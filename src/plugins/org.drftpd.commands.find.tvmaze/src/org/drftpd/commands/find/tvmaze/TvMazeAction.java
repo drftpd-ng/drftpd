@@ -18,7 +18,7 @@
 package org.drftpd.commands.find.tvmaze;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commands.find.action.ActionInterface;

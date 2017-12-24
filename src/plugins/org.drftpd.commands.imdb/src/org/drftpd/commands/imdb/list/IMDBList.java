@@ -55,8 +55,7 @@ public class IMDBList implements AddListElementsInterface {
 					env.add("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "0");
 					env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "0");
 					env.add("url", imdbInfo.getURL());
-					env.add("screens", imdbInfo.getScreens() != null ? imdbInfo.getScreens() : "0");
-					env.add("limited", imdbInfo.getLimited());
+					env.add("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "0");
 					String imdbDirName = container.getSession().jprintf(bundle,
 							keyPrefix+"imdb.dir", env, container.getUser());
 					try {

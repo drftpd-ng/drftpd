@@ -52,10 +52,8 @@ public class IMDBConfig extends Config {
 				return !handleDigitComparison(imdbInfo.getRating());
 			} else if (_field.equalsIgnoreCase("Votes")) {
 				return !handleDigitComparison(imdbInfo.getVotes());
-			} else if (_field.equalsIgnoreCase("Screens")) {
-				return !handleDigitComparison(imdbInfo.getScreens());
-			} else if (_field.equalsIgnoreCase("Limited")) {
-				return _operator.equals("!") == imdbInfo.getLimited().matches(_value);
+			} else if (_field.equalsIgnoreCase("Runtime")) {
+				return !handleDigitComparison(imdbInfo.getRuntime());
 			}
         } catch (KeyNotFoundException e1) {
 			// No IMDB info found, return true

@@ -38,6 +38,8 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -62,8 +64,7 @@ public class IMDBUtils {
 		imdbInfo.setPlot(imdbParser.getPlot());
 		imdbInfo.setRating(imdbParser.getRating());
 		imdbInfo.setVotes(imdbParser.getVotes());
-		imdbInfo.setScreens(imdbParser.getScreens());
-		imdbInfo.setLimited(imdbParser.getLimited());
+		imdbInfo.setRuntime(imdbParser.getRuntime());
 		imdbInfo.setMovieFound(imdbParser.foundMovie());
 	}
 
@@ -79,8 +80,7 @@ public class IMDBUtils {
 		env.add("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "-");
 		env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "-");
 		env.add("url", imdbInfo.getURL());
-		env.add("screens", imdbInfo.getScreens() != null ? imdbInfo.getScreens() : "-");
-		env.add("limited", imdbInfo.getLimited());
+		env.add("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "-");
 		return env;
 	}
 
@@ -159,8 +159,12 @@ public class IMDBUtils {
 			newTitle = newTitle.replaceAll("\\"+separator," ");
 		}
 		newTitle = newTitle.trim();
-		//remove extra spaces
-		newTitle = newTitle.replaceAll("\\s+","%20");
+		// Escape HTML
+		try {
+			newTitle = URLEncoder.encode(newTitle, "UTF-8");
+		} catch (UnsupportedEncodingException ignored) {
+			// Can be safely ignored because UTF-8 is always supported
+		}
 		return newTitle;
 	}
 

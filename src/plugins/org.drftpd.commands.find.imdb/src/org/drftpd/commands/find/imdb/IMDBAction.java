@@ -25,7 +25,7 @@ import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
-import org.apache.commons.lang3.text.WordUtils;
+import org.apache.commons.text.WordUtils;
 
 /**
  * @author scitz0
@@ -49,6 +49,7 @@ public class IMDBAction implements ActionInterface {
 				sb.append("#########################################").append(")\n");
 				sb.append("# Title # - ").append(imdbInfo.getTitle()).append("\n");
 				sb.append("# Year # - ").append(imdbInfo.getYear()).append("\n");
+				sb.append("# Runtime # - ").append(imdbInfo.getRuntime()).append(" min").append("\n");
 				sb.append("# Language # - ").append(imdbInfo.getLanguage()).append("\n");
 				sb.append("# Country # - ").append(imdbInfo.getCountry()).append("\n");
 				sb.append("# Director # - ").append(imdbInfo.getDirector()).append("\n");
@@ -58,8 +59,6 @@ public class IMDBAction implements ActionInterface {
 				sb.append(imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10+"/10" : "-").append("\n");
 				sb.append("# Votes # - ").append(imdbInfo.getVotes()).append("\n");
 				sb.append("# URL # - ").append(imdbInfo.getURL()).append("\n");
-				sb.append("# Screens # - ").append(imdbInfo.getScreens()).append("\n");
-				sb.append("# Limited # - ").append(imdbInfo.getLimited()).append("\n");
 				return sb.toString();
 			}
 		}
