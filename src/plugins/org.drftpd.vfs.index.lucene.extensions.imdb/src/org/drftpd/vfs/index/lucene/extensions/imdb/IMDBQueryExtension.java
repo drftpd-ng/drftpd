@@ -68,10 +68,10 @@ public class IMDBQueryExtension implements QueryTermExtensionInterface {
 						queryParams.getMinYear(), queryParams.getMaxYear(), true, true);
 				query.add(yearQuery, Occur.MUST);
 			}
-			if (queryParams.getMinScreens() != null || queryParams.getMaxScreens() != null) {
-				Query screensQuery = NumericRangeQuery.newIntRange("imdbscreens",
-						queryParams.getMinScreens(), queryParams.getMaxScreens(), true, true);
-				query.add(screensQuery, Occur.MUST);
+			if (queryParams.getMinRuntime() != null || queryParams.getMaxRuntime() != null) {
+				Query runtimeQuery = NumericRangeQuery.newIntRange("imdbruntime",
+						queryParams.getMinRuntime(), queryParams.getMaxRuntime(), true, true);
+				query.add(runtimeQuery, Occur.MUST);
 			}
 		} catch (KeyNotFoundException e) {
 			// No IMDB terms to include, return without amending query

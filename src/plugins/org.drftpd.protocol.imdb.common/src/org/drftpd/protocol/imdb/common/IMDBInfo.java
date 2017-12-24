@@ -45,8 +45,7 @@ public class IMDBInfo implements Serializable {
     private String _plot = "N|A";
     private Integer _rating;
     private Integer _votes;
-    private Integer _screens;
-    private String _limited = "N|A";
+    private Integer _runtime;
     private boolean _foundMovie = false;
 
 	/**
@@ -174,20 +173,12 @@ public class IMDBInfo implements Serializable {
         _votes = votes;
     }
 
-    public Integer getScreens() {
-        return _screens;
+    public Integer getRuntime() {
+        return _runtime;
     }
 
-    public void setScreens(Integer screens) {
-        _screens = screens;
-    }
-
-    public String getLimited() {
-        return _limited;
-    }
-
-    public void setLimited(String limited) {
-        _limited = limited;
+    public void setRuntime(Integer runtime) {
+		_runtime = runtime;
     }
 
     public boolean getMovieFound() {

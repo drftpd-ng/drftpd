@@ -25,6 +25,9 @@ import org.apache.log4j.Logger;
 import org.drftpd.util.HttpUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * @author lh
  */
@@ -44,8 +47,7 @@ public class IMDBParser {
 	private Integer _rating;
 	private Integer _votes;
 	private String _url;
-	private Integer _screens;
-	private String _limited;
+	private Integer _runtime;
 	private String _searchString;
 	private boolean _foundMovie;
 	
@@ -59,8 +61,7 @@ public class IMDBParser {
 	public Integer getRating() 	{ return foundMovie() ? _rating  	:  null; }
 	public Integer getVotes()  	{ return foundMovie() ? _votes   	:  null; }
 	public String getURL()	 	{ return foundMovie() ? _url	 	: "N|A"; }
-	public Integer getScreens()	{ return foundMovie() ? _screens 	:  null; }
-	public String getLimited() 	{ return foundMovie() ? _limited 	: "N|A"; }
+	public Integer getRuntime()	{ return foundMovie() ? _runtime 	:  null; }
 	public boolean foundMovie()	{ return _foundMovie; }
 	
 	public void doSEARCH(String searchString) {
@@ -107,49 +108,32 @@ public class IMDBParser {
 
 			String data = HttpUtils.retrieveHttpAsString(url);
 
-			_title = parseData(data, "<div id=\"tn15title\">", "<span>");
-			_language = parseData(data, "<h5>Language:</h5>", "</div>").replaceAll(" ","");
-			_country = parseData(data, "<h5>Country:</h5>", "</div>");
-			_genre = parseData(data, "<h5>Genre:</h5>", "</div>").replaceAll("See more","").trim().replaceAll("\\s+","");
-			_director = parseData(data, "<h5>Director:</h5>", "</div>");
-			if (_director.equals("N|A")) {
-				_director = parseData(data, "Directors:", "</div>").replaceAll("\\s{2,}","|");
+			if (!data.contains("<meta property='og:type' content=\"video.movie\" />")) {
+				logger.warn("Request for IMDB info for a Tv Show, this is not handled by this plugin. URL:"+url);
+				return false;
 			}
-			String rating = parseData(data, "<div class=\"starbar-meta\">", "</b>").replaceAll("/10","");
-			if (!rating.equals("N|A") &&
-					NumberUtils.isDigits(rating.replaceAll("\\D","")) &&
-					!rating.contains("(awaiting 5 votes)")) {
+
+			_title = parseData(data, "<meta property='og:title' content=\"", "(");
+			_language = parseData(data, "<td class=\"ipl-zebra-list__label\">Language</td>", "</td>").replaceAll("\\s{2,}","|");
+			_country = parseData(data, "<td class=\"ipl-zebra-list__label\">Country</td>", "</td>").replaceAll("\\s{2,}","|");
+			_genre = parseData(data, "<td class=\"ipl-zebra-list__label\">Genres</td>", "</td>").replaceAll("\\s{2,}","|");
+			_director = parseData(data, "<div class=\"titlereference-overview-section\">\\n\\s+Directors?:", "</div>", false, true).replaceAll("\\s+?,\\s+?","|");
+			String rating = parseData(data, "<span class=\"ipl-rating-star__rating\">", "</span>");
+			if (!rating.equals("N|A") && rating.length() == 3 && NumberUtils.isDigits(rating.replaceAll("\\D",""))) {
 				_rating = Integer.valueOf(rating.replaceAll("\\D",""));
-				String votes = parseData(data, "<a href=\"ratings\" class=\"tn15more\">", " votes</a>");
+				String votes = parseData(data, "<span class=\"ipl-rating-star__total-votes\">", "</span>");
 				if (!votes.equals("N|A") && NumberUtils.isDigits(votes.replaceAll("\\D","")))
 					_votes = Integer.valueOf(votes.replaceAll("\\D",""));
 			}
-			_plot = parseData(data, "<h5>Plot:</h5>", "<a class=\"tn15more inline\"").replaceAll("\\s\\|","");
-			String year = parseData(data, "<a href=\"/year/", "</a>", true).replaceAll("\\D","");
-			if (year.length() == 4) {
-				_year = Integer.valueOf(year);
+			_plot = parseData(data, "<section class=\"titlereference-section-overview\">", "</div>", true, true);
+			Pattern p = Pattern.compile("<a href=\"/title/tt\\d+/releaseinfo\">\\d{2} [a-zA-Z]{3} (\\d{4})");
+			Matcher m = p.matcher(data);
+			if (m.find() && NumberUtils.isDigits(m.group(1))) {
+				_year = Integer.valueOf(m.group(1));
 			}
-
-			_limited = "";
-			try {
-				url = _url+"/business";
-				data = HttpUtils.retrieveHttpAsString(url);
-				String screens = parseData(data, "<h5>Opening Weekend</h5>", "<br/>");
-				if (!screens.equals("N|A") && screens.contains(" Screens)") && screens.lastIndexOf(") (") >= 0) {
-					int start = screens.lastIndexOf(") (") + 3;
-					int end = screens.indexOf(" Screens)");
-					if (start < end) {
-						screens = screens.substring(start, end).replaceAll("\\D", "").trim();
-						if (!screens.isEmpty()) {
-							_screens = Integer.valueOf(screens);
-							if (_screens < 600) {
-								_limited = " (Limited)";
-							}
-						}
-					}
-				}
-			} catch (Exception e) {
-				logger.warn("", e);
+			String runtime = parseData(data, "<td class=\"ipl-zebra-list__label\">Runtime</td>", "</td>");
+			if (!runtime.equals("N|A") && NumberUtils.isDigits(runtime.replaceAll("\\D",""))) {
+				_runtime = Integer.valueOf(runtime.replaceAll("\\D", ""));
 			}
 		} catch (Exception e) {
 			logger.error("",e);
@@ -170,25 +154,42 @@ public class IMDBParser {
 		env.add("votes", getVotes() != null ? getVotes() : "0");
 		env.add("year", getYear() != null ? getYear() : "9999");
 		env.add("url", getURL());
-		env.add("screens", getScreens() != null ? getScreens() : "0");
-		env.add("limited", getLimited());
+		env.add("runtime", getRuntime() != null ? getRuntime() : "0");
 		env.add("searchstr", _searchString != null ? _searchString : "");
 		return env;
 	}
 
 	private String parseData(String data, String startText, String endText) {
-		return parseData(data, startText, endText, false);
+		return parseData(data, startText, endText, false, false);
 	}
 
-	private String parseData(String data, String startText, String endText, boolean beginning) {
+	private String parseData(String data, String startText, String endText, boolean beginning, boolean regex) {
 		int start, end;
-		start = data.indexOf(startText);
-		if (start > 0) {
-			if (!beginning) {
-				start = start + startText.length();
+		if (regex) {
+			Pattern p = Pattern.compile(startText);
+			Matcher m = p.matcher(data);
+			if (m.find()) {
+				start = m.start();
+				if (!beginning) {
+					start = start + m.group().length();
+				}
+				p = Pattern.compile(endText);
+				// Always start end search from end of start match even if beginning flag is set.
+				m = p.matcher(data.substring(start));
+				if (m.find()) {
+					end = m.start() + start;
+					return HttpUtils.htmlToString(data.substring(start, end)).trim();
+				}
 			}
-			end = data.indexOf(endText, start);
-			return HttpUtils.htmlToString(data.substring(start, end)).trim();
+		} else {
+			start = data.indexOf(startText);
+			if (start > 0) {
+				if (!beginning) {
+					start = start + startText.length();
+				}
+				end = data.indexOf(endText, start);
+				return HttpUtils.htmlToString(data.substring(start, end)).trim();
+			}
 		}
 		return "N|A";
 	}

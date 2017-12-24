@@ -67,10 +67,10 @@ public class IMDBOption implements OptionInterface {
 			queryParams.setMinYear(range[0]);
 			queryParams.setMaxYear(range[1]);
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-imdbscreens")) {
+		} else if (option.equalsIgnoreCase("-imdbruntime")) {
 			Integer[] range = getIntRange(args[0]);
-			queryParams.setMinScreens(range[0]);
-			queryParams.setMaxScreens(range[1]);
+			queryParams.setMinRuntime(range[0]);
+			queryParams.setMaxRuntime(range[1]);
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
 		}
 	}
