@@ -119,8 +119,12 @@ public class IMDBParser {
 			_genre = parseData(data, "<td class=\"ipl-zebra-list__label\">Genres</td>", "</td>").replaceAll("\\s{2,}","|");
 			_director = parseData(data, "<div class=\"titlereference-overview-section\">\\n\\s+Directors?:", "</div>", false, true).replaceAll("\\s+?,\\s+?","|");
 			String rating = parseData(data, "<span class=\"ipl-rating-star__rating\">", "</span>");
-			if (!rating.equals("N|A") && rating.length() == 3 && NumberUtils.isDigits(rating.replaceAll("\\D",""))) {
+			if (!rating.equals("N|A") && (rating.length() == 1 || rating.length() == 3) && NumberUtils.isDigits(rating.replaceAll("\\D",""))) {
 				_rating = Integer.valueOf(rating.replaceAll("\\D",""));
+				if (rating.length() == 1) {
+					// Rating an even(single digit) number, multiply by 10
+					_rating = _rating*10;
+				}
 				String votes = parseData(data, "<span class=\"ipl-rating-star__total-votes\">", "</span>");
 				if (!votes.equals("N|A") && NumberUtils.isDigits(votes.replaceAll("\\D","")))
 					_votes = Integer.valueOf(votes.replaceAll("\\D",""));
