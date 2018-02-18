@@ -109,7 +109,7 @@ public class Bytes {
 		char suffix = Character.toUpperCase(str.charAt(str.length() - 1));
 
 		if (Character.isDigit(suffix)) {
-			return Long.parseLong(str);
+			return Math.round(Double.parseDouble(str));
 		}
 
 		str = str.substring(0, str.length() - 1);
@@ -117,11 +117,10 @@ public class Bytes {
 		for (int i = 0; i < MULTIPLES.length; i++) {
 			Multiple multiple = MULTIPLES[i];
 
-			// long multiple = ;
 			if (suffix == multiple.getSuffix()) {
-				return Long.parseLong(str)
+				return Math.round(Double.parseDouble(str)
 						* (binary ? multiple.getBinaryMultiple() : multiple
-								.getMultiple());
+								.getMultiple()));
 			}
 		}
 
