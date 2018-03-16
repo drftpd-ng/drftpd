@@ -166,17 +166,21 @@ public class TvMazeUtils {
 		} else {
 			tvmazeInfo.setPremiered("1900-01-01");
 		}
-		JsonObject networkJsonObj = null;
-		if (jObj.get("network").isJsonObject()) {
-			networkJsonObj = jObj.getAsJsonObject("network");
-		} else if (jObj.get("webChannel").isJsonObject()) {
-			networkJsonObj = jObj.getAsJsonObject("webChannel");
-		}
-		if (networkJsonObj != null) {
-			if (networkJsonObj.get("name").isJsonPrimitive()) tvmazeInfo.setNetwork(networkJsonObj.get("name").getAsString());
-			JsonObject countryJsonObj = networkJsonObj.getAsJsonObject("country");
-			if (countryJsonObj.get("name").isJsonPrimitive()) tvmazeInfo.setCountry(countryJsonObj.get("name").getAsString());
-		}
+        JsonObject networkJsonObj = null;
+        if (jObj.get("network").isJsonObject()) {
+            networkJsonObj = jObj.getAsJsonObject("network");
+        } else if (jObj.get("webChannel").isJsonObject()) {
+            networkJsonObj = jObj.getAsJsonObject("webChannel");
+        }
+        if (networkJsonObj != null) {
+            if (networkJsonObj.get("name").isJsonPrimitive()) tvmazeInfo.setNetwork(networkJsonObj.get("name").getAsString());
+            if (networkJsonObj.get("country").isJsonObject()){
+                JsonObject countryJsonObj = networkJsonObj.getAsJsonObject("country");
+                if (countryJsonObj.get("name").isJsonPrimitive()) tvmazeInfo.setCountry(countryJsonObj.get("name").getAsString());
+            } else {
+                tvmazeInfo.setCountry("UNKNOWN COUNTRY");
+			}
+        }
 		if (jObj.get("summary").isJsonPrimitive()) tvmazeInfo.setSummary(HttpUtils.htmlToString(jObj.get("summary").getAsString()));
 		JsonObject linksObj = jObj.getAsJsonObject("_links");
 		if (linksObj != null) {
