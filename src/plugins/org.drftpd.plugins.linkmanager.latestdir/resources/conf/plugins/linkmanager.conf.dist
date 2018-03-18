@@ -1,7 +1,7 @@
 ################################################################################
 #	LATESTDIR:
 #
-#	This will just make links of last races (10)
+#	This will just make links of last races (by default 10, check latestdir.conf to change)
 #
 #	x.type=LATESTDIR
 #	x.dirname=/_LAST_RACES_

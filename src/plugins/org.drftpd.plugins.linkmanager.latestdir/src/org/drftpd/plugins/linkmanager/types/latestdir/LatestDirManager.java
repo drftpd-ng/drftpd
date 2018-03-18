@@ -25,9 +25,9 @@ import java.util.Properties;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
+import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.GlobalContext;
-import org.drftpd.PluginInterface;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.DirectoryFtpEvent;
@@ -38,7 +38,6 @@ import org.drftpd.plugins.linkmanager.LinkType;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.LinkHandle;
-
 /**
  * @author freasy
  * @version $Id: LatestDirManager.java freasy $
@@ -73,7 +72,8 @@ public class LatestDirManager implements PluginInterface {
     	_linkmanager = LinkManager.getLinkManager();
 		_links = new ArrayList<DirectoryHandle>();
 		_map = new HashMap<String, DirectoryHandle>();
-		_count = 10;
+		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("latestdir.conf");
+		_count = Integer.parseInt(PropertyHelper.getProperty(_props, "maxcount","10"));
 		for (LinkType link : _linkmanager.getLinks()) {
 			if (link.getEventType().equals("latestdir")) {
 				DirectoryHandle dir = new DirectoryHandle(link.getDirName(null));
