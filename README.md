@@ -38,12 +38,14 @@ To give an overview of the installation process the different steps are listed b
 On the master you will need to:
 - Install Oracle Java 1.8
 - Install Ant or Eclipse on the master
-- Add needed plugins that are not present
 - Compile the software using setup wizard
 - Configure .conf files
 
 On the slaves you will need to:
 - Install Oracle Java 1.8
+- Add needed plugins that are not present :
+  MediaInfo (CLI): https://mediaarea.net/fr/MediaInfo
+  mkvalidator tool: https://www.matroska.org/downloads/mkvalidator.html
 - Copy slave.zip to a slave from the master
 - Configure slave.conf
 
@@ -83,9 +85,8 @@ Download DrFTPD from https://github.com/drftpd-ng/drftpd3
 
 Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
-git clone https://github.com/drftpd-ng/drftpd3.git
-unzip master.zip
-rm master.zip
+git clone -b develop --single-branch https://github.com/drftpd-ng/drftpd3.git
+cd drftpd3
 ```
 
 ## Build DrFTPD
@@ -101,12 +102,6 @@ Start the installer
 ```
 build.bat
 ```
-
-## Plugins
-
-Plugins and code modifications of DrFTPD versions prior 3.2.0 will not work. You need to use plugins designed for version 3.2.0 and above.
-
-Unofficial plugins can be found here http://drftpd.org/forums/viewforum.php?f=26
 
 ### Installation instructions
 
@@ -157,7 +152,7 @@ You can now start the slave
 ```
 - Windows, You would very likely want to add the slave as a service within Windows.
 ```
-bin\wrapper-windows-x86-32.exe -i c:\drftpd\conf\wrapper-slave.conf
+bin\InstallSlave.bat
 net start drftpd-slave
 ```
 
@@ -188,4 +183,4 @@ Search on libTerminal.so where you can test a few versions that people have uplo
 
 # Online Help 
 
-If you use IRC, connect to EFnet and join #drftpd, #drftpd-develop. Alternatively use the forum http://forum.drftpd.org
+If you use IRC, connect to EFnet and join #drftpd, #drftpd-develop. Alternatively use the github repository https://github.com/drftpd-ng/drftpd3
