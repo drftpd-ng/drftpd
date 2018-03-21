@@ -1,17 +1,34 @@
-# $Id$
+#encoding=UTF-8
+# Configuration files must begin with a line specifying the encoding
+#  of the the file.
+
 #********************************************************************
-# Wrapper Properties
+# Wrapper Localization
+#********************************************************************
+# Specify the language and locale which the Wrapper should use.
+#wrapper.lang=en_US # en_US or ja_JP
+
+# Specify the location of the language resource files (*.mo).
+#wrapper.lang.folder=../lang
+
+#********************************************************************
+# Wrapper Java Properties
 #********************************************************************
 # Java Application
+#  Locate the java binary on the system PATH:
 wrapper.java.command=java
+#  Specify a specific java binary:
+#set.JAVA_HOME=/java/path
+#wrapper.java.command=%JAVA_HOME%/bin/java
 
 # Working Dir
 wrapper.working.dir=../
 
 # Java Main class.  This class must implement the WrapperListener interface
 #  or guarantee that the WrapperManager class is initialized.  Helper
-#  classes are provided to do this for you.  See the Integration section
-#  of the documentation for details.
+#  classes are provided to do this for you.
+#  See the following page for details:
+#  http://wrapper.tanukisoftware.com/doc/english/integrate.html
 wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 
 # Java Classpath (include wrapper.jar)  Add class path elements as
@@ -26,56 +43,26 @@ wrapper.java.classpath.6=lib/drftpd-jpf-3.2.0.jar
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib
 
+# Java Bits.  On applicable platforms, tells the JVM to run in 32 or 64-bit mode.
+wrapper.java.additional.auto_bits=TRUE
+
 # Java Additional Parameters
 wrapper.java.additional.1=-Dlog4j.configuration=file:conf/log4j-master.properties
 wrapper.java.additional.2=-Djpf.boot.config=conf/boot-master.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UnsyncloadClass
-#--- Uncommenting the following (And changing X to next number), 
-#--- causes DR to create a memory dump if out of memory
-#wrapper.java.additional.X=-XX:+HeapDumpOnOutOfMemoryError
-#--- Uncommenting the following (And changing X to next number), 
-#--- Causes Garbage collectible items to remain in memory and not collected if available memory is sufficient
-#wrapper.java.additional.X=-XX:SoftRefLRUPolicyMSPerMB=10000
-#--- Uncommenting the following (And changing X to next number), 
-#--- Unlocks and uses part of the new G1GC
-#wrapper.java.additional.X=-XX:+UnlockExperimentalVMOptions
-#--- Uncommenting the following (And changing X to next number), 
-#--- Use the new garbage collection routine 6.14 or higher needed
-#wrapper.java.additional.X=-XX:+UseG1GC
-#--- Uncommenting the following (And changing X to next number), 
-#--- Sets users timezone
-#wrapper.java.additional.X=-Duser.timezone="Europe/Amsterdam"
-#--- Uncommenting the following (And changing X to next number), 
-#--- Uses optimized versions of Get<Primitive>Field.
-#wrapper.java.additional.X=-XX:+UseFastAccessorMethods
-#--- Uncommenting the following (And changing X to next number), time will increase initial startup 
-#--- time but should improve performance once running. This option requires you to have a 
-#--- full JDK installed, not simply a JRE.
-#wrapper.java.additional.X=-server
-#--- Uncommenting the following (And changing X to next number), will change ouput side from ASCII(false) to Binary(true)
-#--- This will change file size to base 2
-#wrapper.java.additional.X=-Dbytes.binary=true
 
-
-# ---------------------------------------
-# Enable below if you wish to monitor the memory that drftpd uses, the 
-# resulting hprof.txt file should be sent to zubov (i'm everywhere)
-# It will cause a severe performance hit to drftpd, but will give
+# Enable below if you wish to monitor the memory that DrFTPD uses,
+# the resulting hprof.txt file should be sent to developers
+# It will cause a severe performance hit to DrFTPD, but will give
 # valuable information that can decrease memory usage
-# If you have a jvm greater or equal to 1.5.0.03 HAT (the tool I was
-# going to use) will work with it.  If your JVM is old, upgrade or
-# don't bother
 #wrapper.java.additional.5=-Xrunhprof:heap=dump,file=hprof.txt,format=b
-# ---------------------------------------
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=16
-#wrapper.java.initmemory.percent=50
 
 # Maximum Java Heap Size (in MB)
 wrapper.java.maxmemory=512
-#wrapper.java.maxmemory.percent=75
 
 # Application parameters.  Add parameters as needed starting from 1
 wrapper.app.parameter.1=org.java.plugin.boot.Boot
@@ -83,6 +70,9 @@ wrapper.app.parameter.1=org.java.plugin.boot.Boot
 #********************************************************************
 # Wrapper Logging Properties
 #********************************************************************
+# Enables Debug output from the Wrapper.
+# wrapper.debug=TRUE
+
 # Format of output for the console.  (See docs for formats)
 wrapper.console.format=PM
 
@@ -112,6 +102,33 @@ wrapper.logfile.maxfiles=0
 wrapper.syslog.loglevel=NONE
 
 #********************************************************************
+# Wrapper General Properties
+#********************************************************************
+# Allow for the use of non-contiguous numbered properties
+wrapper.ignore_sequence_gaps=TRUE
+
+# Do not start if the pid file already exists.
+wrapper.pidfile.strict=TRUE
+
+# Title to use when running as a console
+wrapper.console.title=Distributed Daemon FTP Server v3 Master
+
+#********************************************************************
+# Wrapper JVM Checks
+#********************************************************************
+# Out Of Memory detection.
+#  Ignore -verbose:class output to avoid false positives.
+wrapper.filter.trigger.1000=[Loaded java.lang.OutOfMemoryError
+wrapper.filter.action.1000=NONE
+# (Simple match)
+wrapper.filter.trigger.1001=java.lang.OutOfMemoryError
+# (Only match text in stack traces if -XX:+PrintClassHistogram is being used.)
+#wrapper.filter.trigger.1001=Exception in thread "*" java.lang.OutOfMemoryError
+#wrapper.filter.allow_wildcards.1001=TRUE
+wrapper.filter.action.1001=RESTART
+wrapper.filter.message.1001=The JVM has run out of memory.
+
+#********************************************************************
 # Wrapper NT Service Properties
 #********************************************************************
 # WARNING - Do not modify any of these properties when an application
@@ -126,16 +143,13 @@ wrapper.ntservice.name=drftpd-master
 wrapper.ntservice.displayname=DrFTPD Master
 
 # Description of the service
-wrapper.ntservice.description=DistRibuted FTP Daemon Master http://www.drftpd.org
+wrapper.ntservice.description=Distributed Daemon FTP Server v3 Master https://github.com/drftpd-ng/drftpd3
 
 # Service dependencies.  Add dependencies as needed starting from 1
 wrapper.ntservice.dependency.1=
 
-# Mode in which the service is installed.  
-# [ AUTO_START | DEMAND_START ]
+# Mode in which the service is installed.  AUTO_START, DELAY_START or DEMAND_START
 wrapper.ntservice.starttype=AUTO_START
 
-# Allow the service to interact with the desktop.
-# [ true | false ]
-wrapper.ntservice.interactive=false
-
+# Allow the service to interact with the desktop (Windows NT/2000/XP only).
+wrapper.ntservice.interactive=FALSE
