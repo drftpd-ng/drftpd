@@ -108,10 +108,10 @@
 						<manifest>
 							<attribute name="Specification-Title" value="DrFTPd - ${plugin.id}" />
 							<attribute name="Specification-Version" value="${plugin.version}" />
-							<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
+							<attribute name="Specification-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
 							<attribute name="Implementation-Title" value="${plugin.id}" />
 							<attribute name="Implementation-Version" value="${plugin.version}" />
-							<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
+							<attribute name="Implementation-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
 						</manifest>
 						<fileset dir="${build.dir}/classes">
 							<include name="**/*.class" />

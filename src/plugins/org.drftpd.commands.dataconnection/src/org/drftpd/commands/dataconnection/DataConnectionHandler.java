@@ -365,7 +365,7 @@ public class DataConnectionHandler extends CommandInterface {
 			response.addComment("And set up port forwarding in your router.");
 			response.addComment(
 			"Or you can just use a PRET capable client, see");
-			response.addComment("  http://drftpd.org/ for PRET capable clients");
+			response.addComment("  https://github.com/drftpd-ng/drftpd3/wiki for PRET capable clients");
 
 			reset(conn);
 			return response;
