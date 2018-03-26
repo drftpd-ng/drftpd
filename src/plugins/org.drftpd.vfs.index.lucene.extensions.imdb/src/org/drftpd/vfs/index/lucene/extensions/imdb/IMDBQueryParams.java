@@ -29,7 +29,7 @@ public class IMDBQueryParams {
 	
 	private String _title;
 	private String _director;
-	private String _genre;
+	private String _genres;
 	private Integer _minVotes;
 	private Integer _maxVotes;
 	private Integer _minRating;
@@ -47,8 +47,8 @@ public class IMDBQueryParams {
 		return _director;
 	}
 	
-	public String getGenre() {
-		return _genre;
+	public String getGenres() {
+		return _genres;
 	}
 
 	public Integer getMinVotes() {
@@ -91,8 +91,8 @@ public class IMDBQueryParams {
 		_director = director;
 	}
 	
-	public void setGenre(String genre) {
-		_genre = genre;
+	public void setGenres(String genres) {
+		_genres = genres;
 	}
 
 	public void setMinVotes(Integer votes) {

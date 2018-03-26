@@ -42,7 +42,7 @@ public class IMDBParser {
 	private String _language;
 	private String _country;
 	private String _director;
-	private String _genre;
+	private String _genres;
 	private String _plot;
 	private Integer _rating;
 	private Integer _votes;
@@ -55,8 +55,8 @@ public class IMDBParser {
 	public Integer getYear()   	{ return foundMovie() ? _year		:  null; }
 	public String getLanguage()	{ return foundMovie() ? _language	: "N|A"; }
 	public String getCountry()	{ return foundMovie() ? _country	: "N|A"; }
-	public String getDirector() { return foundMovie() ? _director 	: "N|A"; }
-	public String getGenre()   	{ return foundMovie() ? _genre   	: "N|A"; }
+	public String getDirector()	{ return foundMovie() ? _director 	: "N|A"; }
+	public String getGenres()	{ return foundMovie() ? _genres   	: "N|A"; }
 	public String getPlot()		{ return foundMovie() ? _plot		: "N|A"; }
 	public Integer getRating() 	{ return foundMovie() ? _rating  	:  null; }
 	public Integer getVotes()  	{ return foundMovie() ? _votes   	:  null; }
@@ -116,7 +116,7 @@ public class IMDBParser {
 			_title = parseData(data, "<meta property='og:title' content=\"", "(");
 			_language = parseData(data, "<td class=\"ipl-zebra-list__label\">Language</td>", "</td>").replaceAll("\\s{2,}","|");
 			_country = parseData(data, "<td class=\"ipl-zebra-list__label\">Country</td>", "</td>").replaceAll("\\s{2,}","|");
-			_genre = parseData(data, "<td class=\"ipl-zebra-list__label\">Genres</td>", "</td>").replaceAll("\\s{2,}","|");
+			_genres = parseData(data, "<td class=\"ipl-zebra-list__label\">Genres</td>", "</td>").replaceAll("\\s{2,}","|");
 			_director = parseData(data, "<div class=\"titlereference-overview-section\">\\n\\s+Directors?:", "</div>", false, true).replaceAll("\\s+?,\\s+?","|");
 			String rating = parseData(data, "<span class=\"ipl-rating-star__rating\">", "</span>");
 			if (!rating.equals("N|A") && (rating.length() == 1 || rating.length() == 3) && NumberUtils.isDigits(rating.replaceAll("\\D",""))) {
@@ -150,7 +150,7 @@ public class IMDBParser {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("title", getTitle());
 		env.add("director", getDirector());
-		env.add("genre", getGenre());
+		env.add("genres", getGenres());
 		env.add("language", getLanguage());
 		env.add("country", getCountry());
 		env.add("plot", getPlot());

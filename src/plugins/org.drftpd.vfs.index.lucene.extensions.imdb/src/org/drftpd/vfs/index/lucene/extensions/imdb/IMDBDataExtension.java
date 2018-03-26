@@ -33,7 +33,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 
 	private static final Field FIELD_TITLE = new Field("imdbtitle", "", Field.Store.YES, Field.Index.ANALYZED);
 	private static final Field FIELD_DIRECTOR = new Field("imdbdirector", "", Field.Store.YES, Field.Index.ANALYZED);
-	private static final Field FIELD_GENRE = new Field("imdbgenre", "", Field.Store.YES, Field.Index.ANALYZED);
+	private static final Field FIELD_GENRES = new Field("imdbgenres", "", Field.Store.YES, Field.Index.ANALYZED);
 	private static final NumericField FIELD_VOTES = new NumericField("imdbvotes", Field.Store.YES, Boolean.TRUE);
 	private static final NumericField FIELD_RATING = new NumericField("imdbrating", Field.Store.YES, Boolean.TRUE);
 	private static final NumericField FIELD_YEAR = new NumericField("imdbyear", Field.Store.YES, Boolean.TRUE);
@@ -43,7 +43,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 	public void initializeFields(Document doc) {
 		doc.add(FIELD_TITLE);
 		doc.add(FIELD_DIRECTOR);
-		doc.add(FIELD_GENRE);
+		doc.add(FIELD_GENRES);
 		doc.add(FIELD_VOTES);
 		doc.add(FIELD_RATING);
 		doc.add(FIELD_YEAR);
@@ -61,7 +61,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 		if (imdbInfo == null || !imdbInfo.getMovieFound()) {
 			FIELD_TITLE.setValue("");
 			FIELD_DIRECTOR.setValue("");
-			FIELD_GENRE.setValue("");
+			FIELD_GENRES.setValue("");
 			FIELD_VOTES.setIntValue(-1);
 			FIELD_RATING.setIntValue(-1);
 			FIELD_YEAR.setIntValue(-1);
@@ -69,7 +69,7 @@ public class IMDBDataExtension implements IndexDataExtensionInterface {
 		} else {
 			FIELD_TITLE.setValue(imdbInfo.getTitle());
 			FIELD_DIRECTOR.setValue(imdbInfo.getDirector());
-			FIELD_GENRE.setValue(imdbInfo.getGenre());
+			FIELD_GENRES.setValue(imdbInfo.getGenres());
 			FIELD_VOTES.setIntValue(imdbInfo.getVotes() != null ? imdbInfo.getVotes() : -1);
 			FIELD_RATING.setIntValue(imdbInfo.getRating() != null ? imdbInfo.getRating() : -1);
 			FIELD_YEAR.setIntValue(imdbInfo.getYear() != null ? imdbInfo.getYear() : -1);
