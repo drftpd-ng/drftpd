@@ -60,7 +60,7 @@ public class IMDBUtils {
 		imdbInfo.setLanguage(imdbParser.getLanguage());
 		imdbInfo.setCountry(imdbParser.getCountry());
 		imdbInfo.setDirector(imdbParser.getDirector());
-		imdbInfo.setGenre(imdbParser.getGenre());
+		imdbInfo.setGenres(imdbParser.getGenres());
 		imdbInfo.setPlot(imdbParser.getPlot());
 		imdbInfo.setRating(imdbParser.getRating());
 		imdbInfo.setVotes(imdbParser.getVotes());
@@ -75,7 +75,7 @@ public class IMDBUtils {
 		env.add("language", imdbInfo.getLanguage());
 		env.add("country", imdbInfo.getCountry());
 		env.add("director", imdbInfo.getDirector());
-		env.add("genre", imdbInfo.getGenre());
+		env.add("genres", imdbInfo.getGenres());
 		env.add("plot", imdbInfo.getPlot());
 		env.add("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "-");
 		env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "-");

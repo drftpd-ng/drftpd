@@ -50,7 +50,7 @@ public class IMDBList implements AddListElementsInterface {
 					env.add("language", imdbInfo.getLanguage());
 					env.add("country", imdbInfo.getCountry());
 					env.add("director", imdbInfo.getDirector());
-					env.add("genre", imdbInfo.getGenre());
+					env.add("genres", imdbInfo.getGenres());
 					env.add("plot", imdbInfo.getPlot());
 					env.add("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "0");
 					env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "0");

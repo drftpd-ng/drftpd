@@ -5,7 +5,7 @@
 ##
 ## x.imdb.field
 ## The IMDB field to check, valid settings are:
-## Title Year Language Country Director Genre Plot Votes Rating Screens Limited
+## Title Year Language Country Director Genres Plot Votes Rating Screens Limited
 ##
 ## x.imdb.operator
 ## The mathematical operator to use when comparing the metadata against value specified.

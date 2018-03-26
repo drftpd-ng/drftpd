@@ -53,7 +53,7 @@ public class IMDBAction implements ActionInterface {
 				sb.append("# Language # - ").append(imdbInfo.getLanguage()).append("\n");
 				sb.append("# Country # - ").append(imdbInfo.getCountry()).append("\n");
 				sb.append("# Director # - ").append(imdbInfo.getDirector()).append("\n");
-				sb.append("# Genre # - ").append(imdbInfo.getGenre()).append("\n");
+				sb.append("# Genres # - ").append(imdbInfo.getGenres()).append("\n");
 				sb.append("# Plot #\n").append(WordUtils.wrap(imdbInfo.getPlot(), 70));
 				sb.append("# Rating # - ");
 				sb.append(imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10+"/10" : "-").append("\n");

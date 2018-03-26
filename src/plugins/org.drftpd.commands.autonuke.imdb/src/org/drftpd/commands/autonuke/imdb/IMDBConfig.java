@@ -44,8 +44,8 @@ public class IMDBConfig extends Config {
 				return !handleDigitComparison(imdbInfo.getYear());
 			} else if (_field.equalsIgnoreCase("Director")) {
 				return _operator.equals("!") == imdbInfo.getDirector().matches(_value);
-			} else if (_field.equalsIgnoreCase("Genre")) {
-				return _operator.equals("!") == imdbInfo.getGenre().matches(_value);
+			} else if (_field.equalsIgnoreCase("Genres")) {
+				return _operator.equals("!") == imdbInfo.getGenres().matches(_value);
 			} else if (_field.equalsIgnoreCase("Plot")) {
 				return _operator.equals("!") == imdbInfo.getPlot().matches(_value);
 			} else if (_field.equalsIgnoreCase("Rating")) {
