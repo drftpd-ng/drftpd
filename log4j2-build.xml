@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <File name="root" fileName="build.log">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+    </File>
+  </Appenders>
+  <Loggers>
+    <Root level="fatal">
+      <AppenderRef ref="root"/>
+    </Root>
+  </Loggers>
+</Configuration>

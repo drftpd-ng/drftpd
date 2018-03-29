@@ -35,13 +35,14 @@ import org.drftpd.commands.autonuke.NukeItem;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
 import org.tanesha.replacer.FormatterException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author scitz0
  */
 public class AutoNukeAnnouncer extends AbstractAnnouncer {
-	private static final Logger logger = Logger.getLogger(AutoNukeAnnouncer.class);
+	private static final Logger logger = LogManager.getLogger(AutoNukeAnnouncer.class);
 
 	private AnnounceConfig _config;
 

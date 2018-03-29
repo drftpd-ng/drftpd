@@ -29,7 +29,8 @@ import java.util.StringTokenizer;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
@@ -72,7 +73,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class DataConnectionHandler extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
+	private static final Logger logger = LogManager.getLogger(DataConnectionHandler.class);
 
 	public static final Key<Long> CHECKSUM = new Key<Long>(DataConnectionHandler.class, "checksum");
 

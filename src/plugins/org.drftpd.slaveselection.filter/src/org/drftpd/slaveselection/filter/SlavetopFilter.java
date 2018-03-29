@@ -25,7 +25,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -47,7 +48,7 @@ import org.drftpd.vfs.InodeHandleInterface;
 public class SlavetopFilter extends Filter {
     private long _assign;
     private int _topslaves;
-	private static final Logger logger = Logger.getLogger(SlavetopFilter.class
+	private static final Logger logger = LogManager.getLogger(SlavetopFilter.class
 			.getName());
 
     public SlavetopFilter(int i, Properties p) {

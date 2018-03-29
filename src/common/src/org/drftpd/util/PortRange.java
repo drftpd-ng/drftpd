@@ -24,14 +24,15 @@ import java.util.Random;
 
 import javax.net.ServerSocketFactory;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author mog
  * @version $Id$
  */
 public class PortRange {
-	private static final Logger logger = Logger.getLogger(PortRange.class);
+	private static final Logger logger = LogManager.getLogger(PortRange.class);
 
 	private int _minPort;
 

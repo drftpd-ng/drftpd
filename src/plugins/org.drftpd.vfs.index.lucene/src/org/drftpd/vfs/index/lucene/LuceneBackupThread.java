@@ -23,7 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.store.FSDirectory;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PhysicalFile;
@@ -34,7 +35,7 @@ import org.drftpd.io.PhysicalFile;
  * @version $Id$
  */
 public class LuceneBackupThread  extends Thread {
-	private static final Logger logger = Logger.getLogger(LuceneBackupThread.class);
+	private static final Logger logger = LogManager.getLogger(LuceneBackupThread.class);
 	
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss");
 	private static final String BACKUP_DIRNAME = "index.bkp";

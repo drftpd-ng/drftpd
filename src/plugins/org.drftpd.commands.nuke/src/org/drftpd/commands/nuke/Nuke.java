@@ -24,7 +24,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.nuke.metadata.NukeData;
@@ -59,7 +60,7 @@ public class Nuke extends CommandInterface {
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
     
-    private static final Logger logger = Logger.getLogger(Nuke.class);
+    private static final Logger logger = LogManager.getLogger(Nuke.class);
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);

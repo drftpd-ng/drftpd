@@ -17,7 +17,8 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -36,7 +37,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class IMDBConfig {
 	private static IMDBConfig ourInstance;
 
-	private static final Logger logger = Logger.getLogger(IMDBConfig.class);
+	private static final Logger logger = LogManager.getLogger(IMDBConfig.class);
 
 	private ArrayList<SectionInterface> _rSections = new ArrayList<SectionInterface>();
 	private ArrayList<SectionInterface> _sSDSections = new ArrayList<SectionInterface>();

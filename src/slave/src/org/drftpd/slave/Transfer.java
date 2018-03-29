@@ -30,7 +30,8 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
@@ -49,7 +50,7 @@ import javax.net.ssl.SSLSocket;
  * @version $Id$
  */
 public class Transfer {
-	private static final Logger logger = Logger.getLogger(Transfer.class);
+	private static final Logger logger = LogManager.getLogger(Transfer.class);
 
 	private String _abortReason = null;
 

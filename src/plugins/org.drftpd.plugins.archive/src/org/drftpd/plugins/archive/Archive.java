@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -43,7 +44,7 @@ import org.drftpd.util.PluginObjectContainer;
  * @version $Id$
  */
 public class Archive implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(Archive.class);
+	private static final Logger logger = LogManager.getLogger(Archive.class);
 
 	private Properties _props;
 

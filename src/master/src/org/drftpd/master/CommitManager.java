@@ -24,7 +24,8 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.util.CommonPluginUtils;
@@ -38,7 +39,7 @@ import org.drftpd.util.CommonPluginUtils;
  */
 public class CommitManager {
 
-	private static final Logger logger = Logger.getLogger(CommitManager.class);
+	private static final Logger logger = LogManager.getLogger(CommitManager.class);
 
 	private static CommitManager _instance;
 

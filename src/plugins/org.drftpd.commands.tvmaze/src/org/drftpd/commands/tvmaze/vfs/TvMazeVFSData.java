@@ -26,13 +26,14 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.vfs.DirectoryHandle;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author lh
  */
 public class TvMazeVFSData {
-	private static final Logger logger = Logger.getLogger(TvMazeVFSData.class);
+	private static final Logger logger = LogManager.getLogger(TvMazeVFSData.class);
 
 	private DirectoryHandle _dir;
 

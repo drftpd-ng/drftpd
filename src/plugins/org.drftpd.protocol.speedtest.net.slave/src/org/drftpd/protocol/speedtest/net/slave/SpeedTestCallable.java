@@ -25,7 +25,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +38,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class SpeedTestCallable implements Callable<Long> {
 
-	private static final Logger logger = Logger.getLogger(SpeedTestCallable.class);
+	private static final Logger logger = LogManager.getLogger(SpeedTestCallable.class);
 
 	private CloseableHttpResponse response;
 	private CloseableHttpClient httpClient;

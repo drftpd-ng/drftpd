@@ -19,7 +19,8 @@ package org.drftpd.plugins.sitebot.commands;
 
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.CommandInterface;
@@ -41,7 +42,7 @@ import org.drftpd.usermanager.UserFileException;
  */
 public class UserHandler extends CommandInterface {
 
-	private static final Logger logger = Logger.getLogger(UserHandler.class);
+	private static final Logger logger = LogManager.getLogger(UserHandler.class);
 
 	public CommandResponse doIdent(CommandRequest request) throws ImproperUsageException {
 		StringTokenizer st = new StringTokenizer(request.getArgument());

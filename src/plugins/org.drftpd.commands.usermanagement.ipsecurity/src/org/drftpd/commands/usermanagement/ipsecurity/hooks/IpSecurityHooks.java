@@ -25,7 +25,8 @@
 
 package org.drftpd.commands.usermanagement.ipsecurity.hooks;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.StringTokenizer;
 
@@ -51,7 +52,7 @@ import org.drftpd.util.HostMask;
  */
 
 public class IpSecurityHooks implements PreHookInterface {
-	private static final Logger logger = Logger.getLogger(IpSecurityHooks.class);
+	private static final Logger logger = LogManager.getLogger(IpSecurityHooks.class);
 	
 	/*
 	 * Checks the IP from arguments (Used for ADDUSER/GADDUSER/ADDIP)

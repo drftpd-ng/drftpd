@@ -17,7 +17,8 @@
  */
 package org.drftpd.plugins.mirror.pre;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -43,7 +44,7 @@ import java.util.TimerTask;
  * @author lh
  */
 public class PREMirrorPostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(PREMirrorPostHook.class);
+	private static final Logger logger = LogManager.getLogger(PREMirrorPostHook.class);
 	private long _unmirrorTime;
 	private ArrayList<String> _excludePaths;
 	private Timer _preTimer;

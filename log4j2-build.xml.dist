@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <RollingFile name="root" fileName="build.log" filePattern="logs/$$date{date:yyyy-MM}/build-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+    <Root level="fatal">
+      <AppenderRef ref="root"/>
+    </Root>
+  </Loggers>
+</Configuration>

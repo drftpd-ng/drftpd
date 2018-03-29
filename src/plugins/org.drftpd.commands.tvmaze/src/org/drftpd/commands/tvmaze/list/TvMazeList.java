@@ -29,13 +29,14 @@ import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author lh
  */
 public class TvMazeList implements AddListElementsInterface {
-	private static final Logger logger = Logger.getLogger(TvMazeList.class);
+	private static final Logger logger = LogManager.getLogger(TvMazeList.class);
 
 	public void initialize() { }
 

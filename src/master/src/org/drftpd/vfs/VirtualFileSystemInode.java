@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
@@ -39,8 +40,7 @@ import org.drftpd.master.Commitable;
  */
 public abstract class VirtualFileSystemInode implements Commitable {
 
-	protected static final Logger logger = Logger
-			.getLogger(VirtualFileSystemInode.class);
+	protected static final Logger logger = LogManager.getLogger(VirtualFileSystemInode.class);
 
 	/**
 	 * @return the VirtualFileSystem instance.

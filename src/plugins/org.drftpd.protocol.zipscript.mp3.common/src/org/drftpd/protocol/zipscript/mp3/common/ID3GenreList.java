@@ -17,7 +17,8 @@
  */
 package org.drftpd.protocol.zipscript.mp3.common;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author djb61
@@ -25,7 +26,7 @@ import org.apache.log4j.Logger;
  */
 public class ID3GenreList {
 
-	private static final Logger logger = Logger.getLogger(ID3GenreList.class);
+	private static final Logger logger = LogManager.getLogger(ID3GenreList.class);
 
 	public static final String[] genres = {
 		"Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk",

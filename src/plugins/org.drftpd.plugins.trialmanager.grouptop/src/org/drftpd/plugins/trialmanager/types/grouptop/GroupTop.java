@@ -32,6 +32,9 @@ import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.drftpd.util.GroupPosition;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 /**
  * @author CyBeR
  * @version $Id: TopTrial.java 1925 2009-06-15 21:46:05Z CyBeR $

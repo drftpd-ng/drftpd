@@ -22,7 +22,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.java.plugin.Plugin;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
@@ -41,7 +42,7 @@ import org.java.plugin.registry.ExtensionPoint;
  */
 public class CommonPluginUtils {
 
-	private static final Logger logger = Logger.getLogger(CommonPluginUtils.class);
+	private static final Logger logger = LogManager.getLogger(CommonPluginUtils.class);
 
 	/**
 	 * Returns the classloader which was used to load the class defining the object.

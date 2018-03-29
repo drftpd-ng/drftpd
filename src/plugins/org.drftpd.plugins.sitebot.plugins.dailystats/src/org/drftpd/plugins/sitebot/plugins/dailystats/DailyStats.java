@@ -23,7 +23,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -41,7 +42,7 @@ import org.drftpd.usermanager.util.UserComparator;
  */
 public class DailyStats implements UserResetHookInterface {
 
-	private static Logger logger = Logger.getLogger(DailyStats.class);
+	private static Logger logger = LogManager.getLogger(DailyStats.class);
 
 	private boolean _showzero = false;
 	private int _outputnum;

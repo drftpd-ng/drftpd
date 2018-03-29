@@ -24,7 +24,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
@@ -37,7 +38,7 @@ import org.drftpd.vfs.FileHandle;
 public class ConstantMirroring extends ArchiveType {
 	private long _slaveDeadAfter;
 
-	private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
+	private static final Logger logger = LogManager.getLogger(ConstantMirroring.class);
 
 	/*
 	 * Consturctor:

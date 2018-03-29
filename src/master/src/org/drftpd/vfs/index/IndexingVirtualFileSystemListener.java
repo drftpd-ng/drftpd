@@ -17,7 +17,8 @@
  */
 package org.drftpd.vfs.index;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -42,7 +43,7 @@ import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
  */
 public class IndexingVirtualFileSystemListener {
 	
-	private static final Logger logger = Logger.getLogger(IndexingVirtualFileSystemListener.class);
+	private static final Logger logger = LogManager.getLogger(IndexingVirtualFileSystemListener.class);
 	
 	private static final String EXCEPTION_OCCURED_WHILE_INDEXING = "An exception occured while indexing, check stack trace";
 	

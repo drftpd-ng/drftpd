@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
@@ -57,7 +58,7 @@ import javax.net.ssl.SSLContext;
  * @version $Id$
  */
 public class ConfigManager implements ConfigInterface {
-    private static final Logger logger = Logger.getLogger(ConfigManager.class);
+    private static final Logger logger = LogManager.getLogger(ConfigManager.class);
     private static final File permsFile = new File("conf/perms.conf");
     private static final File mainFile = new File("conf/master.conf");
 

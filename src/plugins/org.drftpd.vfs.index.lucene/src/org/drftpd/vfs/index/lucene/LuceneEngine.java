@@ -32,7 +32,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.LinkedHashMap;
 import java.util.TreeSet;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -98,7 +99,7 @@ import org.drftpd.vfs.index.lucene.extensions.QueryTermExtensionInterface;
  * @version $Id$
  */
 public class LuceneEngine implements IndexEngineInterface {
-	private static final Logger logger = Logger.getLogger(LuceneEngine.class);
+	private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
 
 	private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
 

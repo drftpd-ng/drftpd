@@ -19,7 +19,8 @@ package org.drftpd.commands.tvmaze;
 
 import java.io.FileNotFoundException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -33,7 +34,7 @@ import org.drftpd.vfs.ObjectNotValidException;
  * @author lh
  */
 public class TvMazePostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(TvMazePostHook.class);
+	private static final Logger logger = LogManager.getLogger(TvMazePostHook.class);
 
 	public void initialize(StandardCommandManager manager) {
 	}

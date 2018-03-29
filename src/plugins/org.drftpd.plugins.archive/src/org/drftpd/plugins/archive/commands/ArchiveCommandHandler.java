@@ -25,7 +25,8 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.CommandInterface;
@@ -51,7 +52,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class ArchiveCommandHandler extends CommandInterface {
-    private static final Logger logger = Logger.getLogger(ArchiveCommandHandler.class);
+    private static final Logger logger = LogManager.getLogger(ArchiveCommandHandler.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

@@ -27,8 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+//import org.apache.log4j.BasicConfigurator;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.PropertyHelper;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
@@ -46,7 +47,7 @@ public class TestSlave extends Slave {
     private Socket _s;
     private ObjectInputStream _sin;
     private ObjectOutputStream _sout;
-    private static final Logger logger = Logger.getLogger(TestSlave.class);
+    private static final Logger logger = LogManager.getLogger(TestSlave.class);
 	public TestSlave(Properties p) throws IOException {
         InetSocketAddress addr = new InetSocketAddress(PropertyHelper
 				.getProperty(p, "master.host"), Integer.parseInt(PropertyHelper
@@ -89,7 +90,7 @@ public class TestSlave extends Slave {
         }
     }
     public static void main(String[] args) throws Exception {
-        BasicConfigurator.configure();
+        //BasicConfigurator.configure();
         System.out.println(
             "DrFTPD Slave starting, further logging will be done through log4j");
 

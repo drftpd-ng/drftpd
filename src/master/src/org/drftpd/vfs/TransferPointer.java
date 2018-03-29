@@ -18,7 +18,8 @@ package org.drftpd.vfs;
 
 import java.io.FileNotFoundException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.Transfer;
 
@@ -31,7 +32,7 @@ import org.drftpd.slave.Transfer;
 public class TransferPointer {
 	private VirtualFileSystemFile _vfsObject = null;
 	
-	protected static final Logger logger = Logger.getLogger(InodeHandle.class);
+	protected static final Logger logger = LogManager.getLogger(InodeHandle.class);
 
 	public TransferPointer(String path, RemoteTransfer transfer) throws FileNotFoundException {
 		VirtualFileSystemInode vfsInode = VirtualFileSystem.getVirtualFileSystem().getInodeByPath(path);

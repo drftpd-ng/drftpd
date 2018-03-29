@@ -25,7 +25,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.ActiveConnection;
 import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
@@ -44,7 +45,7 @@ import org.drftpd.vfs.FileHandle;
 public class TransferState {
 	
 	public static final Key<TransferState> TRANSFERSTATE = new Key<TransferState>(TransferState.class, "transferstate");
-	private static final Logger logger = Logger.getLogger(TransferState.class);
+	private static final Logger logger = LogManager.getLogger(TransferState.class);
 	
 	/**
 	 * The file to be transfered

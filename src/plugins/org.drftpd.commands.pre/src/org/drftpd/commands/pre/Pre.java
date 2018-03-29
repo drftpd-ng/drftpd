@@ -22,7 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
@@ -49,7 +50,7 @@ import org.drftpd.vfs.VirtualFileSystem;
  * @version $Id$
  */
 public class Pre extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(Pre.class);
+	private static final Logger logger = LogManager.getLogger(Pre.class);
 
     public static final Key<DirectoryHandle> PREDIR = new Key<DirectoryHandle>(Pre.class, "predir");
 

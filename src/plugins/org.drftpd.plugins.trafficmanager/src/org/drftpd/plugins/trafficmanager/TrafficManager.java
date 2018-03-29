@@ -20,7 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -38,7 +39,7 @@ import org.drftpd.util.PluginObjectContainer;
  */
 
 public class TrafficManager implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(TrafficManager.class);
+	private static final Logger logger = LogManager.getLogger(TrafficManager.class);
 
 	private CaseInsensitiveHashMap<String, Class<TrafficType>> _typesMap;
 	
