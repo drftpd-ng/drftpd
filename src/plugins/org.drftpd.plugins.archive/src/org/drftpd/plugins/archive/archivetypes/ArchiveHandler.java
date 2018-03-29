@@ -21,7 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
@@ -37,7 +38,7 @@ import org.drftpd.sections.SectionInterface;
  * @version $Id$
  */
 public class ArchiveHandler extends Thread {
-	protected final static Logger logger = Logger.getLogger(ArchiveHandler.class);
+	protected final static Logger logger = LogManager.getLogger(ArchiveHandler.class);
 
 	private ArchiveType _archiveType;
 

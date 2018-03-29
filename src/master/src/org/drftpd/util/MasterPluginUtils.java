@@ -26,7 +26,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.java.plugin.PluginLifecycleException;
@@ -50,7 +51,7 @@ import org.java.plugin.registry.ExtensionPoint;
  */
 public class MasterPluginUtils extends CommonPluginUtils {
 
-	private static final Logger logger = Logger.getLogger(MasterPluginUtils.class);
+	private static final Logger logger = LogManager.getLogger(MasterPluginUtils.class);
 
 	/**
 	 * Get a <tt>Set</tt> containing the currently loaded extensions which belong to the unloaded plugin.

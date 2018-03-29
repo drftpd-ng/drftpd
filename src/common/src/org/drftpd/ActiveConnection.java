@@ -25,7 +25,8 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.slave.Connection;
 
 /**
@@ -33,8 +34,7 @@ import org.drftpd.slave.Connection;
  * @version $Id$
  */
 public class ActiveConnection extends Connection {
-	private static final Logger logger = Logger
-			.getLogger(ActiveConnection.class);
+	private static final Logger logger = LogManager.getLogger(ActiveConnection.class);
 
 	private SSLContext _ctx;
 

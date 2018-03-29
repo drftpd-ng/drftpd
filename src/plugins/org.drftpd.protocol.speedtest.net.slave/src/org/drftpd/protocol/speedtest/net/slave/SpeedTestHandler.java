@@ -30,7 +30,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
@@ -60,7 +61,7 @@ import java.util.concurrent.Future;
  * @author Scitz0
  */
 public class SpeedTestHandler extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(SpeedTestHandler.class);
+	private static final Logger logger = LogManager.getLogger(SpeedTestHandler.class);
 
 	private int[] _sizes = {350, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000};
 	private int _sizeLoop = 4;

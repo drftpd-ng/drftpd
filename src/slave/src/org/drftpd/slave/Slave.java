@@ -46,7 +46,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.exceptions.FileExistsException;
@@ -73,7 +74,7 @@ import org.drftpd.util.PortRange;
 public class Slave {
 	public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
 
-	private static final Logger logger = Logger.getLogger(Slave.class);
+	private static final Logger logger = LogManager.getLogger(Slave.class);
 
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="A1" target="SYSTEM_OUT">
+      <PatternLayout> 
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+    </Console> 
+  </Appenders>
+    <Loggers>
+      <Root level="DEBUG">
+        <AppenderRef ref="A1"/>
+      </Root>
+    </Loggers>
+</Configuration>

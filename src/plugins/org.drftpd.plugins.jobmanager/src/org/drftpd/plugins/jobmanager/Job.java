@@ -19,8 +19,8 @@ package org.drftpd.plugins.jobmanager;
 import java.io.FileNotFoundException;
 import java.util.*;
 
-
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -39,7 +39,7 @@ import org.drftpd.vfs.FileHandle;
 public class Job {
 	private static long jobIndexCount = 0;
 
-	private static final Logger logger = Logger.getLogger(Job.class);
+	private static final Logger logger = LogManager.getLogger(Job.class);
 
 	private Set<String> _destSlaves;
 

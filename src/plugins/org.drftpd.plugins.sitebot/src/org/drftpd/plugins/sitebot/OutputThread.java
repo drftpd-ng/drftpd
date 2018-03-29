@@ -19,7 +19,8 @@ package org.drftpd.plugins.sitebot;
 
 import java.io.BufferedWriter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author Modified from PircBot by Paul James Mutton, http://www.jibble.org/
@@ -28,7 +29,7 @@ import org.apache.log4j.Logger;
  */
 public class OutputThread extends Thread {
 
-	private static final Logger logger = Logger.getLogger(OutputThread.class);
+	private static final Logger logger = LogManager.getLogger(OutputThread.class);
 	private SiteBot _bot = null;
 	private Queue _outQueue = null;
 

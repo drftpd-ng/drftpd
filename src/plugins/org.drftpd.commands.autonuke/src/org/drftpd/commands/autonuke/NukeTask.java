@@ -28,7 +28,8 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.commands.nuke.NukeUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.FileNotFoundException;
 import java.util.Iterator;
@@ -39,7 +40,7 @@ import java.util.TimerTask;
  * @author scitz0
  */
 public class NukeTask extends TimerTask {
-	private static final Logger logger = Logger.getLogger(NukeTask.class);
+	private static final Logger logger = LogManager.getLogger(NukeTask.class);
 
 	public NukeTask() {
 	}

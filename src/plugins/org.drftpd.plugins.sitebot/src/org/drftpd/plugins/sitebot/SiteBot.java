@@ -45,7 +45,8 @@ import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -75,7 +76,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  */
 public class SiteBot implements ReplyConstants, Runnable {
 
-	private static final Logger logger = Logger.getLogger(SiteBot.class);
+	private static final Logger logger = LogManager.getLogger(SiteBot.class);
 
 	public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
 

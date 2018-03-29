@@ -17,15 +17,15 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author zubov
  * @version $Id$
  */
 public class JobTransferThread extends Thread {
-	private static final Logger logger = Logger
-			.getLogger(JobTransferThread.class);
+	private static final Logger logger = LogManager.getLogger(JobTransferThread.class);
 
 	private JobManager _jm;
 

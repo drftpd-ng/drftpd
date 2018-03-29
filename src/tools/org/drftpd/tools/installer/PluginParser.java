@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.util.FileUtils;
@@ -46,7 +47,7 @@ import org.java.plugin.util.IoUtil;
 public class PluginParser {
 
 	private static final FileUtils fileUtils = FileUtils.getFileUtils();
-	private static final Logger logger = Logger.getLogger(PluginParser.class);
+	private static final Logger logger = LogManager.getLogger(PluginParser.class);
 
 	private FileSet _fileSet = new FileSet();
 	private File _baseDir;

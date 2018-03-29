@@ -24,7 +24,8 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
@@ -63,7 +64,7 @@ import org.tanesha.replacer.SimplePrintf;
  */
 public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptPostHook.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptPostHook.class);
 
 	private ResourceBundle _bundle;
 

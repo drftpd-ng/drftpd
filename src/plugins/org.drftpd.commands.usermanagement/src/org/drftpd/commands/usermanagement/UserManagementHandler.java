@@ -32,8 +32,9 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Level;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
@@ -65,7 +66,7 @@ import org.tanesha.replacer.SimplePrintf;
  * @version $Id$
  */
 public class UserManagementHandler extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(UserManagement.class);
+	private static final Logger logger = LogManager.getLogger(UserManagement.class);
 
 	private ResourceBundle _bundle;
 

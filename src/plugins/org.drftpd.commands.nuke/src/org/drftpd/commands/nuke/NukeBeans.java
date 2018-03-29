@@ -33,7 +33,8 @@ import java.util.Map;
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.commons.collections4.map.LRUMap;
 import org.drftpd.Bytes;
 import org.drftpd.commands.nuke.metadata.NukeData;
@@ -58,7 +59,7 @@ public class NukeBeans {
 	private NukeBeans() {
 	}
 
-	protected static final Logger logger = Logger.getLogger(NukeBeans.class);
+	protected static final Logger logger = LogManager.getLogger(NukeBeans.class);
 
 	private static final String _nukebeansPath = "userdata";
 

@@ -19,7 +19,8 @@ package org.drftpd.vfs.index.lucene;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.index.CorruptIndexException;
 import org.drftpd.GlobalContext;
 
@@ -29,7 +30,7 @@ import org.drftpd.GlobalContext;
  * @version $Id$
  */
 public class LuceneMaintenanceThread extends Thread {
-	private static final Logger logger = Logger.getLogger(LuceneMaintenanceThread.class);
+	private static final Logger logger = LogManager.getLogger(LuceneMaintenanceThread.class);
 
 	private int _optimizeInterval;
 	private long _lastOptimization;

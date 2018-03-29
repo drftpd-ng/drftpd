@@ -17,7 +17,8 @@
  */
 package org.drftpd.event;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author mog
@@ -28,7 +29,7 @@ public class Event {
 
 	private long _time;
 
-	protected static final Logger logger = Logger.getLogger(Event.class);
+	protected static final Logger logger = LogManager.getLogger(Event.class);
 
 	public Event(String command) {
 		super();

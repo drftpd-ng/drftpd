@@ -25,7 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
@@ -39,7 +40,7 @@ import org.drftpd.vfs.ObjectNotValidException;
  */
 public class SectionManager implements SectionManagerInterface {
 	
-	private static final Logger logger = Logger.getLogger(SectionManager.class);
+	private static final Logger logger = LogManager.getLogger(SectionManager.class);
 
 	public SectionManager() {
 	}

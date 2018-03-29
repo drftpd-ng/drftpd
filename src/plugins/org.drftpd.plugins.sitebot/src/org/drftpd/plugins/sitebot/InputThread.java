@@ -25,7 +25,8 @@ import java.io.StringWriter;
 import java.net.Socket;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * @author Modified from PircBot by Paul James Mutton, http://www.jibble.org/
@@ -34,7 +35,7 @@ import org.apache.log4j.Logger;
  */
 public class InputThread extends Thread {
 
-	private static final Logger logger = Logger.getLogger(InputThread.class);
+	private static final Logger logger = LogManager.getLogger(InputThread.class);
 
 	private SiteBot _bot = null;
 	private Socket _socket = null;

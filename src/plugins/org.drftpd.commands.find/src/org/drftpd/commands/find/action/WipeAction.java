@@ -17,7 +17,8 @@
  */
 package org.drftpd.commands.find.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.io.PermissionDeniedException;
@@ -30,7 +31,7 @@ import java.io.FileNotFoundException;
  * @version $Id$
  */
 public class WipeAction implements ActionInterface {
-	public static final Logger logger = Logger.getLogger(WipeAction.class);
+	public static final Logger logger = LogManager.getLogger(WipeAction.class);
 
 	private boolean _failed;
 

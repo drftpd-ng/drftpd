@@ -17,7 +17,8 @@
  */
 package org.drftpd.tools.installer.auto;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginData;
@@ -29,7 +30,7 @@ import java.io.PipedInputStream;
 import java.util.ArrayList;
 
 public class AutoInstaller {
-	private static final Logger logger = Logger.getLogger(AutoInstaller.class);
+	private static final Logger logger = LogManager.getLogger(AutoInstaller.class);
 
 	public AutoInstaller(PluginRegistry registry, InstallerConfig config, boolean cleanOnly) {
 
