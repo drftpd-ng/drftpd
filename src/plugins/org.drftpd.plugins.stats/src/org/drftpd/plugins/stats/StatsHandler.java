@@ -24,8 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
@@ -42,7 +41,7 @@ import org.drftpd.permissions.RatioPathPermission;
  * @version $Id$
  */
 public class StatsHandler extends ConfigHandler {
-	private static final Logger logger = LogManager.getLogger(StatsHandler.class);
+	private static final Logger logger = Logger.getLogger(StatsHandler.class);
 
 	protected static final int DIRECTION_UP = 0;
 	protected static final int DIRECTION_DN = 1;

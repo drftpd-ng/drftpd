@@ -1,14 +1,13 @@
 package org.drftpd.plugins.sitebot;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.plugins.sitebot.blowfish.Blowfish;
 import org.drftpd.plugins.sitebot.blowfish.BlowfishCBC;
 import org.drftpd.plugins.sitebot.blowfish.BlowfishECB;
 
 class BlowfishManager {
 
-    private static final Logger logger = LogManager.getLogger(Blowfish.class);
+    private static final Logger logger = Logger.getLogger(Blowfish.class);
 
     private static final String ENCRYPTION_ERROR_MESSAGE = "An error occurred in encryption process. Check your logs";
     

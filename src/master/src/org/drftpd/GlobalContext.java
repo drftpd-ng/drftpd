@@ -30,8 +30,7 @@ import java.util.Timer;
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -71,7 +70,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
 
 public class GlobalContext {
 
-	private static final Logger logger = LogManager.getLogger(GlobalContext.class);
+	private static final Logger logger = Logger.getLogger(GlobalContext.class);
 
 	private static GlobalContext _gctx;
 

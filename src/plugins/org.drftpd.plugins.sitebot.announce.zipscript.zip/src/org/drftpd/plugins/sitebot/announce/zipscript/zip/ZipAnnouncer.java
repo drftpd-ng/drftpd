@@ -24,8 +24,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -61,7 +60,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  */
 public class ZipAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = LogManager.getLogger(ZipAnnouncer.class);
+	private static final Logger logger = Logger.getLogger(ZipAnnouncer.class);
 
 	private AnnounceConfig _config;
 

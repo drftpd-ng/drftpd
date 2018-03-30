@@ -26,8 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.event.Event;
 import org.drftpd.event.FtpListener;
 import org.drftpd.event.TransferEvent;
@@ -63,7 +62,7 @@ public class XferLog extends FtpListener {
      */
     public static final SimpleDateFormat DATE_FMT = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy", Locale.ENGLISH);
     private PrintStream _out;
-    private static final Logger logger = LogManager.getLogger(XferLog.class);
+    private static final Logger logger = Logger.getLogger(XferLog.class);
 
     public XferLog() {
         super();

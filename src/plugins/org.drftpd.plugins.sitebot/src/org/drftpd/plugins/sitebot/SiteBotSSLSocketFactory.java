@@ -25,8 +25,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * @author djb61
@@ -34,7 +33,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class SiteBotSSLSocketFactory extends SSLSocketFactory {
 
-	private static final Logger logger = LogManager.getLogger(SiteBotSSLSocketFactory.class);
+	private static final Logger logger = Logger.getLogger(SiteBotSSLSocketFactory.class);
 
 	private SSLSocketFactory _factory;
 	

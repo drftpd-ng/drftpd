@@ -31,8 +31,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 import com.cedarsoftware.util.io.JsonReader;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
@@ -51,7 +50,8 @@ public class BeanUserManager extends AbstractUserManager {
 	private static final String _userpath = "userdata/users/javabeans/";
 	private static final File _userpathFile = new File(_userpath);
 
-	protected static final Logger logger = LogManager.getLogger(BeanUserManager.class);
+	protected static final Logger logger = Logger
+			.getLogger(BeanUserManager.class);
 
 	/**
 	 * Creates a user named 'username' and adds it to the users map.

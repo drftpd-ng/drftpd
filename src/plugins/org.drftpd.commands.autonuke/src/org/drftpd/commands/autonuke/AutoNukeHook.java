@@ -19,8 +19,7 @@ package org.drftpd.commands.autonuke;
 
 import java.io.FileNotFoundException;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
@@ -37,7 +36,7 @@ import org.drftpd.sections.conf.DatedSection;
  * @author scitz0
  */
 public class AutoNukeHook implements PostHookInterface {
-	private static final Logger logger = LogManager.getLogger(AutoNukeHook.class);
+	private static final Logger logger = Logger.getLogger(AutoNukeHook.class);
 
 	public void initialize(StandardCommandManager manager) {
 	}

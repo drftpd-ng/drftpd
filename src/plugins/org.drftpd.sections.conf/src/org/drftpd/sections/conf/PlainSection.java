@@ -22,8 +22,7 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FileExistsException;
@@ -35,7 +34,7 @@ import org.drftpd.vfs.VirtualFileSystem;
  * @version $Id$
  */
 public class PlainSection implements ConfigurableSectionInterface {
-	private static Logger logger = LogManager.getLogger(PlainSection.class);
+	private static Logger logger = Logger.getLogger(PlainSection.class);
 
 	private String _name;
 	private String _color;

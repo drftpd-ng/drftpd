@@ -1,0 +1,8 @@
+# $Id$
+log4j.logger.org.drftpd.plugins.sitebot=DEBUG, sitebot
+log4j.additivity.org.drftpd.plugins.sitebot=false
+
+log4j.appender.sitebot=org.apache.log4j.DailyRollingFileAppender
+log4j.appender.sitebot.File=logs/sitebot.log
+log4j.appender.sitebot.layout=org.apache.log4j.PatternLayout
+log4j.appender.sitebot.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n

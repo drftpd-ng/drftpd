@@ -16,8 +16,7 @@
  */
 package org.drftpd.commands.find;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -45,7 +44,7 @@ import java.util.ResourceBundle;
  * @version $Id$
  */
 public class Search extends CommandInterface {
-	public static final Logger logger = LogManager.getLogger(Find.class);
+	public static final Logger logger = Logger.getLogger(Find.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

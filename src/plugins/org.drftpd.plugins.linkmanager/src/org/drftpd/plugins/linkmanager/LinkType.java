@@ -21,8 +21,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.sections.SectionInterface;
@@ -36,7 +35,7 @@ import org.drftpd.vfs.ObjectNotValidException;
  */
 
 public abstract class LinkType {
-	protected static final Logger logger = LogManager.getLogger(LinkType.class);
+	protected static final Logger logger = Logger.getLogger(LinkType.class);
 	
 	private String _dirname;
 	private String _eventtype;

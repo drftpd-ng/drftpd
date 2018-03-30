@@ -29,8 +29,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.TransferDeniedException;
@@ -68,7 +67,7 @@ import org.tanukisoftware.wrapper.WrapperManager;
  * @version $Id$
  */
 public class BasicHandler extends AbstractHandler {
-	private static final Logger logger = LogManager.getLogger(BasicHandler.class);
+	private static final Logger logger = Logger.getLogger(BasicHandler.class);
 
 	// The following variables are static as they are used to signal between
 	// remerging and the pause/resume functions, due to the way the handler

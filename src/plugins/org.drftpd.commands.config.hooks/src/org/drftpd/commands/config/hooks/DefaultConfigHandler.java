@@ -21,8 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.config.ConfigHandler;
@@ -38,7 +37,7 @@ import org.drftpd.permissions.Permission;
  * @version $Id$
  */
 public class DefaultConfigHandler extends ConfigHandler {
-	private static final Logger logger = LogManager.getLogger(DefaultConfigHandler.class);
+	private static final Logger logger = Logger.getLogger(DefaultConfigHandler.class);
 	
 	protected static final Key<ArrayList<MessagePathPermission>> MSGPATH = new Key<ArrayList<MessagePathPermission>>(DefaultConfigHandler.class, "msgPath");
 	

@@ -24,8 +24,7 @@ import java.util.Map;
 
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.master.CommitManager;
@@ -39,7 +38,7 @@ import org.drftpd.usermanager.UserManager;
  */
 public class BeanUser extends AbstractUser {
 
-	private static final Logger logger = LogManager.getLogger(BeanUser.class);
+	private static final Logger logger = Logger.getLogger(BeanUser.class);
 
 	private transient BeanUserManager _um;
 

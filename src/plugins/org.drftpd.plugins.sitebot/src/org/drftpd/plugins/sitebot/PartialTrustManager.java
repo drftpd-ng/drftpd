@@ -36,8 +36,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * @author djb61
@@ -45,7 +44,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class PartialTrustManager implements X509TrustManager {
 
-	private static final Logger logger = LogManager.getLogger(PartialTrustManager.class);
+	private static final Logger logger = Logger.getLogger(PartialTrustManager.class);
 
 	private HashMap<String,X509Certificate> _certs = new HashMap<String,X509Certificate>();
 

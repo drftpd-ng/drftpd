@@ -27,8 +27,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -51,7 +50,7 @@ import org.drftpd.util.MasterPluginUtils;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
-	private static final Logger logger = LogManager.getLogger(AbstractUserManager.class);
+	private static final Logger logger = Logger.getLogger(AbstractUserManager.class);
 
 	protected HashMap<String, SoftReference<User>> _users;
 

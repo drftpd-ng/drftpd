@@ -39,8 +39,7 @@ import java.io.PipedInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginData;
@@ -52,7 +51,7 @@ import org.java.plugin.registry.PluginRegistry;
  */
 public class ConsoleInstaller extends JFrame implements ActionListener, KeyListener {
 
-	private static final Logger logger = LogManager.getLogger(ConsoleInstaller.class);
+	private static final Logger logger = Logger.getLogger(ConsoleInstaller.class);
 	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 	private JButton _buildButton;

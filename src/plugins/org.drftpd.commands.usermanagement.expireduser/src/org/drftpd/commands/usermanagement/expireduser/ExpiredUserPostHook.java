@@ -17,8 +17,7 @@
  */
 package org.drftpd.commands.usermanagement.expireduser;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -38,7 +37,7 @@ import java.util.ResourceBundle;
  * @author Scitz0
  */
 public class ExpiredUserPostHook implements PostHookInterface {
-	private static final Logger logger = LogManager.getLogger(ExpiredUserPostHook.class);
+	private static final Logger logger = Logger.getLogger(ExpiredUserPostHook.class);
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 

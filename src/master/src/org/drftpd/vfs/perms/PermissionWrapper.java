@@ -20,8 +20,7 @@ package org.drftpd.vfs.perms;
 import java.lang.reflect.Method;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * Wraps the PermissionHandler instance and its "handling" method.
@@ -30,7 +29,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class PermissionWrapper {
 
-	private static final Logger logger = LogManager.getLogger(PermissionWrapper.class);
+	private static final Logger logger = Logger.getLogger(PermissionWrapper.class);
 	
 	private VFSPermHandler _permHandler;
 	private Method _method;

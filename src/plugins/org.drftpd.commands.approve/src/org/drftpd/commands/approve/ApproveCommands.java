@@ -22,8 +22,7 @@ import java.util.ResourceBundle;
 import java.util.ArrayList;
 import java.io.FileNotFoundException;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.approve.metadata.Approve;
@@ -42,7 +41,7 @@ import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 public class ApproveCommands extends CommandInterface {
-	private static final Logger logger = LogManager.getLogger(ApproveCommands.class);
+	private static final Logger logger = Logger.getLogger(ApproveCommands.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

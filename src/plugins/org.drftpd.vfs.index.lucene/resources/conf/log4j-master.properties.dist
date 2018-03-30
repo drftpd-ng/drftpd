@@ -1,0 +1,3 @@
+# $id$
+log4j.logger.org.drftpd.vfs.index.lucene=DEBUG, index
+log4j.additivity.org.drftpd.vfs.index.lucene=false

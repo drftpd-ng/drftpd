@@ -7,8 +7,7 @@ import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -23,7 +22,7 @@ import org.drftpd.vfs.ObjectNotValidException;
  * @author phew
  */
 public class NukeFilterPostHook implements PostHookInterface {
-	private static final Logger logger = LogManager.getLogger(NukeFilterPostHook.class);
+	private static final Logger logger = Logger.getLogger(NukeFilterPostHook.class);
 	
 	private NukeFilterSettings _nfs;
 

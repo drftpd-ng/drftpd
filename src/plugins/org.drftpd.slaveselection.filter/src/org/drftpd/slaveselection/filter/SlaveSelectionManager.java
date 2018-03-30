@@ -24,8 +24,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -44,7 +43,7 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
-	protected static final Logger logger = LogManager.getLogger(SlaveSelectionManager.class);
+	protected static final Logger logger = Logger.getLogger(SlaveSelectionManager.class);
 			
 	private FilterChain _downChain;
 	private FilterChain _upChain;

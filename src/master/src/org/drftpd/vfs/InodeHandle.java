@@ -22,8 +22,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -42,7 +41,7 @@ import org.drftpd.vfs.perms.VFSPermissions;
  */
 public abstract class InodeHandle implements InodeHandleInterface, Comparable<InodeHandle> {
 	protected String _path = null;
-	protected static final Logger logger = LogManager.getLogger(InodeHandle.class.getName());
+	protected static final Logger logger = Logger.getLogger(InodeHandle.class.getName());
 	
 	/**
 	 * Creates an InodleHandle for the given path.

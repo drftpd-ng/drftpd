@@ -19,8 +19,7 @@ package org.drftpd.commands.usermanagement.expireduser;
 import java.util.Date;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -34,7 +33,7 @@ import org.drftpd.usermanager.UserResetHookInterface;
  */
 public class ExpiredUserManager implements UserResetHookInterface {
 
-	private static Logger logger = LogManager.getLogger(ExpiredUserManager.class);
+	private static Logger logger = Logger.getLogger(ExpiredUserManager.class);
 	
 	private boolean _delete;
 	private boolean _purge;

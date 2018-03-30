@@ -22,8 +22,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
@@ -50,7 +49,7 @@ import org.drftpd.vfs.index.IndexException;
  */
 
 public class DupeCheckHooks implements PreHookInterface {
-	private static final Logger logger = LogManager.getLogger(DupeCheckHooks.class);
+	private static final Logger logger = Logger.getLogger(DupeCheckHooks.class);
 
 	private Pattern _exempt = null;
 	private int _type = 0;

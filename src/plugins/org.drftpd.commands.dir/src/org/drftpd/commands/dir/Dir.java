@@ -22,8 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
@@ -56,7 +55,7 @@ import org.drftpd.vfs.VirtualFileSystem;
 public class Dir extends CommandInterface {
 	private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
 	"yyyyMMddHHmmss.SSS");
-	private static final Logger logger = LogManager.getLogger(Dir.class);
+	private static final Logger logger = Logger.getLogger(Dir.class);
 
 	public static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
 	public static final Key<InodeHandle> RENAMETO = new Key<InodeHandle>(Dir.class, "renameto");

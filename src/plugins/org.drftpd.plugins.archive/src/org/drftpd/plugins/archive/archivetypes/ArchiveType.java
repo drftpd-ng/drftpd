@@ -29,8 +29,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
@@ -52,7 +51,7 @@ import org.drftpd.vfs.ObjectNotValidException;
  * @version $Id$
  */
 public abstract class ArchiveType {
-	private static final Logger logger = LogManager.getLogger(ArchiveType.class);
+	private static final Logger logger = Logger.getLogger(ArchiveType.class);
 
 	// Used for: Archive dirs After This amount of time
 	private long _archiveAfter;

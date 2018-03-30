@@ -17,8 +17,7 @@
  */
 package org.drftpd.plugins.mirror;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -46,7 +45,7 @@ import java.util.Properties;
  * @author lh
  */
 public class MirrorPostHook implements PostHookInterface {
-	private static final Logger logger = LogManager.getLogger(MirrorPostHook.class);
+	private static final Logger logger = Logger.getLogger(MirrorPostHook.class);
 
 	private ArrayList<MirrorSetting> _settings;
 

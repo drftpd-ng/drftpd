@@ -23,8 +23,7 @@ import java.net.UnknownHostException;
 import java.util.ResourceBundle;
 
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -46,7 +45,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class LoginHandler extends CommandInterface {
-    private static final Logger logger = LogManager.getLogger(LoginHandler.class);
+    private static final Logger logger = Logger.getLogger(LoginHandler.class);
     
     private ResourceBundle _bundle;
     private String _keyPrefix;
