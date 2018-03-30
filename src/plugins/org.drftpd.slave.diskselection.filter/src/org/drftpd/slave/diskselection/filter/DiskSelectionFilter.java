@@ -24,8 +24,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.slave.Root;
 import org.drftpd.slave.RootCollection;
@@ -45,7 +44,7 @@ import org.drftpd.util.PluginObjectContainer;
  */
 public class DiskSelectionFilter extends DiskSelectionInterface{
 	private static final Class<?>[] SIG = new Class[] { DiskSelectionFilter.class, Properties.class, Integer.class };
-	private static final Logger logger = LogManager.getLogger(Slave.class);
+	private static final Logger logger = Logger.getLogger(Slave.class);
 
 	private ArrayList<DiskFilter> _filters;
 	private RootCollection _rootCollection;	

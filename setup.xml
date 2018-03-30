@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
-<project name="DrFTPD Installer Project Helper" basedir=".">
+<project name="DRFTPD Installer Project Helper" basedir=".">
 
 	<property name="build.debug" value="true" />
 	<property name="build.javac" value="1.8" />
@@ -106,7 +106,7 @@
 				<else>
 					<jar destfile="${build.dir}/${plugin.id}-${plugin.version}.jar">
 						<manifest>
-							<attribute name="Specification-Title" value="DrFTPD - ${plugin.id}" />
+							<attribute name="Specification-Title" value="DrFTPd - ${plugin.id}" />
 							<attribute name="Specification-Version" value="${plugin.version}" />
 							<attribute name="Specification-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
 							<attribute name="Implementation-Title" value="${plugin.id}" />

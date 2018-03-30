@@ -37,8 +37,7 @@ import java.util.StringTokenizer;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
@@ -76,7 +75,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  */
 public class ListHandler extends CommandInterface {
 
-	private static final Logger logger = LogManager.getLogger(ListHandler.class);
+	private static final Logger logger = Logger.getLogger(ListHandler.class);
 
 	private static final DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
 

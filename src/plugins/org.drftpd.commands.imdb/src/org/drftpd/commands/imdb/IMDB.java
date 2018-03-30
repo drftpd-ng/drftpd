@@ -38,8 +38,7 @@ import org.drftpd.vfs.FileHandle;
 import org.drftpd.GlobalContext;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -48,7 +47,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @author scitz0
  */
 public class IMDB extends CommandInterface {
-	private static final Logger logger = LogManager.getLogger(IMDBPostHook.class);
+	private static final Logger logger = Logger.getLogger(IMDBPostHook.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

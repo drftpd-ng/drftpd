@@ -22,8 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -43,7 +42,7 @@ import org.drftpd.vfs.DirectoryHandle;
  * @version $Id$
  */
 public class StatsManager implements PluginInterface {
-	private static final Logger logger = LogManager.getLogger(StatsManager.class);
+	private static final Logger logger = Logger.getLogger(StatsManager.class);
 
 	public static final Key<ArrayList<RatioPathPermission>> CREDITCHECK =
 			new Key<>(StatsManager.class, "creditcheck");

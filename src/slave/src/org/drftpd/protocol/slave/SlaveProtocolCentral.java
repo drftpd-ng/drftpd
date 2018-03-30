@@ -25,8 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.protocol.HandshakeWrapper;
 import org.drftpd.protocol.ProtocolException;
 import org.drftpd.slave.Slave;
@@ -47,7 +46,7 @@ public class SlaveProtocolCentral {
 	public Map<String, HandlerWrapper> _handlersMap;
 	public List<String> _protocols; 
 	
-	private static final Logger logger = LogManager.getLogger(SlaveProtocolCentral.class);
+	private static final Logger logger = Logger.getLogger(SlaveProtocolCentral.class);
 	
 	private static final Class<?>[] CONSTRUCTORPARMS = { SlaveProtocolCentral.class };
 	private static final Class<?>[] METHODPARMS = { AsyncCommandArgument.class };

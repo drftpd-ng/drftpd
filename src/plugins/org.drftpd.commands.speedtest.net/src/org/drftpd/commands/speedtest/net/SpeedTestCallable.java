@@ -17,8 +17,7 @@
  */
 package org.drftpd.commands.speedtest.net;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
@@ -36,7 +35,7 @@ import java.util.concurrent.ExecutionException;
  */
 public class SpeedTestCallable implements Callable<SpeedTestInfo> {
 
-	private static final Logger logger = LogManager.getLogger(SpeedTestCallable.class);
+	private static final Logger logger = Logger.getLogger(SpeedTestCallable.class);
 
 	private RemoteSlave _rslave;
 	private HashMap<String, SpeedTestServer> _testServers;

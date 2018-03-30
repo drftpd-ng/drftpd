@@ -25,8 +25,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 
 /**
@@ -37,7 +36,7 @@ public class TimeManager {
 	
 	private ArrayList<TimeEventInterface> _timedEvents;
 	
-	private static final Logger logger = LogManager.getLogger(TimeManager.class);
+	private static final Logger logger = Logger.getLogger(TimeManager.class);
 
 	private static final long MINUTE = 60 * 1000L;
 	

@@ -127,9 +127,9 @@ chmod 744 bin/wrapper
 ```
 
 - Copy conf/diskselection.conf.dist to conf/diskselection.conf
-- Copy conf/log4j2-debug.xml.dist to conf/log4j2-debug.xml
-- Copy conf/log4j2-eclipse.xml.dist to conf/log4j2-eclipse.xml
-- Copy conf/log4j2-slave.xml.dist to conf/log4j2-slave.xml
+- Copy conf/log4j-debug.properties.dist to conf/log4j-debug.properties.conf
+- Copy conf/log4j-eclipse.properties.dist to conf/log4j-eclipse.properties.conf
+- Copy conf/log4j-slave.properties.dist to conf/log4j-slave.properties.conf
 - Copy conf/slave.conf.dist to conf/slave.conf
 - Copy conf/wrapper-slave.conf.dist to conf/wrapper-slave.conf
 - Copy conf/speedtest.net.slave.conf.dist to speedtest.net.slave.conf
@@ -167,6 +167,7 @@ Verify that the slave is coming online with SITE SLAVES.
 4. In your System Properties under the Advanced Tab, there is a button entitled "Environment Variables," edit your PATH variable to include the Java directory (i.e. c:\program files\java\jre8\bin),
    also set your JAVA_HOME to this path, but without the bin appeneded to the end (i.e. c:\program files\java\jre\)
 5. Open a command prompt (start->run->cmd) and type cd c:\drftpd\, then type c:\ant\bin\ant and it should compile DrFTPD. If any errors are generated, something went wrong, and DrFTPD most likely will not function.
+
 
 # FAQ 
 

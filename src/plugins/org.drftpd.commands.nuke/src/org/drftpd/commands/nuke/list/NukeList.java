@@ -16,8 +16,7 @@
  */
 package org.drftpd.commands.nuke.list;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.Bytes;
 import org.drftpd.commands.list.AddListElementsInterface;
@@ -35,7 +34,7 @@ import java.util.ResourceBundle;
  * @author scitz0
  */
 public class NukeList implements AddListElementsInterface {
-    private static final Logger logger = LogManager.getLogger(NukeList.class);
+    private static final Logger logger = Logger.getLogger(NukeList.class);
 
 	public void initialize() { }
 

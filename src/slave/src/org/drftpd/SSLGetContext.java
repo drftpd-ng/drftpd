@@ -27,8 +27,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * @author mog
@@ -37,7 +36,7 @@ import org.apache.logging.log4j.LogManager;
 public class SSLGetContext {
 	static SSLContext ctx = null;
 
-	private static final Logger logger = LogManager.getLogger(SSLGetContext.class);
+	private static final Logger logger = Logger.getLogger(SSLGetContext.class);
 
 	public static SSLContext getSSLContext() throws GeneralSecurityException,
 			IOException {

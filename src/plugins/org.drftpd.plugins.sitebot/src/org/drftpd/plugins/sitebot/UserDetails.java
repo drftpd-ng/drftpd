@@ -20,8 +20,7 @@ package org.drftpd.plugins.sitebot;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
@@ -36,7 +35,7 @@ import org.drftpd.usermanager.UserFileException;
  */
 public class UserDetails {
 
-	private static final Logger logger = LogManager.getLogger(UserDetails.class);
+	private static final Logger logger = Logger.getLogger(UserDetails.class);
 
 	public static final Key<String> BLOWKEY = new Key<String>(UserDetails.class, "blowfishkey");
 

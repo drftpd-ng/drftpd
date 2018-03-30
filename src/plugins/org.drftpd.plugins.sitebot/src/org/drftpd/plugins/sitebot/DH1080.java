@@ -23,8 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays; 
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * @author djb61
@@ -32,7 +31,7 @@ import org.apache.logging.log4j.LogManager;
  */
 public class DH1080 {
 
-	private static final Logger logger = LogManager.getLogger(DH1080.class);
+	private static final Logger logger = Logger.getLogger(DH1080.class);
 
 	private static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 

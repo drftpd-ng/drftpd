@@ -23,8 +23,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
@@ -50,7 +49,7 @@ import org.drftpd.vfs.FileHandle;
  */
 public class ZipscriptPreHook implements PreHookInterface {
 
-	private static final Logger logger = LogManager.getLogger(ZipscriptPreHook.class);
+	private static final Logger logger = Logger.getLogger(ZipscriptPreHook.class);
 
 	private boolean _sfvFirstRequired;
 

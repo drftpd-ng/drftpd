@@ -23,8 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -48,7 +47,7 @@ public class MoreStats extends CommandInterface {
     public static final short PERIOD_WEEKLY = 2;
     public static final short PERIOD_DAILY = 3;
 	
-    private static final Logger logger = LogManager.getLogger(MoreStats.class);
+    private static final Logger logger = Logger.getLogger(MoreStats.class);
     
 	private ResourceBundle _bundle;
 

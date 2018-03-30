@@ -22,8 +22,7 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.auto.AutoInstaller;
 import org.drftpd.tools.installer.console.ConsoleInstaller;
 import org.drftpd.tools.installer.swing.SwingInstaller;
@@ -34,7 +33,7 @@ import org.drftpd.tools.installer.swing.SwingInstaller;
  */
 public class Wrapper {
 
-	private static final Logger logger = LogManager.getLogger(Wrapper.class);
+	private static final Logger logger = Logger.getLogger(Wrapper.class);
 
 	public static void main(String[] args) {
 		PluginParser parser = null;

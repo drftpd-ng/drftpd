@@ -37,8 +37,7 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.util.Base64;
 
 import org.drftpd.protocol.slave.AbstractHandler;
@@ -57,7 +56,7 @@ import org.drftpd.slave.async.AsyncResponse;
  * @version $Id$
  */
 public class ZipscriptZipHandler extends AbstractHandler {
-	private static final Logger logger = LogManager.getLogger(ZipscriptZipHandler.class);
+	private static final Logger logger = Logger.getLogger(ZipscriptZipHandler.class);
 
 	public ZipscriptZipHandler(SlaveProtocolCentral central) {
 		super(central);

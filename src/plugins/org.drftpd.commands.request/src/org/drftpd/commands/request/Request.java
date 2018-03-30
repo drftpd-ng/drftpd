@@ -24,8 +24,7 @@ import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -50,7 +49,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  * @version $Id$
  */
 public class Request extends CommandInterface {	
-	private static final Logger logger = LogManager.getLogger(Request.class);
+	private static final Logger logger = Logger.getLogger(Request.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

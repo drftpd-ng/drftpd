@@ -12,8 +12,7 @@ import org.drftpd.vfs.FileHandle;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -33,7 +32,7 @@ import org.drftpd.PropertyHelper;
  */
 
 public class AutoFreeSpace implements PluginInterface {
-	private static Logger logger = LogManager.getLogger(AutoFreeSpace.class);
+	private static Logger logger = Logger.getLogger(AutoFreeSpace.class);
 	private HashMap<String,Section> sections;
 	private ArrayList<String> _excludeFiles;
 	private ArrayList<String> _excludeSlaves;

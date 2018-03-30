@@ -32,8 +32,7 @@ import java.util.Set;
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
@@ -74,7 +73,7 @@ public class VirtualFileSystem {
 
 	public static final String fileSystemPath = "userdata/vfs";
 
-	private static final Logger logger = LogManager.getLogger(VirtualFileSystem.class);
+	private static final Logger logger = Logger.getLogger(VirtualFileSystem.class);
 
 	private static final DirInodeFilenameFilter dirFilter = new DirInodeFilenameFilter();
 

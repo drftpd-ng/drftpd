@@ -37,9 +37,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLSocket;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Level;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandManagerInterface;
@@ -65,9 +64,9 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 @SuppressWarnings("serial")
 public class BaseFtpConnection extends Session implements Runnable {
-	private static final Logger debuglogger = LogManager.getLogger(BaseFtpConnection.class.getName() + ".service");
+	private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
 
-	private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
+	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
 
 	public static final Key<InetAddress> ADDRESS = new Key<InetAddress>(BaseFtpConnection.class, "address");
 	public static final Key<String> IDENT = new Key<String>(BaseFtpConnection.class, "ident");

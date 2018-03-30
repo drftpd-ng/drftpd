@@ -24,8 +24,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.commands.nuke.metadata.NukeData;
@@ -51,7 +50,7 @@ import org.drftpd.vfs.index.IndexException;
  * @version $Id$
  */
 public class NukeUtils {
-	private static final Logger logger = LogManager.getLogger(NukeUtils.class);
+	private static final Logger logger = Logger.getLogger(NukeUtils.class);
 
 	private static final Object _lock = new Object();
 

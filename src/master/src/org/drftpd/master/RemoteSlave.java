@@ -41,8 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
@@ -87,7 +86,7 @@ import org.drftpd.vfs.FileHandle;
 public class RemoteSlave extends ExtendedTimedStats implements Runnable, Comparable<RemoteSlave>,
 		Entity, Commitable {
 
-	private static final Logger logger = LogManager.getLogger(RemoteSlave.class);
+	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
 
 	private transient boolean _isAvailable;
 

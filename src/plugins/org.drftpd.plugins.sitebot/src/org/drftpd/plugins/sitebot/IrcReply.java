@@ -19,8 +19,7 @@ package org.drftpd.plugins.sitebot;
 
 import java.util.Vector;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandResponseInterface;
 
 /**
@@ -29,7 +28,7 @@ import org.drftpd.commandmanager.CommandResponseInterface;
  */
 public class IrcReply {
 
-	private static final Logger logger = LogManager.getLogger(IrcReply.class);
+	private static final Logger logger = Logger.getLogger(IrcReply.class);
 
 	protected int _code;
 

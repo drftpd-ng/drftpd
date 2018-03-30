@@ -25,8 +25,7 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.usermanager.User;
@@ -40,7 +39,7 @@ import org.drftpd.vfs.InodeHandle;
  * @version $Id$
  */
 public class VFSPermissions {
-	private final static Logger logger = LogManager.getLogger(VFSPermissions.class);
+	private final static Logger logger = Logger.getLogger(VFSPermissions.class);
 
 	private HashMap<String, PermissionWrapper> _handlersMap;	
 	

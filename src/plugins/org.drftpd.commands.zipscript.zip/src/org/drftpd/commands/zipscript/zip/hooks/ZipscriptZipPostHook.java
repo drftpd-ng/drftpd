@@ -24,8 +24,7 @@ import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
@@ -67,7 +66,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface {
 
-	private static final Logger logger = LogManager.getLogger(ZipscriptZipPostHook.class);
+	private static final Logger logger = Logger.getLogger(ZipscriptZipPostHook.class);
 
 	private ResourceBundle _bundle;
 

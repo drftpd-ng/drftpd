@@ -19,8 +19,7 @@ package org.drftpd.util;
 
 import java.util.ResourceBundle;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -32,7 +31,7 @@ import org.tanesha.replacer.SimplePrintf;
  */
 public class ReplacerUtils {
 	
-	private static final Logger logger = LogManager.getLogger(ReplacerUtils.class);
+	private static final Logger logger = Logger.getLogger(ReplacerUtils.class);
 	
 	private ReplacerUtils() {
 		super();

@@ -27,8 +27,7 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.TreeSet;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -44,7 +43,7 @@ import org.drftpd.master.RemoteSlave;
  * @version $Id$
  */
 public class JobManager implements PluginInterface {
-	private static final Logger logger = LogManager.getLogger(JobManager.class);
+	private static final Logger logger = Logger.getLogger(JobManager.class);
 
 	private boolean _isStopped = false;
 

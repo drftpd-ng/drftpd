@@ -17,8 +17,7 @@
  */
 package org.drftpd.plugins.sitebot.config;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
@@ -39,7 +38,7 @@ import java.util.StringTokenizer;
  */
 public class AnnounceConfig {
 
-	private static final Logger logger = LogManager.getLogger(AnnounceConfig.class);
+	private static final Logger logger = Logger.getLogger(AnnounceConfig.class);
 
 	private HashMap<String,ArrayList<AnnounceWriter>> _pathWriters = 
 		new HashMap<String,ArrayList<AnnounceWriter>>();

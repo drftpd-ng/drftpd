@@ -20,8 +20,7 @@ package org.drftpd.commands.speedtest.net;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.util.HttpUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -42,7 +41,7 @@ import java.util.Iterator;
  * @author scitz0
  */
 public class SpeedTestUtils {
-	private static final Logger logger = LogManager.getLogger(SpeedTestUtils.class);
+	private static final Logger logger = Logger.getLogger(SpeedTestUtils.class);
 
 	private static final String[] _speedTestURLS = {
 			"http://www.speedtest.net/speedtest-servers-static.php",

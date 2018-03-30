@@ -21,8 +21,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.BaseFtpConnection;
@@ -36,7 +35,7 @@ import org.drftpd.vfs.FileHandle;
  */
 
 public abstract class TrafficType {
-	protected static final Logger logger = LogManager.getLogger(TrafficType.class);
+	protected static final Logger logger = Logger.getLogger(TrafficType.class);
 	
 	private String _type;
 	private String _name;

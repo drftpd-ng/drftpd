@@ -21,8 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
@@ -40,7 +39,7 @@ import org.drftpd.util.HostMaskCollection;
  * @version $Id$
  */
 public abstract class AbstractUser extends User implements Commitable {
-	private static final Logger logger = LogManager.getLogger(AbstractUser.class);
+	private static final Logger logger = Logger.getLogger(AbstractUser.class);
 
 	public static void checkValidGroupName(String group) {
 		if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {

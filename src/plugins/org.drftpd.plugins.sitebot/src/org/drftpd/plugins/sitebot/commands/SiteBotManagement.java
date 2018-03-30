@@ -22,8 +22,7 @@ import java.util.Collections;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.CommandInterface;
@@ -46,7 +45,7 @@ import org.drftpd.usermanager.User;
  */
 public class SiteBotManagement extends CommandInterface {
 
-	private static final Logger logger = LogManager.getLogger(SiteBotManagement.class);
+	private static final Logger logger = Logger.getLogger(SiteBotManagement.class);
 
 	private ResourceBundle _bundle;
 

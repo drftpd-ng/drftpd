@@ -18,8 +18,7 @@ package org.drftpd.commands.zipscript.zip;
 
 import java.io.FileNotFoundException;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.zipscript.RescanPostProcessDirInterface;
@@ -38,7 +37,7 @@ import org.drftpd.vfs.FileHandle;
  */
 public class RescanPostProcessZips extends ZipTools implements RescanPostProcessDirInterface {
 
-	private static final Logger logger = LogManager.getLogger(RescanPostProcessZips.class);
+	private static final Logger logger = Logger.getLogger(RescanPostProcessZips.class);
 
 	public void initialize(StandardCommandManager cManager) {
 	}

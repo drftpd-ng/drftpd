@@ -17,8 +17,7 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -26,7 +25,7 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class TvMazeThread extends Thread {
 
-	private static final Logger logger = LogManager.getLogger(TvMaze.class);
+	private static final Logger logger = Logger.getLogger(TvMaze.class);
 
 	public TvMazeThread() {
 		setPriority(Thread.MIN_PRIORITY);

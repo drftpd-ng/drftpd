@@ -23,8 +23,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * @author mog
@@ -71,7 +70,7 @@ public class SafeFileWriter extends Writer {
 		_out.close();
 
 		if (!failed) {
-			LogManager.getLogger(SafeFileWriter.class).debug(
+			Logger.getLogger(SafeFileWriter.class).debug(
 					"Renaming " + _tempFile + " (" + _tempFile.length()
 							+ ") to " + _actualFile);
 

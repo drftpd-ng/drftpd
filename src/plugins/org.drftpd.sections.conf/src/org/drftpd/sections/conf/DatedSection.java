@@ -26,8 +26,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.cron.TimeEventInterface;
@@ -53,7 +52,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 	// The gmtTimeZone is used only in computeCheckPeriod() method.
 	private static final TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
 
-	private static final Logger logger = LogManager.getLogger(DatedSection.class);
+	private static final Logger logger = Logger.getLogger(DatedSection.class);
 
 	private SimpleDateFormat _dateFormat;
 

@@ -3,8 +3,7 @@ package org.drftpd.usermanager.encryptedjavabeans;
 import java.lang.ref.SoftReference;
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -17,7 +16,7 @@ import org.drftpd.usermanager.UserFileException;
 
 public class EncryptedBeanUserManager extends BeanUserManager {
 
-	protected static final Logger logger = LogManager.getLogger(EncryptedBeanUserManager.class);
+	protected static final Logger logger = Logger.getLogger(EncryptedBeanUserManager.class);
 	
 	private int _passcrypt = 0;
 	

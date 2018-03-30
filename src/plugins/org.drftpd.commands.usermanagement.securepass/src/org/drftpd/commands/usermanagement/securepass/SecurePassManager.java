@@ -31,8 +31,7 @@ import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -47,7 +46,7 @@ import org.drftpd.usermanager.User;
  */
 
 public class SecurePassManager implements PluginInterface {
-	private static final Logger logger = LogManager.getLogger(SecurePassManager.class);
+	private static final Logger logger = Logger.getLogger(SecurePassManager.class);
 
 	private ArrayList<Integer> _length;
 	private ArrayList<Integer> _uppercase;

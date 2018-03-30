@@ -2,8 +2,7 @@ package org.drftpd.plugins.nukefilter;
 
 import java.util.TimerTask;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.commands.nuke.NukeException;
@@ -19,7 +18,7 @@ import org.drftpd.vfs.DirectoryHandle;
  * @author phew
  */
 public class NukeFilterNukeTask extends TimerTask {
-	private static final Logger logger = LogManager.getLogger(NukeFilterNukeTask.class);
+	private static final Logger logger = Logger.getLogger(NukeFilterNukeTask.class);
 	
 	private DirectoryHandle dir;
 	private String reason;

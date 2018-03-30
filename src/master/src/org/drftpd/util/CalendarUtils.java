@@ -19,15 +19,14 @@ package org.drftpd.util;
 
 import java.util.Calendar;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * @author mog
  * @version $Id$
  */
 public class CalendarUtils {
-	private static final Logger logger = LogManager.getLogger(CalendarUtils.class);
+	private static final Logger logger = Logger.getLogger(CalendarUtils.class);
 
 	private CalendarUtils() {
 	}

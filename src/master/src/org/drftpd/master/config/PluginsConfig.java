@@ -26,8 +26,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 /**
  * Plugin Configuraiton loader.<br>
@@ -41,7 +40,7 @@ public class PluginsConfig {
 	private final static String pluginsConfPath = "conf/plugins/";
 	private final static File pluginsConfFile = new File(pluginsConfPath);
 
-	private static final Logger logger = LogManager.getLogger(PluginsConfig.class);
+	private static final Logger logger = Logger.getLogger(PluginsConfig.class);
 			
 	private HashMap<String, Properties> _propertiesMap = new HashMap<String, Properties>();
 

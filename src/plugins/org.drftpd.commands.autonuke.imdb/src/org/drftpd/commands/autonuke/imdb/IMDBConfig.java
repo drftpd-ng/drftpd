@@ -6,8 +6,7 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.PropertyHelper;
 import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.util.Properties;
 import java.io.FileNotFoundException;
@@ -16,7 +15,7 @@ import java.io.FileNotFoundException;
  * @author scitz0
  */
 public class IMDBConfig extends Config {
-	private static final Logger logger = LogManager.getLogger(IMDBConfig.class);
+	private static final Logger logger = Logger.getLogger(IMDBConfig.class);
 	String _field, _operator, _value;
 
 	public IMDBConfig(int i, Properties p) {
