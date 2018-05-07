@@ -248,7 +248,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				_storage = FSDirectory.open(new File(INDEX_DIR));
 			}
 
-			IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_32 ,ANALYZER);
+			IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_36 ,ANALYZER);
 			conf.setMaxBufferedDocs(_maxDocsBuffer);
 			conf.setRAMBufferSizeMB(_maxRAMBufferSize);
 
