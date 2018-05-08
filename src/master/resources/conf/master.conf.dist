@@ -67,9 +67,7 @@ cipher.blacklist.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV)_.*
 
 # Enabled protocols
 # If left empty, default set will be used
-protocol.1=TLSv1
-protocol.2=TLSv1.1
-protocol.3=TLSv1.2
+protocol.1=TLSv1.2
 
 # Slave remerge throttling thresholds, do not modify these
 # unless you know what you are doing
@@ -97,7 +95,6 @@ partial.remerge.mode=off
 # does not preclude any post hooks running on the transfer
 # command from deleting the file anyway.
 delete.upload.on.abort=false
-
 
 # This sets the first day of the week for reset days.
 # true = Monday for the first day of the week
