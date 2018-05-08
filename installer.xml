@@ -50,7 +50,7 @@
 		<!-- create plugin framework jar -->
 		<jar destfile="lib/${app.name}-jpf-${app.version}.jar">
 			<manifest>
-				<attribute name="Class-Path" value="ant-1.10.2.jar" />
+				<attribute name="Class-Path" value="ant-1.10.3.jar" />
 				<attribute name="Specification-Title" value="DrFTPd - plugin framework library" />
 				<attribute name="Specification-Version" value="${app.version}" />
 				<attribute name="Specification-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
@@ -79,7 +79,7 @@
 		<!-- create tools jar -->
 		<jar destfile="lib/${app.name}-tools-${app.version}.jar">
 			<manifest>
-				<attribute name="Class-Path" value="ant-1.10.2.jar" />
+				<attribute name="Class-Path" value="ant-1.10.3.jar" />
 				<attribute name="Specification-Title" value="DrFTPd - tools library" />
 				<attribute name="Specification-Version" value="${app.version}" />
 				<attribute name="Specification-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
