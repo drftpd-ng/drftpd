@@ -26,7 +26,6 @@ slave.masterSSL=true
 # BIND IP - This will bind SLAVE ip to this address.
 #bind.ip=xxx.xxx.xxx.xxx
 
-
 # Enable checksums for uploads
 # [ true | false ]
 enableuploadchecksums=true
@@ -63,9 +62,7 @@ cipher.blacklist.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV)_.*
 
 # Enabled protocols
 # If left empty, default set will be used
-protocol.1=TLSv1
-protocol.2=TLSv1.1
-protocol.3=TLSv1.2
+protocol.1=TLSv1.2
 
 # Setting this to true will make this slave perform
 # a full remerge when connecting to a master irrespective
