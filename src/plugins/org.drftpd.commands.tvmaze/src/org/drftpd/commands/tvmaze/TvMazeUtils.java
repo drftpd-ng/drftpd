@@ -178,7 +178,7 @@ public class TvMazeUtils {
                 JsonObject countryJsonObj = networkJsonObj.getAsJsonObject("country");
                 if (countryJsonObj.get("name").isJsonPrimitive()) tvmazeInfo.setCountry(countryJsonObj.get("name").getAsString());
             } else {
-                tvmazeInfo.setCountry("UNKNOWN COUNTRY");
+                tvmazeInfo.setCountry("Unknown Country");
 			}
         }
 		if (jObj.get("summary").isJsonPrimitive()) tvmazeInfo.setSummary(HttpUtils.htmlToString(jObj.get("summary").getAsString()));
