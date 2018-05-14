@@ -36,8 +36,8 @@ DrFTPD 3.2.0 installation requires a number of steps before you can utilize the 
 To give an overview of the installation process the different steps are listed below in this section.
 
 On the master you will need to:
-- Install Oracle Java 1.8
-- Install Ant or Eclipse on the master
+- Install Oracle Java 1.8 and Apache Ant
+- Generate key
 - Compile the software using setup wizard
 - Configure .conf files
 
@@ -53,7 +53,7 @@ On the slaves you will need to:
 
 Generial info follows:
 - Download and install Java Development Kit 8 (JDK) on the master.
-- Download and install a Java Runtime Environment 8 (JRE) or Java Development Kit 8 (JDK) on the slaves.
+- Download and install a Java Runtime Environment 8 (JRE) on the slaves.
 
 You can get Oracle's JDK here: http://www.oracle.com/technetwork/java/javase/downloads/index.html
 
@@ -128,7 +128,6 @@ chmod 744 bin/wrapper
 
 - Copy conf/diskselection.conf.dist to conf/diskselection.conf
 - Copy conf/log4j-debug.properties.dist to conf/log4j-debug.properties.conf
-- Copy conf/log4j-eclipse.properties.dist to conf/log4j-eclipse.properties.conf
 - Copy conf/log4j-slave.properties.dist to conf/log4j-slave.properties.conf
 - Copy conf/slave.conf.dist to conf/slave.conf
 - Copy conf/wrapper-slave.conf.dist to conf/wrapper-slave.conf
