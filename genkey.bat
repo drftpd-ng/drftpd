@@ -1,10 +1,19 @@
 set ROOT=%~dp0
-set USERDATA=%ROOT%userdata\
-if not exist "%USERDATA%" (
-  mkdir "%USERDATA%"
+set USERDATA_MASTER=%ROOT%userdata\
+set USERDATA_SLAVE=%ROOT%src\slave\resources\userdata\
+if not exist "%USERDATA_MASTER%" (
+  mkdir "%USERDATA_MASTER%"
   if "%errorlevel%" NEQ "0" (
-    echo Error while creating userdata folder %USERDATA%
+    echo Error while creating userdata folder %USERDATA_MASTER%
     goto :eof
   )
 )
-keytool -genkeypair -keyalg EC -keysize 256 -sigalg SHA256withECDSA -alias drftpd -dname CN=drftpd -keypass drftpd -keystore "%USERDATA%drftpd.key" -storepass drftpd
+if not exist "%USERDATA_SLAVE%" (
+  mkdir "%USERDATA_SLAVE%"
+  if "%errorlevel%" NEQ "0" (
+    echo Error while creating userdata folder %USERDATA_SLAVE%
+    goto :eof
+  )
+)
+keytool -genkeypair -keyalg EC -keysize 256 -sigalg SHA256withECDSA -alias drftpd -dname CN=drftpd -keypass drftpd -keystore "%USERDATA_MASTER%drftpd.key" -storepass drftpd
+copy /Y "%USERDATA_MASTER%drftpd.key" "%USERDATA_SLAVE%"
