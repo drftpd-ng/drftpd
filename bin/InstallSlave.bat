@@ -43,6 +43,16 @@ rem  If _WRAPPER_CONF_OVERRIDE is specified then all parameters will be passed.
 rem  If not set then all parameters starting with the second will be passed.
 set _PASS_THROUGH=true
 
+rem Create logs dir if not present
+set LOGS_DIR=%~dp0\logs
+if not exist "%LOGS_DIR%" (
+  mkdir "%LOGS_DIR%"
+  if "%errorlevel%" NEQ "0" (
+    echo Error while creating userdata folder %LOGS_DIR%
+	goto :eof
+  )
+)
+
 rem Do not modify anything beyond this point
 rem -----------------------------------------------------------------------------
 
