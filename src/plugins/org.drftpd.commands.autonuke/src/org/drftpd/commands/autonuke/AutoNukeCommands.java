@@ -17,15 +17,9 @@
  */
 package org.drftpd.commands.autonuke;
 
-import java.util.ResourceBundle;
-import java.util.ArrayList;
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -33,10 +27,16 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.Session;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.conf.DatedSection;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 /**
  * FTP/IRC commands available to the AutoNuke plugin

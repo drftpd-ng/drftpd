@@ -17,16 +17,16 @@
  */
 package org.drftpd.commands.tvmaze.vfs;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
+import org.apache.log4j.Logger;
 import org.drftpd.commands.tvmaze.TvMazeParser;
+import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.vfs.DirectoryHandle;
-import org.apache.log4j.Logger;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @author lh

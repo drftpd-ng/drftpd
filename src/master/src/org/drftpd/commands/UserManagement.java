@@ -16,9 +16,9 @@
  */
 package org.drftpd.commands;
 
-import java.util.Date;
-
 import org.drftpd.dynamicdata.Key;
+
+import java.util.Date;
 
 /**
  * @author mog

@@ -17,12 +17,9 @@
  */
 package org.drftpd.plugins.newraceleader.announce;
 
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.newraceleader.event.NewRaceLeaderEvent;
@@ -30,10 +27,10 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-
 import org.drftpd.util.ReplacerUtils;
-
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.ResourceBundle;
 
 /**
  * @author CyBeR

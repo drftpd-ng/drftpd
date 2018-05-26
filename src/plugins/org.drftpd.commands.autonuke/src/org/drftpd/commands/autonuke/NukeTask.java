@@ -17,18 +17,18 @@
  */
 package org.drftpd.commands.autonuke;
 
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
 import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.commands.nuke.NukeException;
+import org.drftpd.commands.nuke.NukeUtils;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.GlobalContext;
 import org.drftpd.event.NukeEvent;
-import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.commands.nuke.NukeUtils;
-import org.apache.log4j.Logger;
+import org.drftpd.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.util.Iterator;

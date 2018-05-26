@@ -16,14 +16,6 @@
  */
 package org.drftpd.plugins.archive;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.TimerTask;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -37,6 +29,8 @@ import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
+
+import java.util.*;
 
 /**
  * @author CyBeR

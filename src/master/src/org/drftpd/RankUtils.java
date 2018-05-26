@@ -18,16 +18,15 @@
 
 package org.drftpd;
 
+import org.drftpd.util.GroupPosition;
+import org.drftpd.util.UploaderPosition;
+import org.drftpd.vfs.FileHandle;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-
-
-import org.drftpd.util.GroupPosition;
-import org.drftpd.util.UploaderPosition;
-import org.drftpd.vfs.FileHandle;
 
 /**
  * Set of usefull commnads to sort users/groups.

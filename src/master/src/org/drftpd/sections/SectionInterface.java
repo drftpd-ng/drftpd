@@ -17,9 +17,9 @@
  */
 package org.drftpd.sections;
 
-import java.util.Set;
-
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.Set;
 
 /**
  * @author mog

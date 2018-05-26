@@ -17,12 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
@@ -33,6 +27,8 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.*;
 
 /**
  * @author djb61

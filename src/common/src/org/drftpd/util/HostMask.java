@@ -17,12 +17,12 @@
  */
 package org.drftpd.util;
 
-import java.net.InetAddress;
-
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Matcher;
+
+import java.net.InetAddress;
 
 /**
  * @author mog

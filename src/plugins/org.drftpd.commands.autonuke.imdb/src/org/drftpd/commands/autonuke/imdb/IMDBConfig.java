@@ -1,15 +1,15 @@
 package org.drftpd.commands.autonuke.imdb;
 
+import org.apache.log4j.Logger;
+import org.drftpd.PropertyHelper;
 import org.drftpd.commands.autonuke.Config;
 import org.drftpd.commands.autonuke.ConfigData;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.PropertyHelper;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.apache.log4j.Logger;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.vfs.DirectoryHandle;
 
-import java.util.Properties;
 import java.io.FileNotFoundException;
+import java.util.Properties;
 
 /**
  * @author scitz0

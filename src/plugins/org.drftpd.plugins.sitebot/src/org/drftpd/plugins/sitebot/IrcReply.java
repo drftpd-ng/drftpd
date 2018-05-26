@@ -17,10 +17,10 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandResponseInterface;
+
+import java.util.Vector;
 
 /**
  * @author djb61

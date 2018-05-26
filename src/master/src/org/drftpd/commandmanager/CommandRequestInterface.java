@@ -17,10 +17,10 @@
  */
 package org.drftpd.commandmanager;
 
-import java.util.Properties;
-
 import org.drftpd.master.Session;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.Properties;
 
 /**
  * @author djb61

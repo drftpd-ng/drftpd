@@ -17,28 +17,17 @@
  */
 package org.drftpd.commands.nuke;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.*;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.commands.nuke.metadata.NukeData;
+import org.drftpd.event.NukeEvent;
+import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.Session;
 import org.drftpd.sections.SectionInterface;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.event.NukeEvent;
-import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -46,6 +35,9 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * nukedamount -> amount after multiplier

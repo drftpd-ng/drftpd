@@ -17,14 +17,6 @@
  */
 package org.drftpd.vfs.perms;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.Map.Entry;
-
 import org.apache.log4j.Logger;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.PathPermission;
@@ -32,6 +24,9 @@ import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.InodeHandle;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * This object handles all the permissions releated to the VFS.

@@ -17,9 +17,9 @@
  */
 package org.drftpd.usermanager;
 
-import java.util.Collection;
-
 import org.drftpd.master.cron.TimeEventInterface;
+
+import java.util.Collection;
 
 /**
  * @author mog

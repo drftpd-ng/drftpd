@@ -17,19 +17,14 @@
  */
 package org.drftpd.plugins.stats;
 
-import java.io.FileNotFoundException;
-import java.util.Map;
-
 import org.drftpd.Bytes;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.permissions.CreditLimitPathPermission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+
+import java.io.FileNotFoundException;
 
 /**
  * @author fr0w

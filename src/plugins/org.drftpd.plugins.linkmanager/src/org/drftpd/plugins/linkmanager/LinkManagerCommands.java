@@ -16,16 +16,12 @@
  */
 package org.drftpd.plugins.linkmanager;
 
+import org.apache.log4j.Logger;
+import org.drftpd.commandmanager.*;
+import org.drftpd.vfs.DirectoryHandle;
+
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
-
-import org.apache.log4j.Logger;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.vfs.DirectoryHandle;
 
 /**
  * @author CyBeR

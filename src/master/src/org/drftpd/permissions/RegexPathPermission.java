@@ -1,10 +1,10 @@
 package org.drftpd.permissions;
 
+import org.drftpd.vfs.InodeHandle;
+
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.drftpd.vfs.InodeHandle;
 
 public class RegexPathPermission extends PathPermission {
     private Pattern _pat;

@@ -16,17 +16,17 @@
  */
 package org.drftpd.commands.imdb.list;
 
-import java.io.FileNotFoundException;
-import java.util.ResourceBundle;
-
 import org.drftpd.commands.imdb.IMDBConfig;
+import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ResourceBundle;
 
 /**
  * @author scitz0

@@ -17,9 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FatalException;
@@ -30,6 +27,8 @@ import org.drftpd.vfs.InodeHandleInterface;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Example slaveselection entry:

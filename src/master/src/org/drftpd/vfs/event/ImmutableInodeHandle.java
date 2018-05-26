@@ -17,15 +17,15 @@
  */
 package org.drftpd.vfs.event;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.VirtualFileSystemFile;
 import org.drftpd.vfs.VirtualFileSystemInode;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author djb61

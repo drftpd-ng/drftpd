@@ -17,10 +17,6 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -28,6 +24,9 @@ import org.apache.http.HttpException;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.util.HttpUtils;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author lh

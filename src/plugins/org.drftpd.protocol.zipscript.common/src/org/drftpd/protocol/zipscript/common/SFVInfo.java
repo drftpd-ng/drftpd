@@ -17,12 +17,12 @@
  */
 package org.drftpd.protocol.zipscript.common;
 
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.vfs.CaseInsensitiveTreeMap;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
-
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 /**
  * @author mog

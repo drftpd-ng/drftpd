@@ -20,7 +20,6 @@ package org.drftpd.plugins.sitebot.config;
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.apache.oro.text.regex.Perl5Matcher;
-import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 
 import java.util.regex.Matcher;

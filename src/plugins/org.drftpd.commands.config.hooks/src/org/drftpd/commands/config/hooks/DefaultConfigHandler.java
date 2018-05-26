@@ -17,10 +17,6 @@
  */
 package org.drftpd.commands.config.hooks;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
@@ -30,6 +26,10 @@ import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.MessagePathPermission;
 import org.drftpd.permissions.Permission;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * Handles most of the perms.conf directives that aren't releated to the VFS.

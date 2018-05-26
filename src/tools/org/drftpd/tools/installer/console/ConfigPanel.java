@@ -17,29 +17,16 @@
  */
 package org.drftpd.tools.installer.console;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import charva.awt.BorderLayout;
-import charva.awt.FlowLayout;
-import charva.awt.GridBagConstraints;
-import charva.awt.GridBagLayout;
-import charva.awt.Insets;
-import charva.awt.Toolkit;
+import charva.awt.*;
 import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
 import charva.awt.event.ItemEvent;
 import charva.awt.event.ItemListener;
-
-import charvax.swing.JButton;
-import charvax.swing.JCheckBox;
-import charvax.swing.JComboBox;
-import charvax.swing.JFileChooser;
-import charvax.swing.JLabel;
-import charvax.swing.JPanel;
-import charvax.swing.JTextField;
-
+import charvax.swing.*;
 import org.drftpd.tools.installer.InstallerConfig;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * @author djb61

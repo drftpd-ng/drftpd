@@ -1,12 +1,12 @@
 package org.drftpd.commands.autonuke;
 
+import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
-import org.apache.log4j.Logger;
 
-import java.util.Properties;
 import java.io.FileNotFoundException;
+import java.util.Properties;
 
 /**
  * @author scitz0

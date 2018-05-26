@@ -16,11 +16,11 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.Transfer;
+
+import java.io.FileNotFoundException;
 
 /**
  * This class's only purpose is to create a hard Reference to the VirtualFileSystemFile object that is being transferred

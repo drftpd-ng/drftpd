@@ -17,6 +17,7 @@
  */
 package org.drftpd.commands.find.imdb;
 
+import org.apache.commons.text.WordUtils;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commands.find.action.ActionInterface;
@@ -24,8 +25,6 @@ import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
-
-import org.apache.commons.text.WordUtils;
 
 /**
  * @author scitz0

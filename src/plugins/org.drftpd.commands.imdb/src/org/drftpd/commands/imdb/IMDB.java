@@ -17,31 +17,27 @@
  */
 package org.drftpd.commands.imdb;
 
+import org.apache.log4j.Logger;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.*;
+import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.vfs.index.IndexException;
+import org.tanesha.replacer.ReplacerEnvironment;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.ResourceBundle;
-
-import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.GlobalContext;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
-import org.apache.log4j.Logger;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.index.IndexException;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author scitz0

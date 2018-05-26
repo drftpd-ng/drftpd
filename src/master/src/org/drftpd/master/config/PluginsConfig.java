@@ -18,15 +18,15 @@
 
 package org.drftpd.master.config;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Map.Entry;
-
-import org.apache.log4j.Logger;
+import java.util.Properties;
 
 /**
  * Plugin Configuraiton loader.<br>

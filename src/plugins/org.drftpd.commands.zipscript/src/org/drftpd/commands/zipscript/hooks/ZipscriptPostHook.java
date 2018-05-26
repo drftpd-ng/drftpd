@@ -17,13 +17,6 @@
  */
 package org.drftpd.commands.zipscript.hooks;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
@@ -56,6 +49,13 @@ import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 /**
  * @author djb61

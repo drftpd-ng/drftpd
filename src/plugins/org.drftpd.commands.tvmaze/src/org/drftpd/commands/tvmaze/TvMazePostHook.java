@@ -17,8 +17,6 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
@@ -28,6 +26,8 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+
+import java.io.FileNotFoundException;
 
 /**
  * @author lh

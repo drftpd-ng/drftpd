@@ -17,9 +17,9 @@
  */
 package org.drftpd.permissions;
 
-import java.util.Collection;
-
 import org.apache.oro.text.regex.MalformedPatternException;
+
+import java.util.Collection;
 
 public class CreditLimitPathPermission extends GlobPathPermission {
 	private int _direction;

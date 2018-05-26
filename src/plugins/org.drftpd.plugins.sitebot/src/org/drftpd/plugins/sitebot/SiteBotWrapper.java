@@ -17,13 +17,13 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
+
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * @author djb61

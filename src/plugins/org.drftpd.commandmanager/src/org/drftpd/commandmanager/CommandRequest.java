@@ -17,10 +17,6 @@
  */
 package org.drftpd.commandmanager;
 
-import java.util.Collections;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -31,6 +27,10 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.Collections;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * @author djb61

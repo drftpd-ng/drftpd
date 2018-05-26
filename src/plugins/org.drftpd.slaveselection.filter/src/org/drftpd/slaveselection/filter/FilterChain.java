@@ -17,14 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -33,6 +25,14 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * @author mog

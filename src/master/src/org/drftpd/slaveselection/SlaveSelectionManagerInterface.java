@@ -17,10 +17,6 @@
  */
 package org.drftpd.slaveselection;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
@@ -28,6 +24,10 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * @author mog

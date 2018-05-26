@@ -17,29 +17,6 @@
  */
 package org.drftpd.tools.installer.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.InstallerConfig;
@@ -47,6 +24,16 @@ import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginBuilderThread;
 import org.drftpd.tools.installer.PluginData;
 import org.java.plugin.registry.PluginRegistry;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author djb61

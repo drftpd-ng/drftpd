@@ -17,13 +17,13 @@
  */
 package org.drftpd.tests;
 
-import java.util.Collection;
-import java.util.HashMap;
-
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
+
+import java.util.Collection;
+import java.util.HashMap;
 
 
 /**

@@ -22,8 +22,8 @@ import org.apache.commons.text.WordUtils;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.ImproperUsageException;
 import org.drftpd.commands.find.action.ActionInterface;
-import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 

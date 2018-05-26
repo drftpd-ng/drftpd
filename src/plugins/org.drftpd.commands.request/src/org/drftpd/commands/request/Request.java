@@ -17,32 +17,28 @@
  */
 package org.drftpd.commands.request;
 
+import org.apache.log4j.Logger;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.*;
+import org.drftpd.event.ReloadEvent;
+import org.drftpd.event.RequestEvent;
+import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.Session;
+import org.drftpd.permissions.Permission;
+import org.drftpd.usermanager.User;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.ListUtils;
+import org.tanesha.replacer.ReplacerEnvironment;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.log4j.Logger;
-import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.RequestEvent;
-import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.master.Session;
-import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.permissions.Permission;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ListUtils;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author mog

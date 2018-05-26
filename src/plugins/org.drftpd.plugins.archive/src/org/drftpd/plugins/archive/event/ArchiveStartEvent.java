@@ -16,10 +16,10 @@
  */
 package org.drftpd.plugins.archive.event;
 
-import java.util.ArrayList;
-
 import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.plugins.jobmanager.Job;
+
+import java.util.ArrayList;
 
 /**
  * @author CyBeR

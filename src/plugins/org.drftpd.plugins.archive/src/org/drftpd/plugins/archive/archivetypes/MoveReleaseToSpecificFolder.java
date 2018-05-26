@@ -17,14 +17,14 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.Properties;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.FileNotFoundException;
+import java.util.HashSet;
+import java.util.Properties;
 
 /**
  * @author CyBeR

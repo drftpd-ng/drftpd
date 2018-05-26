@@ -1,9 +1,9 @@
 package org.drftpd.plugins.nukefilter;
 
-import java.util.ArrayList;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.sections.SectionInterface;
+
+import java.util.ArrayList;
 
 /**
  * @author phew

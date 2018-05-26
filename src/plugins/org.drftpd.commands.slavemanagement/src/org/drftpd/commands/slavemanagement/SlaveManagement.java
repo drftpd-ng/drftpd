@@ -17,41 +17,29 @@
  */
 package org.drftpd.commands.slavemanagement;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.SlaveEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.master.CommitManager;
-import org.drftpd.master.RemergeMessage;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.Session;
-import org.drftpd.master.SlaveManager;
+import org.drftpd.master.*;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.filter.Filter;
 import org.drftpd.slaveselection.filter.ScoreChart;
-import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
+import org.drftpd.slaveselection.filter.SlaveSelectionManager;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author mog

@@ -16,10 +16,10 @@
  */
 package org.drftpd.commands.zipscript.list;
 
-import java.util.ArrayList;
-
 import org.drftpd.commands.list.ListElementsContainer;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61

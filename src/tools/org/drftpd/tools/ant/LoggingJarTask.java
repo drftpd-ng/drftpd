@@ -17,11 +17,11 @@
  */
 package org.drftpd.tools.ant;
 
-import java.io.File;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.types.FileSet;
+
+import java.io.File;
 
 /**
  * @author djb61

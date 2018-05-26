@@ -16,6 +16,19 @@
  */
 package org.drftpd.protocol.slave.def;
 
+import org.apache.log4j.Logger;
+import org.drftpd.ActiveConnection;
+import org.drftpd.PassiveConnection;
+import org.drftpd.exceptions.TransferDeniedException;
+import org.drftpd.io.PermissionDeniedException;
+import org.drftpd.io.PhysicalFile;
+import org.drftpd.master.QueuedOperation;
+import org.drftpd.protocol.slave.AbstractHandler;
+import org.drftpd.protocol.slave.SlaveProtocolCentral;
+import org.drftpd.slave.*;
+import org.drftpd.slave.async.*;
+import org.tanukisoftware.wrapper.WrapperManager;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -28,36 +41,6 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.log4j.Logger;
-import org.drftpd.ActiveConnection;
-import org.drftpd.PassiveConnection;
-import org.drftpd.exceptions.TransferDeniedException;
-import org.drftpd.io.PermissionDeniedException;
-import org.drftpd.io.PhysicalFile;
-import org.drftpd.master.QueuedOperation;
-import org.drftpd.protocol.slave.AbstractHandler;
-import org.drftpd.protocol.slave.SlaveProtocolCentral;
-import org.drftpd.slave.ConnectInfo;
-import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.slave.RootCollection;
-import org.drftpd.slave.RootPathContents;
-import org.drftpd.slave.Slave;
-import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferIndex;
-import org.drftpd.slave.TransferStatus;
-import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.slave.async.AsyncResponse;
-import org.drftpd.slave.async.AsyncResponseChecksum;
-import org.drftpd.slave.async.AsyncResponseDiskStatus;
-import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.slave.async.AsyncResponseMaxPath;
-import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSSLCheck;
-import org.drftpd.slave.async.AsyncResponseTransfer;
-import org.drftpd.slave.async.AsyncResponseTransferStatus;
-import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
-import org.tanukisoftware.wrapper.WrapperManager;
 
 /**
  * Basic operations handling. 

@@ -22,7 +22,7 @@ import org.drftpd.usermanager.javabeans.BeanUser;
 import org.drftpd.usermanager.javabeans.BeanUserManager;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.io.UnsupportedEncodingException; 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 

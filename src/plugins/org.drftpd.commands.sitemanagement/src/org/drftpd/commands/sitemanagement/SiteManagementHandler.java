@@ -17,35 +17,15 @@
  */
 package org.drftpd.commands.sitemanagement;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Map.Entry;
-import java.util.ResourceBundle;
-import java.util.TreeMap;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.OptionConverter;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.event.ReloadEvent;
+import org.drftpd.commandmanager.*;
 import org.drftpd.event.LoadPluginEvent;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
@@ -62,6 +42,15 @@ import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.registry.PluginRegistry;
 import org.java.plugin.util.ExtendedProperties;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author mog

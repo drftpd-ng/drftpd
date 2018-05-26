@@ -17,10 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Properties;
-
 import org.apache.oro.text.GlobCompiler;
 import org.apache.oro.text.regex.Pattern;
 import org.apache.oro.text.regex.Perl5Compiler;
@@ -31,6 +27,10 @@ import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Example slaveselection entry:

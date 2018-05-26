@@ -17,13 +17,13 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.ArrayList;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.config.PathMatcher;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61

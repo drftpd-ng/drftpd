@@ -17,22 +17,16 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.usermanager.User;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 
 /**

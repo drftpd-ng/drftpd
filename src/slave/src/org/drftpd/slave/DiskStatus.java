@@ -17,9 +17,9 @@
  */
 package org.drftpd.slave;
 
-import java.io.Serializable;
-
 import org.drftpd.Bytes;
+
+import java.io.Serializable;
 
 /**
  * @author zubov

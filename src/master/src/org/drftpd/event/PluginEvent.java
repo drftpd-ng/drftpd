@@ -17,10 +17,10 @@
  */
 package org.drftpd.event;
 
-import java.util.ArrayList;
-
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61

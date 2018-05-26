@@ -17,15 +17,6 @@
  */
 package org.drftpd.tests;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-
-import javax.net.ServerSocketFactory;
-import javax.net.SocketFactory;
-
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.exceptions.FileExistsException;
@@ -34,6 +25,14 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.DirectoryHandle;
+
+import javax.net.ServerSocketFactory;
+import javax.net.SocketFactory;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.Socket;
 
 
 /**

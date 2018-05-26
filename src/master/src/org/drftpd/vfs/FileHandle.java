@@ -17,17 +17,16 @@
  */
 package org.drftpd.vfs;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.RemoteSlave;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov

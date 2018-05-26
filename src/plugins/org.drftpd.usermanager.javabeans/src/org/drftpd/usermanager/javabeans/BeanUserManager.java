@@ -17,19 +17,6 @@
  */
 package org.drftpd.usermanager.javabeans;
 
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-
 import com.cedarsoftware.util.io.JsonReader;
 import org.apache.log4j.Logger;
 import org.drftpd.usermanager.AbstractUserManager;
@@ -37,6 +24,14 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.CommonPluginUtils;
+
+import java.beans.XMLDecoder;
+import java.io.*;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * This is a new usermanager that after recommendation from captain- serializes

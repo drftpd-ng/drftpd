@@ -18,7 +18,6 @@
 package org.drftpd.commands.find.option;
 
 import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commands.find.FindUtils;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 
 /**

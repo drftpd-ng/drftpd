@@ -17,13 +17,6 @@
  */
 package org.drftpd.plugins.stats;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.Bytes;
@@ -34,6 +27,10 @@ import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.permissions.CreditLimitPathPermission;
 import org.drftpd.permissions.Permission;
 import org.drftpd.permissions.RatioPathPermission;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.StringTokenizer;
 
 /**
  * Handles 'creditcheck' and 'creditloss' lines from perms.conf

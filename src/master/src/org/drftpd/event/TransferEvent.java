@@ -17,12 +17,11 @@
  */
 package org.drftpd.event;
 
-import java.net.InetAddress;
-
-
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.FileHandle;
+
+import java.net.InetAddress;
 
 /**
  * @author mog

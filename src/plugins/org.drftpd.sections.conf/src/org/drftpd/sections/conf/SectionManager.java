@@ -17,16 +17,6 @@
  */
 package org.drftpd.sections.conf;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
@@ -36,6 +26,10 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author mog

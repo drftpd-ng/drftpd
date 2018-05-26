@@ -17,10 +17,10 @@
  */
 package org.drftpd.plugins.sitebot;
 
+import org.drftpd.plugins.sitebot.config.AnnounceConfig;
+
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 
 /**
  * @author djb61

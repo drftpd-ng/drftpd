@@ -25,13 +25,13 @@
 
 package org.drftpd.plugins.newraceleader;
 
-import java.util.Collection;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.newraceleader.event.NewRaceLeaderEvent;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+
+import java.util.Collection;
 
 /**
  * @author CyBeR

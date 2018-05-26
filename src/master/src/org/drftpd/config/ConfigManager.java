@@ -17,21 +17,6 @@
  */
 package org.drftpd.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
@@ -47,6 +32,9 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.perms.VFSPermissions;
 
 import javax.net.ssl.SSLContext;
+import java.io.*;
+import java.net.InetAddress;
+import java.util.*;
 
 /**
  * Handles the loading of 'master.conf' and 'conf/perms.conf'<br>

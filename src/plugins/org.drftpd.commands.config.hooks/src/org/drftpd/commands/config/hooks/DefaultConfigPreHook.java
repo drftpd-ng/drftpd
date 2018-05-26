@@ -17,9 +17,6 @@
  */
 package org.drftpd.commands.config.hooks;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
@@ -31,6 +28,9 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.vfs.perms.VFSPermissions;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * PreHooks that implements some of the functionalities "required" by the directives in perms.conf

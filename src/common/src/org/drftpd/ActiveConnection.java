@@ -17,16 +17,15 @@
  */
 package org.drftpd;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import org.apache.log4j.Logger;
+import org.drftpd.slave.Connection;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
-
-import org.apache.log4j.Logger;
-import org.drftpd.slave.Connection;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 /**
  * @author mog

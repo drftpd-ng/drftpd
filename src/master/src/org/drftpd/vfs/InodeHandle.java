@@ -16,12 +16,6 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-import java.util.Map;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
@@ -33,6 +27,12 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.perms.VFSPermissions;
+
+import java.io.FileNotFoundException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
