@@ -17,28 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
@@ -53,30 +31,21 @@ import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.protocol.ProtocolException;
-import org.drftpd.slave.ConnectInfo;
-import org.drftpd.slave.DiskStatus;
-import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.SlaveStatus;
-import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferIndex;
-import org.drftpd.slave.TransferStatus;
-import org.drftpd.slave.async.AsyncCommand;
-import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.slave.async.AsyncResponse;
-import org.drftpd.slave.async.AsyncResponseChecksum;
-import org.drftpd.slave.async.AsyncResponseDiskStatus;
-import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.slave.async.AsyncResponseMaxPath;
-import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSSLCheck;
-import org.drftpd.slave.async.AsyncResponseTransfer;
-import org.drftpd.slave.async.AsyncResponseTransferStatus;
-import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
+import org.drftpd.slave.*;
+import org.drftpd.slave.async.*;
 import org.drftpd.stats.ExtendedTimedStats;
 import org.drftpd.usermanager.Entity;
 import org.drftpd.util.HostMaskCollection;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.*;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author mog

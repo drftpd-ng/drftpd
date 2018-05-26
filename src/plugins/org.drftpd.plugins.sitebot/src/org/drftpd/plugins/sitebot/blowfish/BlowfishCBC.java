@@ -12,9 +12,9 @@ package org.drftpd.plugins.sitebot.blowfish;
 
 import org.apache.commons.net.util.Base64;
 
-import java.security.SecureRandom;
 import javax.crypto.*;
 import javax.crypto.spec.*;
+import java.security.SecureRandom;
 
 /**
  * BlowfishM CBC

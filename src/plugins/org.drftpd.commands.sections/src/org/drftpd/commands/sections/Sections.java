@@ -17,11 +17,6 @@
  */
 package org.drftpd.commands.sections;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.ResourceBundle;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -29,6 +24,11 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.sections.SectionInterface;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.ResourceBundle;
 
 /**
  * @author mog

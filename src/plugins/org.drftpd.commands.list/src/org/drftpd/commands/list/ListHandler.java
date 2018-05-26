@@ -17,57 +17,28 @@
  */
 package org.drftpd.commands.list;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TimeZone;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.master.FtpReply;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.Session;
-import org.drftpd.master.TransferState;
+import org.drftpd.master.*;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.FileHandleInterface;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.InodeHandleInterface;
-import org.drftpd.vfs.LinkHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.*;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author djb61

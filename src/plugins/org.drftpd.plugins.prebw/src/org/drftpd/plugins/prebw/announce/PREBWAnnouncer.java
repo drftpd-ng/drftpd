@@ -16,24 +16,24 @@
  */
 package org.drftpd.plugins.prebw.announce;
 
-import java.util.ResourceBundle;
-import java.util.Collections;
-import java.util.Comparator;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
+import org.drftpd.plugins.prebw.PreInfo;
+import org.drftpd.plugins.prebw.UserInfo;
+import org.drftpd.plugins.prebw.event.PREBWEvent;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.plugins.prebw.event.PREBWEvent;
-import org.drftpd.plugins.prebw.PreInfo;
-import org.drftpd.plugins.prebw.UserInfo;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.ResourceBundle;
 
 /**
  * @author lh

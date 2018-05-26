@@ -17,10 +17,10 @@
  */
 package org.drftpd.usermanager.util;
 
-import java.util.Collection;
-
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserManager;
+
+import java.util.Collection;
 
 /**
  * @author djb61

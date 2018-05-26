@@ -17,10 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.net.InetAddress;
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
@@ -30,6 +26,10 @@ import org.drftpd.slave.Transfer;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.net.InetAddress;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * @author zubov

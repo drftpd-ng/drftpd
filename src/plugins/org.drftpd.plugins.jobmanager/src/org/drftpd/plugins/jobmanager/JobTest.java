@@ -17,13 +17,12 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import java.io.FileNotFoundException;
-import java.util.HashSet;
-
 import junit.framework.TestCase;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.tests.DummyRemoteSlave;
+
+import java.io.FileNotFoundException;
+import java.util.HashSet;
 
 
 /**

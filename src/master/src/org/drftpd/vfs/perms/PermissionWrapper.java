@@ -17,10 +17,10 @@
  */
 package org.drftpd.vfs.perms;
 
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.Method;
 import java.util.StringTokenizer;
-
-import org.apache.log4j.Logger;
 
 /**
  * Wraps the PermissionHandler instance and its "handling" method.

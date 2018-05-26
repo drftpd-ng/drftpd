@@ -17,12 +17,12 @@
  */
 package org.drftpd.vfs.index;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author fr0w

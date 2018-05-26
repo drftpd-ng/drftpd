@@ -25,12 +25,6 @@
 
 package org.drftpd.plugins.newraceleader;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.TimerTask;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
@@ -38,6 +32,12 @@ import org.drftpd.PluginInterface;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.TimerTask;
 
 /**
  * @author CyBeR

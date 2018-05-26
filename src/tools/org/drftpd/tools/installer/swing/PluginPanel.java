@@ -17,16 +17,14 @@
  */
 package org.drftpd.tools.installer.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.util.ArrayList;
+import org.drftpd.tools.installer.InstallerConfig;
+import org.drftpd.tools.installer.PluginData;
+import org.drftpd.tools.installer.PluginTools;
+import org.java.plugin.registry.Documentation;
+import org.java.plugin.registry.PluginDescriptor;
+import org.java.plugin.registry.PluginRegistry;
 
-import javax.swing.JTabbedPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -36,13 +34,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-
-import org.drftpd.tools.installer.InstallerConfig;
-import org.drftpd.tools.installer.PluginData;
-import org.drftpd.tools.installer.PluginTools;
-import org.java.plugin.registry.Documentation;
-import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.PluginRegistry;
+import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * @author djb61

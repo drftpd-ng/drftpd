@@ -18,49 +18,15 @@
 
 package org.drftpd.vfs.index.lucene;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.LinkedHashMap;
-import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.FieldComparator;
-import org.apache.lucene.search.FieldComparatorSource;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TotalHitCountCollector;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.regex.RegexQuery;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopFieldCollector;
-import org.apache.lucene.search.TopScoreDocCollector;
-import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
@@ -78,13 +44,19 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams;
+import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.drftpd.vfs.index.IndexingVirtualFileSystemListener;
-import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 import org.drftpd.vfs.index.lucene.extensions.IndexDataExtensionInterface;
 import org.drftpd.vfs.index.lucene.extensions.QueryTermExtensionInterface;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.*;
 
 
 /**

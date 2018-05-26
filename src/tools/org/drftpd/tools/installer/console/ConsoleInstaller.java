@@ -25,25 +25,17 @@ import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
 import charva.awt.event.KeyEvent;
 import charva.awt.event.KeyListener;
-
-import charvax.swing.JButton;
-import charvax.swing.JFrame;
-import charvax.swing.JMenu;
-import charvax.swing.JMenuBar;
-import charvax.swing.JMenuItem;
-import charvax.swing.JPanel;
-import charvax.swing.JTabbedPane;
-
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import charvax.swing.*;
 import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginData;
 import org.java.plugin.registry.PluginRegistry;
+
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author djb61

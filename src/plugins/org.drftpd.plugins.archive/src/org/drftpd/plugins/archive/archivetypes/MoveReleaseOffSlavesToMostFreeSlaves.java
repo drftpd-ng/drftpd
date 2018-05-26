@@ -17,12 +17,6 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import java.io.FileNotFoundException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -33,6 +27,12 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+
+import java.io.FileNotFoundException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author CyBeR

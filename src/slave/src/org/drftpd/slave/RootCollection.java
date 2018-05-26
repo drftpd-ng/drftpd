@@ -17,28 +17,14 @@
  */
 package org.drftpd.slave;
 
+import org.apache.log4j.Logger;
+import org.drftpd.io.PhysicalFile;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.log4j.Logger;
-import org.drftpd.io.PhysicalFile;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * @author mog

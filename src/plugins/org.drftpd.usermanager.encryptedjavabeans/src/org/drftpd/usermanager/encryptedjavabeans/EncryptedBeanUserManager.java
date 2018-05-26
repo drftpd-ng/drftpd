@@ -1,18 +1,18 @@
 package org.drftpd.usermanager.encryptedjavabeans;
 
-import java.lang.ref.SoftReference;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.event.ReloadEvent;
-import org.drftpd.usermanager.javabeans.BeanUser;
-import org.drftpd.usermanager.javabeans.BeanUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.javabeans.BeanUser;
+import org.drftpd.usermanager.javabeans.BeanUserManager;
+
+import java.lang.ref.SoftReference;
+import java.util.Properties;
 
 public class EncryptedBeanUserManager extends BeanUserManager {
 

@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.linkmanager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -35,6 +31,10 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author CyBeR

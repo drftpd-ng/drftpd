@@ -17,13 +17,13 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * @author djb61

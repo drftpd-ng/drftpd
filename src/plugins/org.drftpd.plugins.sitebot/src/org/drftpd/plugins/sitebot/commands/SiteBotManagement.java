@@ -17,19 +17,10 @@
  */
 package org.drftpd.plugins.sitebot.commands;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.Session;
 import org.drftpd.plugins.sitebot.OutputWriter;
@@ -38,6 +29,11 @@ import org.drftpd.plugins.sitebot.SiteBotWrapper;
 import org.drftpd.plugins.sitebot.UserDetails;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.usermanager.User;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 /**
  * @author djb61

@@ -17,13 +17,13 @@
  */
 package org.drftpd.commandmanager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Vector;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.Vector;
 
 /**
  * @author djb61

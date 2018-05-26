@@ -17,9 +17,9 @@
  */
 package org.drftpd.slave;
 
-import java.io.IOException;
-
 import org.drftpd.io.PhysicalFile;
+
+import java.io.IOException;
 
 /**
  * @author mog

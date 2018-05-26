@@ -17,22 +17,13 @@
  */
 package org.drftpd.commands.pre;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.event.PreEvent;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.event.PreEvent;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.plugins.stats.StatsManager;
 import org.drftpd.sections.SectionInterface;
@@ -43,6 +34,11 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.drftpd.vfs.VirtualFileSystem;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author scitz0

@@ -22,23 +22,17 @@ import charva.awt.Color;
 import charva.awt.Dimension;
 import charva.awt.Toolkit;
 import charva.awt.event.KeyEvent;
-
-import charvax.swing.JPanel;
-import charvax.swing.JScrollPane;
-import charvax.swing.JTable;
-import charvax.swing.JTextArea;
-import charvax.swing.ListSelectionModel;
+import charvax.swing.*;
 import charvax.swing.border.LineBorder;
 import charvax.swing.border.TitledBorder;
-
-import java.util.ArrayList;
-
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginData;
 import org.drftpd.tools.installer.PluginTools;
 import org.java.plugin.registry.Documentation;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginRegistry;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61

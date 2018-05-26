@@ -16,12 +16,12 @@
  */
 package org.drftpd.master.cron;
 
+import junit.framework.TestCase;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-
-import junit.framework.TestCase;
 /**
  * @author zubov
  * @version $Id$

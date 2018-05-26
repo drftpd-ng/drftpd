@@ -1,11 +1,11 @@
 package org.drftpd.plugins.nukefilter;
 
-import java.util.HashMap;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
+
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * @author phew

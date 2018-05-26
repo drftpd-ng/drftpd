@@ -17,10 +17,6 @@
  */
 package org.drftpd.master.config;
 
-import java.net.InetAddress;
-import java.util.List;
-import java.util.Properties;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.permissions.PathPermission;
@@ -29,6 +25,10 @@ import org.drftpd.usermanager.User;
 import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.perms.VFSPermissions;
+
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author mog

@@ -17,20 +17,16 @@
  */
 package org.drftpd.plugins;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-
 import org.apache.log4j.Logger;
 import org.drftpd.event.Event;
 import org.drftpd.event.FtpListener;
 import org.drftpd.event.TransferEvent;
 import org.drftpd.exceptions.FatalException;
+
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 
 

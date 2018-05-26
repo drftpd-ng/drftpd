@@ -1,12 +1,12 @@
 package org.drftpd.slaveselection.filter;
 
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
+
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class AssignSlave {
 	private static GlobalContext _gctx;

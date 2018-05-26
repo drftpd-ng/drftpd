@@ -17,13 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.event.ReloadEvent;
@@ -37,6 +30,13 @@ import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author mog

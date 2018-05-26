@@ -17,14 +17,14 @@
  */
 package org.drftpd.commands.config.hooks;
 
-import java.util.Collection;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.PostHookInterface;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.permissions.MessagePathPermission;
+
+import java.util.Collection;
 
 /**
  * PostHooks that implements some of the functionalities "required" by the directives in perms.conf

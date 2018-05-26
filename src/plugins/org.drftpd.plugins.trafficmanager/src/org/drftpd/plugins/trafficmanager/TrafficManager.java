@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.trafficmanager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -31,6 +27,10 @@ import org.drftpd.event.ReloadEvent;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author CyBeR

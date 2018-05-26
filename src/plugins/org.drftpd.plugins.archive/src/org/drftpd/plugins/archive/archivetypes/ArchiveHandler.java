@@ -17,10 +17,6 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
@@ -31,6 +27,10 @@ import org.drftpd.plugins.archive.event.ArchiveFinishEvent;
 import org.drftpd.plugins.archive.event.ArchiveStartEvent;
 import org.drftpd.plugins.jobmanager.Job;
 import org.drftpd.sections.SectionInterface;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author CyBeR

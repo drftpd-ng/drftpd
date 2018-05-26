@@ -16,11 +16,6 @@
  */
 package org.drftpd.usermanager;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
@@ -30,6 +25,11 @@ import org.drftpd.event.UserEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.master.Commitable;
 import org.drftpd.util.HostMaskCollection;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Implements basic functionality for the User interface.

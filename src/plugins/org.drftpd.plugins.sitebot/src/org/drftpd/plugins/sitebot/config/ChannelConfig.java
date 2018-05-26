@@ -17,10 +17,10 @@
  */
 package org.drftpd.plugins.sitebot.config;
 
-import java.util.StringTokenizer;
-
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
+
+import java.util.StringTokenizer;
 
 /**
  * @author djb61

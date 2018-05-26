@@ -17,15 +17,14 @@
  */
 package org.drftpd.tests;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
 import junit.framework.TestCase;
-
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * This a Stress TestCase for the ConnectionManager ThreadPool.<br>

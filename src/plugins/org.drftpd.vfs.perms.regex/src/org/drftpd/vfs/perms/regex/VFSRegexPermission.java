@@ -17,12 +17,12 @@
  */
 package org.drftpd.vfs.perms.regex;
 
-import java.util.StringTokenizer;
-import java.util.regex.Pattern;
-
 import org.drftpd.permissions.Permission;
 import org.drftpd.permissions.RegexPathPermission;
 import org.drftpd.vfs.perms.VFSPermHandler;
+
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 /**
  * Handles Regex Permissions.

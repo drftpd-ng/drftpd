@@ -17,14 +17,10 @@
  */
 package org.drftpd.commands.dummy;
 
+import org.drftpd.commandmanager.*;
+
 import java.util.ArrayList;
 import java.util.Map;
-
-import org.drftpd.commandmanager.CommandInstanceContainer;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
 
 /**
  * returns 200 Command OK on all commands

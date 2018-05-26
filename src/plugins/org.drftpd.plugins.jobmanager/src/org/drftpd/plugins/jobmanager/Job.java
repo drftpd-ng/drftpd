@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import java.io.FileNotFoundException;
-import java.util.*;
-
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
@@ -30,6 +26,9 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author zubov

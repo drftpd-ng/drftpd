@@ -17,9 +17,9 @@
  */
 package org.drftpd.commandmanager;
 
-import java.util.Vector;
-
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.Vector;
 
 /**
  * @author djb61

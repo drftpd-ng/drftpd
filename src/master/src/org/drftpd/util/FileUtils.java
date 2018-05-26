@@ -17,12 +17,12 @@
  */
 package org.drftpd.util;
 
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
+
 import java.io.FileNotFoundException;
 import java.util.Comparator;
 import java.util.TreeSet;
-
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
 
 /**
  * @author djb61

@@ -17,15 +17,11 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.apache.log4j.Logger;
+
+import java.io.*;
 import java.net.Socket;
 import java.util.StringTokenizer;
-
-import org.apache.log4j.Logger;
 
 /**
  * @author Modified from PircBot by Paul James Mutton, http://www.jibble.org/

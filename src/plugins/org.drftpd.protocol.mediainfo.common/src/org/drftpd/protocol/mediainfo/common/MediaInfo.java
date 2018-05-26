@@ -17,16 +17,12 @@
  */
 package org.drftpd.protocol.mediainfo.common;
 
-import org.mp4parser.IsoFile;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
+import org.mp4parser.IsoFile;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;

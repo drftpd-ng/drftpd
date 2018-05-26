@@ -17,10 +17,10 @@
  */
 package org.drftpd.usermanager.util;
 
+import org.drftpd.usermanager.User;
+
 import java.io.Serializable;
 import java.util.Comparator;
-
-import org.drftpd.usermanager.User;
 
 /**
  * @author mog

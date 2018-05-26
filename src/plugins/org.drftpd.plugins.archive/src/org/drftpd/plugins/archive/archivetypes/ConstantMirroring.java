@@ -17,19 +17,15 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import java.io.FileNotFoundException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author CyBeR

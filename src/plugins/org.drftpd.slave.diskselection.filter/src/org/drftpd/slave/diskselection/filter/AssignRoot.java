@@ -18,9 +18,9 @@
 
 package org.drftpd.slave.diskselection.filter;
 
-import java.util.ArrayList;
-
 import org.drftpd.slave.Root;
+
+import java.util.ArrayList;
 
 /**
  * @author fr0w

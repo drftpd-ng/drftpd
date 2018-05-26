@@ -17,45 +17,12 @@
  */
 package org.drftpd.master;
 
-import java.beans.XMLDecoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.net.ssl.SSLSocket;
-
 import com.cedarsoftware.util.io.JsonReader;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
-import org.drftpd.exceptions.FatalException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.exceptions.SSLUnavailableException;
-import org.drftpd.exceptions.SlaveFileException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.exceptions.*;
 import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.protocol.master.AbstractBasicIssuer;
 import org.drftpd.protocol.master.AbstractIssuer;
@@ -65,6 +32,15 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.DirectoryHandle;
+
+import javax.net.ssl.SSLSocket;
+import java.beans.XMLDecoder;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mog

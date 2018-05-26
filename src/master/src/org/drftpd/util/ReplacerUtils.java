@@ -17,13 +17,13 @@
  */
 package org.drftpd.util;
 
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
 import org.tanesha.replacer.SimplePrintf;
+
+import java.util.ResourceBundle;
 
 /**
  * @author mog

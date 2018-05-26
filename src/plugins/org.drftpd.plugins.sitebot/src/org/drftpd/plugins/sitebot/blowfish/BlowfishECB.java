@@ -13,8 +13,8 @@
 */
 package org.drftpd.plugins.sitebot.blowfish;
 
-import java.io.*;
 import javax.crypto.*;
+import java.io.*;
 
 /**
  * Blowfish ECB

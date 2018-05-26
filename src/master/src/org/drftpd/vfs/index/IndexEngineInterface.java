@@ -17,13 +17,13 @@
  */
 package org.drftpd.vfs.index;
 
-import java.io.FileNotFoundException;
-import java.util.Map;
-import java.util.Set;
-
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
+
+import java.io.FileNotFoundException;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * To create a new Indexing engine this interface must be implemented.

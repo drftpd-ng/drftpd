@@ -17,10 +17,10 @@
  */
 package org.drftpd.permissions;
 
-import java.util.Collection;
-
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
+
+import java.util.Collection;
 
 /**
  * @author mog

@@ -17,21 +17,16 @@
  */
 package org.drftpd.vfs;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.stats.StatsInterface;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Lowest representation of a File object.

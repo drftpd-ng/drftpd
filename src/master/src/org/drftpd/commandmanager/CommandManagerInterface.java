@@ -17,12 +17,12 @@
  */
 package org.drftpd.commandmanager;
 
-import java.util.HashMap;
-import java.util.Properties;
-
 import org.drftpd.master.Session;
 import org.drftpd.util.ExtendedPropertyResourceBundle;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * @author djb61

@@ -17,17 +17,13 @@
  */
 package org.drftpd.tests;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author fr0w

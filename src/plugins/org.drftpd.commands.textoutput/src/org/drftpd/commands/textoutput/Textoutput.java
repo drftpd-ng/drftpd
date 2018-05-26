@@ -17,12 +17,12 @@
  */
 package org.drftpd.commands.textoutput;
 
-import java.io.IOException;
-
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+
+import java.io.IOException;
 
 
 /**

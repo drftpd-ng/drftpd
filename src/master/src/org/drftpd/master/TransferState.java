@@ -20,11 +20,6 @@
  */
 package org.drftpd.master;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.GlobalContext;
@@ -36,6 +31,11 @@ import org.drftpd.slave.TransferFailedException;
 import org.drftpd.slave.TransferStatus;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 /**
  * @author zubov

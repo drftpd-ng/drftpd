@@ -17,16 +17,16 @@
  */
 package org.drftpd.vfs.index.lucene;
 
+import org.apache.log4j.Logger;
+import org.apache.lucene.store.FSDirectory;
+import org.drftpd.GlobalContext;
+import org.drftpd.io.PhysicalFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
-
-import org.apache.log4j.Logger;
-import org.apache.lucene.store.FSDirectory;
-import org.drftpd.GlobalContext;
-import org.drftpd.io.PhysicalFile;
 
 /**
  * Thread that performs backup operations on the index.

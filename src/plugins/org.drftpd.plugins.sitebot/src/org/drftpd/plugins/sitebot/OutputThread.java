@@ -17,9 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.io.BufferedWriter;
-
 import org.apache.log4j.Logger;
+
+import java.io.BufferedWriter;
 
 /**
  * @author Modified from PircBot by Paul James Mutton, http://www.jibble.org/

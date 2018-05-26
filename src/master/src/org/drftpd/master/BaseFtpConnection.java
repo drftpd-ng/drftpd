@@ -17,26 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLSocket;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -53,6 +33,14 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.DirectoryHandle;
+
+import javax.net.ssl.SSLSocket;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This is a generic ftp connection handler. It delegates the request to

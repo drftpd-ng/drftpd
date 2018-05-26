@@ -16,19 +16,6 @@
  */
 package org.drftpd.commands.dataconnection;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
@@ -40,30 +27,28 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.event.SlowTransferEvent;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SSLUnavailableException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.exceptions.TransferDeniedException;
+import org.drftpd.exceptions.*;
 import org.drftpd.io.PermissionDeniedException;
-import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.master.FtpReply;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.SlaveManager;
-import org.drftpd.master.TransferState;
-import org.drftpd.slave.ConnectInfo;
-import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferFailedException;
-import org.drftpd.slave.TransferSlowException;
-import org.drftpd.slave.TransferStatus;
+import org.drftpd.master.*;
+import org.drftpd.slave.*;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 
 /**

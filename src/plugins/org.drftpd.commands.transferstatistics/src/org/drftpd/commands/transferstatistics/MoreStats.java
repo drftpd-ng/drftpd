@@ -17,12 +17,6 @@
  */
 package org.drftpd.commands.transferstatistics;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
@@ -34,6 +28,12 @@ import org.drftpd.usermanager.User;
 import org.drftpd.util.GroupPosition;
 import org.drftpd.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ResourceBundle;
 
 
 /**

@@ -17,11 +17,6 @@
  */
 package org.drftpd.plugins.stats;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -35,6 +30,9 @@ import org.drftpd.permissions.RatioPathPermission;
 import org.drftpd.plugins.stats.metadata.StatsUserData;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * StatsManager is a class that centralizes the update of users stats. 

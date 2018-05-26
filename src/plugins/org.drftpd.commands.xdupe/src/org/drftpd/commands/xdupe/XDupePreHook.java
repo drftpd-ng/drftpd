@@ -1,17 +1,13 @@
 package org.drftpd.commands.xdupe;
 
-import java.io.FileNotFoundException;
-import java.util.Set;
-import java.util.StringTokenizer;
-
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 public class XDupePreHook implements PreHookInterface {
 	public void initialize(StandardCommandManager manager) {

@@ -17,13 +17,9 @@
  */
 package org.drftpd.permissions;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.StringTokenizer;
-
 import org.drftpd.usermanager.User;
+
+import java.util.*;
 
 /**
  * @author mog

@@ -16,26 +16,12 @@
  */
 package org.drftpd.commands.find;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.find.action.ActionInterface;
 import org.drftpd.commands.find.option.OptionInterface;
 import org.drftpd.event.LoadPluginEvent;
@@ -53,6 +39,9 @@ import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 
 /**

@@ -17,30 +17,26 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.ResourceBundle;
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.tvmaze.metadata.TvEpisode;
+import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.ResourceBundle;
 
 /**
  * @author lh

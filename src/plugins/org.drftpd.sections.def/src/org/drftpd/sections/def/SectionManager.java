@@ -17,14 +17,6 @@
  */
 package org.drftpd.sections.def;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
@@ -32,6 +24,9 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author mog

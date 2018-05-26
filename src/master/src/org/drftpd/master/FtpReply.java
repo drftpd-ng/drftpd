@@ -17,11 +17,11 @@
  */
 package org.drftpd.master;
 
-import java.util.Iterator;
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandResponseInterface;
+
+import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * @author djb61

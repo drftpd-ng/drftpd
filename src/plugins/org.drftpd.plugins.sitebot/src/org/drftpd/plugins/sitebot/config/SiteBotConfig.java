@@ -17,14 +17,13 @@
  */
 package org.drftpd.plugins.sitebot.config;
 
+import org.drftpd.BlindTrustManager;
+import org.drftpd.plugins.sitebot.PartialTrustManager;
+
+import javax.net.ssl.X509TrustManager;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Properties;
-
-import javax.net.ssl.X509TrustManager;
-
-import org.drftpd.BlindTrustManager;
-import org.drftpd.plugins.sitebot.PartialTrustManager;
 
 /**
  * @author djb61

@@ -16,11 +16,11 @@
  */
 package org.drftpd.commands.list;
 
-import java.util.ArrayList;
-
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.Session;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61

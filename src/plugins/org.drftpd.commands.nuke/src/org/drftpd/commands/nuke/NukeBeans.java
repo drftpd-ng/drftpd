@@ -17,30 +17,21 @@
  */
 package org.drftpd.commands.nuke;
 
-import java.beans.XMLDecoder;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.log4j.Logger;
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.io.SafeFileOutputStream;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.vfs.VirtualFileSystem;
+
+import java.beans.XMLDecoder;
+import java.io.*;
+import java.util.*;
 
 /**
  * NukeBeans handles the logging of nukes. Using a TreeMap, it sorts all nukes

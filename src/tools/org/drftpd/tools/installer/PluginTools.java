@@ -17,19 +17,13 @@
  */
 package org.drftpd.tools.installer;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.java.plugin.registry.PluginAttribute;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.registry.PluginRegistry;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * @author djb61

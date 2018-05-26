@@ -17,18 +17,6 @@
  */
 package org.drftpd.vfs;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
@@ -36,15 +24,13 @@ import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.vfs.event.VirtualFileSystemEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeRefreshEvent;
-import org.drftpd.vfs.event.VirtualFileSystemLastModifiedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
-import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
-import org.drftpd.vfs.event.VirtualFileSystemSizeEvent;
-import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
+import org.drftpd.vfs.event.*;
+
+import java.io.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class VirtualFileSystem {
 

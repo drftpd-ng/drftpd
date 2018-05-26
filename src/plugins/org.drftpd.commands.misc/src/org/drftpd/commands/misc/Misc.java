@@ -17,27 +17,16 @@
  */
 package org.drftpd.commands.misc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.Map.Entry;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInstanceContainer;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.master.BaseFtpConnection;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 
 /**

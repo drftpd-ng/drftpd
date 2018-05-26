@@ -17,15 +17,15 @@
  */
 package org.drftpd.commands.autonuke;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
-
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.vfs.DirectoryHandle;
-import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * @author scitz0

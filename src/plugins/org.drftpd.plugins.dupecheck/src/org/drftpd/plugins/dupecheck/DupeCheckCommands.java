@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.dupecheck;
 
-import java.io.FileNotFoundException;
-import java.util.Map;
-import java.util.StringTokenizer;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -32,6 +28,10 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
+
+import java.io.FileNotFoundException;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 public class DupeCheckCommands extends CommandInterface {
 	

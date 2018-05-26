@@ -17,11 +17,11 @@
  */
 package org.drftpd.vfs.index.lucene;
 
-import java.io.IOException;
-
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.CorruptIndexException;
 import org.drftpd.GlobalContext;
+
+import java.io.IOException;
 
 /**
  * Optimizes the index and update the search engine.

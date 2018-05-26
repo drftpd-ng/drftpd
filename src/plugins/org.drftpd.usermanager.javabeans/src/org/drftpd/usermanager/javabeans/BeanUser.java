@@ -17,11 +17,6 @@
  */
 package org.drftpd.usermanager.javabeans;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
@@ -31,6 +26,11 @@ import org.drftpd.master.CommitManager;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author mog

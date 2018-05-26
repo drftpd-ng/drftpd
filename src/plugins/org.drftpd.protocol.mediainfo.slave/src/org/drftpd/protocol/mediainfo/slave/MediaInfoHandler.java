@@ -16,9 +16,6 @@
  */
 package org.drftpd.protocol.mediainfo.slave;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.drftpd.protocol.mediainfo.common.MediaInfo;
 import org.drftpd.protocol.mediainfo.common.async.AsyncResponseMediaInfo;
 import org.drftpd.protocol.slave.AbstractHandler;
@@ -27,6 +24,8 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseException;
+
+import java.io.IOException;
 
 /**
  * Handler for MediaInfo requests.

@@ -17,10 +17,10 @@
  */
 package org.drftpd.master;
 
-import java.util.List;
-
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.slave.async.AsyncResponseRemerge;
+
+import java.util.List;
 
 /**
  * @author mog

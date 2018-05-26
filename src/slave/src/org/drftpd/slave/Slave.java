@@ -17,35 +17,6 @@
  */
 package org.drftpd.slave;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLSocket;
-
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
@@ -55,14 +26,22 @@ import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.PhysicalFile;
 import org.drftpd.master.QueuedOperation;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
-import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.slave.async.AsyncResponse;
-import org.drftpd.slave.async.AsyncResponseDiskStatus;
-import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.slave.async.AsyncResponseTransferStatus;
+import org.drftpd.slave.async.*;
 import org.drftpd.slave.diskselection.DiskSelectionInterface;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PortRange;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSocket;
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 
 /**

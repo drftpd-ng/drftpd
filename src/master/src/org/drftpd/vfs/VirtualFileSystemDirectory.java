@@ -17,6 +17,8 @@
  */
 package org.drftpd.vfs;
 
+import org.drftpd.exceptions.FileExistsException;
+
 import java.io.FileNotFoundException;
 import java.lang.ref.SoftReference;
 import java.util.HashSet;
@@ -24,8 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.drftpd.exceptions.FileExistsException;
 
 
 /**

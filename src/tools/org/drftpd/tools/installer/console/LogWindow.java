@@ -17,38 +17,15 @@ package org.drftpd.tools.installer.console;
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-import charva.awt.BorderLayout;
-import charva.awt.Color;
-import charva.awt.Container;
-import charva.awt.Dimension;
-import charva.awt.GridBagConstraints;
-import charva.awt.GridBagLayout;
-import charva.awt.Insets;
-import charva.awt.Toolkit;
+import charva.awt.*;
 import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-
-import charvax.swing.JButton;
-import charvax.swing.JFileChooser;
-import charvax.swing.JFrame;
-import charvax.swing.JPanel;
-import charvax.swing.JProgressBar;
-import charvax.swing.JScrollPane;
-import charvax.swing.JTextArea;
+import charvax.swing.*;
 import charvax.swing.border.LineBorder;
 import charvax.swing.border.TitledBorder;
+import org.drftpd.tools.installer.*;
 
-import org.drftpd.tools.installer.FileLogger;
-import org.drftpd.tools.installer.InstallerConfig;
-import org.drftpd.tools.installer.PluginBuilder;
-import org.drftpd.tools.installer.PluginBuilderThread;
-import org.drftpd.tools.installer.LogWindowInterface;
+import java.io.*;
 
 /**
  * @author djb61

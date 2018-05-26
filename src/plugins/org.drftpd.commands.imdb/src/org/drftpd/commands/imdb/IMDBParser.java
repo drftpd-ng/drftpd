@@ -18,10 +18,8 @@
 package org.drftpd.commands.imdb;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.drftpd.plugins.sitebot.SiteBot;
-
 import org.apache.log4j.Logger;
-
+import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.util.HttpUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 

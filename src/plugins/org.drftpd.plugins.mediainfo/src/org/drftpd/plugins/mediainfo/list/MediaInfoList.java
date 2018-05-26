@@ -16,14 +16,6 @@
  */
 package org.drftpd.plugins.mediainfo.list;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
@@ -39,6 +31,10 @@ import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author scitz0

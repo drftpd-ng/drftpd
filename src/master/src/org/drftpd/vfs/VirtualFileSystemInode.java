@@ -17,12 +17,6 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -31,6 +25,12 @@ import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.Commitable;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**

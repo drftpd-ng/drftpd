@@ -17,10 +17,10 @@
  */
 package org.drftpd.event;
 
+import org.bushe.swing.event.ThreadSafeEventService;
+
 import java.lang.reflect.Type;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.bushe.swing.event.ThreadSafeEventService;
 
 /**
  * @author djb61

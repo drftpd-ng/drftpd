@@ -17,17 +17,6 @@
  */
 package org.drftpd.tools.installer;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -37,6 +26,12 @@ import org.java.plugin.PathResolver;
 import org.java.plugin.registry.Identity;
 import org.java.plugin.registry.PluginRegistry;
 import org.java.plugin.util.IoUtil;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author djb61

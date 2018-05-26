@@ -1,10 +1,10 @@
 package org.drftpd.plugins.trialmanager;
 
-import java.util.Date;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.usermanager.UserResetHookInterface;
+
+import java.util.Date;
 
 public class TrialManagerReset implements UserResetHookInterface {
 	private static final Logger logger = Logger.getLogger(TrialManagerReset.class);

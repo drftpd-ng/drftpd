@@ -17,19 +17,6 @@
  */
 package org.drftpd.slave;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
-import java.util.zip.CheckedOutputStream;
-
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PassiveConnection;
@@ -43,6 +30,12 @@ import org.drftpd.slave.async.AsyncResponseTransferStatus;
 import org.drftpd.util.HostMask;
 
 import javax.net.ssl.SSLSocket;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
+import java.util.zip.CheckedOutputStream;
 
 /**
  * @author zubov

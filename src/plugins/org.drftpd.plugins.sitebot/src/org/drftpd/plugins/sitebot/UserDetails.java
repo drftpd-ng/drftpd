@@ -17,9 +17,6 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
@@ -28,6 +25,9 @@ import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author djb61

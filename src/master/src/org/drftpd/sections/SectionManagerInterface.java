@@ -17,10 +17,10 @@
  */
 package org.drftpd.sections;
 
+import org.drftpd.vfs.DirectoryHandle;
+
 import java.util.Collection;
 import java.util.Map;
-
-import org.drftpd.vfs.DirectoryHandle;
 
 /**
  * @author mog
