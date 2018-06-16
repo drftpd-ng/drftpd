@@ -107,7 +107,7 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 	}
 
 	public int getCode() {
-		return getObject(CommandResponse.CODE, Integer.valueOf(500)).intValue();
+		return getObject(CommandResponse.CODE, 500);
 	}
 
 	public Vector<String> getComment() {

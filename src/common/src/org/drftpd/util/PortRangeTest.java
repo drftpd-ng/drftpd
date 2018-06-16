@@ -37,7 +37,7 @@ public class PortRangeTest extends TestCase {
         ArrayList<ServerSocket> sockets = new ArrayList<ServerSocket>();
 
         for (int x = 45300; x <= 45310; x++) {
-            ports.add(Integer.valueOf(x));
+            ports.add(x);
         }
 
         assertEquals(11, ports.size());

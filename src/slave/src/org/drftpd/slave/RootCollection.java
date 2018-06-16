@@ -99,8 +99,8 @@ public class RootCollection {
 				}
 			}
 			if (rootLastModified[i] != null) {
-				if (rootLastModified[i].longValue() > lastModified) {
-					lastModified = rootLastModified[i].longValue();
+				if (rootLastModified[i] > lastModified) {
+					lastModified = rootLastModified[i];
 				}
 			}
 		}

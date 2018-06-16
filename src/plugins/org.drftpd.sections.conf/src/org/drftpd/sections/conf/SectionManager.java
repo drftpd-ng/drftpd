@@ -142,7 +142,7 @@ public class SectionManager implements SectionManagerInterface {
 			} else {
 				try {
 					Class<ConfigurableSectionInterface> clazz = _typesMap.get(type);
-					ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(new Object[] { Integer.valueOf(i), p });
+					ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(new Object[] {i, p });
 					sections.put(name, section);
 					if (_mkdirs) {
 						section.createSectionDir();

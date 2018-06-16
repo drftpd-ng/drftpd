@@ -85,7 +85,7 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 			env.add("size",Bytes.formatBytes(event.getUploaderPosition().getBytes()));
 			env.add("files", event.getUploaderPosition().getFiles());
 			env.add("speed", Bytes.formatBytes(event.getUploaderPosition().getXferspeed()));
-			env.add("percent", new Integer(event.getFiles() / event.getUploaderPosition().getFiles()));
+			env.add("percent", event.getFiles() / event.getUploaderPosition().getFiles());
 
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.newraceleader", env, _bundle), writer);
 		}

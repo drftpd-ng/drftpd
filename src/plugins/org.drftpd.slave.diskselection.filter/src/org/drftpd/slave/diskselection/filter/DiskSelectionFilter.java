@@ -106,7 +106,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 			
 			try {
 				Class<DiskFilter> clazz = _filtersMap.get(filterName);
-				DiskFilter filter = clazz.getConstructor(SIG).newInstance(new Object[] { this, p, Integer.valueOf(i) });
+				DiskFilter filter = clazz.getConstructor(SIG).newInstance(new Object[] { this, p, i});
 				filters.add(filter);
 			} catch (Exception e) {
 				throw new RuntimeException(i + ".filter = " + filterName, e);
