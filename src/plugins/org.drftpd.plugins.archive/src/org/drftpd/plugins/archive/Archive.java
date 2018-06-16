@@ -73,7 +73,7 @@ public class Archive implements PluginInterface {
 	        if (!sec.getName().isEmpty()) {
 				try {
 					Class<ArchiveType> clazz = _typesMap.get(type);
-					archiveType = clazz.getConstructor(SIG).newInstance(new Object[] { this, sec, props, count });
+					archiveType = clazz.getConstructor(SIG).newInstance(this, sec, props, count);
 	
 				} catch (Exception e) {
 					logger.error("Unable to load ArchiveType for section " + count + "." + type, e);

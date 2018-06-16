@@ -359,7 +359,7 @@ public class CommonPluginUtils {
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException, PluginLifecycleException {
 		T retObj = null;
 		try {
-			retObj = CommonPluginUtils.<T>getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
+			retObj = CommonPluginUtils.getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
 					null, null, true, true);
 		} catch (InvocationTargetException e) {
 			// can't happen as called with nullary constructor
@@ -427,7 +427,7 @@ public class CommonPluginUtils {
 			String desiredPlugin, Class<?>[] constructorSig, Object[] constructorArgs) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
-		return CommonPluginUtils.<T>getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
+		return CommonPluginUtils.getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
 				constructorSig, constructorArgs, true, true);
 	}
 

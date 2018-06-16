@@ -81,7 +81,7 @@ public class ImmutableInodeHandle {
 	}
 	
 	public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) {
-		return _inode.<T>getUntypedPluginMetaData(key);
+		return _inode.getUntypedPluginMetaData(key);
 	}
 	
 	public String getUsername() {

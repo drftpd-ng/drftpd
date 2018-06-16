@@ -115,7 +115,7 @@ public abstract class CommandInterface {
 		for (HookContainer<PostHookInterface> hook : _postHooks.values()) {
 			Method m = hook.getMethod();
 			try {
-				m.invoke(hook.getHookInterfaceInstance(), new Object[] {request, response});
+				m.invoke(hook.getHookInterfaceInstance(), request, response);
 			}
 			catch (Exception e) {
 				logger.error("Error while loading/invoking posthook " + m.toString(), e.getCause());

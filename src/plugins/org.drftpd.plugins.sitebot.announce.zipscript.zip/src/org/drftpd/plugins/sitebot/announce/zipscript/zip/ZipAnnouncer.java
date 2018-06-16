@@ -422,7 +422,6 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 			}
 		} catch (FileNotFoundException e1) {
 			// The directory or file no longer exists, just fail out of the method
-			return;
-		}	
+        }
 	}
 }

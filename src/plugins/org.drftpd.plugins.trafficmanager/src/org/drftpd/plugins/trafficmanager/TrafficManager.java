@@ -86,7 +86,7 @@ public class TrafficManager implements PluginInterface {
 		} else {
 			try {
 				Class<TrafficType> clazz = _typesMap.get(type);
-				trafficType = clazz.getConstructor(SIG).newInstance(new Object[] { props, count, type.toLowerCase() });
+				trafficType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
 				logger.error("Unable to load TrafficType for section " + count + ".type=" + type, e);
 			}		

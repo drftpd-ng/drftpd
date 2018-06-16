@@ -86,7 +86,7 @@ public class TrialManager implements PluginInterface {
 		} else {
 			try {
 				Class<TrialType> clazz = _typesMap.get(type);
-				trialType = clazz.getConstructor(SIG).newInstance(new Object[] { props, count, type.toLowerCase() });
+				trialType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
 				logger.error("Unable to load TrialType for section " + count + ".type=" + type, e);
 			}		

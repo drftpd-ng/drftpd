@@ -82,7 +82,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	public VirtualFileSystemFile(String username, String group, long size,
 			String initialSlave) {
 		this(username, group, size, new HashSet<String>(Arrays
-				.asList(new String[] { initialSlave })));
+				.asList(initialSlave)));
 	}
 
 	public VirtualFileSystemFile(String username, String group, long size,

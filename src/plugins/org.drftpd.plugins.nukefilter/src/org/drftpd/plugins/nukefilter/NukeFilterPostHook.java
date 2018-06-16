@@ -351,7 +351,6 @@ public class NukeFilterPostHook implements PostHookInterface {
 						} catch (NumberFormatException er) {
 							logger.warn("improper formatted global.filter.year element given, " +
 									"skipping '" + e.getElement() + "'");
-							continue;
 						}
 					}
 				}
@@ -435,7 +434,6 @@ public class NukeFilterPostHook implements PostHookInterface {
 					} catch (NumberFormatException er) {
 						logger.warn("improper formatted global.filter.year element given, " +
 								"skipping '" + e.getElement() + "'");
-						continue;
 					}
 				}
 			}
@@ -498,7 +496,6 @@ public class NukeFilterPostHook implements PostHookInterface {
 						} catch(NumberFormatException er) {
 							logger.warn("improper formatted global.enforce.year/section.enforce.year " +
 									"element given, skipping '"+e.getElement()+"'");
-							continue;
 						}
 					}
 				}
@@ -577,7 +574,6 @@ public class NukeFilterPostHook implements PostHookInterface {
 					} catch(NumberFormatException er) {
 						logger.warn("improper formatted global.enforce.year/section.enforce.year " +
 								"element given, skipping '"+e.getElement()+"'");
-						continue;
 					}
 				}
 			}

@@ -76,8 +76,7 @@ public class PluginsConfig {
 		for (File file : dir.listFiles()) {
 			// TODO: by doing startsWith(".") i'm preveting people using a config file like '.hidden.conf' is that a problem?
 			if (file.getName().startsWith(".")) {
-				continue;
-			} else if (file.isFile() && file.getName().endsWith(".conf")) {
+            } else if (file.isFile() && file.getName().endsWith(".conf")) {
 				loadConf(file);
 			} else if (file.isDirectory()){
 				searchForConfigurations(file);

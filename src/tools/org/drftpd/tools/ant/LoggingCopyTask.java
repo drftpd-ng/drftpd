@@ -36,7 +36,7 @@ public class LoggingCopyTask extends Copy {
 	public void execute() throws BuildException {
 		// See if this is a slave plugin
 		boolean slavePlugin = getProject().getProperty("slave.plugin").equalsIgnoreCase("true");
-		FileSet slaveFiles = (FileSet)getProject().getReference("slave.fileset");
+		FileSet slaveFiles = getProject().getReference("slave.fileset");
 		// Run the actual Copy process
 		super.execute();
 		// Log copied file if needed

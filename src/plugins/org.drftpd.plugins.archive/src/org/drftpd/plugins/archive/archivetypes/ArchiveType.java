@@ -182,7 +182,6 @@ public abstract class ArchiveType {
 		} catch (OfflineSlaveException e) {
 		} catch (FileNotFoundException e) {
 		}
-		return;
 	}
 
 	/**
@@ -261,7 +260,6 @@ public abstract class ArchiveType {
 				}
 			} catch (FileNotFoundException e) {
 				iter.remove();
-				continue;
 			}
 		}
 		if (oldestDir != null) {

@@ -65,7 +65,7 @@ public class ResourceTask extends Task {
 	public void execute() throws BuildException {
 		// See if this is a slave plugin
 		_slavePlugin = getProject().getProperty("slave.plugin").equalsIgnoreCase("true");
-		FileSet slaveFiles = (FileSet)getProject().getReference("slave.fileset");
+		FileSet slaveFiles = getProject().getReference("slave.fileset");
 		_filePatterns = new ArrayList<String>();
 		// Get the build start time as long
 		SimpleDateFormat simpleBuildDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
@@ -76,7 +76,7 @@ public class ResourceTask extends Task {
 			throw new BuildException("Plugin build timestamp not set correctly");
 		}
 		_longDate = buildDate.getTime();
-		_installedConfs = (ArrayList<String>)getProject().getReference("installed.confs");
+		_installedConfs = getProject().getReference("installed.confs");
 		findResources(_resourceDir);
 		if (_slavePlugin && !_filePatterns.isEmpty()) {
 			String[] patterns = _filePatterns.toArray(new String[_filePatterns.size()]);
@@ -100,8 +100,7 @@ public class ResourceTask extends Task {
 
 		for (File file : dir.listFiles()) {
 			if (file.getName().startsWith(".")) {
-				continue;
-			} else if (file.isFile()) {
+            } else if (file.isFile()) {
 				copyResource(file);
 			} else if (file.isDirectory()){
 				findResources(file);

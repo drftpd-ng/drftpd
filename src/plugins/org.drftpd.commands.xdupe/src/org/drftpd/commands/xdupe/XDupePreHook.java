@@ -72,8 +72,7 @@ public class XDupePreHook implements PreHookInterface {
 				case 4 :
 					if (mode1or4.length() + file.getName().length() <= 1010)
 						mode1or4 = (mode1or4.length() > 0 ? mode1or4 + " " : "") + file.getName();
-					continue;
-			}
+            }
 		}
 		
 		if (mode1or4.length() > 0)

@@ -154,14 +154,12 @@ public class BasicIssuer extends AbstractBasicIssuer {
 	public void issueRemergePauseToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
 		rslave.sendCommand(new AsyncCommand("remergePause", "remergePause"));
 
-		return;
-	}
+    }
 
 	public void issueRemergeResumeToSlave(RemoteSlave rslave) throws SlaveUnavailableException {
 		rslave.sendCommand(new AsyncCommand("remergeResume", "remergeResume"));
 
-		return;
-	}
+    }
 
 	@Override
 	public String issueCheckSSL(RemoteSlave rslave) throws SlaveUnavailableException {

@@ -115,8 +115,7 @@ public class DirectoryspaceFilter extends Filter {
 			}
 		} catch (FileNotFoundException e) {
 			// can't do anything, couldn't find the directory
-			return;
-		}
+        }
 	}
 
 }

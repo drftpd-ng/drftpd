@@ -1060,8 +1060,7 @@ public class UserManagementHandler extends CommandInterface {
 				response.addComment("Mask " + string + " not found: "
 						+ e1.getMessage());
 
-				continue;
-			}
+            }
 		}
 		
 		myUser.commit();

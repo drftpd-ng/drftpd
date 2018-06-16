@@ -139,8 +139,7 @@ public class ThemeTask extends Task {
 
 		for (File file : dir.listFiles()) {
 			if (file.getName().startsWith(".")) {
-				continue;
-			} else if (file.isFile() && file.getName().endsWith(".properties")) {
+            } else if (file.isFile() && file.getName().endsWith(".properties")) {
 				loadProperties(file);
 			} else if (file.isDirectory()){
 				findProperties(file);

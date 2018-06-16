@@ -227,8 +227,7 @@ public class JobManager implements PluginInterface {
 					// ready to accept it
 					skipJobs.add(job);
 
-					continue;
-				} catch (FileNotFoundException e) {
+                } catch (FileNotFoundException e) {
 					// can't transfer
 					return;
 				}

@@ -91,7 +91,7 @@ public class LinkManager implements PluginInterface {
 		} else {
 			try {
 				Class<LinkType> clazz = _typesMap.get(type);
-				linkType = clazz.getConstructor(SIG).newInstance(new Object[] { props, count, type.toLowerCase() });
+				linkType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
 				logger.error("Unable to load LinkType for section " + count + ".type=" + type, e);
 			}		

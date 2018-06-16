@@ -94,7 +94,7 @@ public class SiteManagementHandler extends CommandInterface {
 		List<InodeHandle> inodes;
 		try {
 			if (target.isFile()) {
-				inodes = Collections.singletonList((InodeHandle)dir);
+				inodes = Collections.singletonList(dir);
 			} else {
 				inodes = new ArrayList<InodeHandle>(dir.getInodeHandles(user));
 			}
