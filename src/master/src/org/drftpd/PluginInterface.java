@@ -23,7 +23,7 @@ package org.drftpd;
  */
 public interface PluginInterface {
 
-	public void startPlugin();
+	void startPlugin();
 
-	public void stopPlugin(String reason);
+	void stopPlugin(String reason);
 }

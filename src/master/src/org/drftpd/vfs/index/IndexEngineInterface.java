@@ -43,28 +43,28 @@ public interface IndexEngineInterface {
 	 * </ul>
 	 * @throws IndexException
 	 */
-	public void init() throws IndexException;
+    void init() throws IndexException;
 
 	/**
 	 * Adds an inode to the index.<br>
 	 * The kind of information stored in the index is up to the implementation.
 	 * @throws IndexException
 	 */
-	public void addInode(ImmutableInodeHandle inode) throws IndexException;
+    void addInode(ImmutableInodeHandle inode) throws IndexException;
 	
 	/**
 	 * Deletes an inode from the index.
 	 * @param inode
 	 * @throws IndexException
 	 */
-	public void deleteInode(ImmutableInodeHandle inode) throws IndexException;
+    void deleteInode(ImmutableInodeHandle inode) throws IndexException;
 	
 	/**
 	 * Updates the data of an inode.
 	 * @param inode
 	 * @throws IndexException
 	 */
-	public void updateInode(ImmutableInodeHandle inode) throws IndexException;
+    void updateInode(ImmutableInodeHandle inode) throws IndexException;
 	
 	/**
 	 * Renames the inode in the index
@@ -72,20 +72,20 @@ public interface IndexEngineInterface {
 	 * @param toInode
 	 * @throws IndexException
 	 */
-	public void renameInode(ImmutableInodeHandle fromInode, ImmutableInodeHandle toInode) throws IndexException;
+    void renameInode(ImmutableInodeHandle fromInode, ImmutableInodeHandle toInode) throws IndexException;
 	
 	/**
 	 * Force the engine to save its current data.<br>
 	 * Not all databases need this operation, if that's your case, make it a NoOp method.
 	 * @throws IndexException
 	 */
-	public void commit() throws IndexException;
+    void commit() throws IndexException;
 	
 	/**
 	 * Removes ALL the content from the Index and recurse through the VFS recreating the index.
 	 * @throws FileNotFoundException 
 	 */
-	public void rebuildIndex() throws IndexException, FileNotFoundException;
+    void rebuildIndex() throws IndexException, FileNotFoundException;
 	
 	/**
 	 * This method should return a Map containing information about the index engine.<br>
@@ -96,8 +96,8 @@ public interface IndexEngineInterface {
 	 * </ul>
 	 * @return
 	 */
-	public Map<String, String> getStatus();
+    Map<String, String> getStatus();
 	
-	public Set<String> findInode(DirectoryHandle startNode, String text, InodeType inodeType) throws IndexException;
-	public Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params) throws IndexException, IllegalArgumentException;
+	Set<String> findInode(DirectoryHandle startNode, String text, InodeType inodeType) throws IndexException;
+	Map<String,String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params) throws IndexException, IllegalArgumentException;
 }

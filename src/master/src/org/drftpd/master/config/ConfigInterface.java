@@ -36,47 +36,47 @@ import java.util.Properties;
  * @version $Id$
  */
 public interface ConfigInterface {
-	public KeyedMap<Key<?>, Object> getKeyedMap();
+	KeyedMap<Key<?>, Object> getKeyedMap();
 	
-	public Properties getMainProperties();	
+	Properties getMainProperties();
 	
-	public VFSPermissions getVFSPermissions();
+	VFSPermissions getVFSPermissions();
 	
-	public void reload();
+	void reload();
 	
-	public boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path);
+	boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path);
 
-	public boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path, boolean defaults);
+	boolean checkPathPermission(String directive, User fromUser, DirectoryHandle path, boolean defaults);
 
-	public boolean checkPermission(String directive, User user);
+	boolean checkPermission(String directive, User user);
 
-	public void addPathPermission(String directive, PathPermission permission);
+	void addPathPermission(String directive, PathPermission permission);
 	
-	public void addPermission(String directive, Permission permission);
+	void addPermission(String directive, Permission permission);
 	
-	public List<InetAddress> getBouncerIps();
+	List<InetAddress> getBouncerIps();
 
-	public boolean getHideIps();
+	boolean getHideIps();
 
-	public String getLoginPrompt();
+	String getLoginPrompt();
 	
-	public String getAllowConnectionsDenyReason();
+	String getAllowConnectionsDenyReason();
 
-	public int getMaxUsersExempt();
+	int getMaxUsersExempt();
 
-	public int getMaxUsersTotal();
+	int getMaxUsersTotal();
 
-	public boolean isLoginAllowed(User user);
+	boolean isLoginAllowed(User user);
 
-	public boolean isLoginExempt(User user);
+	boolean isLoginExempt(User user);
 
-	public PortRange getPortRange();
+	PortRange getPortRange();
 
-	public String getPasvAddress() throws NullPointerException;
+	String getPasvAddress() throws NullPointerException;
 
-	public String[] getCipherSuites();
+	String[] getCipherSuites();
 
-	public String[] getSSLProtocols();
+	String[] getSSLProtocols();
 
-	public String getHideInStats();
+	String getHideInStats();
 }

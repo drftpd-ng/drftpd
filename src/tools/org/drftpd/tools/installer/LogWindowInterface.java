@@ -23,9 +23,9 @@ package org.drftpd.tools.installer;
  */
 public interface LogWindowInterface {
 
-	public String getUserDir();
+	String getUserDir();
 
-	public void setProgress(int pluginsDone);
+	void setProgress(int pluginsDone);
 
-	public void setProgressMessage(String message);
+	void setProgressMessage(String message);
 }

@@ -24,9 +24,9 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public interface AddListElementsInterface {
 
-	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container);
+	ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container);
 
-	public void initialize();
+	void initialize();
 
-	public void unload();
+	void unload();
 }

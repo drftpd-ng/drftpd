@@ -7,34 +7,34 @@ import java.util.ArrayList;
  */
 public interface NukeFilterConfigInterface {
 	
-	public void setNukeDelay(Integer delay);
-	public Integer getNukeDelay();
+	void setNukeDelay(Integer delay);
+	Integer getNukeDelay();
 	
-	public ArrayList<NukeFilterConfigElement> getFilterStringList();
-	public ArrayList<NukeFilterConfigElement> getEnforceStringList();
-	public ArrayList<NukeFilterConfigElement> getFilterRegexList();
-	public ArrayList<NukeFilterConfigElement> getEnforceRegexList();
-	public ArrayList<NukeFilterConfigElement> getFilterYearList();
-	public ArrayList<NukeFilterConfigElement> getEnforceYearList();
-	public ArrayList<NukeFilterConfigElement> getFilterGroupList();
-	public ArrayList<NukeFilterConfigElement> getEnforceGroupList();
+	ArrayList<NukeFilterConfigElement> getFilterStringList();
+	ArrayList<NukeFilterConfigElement> getEnforceStringList();
+	ArrayList<NukeFilterConfigElement> getFilterRegexList();
+	ArrayList<NukeFilterConfigElement> getEnforceRegexList();
+	ArrayList<NukeFilterConfigElement> getFilterYearList();
+	ArrayList<NukeFilterConfigElement> getEnforceYearList();
+	ArrayList<NukeFilterConfigElement> getFilterGroupList();
+	ArrayList<NukeFilterConfigElement> getEnforceGroupList();
 	
-	public void addFilterStringElement(NukeFilterConfigElement element);
-	public void addEnforceStringElement(NukeFilterConfigElement element);
-	public void addFilterRegexElement(NukeFilterConfigElement element);
-	public void addEnforceRegexElement(NukeFilterConfigElement element);
-	public void addFilterYearElement(NukeFilterConfigElement element);
-	public void addEnforceYearElement(NukeFilterConfigElement element);
-	public void addFilterGroupElement(NukeFilterConfigElement element);
-	public void addEnforceGroupElement(NukeFilterConfigElement element);
+	void addFilterStringElement(NukeFilterConfigElement element);
+	void addEnforceStringElement(NukeFilterConfigElement element);
+	void addFilterRegexElement(NukeFilterConfigElement element);
+	void addEnforceRegexElement(NukeFilterConfigElement element);
+	void addFilterYearElement(NukeFilterConfigElement element);
+	void addEnforceYearElement(NukeFilterConfigElement element);
+	void addFilterGroupElement(NukeFilterConfigElement element);
+	void addEnforceGroupElement(NukeFilterConfigElement element);
 	
-	public boolean hasFilterStrings();
-	public boolean hasEnforceStrings();
-	public boolean hasFilterRegex();
-	public boolean hasEnforceRegex();
-	public boolean hasFilterYears();
-	public boolean hasEnforceYears();
-	public boolean hasFilterGroups();
-	public boolean hasEnforceGroups();
+	boolean hasFilterStrings();
+	boolean hasEnforceStrings();
+	boolean hasFilterRegex();
+	boolean hasEnforceRegex();
+	boolean hasFilterYears();
+	boolean hasEnforceYears();
+	boolean hasFilterGroups();
+	boolean hasEnforceGroups();
 	
 }
