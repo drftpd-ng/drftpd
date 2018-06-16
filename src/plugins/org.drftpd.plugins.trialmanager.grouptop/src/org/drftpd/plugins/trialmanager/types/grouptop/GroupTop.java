@@ -426,7 +426,7 @@ public class GroupTop extends TrialType {
 			MyGroupPosition mo = (MyGroupPosition) o;
             long thisVal = getBytes()/getMembers();
 			long anotherVal = mo.getBytes()/mo.getMembers();
-			return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0 : (-1)));
+			return (Long.compare(anotherVal, thisVal));
 		}
 
 

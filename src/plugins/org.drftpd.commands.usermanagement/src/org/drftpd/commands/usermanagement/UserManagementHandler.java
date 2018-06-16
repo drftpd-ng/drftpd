@@ -1418,22 +1418,26 @@ public class UserManagementHandler extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
-		if (opt.equals("num_logins")) {
-			numLogin = Integer.parseInt(st.nextToken());
-			if (st.hasMoreTokens()) {
-				ip = true;
-				numLoginIP = Integer.parseInt(st.nextToken());
-			}
-		} else if (opt.equals("ratio")) {
-			ratio = Float.parseFloat(st.nextToken());
-		} else if (opt.equals("max_sim")) {
-			maxUp = Integer.parseInt(st.nextToken());
-			if (!st.hasMoreTokens()) {
-				throw new ImproperUsageException();
-			}
-			maxDn = Integer.parseInt(st.nextToken());
-		} else {
-			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		switch (opt) {
+			case "num_logins":
+				numLogin = Integer.parseInt(st.nextToken());
+				if (st.hasMoreTokens()) {
+					ip = true;
+					numLoginIP = Integer.parseInt(st.nextToken());
+				}
+				break;
+			case "ratio":
+				ratio = Float.parseFloat(st.nextToken());
+				break;
+			case "max_sim":
+				maxUp = Integer.parseInt(st.nextToken());
+				if (!st.hasMoreTokens()) {
+					throw new ImproperUsageException();
+				}
+				maxDn = Integer.parseInt(st.nextToken());
+				break;
+			default:
+				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
 		// getting data

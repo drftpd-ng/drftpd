@@ -38,6 +38,6 @@ public class UserComparator implements Comparator<User>, Serializable {
     public int compare(User u1, User u2) {
         long thisVal = UserTransferStats.getStats(_type, u1);
         long anotherVal = UserTransferStats.getStats(_type, u2);
-        return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0 : 1));
+        return (Long.compare(anotherVal, thisVal));
     }
 }

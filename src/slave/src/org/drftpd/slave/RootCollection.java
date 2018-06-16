@@ -258,8 +258,7 @@ public class RootCollection {
 				int thisVal = o1.getPath().length();
 				int anotherVal = o2.getPath().length();
 
-				return ((thisVal < anotherVal) ? 1
-						: ((thisVal == anotherVal) ? 0 : (-1)));
+				return (Integer.compare(anotherVal, thisVal));
 			}
 		});
 

@@ -46,8 +46,7 @@ public class GroupPosition implements Comparable<GroupPosition> {
 		long thisVal = getBytes();
 		long anotherVal = o.getBytes();
 
-		return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0
-				: (-1)));
+		return (Long.compare(anotherVal, thisVal));
 	}
 
 	/*

@@ -164,16 +164,17 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	
 	public FilterChain getFilterChain(String type) {
 		type = type.toLowerCase();
-		if (type.equals("down")) {
-			return _downChain;
-		} else if (type.equals("up")) {
-			return _upChain;
-		} else if (type.equals("jobup")) {
-			return _jobUpChain;
-		} else if (type.equals("jobdown")) {
-			return _jobDownChain;
-		} else {
-			throw new IllegalArgumentException();
-		}
+        switch (type) {
+            case "down":
+                return _downChain;
+            case "up":
+                return _upChain;
+            case "jobup":
+                return _jobUpChain;
+            case "jobdown":
+                return _jobDownChain;
+            default:
+                throw new IllegalArgumentException();
+        }
 	}
 }
