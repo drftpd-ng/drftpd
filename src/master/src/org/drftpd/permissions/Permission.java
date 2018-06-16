@@ -56,47 +56,46 @@ public class Permission {
 	public boolean check(User user) {
 		boolean allow = false;
 
-		for (Iterator<String> iter = _users.iterator(); iter.hasNext();) {
-			String aclUser = iter.next();
-			allow = true;
-			if (aclUser.charAt(0) == '!') {
-				allow = false;
-				aclUser = aclUser.substring(1);
-			}
-			if (aclUser.equals("%")) {
-				return allow;
-			} else if (aclUser.equals("*") && user != null) {
-				return allow;
-			} else if (aclUser.charAt(0) == '-') {
-				// USER
-				if (user == null) {
-					continue;
-				}
-				if (aclUser.substring(1).equals(user.getName())) {
-					return allow;
-				}
+        for (String aclUser : _users) {
+            allow = true;
+            if (aclUser.charAt(0) == '!') {
+                allow = false;
+                aclUser = aclUser.substring(1);
+            }
+            if (aclUser.equals("%")) {
+                return allow;
+            } else if (aclUser.equals("*") && user != null) {
+                return allow;
+            } else if (aclUser.charAt(0) == '-') {
+                // USER
+                if (user == null) {
+                    continue;
+                }
+                if (aclUser.substring(1).equals(user.getName())) {
+                    return allow;
+                }
 
-				continue;
-			} else if (aclUser.charAt(0) == '=') {
-				// GROUP
-				if (user == null) {
-					continue;
-				}
-				if (user.isMemberOf(aclUser.substring(1))) {
-					return allow;
-				}
-			} else {
-				// FLAG, we don't have flags, we have groups and that's the same
-				// but multiple letters
-				// Does anyone use these?  Do we want to get rid of the = modifier?
-				if (user == null) {
-					continue;
-				}
-				if (user.isMemberOf(aclUser)) {
-					return allow;
-				}
-			}
-		}
+                continue;
+            } else if (aclUser.charAt(0) == '=') {
+                // GROUP
+                if (user == null) {
+                    continue;
+                }
+                if (user.isMemberOf(aclUser.substring(1))) {
+                    return allow;
+                }
+            } else {
+                // FLAG, we don't have flags, we have groups and that's the same
+                // but multiple letters
+                // Does anyone use these?  Do we want to get rid of the = modifier?
+                if (user == null) {
+                    continue;
+                }
+                if (user.isMemberOf(aclUser)) {
+                    return allow;
+                }
+            }
+        }
 
 		// didn't match..
 		return _invert ? (!allow) : false;

@@ -218,9 +218,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		Collection<RemoteSlave> slaveList = getSlaves();
 		HashMap<Long, RemoteSlave> map = new HashMap<Long, RemoteSlave>();
 
-		for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = iter.next();
-
+		for (RemoteSlave rslave : slaveList) {
 			if (exemptSlaves.contains(rslave)) {
 				continue;
 			}
@@ -263,8 +261,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		long smallSize = Integer.MAX_VALUE;
 		RemoteSlave smallSlave = null;
 
-		for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
-			RemoteSlave rslave = iter.next();
+		for (RemoteSlave rslave : slaveList) {
 			long size = Integer.MAX_VALUE;
 
 			try {
@@ -288,9 +285,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	public SlaveStatus getAllStatus() {
 		SlaveStatus allStatus = new SlaveStatus();
 
-		for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter.hasNext();) {
-			RemoteSlave rslave = iter.next();
-
+		for (RemoteSlave rslave : getSlaves()) {
 			try {
 				allStatus = allStatus.append(rslave.getSlaveStatusAvailable());
 			} catch (SlaveUnavailableException e) {
@@ -305,10 +300,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		HashMap<String, SlaveStatus> ret = new HashMap<String, SlaveStatus>(
 				getSlaves().size());
 
-		for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter
-				.hasNext();) {
-			RemoteSlave rslave = iter.next();
-
+		for (RemoteSlave rslave : getSlaves()) {
 			try {
 				ret.put(rslave.getName(), rslave.getSlaveStatus());
 			} catch (SlaveUnavailableException e) {
@@ -326,10 +318,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			throws NoAvailableSlaveException {
 		ArrayList<RemoteSlave> availableSlaves = new ArrayList<RemoteSlave>();
 
-		for (Iterator<RemoteSlave> iter = getSlaves().iterator(); iter
-				.hasNext();) {
-			RemoteSlave rslave = iter.next();
-
+		for (RemoteSlave rslave : getSlaves()) {
 			if (!rslave.isAvailable()) {
 				continue;
 			}
@@ -371,8 +360,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	 * @return true if one or more slaves are online, false otherwise.
 	 */
 	public boolean hasAvailableSlaves() {
-		for (Iterator<RemoteSlave> iter = _rslaves.values().iterator(); iter.hasNext();) {
-			if (iter.next().isAvailable()) {
+		for (RemoteSlave remoteSlave : _rslaves.values()) {
+			if (remoteSlave.isAvailable()) {
 				return true;
 			}
 		}

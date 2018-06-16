@@ -58,10 +58,10 @@ public class PhysicalFile extends File {
 	public boolean deleteRecursive() {
 		if (isDirectory()) {
 			File[] files = listFiles();
-			for (int i = 0; i < files.length; i++) {
-				PhysicalFile file = new PhysicalFile(files[i]);
-				file.deleteRecursive();
-			}
+            for (File file1 : files) {
+                PhysicalFile file = new PhysicalFile(file1);
+                file.deleteRecursive();
+            }
 		}
 		return super.delete();
 	}

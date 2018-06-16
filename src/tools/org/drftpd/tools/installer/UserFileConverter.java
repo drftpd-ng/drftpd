@@ -71,7 +71,7 @@ public class UserFileConverter {
 	}
 
 	private void convertUser(File origUser,File targetDir,ResourceBundle patterns) {
-		StringBuffer inputContents = new StringBuffer();
+		StringBuilder inputContents = new StringBuilder();
 		FileReader userReader = null;
 		BufferedReader buffInput = null;
 		try {

@@ -69,14 +69,12 @@ public class CycleFilter extends Filter {
 
 			SlaveScore leastUsed = first;
 
-			for (Iterator<SlaveScore> iter = equalList.iterator(); iter.hasNext();) {
-				SlaveScore match = iter.next();
-
-				if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
-						.getRSlave().getLastTransferForDirection(direction)) {
-					leastUsed = match;
-				}
-			}
+            for (SlaveScore match : equalList) {
+                if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
+                        .getRSlave().getLastTransferForDirection(direction)) {
+                    leastUsed = match;
+                }
+            }
 
 			if (leastUsed != null) {
 				leastUsed.addScore(1);

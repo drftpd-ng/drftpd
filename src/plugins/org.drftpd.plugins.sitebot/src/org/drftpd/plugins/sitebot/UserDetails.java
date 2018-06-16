@@ -136,16 +136,16 @@ public class UserDetails {
 					String[] userKeys = userKeysString.split(",");
 					String userKey = "";
 					String userKeyMode = "";
-					for (int i = 0; i < userKeys.length;i++) {
-						if (userKeys[i].startsWith(_bot.getBotName() + "|")) {
-							String[] botKey = userKeys[i].split("\\|");
-							if (botKey.length > 1) {
-								userKey = botKey[1];
+                    for (String userKey1 : userKeys) {
+                        if (userKey1.startsWith(_bot.getBotName() + "|")) {
+                            String[] botKey = userKey1.split("\\|");
+                            if (botKey.length > 1) {
+                                userKey = botKey[1];
                                 userKeyMode = botKey.length > 2 ? botKey[2] : BlowfishManager.ECB; //Compatibility
-								break;
-							}
-						}
-					}
+                                break;
+                            }
+                        }
+                    }
 					if (!userKey.equals("")) {
 						setBlowCipher(userKey, userKeyMode);
 					} else {

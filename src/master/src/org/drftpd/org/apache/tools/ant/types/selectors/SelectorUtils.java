@@ -341,12 +341,12 @@ public final class SelectorUtils {
 		char ch;
 
 		boolean containsStar = false;
-		for (int i = 0; i < patArr.length; i++) {
-			if (patArr[i] == '*') {
-				containsStar = true;
-				break;
-			}
-		}
+        for (char aPatArr : patArr) {
+            if (aPatArr == '*') {
+                containsStar = true;
+                break;
+            }
+        }
 
 		if (!containsStar) {
 			// No '*'s, so we make a shortcut
@@ -593,7 +593,7 @@ public final class SelectorUtils {
 	 * @return a String that has had all whitespace removed.
 	 */
 	public static String removeWhitespace(String input) {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (input != null) {
 			StringTokenizer st = new StringTokenizer(input);
 			while (st.hasMoreTokens()) {
@@ -623,7 +623,7 @@ public final class SelectorUtils {
 	 */
 	public static String rtrimWildcardTokens(String input) {
 		Vector<String> v = tokenizePath(input, File.separator);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int counter = 0; counter < v.size(); counter++) {
 			if (hasWildcards(v.elementAt(counter))) {
 				break;

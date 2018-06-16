@@ -289,7 +289,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		if (name.startsWith(VirtualFileSystem.separator)) {
 			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(name);
 		}
-		if (name.indexOf(VirtualFileSystem.separator) != -1) {
+		if (name.contains(VirtualFileSystem.separator)) {
 			return VirtualFileSystem.getVirtualFileSystem().getInodeByPath(
 					getPath() + VirtualFileSystem.separator + name);
 		}

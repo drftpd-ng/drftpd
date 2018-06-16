@@ -113,34 +113,30 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	 */
 	@Override
 	protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-		for (Iterator<InodeHandle> iter = lrf.getInodeHandlesUnchecked().iterator(); iter.hasNext();) {
-			InodeHandle inode = iter.next();
+        for (InodeHandle inode : lrf.getInodeHandlesUnchecked()) {
+            if (inode.isLink()) {
+                continue;
+            } else if (inode instanceof DirectoryHandle) {
+                if (!isArchivedDir((DirectoryHandle) inode)) {
+                    return false;
+                }
+            } else {
+                try {
+                    for (RemoteSlave rslave : ((FileHandle) inode).getAvailableSlaves()) {
+                        if (_offOfSlaves.contains(rslave)) {
+                            return false;
+                        }
 
-			if (inode.isLink()) {
-				continue;
-			} else if (inode instanceof DirectoryHandle) {
-				if (!isArchivedDir((DirectoryHandle) inode)) {
-					return false;
-				}
-			} else {
-				try {
-					for (Iterator<RemoteSlave> iter2 = ((FileHandle) inode).getAvailableSlaves().iterator(); iter2.hasNext();) {
-						RemoteSlave rslave = iter2.next();
+                    }
+                } catch (NoAvailableSlaveException e) {
+                    throw new OfflineSlaveException("There were no available slaves for " + inode.getPath());
+                } catch (FileNotFoundException e) {
+                    throw new FileNotFoundException("File was not found " + inode.getPath());
+                }
 
-						if (_offOfSlaves.contains(rslave)) {
-							return false;
-						}
+            }
 
-					}
-				} catch (NoAvailableSlaveException e) {
-					throw new OfflineSlaveException("There were no available slaves for " + inode.getPath());
-				} catch (FileNotFoundException e) {
-					throw new FileNotFoundException("File was not found " + inode.getPath());
-				}
-
-			}
-
-		}
+        }
 
 		return isArchivedToSpecificSlaves(lrf, _numOfSlaves,findDestinationSlaves());
 

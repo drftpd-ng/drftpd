@@ -194,16 +194,16 @@ public abstract class AbstractUserManager implements UserManager {
 			try {
 				String uidentList = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
 				String[] identArray = uidentList.split(",");
-				for (int i = 0; i < identArray.length;i++) {
-					if (identArray[i].startsWith(botName + "|")) {
-						String[] botIdent = identArray[i].split("\\|");
-						if (botIdent.length == 2) {
-							if (botIdent[1].equals(ident)) {
-								return user;
-							}
-						}
-					}
-				}
+                for (String anIdentArray : identArray) {
+                    if (anIdentArray.startsWith(botName + "|")) {
+                        String[] botIdent = anIdentArray.split("\\|");
+                        if (botIdent.length == 2) {
+                            if (botIdent[1].equals(ident)) {
+                                return user;
+                            }
+                        }
+                    }
+                }
 			} catch (KeyNotFoundException e1) {
 			}
 		}

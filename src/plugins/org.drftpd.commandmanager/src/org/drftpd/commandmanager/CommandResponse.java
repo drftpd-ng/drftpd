@@ -79,8 +79,8 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 		if (resp.indexOf('\n') != -1) {
 			String[] lines = resp.split("\n");
 
-			for (int i = 0; i < lines.length; i++) {
-				_comments.add(lines[i]);
+			for (String line : lines) {
+				_comments.add(line);
 			}
 		} else {
 			_comments.add(resp);

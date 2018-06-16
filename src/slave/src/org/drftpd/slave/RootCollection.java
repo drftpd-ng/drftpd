@@ -240,9 +240,9 @@ public class RootCollection {
 		File[] mountsArr = File.listRoots();
 		ArrayList<File> mounts = new ArrayList<File>(mountsArr.length);
 
-		for (int i = 0; i < mountsArr.length; i++) {
-			mounts.add(mountsArr[i]);
-		}
+        for (File aMountsArr : mountsArr) {
+            mounts.add(aMountsArr);
+        }
 
 		Collections.sort(mounts, new Comparator<File>() {
 			public boolean equals(Object obj) {

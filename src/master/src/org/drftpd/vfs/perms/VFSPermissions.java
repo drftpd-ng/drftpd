@@ -250,16 +250,15 @@ public class VFSPermissions {
 			
 			logger.debug(type + " is handling:");
 			TreeMap<Integer, String> order = _priorities.get(type);
-			for (Iterator<Entry<Integer, String>> iter = order.entrySet().iterator(); iter.hasNext();) {
-				Entry<Integer, String> e2 = iter.next();
-				String directive = e2.getValue();
-				logger.debug(e2.getKey()+". "+ directive);
-				if (map.get(directive) == null) {
-					// 'directive' was not found in perms.conf
-					continue;
-				}
-				logger.debug(map.get(directive).toString());
-			}
+            for (Entry<Integer, String> e2 : order.entrySet()) {
+                String directive = e2.getValue();
+                logger.debug(e2.getKey() + ". " + directive);
+                if (map.get(directive) == null) {
+                    // 'directive' was not found in perms.conf
+                    continue;
+                }
+                logger.debug(map.get(directive).toString());
+            }
 		}
 	}
 }

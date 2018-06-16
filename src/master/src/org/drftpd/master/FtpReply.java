@@ -62,9 +62,9 @@ public class FtpReply {
 		if (resp.indexOf('\n') != -1) {
 			String[] lines = resp.split("\n");
 
-			for (int i = 0; i < lines.length; i++) {
-				_lines.add(lines[i]);
-			}
+            for (String line : lines) {
+                _lines.add(line);
+            }
 		} else {
 			_lines.add(resp);
 		}
@@ -99,7 +99,7 @@ public class FtpReply {
 	}
 
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		// sb.append(code + "-");
 		if ((_lines.size() == 0) && (_message == null)) {

@@ -70,10 +70,10 @@ public class NukeFilterPostHook implements PostHookInterface {
 	 * 		   <b>FALSE</b> if dirName is NOT an exempt
 	 */
 	private boolean isExemptDirectoryName(String dirName, String[] exemptRegex) {
-		for(int i = 0; i < exemptRegex.length; i++) {
-			if(Pattern.matches(exemptRegex[i], dirName))
-				return true;
-		}
+        for (String anExemptRegex : exemptRegex) {
+            if (Pattern.matches(anExemptRegex, dirName))
+                return true;
+        }
 		return false;
 	}
 	
@@ -89,10 +89,8 @@ public class NukeFilterPostHook implements PostHookInterface {
 		//check if section is exempt
 		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
 		ArrayList<SectionInterface> exempts = _nfs.getNukeFilterGlobalConfig().getExemptSections();
-		Iterator<SectionInterface> iter = exempts.iterator();
-		while(iter.hasNext()) {
-			SectionInterface exempt = iter.next();
-			if(exempt.getName().equals(section.getName()))
+		for (SectionInterface exempt : exempts) {
+			if (exempt.getName().equals(section.getName()))
 				return false;
 		}
 		if(doFilterStringCheck(dir, 
@@ -168,20 +166,18 @@ public class NukeFilterPostHook implements PostHookInterface {
 	 */
 	private boolean doFilterStringCheck(DirectoryHandle dir, 
 			ArrayList<NukeFilterConfigElement> filterStringList, String type) {
-		Iterator<NukeFilterConfigElement> fsIter = filterStringList.iterator();
-		while(fsIter.hasNext()) {
-			NukeFilterConfigElement e = fsIter.next();
-			if(dir.getName().toLowerCase().contains(e.getElement().toLowerCase())) {
-				if(type.equals("global")) {
-					nuke(new NukeFilterNukeItem(dir, 
-							"directory.contains.global.banned.string", e.getElement(), 
-							_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+		for (NukeFilterConfigElement e : filterStringList) {
+			if (dir.getName().toLowerCase().contains(e.getElement().toLowerCase())) {
+				if (type.equals("global")) {
+					nuke(new NukeFilterNukeItem(dir,
+							"directory.contains.global.banned.string", e.getElement(),
+							_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 							e.getNukex()), "global.filter.string.announce");
-				} else if(type.equals("section")) {
+				} else if (type.equals("section")) {
 					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-					nuke(new NukeFilterNukeItem(dir, 
+					nuke(new NukeFilterNukeItem(dir,
 							"directory.contains.section.banned.string", e.getElement(),
-							_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+							_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 							e.getNukex()), "section.filter.string.announce");
 				}
 				return true;
@@ -200,20 +196,18 @@ public class NukeFilterPostHook implements PostHookInterface {
 	 */
 	private boolean doEnforceStringCheck(DirectoryHandle dir, 
 			ArrayList<NukeFilterConfigElement> enforceStringList, String type) {
-		Iterator<NukeFilterConfigElement> esIter = enforceStringList.iterator();
-		while(esIter.hasNext()) {
-			NukeFilterConfigElement e = esIter.next();
-			if(!dir.getName().toLowerCase().contains(e.getElement().toLowerCase())) {
-				if(type.equals("global")) {
-					nuke(new NukeFilterNukeItem(dir, 
+		for (NukeFilterConfigElement e : enforceStringList) {
+			if (!dir.getName().toLowerCase().contains(e.getElement().toLowerCase())) {
+				if (type.equals("global")) {
+					nuke(new NukeFilterNukeItem(dir,
 							"directory.is.missing.global.enforced.string", e.getElement(),
-							_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+							_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 							e.getNukex()), "global.enforce.string.announce");
-				} else if(type.equals("section")) {
+				} else if (type.equals("section")) {
 					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-					nuke(new NukeFilterNukeItem(dir, 
-							"directory.is.missing.section.enforced.string", e.getElement(), 
-							_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+					nuke(new NukeFilterNukeItem(dir,
+							"directory.is.missing.section.enforced.string", e.getElement(),
+							_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 							e.getNukex()), "section.enforce.string.announce");
 				}
 				return true;
@@ -232,22 +226,20 @@ public class NukeFilterPostHook implements PostHookInterface {
 	 */
 	private boolean doFilterRegexCheck(DirectoryHandle dir, 
 			ArrayList<NukeFilterConfigElement> filterRegexList, String type) {
-		Iterator<NukeFilterConfigElement> frIter = filterRegexList.iterator();
-		while(frIter.hasNext()) {
-			NukeFilterConfigElement e = frIter.next();
+		for (NukeFilterConfigElement e : filterRegexList) {
 			Pattern pattern = Pattern.compile(e.getElement());
 			Matcher matcher = pattern.matcher(dir.getName());
-			if(matcher.matches()) {
-				if(type.equals("global")) {
-					nuke(new NukeFilterNukeItem(dir, 
+			if (matcher.matches()) {
+				if (type.equals("global")) {
+					nuke(new NukeFilterNukeItem(dir,
 							"global.filter.regex.matched", e.getElement(),
-							_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+							_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 							e.getNukex()), "global.filter.regex.announce");
-				} else if(type.equals("section")) {
+				} else if (type.equals("section")) {
 					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-					nuke(new NukeFilterNukeItem(dir, 
-							"section.filter.regex.matched", e.getElement(), 
-							_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+					nuke(new NukeFilterNukeItem(dir,
+							"section.filter.regex.matched", e.getElement(),
+							_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 							e.getNukex()), "section.filter.regex.announce");
 				}
 				return true;
@@ -266,22 +258,20 @@ public class NukeFilterPostHook implements PostHookInterface {
 	 */
 	private boolean doEnforceRegexCheck(DirectoryHandle dir, 
 			ArrayList<NukeFilterConfigElement> enforceRegexList, String type) {
-		Iterator<NukeFilterConfigElement> erIter = enforceRegexList.iterator();
-		while(erIter.hasNext()) {
-			NukeFilterConfigElement e = erIter.next();
+		for (NukeFilterConfigElement e : enforceRegexList) {
 			Pattern pattern = Pattern.compile(e.getElement());
 			Matcher matcher = pattern.matcher(dir.getName());
-			if(!matcher.matches()) {
-				if(type.equals("global")) {
-					nuke(new NukeFilterNukeItem(dir, 
-							"global.enforce.regex.did.not.match", e.getElement(), 
-							_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+			if (!matcher.matches()) {
+				if (type.equals("global")) {
+					nuke(new NukeFilterNukeItem(dir,
+							"global.enforce.regex.did.not.match", e.getElement(),
+							_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 							e.getNukex()), "global.enforce.regex.announce");
-				} else if(type.equals("section")) {
+				} else if (type.equals("section")) {
 					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-					nuke(new NukeFilterNukeItem(dir, 
-							"section.enforce.regex.did.not.match", e.getElement(), 
-							_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+					nuke(new NukeFilterNukeItem(dir,
+							"section.enforce.regex.did.not.match", e.getElement(),
+							_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 							e.getNukex()), "section.enforce.regex.announce");
 				}
 				return true;
@@ -305,14 +295,12 @@ public class NukeFilterPostHook implements PostHookInterface {
 		if(matcherYear.matches()) {
 			try {
 				int rlsYear = Integer.parseInt(matcherYear.group(1));
-				Iterator<NukeFilterConfigElement> fyIter = filterYearList.iterator();
-				while(fyIter.hasNext()) {
-					NukeFilterConfigElement e = fyIter.next();
-					if(e.getElement().contains("-")) {
+				for (NukeFilterConfigElement e : filterYearList) {
+					if (e.getElement().contains("-")) {
 						String[] range = e.getElement().split("-");
-						if(range.length != 2) {
+						if (range.length != 2) {
 							logger.warn("improper formatted global.filter.year range element given, " +
-									"skipping '"+e.getElement()+"'");
+									"skipping '" + e.getElement() + "'");
 							continue;
 						}
 						int start;
@@ -320,53 +308,53 @@ public class NukeFilterPostHook implements PostHookInterface {
 						try {
 							start = Integer.parseInt(range[0]);
 							stop = Integer.parseInt(range[1]);
-						} catch(NumberFormatException er) {
+						} catch (NumberFormatException er) {
 							logger.warn("improper formatted global.filter.year element given, " +
-									"skipping '"+e.getElement()+"'");
+									"skipping '" + e.getElement() + "'");
 							continue;
 						}
-						if(stop < start) {
+						if (stop < start) {
 							int tmp = start;
 							start = stop;
 							stop = tmp;
 						}
-						if(rlsYear >= start && rlsYear <= stop) {
+						if (rlsYear >= start && rlsYear <= stop) {
 							//within range, nuke that bitch
-							if(type.equals("global")) {
-								nuke(new NukeFilterNukeItem(dir, 
-										"global.banned.year", e.getElement(), 
-										_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+							if (type.equals("global")) {
+								nuke(new NukeFilterNukeItem(dir,
+										"global.banned.year", e.getElement(),
+										_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 										e.getNukex()), "global.filter.year.announce");
-							} else if(type.equals("section")) {
+							} else if (type.equals("section")) {
 								SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-								nuke(new NukeFilterNukeItem(dir, 
-										"section.banned.year", e.getElement(), 
-										_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+								nuke(new NukeFilterNukeItem(dir,
+										"section.banned.year", e.getElement(),
+										_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 										e.getNukex()), "section.filter.year.announce");
 							}
 							return true;
 						}
 					} else {
 						try {
-							if(rlsYear == Integer.parseInt(e.getElement())) {
+							if (rlsYear == Integer.parseInt(e.getElement())) {
 								//nuke that bitch
-								if(type.equals("global")) {
-									nuke(new NukeFilterNukeItem(dir, 
-											"global.banned.year", e.getElement(), 
-											_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+								if (type.equals("global")) {
+									nuke(new NukeFilterNukeItem(dir,
+											"global.banned.year", e.getElement(),
+											_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 											e.getNukex()), "global.filter.year.announce");
-								} else if(type.equals("section")) {
+								} else if (type.equals("section")) {
 									SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-									nuke(new NukeFilterNukeItem(dir, 
-											"section.banned.year", e.getElement(), 
-											_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+									nuke(new NukeFilterNukeItem(dir,
+											"section.banned.year", e.getElement(),
+											_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 											e.getNukex()), "section.filter.year.announce");
 								}
 								return true;
 							}
-						} catch(NumberFormatException er) {
+						} catch (NumberFormatException er) {
 							logger.warn("improper formatted global.filter.year element given, " +
-									"skipping '"+e.getElement()+"'");
+									"skipping '" + e.getElement() + "'");
 							continue;
 						}
 					}
@@ -387,14 +375,12 @@ public class NukeFilterPostHook implements PostHookInterface {
 						"skipping global.filter.year (\\d\\d\\dx) on given release");
 				return false;
 			}
-			Iterator<NukeFilterConfigElement> fyIter = filterYearList.iterator();
-			while(fyIter.hasNext()) {
-				NukeFilterConfigElement e = fyIter.next();
-				if(e.getElement().contains("-")) {
+			for (NukeFilterConfigElement e : filterYearList) {
+				if (e.getElement().contains("-")) {
 					String[] range = e.getElement().split("-");
-					if(range.length != 2) {
+					if (range.length != 2) {
 						logger.warn("improper formatted global.filter.year element given, " +
-								"skipping '"+e.getElement()+"'");
+								"skipping '" + e.getElement() + "'");
 						continue;
 					}
 					int start;
@@ -402,29 +388,29 @@ public class NukeFilterPostHook implements PostHookInterface {
 					try {
 						start = Integer.parseInt(range[0]);
 						stop = Integer.parseInt(range[1]);
-					} catch(NumberFormatException er) {
+					} catch (NumberFormatException er) {
 						logger.warn("improper formatted global.filter.year element given, " +
-								"skipping '"+e.getElement()+"'");
+								"skipping '" + e.getElement() + "'");
 						continue;
 					}
-					if(stop < start) {
+					if (stop < start) {
 						int tmp = start;
 						start = stop;
 						stop = tmp;
 					}
-					for(int i = 0; i < 10; i++) {
-						int year = Integer.parseInt(rlsYear+String.valueOf(i));
-						if(year >= start && year <= stop) {
-							if(type.equals("global")) {
-								nuke(new NukeFilterNukeItem(dir, 
-										"global.banned.year", e.getElement(), 
-										_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+					for (int i = 0; i < 10; i++) {
+						int year = Integer.parseInt(rlsYear + String.valueOf(i));
+						if (year >= start && year <= stop) {
+							if (type.equals("global")) {
+								nuke(new NukeFilterNukeItem(dir,
+										"global.banned.year", e.getElement(),
+										_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 										e.getNukex()), "global.filter.year.announce");
-							} else if(type.equals("section")) {
+							} else if (type.equals("section")) {
 								SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-								nuke(new NukeFilterNukeItem(dir, 
-										"section.banned.year", e.getElement(), 
-										_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+								nuke(new NukeFilterNukeItem(dir,
+										"section.banned.year", e.getElement(),
+										_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 										e.getNukex()), "section.filter.year.announce");
 							}
 							return true;
@@ -432,27 +418,27 @@ public class NukeFilterPostHook implements PostHookInterface {
 					}
 				} else {
 					try {
-						for(int i = 0; i < 10; i++) {
-							int year = Integer.parseInt(rlsYear+String.valueOf(i));
-							if(year == Integer.parseInt(e.getElement())) {
-								if(type.equals("global")) {
-									nuke(new NukeFilterNukeItem(dir, 
-											"global.banned.year", e.getElement(), 
-											_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+						for (int i = 0; i < 10; i++) {
+							int year = Integer.parseInt(rlsYear + String.valueOf(i));
+							if (year == Integer.parseInt(e.getElement())) {
+								if (type.equals("global")) {
+									nuke(new NukeFilterNukeItem(dir,
+											"global.banned.year", e.getElement(),
+											_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 											e.getNukex()), "global.filter.year.announce");
-								} else if(type.equals("section")) {
+								} else if (type.equals("section")) {
 									SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-									nuke(new NukeFilterNukeItem(dir, 
-											"section.banned.year", e.getElement(), 
-											_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+									nuke(new NukeFilterNukeItem(dir,
+											"section.banned.year", e.getElement(),
+											_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 											e.getNukex()), "section.filter.year.announce");
 								}
 								return true;
 							}
 						}
-					} catch(NumberFormatException er) {
+					} catch (NumberFormatException er) {
 						logger.warn("improper formatted global.filter.year element given, " +
-								"skipping '"+e.getElement()+"'");
+								"skipping '" + e.getElement() + "'");
 						continue;
 					}
 				}
@@ -627,19 +613,17 @@ public class NukeFilterPostHook implements PostHookInterface {
 	 */
 	private boolean doFilterGroupCheck(DirectoryHandle dir, 
 			ArrayList<NukeFilterConfigElement> filterGroupList, String type) {
-		Iterator<NukeFilterConfigElement> fgIter = filterGroupList.iterator();
-		while(fgIter.hasNext()) {
-			NukeFilterConfigElement e = fgIter.next();
-			if(dir.getName().toLowerCase().endsWith("-"+e.getElement().toLowerCase())) {
-				if(type.equals("global")) {
+		for (NukeFilterConfigElement e : filterGroupList) {
+			if (dir.getName().toLowerCase().endsWith("-" + e.getElement().toLowerCase())) {
+				if (type.equals("global")) {
 					nuke(new NukeFilterNukeItem(dir, "global.banned.group", e.getElement(),
-							_nfs.getNukeFilterGlobalConfig().getNukeDelay(), 
+							_nfs.getNukeFilterGlobalConfig().getNukeDelay(),
 							e.getNukex()), "global.filter.group.announce");
-				} else if(type.equals("section")) {
+				} else if (type.equals("section")) {
 					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-					nuke(new NukeFilterNukeItem(dir, 
-							"section.banned.group", e.getElement(), 
-							_nfs.getSectionConfig(section.getName()).getNukeDelay(), 
+					nuke(new NukeFilterNukeItem(dir,
+							"section.banned.group", e.getElement(),
+							_nfs.getSectionConfig(section.getName()).getNukeDelay(),
 							e.getNukex()), "section.filter.group.announce");
 				}
 				return true;
@@ -662,10 +646,8 @@ public class NukeFilterPostHook implements PostHookInterface {
 		boolean nuke = true;
 		String grp = dir.getName(); 
 		grp = grp.substring(grp.lastIndexOf('-')+1);
-		Iterator<NukeFilterConfigElement> egIter = enforceGroupList.iterator();
-		while(egIter.hasNext()) {
-			NukeFilterConfigElement e = egIter.next();
-			if(dir.getName().toLowerCase().endsWith("-"+e.getElement().toLowerCase())) {
+		for (NukeFilterConfigElement e : enforceGroupList) {
+			if (dir.getName().toLowerCase().endsWith("-" + e.getElement().toLowerCase())) {
 				nuke = false;
 				break;
 			}
