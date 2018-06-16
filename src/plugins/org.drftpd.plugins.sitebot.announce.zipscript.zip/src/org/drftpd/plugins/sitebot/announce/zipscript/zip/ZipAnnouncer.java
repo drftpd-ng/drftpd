@@ -217,29 +217,29 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 								Integer.toString(
 										(stat.getFiles() * 100) / zipEvent.getDizInfo().getTotal()) + "%");
 						raceenv.add("alup",
-								Integer.valueOf(UserTransferStats.getStatsPlace("ALUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("ALUP",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("monthup",
-								Integer.valueOf(UserTransferStats.getStatsPlace("MONTHUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("MONTHUP",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("wkup",
-								Integer.valueOf(UserTransferStats.getStatsPlace("WKUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("WKUP",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("dayup",
-								Integer.valueOf(UserTransferStats.getStatsPlace("DAYUP",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("DAYUP",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("aldn",
-								Integer.valueOf(UserTransferStats.getStatsPlace("ALDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("ALDN",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("monthdn",
-								Integer.valueOf(UserTransferStats.getStatsPlace("MONTHDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("MONTHDN",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("wkdn",
-								Integer.valueOf(UserTransferStats.getStatsPlace("WKDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("WKDN",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						raceenv.add("daydn",
-								Integer.valueOf(UserTransferStats.getStatsPlace("DAYDN",
-										raceuser, GlobalContext.getGlobalContext().getUserManager())));
+                                UserTransferStats.getStatsPlace("DAYDN",
+                                        raceuser, GlobalContext.getGlobalContext().getUserManager()));
 						sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.complete.racer", raceenv, _bundle), writer);
 
 						position++;

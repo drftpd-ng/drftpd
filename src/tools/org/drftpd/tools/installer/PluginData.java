@@ -57,7 +57,7 @@ public class PluginData {
 	}
 
 	public void setSelected(Object value) { 
-		_selected = ((Boolean)value).booleanValue(); 
+		_selected = (Boolean) value;
 	}
 
 	public void invertSelected() {

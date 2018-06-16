@@ -169,7 +169,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 
 	public Object getValueAt(int row, int col) {
 		switch(col) {
-		case 0: return Boolean.valueOf(_plugins.get(row).isSelected()); 
+		case 0: return _plugins.get(row).isSelected();
 		case 1: return _plugins.get(row).getName();
 		case 2: return _plugins.get(row).getDescriptor().getVersion().toString();
 		default: return null;
@@ -215,7 +215,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 						if (!dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
-							setValueAt(Boolean.valueOf(dep.isSelected()),i,0);
+							setValueAt(dep.isSelected(),i,0);
 							_internalChange = false;
 						}
 					}
@@ -226,7 +226,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 						if (dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
-							setValueAt(Boolean.valueOf(dep.isSelected()),i,0);
+							setValueAt(dep.isSelected(),i,0);
 							_internalChange = false;
 						}
 					}

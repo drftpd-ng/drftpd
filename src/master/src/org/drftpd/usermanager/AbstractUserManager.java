@@ -64,7 +64,7 @@ public abstract class AbstractUserManager implements UserManager {
 		User user = createUser("drftpd");
 		user.setGroup("drftpd");
 		user.setPassword("drftpd");
-		user.getKeyedMap().setObject(UserManagement.RATIO, new Float(0));
+		user.getKeyedMap().setObject(UserManagement.RATIO, (float) 0);
 		user.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
 		user.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXLOGINS, 0);
@@ -75,7 +75,7 @@ public abstract class AbstractUserManager implements UserManager {
 		user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
 		user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
 		user.getKeyedMap()
-		.setObject(UserManagement.WKLY_ALLOTMENT, Long.valueOf(0));
+		.setObject(UserManagement.WKLY_ALLOTMENT, 0L);
 		user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
 		user.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
 		user.getKeyedMap().setObject(UserManagement.TAGLINE, "drftpd");

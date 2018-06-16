@@ -561,7 +561,7 @@ public class UserManagementHandler extends CommandInterface {
 						+ userToChange.getKeyedMap().getObjectFloat(
 								UserManagement.RATIO) + "' to '" + ratio + "'");
 				userToChange.getKeyedMap().setObject(UserManagement.RATIO,
-						new Float(ratio));
+                        ratio);
 				env.add("newratio", Float.toString(userToChange.getKeyedMap()
 						.getObjectFloat(UserManagement.RATIO)));
 				response.addComment(session.jprintf(_bundle,
@@ -576,7 +576,7 @@ public class UserManagementHandler extends CommandInterface {
 						+ userToChange.getKeyedMap().getObjectFloat(
 								UserManagement.RATIO) + " to '" + ratio + "'");
 				userToChange.getKeyedMap().setObject(UserManagement.RATIO,
-						new Float(ratio));
+                        ratio);
 				env.add("newratio", Float.toString(userToChange.getKeyedMap()
 						.getObjectFloat(UserManagement.RATIO)));
 				response.addComment(session.jprintf(_bundle,
@@ -1464,7 +1464,7 @@ public class UserManagementHandler extends CommandInterface {
 				}
 				if (opt.equals("ratio")) {
 					userToChange.getKeyedMap().setObject(UserManagement.RATIO,
-							new Float(ratio));
+                            ratio);
 				}
 				userToChange.commit();
 				response.addComment("Changed " + userToChange.getName() + "!");
@@ -1819,12 +1819,12 @@ public class UserManagementHandler extends CommandInterface {
 		if (!request.hasArgument()) {
 			user.getKeyedMap().setObject(
 					UserManagement.DEBUG,
-					Boolean.valueOf(!user.getKeyedMap().getObjectBoolean(
-							UserManagement.DEBUG)));
+                    !user.getKeyedMap().getObjectBoolean(
+                            UserManagement.DEBUG));
 		} else {
 			String arg = request.getArgument();
 			user.getKeyedMap().setObject(UserManagement.DEBUG,
-					Boolean.valueOf(arg.equals("true") || arg.equals("on")));
+                    arg.equals("true") || arg.equals("on"));
 		}
 		user.commit();
 		return new CommandResponse(200, session.jprintf(_bundle, _keyPrefix+"debug", request.getUser()));
