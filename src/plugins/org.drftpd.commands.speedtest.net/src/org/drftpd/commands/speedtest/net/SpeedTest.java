@@ -157,10 +157,10 @@ public class SpeedTest extends CommandInterface {
 			SlaveLocation slaveLocation = new SlaveLocation();
 			String lat = rslave.getProperty("lat");
 			String lon = rslave.getProperty("lon");
-			if (lat != null && NumberUtils.isParsable(lat)) {
+			if (NumberUtils.isParsable(lat)) {
 				slaveLocation.setLatitude(Double.parseDouble(lat));
 			}
-			if (lon != null && NumberUtils.isParsable(lon)) {
+			if (NumberUtils.isParsable(lon)) {
 				slaveLocation.setLongitude(Double.parseDouble(lon));
 			}
 			if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {

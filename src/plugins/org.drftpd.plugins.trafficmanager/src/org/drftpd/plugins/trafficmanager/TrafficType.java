@@ -91,8 +91,8 @@ public abstract class TrafficType {
 			throw new RuntimeException("Invalid Regex For " + confnum + ".exclude - Skipping Config");
 		}		
 		
-		_up = p.getProperty(confnum + ".up","false").trim().equalsIgnoreCase("true") ? true : false;
-		_dn = p.getProperty(confnum + ".dn","false").trim().equalsIgnoreCase("true") ? true : false;		
+		_up = p.getProperty(confnum + ".up", "false").trim().equalsIgnoreCase("true");
+		_dn = p.getProperty(confnum + ".dn", "false").trim().equalsIgnoreCase("true");
 	}
 	
 	protected String getName() {

@@ -86,7 +86,7 @@ public class MaxtransfersPerslaveFilter extends Filter {
 	       throws NoAvailableSlaveException {
 
 		Matcher m = _p.matcher(dir.getPath());
-		boolean validPath = _negateExpr ? !m.find() : m.find();
+		boolean validPath = _negateExpr != m.find();
 
 	 	for (Iterator<ScoreChart.SlaveScore> iterator = scorechart.getSlaveScores().iterator(); iterator.hasNext();) {
 	 		ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iterator.next();

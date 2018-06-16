@@ -112,14 +112,11 @@ public class VFSPermissions {
 	
 	private boolean verifyType(String type) {
 		type = type.toLowerCase();
-		if (type.equals("upload") || type.equals("makedir") || type.equals("delete") 
-				|| type.equals("deleteown")	|| type.startsWith("rename") || type.equals("renameown")
-				|| type.equals("privpath") || type.equals("download")) {
-			return true;
-		}
-		
-		return false;
-	}
+        return type.equals("upload") || type.equals("makedir") || type.equals("delete")
+                || type.equals("deleteown") || type.startsWith("rename") || type.equals("renameown")
+                || type.equals("privpath") || type.equals("download");
+
+    }
 	
 	public void handleLine(String directive, StringTokenizer st) {
 		if (!_handlersMap.containsKey(directive)) {

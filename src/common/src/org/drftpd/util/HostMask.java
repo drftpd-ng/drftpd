@@ -53,7 +53,7 @@ public class HostMask {
 	}
 
 	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof HostMask)) {
+		if (!(obj instanceof HostMask)) {
 			return false;
 		}
 		

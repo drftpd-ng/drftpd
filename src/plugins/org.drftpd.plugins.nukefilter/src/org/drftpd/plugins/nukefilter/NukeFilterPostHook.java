@@ -114,12 +114,10 @@ public class NukeFilterPostHook implements PostHookInterface {
 		if(doFilterGroupCheck(dir, 
 				_nfs.getNukeFilterGlobalConfig().getFilterGroupList(), "global"))
 			return true;
-		if(doEnforceGroupCheck(dir, 
-				_nfs.getNukeFilterGlobalConfig().getEnforceGroupList(), "global"))
-			return true;
-		
-		return false;
-	}
+        return doEnforceGroupCheck(dir,
+                _nfs.getNukeFilterGlobalConfig().getEnforceGroupList(), "global");
+
+    }
 	
 	/**
 	 * This method performs the section specific checks.
@@ -150,11 +148,9 @@ public class NukeFilterPostHook implements PostHookInterface {
 		if(doFilterGroupCheck(dir, 
 				_nfs.getSectionConfig(sectionName).getFilterGroupList(), "section"))
 			return true;
-		if(doEnforceGroupCheck(dir, 
-				_nfs.getSectionConfig(sectionName).getEnforceGroupList(), "section"))
-			return true;
-		return false;
-	}
+        return doEnforceGroupCheck(dir,
+                _nfs.getSectionConfig(sectionName).getEnforceGroupList(), "section");
+    }
 	
 	/**
 	 * This method checks the filter string settings against the given dir.

@@ -31,7 +31,7 @@ public class Approve implements Serializable {
 
 	public static boolean isApproved(DirectoryHandle dir) {
 		try {
-			if (dir.getPluginMetaData(APPROVE) == true) {
+			if (dir.getPluginMetaData(APPROVE)) {
 				return true;
 			}
 		} catch (FileNotFoundException e) {

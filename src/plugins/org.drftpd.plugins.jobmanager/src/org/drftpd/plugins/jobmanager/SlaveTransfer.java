@@ -171,13 +171,10 @@ public class SlaveTransfer {
 			}
 		}
 
-		if (_srcTransfer.getChecksum() == _destTransfer.getChecksum()
-				|| _destTransfer.getChecksum() == 0
-				|| _srcTransfer.getChecksum() == 0) {
-			return true;
-		}
-		return false;
-	}
+        return _srcTransfer.getChecksum() == _destTransfer.getChecksum()
+                || _destTransfer.getChecksum() == 0
+                || _srcTransfer.getChecksum() == 0;
+    }
 
 	/**
 	 * @return Returns the _destSlave.

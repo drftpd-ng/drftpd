@@ -98,7 +98,7 @@ public class Permission {
         }
 
 		// didn't match..
-		return _invert ? (!allow) : false;
+		return _invert && (!allow);
 	}
 	
 	public static ArrayList<String> makeUsers(Enumeration<Object> st) {

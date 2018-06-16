@@ -155,7 +155,7 @@ public class ApproveCommands extends CommandInterface {
 				}
 				
 				try {
-					if (dir.getPluginMetaData(Approve.APPROVE) == false) {
+					if (!dir.getPluginMetaData(Approve.APPROVE)) {
 						throw new KeyNotFoundException();
 					}
 					return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"approve.approved", env, user));

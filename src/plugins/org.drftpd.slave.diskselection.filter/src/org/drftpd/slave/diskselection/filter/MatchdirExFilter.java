@@ -82,7 +82,7 @@ public class MatchdirExFilter extends DiskFilter {
 
 	public void process(ScoreChart sc, String path) {
 		Matcher m = _p.matcher(path);
-		boolean validPath = _negateExpr ? !m.find() : m.find();
+		boolean validPath = _negateExpr != m.find();
 		if (validPath) {
 			AssignRoot.addScoresToChart(this, _assignList, sc);
 		}

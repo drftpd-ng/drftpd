@@ -89,7 +89,7 @@ public class MatchdirExFilter extends Filter {
 	public void process(ScoreChart scorechart, User user, InetAddress source,
 			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
 		Matcher m = _p.matcher(file.getPath());
-		boolean validPath = _negateExpr ? !m.find() : m.find();
+		boolean validPath = _negateExpr != m.find();
 		if (validPath) {
 			AssignSlave.addScoresToChart(_assigns, scorechart);
 		}

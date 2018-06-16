@@ -410,7 +410,7 @@ public class ConfigManager implements ConfigInterface {
 
     public boolean checkPermission(String key, User user) {
         Permission perm = getPermissionsMap().get(key);
-        return (perm == null) ? false : perm.check(user);
+        return (perm != null) && perm.check(user);
     }
 
     public List<InetAddress> getBouncerIps() {

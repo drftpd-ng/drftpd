@@ -183,11 +183,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 	public boolean isCellEditable(int row, int col) {
 		if (col > 0) {
 			return false;
-		} else if (!_plugins.get(row).isModifiable()) {
-			return false;
-		} else {
-			return true;
-		}
+		} else return _plugins.get(row).isModifiable();
 	}
 
 	public void setValueAt(Object value, int row, int col) {

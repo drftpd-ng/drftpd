@@ -59,62 +59,59 @@ public class LuceneBackupThread  extends Thread {
 		String[] backups;
 		int x;
 
-		while (true) {
-			if (_stop) {
-				break;
-			}
+        while (!_stop) {
 
-			// store a limited amount of backups.
-			// the code bellow remove older backups.
-			backups = BACKUP_HOME.list();
-			
-			if (backups != null) {
-				Arrays.sort(backups, String.CASE_INSENSITIVE_ORDER);
-				for (x = 0; x < backups.length; x++) {
-					if (BACKUP_HOME.list().length < _maxNumberBackup) {
-						break;
-					}
-					new PhysicalFile(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
-				}
-			}
+            // store a limited amount of backups.
+            // the code bellow remove older backups.
+            backups = BACKUP_HOME.list();
 
-			if (_doBackups) {
-				// locking the writer object so that noone can use it.
-				// this might be useful.
-				synchronized (_engine.getWriter()) {
-					setRunning(true);
+            if (backups != null) {
+                Arrays.sort(backups, String.CASE_INSENSITIVE_ORDER);
+                for (x = 0; x < backups.length; x++) {
+                    if (BACKUP_HOME.list().length < _maxNumberBackup) {
+                        break;
+                    }
+                    new PhysicalFile(BACKUP_DIRNAME + "/" + backups[x]).deleteRecursive();
+                }
+            }
 
-					String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
-					File f = new File(BACKUP_DIRNAME + "/" + dateTxt);
+            if (_doBackups) {
+                // locking the writer object so that noone can use it.
+                // this might be useful.
+                synchronized (_engine.getWriter()) {
+                    setRunning(true);
 
-					try {
-						if (!f.mkdirs()) {
-							throw new IOException("Impossible to create backup directory, not enough permissions.");
-						}
+                    String dateTxt = sdf.format(new Date(System.currentTimeMillis()));
+                    File f = new File(BACKUP_DIRNAME + "/" + dateTxt);
 
-						// creating the destination directory.
-						FSDirectory bkpDirectory = FSDirectory.open(f);
+                    try {
+                        if (!f.mkdirs()) {
+                            throw new IOException("Impossible to create backup directory, not enough permissions.");
+                        }
 
-						for (String file : _engine.getStorage().listAll()) {
-							_engine.getStorage().copy(bkpDirectory, file, file);
-						}
+                        // creating the destination directory.
+                        FSDirectory bkpDirectory = FSDirectory.open(f);
 
-						logger.debug("A backup of the index was created successfully.");
-						updateLastBackupTime();
-					} catch (IOException e) {
-						logger.error(e, e);
-					}
-				}
-			}
+                        for (String file : _engine.getStorage().listAll()) {
+                            _engine.getStorage().copy(bkpDirectory, file, file);
+                        }
 
-			try {
-				synchronized (this) {
-					setRunning(false);
-					wait(_backupInterval);
-				}
-			} catch (InterruptedException e) {
-			}
-		}
+                        logger.debug("A backup of the index was created successfully.");
+                        updateLastBackupTime();
+                    } catch (IOException e) {
+                        logger.error(e, e);
+                    }
+                }
+            }
+
+            try {
+                synchronized (this) {
+                    setRunning(false);
+                    wait(_backupInterval);
+                }
+            } catch (InterruptedException e) {
+            }
+        }
 	}
 	
 	/**
