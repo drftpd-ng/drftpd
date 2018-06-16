@@ -515,8 +515,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				}
 			} catch (FileNotFoundException e) {
 				// Inode has been deleted, skip it
-				continue;
-			}
+            }
 		}
 		synchronized (_slaveRefCounts) {
 			_slaveRefCounts.clear();

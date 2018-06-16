@@ -75,7 +75,6 @@ public class Permission {
                     return allow;
                 }
 
-                continue;
             } else if (aclUser.charAt(0) == '=') {
                 // GROUP
                 if (user == null) {

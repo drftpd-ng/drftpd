@@ -130,8 +130,7 @@ public class UserFileConverter {
 			buffOutput.flush();
 		} catch (IOException e) {
 			System.out.println("Skipping "+origUser.getName()+" as an IO error occurred during writing");
-			return;
-		} finally {
+        } finally {
 			try {
 				buffOutput.close();
 			} catch (IOException e) {

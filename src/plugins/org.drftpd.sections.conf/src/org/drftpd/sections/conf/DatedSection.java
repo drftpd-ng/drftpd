@@ -197,8 +197,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			return;
 		}
 		createLink(newDir);
-		return;
-	}
+    }
 
 	private void createLink(DirectoryHandle targetDir) {
 		// creating the symlink

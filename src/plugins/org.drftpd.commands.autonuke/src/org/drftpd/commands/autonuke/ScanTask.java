@@ -37,7 +37,7 @@ public class ScanTask extends TimerTask {
 
 	public void run() {
 		for (Iterator<DirectoryHandle> iter = DirsToCheck.getDirsToCheck().get().iterator(); iter.hasNext();) {
-			DirectoryHandle dir = (DirectoryHandle) iter.next();
+			DirectoryHandle dir = iter.next();
 
 			boolean isApproved = false;
 			try {

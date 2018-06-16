@@ -74,8 +74,7 @@ public class RankUtils {
 					stat.updateFiles(1);
 					stat.updateXfertime(file.getXfertime());
 				} catch (FileNotFoundException e) {
-					continue;
-					// file was deleted or moved
+                    // file was deleted or moved
 				}
 			}
 		}
@@ -101,8 +100,7 @@ public class RankUtils {
 						break;
 					}
 				} catch (FileNotFoundException e) {
-					continue;
-					// file was deleted or moved
+                    // file was deleted or moved
 				}
 			}
 
@@ -121,8 +119,7 @@ public class RankUtils {
 					stat.updateFiles(1);
 					stat.updateXfertime(file.getXfertime());
 				} catch (FileNotFoundException e) {
-					continue;
-					// file was deleted or moved
+                    // file was deleted or moved
 				}
 			}
 		}

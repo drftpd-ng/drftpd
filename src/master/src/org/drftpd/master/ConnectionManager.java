@@ -137,7 +137,6 @@ public class ConnectionManager {
 			logger.error("", th);
 			WrapperManager.stop(0);
 
-			return;
 		}
 	}
 

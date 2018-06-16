@@ -46,7 +46,7 @@ public class NukeTask extends TimerTask {
 
 	public void run() {
 		for (Iterator<NukeItem> iter = DirsToNuke.getDirsToNuke().get().iterator(); iter.hasNext();) {
-			NukeItem ni = (NukeItem) iter.next();
+			NukeItem ni = iter.next();
 			if (System.currentTimeMillis() >= ni.getTime()) {
 				DirectoryHandle dir;
 				if (ni.isSubdir()) {

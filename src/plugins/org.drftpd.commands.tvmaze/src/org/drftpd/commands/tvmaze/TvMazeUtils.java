@@ -150,7 +150,7 @@ public class TvMazeUtils {
 		if (jObj.get("type").isJsonPrimitive()) tvmazeInfo.setType(jObj.get("type").getAsString());
 		if (jObj.get("language").isJsonPrimitive()) tvmazeInfo.setLanguage(jObj.get("language").getAsString());
 		if (jObj.get("genres").isJsonArray()) tvmazeInfo.setGenres(
-				(String[])new Gson().fromJson(jObj.getAsJsonArray("genres"), new TypeToken<String[]>() {}.getType()));
+                new Gson().fromJson(jObj.getAsJsonArray("genres"), new TypeToken<String[]>() {}.getType()));
 		if (jObj.get("status").isJsonPrimitive()) tvmazeInfo.setStatus(jObj.get("status").getAsString());
 		if (jObj.get("runtime").isJsonPrimitive()) tvmazeInfo.setRuntime(jObj.get("runtime").getAsInt());
 		if (jObj.get("premiered").isJsonPrimitive()) {

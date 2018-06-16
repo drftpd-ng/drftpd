@@ -34,7 +34,7 @@ public class URLBootStrap {
 		URL[] urls = { new URL(args[0]) };
 		URLClassLoader cl = new URLClassLoader(urls);
 		Method met = cl.loadClass(args[1]).getMethod("main",
-				new Class[] { String[].class });
+                String[].class);
 		met.invoke(null, new Object[] { scrubArgs(args, 2) });
 	}
 

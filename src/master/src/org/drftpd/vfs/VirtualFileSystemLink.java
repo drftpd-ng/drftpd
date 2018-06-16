@@ -55,8 +55,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 	 */
 	@Override
 	public void setSize(long l) {
-		return;
-		// size of links are always zero
+        // size of links are always zero
 	}
 
 	@Override

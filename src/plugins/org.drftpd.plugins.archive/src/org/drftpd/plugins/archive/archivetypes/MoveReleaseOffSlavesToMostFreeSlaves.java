@@ -115,7 +115,6 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
         for (InodeHandle inode : lrf.getInodeHandlesUnchecked()) {
             if (inode.isLink()) {
-                continue;
             } else if (inode instanceof DirectoryHandle) {
                 if (!isArchivedDir((DirectoryHandle) inode)) {
                     return false;
