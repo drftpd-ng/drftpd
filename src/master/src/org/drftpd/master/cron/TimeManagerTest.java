@@ -115,7 +115,7 @@ public class TimeManagerTest extends TestCase {
 		cal.setTime(date);
 		_tm.doReset(cal);
 		assertTrue(_lastReset == Calendar.YEAR);
-		assertTrue(_resetWeek == false);
+		assertTrue(!_resetWeek);
 		
 		// test month & week
 		_resetWeek = false;
@@ -125,7 +125,7 @@ public class TimeManagerTest extends TestCase {
 		cal.setTime(date);
 		_tm.doReset(cal);
 		assertTrue(_lastReset == Calendar.MONTH);
-		assertTrue(_resetWeek == false);
+		assertTrue(!_resetWeek);
 		
 		// test day & week
 		_resetWeek = false;
@@ -135,7 +135,7 @@ public class TimeManagerTest extends TestCase {
 		cal.setTime(date);
 		_tm.doReset(cal);
 		assertTrue(_lastReset == Calendar.DAY_OF_MONTH);
-		assertTrue(_resetWeek == false);
+		assertTrue(!_resetWeek);
 		
 		// test hour & week
 		_resetWeek = false;
@@ -145,7 +145,7 @@ public class TimeManagerTest extends TestCase {
 		cal.setTime(date);
 		_tm.doReset(cal);
 		assertTrue(_lastReset == Calendar.HOUR);
-		assertTrue(_resetWeek == false);
+		assertTrue(!_resetWeek);
 		
 	}
 

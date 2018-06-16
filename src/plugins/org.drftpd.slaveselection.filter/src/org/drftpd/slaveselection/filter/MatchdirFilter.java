@@ -90,7 +90,7 @@ public class MatchdirFilter extends Filter {
 	public void process(ScoreChart scorechart, User user, InetAddress source,
 			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
 		Perl5Matcher m = new Perl5Matcher();
-		boolean validPath = _negateExpr ? !m.matches(file.getPath(), _p) : m.matches(file.getPath(), _p);
+		boolean validPath = _negateExpr != m.matches(file.getPath(), _p);
 		if (validPath) {
 			AssignSlave.addScoresToChart(_assigns, scorechart);
 		}

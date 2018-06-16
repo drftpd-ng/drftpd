@@ -142,11 +142,8 @@ public class IpSecurityManager implements PluginInterface {
 	 * Checks if host has an Ident line and returns if permitted
 	 */
 	private boolean checkIdent(String ident, int currentident ) {
-		if ((currentident == 1) && (ident.equals("*")) ) {
-			return false;
-		}
-		return true;
-	}
+        return (currentident != 1) || (!ident.equals("*"));
+    }
 	
 	/*
 	 * This checks the octects to make sure they are correct and not a insecure set

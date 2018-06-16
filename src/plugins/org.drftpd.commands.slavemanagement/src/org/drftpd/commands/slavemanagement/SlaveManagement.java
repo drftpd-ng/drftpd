@@ -65,11 +65,11 @@ public class SlaveManagement extends CommandInterface {
 		}
 		String argument = request.getArgument();
 		StringTokenizer arguments = new StringTokenizer(argument);
-		if (arguments.hasMoreTokens() == false) {
+		if (!arguments.hasMoreTokens()) {
 			throw new ImproperUsageException();
 		}
 		String type = arguments.nextToken();
-		if (arguments.hasMoreTokens() == false) {
+		if (!arguments.hasMoreTokens()) {
 			throw new ImproperUsageException();
 		}
 		String path = arguments.nextToken();

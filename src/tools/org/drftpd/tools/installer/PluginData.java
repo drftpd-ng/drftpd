@@ -36,16 +36,8 @@ public class PluginData {
 		_descr = descr;
 		PluginAttribute coreBuild = descr.getAttribute("DefaultBuild");
 		PluginAttribute mustBuild = descr.getAttribute("MustBuild");
-		if (coreBuild != null && coreBuild.getValue().equalsIgnoreCase("true")) {
-			_selected = true;
-		} else {
-			_selected = false;
-		}
-		if (mustBuild != null && mustBuild.getValue().equalsIgnoreCase("true")) {
-			_modifiable = false;
-		} else {
-			_modifiable = true;
-		}
+        _selected = coreBuild != null && coreBuild.getValue().equalsIgnoreCase("true");
+        _modifiable = mustBuild == null || !mustBuild.getValue().equalsIgnoreCase("true");
 	}
 
 	public String getName() {

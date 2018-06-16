@@ -582,25 +582,22 @@ public abstract class ArchiveType {
 	 * Loops through and waits for all files to archive to configured slaves.
 	 */
 	public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
-		while (true) {
-			for (Iterator<Job> iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = iter.next();
+        do {
+            for (Iterator<Job> iter = jobQueue.iterator(); iter.hasNext(); ) {
+                Job job = iter.next();
 
-				if (job.isDone()) {
-					logger.debug(job + " - is done being sent");
-					iter.remove();
-				}
-			}
+                if (job.isDone()) {
+                    logger.debug(job + " - is done being sent");
+                    iter.remove();
+                }
+            }
 
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-			}
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+            }
 
-			if (jobQueue.isEmpty()) {
-				break;
-			}
-		}
+        } while (!jobQueue.isEmpty());
 	}
 
 	/*

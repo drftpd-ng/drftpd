@@ -99,7 +99,7 @@ public class PortRange {
 				pos = _minPort;
 			}
 			if (pos == initPos) {
-				if (retry == false) {
+				if (!retry) {
 					throw new RuntimeException("PortRange exhausted");
 				}
 				System.runFinalization();

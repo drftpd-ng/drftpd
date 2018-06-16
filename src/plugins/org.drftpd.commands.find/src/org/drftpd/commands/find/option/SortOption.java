@@ -36,7 +36,7 @@ public class SortOption implements OptionInterface {
 			params.setSortField(args[0]);
 			if (args.length == 2) {
 				// Sort order also specified
-				params.setSortOrder(args[1].equalsIgnoreCase("desc") ? true : false);
+				params.setSortOrder(args[1].equalsIgnoreCase("desc"));
 			}
 		} else if (option.equalsIgnoreCase("-random")) {
 			params.setSortOrder(null);

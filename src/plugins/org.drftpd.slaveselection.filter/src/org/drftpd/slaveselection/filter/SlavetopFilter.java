@@ -57,15 +57,12 @@ public class SlavetopFilter extends Filter {
     public void process(ScoreChart scorechart, DirectoryHandle dir) {
         //// find the section part of the path name
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-        while (true) {
-        	if (dir.getParent().equals(section.getBaseDirectory())) {
-        		break;
-        	}
-        	if (dir.equals(GlobalContext.getGlobalContext().getRoot())) {
-        		// this is not a "release", don't process
-        		return;
-        	}
-        	dir = dir.getParent();
+        while (!dir.getParent().equals(section.getBaseDirectory())) {
+            if (dir.equals(GlobalContext.getGlobalContext().getRoot())) {
+                // this is not a "release", don't process
+                return;
+            }
+            dir = dir.getParent();
         }
 
         Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =

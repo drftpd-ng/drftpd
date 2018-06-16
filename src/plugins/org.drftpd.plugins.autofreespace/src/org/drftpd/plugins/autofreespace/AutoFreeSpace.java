@@ -177,9 +177,7 @@ public class AutoFreeSpace implements PluginInterface {
 				throws NoAvailableSlaveException, FileNotFoundException {
 
 			if (inode.isFile()) {
-				if(((FileHandle)inode).getAvailableSlaves().contains(slave)) {
-					return true;
-				}
+                return ((FileHandle) inode).getAvailableSlaves().contains(slave);
 			} else if (inode.isDirectory()) {
 				for (FileHandle file : ((DirectoryHandle)inode).getAllFilesRecursiveUnchecked()) {
 					if (file.getAvailableSlaves().contains(slave)) {

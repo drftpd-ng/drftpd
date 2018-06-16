@@ -400,7 +400,7 @@ public class BasicHandler extends AbstractHandler {
 							boolean restoreRun = localRun;
 							String oldPath = path;
 							path = fullPath;
-							if (localRun == false) {
+							if (!localRun) {
 								localRun = true;
 							}
 							run();
@@ -457,7 +457,7 @@ public class BasicHandler extends AbstractHandler {
 				}
 				updateDepth(path + "/");
 
-				if (localRun == false) {
+				if (!localRun) {
 					available();
 				} else {
 					return;
@@ -531,7 +531,7 @@ public class BasicHandler extends AbstractHandler {
 				}
 			}
 
-			if (add == true) {
+			if (add) {
 				threadMergeDepth.add(path);
 			}
 		}

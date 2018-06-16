@@ -38,7 +38,7 @@ public class Key<T> implements Serializable {
 	
 	@SuppressWarnings("unchecked")
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof Key)) {
+		if (!(o instanceof Key)) {
 			return false;
 		}
 

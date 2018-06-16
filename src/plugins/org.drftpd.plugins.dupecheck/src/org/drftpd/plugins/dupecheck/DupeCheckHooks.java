@@ -111,9 +111,7 @@ public class DupeCheckHooks implements PreHookInterface {
 	private boolean checkFile(String file) {
 		if (_exempt != null) {
 			Matcher matcher = _exempt.matcher(file.toLowerCase());
-			if (matcher.find()) {
-				return true;
-			}
+            return matcher.find();
 		}
 		return false;
 	}

@@ -22,11 +22,8 @@ public class TrialManagerReset implements UserResetHookInterface {
 		} catch (RuntimeException e) {
 			logger.debug("Could Not Load Trial Manager - ",e);
 		}
-		if (trialmanager == null) {
-			return false;
-		}
-		return true;
-	}
+        return trialmanager != null;
+    }
 	
 	@Override
 	public void resetDay(Date d) {

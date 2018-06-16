@@ -193,59 +193,60 @@ public class SpeedTestHandler extends AbstractHandler {
 		boolean limitReached = false;
 
 		int i = 2;
-		while (true) {
-			if ((System.currentTimeMillis()-startTime) > _upTime) { break; }
+        while ((System.currentTimeMillis() - startTime) <= _upTime) {
 
-			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-			nameValuePairs.add(new BasicNameValuePair("content1",payload));
-			try {
-				httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-			} catch (UnsupportedEncodingException e) {
-				logger.error("Unsupported encoding of payload for speedtest upload: " + e.getMessage());
-				close(executor, callables);
-				return 0;
-			}
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            nameValuePairs.add(new BasicNameValuePair("content1", payload));
+            try {
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            } catch (UnsupportedEncodingException e) {
+                logger.error("Unsupported encoding of payload for speedtest upload: " + e.getMessage());
+                close(executor, callables);
+                return 0;
+            }
 
-			callables.clear();
-			for (int k = 0; k < _upThreads; k++) {
-				speedTestCallables[k].setHttpPost(httpPost);
-				callables.add(speedTestCallables[k]);
-			}
+            callables.clear();
+            for (int k = 0; k < _upThreads; k++) {
+                speedTestCallables[k].setHttpPost(httpPost);
+                callables.add(speedTestCallables[k]);
+            }
 
-			for (int j = 0; j < _payloadLoop; j++) {
-				try {
-					watch.reset();
-					Thread.sleep(_sleep);
-					watch.start();
-					threadList = executor.invokeAll(callables);
-					for(Future<Long> fut : threadList){
-						Long bytes = fut.get();
-						totalBytes += bytes;
-					}
-					watch.stop();
-					totalTime += watch.getTime();
-				} catch (InterruptedException e) {
-					logger.error(e.getMessage());
-					close(executor, callables);
-					return 0;
-				} catch (ExecutionException e) {
-					if (e.getMessage().contains("Error code 413")) {
-						limitReached = true;
-						payload = StringUtils.repeat(_payload, i-2);
-					} else {
-						logger.error(e.getMessage());
-						close(executor, callables);
-						return 0;
-					}
-				}
-				if ((System.currentTimeMillis()-startTime) > _upTime) { break; }
-			}
+            for (int j = 0; j < _payloadLoop; j++) {
+                try {
+                    watch.reset();
+                    Thread.sleep(_sleep);
+                    watch.start();
+                    threadList = executor.invokeAll(callables);
+                    for (Future<Long> fut : threadList) {
+                        Long bytes = fut.get();
+                        totalBytes += bytes;
+                    }
+                    watch.stop();
+                    totalTime += watch.getTime();
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                    close(executor, callables);
+                    return 0;
+                } catch (ExecutionException e) {
+                    if (e.getMessage().contains("Error code 413")) {
+                        limitReached = true;
+                        payload = StringUtils.repeat(_payload, i - 2);
+                    } else {
+                        logger.error(e.getMessage());
+                        close(executor, callables);
+                        return 0;
+                    }
+                }
+                if ((System.currentTimeMillis() - startTime) > _upTime) {
+                    break;
+                }
+            }
 
-			if (!limitReached) { // Increase payload size if not too big
-				payload = StringUtils.repeat(_payload, i);
-				i++;
-			}
-		}
+            if (!limitReached) { // Increase payload size if not too big
+                payload = StringUtils.repeat(_payload, i);
+                i++;
+            }
+        }
 
 		if (totalBytes == 0L || totalTime == 0L) {
 			close(executor, callables);
