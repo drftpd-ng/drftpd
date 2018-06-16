@@ -33,19 +33,19 @@ public interface Commitable {
 	 * Adds itself to the CommitManager by calling CommitManager.add()
 	 *
 	 */
-	public void commit();
+    void commit();
 	
 	
 	/**
 	 * This is the actual serialization method to write this Commitable to disk
 	 * @throws IOException
 	 */
-	public void writeToDisk() throws IOException;
+    void writeToDisk() throws IOException;
 	
 	/**
 	 * Returns a textual descriptive name for `this` object that a drftpd user can recognize
 	 * Used in error reporting
 	 * @return
 	 */
-	public String descriptiveName();
+    String descriptiveName();
 }

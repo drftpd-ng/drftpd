@@ -31,8 +31,8 @@ import java.io.FileNotFoundException;
  */
 public interface DirectoryHandleInterface extends InodeHandleInterface {
 
-	public DirectoryHandleInterface createDirectorySystem(String string) throws FileExistsException, FileNotFoundException;
+	DirectoryHandleInterface createDirectorySystem(String string) throws FileExistsException, FileNotFoundException;
 
-	public FileHandle createFileUnchecked(String string, String user, String group, RemoteSlave rslave) throws FileExistsException, FileNotFoundException;
+	FileHandle createFileUnchecked(String string, String user, String group, RemoteSlave rslave) throws FileExistsException, FileNotFoundException;
 
 }

@@ -25,5 +25,5 @@ import org.drftpd.sections.SectionInterface;
  */
 public interface ConfigurableSectionInterface extends SectionInterface {
 
-	public void createSectionDir();
+	void createSectionDir();
 }

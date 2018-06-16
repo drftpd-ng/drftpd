@@ -21,7 +21,7 @@ package org.drftpd.usermanager;
  * @version $Id$
  */
 public interface Entity {
-	public String getName();
+	String getName();
 
-	public boolean isMemberOf(String string);
+	boolean isMemberOf(String string);
 }

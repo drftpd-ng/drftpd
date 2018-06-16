@@ -32,14 +32,14 @@ import java.util.Date;
  */
 public interface TimeEventInterface {
 
-	public abstract void resetDay(Date d);
+	void resetDay(Date d);
 	
-	public abstract void resetWeek(Date d);
+	void resetWeek(Date d);
 	
-	public abstract void resetMonth(Date d);
+	void resetMonth(Date d);
 	
-	public abstract void resetYear(Date d);
+	void resetYear(Date d);
 	
-	public abstract void resetHour(Date d);
+	void resetHour(Date d);
 
 }

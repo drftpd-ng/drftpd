@@ -26,31 +26,31 @@ import java.util.Collection;
  * @version $Id$
  */
 public interface UserManager extends TimeEventInterface {
-	public abstract void init() throws UserFileException;
+	void init() throws UserFileException;
 	
-	public abstract User create(String username) throws UserFileException;
+	User create(String username) throws UserFileException;
 
-	public abstract Collection<String> getAllGroups();
+	Collection<String> getAllGroups();
 
 	/**
 	 * Get all user names in the system.
 	 */
-	public abstract Collection<User> getAllUsers();
+    Collection<User> getAllUsers();
 
-	public abstract Collection<User> getAllUsersByGroup(String group);
+	Collection<User> getAllUsersByGroup(String group);
 
 	/**
 	 * Get user by name.
 	 */
-	public abstract User getUserByName(String username)
+    User getUserByName(String username)
 			throws NoSuchUserException, UserFileException;
 
-	public abstract User getUserByIdent(String ident, String botName)
+	User getUserByIdent(String ident, String botName)
 			throws NoSuchUserException;
 
-	public abstract User getUserByNameUnchecked(String username)
+	User getUserByNameUnchecked(String username)
 			throws NoSuchUserException, UserFileException;
 
-	public abstract User getUserByNameIncludeDeleted(String argument)
+	User getUserByNameIncludeDeleted(String argument)
 			throws NoSuchUserException, UserFileException;
 }
