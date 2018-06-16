@@ -44,23 +44,28 @@ public class SysopPostHook implements PostHookInterface {
 		String arg = request.getArgument();
 		String code = String.valueOf(response.getCode());
 		String message;
-		if (cmd.equals("CHPASS") || cmd.equals("ADDUSER")) {
-			int i = arg.indexOf(" ");
-			if (i == -1) {
-				//Syntax check to not throw an StringIndexOutOfBoundsException
-				return;
-			}
-			message = cmd + " " + arg.substring(0, arg.indexOf(" "));
-		} else if (cmd.equals("GADDUSER")) {
-			String[] arguments = arg.split(" ");
-			if (arguments.length < 2) {
-				//Syntax check to not throw an ArrayIndexOutOfBoundsException
-				return;
-			}
-			message = cmd + " " + arguments[0] + " " + arguments[1];
-		} else {
-			message = cmd + " " + arg;
-		}
+        switch (cmd) {
+            case "CHPASS":
+            case "ADDUSER":
+                int i = arg.indexOf(" ");
+                if (i == -1) {
+                    //Syntax check to not throw an StringIndexOutOfBoundsException
+                    return;
+                }
+                message = cmd + " " + arg.substring(0, arg.indexOf(" "));
+                break;
+            case "GADDUSER":
+                String[] arguments = arg.split(" ");
+                if (arguments.length < 2) {
+                    //Syntax check to not throw an ArrayIndexOutOfBoundsException
+                    return;
+                }
+                message = cmd + " " + arguments[0] + " " + arguments[1];
+                break;
+            default:
+                message = cmd + " " + arg;
+                break;
+        }
 		if ((code.startsWith("5") || code.startsWith("4")) && !code.startsWith("530") && showFailed(cmd)) {
 			GlobalContext.getEventService().publishAsync(
 					new SysopEvent(request.getUser(), message, response

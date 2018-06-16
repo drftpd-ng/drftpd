@@ -41,8 +41,7 @@ public class FileUtils {
 		public int compare(FileHandle f1, FileHandle f2) {
 
 			try {
-				return ((f1.lastModified() < f2.lastModified()) ? (-1) : ((f1.lastModified() == f2.lastModified()) ? 0
-						: 1));
+				return (Long.compare(f1.lastModified(), f2.lastModified()));
 			}
 			catch (FileNotFoundException e) {
 				return 0;

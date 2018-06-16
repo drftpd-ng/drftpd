@@ -52,7 +52,7 @@ public class DistanceFromMeComparator implements Comparator<SpeedTestServer> {
 		} else {
 			int a = s1.getId();
 			int b = s2.getId();
-			return a > b ? +1 : a < b ? -1 : 0;
+			return Integer.compare(a, b);
 		}
 	}
 }

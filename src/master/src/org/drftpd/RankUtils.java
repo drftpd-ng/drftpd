@@ -144,12 +144,13 @@ class UserComparator implements Comparator<UploaderPosition> {
 	}
 
 	static long getType(String type, UploaderPosition user) {
-		if (type.equals("bytes")) {
-			return user.getBytes();
-		} else if (type.equals("xferspeed")) {
-			return user.getXferspeed();
-		} else if (type.equals("xfertime")) {
-			return user.getXfertime();
+		switch (type) {
+			case "bytes":
+				return user.getBytes();
+			case "xferspeed":
+				return user.getXferspeed();
+			case "xfertime":
+				return user.getXfertime();
 		}
 
 		return 0;
@@ -161,11 +162,9 @@ class UserComparator implements Comparator<UploaderPosition> {
 		long anotherVal = getType(_type, u2);
 
 		if (_sort.equals("low")) {
-			return ((thisVal < anotherVal) ? (-1)
-					: ((thisVal == anotherVal) ? 0 : 1));
+			return (Long.compare(thisVal, anotherVal));
 		}
 
-		return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0
-				: 1));
+		return (Long.compare(anotherVal, thisVal));
 	}
 }

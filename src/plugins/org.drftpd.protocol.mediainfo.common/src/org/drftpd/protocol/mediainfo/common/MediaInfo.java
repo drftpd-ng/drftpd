@@ -214,64 +214,68 @@ public class MediaInfo implements Serializable {
 		}
 
 		// Calculate valid filesize for mp4, mkv and avi
-		if (realFormat.equals("MP4")) {
-			IsoFile isoFile = new IsoFile(filePath);
-			if (isoFile.getSize() != mediaInfo.getActFileSize()) {
-				mediaInfo.setSampleOk(false);
-				mediaInfo.setCalFileSize(isoFile.getSize());
-			}
-		} else if (realFormat.equals("MKV")) {
-			builder = new ProcessBuilder("mkvalidator", "--quiet", "--no-warn", filePath);
-			builder.redirectErrorStream(true);
-			pDD = builder.start();
-			stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
-			while ((line = stdout.readLine()) != null) {
-				if (line.contains("ERR042")) {
-					mediaInfo.setSampleOk(false);
-					for (String word : line.split("\\s")) {
-						if (word.matches("^\\d+$")) {
-							mediaInfo.setCalFileSize(Long.parseLong(word));
-							break;
-						}
-					}
-				}
-			}
-			stdout.close();
-			try {
-				pDD.waitFor();
-			} catch (InterruptedException e) {
-				logger.error("ERROR: mkvalidator process interrupted");
-			}
-			pDD.destroy();
-		} else if (realFormat.equals("AVI")) {
-			if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("File size") != null &&
-					!mediaInfo.getVideoInfos().isEmpty() && mediaInfo.getVideoInfos().get(0) != null &&
-					mediaInfo.getVideoInfos().get(0).containsKey("Stream size") &&
-					!mediaInfo.getAudioInfos().isEmpty() && mediaInfo.getAudioInfos().get(0) != null &&
-					mediaInfo.getAudioInfos().get(0).containsKey("Stream size")) {
-				HashMap videodata = mediaInfo.getVideoInfos().get(0);
-				HashMap audiodata = mediaInfo.getAudioInfos().get(0);
-				String[] videoStream = (mediaInfo.getVideoInfos().get(0).get("Stream size")).split("\\s");
-				String[] audioStream = (mediaInfo.getAudioInfos().get(0).get("Stream size")).split("\\s");
-				long videoStreamSize = 0L;
-				long audioStreamSize = 0L;
-				long fileSizeFromMediainfo = Bytes.parseBytes(mediaInfo.getGeneralInfo().get("File size").replaceAll("\\s",""));
-				if (videoStream.length >= 2) {
-					videoStreamSize = Bytes.parseBytes(videoStream[0]+videoStream[1]);
-				}
-				if (audioStream.length >= 2) {
-					audioStreamSize = Bytes.parseBytes(audioStream[0]+audioStream[1]);
-				}
-				if (videoStreamSize + audioStreamSize > fileSizeFromMediainfo) {
-					mediaInfo.setSampleOk(false);
-					mediaInfo.setCalFileSize(videoStreamSize + audioStreamSize);
-				}
-			} else {
-				// No audio or video stream available/readable
-				mediaInfo.setSampleOk(false);
-				mediaInfo.setCalFileSize(0L);
-			}
-		}
+        switch (realFormat) {
+            case "MP4":
+                IsoFile isoFile = new IsoFile(filePath);
+                if (isoFile.getSize() != mediaInfo.getActFileSize()) {
+                    mediaInfo.setSampleOk(false);
+                    mediaInfo.setCalFileSize(isoFile.getSize());
+                }
+                break;
+            case "MKV":
+                builder = new ProcessBuilder("mkvalidator", "--quiet", "--no-warn", filePath);
+                builder.redirectErrorStream(true);
+                pDD = builder.start();
+                stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
+                while ((line = stdout.readLine()) != null) {
+                    if (line.contains("ERR042")) {
+                        mediaInfo.setSampleOk(false);
+                        for (String word : line.split("\\s")) {
+                            if (word.matches("^\\d+$")) {
+                                mediaInfo.setCalFileSize(Long.parseLong(word));
+                                break;
+                            }
+                        }
+                    }
+                }
+                stdout.close();
+                try {
+                    pDD.waitFor();
+                } catch (InterruptedException e) {
+                    logger.error("ERROR: mkvalidator process interrupted");
+                }
+                pDD.destroy();
+                break;
+            case "AVI":
+                if (mediaInfo.getGeneralInfo() != null && mediaInfo.getGeneralInfo().get("File size") != null &&
+                        !mediaInfo.getVideoInfos().isEmpty() && mediaInfo.getVideoInfos().get(0) != null &&
+                        mediaInfo.getVideoInfos().get(0).containsKey("Stream size") &&
+                        !mediaInfo.getAudioInfos().isEmpty() && mediaInfo.getAudioInfos().get(0) != null &&
+                        mediaInfo.getAudioInfos().get(0).containsKey("Stream size")) {
+                    HashMap videodata = mediaInfo.getVideoInfos().get(0);
+                    HashMap audiodata = mediaInfo.getAudioInfos().get(0);
+                    String[] videoStream = (mediaInfo.getVideoInfos().get(0).get("Stream size")).split("\\s");
+                    String[] audioStream = (mediaInfo.getAudioInfos().get(0).get("Stream size")).split("\\s");
+                    long videoStreamSize = 0L;
+                    long audioStreamSize = 0L;
+                    long fileSizeFromMediainfo = Bytes.parseBytes(mediaInfo.getGeneralInfo().get("File size").replaceAll("\\s", ""));
+                    if (videoStream.length >= 2) {
+                        videoStreamSize = Bytes.parseBytes(videoStream[0] + videoStream[1]);
+                    }
+                    if (audioStream.length >= 2) {
+                        audioStreamSize = Bytes.parseBytes(audioStream[0] + audioStream[1]);
+                    }
+                    if (videoStreamSize + audioStreamSize > fileSizeFromMediainfo) {
+                        mediaInfo.setSampleOk(false);
+                        mediaInfo.setCalFileSize(videoStreamSize + audioStreamSize);
+                    }
+                } else {
+                    // No audio or video stream available/readable
+                    mediaInfo.setSampleOk(false);
+                    mediaInfo.setCalFileSize(0L);
+                }
+                break;
+        }
 
 		// Check container format type
 		if (filePath.toUpperCase().endsWith(".MP4")) {

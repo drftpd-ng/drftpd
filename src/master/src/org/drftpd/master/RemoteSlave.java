@@ -872,45 +872,50 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 							new RemoteTransfer(art.getConnectInfo(), this));
 				}
 
-				if (ar.getIndex().equals("Remerge")) {
-					putRemergeQueue(new RemergeMessage((AsyncResponseRemerge) ar, this));
-				} else if (ar.getIndex().equals("DiskStatus")) {
-					_status = ((AsyncResponseDiskStatus) ar)
-					.getDiskStatus();
-				} else if (ar.getIndex().equals("TransferStatus")) {
-					TransferStatus ats = ((AsyncResponseTransferStatus) ar)
-					.getTransferStatus();
-					RemoteTransfer rt;
+                switch (ar.getIndex()) {
+                    case "Remerge":
+                        putRemergeQueue(new RemergeMessage((AsyncResponseRemerge) ar, this));
+                        break;
+                    case "DiskStatus":
+                        _status = ((AsyncResponseDiskStatus) ar)
+                                .getDiskStatus();
+                        break;
+                    case "TransferStatus":
+                        TransferStatus ats = ((AsyncResponseTransferStatus) ar)
+                                .getTransferStatus();
+                        RemoteTransfer rt;
 
-					try {
-						rt = getTransfer(ats.getTransferIndex());
-					} catch (SlaveUnavailableException e1) {
+                        try {
+                            rt = getTransfer(ats.getTransferIndex());
+                        } catch (SlaveUnavailableException e1) {
 
-						// no reason for slave thread to be running if the
-						// slave is not online
-						return;
-					}
+                            // no reason for slave thread to be running if the
+                            // slave is not online
+                            return;
+                        }
 
-					rt.updateTransferStatus(ats);
+                        rt.updateTransferStatus(ats);
 
-					if (ats.isFinished()) {
-						removeTransfer(ats.getTransferIndex());
-					}
-				} else {
-					_indexWithCommands.put(ar.getIndex(), ar);
-					if (pingIndex != null
-							&& pingIndex.equals(ar.getIndex())) {
-						fetchResponse(pingIndex);
-						pingIndex = null;
-					} else if (ar.getIndex().equals("SiteBotMessage")) {
-						String message = ((AsyncResponseSiteBotMessage) ar).getMessage();
-						GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
-					} else {
-						synchronized (_commandMonitor) {
-							_commandMonitor.notifyAll();
-						}
-					}
-				}
+                        if (ats.isFinished()) {
+                            removeTransfer(ats.getTransferIndex());
+                        }
+                        break;
+                    default:
+                        _indexWithCommands.put(ar.getIndex(), ar);
+                        if (pingIndex != null
+                                && pingIndex.equals(ar.getIndex())) {
+                            fetchResponse(pingIndex);
+                            pingIndex = null;
+                        } else if (ar.getIndex().equals("SiteBotMessage")) {
+                            String message = ((AsyncResponseSiteBotMessage) ar).getMessage();
+                            GlobalContext.getEventService().publishAsync(new SlaveEvent("MSGSLAVE", message, this));
+                        } else {
+                            synchronized (_commandMonitor) {
+                                _commandMonitor.notifyAll();
+                            }
+                        }
+                        break;
+                }
 			}
 		} catch (Throwable e) {
 			setOffline("error: " + e.getMessage());

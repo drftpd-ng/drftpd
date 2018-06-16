@@ -287,36 +287,48 @@ public class ConfigManager implements ConfigInterface {
 				 * Built-in directives.
 				 */
 
-                if (drct.equals("login_prompt")) {
-                    _loginPrompt = line.substring("login_prompt".length()).trim();
-                } else if (drct.equals("max_users")) {
-                    _maxUsersTotal = Integer.parseInt(st.nextToken());
-                    _maxUsersExempt = Integer.parseInt(st.nextToken());
-                } else if (drct.equals("pasv_addr")) {
-                    _pasvAddr = st.nextToken();
-                } else if (drct.equals("pasv_ports")) {
-                    String[] temp = st.nextToken().split("-");
-                    _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
-                } else if (drct.equals("hide_ips")) {
-                    _hideIps = st.nextToken().equalsIgnoreCase("true");
-                } else if (drct.equals("allow_connections")) {
-                    getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
-                } else if (drct.equals("allow_connections_deny_reason")) {
-                    _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
+                switch (drct) {
+                    case "login_prompt":
+                        _loginPrompt = line.substring("login_prompt".length()).trim();
+                        break;
+                    case "max_users":
+                        _maxUsersTotal = Integer.parseInt(st.nextToken());
+                        _maxUsersExempt = Integer.parseInt(st.nextToken());
+                        break;
+                    case "pasv_addr":
+                        _pasvAddr = st.nextToken();
+                        break;
+                    case "pasv_ports":
+                        String[] temp = st.nextToken().split("-");
+                        _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
+                        break;
+                    case "hide_ips":
+                        _hideIps = st.nextToken().equalsIgnoreCase("true");
+                        break;
+                    case "allow_connections":
+                        getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
+                        break;
+                    case "allow_connections_deny_reason":
+                        _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
 
-                } else if (drct.equals("exempt")) {
-                    getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
-                } else if (drct.equals("bouncer_ips")) {
-                    ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
-                    while (st.hasMoreTokens()) {
-                        ips.add(InetAddress.getByName(st.nextToken()));
-                    }
-                    _bouncerIps = ips;
-                } else if (drct.equals("hideinstats")) {
-                    while (st.hasMoreTokens())
-                        hideInStats=hideInStats+st.nextToken()+" ";
-                } else {
-                    handleLine(drct, st);
+                        break;
+                    case "exempt":
+                        getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
+                        break;
+                    case "bouncer_ips":
+                        ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
+                        while (st.hasMoreTokens()) {
+                            ips.add(InetAddress.getByName(st.nextToken()));
+                        }
+                        _bouncerIps = ips;
+                        break;
+                    case "hideinstats":
+                        while (st.hasMoreTokens())
+                            hideInStats = hideInStats + st.nextToken() + " ";
+                        break;
+                    default:
+                        handleLine(drct, st);
+                        break;
                 }
             }
         } catch (IOException e) {

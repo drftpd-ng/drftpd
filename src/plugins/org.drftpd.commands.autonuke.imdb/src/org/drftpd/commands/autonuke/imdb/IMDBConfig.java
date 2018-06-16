@@ -71,15 +71,16 @@ public class IMDBConfig extends Config {
 	private boolean handleDigitComparison(Integer meta) {
 		if (meta != null) {
 			int conf_value = Integer.valueOf(_value.replaceAll("\\D",""));
-			if (_operator.equals("<")) {
-				return meta < conf_value;
-			} else if (_operator.equals("=")) {
-				return meta == conf_value;
-			} else if (_operator.equals("!=")) {
-				return meta != conf_value;
-			} else if (_operator.equals(">")) {
-				return meta > conf_value;
-			}
+            switch (_operator) {
+                case "<":
+                    return meta < conf_value;
+                case "=":
+                    return meta == conf_value;
+                case "!=":
+                    return meta != conf_value;
+                case ">":
+                    return meta > conf_value;
+            }
 		}
 		return false;
 	}

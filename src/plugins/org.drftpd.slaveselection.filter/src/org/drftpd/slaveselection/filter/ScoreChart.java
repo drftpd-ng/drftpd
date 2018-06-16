@@ -117,7 +117,7 @@ public class ScoreChart {
 		}
 
 		public int compareTo(SlaveScore s) {
-			return ((getScore() < s.getScore()) ? (-1) : ((getScore() == s.getScore()) ? 0 : 1));
+			return (Long.compare(getScore(), s.getScore()));
 		}
 
 		public RemoteSlave getRSlave() {

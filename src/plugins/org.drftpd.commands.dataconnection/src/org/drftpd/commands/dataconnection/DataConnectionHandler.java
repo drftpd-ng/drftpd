@@ -420,49 +420,52 @@ public class DataConnectionHandler extends CommandInterface {
 			reset(conn);
 			return new CommandResponse(550, "Unable to get PretRequest Argument");			
 		}
-	
-		if (cmd.equals("RETR")) {
-			FileHandle file;
-			try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
-			} catch (FileNotFoundException e) {
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-			} catch (ObjectNotValidException e) {
-				reset(conn);
-				return new CommandResponse(550, "Requested target is not a file");
-			}
-			ts.setTransferFile(file);
-			return new CommandResponse(200, "OK, planning for upcoming download");
-		} else if (cmd.equals("STOR")) {
-			FileHandle file = null;
-			try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
-			} catch (FileNotFoundException e) {
-				// this is good, do nothing
-			} catch (ObjectNotValidException e) {
-				// this is not good, file exists
-				// until we can upload multiple instances of files
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-			}
-			if (file != null) {
-				// this is not good, file exists
-				// until we can upload multiple instances of files
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-			}
-			file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
 
-			if (!ListUtils.isLegalFileName(file.getName())) {
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
-			}
-			ts.setTransferFile(file);
-			return new CommandResponse(200, "OK, planning for upcoming upload");
-		} else {
-			return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-		}
+        switch (cmd) {
+            case "RETR": {
+                FileHandle file;
+                try {
+                    file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
+                } catch (FileNotFoundException e) {
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+                } catch (ObjectNotValidException e) {
+                    reset(conn);
+                    return new CommandResponse(550, "Requested target is not a file");
+                }
+                ts.setTransferFile(file);
+                return new CommandResponse(200, "OK, planning for upcoming download");
+            }
+            case "STOR": {
+                FileHandle file = null;
+                try {
+                    file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
+                } catch (FileNotFoundException e) {
+                    // this is good, do nothing
+                } catch (ObjectNotValidException e) {
+                    // this is not good, file exists
+                    // until we can upload multiple instances of files
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+                }
+                if (file != null) {
+                    // this is not good, file exists
+                    // until we can upload multiple instances of files
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+                }
+                file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
+
+                if (!ListUtils.isLegalFileName(file.getName())) {
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
+                }
+                ts.setTransferFile(file);
+                return new CommandResponse(200, "OK, planning for upcoming upload");
+            }
+            default:
+                return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+        }
 	}
 
 	public CommandResponse doSSCN(CommandRequest request) {
