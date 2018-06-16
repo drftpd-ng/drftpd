@@ -229,7 +229,7 @@ public class NukeBeans {
 	private void loadLRUMap() {
 		Map<String, NukeData> nukees = new LRUMap(200);
 		try (InputStream in = new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
-			 JsonReader reader = new JsonReader(in);) {
+			 JsonReader reader = new JsonReader(in)) {
 			nukees.putAll((Map<String, NukeData>)reader.readObject());
 			logger.debug("Loaded log from .json, size: " + nukees.size());
 		} catch (FileNotFoundException e) {
