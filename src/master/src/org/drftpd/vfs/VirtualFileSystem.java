@@ -276,9 +276,9 @@ public class VirtualFileSystem {
 	private void recursiveDelete(File file) {
 		if (file.isDirectory()) {
 			File[] files = file.listFiles();
-			for (int x = 0; x < files.length; x++) {
-				recursiveDelete(files[x]);
-			}
+            for (File file1 : files) {
+                recursiveDelete(file1);
+            }
 		}
 		if (file.exists() && !file.delete()) {
 			logger.error("Could not delete local entry "

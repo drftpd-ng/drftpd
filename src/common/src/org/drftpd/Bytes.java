@@ -71,16 +71,15 @@ public class Bytes {
 	public static String formatBytes(long bytes, boolean binary) {
 		long absbytes = Math.abs(bytes);
 
-		for (int i = 0; i < MULTIPLES.length; i++) {
-			Multiple multiple = MULTIPLES[i];
-			long multipleVal = binary ? multiple.getBinaryMultiple() : multiple
-					.getMultiple();
+        for (Multiple multiple : MULTIPLES) {
+            long multipleVal = binary ? multiple.getBinaryMultiple() : multiple
+                    .getMultiple();
 
-			if (absbytes >= multipleVal) {
-				return Bytes.FORMAT.format((float) bytes / multipleVal)
-						+ multiple.getSuffix() + (binary ? "i" : "") + "B";
-			}
-		}
+            if (absbytes >= multipleVal) {
+                return Bytes.FORMAT.format((float) bytes / multipleVal)
+                        + multiple.getSuffix() + (binary ? "i" : "") + "B";
+            }
+        }
 
 		return bytes + "B";
 	}
@@ -114,15 +113,13 @@ public class Bytes {
 
 		str = str.substring(0, str.length() - 1);
 
-		for (int i = 0; i < MULTIPLES.length; i++) {
-			Multiple multiple = MULTIPLES[i];
-
-			if (suffix == multiple.getSuffix()) {
-				return Math.round(Double.parseDouble(str)
-						* (binary ? multiple.getBinaryMultiple() : multiple
-								.getMultiple()));
-			}
-		}
+        for (Multiple multiple : MULTIPLES) {
+            if (suffix == multiple.getSuffix()) {
+                return Math.round(Double.parseDouble(str)
+                        * (binary ? multiple.getBinaryMultiple() : multiple
+                        .getMultiple()));
+            }
+        }
 
 		throw new IllegalArgumentException("Unknown suffix " + suffix);
 	}

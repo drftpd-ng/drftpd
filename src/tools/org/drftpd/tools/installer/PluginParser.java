@@ -64,30 +64,29 @@ public class PluginParser {
 		File[] manifestFiles = getIncludedFiles();
 		List<URL> manifestUrls = new LinkedList<URL>();
 		final Map<String, URL> foldersMap = new HashMap<String, URL>();
-		for (int i = 0; i < manifestFiles.length; i++) {
-			File manifestFile = manifestFiles[i];
-			try {
-				URL manifestUrl = getManifestURL(manifestFile);
-				if (manifestUrl == null) {
-					logger.debug("Skipped file: " + manifestFile);
-					continue;
-				}
-				manifestUrls.add(manifestUrl);
-				logger.debug("Added URL: " + manifestUrl);
-				if (usePathResolver) {
-					if ("jar".equals(manifestUrl.getProtocol())) {
-						foldersMap.put(manifestUrl.toExternalForm(),
-								IoUtil.file2url(manifestFile));
-					} else {
-						foldersMap.put(manifestUrl.toExternalForm(),
-								IoUtil.file2url(manifestFile.getParentFile()));
-					}
-				}
-			} catch (MalformedURLException mue) {
-				throw new PluginParseException("can't create URL for file "
-						+ manifestFile);
-			}
-		}
+        for (File manifestFile : manifestFiles) {
+            try {
+                URL manifestUrl = getManifestURL(manifestFile);
+                if (manifestUrl == null) {
+                    logger.debug("Skipped file: " + manifestFile);
+                    continue;
+                }
+                manifestUrls.add(manifestUrl);
+                logger.debug("Added URL: " + manifestUrl);
+                if (usePathResolver) {
+                    if ("jar".equals(manifestUrl.getProtocol())) {
+                        foldersMap.put(manifestUrl.toExternalForm(),
+                                IoUtil.file2url(manifestFile));
+                    } else {
+                        foldersMap.put(manifestUrl.toExternalForm(),
+                                IoUtil.file2url(manifestFile.getParentFile()));
+                    }
+                }
+            } catch (MalformedURLException mue) {
+                throw new PluginParseException("can't create URL for file "
+                        + manifestFile);
+            }
+        }
 		final Map<String, Identity> processedPlugins;
 		try {
 			processedPlugins = _registry.register(

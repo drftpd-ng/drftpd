@@ -68,8 +68,8 @@ public class PortRangeTest extends TestCase {
         
         // clean up
         ss.close();
-        for (Iterator<ServerSocket> iter = sockets.iterator();iter.hasNext();) {
-        	iter.next().close();
+        for (ServerSocket socket : sockets) {
+            socket.close();
         }
     }
 }

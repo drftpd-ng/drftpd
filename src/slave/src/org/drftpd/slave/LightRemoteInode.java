@@ -44,7 +44,7 @@ public class LightRemoteInode implements Serializable, InodeHandleInterface {
 	private String _group = "drftpd";
 
 	private void setName(String name) {
-		if (name.indexOf("\\") != -1) {
+		if (name.contains("\\")) {
 			throw new RuntimeException(
 					"\\ is not an allowed character in filenames");
 		}

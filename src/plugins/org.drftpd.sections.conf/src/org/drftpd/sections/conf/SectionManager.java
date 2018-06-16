@@ -72,17 +72,14 @@ public class SectionManager implements SectionManagerInterface {
 		int matchlen = 0;
 		SectionInterface match = EMPTYSECTION;
 
-		for (Iterator<SectionInterface> iter = _sections.values().iterator(); iter
-				.hasNext();) {
-			SectionInterface section = iter.next();
-
-			if (string.startsWith(section.getBaseDirectory().getPath())
-					&& (matchlen < section.getCurrentDirectory().getPath()
-							.length())) {
-				match = section;
-				matchlen = section.getCurrentDirectory().getPath().length();
-			}
-		}
+        for (SectionInterface section : _sections.values()) {
+            if (string.startsWith(section.getBaseDirectory().getPath())
+                    && (matchlen < section.getCurrentDirectory().getPath()
+                    .length())) {
+                match = section;
+                matchlen = section.getCurrentDirectory().getPath().length();
+            }
+        }
 		return match;
 	}
 	

@@ -69,20 +69,18 @@ public class JobManager implements PluginInterface {
 				continue;
 			}
 
-			for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
-				RemoteSlave slave = iter.next();
-
-				if (job.getDestinationSlaves().contains(slave.getName())) {
-					try {
-						job.sentToSlave(slave);
-					} catch (FileNotFoundException e) {
-						// I'd like to simply remove it, but I'm not sure how to handle that
-						// the job may be isDone() and the code below will throw an error if true
-						// this is going to be a small race condition since above we check if file exists
-						// bug I'm willing to accept --zubov
-					}
-				}
-			}
+            for (RemoteSlave slave : slaves) {
+                if (job.getDestinationSlaves().contains(slave.getName())) {
+                    try {
+                        job.sentToSlave(slave);
+                    } catch (FileNotFoundException e) {
+                        // I'd like to simply remove it, but I'm not sure how to handle that
+                        // the job may be isDone() and the code below will throw an error if true
+                        // this is going to be a small race condition since above we check if file exists
+                        // bug I'm willing to accept --zubov
+                    }
+                }
+            }
 			if (job.isDone()) {
 				jobiter.remove();
 			}

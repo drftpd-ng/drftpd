@@ -203,43 +203,38 @@ public abstract class ArchiveType {
 				dir = getSection().getBaseDirectory();
 			}
 
-			for (Iterator<DirectoryHandle> iter = dir.getDirectoriesUnchecked().iterator(); iter.hasNext();) {
-				DirectoryHandle lrf = iter.next();
+            for (DirectoryHandle lrf : dir.getDirectoriesUnchecked()) {
+                try {
+                    _parent.checkPathForArchiveStatus(lrf.getPath());
+                } catch (DuplicateArchiveException e1) {
+                    /*
+                     *	we are already archiving something for this path..
+                     *  ..lets wait until thats done before we continue
+                     */
+                    logger.debug(getClass().toString() + " - Already archiving something from this path. Skip it.");
+                    continue;
+                }
 
-				try {
-					_parent.checkPathForArchiveStatus(lrf.getPath());
-				} catch (DuplicateArchiveException e1) {
-					/*
-					 *	we are already archiving something for this path..
-					 *  ..lets wait until thats done before we continue
-					 */
-					logger.debug(getClass().toString() + " - Already archiving something from this path. Skip it.");
-					continue;
-				}
+                if (_scansubdirs) {
+                    for (DirectoryHandle lrf2 : lrf.getDirectoriesUnchecked()) {
+                        if (lrf2.getName().matches("(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)")) // this matches season.\d+ and datum formats number, number-number, number-number-number
+                        {
+                            for (DirectoryHandle lrf3 : lrf2.getDirectoriesUnchecked()) {
+                                getOldestNonArchivedDir2(oldDirs, lrf3);
+                            }
+                        } else {
+                            getOldestNonArchivedDir2(oldDirs, lrf2);
+                        }
+                    }
+                } else {
+                    // we do this check so we can't move a dated dir
+                    if (getSection().getCurrentDirectory().equals(lrf) && (_moveRelease)) {
+                        continue;
+                    }
+                    getOldestNonArchivedDir2(oldDirs, lrf);
+                }
 
-				if (_scansubdirs) {
-					for (Iterator<DirectoryHandle> iter2 = lrf.getDirectoriesUnchecked().iterator(); iter2.hasNext();) {
-						DirectoryHandle lrf2 = iter2.next();
-						if (lrf2.getName().matches("(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)")) // this matches season.\d+ and datum formats number, number-number, number-number-number
-						{
-							for (Iterator<DirectoryHandle> iter3 = lrf2.getDirectoriesUnchecked().iterator(); iter3.hasNext();) {
-								DirectoryHandle lrf3 = iter3.next();
-								getOldestNonArchivedDir2(oldDirs,lrf3);
-							}
-						}
-						else {
-							getOldestNonArchivedDir2(oldDirs,lrf2);
-						}
-					}
-				} else {
-					// we do this check so we can't move a dated dir
-					if (getSection().getCurrentDirectory().equals(lrf) && (_moveRelease)) {
-						continue;
-					}
-					getOldestNonArchivedDir2(oldDirs,lrf);
-				}
-
-			}
+            }
 		} catch (FileNotFoundException e) {
 			// section does not exist, no directories to archive
 			// list is empty so the rest of the code will handle that
@@ -308,15 +303,14 @@ public abstract class ArchiveType {
 	protected ArrayList<Job> recursiveSend(DirectoryHandle lrf) throws FileNotFoundException {
 		ArrayList<Job> jobQueue = new ArrayList<Job>();
 
-		for (Iterator<DirectoryHandle> iter = lrf.getDirectoriesUnchecked().iterator(); iter.hasNext();) {
-			jobQueue.addAll(recursiveSend(iter.next()));
-		}
-		for (Iterator<FileHandle> iter = lrf.getFilesUnchecked().iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
-			logger.info("Adding " + file.getPath() + " to the job queue");
-			Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
-			jobQueue.add(job);
-		}
+        for (DirectoryHandle directoryHandle : lrf.getDirectoriesUnchecked()) {
+            jobQueue.addAll(recursiveSend(directoryHandle));
+        }
+        for (FileHandle file : lrf.getFilesUnchecked()) {
+            logger.info("Adding " + file.getPath() + " to the job queue");
+            Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
+            jobQueue.add(job);
+        }
 
 		return jobQueue;
 	}
@@ -336,34 +330,33 @@ public abstract class ArchiveType {
 			return true;
 		}
 
-		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
-			if (!isArchivedToAllSlaves(iter.next(), x)) {
-				return false;
-			}
-		}
+        for (DirectoryHandle directory : directories) {
+            if (!isArchivedToAllSlaves(directory, x)) {
+                return false;
+            }
+        }
 
-		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
-			Collection<RemoteSlave> availableSlaves;
-			try {
-				if (!file.isAvailable()) {
-					throw new OfflineSlaveException(file.getPath() + " is offline");
-				}
-				availableSlaves = file.getSlaves();
-			} catch (FileNotFoundException e) {
-				// can't archive a directory with files that have been moved,
-				// we'll come back later
-				return true;
-			}
+        for (FileHandle file : files) {
+            Collection<RemoteSlave> availableSlaves;
+            try {
+                if (!file.isAvailable()) {
+                    throw new OfflineSlaveException(file.getPath() + " is offline");
+                }
+                availableSlaves = file.getSlaves();
+            } catch (FileNotFoundException e) {
+                // can't archive a directory with files that have been moved,
+                // we'll come back later
+                return true;
+            }
 
-			if (slaveSet == null) {
-				slaveSet = new HashSet<RemoteSlave>(availableSlaves);
-			} else {
-				if (!(slaveSet.containsAll(availableSlaves) && availableSlaves.containsAll(slaveSet))) {
-					return false;
-				}
-			}
-		}
+            if (slaveSet == null) {
+                slaveSet = new HashSet<RemoteSlave>(availableSlaves);
+            } else {
+                if (!(slaveSet.containsAll(availableSlaves) && availableSlaves.containsAll(slaveSet))) {
+                    return false;
+                }
+            }
+        }
 
 		if (slaveSet == null) { // no files found in directory
 			return true;
@@ -392,40 +385,39 @@ public abstract class ArchiveType {
 			return true;
 		}
 
-		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
-			if (!isArchivedToSpecificSlaves(iter.next(), x,rslaves)) {
-				return false;
-			}
-		}
+        for (DirectoryHandle directory : directories) {
+            if (!isArchivedToSpecificSlaves(directory, x, rslaves)) {
+                return false;
+            }
+        }
 
-		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
-			Collection<RemoteSlave> availableSlaves;
-			try {
-				if (!file.isAvailable()) {
-					throw new OfflineSlaveException(file.getPath() + " is offline");
-				}
-				availableSlaves = file.getSlaves();
-			} catch (FileNotFoundException e) {
-				// can't archive a directory with files that have been moved,
-				// we'll come back later
-				return true;
-			}
+        for (FileHandle file : files) {
+            Collection<RemoteSlave> availableSlaves;
+            try {
+                if (!file.isAvailable()) {
+                    throw new OfflineSlaveException(file.getPath() + " is offline");
+                }
+                availableSlaves = file.getSlaves();
+            } catch (FileNotFoundException e) {
+                // can't archive a directory with files that have been moved,
+                // we'll come back later
+                return true;
+            }
 
 
-			int checknumslaves = 0;
-			for (RemoteSlave fileslaves: availableSlaves) {
-				for (RemoteSlave listslaves: rslaves) {
-					if (listslaves.getName().equals(fileslaves.getName())) {
-						checknumslaves++;
-					}
-				}
-			}
-			if (checknumslaves < x) {
-				return false;
-			}
+            int checknumslaves = 0;
+            for (RemoteSlave fileslaves : availableSlaves) {
+                for (RemoteSlave listslaves : rslaves) {
+                    if (listslaves.getName().equals(fileslaves.getName())) {
+                        checknumslaves++;
+                    }
+                }
+            }
+            if (checknumslaves < x) {
+                return false;
+            }
 
-		}
+        }
 		return true;
 	}
 

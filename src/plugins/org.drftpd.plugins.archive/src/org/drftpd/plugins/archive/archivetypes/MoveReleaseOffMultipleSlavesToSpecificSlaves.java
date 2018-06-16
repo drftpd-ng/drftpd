@@ -65,39 +65,35 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
 	 */
 	@Override
 	protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-		for (Iterator<InodeHandle> iter = lrf.getInodeHandlesUnchecked().iterator(); iter.hasNext();) {
-			InodeHandle inode = iter.next();
+        for (InodeHandle inode : lrf.getInodeHandlesUnchecked()) {
+            if (inode.isLink()) {
+                continue;
+            } else if (inode instanceof DirectoryHandle) {
+                if (!isArchivedDir((DirectoryHandle) inode)) {
+                    return false;
+                }
+            } else {
+                try {
 
-			if (inode.isLink()) {
-				continue;
-			} else if (inode instanceof DirectoryHandle) {
-				if (!isArchivedDir((DirectoryHandle) inode)) {
-					return false;
-				}
-			} else {
-				try {
+                    int found = 0;
+                    for (RemoteSlave rslave : ((FileHandle) inode).getAvailableSlaves()) {
+                        if (findDestinationSlaves().contains(rslave)) {
+                            found++;
+                        }
 
-					int found = 0;
-					for (Iterator<RemoteSlave> iter2 = ((FileHandle) inode).getAvailableSlaves().iterator(); iter2.hasNext();) {
-						RemoteSlave rslave = iter2.next();
+                        if (found > _numOfSlaves) {
+                            return false;
+                        }
 
-						if (findDestinationSlaves().contains(rslave)) {
-							found++;
-						}
+                    }
+                } catch (NoAvailableSlaveException e) {
+                    throw new OfflineSlaveException("There were no available slaves for " + inode.getPath());
+                } catch (FileNotFoundException e) {
+                    throw new FileNotFoundException("File was not found " + inode.getPath());
+                }
 
-						if (found > _numOfSlaves) {
-							return false;
-						}
-
-					}
-				} catch (NoAvailableSlaveException e) {
-					throw new OfflineSlaveException("There were no available slaves for " + inode.getPath());
-				} catch (FileNotFoundException e) {
-					throw new FileNotFoundException("File was not found " + inode.getPath());
-				}
-
-			}
-		}
+            }
+        }
 		return isArchivedToSpecificSlaves(lrf, _numOfSlaves,_slaveList);
 	}
 

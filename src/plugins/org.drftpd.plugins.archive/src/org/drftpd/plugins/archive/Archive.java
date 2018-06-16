@@ -179,20 +179,19 @@ public class Archive implements PluginInterface {
 	 * Throws DuplicateArchive expcetion if it is.
 	 */
 	public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
-		for (Iterator<ArchiveHandler> iter = _archiveHandlers.iterator(); iter.hasNext();) {
-			ArchiveHandler ah = iter.next();
-			String ahPath = ah.getArchiveType().getDirectory().getPath();
+        for (ArchiveHandler ah : _archiveHandlers) {
+            String ahPath = ah.getArchiveType().getDirectory().getPath();
 
-			if (ahPath.length() > handlerPath.length()) {
-				if (ahPath.startsWith(handlerPath)) {
-					throw new DuplicateArchiveException(ahPath + " is already being archived");
-				}
-			} else {
-				if (handlerPath.startsWith(ahPath)) {
-					throw new DuplicateArchiveException(handlerPath + " is already being archived");
-				}
-			}
-		}
+            if (ahPath.length() > handlerPath.length()) {
+                if (ahPath.startsWith(handlerPath)) {
+                    throw new DuplicateArchiveException(ahPath + " is already being archived");
+                }
+            } else {
+                if (handlerPath.startsWith(ahPath)) {
+                    throw new DuplicateArchiveException(handlerPath + " is already being archived");
+                }
+            }
+        }
 	}
 
 	@EventSubscriber

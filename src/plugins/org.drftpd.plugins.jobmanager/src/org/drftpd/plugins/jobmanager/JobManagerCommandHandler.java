@@ -245,7 +245,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 		String rangeString = request.getArgument();
 		String[] ranges = rangeString.split(" ");
 		for (String range : ranges) {
-			if (range.indexOf("-") == -1) {
+			if (!range.contains("-")) {
 				long val = Long.parseLong(range);
 				rangeList.add(new Range(val, val));
 			} else {

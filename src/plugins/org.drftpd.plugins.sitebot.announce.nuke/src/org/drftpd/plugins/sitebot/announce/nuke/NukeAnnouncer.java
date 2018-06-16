@@ -75,7 +75,7 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 	@EventSubscriber
 	public void onNukeEvent(NukeEvent event) {
 		String type = "NUKE".equals(event.getCommand()) ? "nuke" : "unnuke";
-		StringBuffer output = new StringBuffer();
+		StringBuilder output = new StringBuilder();
 
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		DirectoryHandle nukeDir = new DirectoryHandle(event.getPath());

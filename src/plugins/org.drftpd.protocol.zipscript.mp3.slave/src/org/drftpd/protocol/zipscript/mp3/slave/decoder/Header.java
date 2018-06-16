@@ -75,7 +75,7 @@ public final class Header {
 	}
 
 	public String toString() {
-		StringBuffer buffer = new StringBuffer(200);
+		StringBuilder buffer = new StringBuilder(200);
 		buffer.append("Layer ");
 		buffer.append(layer_string());
 		buffer.append(" frame ");

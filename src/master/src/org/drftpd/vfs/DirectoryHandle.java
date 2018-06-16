@@ -303,13 +303,11 @@ public class DirectoryHandle extends InodeHandle implements
 	
 	private Set<LinkHandle> getLinksUnchecked(Collection<InodeHandle> inodes) {
 		Set<LinkHandle> set = new LinkedHashSet<LinkHandle>();
-		for (Iterator<InodeHandle> iter = inodes.iterator(); iter
-				.hasNext();) {
-			InodeHandle handle = iter.next();
-			if (handle instanceof LinkHandle) {
-				set.add((LinkHandle) handle);
-			}
-		}
+        for (InodeHandle handle : inodes) {
+            if (handle instanceof LinkHandle) {
+                set.add((LinkHandle) handle);
+            }
+        }
 		return set;
 	}
 	

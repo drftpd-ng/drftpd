@@ -78,10 +78,10 @@ public class DailyStats implements UserResetHookInterface {
 		for (Iterator<User> iter = initialUsers.iterator(); iter.hasNext();) {
 			User user = iter.next();
 			allow = true;
-			for (int i = 0; i < _exempt.length; i++) {
-				if (user.isMemberOf(_exempt[i]))
-					allow = false;
-			}
+            for (String a_exempt : _exempt) {
+                if (user.isMemberOf(a_exempt))
+                    allow = false;
+            }
 			if (user.isDeleted()) {
 				allow = false;
 			}

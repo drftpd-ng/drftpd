@@ -146,7 +146,7 @@ public class ListHandler extends CommandInterface {
 			TransferState ts = conn.getTransferState();
 
 			if (request.hasArgument()) {
-				StringBuffer optionsSb = new StringBuffer(4);
+				StringBuilder optionsSb = new StringBuilder(4);
 				StringTokenizer st = new StringTokenizer(request.getArgument()," ");
 
 				while (st.hasMoreTokens() && (!isMlst)) {

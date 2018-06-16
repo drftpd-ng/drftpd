@@ -384,7 +384,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer ret = new StringBuffer();
+		StringBuilder ret = new StringBuilder();
 		ret.append("[path=").append(getPath()).append("]");
 		ret.append("[user,group=").append(getUsername()).append(",").append(getGroup()).append("]");
 		ret.append("[creationTime=").append(getCreationTime()).append("]");

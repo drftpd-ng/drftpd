@@ -47,15 +47,15 @@ public class AssignRoot {
 		// safety precaution.
 		int x = filter.getDiskSelection().getRootCollection().getRootList().size();
 
-		for (int i = 0; i < p.length; i++) {
-			AssignParser a = new AssignParser(p[i]);
-			
-			 // Root index is bigger than the root list that means that it does not exist.
-			if (a.getRoot() > x)
-				throw new IllegalArgumentException("You are trying to assign points to a root that doesn't exists.");
-			
-			list.add(a);
-		}
+        for (String aP : p) {
+            AssignParser a = new AssignParser(aP);
+
+            // Root index is bigger than the root list that means that it does not exist.
+            if (a.getRoot() > x)
+                throw new IllegalArgumentException("You are trying to assign points to a root that doesn't exists.");
+
+            list.add(a);
+        }
 		return list;
 	}
 

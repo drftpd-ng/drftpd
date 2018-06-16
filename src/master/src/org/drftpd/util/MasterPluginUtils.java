@@ -76,12 +76,11 @@ public class MasterPluginUtils extends CommonPluginUtils {
 			String pluginName = pluginExtension.substring(0, pointIndex);
 			String extension = pluginExtension.substring(pointIndex+1);
 			if (pluginName.equals(currentPlugin) && extension.equals(extName)) {
-				for (Iterator<T> iter = loadedExtensions.iterator(); iter.hasNext();) {
-					T extObj = iter.next();
-					if (manager.getPluginFor(extObj).getDescriptor().getId().equals(event.getPlugin())) {
-						unloadedExtensions.add(extObj);
-					}
-				}
+                for (T extObj : loadedExtensions) {
+                    if (manager.getPluginFor(extObj).getDescriptor().getId().equals(event.getPlugin())) {
+                        unloadedExtensions.add(extObj);
+                    }
+                }
 			}
 		}
 		return unloadedExtensions;

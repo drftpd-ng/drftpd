@@ -79,11 +79,11 @@ public class Misc extends CommandInterface {
         	if (feat == null) {
         		continue;  
         	}
-        	
-        	for (int i = 0; i < feat.length; i++) {
-                if (!featFound.contains(feat[i])) {
-                	conn.printOutput(" " + feat[i] + "\r\n");
-                	featFound.add(feat[i]);
+
+            for (String aFeat : feat) {
+                if (!featFound.contains(aFeat)) {
+                    conn.printOutput(" " + aFeat + "\r\n");
+                    featFound.add(aFeat);
                 }
             }
         }

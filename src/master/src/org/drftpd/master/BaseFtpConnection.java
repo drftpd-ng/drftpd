@@ -454,7 +454,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	}
 
 	public String toString() {
-		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
+		StringBuilder buf = new StringBuilder("[BaseFtpConnection");
 
 		if (_user != null) {
 			buf.append("[user: " + _user + "]");

@@ -120,7 +120,7 @@ public class ServerStatus extends CommandInterface {
 		StringTokenizer st = new StringTokenizer(args);
 		boolean isAll = false;
 		
-		if (args.indexOf("all") != -1) {
+		if (args.contains("all")) {
 			// avoid output repetition
 			// ex: gc, vm, all
 			isAll = true;
