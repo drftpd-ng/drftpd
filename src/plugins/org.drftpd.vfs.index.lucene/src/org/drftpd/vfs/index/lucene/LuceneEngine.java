@@ -140,8 +140,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	private IndexingVirtualFileSystemListener _listener;
 	private boolean _rebuilding;
 	
-	private List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<IndexDataExtensionInterface>();
-	private List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<QueryTermExtensionInterface>();
+	private List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<>();
+	private List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<>();
 
 	/**
 	 * Creates all the needed resources for the Index to work.
@@ -625,7 +625,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		IndexSearcher iSearcher = null;
 		IndexReader iReader = null;
 		try {
-			Map<String,String> inodes = new LinkedHashMap<String,String>();
+			Map<String,String> inodes = new LinkedHashMap<>();
 
 			BooleanQuery query = new BooleanQuery();
 
@@ -794,7 +794,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		IndexSearcher iSearcher = null;
 		IndexReader iReader = null;
 		try {
-			Set<String> inodes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+			Set<String> inodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
 			BooleanQuery query = new BooleanQuery();
 
@@ -875,7 +875,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * </ul>
 	 */
 	public Map<String, String> getStatus() {
-		Map<String, String> status = new LinkedHashMap<String, String>();
+		Map<String, String> status = new LinkedHashMap<>();
 
 		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
 		String lastOp = df.format(new Date(_maintenanceThread.getLastOptimizationTime()));
@@ -942,7 +942,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			List<IndexDataExtensionInterface> loadedDataExtensions =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "IndexData", "Class", event);
 			if (!loadedDataExtensions.isEmpty()) {
-				List<IndexDataExtensionInterface> clonedDataExtensions = new ArrayList<IndexDataExtensionInterface>(_dataExtensions);
+				List<IndexDataExtensionInterface> clonedDataExtensions = new ArrayList<>(_dataExtensions);
 				for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
 					logger.debug("Loading lucene index data extension from plugin "
 							+ CommonPluginUtils.getPluginIdForObject(dataExtension));
@@ -962,7 +962,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			List<QueryTermExtensionInterface> loadedQueryExtensions =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "QueryTerm", "Class", event);
 			if (!loadedQueryExtensions.isEmpty()) {
-				List<QueryTermExtensionInterface> clonedQueryExtensions = new ArrayList<QueryTermExtensionInterface>(_queryExtensions);
+				List<QueryTermExtensionInterface> clonedQueryExtensions = new ArrayList<>(_queryExtensions);
 				for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
 					logger.debug("Loading lucene query term extension from plugin "
 							+ CommonPluginUtils.getPluginIdForObject(queryExtension));

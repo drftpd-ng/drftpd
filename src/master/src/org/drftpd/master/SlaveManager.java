@@ -60,7 +60,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	
 	private static AbstractBasicIssuer _basicIssuer = null;
 	
-	protected Map<String,RemoteSlave> _rslaves = new ConcurrentHashMap<String,RemoteSlave>();
+	protected Map<String,RemoteSlave> _rslaves = new ConcurrentHashMap<>();
 
 	private int _port;
 
@@ -216,7 +216,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	public HashSet<RemoteSlave> findSlavesBySpace(int numOfSlaves,
 			Set<RemoteSlave> exemptSlaves, boolean ascending) {
 		Collection<RemoteSlave> slaveList = getSlaves();
-		HashMap<Long, RemoteSlave> map = new HashMap<Long, RemoteSlave>();
+		HashMap<Long, RemoteSlave> map = new HashMap<>();
 
 		for (RemoteSlave rslave : slaveList) {
 			if (exemptSlaves.contains(rslave)) {
@@ -234,7 +234,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			map.put(size, rslave);
 		}
 
-		ArrayList<Long> sorted = new ArrayList<Long>(map.keySet());
+		ArrayList<Long> sorted = new ArrayList<>(map.keySet());
 
 		if (ascending) {
 			Collections.sort(sorted);
@@ -242,7 +242,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 			Collections.sort(sorted, Collections.reverseOrder());
 		}
 
-		HashSet<RemoteSlave> returnMe = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> returnMe = new HashSet<>();
 
 		for (ListIterator<Long> iter = sorted.listIterator(); iter.hasNext();) {
 			if (iter.nextIndex() == numOfSlaves) {
@@ -297,8 +297,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	}
 
 	public HashMap<String, SlaveStatus> getAllStatusArray() {
-		HashMap<String, SlaveStatus> ret = new HashMap<String, SlaveStatus>(
-				getSlaves().size());
+		HashMap<String, SlaveStatus> ret = new HashMap<>(
+                getSlaves().size());
 
 		for (RemoteSlave rslave : getSlaves()) {
 			try {
@@ -316,7 +316,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	 */
 	public Collection<RemoteSlave> getAvailableSlaves()
 			throws NoAvailableSlaveException {
-		ArrayList<RemoteSlave> availableSlaves = new ArrayList<RemoteSlave>();
+		ArrayList<RemoteSlave> availableSlaves = new ArrayList<>();
 
 		for (RemoteSlave rslave : getSlaves()) {
 			if (!rslave.isAvailable()) {
@@ -349,7 +349,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		if (_rslaves == null) {
 			throw new NullPointerException();
 		}
-		List<RemoteSlave> slaveList = new ArrayList<RemoteSlave>(_rslaves.values());
+		List<RemoteSlave> slaveList = new ArrayList<>(_rslaves.values());
 		Collections.sort(slaveList);
 		return slaveList;
 	}
@@ -500,8 +500,8 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 	 * @param directory
 	 */
 	public void deleteOnAllSlaves(DirectoryHandle directory) {
-		HashMap<RemoteSlave, String> slaveMap = new HashMap<RemoteSlave, String>();
-		Collection<RemoteSlave> slaves = new ArrayList<RemoteSlave>(_rslaves.values());
+		HashMap<RemoteSlave, String> slaveMap = new HashMap<>();
+		Collection<RemoteSlave> slaves = new ArrayList<>(_rslaves.values());
 		for (RemoteSlave rslave : slaves) {
 			String index;
 			try {

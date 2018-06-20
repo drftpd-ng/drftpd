@@ -109,8 +109,8 @@ public class SlaveProtocolCentral {
 	 * Loads all connected Handlers and make them avaialable for later usage.
 	 */
 	private void loadHandlers() {
-		HashMap<String, HandlerWrapper> handlers = new HashMap<String, HandlerWrapper>();
-		ArrayList<String> protocols = new ArrayList<String>();
+		HashMap<String, HandlerWrapper> handlers = new HashMap<>();
+		ArrayList<String> protocols = new ArrayList<>();
 
 		try {
 			List<PluginObjectContainer<AbstractHandler>> loadedHandlers =

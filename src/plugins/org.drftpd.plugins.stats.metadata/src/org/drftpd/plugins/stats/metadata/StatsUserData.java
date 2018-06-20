@@ -28,6 +28,6 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class StatsUserData implements Serializable {
 
-	public static final Key<Integer> LOGINS = new Key<Integer>(StatsUserData.class, "logins");
+	public static final Key<Integer> LOGINS = new Key<>(StatsUserData.class, "logins");
 
 }

@@ -28,10 +28,10 @@ import java.util.LinkedHashMap;
  * @author lh
  */
 public class PreInfo {
-    private ArrayList<UserInfo> _leechers = new ArrayList<UserInfo>();
-    private ArrayList<String> _groups = new ArrayList<String>();
-    private ArrayList<Long> _bw = new ArrayList<Long>();
-    private LinkedHashMap<String, String> _messures = new LinkedHashMap<String, String>();
+    private ArrayList<UserInfo> _leechers = new ArrayList<>();
+    private ArrayList<String> _groups = new ArrayList<>();
+    private ArrayList<Long> _bw = new ArrayList<>();
+    private LinkedHashMap<String, String> _messures = new LinkedHashMap<>();
     private DirectoryHandle _dir;
     private SectionInterface _section;
     private int _mtime = 0;

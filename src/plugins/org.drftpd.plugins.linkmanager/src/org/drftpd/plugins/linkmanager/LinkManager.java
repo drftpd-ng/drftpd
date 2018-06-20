@@ -100,7 +100,7 @@ public class LinkManager implements PluginInterface {
 	}
     
     private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<LinkType>> typesMap = new CaseInsensitiveHashMap<String, Class<LinkType>>();
+		CaseInsensitiveHashMap<String, Class<LinkType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<LinkType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.linkmanager", "LinkType", "ClassName", false);
@@ -116,7 +116,7 @@ public class LinkManager implements PluginInterface {
     
     public void loadConf() {
     	initTypes();
-		_links = new ArrayList<LinkType>();
+		_links = new ArrayList<>();
 		
 		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("linkmanager.conf");
     	int count = 1;
@@ -134,7 +134,7 @@ public class LinkManager implements PluginInterface {
      * Returns a copy of all the current links types
      */
 	public ArrayList<LinkType> getLinks() {
-		return new ArrayList<LinkType>(_links);
+		return new ArrayList<>(_links);
 	}
 	
 	/*

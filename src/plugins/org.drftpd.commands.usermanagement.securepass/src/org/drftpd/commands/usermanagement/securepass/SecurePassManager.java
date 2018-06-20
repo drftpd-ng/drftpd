@@ -88,12 +88,12 @@ public class SecurePassManager implements PluginInterface {
      * Must be done this way as we read the same "command" string multiple times
      */
 	private void loadConf() {
-		_length = new ArrayList<Integer>();
-		_uppercase = new ArrayList<Integer>();
-		_lowercase = new ArrayList<Integer>();
-		_numeric = new ArrayList<Integer>();
-		_special = new ArrayList<Integer>();
-		_perms = new ArrayList<String>();			
+		_length = new ArrayList<>();
+		_uppercase = new ArrayList<>();
+		_lowercase = new ArrayList<>();
+		_numeric = new ArrayList<>();
+		_special = new ArrayList<>();
+		_perms = new ArrayList<>();
 		
 		LineNumberReader inRead = null;
 		

@@ -64,7 +64,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 * @throws FileNotFoundException
 	 */
 	public Set<String> getSlaveNames() throws FileNotFoundException {
-		return new HashSet<String>(getInode().getSlaves());		
+		return new HashSet<>(getInode().getSlaves());
 	}
 
 	/**
@@ -72,7 +72,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 * @throws FileNotFoundException
 	 */
 	public Set<RemoteSlave> getSlaves() throws FileNotFoundException {
-		HashSet<RemoteSlave> slaves = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> slaves = new HashSet<>();
 		for (String slave : getInode().getSlaves()) {
 			try {
 				slaves.add(getGlobalContext().getSlaveManager().getRemoteSlave(
@@ -92,7 +92,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 */
 	public Collection<RemoteSlave> getAvailableSlaves()
 			throws NoAvailableSlaveException, FileNotFoundException {
-		HashSet<RemoteSlave> rslaves = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> rslaves = new HashSet<>();
 		for (RemoteSlave rslave : getSlaves()) {
 			if (rslave.isAvailable()) {
 				rslaves.add(rslave);

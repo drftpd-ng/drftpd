@@ -34,7 +34,7 @@ public class ScoreChart {
 
 
 	public ScoreChart(Collection<RemoteSlave> slaves) {
-		_scoreChart = new ArrayList<SlaveScore>();
+		_scoreChart = new ArrayList<>();
 		for (RemoteSlave rslave : slaves) {
 			_scoreChart.add(new SlaveScore(rslave));
 		}

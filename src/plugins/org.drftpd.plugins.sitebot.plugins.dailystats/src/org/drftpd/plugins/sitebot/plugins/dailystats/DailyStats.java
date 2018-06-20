@@ -72,8 +72,8 @@ public class DailyStats implements UserResetHookInterface {
 		String name;
 		String files = null;
 		String bytes = null;
-		ArrayList<User> initialUsers = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
-		ArrayList<UserStats> outputUsers = new ArrayList<UserStats>();
+		ArrayList<User> initialUsers = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+		ArrayList<UserStats> outputUsers = new ArrayList<>();
 
 		for (Iterator<User> iter = initialUsers.iterator(); iter.hasNext();) {
 			User user = iter.next();

@@ -46,7 +46,7 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
 		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
 		if (statusBarEnabled) {
 			try {
-				ArrayList<String> statusBarEntries = new ArrayList<String>();
+				ArrayList<String> statusBarEntries = new ArrayList<>();
 				ZipscriptVFSDataMP3 mp3Data = new ZipscriptVFSDataMP3(dir);
 				MP3Info mp3Info = mp3Data.getMP3Info();
 				ReplacerEnvironment env = new ReplacerEnvironment();

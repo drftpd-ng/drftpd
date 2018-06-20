@@ -50,9 +50,9 @@ public class ConfigManager implements ConfigInterface {
     private static final File mainFile = new File("conf/master.conf");
 
     private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
-            = new Key<Hashtable<String, ArrayList<PathPermission>>>(ConfigManager.class, "pathPerms");
+            = new Key<>(ConfigManager.class, "pathPerms");
     private static final Key<Hashtable<String, Permission>> PERMS
-            = new Key<Hashtable<String, Permission>>(ConfigManager.class, "perms");
+            = new Key<>(ConfigManager.class, "perms");
 
     private String hideInStats="";
 
@@ -88,7 +88,7 @@ public class ConfigManager implements ConfigInterface {
 
         initializeKeyedMap();
 
-        _bouncerIps = new ArrayList<InetAddress>();
+        _bouncerIps = new ArrayList<>();
 
         readConf();
     }
@@ -119,7 +119,7 @@ public class ConfigManager implements ConfigInterface {
      * Load all connected handlers.
      */
     private void loadConfigHandlers() {
-        _directivesMap = new HashMap<String, ConfigContainer>();
+        _directivesMap = new HashMap<>();
 
         try {
             List<PluginObjectContainer<ConfigHandler>> loadedDirectives =
@@ -161,8 +161,8 @@ public class ConfigManager implements ConfigInterface {
     }
 
     private void parseCipherSuites() {
-        List<String> cipherSuites = new ArrayList<String>();
-        List<String> supportedCipherSuites = new ArrayList<String>();
+        List<String> cipherSuites = new ArrayList<>();
+        List<String> supportedCipherSuites = new ArrayList<>();
         try {
 			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
         } catch (Exception e) {
@@ -217,7 +217,7 @@ public class ConfigManager implements ConfigInterface {
     }
 
     private void parseSSLProtocols() {
-        List<String> sslProtocols = new ArrayList<String>();
+        List<String> sslProtocols = new ArrayList<>();
         List<String> supportedSSLProtocols;
         try {
             supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
@@ -244,10 +244,10 @@ public class ConfigManager implements ConfigInterface {
      * @see #getKeyedMap()
      */
     private void initializeKeyedMap() {
-        _keyedMap = new KeyedMap<Key<?>, Object>();
+        _keyedMap = new KeyedMap<>();
 
-        _keyedMap.setObject(PATHPERMS, new Hashtable<String, ArrayList<PathPermission>>());
-        _keyedMap.setObject(PERMS, new Hashtable<String, Permission>());
+        _keyedMap.setObject(PATHPERMS, new Hashtable<>());
+        _keyedMap.setObject(PERMS, new Hashtable<>());
     }
 
     private Hashtable<String, ArrayList<PathPermission>> getPathPermsMap() {
@@ -316,7 +316,7 @@ public class ConfigManager implements ConfigInterface {
                         getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
                         break;
                     case "bouncer_ips":
-                        ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
+                        ArrayList<InetAddress> ips = new ArrayList<>();
                         while (st.hasMoreTokens()) {
                             ips.add(InetAddress.getByName(st.nextToken()));
                         }
@@ -366,7 +366,7 @@ public class ConfigManager implements ConfigInterface {
     public void addPathPermission(String directive, PathPermission perm) {
         ArrayList<PathPermission> list;
         if (!getPathPermsMap().containsKey(directive)) {
-            list = new ArrayList<PathPermission>();
+            list = new ArrayList<>();
             getPathPermsMap().put(directive, list);
         } else {
             list = getPathPermsMap().get(directive);

@@ -37,7 +37,7 @@ public class Mirror extends CommandInterface {
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
-		_excludePaths = new ArrayList<String>();
+		_excludePaths = new ArrayList<>();
 		loadConf();
 		// Subscribe to events
 		AnnotationProcessor.process(this);

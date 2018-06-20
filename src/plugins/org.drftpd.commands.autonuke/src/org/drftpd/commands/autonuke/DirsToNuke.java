@@ -31,7 +31,7 @@ public class DirsToNuke {
     private ConcurrentLinkedQueue<NukeItem> _dirsToNuke;
 
     private DirsToNuke() {
-        _dirsToNuke = new ConcurrentLinkedQueue<NukeItem>();
+        _dirsToNuke = new ConcurrentLinkedQueue<>();
     }
 
     public ConcurrentLinkedQueue<NukeItem> get() {

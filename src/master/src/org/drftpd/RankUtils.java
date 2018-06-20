@@ -37,7 +37,7 @@ import java.util.Comparator;
 public class RankUtils {
 	public static Collection<GroupPosition> topFileGroup(
 			Collection<FileHandle> files) {
-		ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
+		ArrayList<GroupPosition> ret = new ArrayList<>();
 
 		for (FileHandle file : files) {
 			String groupname;
@@ -86,7 +86,7 @@ public class RankUtils {
 
 	public static Collection<UploaderPosition> userSort(Collection<FileHandle> files,
 			String type, String sort) {
-		ArrayList<UploaderPosition> ret = new ArrayList<UploaderPosition>();
+		ArrayList<UploaderPosition> ret = new ArrayList<>();
 
 		for (FileHandle file :  files) {
 			UploaderPosition stat = null;

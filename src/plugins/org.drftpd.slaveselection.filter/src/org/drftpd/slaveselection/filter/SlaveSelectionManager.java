@@ -70,7 +70,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
     }	
 	
 	private void initFilters() {
-		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<String, Class<Filter>>();
+		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<Filter>> loadedFilters =
@@ -90,7 +90,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	
 	public CaseInsensitiveHashMap<String, Class<Filter>> getFiltersMap() {
 		// we dont want to pass this object around allowing it to be modified, make a copy of it.
-		return new CaseInsensitiveHashMap<String, Class<Filter>>(_filtersMap); 
+		return new CaseInsensitiveHashMap<>(_filtersMap);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 
 	public RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
 			throws NoAvailableSlaveException, FileNotFoundException {		
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(file.getAvailableSlaves());
+		ArrayList<RemoteSlave> slaves = new ArrayList<>(file.getAvailableSlaves());
 		
 		slaves.removeAll(destinationSlaves); //remove all target slaves.
 
@@ -133,7 +133,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	public RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException, FileNotFoundException {
 		
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(destinationSlaves);
+		ArrayList<RemoteSlave> slaves = new ArrayList<>(destinationSlaves);
 		slaves.removeAll(file.getAvailableSlaves()); // a slave cannot have the same file twice ;P
 
 		for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {

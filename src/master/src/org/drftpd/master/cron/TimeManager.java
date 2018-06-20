@@ -85,7 +85,7 @@ public class TimeManager {
 	private void doMethodOnTimeEvents(String methodName, Date d) {
 		List<TimeEventInterface> tempList = null;
 		synchronized (this) {
-			tempList = new ArrayList<TimeEventInterface>(_timedEvents);
+			tempList = new ArrayList<>(_timedEvents);
 		}
 		Class<?>[] classArg = new Class<?>[1];
 		classArg[0] = Date.class;
@@ -124,7 +124,7 @@ public class TimeManager {
 	}
 	
 	protected TimeManager (Calendar cal) {
-		_timedEvents = new ArrayList<TimeEventInterface>();
+		_timedEvents = new ArrayList<>();
 		Timer timer = GlobalContext.getGlobalContext().getTimer();
 		// setup the next time we need to run an event
 		// roll the calendar to the next Hour

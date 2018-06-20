@@ -28,6 +28,6 @@ import java.util.Date;
 @SuppressWarnings("serial")
 public class ExpiredUserData implements Serializable {
 
-	public static final Key<Date> EXPIRES = new Key<Date>(ExpiredUserData.class, "expires");
+	public static final Key<Date> EXPIRES = new Key<>(ExpiredUserData.class, "expires");
 	
 } 

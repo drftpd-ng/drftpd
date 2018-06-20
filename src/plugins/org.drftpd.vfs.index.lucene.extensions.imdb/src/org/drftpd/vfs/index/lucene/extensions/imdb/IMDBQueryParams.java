@@ -25,7 +25,7 @@ import org.drftpd.dynamicdata.Key;
  */
 public class IMDBQueryParams {
 
-	public static final Key<IMDBQueryParams> IMDBQUERYPARAMS = new Key<IMDBQueryParams>(IMDBQueryParams.class, "imdbqueryparams");
+	public static final Key<IMDBQueryParams> IMDBQUERYPARAMS = new Key<>(IMDBQueryParams.class, "imdbqueryparams");
 	
 	private String _title;
 	private String _director;

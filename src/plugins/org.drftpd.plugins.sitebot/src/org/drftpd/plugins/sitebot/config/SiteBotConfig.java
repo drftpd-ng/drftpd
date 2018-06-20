@@ -45,11 +45,11 @@ public class SiteBotConfig {
 
 	private boolean _channelAutoJoin;
 
-	private ArrayList<ChannelConfig> _channels = new ArrayList<ChannelConfig>();
+	private ArrayList<ChannelConfig> _channels = new ArrayList<>();
 
 	private boolean _chanservEnabled;
 
-	private ArrayList<String> _chanservInvites = new ArrayList<String>();
+	private ArrayList<String> _chanservInvites = new ArrayList<>();
 
 	private String _charset;
 
@@ -61,7 +61,7 @@ public class SiteBotConfig {
 
 	private String _commandTrigger;
 
-	private ArrayList<String> _connectCommands = new ArrayList<String>();
+	private ArrayList<String> _connectCommands = new ArrayList<>();
 
 	private long _connectDelay;
 
@@ -93,7 +93,7 @@ public class SiteBotConfig {
 
 	private String _nickservRegPassword;
 
-	private LinkedList<ServerConfig> _servers = new LinkedList<ServerConfig>();
+	private LinkedList<ServerConfig> _servers = new LinkedList<>();
 
 	private X509TrustManager _trustManager;
 

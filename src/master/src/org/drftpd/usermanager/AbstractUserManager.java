@@ -48,9 +48,9 @@ public abstract class AbstractUserManager implements UserManager {
 
 	protected HashMap<String, SoftReference<User>> _users;
 
-	private ArrayList<UserResetHookInterface> _preResetHooks = new ArrayList<UserResetHookInterface>();
+	private ArrayList<UserResetHookInterface> _preResetHooks = new ArrayList<>();
 
-	private ArrayList<UserResetHookInterface> _postResetHooks = new ArrayList<UserResetHookInterface>();
+	private ArrayList<UserResetHookInterface> _postResetHooks = new ArrayList<>();
 
 	public void init() throws UserFileException {
 		// Subscribe to events
@@ -130,7 +130,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 	public Collection<String> getAllGroups() {
 		Collection<User> users = getAllUsers();
-		ArrayList<String> ret = new ArrayList<String>();
+		ArrayList<String> ret = new ArrayList<>();
 
 		for (User myUser : users) {
 			Collection<String> myGroups = myUser.getGroups();
@@ -156,7 +156,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public abstract Collection<User> getAllUsers();
 
 	public Collection<User> getAllUsersByGroup(String group) {
-		Collection<User> c = new ArrayList<User>();
+		Collection<User> c = new ArrayList<>();
 
 		for (User user : getAllUsers()) {
 
@@ -220,7 +220,7 @@ public abstract class AbstractUserManager implements UserManager {
 				getUserByNameUnchecked(newUsername);
 			} catch (NoSuchUserException e) {
 				_users.remove(oldUser.getName());
-				_users.put(newUsername, new SoftReference<User>(oldUser));
+				_users.put(newUsername, new SoftReference<>(oldUser));
 				return;
 			}
 		}
@@ -358,7 +358,7 @@ public abstract class AbstractUserManager implements UserManager {
 		Set<UserResetHookInterface> unloadedPreResetHooks =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "PreUserResetHook", event, _preResetHooks);
 		if (!unloadedPreResetHooks.isEmpty()) {
-			ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<UserResetHookInterface>(_preResetHooks);
+			ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<>(_preResetHooks);
 			boolean hookRemoved = false;
 			for (Iterator<UserResetHookInterface> iter = clonedPreResetHooks.iterator(); iter.hasNext();) {
 				UserResetHookInterface preResetHook = iter.next();
@@ -378,7 +378,7 @@ public abstract class AbstractUserManager implements UserManager {
 		Set<UserResetHookInterface> unloadedPostResetHooks =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "PostUserResetHook", event, _postResetHooks);
 		if (!unloadedPostResetHooks.isEmpty()) {
-			ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<UserResetHookInterface>(_postResetHooks);
+			ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<>(_postResetHooks);
 			boolean hookRemoved = false;
 			for (Iterator<UserResetHookInterface> iter = clonedPostResetHooks.iterator(); iter.hasNext();) {
 				UserResetHookInterface postResetHook = iter.next();
@@ -402,7 +402,7 @@ public abstract class AbstractUserManager implements UserManager {
 			List<UserResetHookInterface> loadedPreResetHooks = 
 				MasterPluginUtils.getLoadedExtensionObjects(this, "master", "PreUserResetHook", "Class", event);
 			if (!loadedPreResetHooks.isEmpty()) {
-				ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<UserResetHookInterface>(_preResetHooks);
+				ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<>(_preResetHooks);
 				for (UserResetHookInterface preResetHook : loadedPreResetHooks) {
 					preResetHook.init();
 					clonedPreResetHooks.add(preResetHook);
@@ -421,7 +421,7 @@ public abstract class AbstractUserManager implements UserManager {
 			List<UserResetHookInterface> loadedPostResetHooks = 
 				MasterPluginUtils.getLoadedExtensionObjects(this, "master", "PostUserResetHook", "Class", event);
 			if (!loadedPostResetHooks.isEmpty()) {
-				ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<UserResetHookInterface>(_postResetHooks);
+				ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<>(_postResetHooks);
 				for (UserResetHookInterface postResetHook : loadedPostResetHooks) {
 					postResetHook.init();
 					clonedPostResetHooks.add(postResetHook);

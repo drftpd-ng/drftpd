@@ -100,7 +100,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		HashSet<String> destSlaves = new HashSet<String>();
+		HashSet<String> destSlaves = new HashSet<>();
 
 		while (st.hasMoreTokens()) {
 			String slaveName = st.nextToken();
@@ -147,7 +147,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 
 		for (Job job : treeSet) {
@@ -180,7 +180,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 
 		for (Job job : treeSet) {
@@ -208,7 +208,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 	}
 
 	public CommandResponse doREMOVEJOBS(CommandRequest request) {
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		for (Job job : treeSet) {
@@ -241,7 +241,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 			}
 		}
 
-		ArrayList<Range> rangeList = new ArrayList<Range>();
+		ArrayList<Range> rangeList = new ArrayList<>();
 		String rangeString = request.getArgument();
 		String[] ranges = rangeString.split(" ");
 		for (String range : ranges) {
@@ -254,7 +254,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 						.parseLong(vals[1])));
 			}
 		}
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 		ReplacerEnvironment env = new ReplacerEnvironment();
 

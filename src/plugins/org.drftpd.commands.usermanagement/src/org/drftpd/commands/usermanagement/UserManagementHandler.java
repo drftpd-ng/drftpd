@@ -65,7 +65,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 	}
 	
-	public static final Key<List<BaseFtpConnection>> CONNECTIONS = new Key<List<BaseFtpConnection>>(UserManagement.class, "connections");
+	public static final Key<List<BaseFtpConnection>> CONNECTIONS = new Key<>(UserManagement.class, "connections");
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -440,7 +440,7 @@ public class UserManagementHandler extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		Collection<User> users = new ArrayList<User>();
+		Collection<User> users = new ArrayList<>();
 
 		User userToChange;
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -1196,7 +1196,7 @@ public class UserManagementHandler extends CommandInterface {
 		long allmbup = 0;
 		long allmbdn = 0;
 
-		ArrayList<User> users = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+		ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
 		Collections.sort(users, UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
 
 		for (User user : users) {
@@ -1627,7 +1627,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 		
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(GlobalContext.getConnectionManager().getConnections());
+		ArrayList<BaseFtpConnection> conns = new ArrayList<>(GlobalContext.getConnectionManager().getConnections());
 		for (BaseFtpConnection conn2 : conns) {
 			if (conn2.getThreadID() == threadId) {
 				conn2.stop("Session Killed: " + reason);
@@ -1972,7 +1972,7 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_USERS(CommandRequest request) {
 
 		CommandResponse response = new CommandResponse(200);
-		ArrayList<User> myUsers = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+		ArrayList<User> myUsers = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
 
 		if (request.hasArgument()) {
 			Permission perm = new Permission(Permission
@@ -2448,7 +2448,7 @@ public class UserManagementHandler extends CommandInterface {
 		long totalcredits = 0;
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
-		ArrayList<User> users = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+		ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
 		for (User user : users) {
 			totalcredits += user.getCredits();
 		}

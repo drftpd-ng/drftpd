@@ -87,7 +87,7 @@ public class SectionManager implements SectionManagerInterface {
 	 * Load the different Section Types specified in plugin.xml
 	 */
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>>();
+		CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<ConfigurableSectionInterface>> loadedTypes =
@@ -106,7 +106,7 @@ public class SectionManager implements SectionManagerInterface {
 	public void reload() {
 		initTypes();
 		Properties p = new Properties();
-		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
+		HashMap<String, SectionInterface> sections = new HashMap<>();
 		FileInputStream stream = null;
         try {
         	stream = new FileInputStream("conf/sections.conf");

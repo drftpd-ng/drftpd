@@ -29,15 +29,15 @@ public class NukeFilterGlobalConfig implements NukeFilterConfigInterface {
 		nukeDelay = 120;
 		enforceYearNukex = 3;
 		enforceGroupNukex = 3;
-		exemptSections = new ArrayList<SectionInterface>();
-		filterString = new ArrayList<NukeFilterConfigElement>();
-		enforceString = new ArrayList<NukeFilterConfigElement>();
-		filterRegex = new ArrayList<NukeFilterConfigElement>();
-		enforceRegex = new ArrayList<NukeFilterConfigElement>();
-		filterYear = new ArrayList<NukeFilterConfigElement>();
-		enforceYear = new ArrayList<NukeFilterConfigElement>();
-		filterGroup = new ArrayList<NukeFilterConfigElement>();
-		enforceGroup = new ArrayList<NukeFilterConfigElement>();
+		exemptSections = new ArrayList<>();
+		filterString = new ArrayList<>();
+		enforceString = new ArrayList<>();
+		filterRegex = new ArrayList<>();
+		enforceRegex = new ArrayList<>();
+		filterYear = new ArrayList<>();
+		enforceYear = new ArrayList<>();
+		filterGroup = new ArrayList<>();
+		enforceGroup = new ArrayList<>();
 	}
 	
 	public boolean isEnabled() {

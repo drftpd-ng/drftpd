@@ -50,7 +50,7 @@ public class MirrorPostHook implements PostHookInterface {
 	private ArrayList<MirrorSetting> _settings;
 
 	public void initialize(StandardCommandManager manager) {
-		_settings = new ArrayList<MirrorSetting>();
+		_settings = new ArrayList<>();
 		loadConf();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
@@ -82,14 +82,14 @@ public class MirrorPostHook implements PostHookInterface {
 				logger.error("Invalid setting for " + i + ".nbrOfMirrors, not a number");
 				continue;
 			}
-			ArrayList<String> paths = new ArrayList<String>();
+			ArrayList<String> paths = new ArrayList<>();
 			for (int j = 1;; j++) {
 				String path = cfg.getProperty(i + ".path." + j);
 				if (path == null || path.trim().isEmpty()) break;
 				paths.add(path);
 			}
 			setting.setPaths(paths);
-			ArrayList<String> excludedPaths = new ArrayList<String>();
+			ArrayList<String> excludedPaths = new ArrayList<>();
 			for (int j = 1;; j++) {
 				String excludePath = cfg.getProperty(i + ".excludePath." + j);
 				if (excludePath == null || excludePath.trim().isEmpty()) break;
@@ -98,7 +98,7 @@ public class MirrorPostHook implements PostHookInterface {
 			setting.setExcludedPaths(excludedPaths);
 			String slaves = cfg.getProperty(i + ".slaves");
 			if (slaves != null && !slaves.trim().isEmpty()) {
-				HashSet<RemoteSlave> slaveList = new HashSet<RemoteSlave>();
+				HashSet<RemoteSlave> slaveList = new HashSet<>();
 				for (String slaveName : slaves.split(" ")) {
 					try {
 						slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
@@ -110,7 +110,7 @@ public class MirrorPostHook implements PostHookInterface {
 			}
 			String excludeSlaves = cfg.getProperty(i + ".excludeSlaves");
 			if (excludeSlaves != null && !excludeSlaves.trim().isEmpty()) {
-				HashSet<RemoteSlave> slaveList = new HashSet<RemoteSlave>();
+				HashSet<RemoteSlave> slaveList = new HashSet<>();
 				for (String slaveName : excludeSlaves.split(" ")) {
 					try {
 						slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
@@ -161,7 +161,7 @@ public class MirrorPostHook implements PostHookInterface {
 		}
 		if (activeSetting == null) return;
 
-		HashSet<String> mirrorSlaves = new HashSet<String>();
+		HashSet<String> mirrorSlaves = new HashSet<>();
 		try {
 			// Add slave(s) file already exist on
 			for (String existingSlave : file.getSlaveNames()) {

@@ -46,7 +46,7 @@ import java.util.*;
  */
 public class PREBWPostHook implements PostHookInterface {
 	private static final Logger logger = Logger.getLogger(PREBWPostHook.class);
-    private ArrayList<TimeSetting> _timeSettings = new ArrayList<TimeSetting>();
+    private ArrayList<TimeSetting> _timeSettings = new ArrayList<>();
     private String _exclude;
     private String[] _sections;
 	private boolean _realSpeed;

@@ -30,7 +30,7 @@ import java.util.Map;
 @SuppressWarnings("serial")
 public class NukeData implements Serializable {
 
-    public static final Key<NukeData> NUKEDATA = new Key<NukeData>(NukeData.class, "nuke");
+    public static final Key<NukeData> NUKEDATA = new Key<>(NukeData.class, "nuke");
 
     private String _user;
 

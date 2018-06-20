@@ -50,11 +50,11 @@ public abstract class AbstractUser extends User implements Commitable {
 
 	private long _credits;
 
-	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<Key<?>, Object>();
+	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
 
 	private String _group = "nogroup";
 
-	private ArrayList<String> _groups = new ArrayList<String>();
+	private ArrayList<String> _groups = new ArrayList<>();
 
 	private HostMaskCollection _hostMasks = new HostMaskCollection();
 
@@ -175,7 +175,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void setGroups(List<String> groups) {
-		_groups = new ArrayList<String>(groups);
+		_groups = new ArrayList<>(groups);
 	}
 
 	public void setHostMaskCollection(HostMaskCollection masks) {

@@ -38,7 +38,7 @@ public class ZipTools {
 
 	public static Collection<FileHandle> getZipFiles(DirectoryHandle dir) 
 	throws IOException, FileNotFoundException {
-		Collection<FileHandle> files = new ArrayList<FileHandle>();
+		Collection<FileHandle> files = new ArrayList<>();
 
 		for (FileHandle file : dir.getFilesUnchecked()) {
 			if (file.getName().toLowerCase().endsWith(".zip") && file.getXfertime() != -1) {

@@ -27,7 +27,7 @@ import java.util.ArrayList;
  */
 public class ArchiveStartEvent {
 
-	private ArrayList<Job> _jobs = new ArrayList<Job>();
+	private ArrayList<Job> _jobs = new ArrayList<>();
 	private ArchiveType _archivetype;
 
 	public ArchiveStartEvent(ArchiveType archivetype, ArrayList<Job> jobs) {

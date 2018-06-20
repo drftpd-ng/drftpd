@@ -62,7 +62,7 @@ public class SysopManager implements PluginInterface {
 		}
 
 		if (CONFIG == null) {
-			CONFIG = new HashMap<String,Integer>();
+			CONFIG = new HashMap<>();
 		} else {
 			CONFIG.clear();
 		}

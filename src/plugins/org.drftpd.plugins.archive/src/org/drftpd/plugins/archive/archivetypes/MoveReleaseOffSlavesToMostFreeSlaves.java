@@ -66,7 +66,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	 * Gets configuration for offofslaves
 	 */
 	private Set<RemoteSlave> getOffOfSlaves(Properties props, int confnum) {
-		Set<RemoteSlave> offOfSlaves = new HashSet<RemoteSlave>();
+		Set<RemoteSlave> offOfSlaves = new HashSet<>();
 		for (int i = 1;; i++) {
 			String slavename = null;
 
@@ -94,7 +94,7 @@ public class MoveReleaseOffSlavesToMostFreeSlaves extends ArchiveType {
 	 */
 	@Override
 	public Set<RemoteSlave> findDestinationSlaves() {
-		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> destSlaves = new HashSet<>();
 		for (RemoteSlave freeslave: GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,_offOfSlaves, false)) {
 			for (RemoteSlave confslave: _slaveList) {
 				if (freeslave.getName().equals(confslave.getName())) {

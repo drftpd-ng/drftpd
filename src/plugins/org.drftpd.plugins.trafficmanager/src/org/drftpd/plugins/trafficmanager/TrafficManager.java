@@ -54,7 +54,7 @@ public class TrafficManager implements PluginInterface {
 	@Override
 	public void stopPlugin(String reason) {
 		AnnotationProcessor.unprocess(this);
-		_traffictypes = new ArrayList<TrafficType>();
+		_traffictypes = new ArrayList<>();
 	}
 	
     @EventSubscriber
@@ -95,7 +95,7 @@ public class TrafficManager implements PluginInterface {
 	}
 	
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<TrafficType>> typesMap = new CaseInsensitiveHashMap<String, Class<TrafficType>>();
+		CaseInsensitiveHashMap<String, Class<TrafficType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<TrafficType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.trafficmanager", "TrafficType", "ClassName", false);
@@ -112,7 +112,7 @@ public class TrafficManager implements PluginInterface {
 	
 	public void loadConf() {
     	initTypes();
-		_traffictypes = new ArrayList<TrafficType>();
+		_traffictypes = new ArrayList<>();
 		
 		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("trafficmanager.conf");
     	int count = 1;
@@ -130,7 +130,7 @@ public class TrafficManager implements PluginInterface {
      * Returns a copy of the current traffic types
      */
     public ArrayList<TrafficType> getTrafficTypes() {
-    	return new ArrayList<TrafficType>(_traffictypes);
+    	return new ArrayList<>(_traffictypes);
     }
 
 	/*

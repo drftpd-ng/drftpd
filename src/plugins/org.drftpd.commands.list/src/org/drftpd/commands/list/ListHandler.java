@@ -69,7 +69,7 @@ public class ListHandler extends CommandInterface {
 
 	private static final String PADDING = "          ";
 
-	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<AddListElementsInterface>();
+	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<>();
 
 	private StandardCommandManager _cManager;
 
@@ -264,7 +264,7 @@ public class ListHandler extends CommandInterface {
 
 	protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user, boolean slavenames) throws IOException {
 		ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
-		ArrayList<InodeHandle> tempFileList = new ArrayList<InodeHandle>(dir.getInodeHandles(session.getUserNull(user)));
+		ArrayList<InodeHandle> tempFileList = new ArrayList<>(dir.getInodeHandles(session.getUserNull(user)));
 		ArrayList<InodeHandleInterface> listFiles = container.getElements();
 		ArrayList<String> fileTypes = container.getFileTypes();
 		int numOnline = container.getNumOnline();
@@ -511,7 +511,7 @@ public class ListHandler extends CommandInterface {
 		Set<AddListElementsInterface> unloadedListAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "AddElements", event, _listAddons);
 		if (!unloadedListAddons.isEmpty()) {
-			ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<AddListElementsInterface>(_listAddons);
+			ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<>(_listAddons);
 			boolean addonRemoved = false;
 			for (Iterator<AddListElementsInterface> iter = clonedListAddons.iterator(); iter.hasNext();) {
 				AddListElementsInterface listAddon = iter.next();
@@ -535,7 +535,7 @@ public class ListHandler extends CommandInterface {
 			List<AddListElementsInterface> loadedListAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.list", "AddElements", "Class", event);
 			if (!loadedListAddons.isEmpty()) {
-				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<AddListElementsInterface>(_listAddons);
+				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<>(_listAddons);
 				for (AddListElementsInterface listAddon : loadedListAddons) {
 					listAddon.initialize();
 					clonedListAddons.add(listAddon);
@@ -552,6 +552,6 @@ public class ListHandler extends CommandInterface {
 	 * Returning a copy of listAddons, so we can't change them.
 	 */
 	public ArrayList<AddListElementsInterface> getAddons() {
-		return new ArrayList<AddListElementsInterface>(_listAddons);
+		return new ArrayList<>(_listAddons);
 	}
 }

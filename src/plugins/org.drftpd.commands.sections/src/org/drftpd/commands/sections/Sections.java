@@ -50,8 +50,8 @@ public class Sections extends CommandInterface {
 
         ReplacerEnvironment env = new ReplacerEnvironment();
 
-        ArrayList<SectionInterface> sections = 
-        	new ArrayList<SectionInterface>(GlobalContext.getGlobalContext().getSectionManager().getSections());
+        ArrayList<SectionInterface> sections =
+                new ArrayList<>(GlobalContext.getGlobalContext().getSectionManager().getSections());
         
        Collections.sort(sections, new SectionComparator());
         

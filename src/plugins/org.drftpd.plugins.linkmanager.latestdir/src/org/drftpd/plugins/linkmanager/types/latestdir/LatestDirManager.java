@@ -70,8 +70,8 @@ public class LatestDirManager implements PluginInterface {
 	
     private void loadManager() {
     	_linkmanager = LinkManager.getLinkManager();
-		_links = new ArrayList<DirectoryHandle>();
-		_map = new HashMap<String, DirectoryHandle>();
+		_links = new ArrayList<>();
+		_map = new HashMap<>();
 		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("latestdir.conf");
 		_count = Integer.parseInt(PropertyHelper.getProperty(_props, "maxcount","10"));
 		for (LinkType link : _linkmanager.getLinks()) {

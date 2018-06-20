@@ -87,7 +87,7 @@ public class SiteBotManagement extends CommandInterface {
 		if (bot == null) {
 			return new CommandResponse(500, "No Blowfish keys found");
 		}
-		ArrayList<String> outputKeys = new ArrayList<String>();
+		ArrayList<String> outputKeys = new ArrayList<>();
 		for (ChannelConfig chan : bot.getConfig().getChannels()) {
 			if (chan.getBlowKey() != null) {
 				if (chan.isPermitted(user) && !chan.getBlowKey().equals("")) {

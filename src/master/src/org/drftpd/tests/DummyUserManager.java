@@ -54,7 +54,7 @@ public class DummyUserManager extends AbstractUserManager {
     }
 
     public synchronized void add(User user) {
-        _users.put(user.getName(), new SoftReference<User>(user));
+        _users.put(user.getName(), new SoftReference<>(user));
     }
 
     public User getUserByNameUnchecked(String username)

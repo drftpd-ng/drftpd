@@ -88,7 +88,7 @@ public class TvMaze extends CommandInterface {
 				}
 				addResponse(env, request, response, "tv.show", verbose);
 			} else {
-				ArrayList<TvEpisode> epList = new ArrayList<TvEpisode>(Arrays.asList(tvmaze.getTvShow().getEPList()));
+				ArrayList<TvEpisode> epList = new ArrayList<>(Arrays.asList(tvmaze.getTvShow().getEPList()));
 				if (epList.size() > 1) {
 					Collections.sort(epList, TvMazeUtils.epNumberComparator);
 					addResponse(env, request, response, "tv.ep.season.header", verbose);
@@ -104,7 +104,7 @@ public class TvMaze extends CommandInterface {
 						env.add("foundSD","No");
 						env.add("foundHD","No");
 
-						ArrayList<DirectoryHandle> results = new ArrayList<DirectoryHandle>();
+						ArrayList<DirectoryHandle> results = new ArrayList<>();
 
 						try {
 							for (SectionInterface section : TvMazeConfig.getInstance().getHDSections()) {
@@ -287,7 +287,7 @@ public class TvMaze extends CommandInterface {
 	}
 
 	private ArrayList<DirectoryHandle> getDirsToCheck(CommandRequest request, DirectoryHandle dir) {
-		ArrayList<DirectoryHandle> dirsToCheck = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> dirsToCheck = new ArrayList<>();
 		ArrayList<SectionInterface> joinedSectionList = TvMazeConfig.getInstance().getRaceSections();
 		for (SectionInterface section : TvMazeConfig.getInstance().getHDSections()) {
 			if (!joinedSectionList.contains(section)) {

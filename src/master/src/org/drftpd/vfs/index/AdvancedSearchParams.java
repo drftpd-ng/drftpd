@@ -54,7 +54,7 @@ public class AdvancedSearchParams {
 	private KeyedMap<Key<?>, Object> _extensionMap;
 
 	public AdvancedSearchParams() {
-		_extensionMap = new KeyedMap<Key<?>, Object>();
+		_extensionMap = new KeyedMap<>();
 	}
 
 	public void setName(String name) {

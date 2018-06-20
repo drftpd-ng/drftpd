@@ -51,7 +51,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 
 	public ConfigPanel(InstallerConfig config) {
 		_config = config;
-		_logList = new ArrayList<String>();
+		_logList = new ArrayList<>();
 		setLayout(new BorderLayout());
 		JPanel centerPanel = new JPanel();
 		centerPanel.setLayout(new GridBagLayout());

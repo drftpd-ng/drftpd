@@ -65,6 +65,6 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 
 	protected Map<String,AtomicInteger> getSlaveRefCounts() {
 		// Links don't reside on slaves so return an empty Map
-		return new TreeMap<String,AtomicInteger>();
+		return new TreeMap<>();
 	}
 }

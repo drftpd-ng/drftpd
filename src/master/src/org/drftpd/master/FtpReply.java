@@ -34,7 +34,7 @@ public class FtpReply {
 
 	protected int _code;
 	
-	protected Vector<String> _lines = new Vector<String>();
+	protected Vector<String> _lines = new Vector<>();
 	
 	protected String _message;
 	

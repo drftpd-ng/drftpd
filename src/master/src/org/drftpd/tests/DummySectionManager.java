@@ -40,13 +40,13 @@ public class DummySectionManager implements SectionManagerInterface {
 	}
 
 	public Collection<SectionInterface> getSections() {
-		ArrayList<SectionInterface> list = new ArrayList<SectionInterface>(1);
+		ArrayList<SectionInterface> list = new ArrayList<>(1);
 		list.add(_section);
 		return list;
 	}
 
 	public Map<String, SectionInterface> getSectionsMap() {
-		HashMap<String, SectionInterface> map = new HashMap<String, SectionInterface>(1);
+		HashMap<String, SectionInterface> map = new HashMap<>(1);
 		map.put(_section.getName(), _section);
 		return map;
 	}

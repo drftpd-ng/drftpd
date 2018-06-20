@@ -37,7 +37,7 @@ import java.util.*;
 @SuppressWarnings("serial")
 public abstract class Session extends KeyedMap<Key<?>, Object> {
 
-	public static final Key<HashMap<String, Properties>> COMMANDS = new Key<HashMap<String, Properties>>(Session.class, "commands");
+	public static final Key<HashMap<String, Properties>> COMMANDS = new Key<>(Session.class, "commands");
 
 	private boolean _aborted = false;
 

@@ -88,11 +88,11 @@ public class IpSecurityManager implements PluginInterface {
      * Must be done this way as we read the same "command" string multiple times
      */
 	private void loadConf() {
-		_ident = new ArrayList<Integer>();
-		_octets = new ArrayList<String>();
-		_numip = new ArrayList<Integer>();
-		_hostm = new ArrayList<Integer>();
-		_perms = new ArrayList<String>();		
+		_ident = new ArrayList<>();
+		_octets = new ArrayList<>();
+		_numip = new ArrayList<>();
+		_hostm = new ArrayList<>();
+		_perms = new ArrayList<>();
 		LineNumberReader inRead = null;
 	
 	   try{

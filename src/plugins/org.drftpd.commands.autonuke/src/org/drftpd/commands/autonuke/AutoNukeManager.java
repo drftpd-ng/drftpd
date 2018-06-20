@@ -114,7 +114,7 @@ public class AutoNukeManager implements PluginInterface {
     }
 
 	private void initConfigs() {
-		CaseInsensitiveHashMap<String, Class<Config>> configsMap = new CaseInsensitiveHashMap<String, Class<Config>>();
+		CaseInsensitiveHashMap<String, Class<Config>> configsMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<Config>> loadedConfigs =

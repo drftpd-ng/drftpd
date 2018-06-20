@@ -49,7 +49,7 @@ public class PREMirrorPostHook implements PostHookInterface {
 	private Timer _preTimer;
 
 	public void initialize(StandardCommandManager manager) {
-		_excludePaths = new ArrayList<String>();
+		_excludePaths = new ArrayList<>();
 		_preTimer = new Timer();
 		loadConf();
 		// Subscribe to events

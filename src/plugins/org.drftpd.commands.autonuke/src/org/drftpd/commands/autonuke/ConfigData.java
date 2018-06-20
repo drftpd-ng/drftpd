@@ -10,7 +10,7 @@ public class ConfigData {
 	private NukeItem _ni;
 
 	public ConfigData() {
-		_returnData = new LinkedList<String>();
+		_returnData = new LinkedList<>();
 	}
 
 	public void addReturnData(String data) {

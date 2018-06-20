@@ -212,7 +212,7 @@ public class IMDBUtils {
 			throw new FileNotFoundException("Index Exception: "+e.getMessage());
 		}
 
-		ArrayList<DirectoryHandle> releases = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> releases = new ArrayList<>();
 
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
 			try {

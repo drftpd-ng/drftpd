@@ -31,7 +31,7 @@ public class DirsToCheck {
 	private ConcurrentLinkedQueue<DirectoryHandle> _dirsToCheck;
 
 	private DirsToCheck() {
-		_dirsToCheck = new ConcurrentLinkedQueue<DirectoryHandle>();
+		_dirsToCheck = new ConcurrentLinkedQueue<>();
 	}
 
 	public ConcurrentLinkedQueue<DirectoryHandle> get() {

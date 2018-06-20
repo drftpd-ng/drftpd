@@ -33,24 +33,24 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class VirtualFileSystemFile extends VirtualFileSystemInode implements StatsInterface  {
 
-	public static final Key<Long> CRC = new Key<Long>(VirtualFileSystemFile.class, "checksum");
+	public static final Key<Long> CRC = new Key<>(VirtualFileSystemFile.class, "checksum");
 
-	public static final Key<Long> MD5 = new Key<Long>(VirtualFileSystemFile.class, "md5");
+	public static final Key<Long> MD5 = new Key<>(VirtualFileSystemFile.class, "md5");
 
-	public static final Key<Long> XFERTIME = new Key<Long>(VirtualFileSystemFile.class,	"xfertime");
+	public static final Key<Long> XFERTIME = new Key<>(VirtualFileSystemFile.class, "xfertime");
 	
 	protected Set<String> _slaves;
 	
 	
-	public static final Key<Integer> DOWNLOADEDTIMES = new Key<Integer>(VirtualFileSystemFile.class, 
-			"dltimes");
+	public static final Key<Integer> DOWNLOADEDTIMES = new Key<>(VirtualFileSystemFile.class,
+            "dltimes");
 	
-	public static final Key<Long> DOWNLOADDURATION = new Key<Long>(VirtualFileSystemFile.class, 
-			"dlduration");
+	public static final Key<Long> DOWNLOADDURATION = new Key<>(VirtualFileSystemFile.class,
+            "dlduration");
 
-	private transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<RemoteTransfer>();
+	private transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<>();
 
-	private transient Queue<RemoteTransfer> _downloads = new ConcurrentLinkedQueue<RemoteTransfer>();
+	private transient Queue<RemoteTransfer> _downloads = new ConcurrentLinkedQueue<>();
 
 	private long _size;
 
@@ -59,7 +59,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 */
 	public Set<String> getSlaves() {
 		synchronized (_slaves) {
-			return new HashSet<String>(_slaves);
+			return new HashSet<>(_slaves);
 		}
 	}
 	
@@ -81,8 +81,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 
 	public VirtualFileSystemFile(String username, String group, long size,
 			String initialSlave) {
-		this(username, group, size, new HashSet<String>(Arrays
-				.asList(initialSlave)));
+		this(username, group, size, new HashSet<>(Arrays
+                .asList(initialSlave)));
 	}
 
 	public VirtualFileSystemFile(String username, String group, long size,
@@ -344,7 +344,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	}
 
 	protected Map<String,AtomicInteger> getSlaveRefCounts() {
-		Map<String,AtomicInteger> slaveRefCounts = new TreeMap<String,AtomicInteger>();
+		Map<String,AtomicInteger> slaveRefCounts = new TreeMap<>();
 		synchronized(_slaves) {
 			for (String slave : _slaves) {
 				slaveRefCounts.put(slave, new AtomicInteger(1));

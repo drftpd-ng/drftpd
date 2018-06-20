@@ -26,7 +26,7 @@ public class NukeFilterSettings {
 	public NukeFilterSettings() {
 		//this is not really necessary hence its done in reloadConfigs() method
 		nfgc = new NukeFilterGlobalConfig(); 
-		nfscMap = new HashMap<String, NukeFilterSectionConfig>();
+		nfscMap = new HashMap<>();
 		nfnc = new NukeFilterNukeConfig();
 	}
 
@@ -36,7 +36,7 @@ public class NukeFilterSettings {
 	public void reloadConfigs() {
 		//destroy previous configs
 		nfgc = new NukeFilterGlobalConfig();
-		nfscMap = new HashMap<String, NukeFilterSectionConfig>();
+		nfscMap = new HashMap<>();
 		nfnc = new NukeFilterNukeConfig();
 		//grab config file
 		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("nukefilter.conf");

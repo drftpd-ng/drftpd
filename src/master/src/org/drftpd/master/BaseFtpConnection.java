@@ -56,14 +56,14 @@ public class BaseFtpConnection extends Session implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
 
-	public static final Key<InetAddress> ADDRESS = new Key<InetAddress>(BaseFtpConnection.class, "address");
-	public static final Key<String> IDENT = new Key<String>(BaseFtpConnection.class, "ident");
+	public static final Key<InetAddress> ADDRESS = new Key<>(BaseFtpConnection.class, "address");
+	public static final Key<String> IDENT = new Key<>(BaseFtpConnection.class, "ident");
 	
-	public static final Key<Boolean> FAILEDLOGIN = new Key<Boolean>(BaseFtpConnection.class, "failedlogin");
+	public static final Key<Boolean> FAILEDLOGIN = new Key<>(BaseFtpConnection.class, "failedlogin");
 	
-	public static final Key<String> FAILEDREASON = new Key<String>(BaseFtpConnection.class, "failedreason");
+	public static final Key<String> FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
 	
-	public static final Key<String> FAILEDUSERNAME = new Key<String>(BaseFtpConnection.class, "failedusername");
+	public static final Key<String> FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
 	
 	public static final String NEWLINE = "\r\n";
 
@@ -268,7 +268,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		}
 		
 		_pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
                 new CommandThreadFactory(_thread.getName()));
 
 		try {

@@ -63,7 +63,7 @@ public class SectionManager implements SectionManagerInterface {
 
 	@SuppressWarnings("unchecked")
 	public Collection<SectionInterface> getSections() {
-		ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
+		ArrayList<SectionInterface> sections = new ArrayList<>();
 		
 		Set<DirectoryHandle> dirs;
 		try {
@@ -148,7 +148,7 @@ public class SectionManager implements SectionManagerInterface {
 
 	@SuppressWarnings("unchecked")
 	public Map<String, SectionInterface> getSectionsMap() {
-		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
+		HashMap<String, SectionInterface> sections = new HashMap<>();
 		
 		try {
 			for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectoriesUnchecked()) {

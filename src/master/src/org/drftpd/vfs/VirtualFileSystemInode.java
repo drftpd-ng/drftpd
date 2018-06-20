@@ -57,11 +57,11 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	
 	protected String _group;
 
-	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<Key<?>, Object>();
+	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<>();
 
-	protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<Key<?>, Object>();
+	protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<>();
 
-	protected Map<String,Object> _untypedPluginMap = new TreeMap<String,Object>();
+	protected Map<String,Object> _untypedPluginMap = new TreeMap<>();
 
 	protected long _lastModified;
 	

@@ -101,7 +101,7 @@ public class Permission {
 	}
 	
 	public static ArrayList<String> makeUsers(Enumeration<Object> st) {
-		ArrayList<String> users = new ArrayList<String>();
+		ArrayList<String> users = new ArrayList<>();
 
 		while (st.hasMoreElements()) {
 			users.add((String) st.nextElement());

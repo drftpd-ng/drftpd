@@ -36,7 +36,7 @@ public class SlaveOption implements OptionInterface {
 			throw new ImproperUsageException("Missing argument for "+option+" option");
 		}
 		if (option.equalsIgnoreCase("-slaves")) {
-			HashSet<String> slaves = new HashSet<String>(Arrays.asList(args));
+			HashSet<String> slaves = new HashSet<>(Arrays.asList(args));
 			params.setSlaves(slaves);
 		} else if (option.equalsIgnoreCase("-nbrofslaves")) {
 			try {

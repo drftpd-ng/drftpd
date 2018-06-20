@@ -28,7 +28,7 @@ import org.drftpd.dynamicdata.Key;
 @SuppressWarnings("serial")
 public class DizInfo implements Serializable {
 
-	public static final Key<DizInfo> DIZINFO = new Key<DizInfo>(DizInfo.class, "diz");
+	public static final Key<DizInfo> DIZINFO = new Key<>(DizInfo.class, "diz");
 
 	private boolean _dizValid = false;
 

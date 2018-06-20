@@ -153,7 +153,7 @@ public class AutoNukeCommands extends CommandInterface {
 				dir = section.getBaseDirectory();
 			}
 		}
-		ArrayList<SectionInterface> sectionsToCheck = new ArrayList<SectionInterface>();
+		ArrayList<SectionInterface> sectionsToCheck = new ArrayList<>();
 		if (dir.isRoot()) {
             for (SectionInterface section : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
                 if (!AutoNukeSettings.getSettings().getExcludedSections().contains(section)) {
@@ -179,7 +179,7 @@ public class AutoNukeCommands extends CommandInterface {
 
 			if (request.getSession().isAborted()) { break; }
 			try {
-				ArrayList<DirectoryHandle> sectionDirs = new ArrayList<DirectoryHandle>();
+				ArrayList<DirectoryHandle> sectionDirs = new ArrayList<>();
 				if (section instanceof DatedSection) {
 					sectionDirs.addAll(sectionRoot.getDirectoriesUnchecked());
 				} else {

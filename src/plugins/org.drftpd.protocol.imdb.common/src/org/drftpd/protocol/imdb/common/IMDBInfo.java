@@ -29,7 +29,7 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class IMDBInfo implements Serializable {
 
-    public static final Key<IMDBInfo> IMDBINFO = new Key<IMDBInfo>(IMDBInfo.class, "imdb");
+    public static final Key<IMDBInfo> IMDBINFO = new Key<>(IMDBInfo.class, "imdb");
 	
 	private String _nfoFileName = null;
 	private String _nfoURL = null;

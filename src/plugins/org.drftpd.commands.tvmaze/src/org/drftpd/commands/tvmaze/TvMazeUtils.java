@@ -199,7 +199,7 @@ public class TvMazeUtils {
 
 	public static TvMazeInfo createTvMazeInfo(JsonObject jObj, int season, int number) throws Exception{
 		TvMazeInfo tvmazeInfo = createTvMazeInfo(jObj);
-		ArrayList<TvEpisode> epList = new ArrayList<TvEpisode>();
+		ArrayList<TvEpisode> epList = new ArrayList<>();
 		JsonObject embeddedObj = jObj.getAsJsonObject("_embedded");
 		if (embeddedObj != null) {
 			// Add all episodes to a map with sXXeYY as key
@@ -259,7 +259,7 @@ public class TvMazeUtils {
 	}
 
 	private static HashMap<String,TvEpisode> parseEpisodes (JsonObject embeddedObj) throws Exception{
-		HashMap<String,TvEpisode> episodes = new HashMap<String,TvEpisode>();
+		HashMap<String,TvEpisode> episodes = new HashMap<>();
 		ArrayList<JsonElement> episodesElement = new Gson().fromJson(embeddedObj.getAsJsonArray("episodes"), new TypeToken<ArrayList<JsonElement>>() {}.getType());
 		for (JsonElement episode : episodesElement) {
 			TvEpisode ep = createTvEpisode(episode.getAsJsonObject());
@@ -356,7 +356,7 @@ public class TvMazeUtils {
 			throw new FileNotFoundException("Index Exception: "+e.getMessage());
 		}
 
-		ArrayList<DirectoryHandle> releases = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> releases = new ArrayList<>();
 
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
 			try {

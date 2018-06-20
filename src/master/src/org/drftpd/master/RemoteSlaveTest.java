@@ -73,7 +73,7 @@ public class RemoteSlaveTest extends TestCase {
         rslave.simpleDelete("/deleteme");
         rslave.simpleRename("/renameme", "/indir", "tofile");
 
-        HashSet<String> filelist = new HashSet<String>();
+        HashSet<String> filelist = new HashSet<>();
         filelist.add("/deleteme");
         filelist.add("/renameme");
         filelist.add("/indir");

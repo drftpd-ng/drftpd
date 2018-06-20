@@ -28,7 +28,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public final class AsyncThreadSafeEventService extends ThreadSafeEventService {
 
-	private LinkedBlockingQueue<QueuedAsyncEvent> _eventQueue = new LinkedBlockingQueue<QueuedAsyncEvent>();
+	private LinkedBlockingQueue<QueuedAsyncEvent> _eventQueue = new LinkedBlockingQueue<>();
 
 	public AsyncThreadSafeEventService() {
 		super();

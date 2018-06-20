@@ -135,7 +135,7 @@ public class TestSlave extends Slave {
     }
     private AsyncResponse handleCommand(AsyncCommandArgument ac) {
         if (ac.getName().equals("remerge")) {
-        	List<LightRemoteInode> mergeFiles = new ArrayList<LightRemoteInode>();
+        	List<LightRemoteInode> mergeFiles = new ArrayList<>();
         	
         	mergeFiles.add(new LightRemoteInode("ps2dvd",System.currentTimeMillis(), 0));
         	sendResponse(new AsyncResponseRemerge("/", mergeFiles, System.currentTimeMillis()));

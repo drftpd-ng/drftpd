@@ -118,7 +118,7 @@ public class Slave {
 		String slavename = PropertyHelper.getProperty(p, "slave.name");
 
 		if (isWin32) {
-			_renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<QueuedOperation, Boolean>());
+			_renameQueue = Collections.newSetFromMap(new ConcurrentHashMap<>());
 		}
 
 		try {

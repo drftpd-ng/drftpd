@@ -111,7 +111,7 @@ public abstract class TrialType {
 	
 	protected ArrayList<User> getUsers() {
 		Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
-		ArrayList<User> filteredusers = new ArrayList<User>();
+		ArrayList<User> filteredusers = new ArrayList<>();
 		for (User user : users) {
 			if ((getPerms().check(user)) && (!user.isDeleted())) {
 				filteredusers.add(user);

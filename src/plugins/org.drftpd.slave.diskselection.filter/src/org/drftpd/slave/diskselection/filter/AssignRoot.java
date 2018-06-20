@@ -42,7 +42,7 @@ public class AssignRoot {
 		String parse = s.trim().replaceAll(",", "");
 		String[] p = parse.split(" ");
 		
-		ArrayList<AssignParser> list = new ArrayList<AssignParser>();
+		ArrayList<AssignParser> list = new ArrayList<>();
 		
 		// safety precaution.
 		int x = filter.getDiskSelection().getRootCollection().getRootList().size();

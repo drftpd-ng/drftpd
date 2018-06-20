@@ -41,7 +41,7 @@ public class PartialTrustManager implements X509TrustManager {
 
 	private static final Logger logger = Logger.getLogger(PartialTrustManager.class);
 
-	private HashMap<String,X509Certificate> _certs = new HashMap<String,X509Certificate>();
+	private HashMap<String,X509Certificate> _certs = new HashMap<>();
 
 	private CertificateFactory _factory; 
 

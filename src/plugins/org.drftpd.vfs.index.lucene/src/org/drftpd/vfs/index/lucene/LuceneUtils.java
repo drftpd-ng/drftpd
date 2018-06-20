@@ -52,7 +52,7 @@ public class LuceneUtils {
 		BooleanQuery bQuery = new BooleanQuery();
 		WildcardQuery wQuery;
 
-		Set<String> tokens = new HashSet<String>(); // avoids repeated terms.
+		Set<String> tokens = new HashSet<>(); // avoids repeated terms.
 
 		// get the CharTermAttribute from the TokenStream
 		CharTermAttribute termAtt = ts.addAttribute(CharTermAttribute.class);

@@ -58,12 +58,12 @@ public class PluginBuildListener implements SubBuildListener {
 		_logLevel = config.getLogLevel();
 		_config = config;
 		_logWindow = logWindow;
-		_pluginMap = new HashMap<String,PluginDescriptor>();
+		_pluginMap = new HashMap<>();
 		_cleanOnly = cleanOnly;
 		for (PluginData plugin : buildPlugins) {
 			_pluginMap.put(plugin.getName(),plugin.getDescriptor());
 		}
-		ArrayList<PluginDescriptor> initialPlugins = new ArrayList<PluginDescriptor>();
+		ArrayList<PluginDescriptor> initialPlugins = new ArrayList<>();
 		initialPlugins.add(_pluginMap.get("slave"));
 		for (PluginData plugin : buildPlugins) {
 			if (plugin.getName().equals("master")) {
@@ -73,7 +73,7 @@ public class PluginBuildListener implements SubBuildListener {
 				initialPlugins.add(plugin.getDescriptor());
 			}
 		}
-		_slavePluginMap = new HashMap<String,PluginDescriptor>();
+		_slavePluginMap = new HashMap<>();
 		for (PluginDescriptor desc : initialPlugins) {
 			_slavePluginMap.put(desc.getId(), desc);
 			for (PluginData plugin : buildPlugins) {
@@ -83,8 +83,8 @@ public class PluginBuildListener implements SubBuildListener {
 			}
 		}
 		_slaveFiles = new FileSet();
-		_installedConfs = new ArrayList<String>();
-		_missingLibs = new TreeSet<String>();
+		_installedConfs = new ArrayList<>();
+		_missingLibs = new TreeSet<>();
 		_pluginsDone = 0;
 	}
 

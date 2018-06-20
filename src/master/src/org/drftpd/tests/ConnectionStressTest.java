@@ -42,7 +42,7 @@ public class ConnectionStressTest extends TestCase {
 	private int failures = 0;
 	private int success = 0;
 	
-	private ArrayList<Thread> list = new ArrayList<Thread>();
+	private ArrayList<Thread> list = new ArrayList<>();
 	
 	public ConnectionStressTest(String fName) {
 		super(fName);

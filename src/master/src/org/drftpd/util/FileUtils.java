@@ -31,7 +31,7 @@ import java.util.TreeSet;
 public class FileUtils {
 
 	public static FileHandle getOldestFile(DirectoryHandle dir) throws FileNotFoundException {
-		TreeSet<FileHandle> files = new TreeSet<FileHandle>(new FileAgeComparator());
+		TreeSet<FileHandle> files = new TreeSet<>(new FileAgeComparator());
 		files.addAll(dir.getFilesUnchecked());
 		return files.first();
 	}

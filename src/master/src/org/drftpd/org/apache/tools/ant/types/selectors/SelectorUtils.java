@@ -501,7 +501,7 @@ public final class SelectorUtils {
 	 * @since Ant 1.6
 	 */
 	public static Vector<String> tokenizePath(String path, String separator) {
-		Vector<String> ret = new Vector<String>();
+		Vector<String> ret = new Vector<>();
 		StringTokenizer st = new StringTokenizer(path, separator);
 		while (st.hasMoreTokens()) {
 			ret.addElement(st.nextToken());

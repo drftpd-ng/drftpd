@@ -191,7 +191,7 @@ public abstract class ArchiveType {
 	 * Checks dir by regex, and by creationTime.
 	 */
 	public final DirectoryHandle getOldestNonArchivedDir() {
-		ArrayList<DirectoryHandle> oldDirs = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> oldDirs = new ArrayList<>();
 
 		try {
 			DirectoryHandle dir = getSection().getCurrentDirectory();
@@ -299,7 +299,7 @@ public abstract class ArchiveType {
 	 * Adds the files in the directory (and subdirs) to the job manager to be archived
 	 */
 	protected ArrayList<Job> recursiveSend(DirectoryHandle lrf) throws FileNotFoundException {
-		ArrayList<Job> jobQueue = new ArrayList<Job>();
+		ArrayList<Job> jobQueue = new ArrayList<>();
 
         for (DirectoryHandle directoryHandle : lrf.getDirectoriesUnchecked()) {
             jobQueue.addAll(recursiveSend(directoryHandle));
@@ -348,7 +348,7 @@ public abstract class ArchiveType {
             }
 
             if (slaveSet == null) {
-                slaveSet = new HashSet<RemoteSlave>(availableSlaves);
+                slaveSet = new HashSet<>(availableSlaves);
             } else {
                 if (!(slaveSet.containsAll(availableSlaves) && availableSlaves.containsAll(slaveSet))) {
                     return false;
@@ -460,7 +460,7 @@ public abstract class ArchiveType {
 	 * Sets standard properties for this ArchiveType
 	 */
 	private void setProperties(Properties properties) {
-		_failedDirs = new ArrayList<String>();
+		_failedDirs = new ArrayList<>();
 		_archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".archiveafter","0").trim());
 		_ignoreAfter = Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".ignoreafter","-1").trim());
 		_numOfSlaves = Integer.parseInt(properties.getProperty(_confnum + ".numofslaves", "0").trim());
@@ -531,7 +531,7 @@ public abstract class ArchiveType {
 			}
 		}
 
-		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> destSlaves = new HashSet<>();
 
 		for (int i = 1;; i++) {
 			String slavename = null;

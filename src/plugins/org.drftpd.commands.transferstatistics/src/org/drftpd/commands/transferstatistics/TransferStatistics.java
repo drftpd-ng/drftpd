@@ -247,7 +247,7 @@ public class TransferStatistics extends CommandInterface  {
 		}
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ArrayList<User> users2 = new ArrayList<User>(users);
+		ArrayList<User> users2 = new ArrayList<>(users);
 		Collections.sort(users2, new UserComparator(type));
 		ReplacerEnvironment env = new ReplacerEnvironment();
 

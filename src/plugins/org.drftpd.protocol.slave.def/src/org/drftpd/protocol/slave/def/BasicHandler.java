@@ -63,7 +63,7 @@ public class BasicHandler extends AbstractHandler {
 	private HandleRemergeRecursiveThread[] mergeThreads;
 	private AtomicInteger threadMergeCount = new AtomicInteger(0);
 	private static Object threadMergeWaitObj = new Object();
-	private ArrayList<String> threadMergeDepth = new ArrayList<String>();
+	private ArrayList<String> threadMergeDepth = new ArrayList<>();
 	private static Object threadMergeDepthWaitObj = new Object();
 
 	private int remergeDepth=0;
@@ -338,8 +338,8 @@ public class BasicHandler extends AbstractHandler {
 				}
 
 				TreeSet<String> inodes = rootCollection.getLocalInodes(path);
-				ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
-				ArrayList<String> dirList = new ArrayList<String>();
+				ArrayList<LightRemoteInode> fileList = new ArrayList<>();
+				ArrayList<String> dirList = new ArrayList<>();
 
 				boolean inodesModified = false;
 				long pathLastModified = rootCollection.getLastModifiedForPath(path);
@@ -583,7 +583,7 @@ public class BasicHandler extends AbstractHandler {
 			}
 		}
 		TreeSet<String> inodes = rootCollection.getLocalInodes(path);
-		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+		ArrayList<LightRemoteInode> fileList = new ArrayList<>();
 
 		boolean inodesModified = false;
 		long pathLastModified = rootCollection.getLastModifiedForPath(path);
@@ -657,7 +657,7 @@ public class BasicHandler extends AbstractHandler {
 		}
 
 		RootPathContents rootContents = rootCollection.getLocalInodesConcurrent(path);
-		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+		ArrayList<LightRemoteInode> fileList = new ArrayList<>();
 
 		boolean inodesModified = false;
 		long pathLastModified = rootContents.getLastModified();

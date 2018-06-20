@@ -53,7 +53,7 @@ public class BeanUserManager extends AbstractUserManager {
 	 */
 	protected synchronized User createUser(String username) {
 		BeanUser buser = new BeanUser(this, username);
-		_users.put(username, new SoftReference<User>(buser));
+		_users.put(username, new SoftReference<>(buser));
 		return buser;
 	}
 
@@ -68,7 +68,7 @@ public class BeanUserManager extends AbstractUserManager {
 					"Error creating directories: " + getUserpathFile()));
 		}
 		
-		_users = new HashMap<String, SoftReference<User>>();
+		_users = new HashMap<>();
 		
 		logger.debug("Creating users map...");
 		for (String filename : getUserpathFile().list()) {
@@ -178,7 +178,7 @@ public class BeanUserManager extends AbstractUserManager {
 		if (u == null) {
 			// user object was garbage collected or was never loaded
 			u = loadUser(name);
-			_users.put(name, new SoftReference<User>(u));
+			_users.put(name, new SoftReference<>(u));
 		}
 		return u;
 	}
@@ -190,13 +190,13 @@ public class BeanUserManager extends AbstractUserManager {
 	 * GarbageColector.
 	 */
 	public synchronized Collection<User> getAllUsers() {
-		ArrayList<User> users = new ArrayList<User>(_users.size());
+		ArrayList<User> users = new ArrayList<>(_users.size());
 		for (Iterator<String> iter = _users.keySet().iterator(); iter.hasNext();) {
 			String name = iter.next();
 			try {
 				User u = getUserFromSoftReference(name);
 				users.add(u);
-				_users.put(name, new SoftReference<User>(u));
+				_users.put(name, new SoftReference<>(u));
 			} catch (NoSuchUserException e) {
 				logger.error(name+" data wasnt found in the disk! " +
 						"How come the user is in the Map and does not have a userfile?! Deleting it.");

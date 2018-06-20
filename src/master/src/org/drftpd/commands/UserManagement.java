@@ -27,42 +27,42 @@ import java.util.Date;
  */
 public class UserManagement {
 
-	public static final Key<String> TAGLINE = new Key<String>(UserManagement.class, "tagline");
+	public static final Key<String> TAGLINE = new Key<>(UserManagement.class, "tagline");
 
-	public static final Key<Boolean> DEBUG = new Key<Boolean>(UserManagement.class, "debug");
+	public static final Key<Boolean> DEBUG = new Key<>(UserManagement.class, "debug");
 
-	public static final Key<Float> RATIO = new Key<Float>(UserManagement.class, "ratio");
+	public static final Key<Float> RATIO = new Key<>(UserManagement.class, "ratio");
 
-	public static final Key<Date> CREATED = new Key<Date>(UserManagement.class, "created");
+	public static final Key<Date> CREATED = new Key<>(UserManagement.class, "created");
 
-	public static final Key<String> COMMENT = new Key<String>(UserManagement.class, "comment");
+	public static final Key<String> COMMENT = new Key<>(UserManagement.class, "comment");
 
-	public static final Key<String> REASON = new Key<String>(UserManagement.class, "reason");
+	public static final Key<String> REASON = new Key<>(UserManagement.class, "reason");
 
-	public static final Key<String> IRCIDENT = new Key<String>(UserManagement.class, "ircident");
+	public static final Key<String> IRCIDENT = new Key<>(UserManagement.class, "ircident");
 
-	public static final Key<Integer> GROUPSLOTS = new Key<Integer>(UserManagement.class, "groupslots");
+	public static final Key<Integer> GROUPSLOTS = new Key<>(UserManagement.class, "groupslots");
 
-	public static final Key<Integer> LEECHSLOTS = new Key<Integer>(UserManagement.class, "leechslots");
+	public static final Key<Integer> LEECHSLOTS = new Key<>(UserManagement.class, "leechslots");
 
-	public static final Key<Integer> MAXLOGINS = new Key<Integer>(UserManagement.class,	"maxlogins");
+	public static final Key<Integer> MAXLOGINS = new Key<>(UserManagement.class, "maxlogins");
 
-	public static final Key<Integer> MAXLOGINSIP = new Key<Integer>(UserManagement.class, "maxloginsip");
+	public static final Key<Integer> MAXLOGINSIP = new Key<>(UserManagement.class, "maxloginsip");
 
-	public static final Key<Float> MINRATIO = new Key<Float>(UserManagement.class, "minratio");
+	public static final Key<Float> MINRATIO = new Key<>(UserManagement.class, "minratio");
 
-	public static final Key<Float> MAXRATIO = new Key<Float>(UserManagement.class, "maxratio");
+	public static final Key<Float> MAXRATIO = new Key<>(UserManagement.class, "maxratio");
 
-	public static final Key<Integer> MAXSIMUP = new Key<Integer>(UserManagement.class, "maxsimup");
+	public static final Key<Integer> MAXSIMUP = new Key<>(UserManagement.class, "maxsimup");
 
-	public static final Key<Integer> MAXSIMDN = new Key<Integer>(UserManagement.class, "maxsimdn");
+	public static final Key<Integer> MAXSIMDN = new Key<>(UserManagement.class, "maxsimdn");
 
-	public static final Key<Date> LASTSEEN = new Key<Date>(UserManagement.class, "lastseen");
+	public static final Key<Date> LASTSEEN = new Key<>(UserManagement.class, "lastseen");
 
-	public static final Key<Long> WKLY_ALLOTMENT = new Key<Long>(UserManagement.class, "wkly_allotment");
+	public static final Key<Long> WKLY_ALLOTMENT = new Key<>(UserManagement.class, "wkly_allotment");
 
-	public static final Key<Date> BAN_TIME = new Key<Date>(UserManagement.class, "ban_time");
+	public static final Key<Date> BAN_TIME = new Key<>(UserManagement.class, "ban_time");
 
-	public static final Key<String> BAN_REASON = new Key<String>(UserManagement.class, "ban_reason");
+	public static final Key<String> BAN_REASON = new Key<>(UserManagement.class, "ban_reason");
 
 }

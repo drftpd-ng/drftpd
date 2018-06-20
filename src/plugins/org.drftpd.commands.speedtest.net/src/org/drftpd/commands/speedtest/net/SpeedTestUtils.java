@@ -54,7 +54,7 @@ public class SpeedTestUtils {
 	 */
 	public static HashSet<SpeedTestServer> getClosetsServers() {
 
-		HashSet<SpeedTestServer> serverList = new HashSet<SpeedTestServer>();
+		HashSet<SpeedTestServer> serverList = new HashSet<>();
 
 		// Get servers from speedtest.net
 		for (String url : _speedTestURLS) {
@@ -75,7 +75,7 @@ public class SpeedTestUtils {
 
 	private static HashSet<SpeedTestServer> parseXML(String xmlString)
 			throws UnsupportedEncodingException, XMLStreamException {
-		HashSet<SpeedTestServer> serverList = new HashSet<SpeedTestServer>();
+		HashSet<SpeedTestServer> serverList = new HashSet<>();
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
 		XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
 				new ByteArrayInputStream(xmlString.getBytes("UTF-8")));
