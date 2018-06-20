@@ -52,7 +52,7 @@ public class CommitManager {
 	 * Private constructor in order to make this class a Singleton.
 	 */
 	private CommitManager() {
-		_commitQueue = new ConcurrentLinkedQueue<CommitableWrapper>();
+		_commitQueue = new ConcurrentLinkedQueue<>();
 		_queueSize = new AtomicInteger();
 	}
 

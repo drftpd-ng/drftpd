@@ -54,7 +54,7 @@ public class New extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
 		SectionManagerInterface sectionManager = GlobalContext.getGlobalContext().getSectionManager();
-		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
+		HashMap<String, SectionInterface> sections = new HashMap<>();
 
 		// site new
 		// site new <number>
@@ -105,7 +105,7 @@ public class New extends CommandInterface {
 		User user = request.getSession().getUserNull(request.getUser());
 
 		// Collect all dirs from all sections
-		ArrayList<DirectoryHandle> directories = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> directories = new ArrayList<>();
 		for (SectionInterface section : sections.values()) {
 			try {
 				directories.addAll(section.getCurrentDirectory().getDirectories(user));

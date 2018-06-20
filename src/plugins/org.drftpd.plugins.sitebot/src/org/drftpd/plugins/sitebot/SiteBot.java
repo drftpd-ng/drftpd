@@ -86,29 +86,29 @@ public class SiteBot implements ReplyConstants, Runnable {
 
 	// Outgoing message stuff.
 	private Queue _outQueue = new Queue();
-	private CaseInsensitiveConcurrentHashMap<String,OutputWriter> _writers = new CaseInsensitiveConcurrentHashMap<String,OutputWriter>();
+	private CaseInsensitiveConcurrentHashMap<String,OutputWriter> _writers = new CaseInsensitiveConcurrentHashMap<>();
 	private ThreadPoolExecutor _pool;
 
 	// A HashMap of channels that points to a selfreferential HashMap of
 	// User objects (used to remember which users are in which channels).
-	private CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>> _channels = new CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>>();
+	private CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>> _channels = new CaseInsensitiveHashMap<>();
 
 	// A HashMap to temporarily store channel topics when we join them
 	// until we find out who set that topic.
-	private HashMap<String,String> _topics = new HashMap<String,String>();
+	private HashMap<String,String> _topics = new HashMap<>();
 
 	// A HashMap of nicknames of which we know details about, such as the
 	// corresponding ftp user.
-	private CaseInsensitiveHashMap<String,UserDetails> _users = new CaseInsensitiveHashMap<String,UserDetails>();
+	private CaseInsensitiveHashMap<String,UserDetails> _users = new CaseInsensitiveHashMap<>();
 
 	// A HashMap of BlowfishManager objects for channels we are aware of
-	private CaseInsensitiveHashMap<String,BlowfishManager> _ciphers = new CaseInsensitiveHashMap<String,BlowfishManager>();
+	private CaseInsensitiveHashMap<String,BlowfishManager> _ciphers = new CaseInsensitiveHashMap<>();
 
 	/* A HashMap of DH1080 objects for users, this is used to store a
 	 * temporary object when initiating a DH1080 request whilst we wait
 	 * for the response
 	 */
-	private CaseInsensitiveHashMap<String,DH1080> _dh1080 = new CaseInsensitiveHashMap<String,DH1080>();
+	private CaseInsensitiveHashMap<String,DH1080> _dh1080 = new CaseInsensitiveHashMap<>();
 
 	// Command Manager to use for executing commands
 	private HashMap<String,Properties> _cmds;
@@ -116,12 +116,12 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private static final String themeDir = "conf/themes/irc";
 
 	// An ArrayList to hold references to announce plugins we have connected
-	private ArrayList<AbstractAnnouncer> _announcers = new ArrayList<AbstractAnnouncer>();
+	private ArrayList<AbstractAnnouncer> _announcers = new ArrayList<>();
 	private AnnounceConfig _announceConfig = null;
-	private ArrayList<String> _eventTypes = new ArrayList<String>();
+	private ArrayList<String> _eventTypes = new ArrayList<>();
 
 	// ArrayList to hold Listeners
-	private ArrayList<ListenerInterface> _listeners = new ArrayList<ListenerInterface>();
+	private ArrayList<ListenerInterface> _listeners = new ArrayList<>();
 	
 	// Default settings for the PircBot.
 	private String _version;
@@ -133,7 +133,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private boolean _userDisconnected = false;
 
 	// A HashMap to store the available prefixes and associated mode operator
-	private HashMap<String,String> _userPrefixes = new HashMap<String,String>();
+	private HashMap<String,String> _userPrefixes = new HashMap<>();
 	// prefixes as delivered from the server .. highest to lowest - default to op/voice
 	private String _userPrefixOrder = "@+";
 	private String _channelPrefixes = "#&+!";
@@ -182,11 +182,11 @@ public class SiteBot implements ReplyConstants, Runnable {
 		int maxCommands = _config.getCommandsMax();
 		if (_config.getCommandsQueue()) {
 			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
-					60L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(),
+					60L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
 					new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		} else if (_config.getCommandsBlock()) {
 			_pool = new ThreadPoolExecutor(maxCommands, maxCommands,
-					60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+					60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
 					new CommandThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		} else {
 			throw new FatalException("commands.full has an invalid value in irc.conf");
@@ -439,7 +439,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	}
 
 	private void sendtoListener(String channel, String sender, String hostname, String message) {
-		for (ListenerInterface listener :  new ArrayList<ListenerInterface>(_listeners)) {
+		for (ListenerInterface listener : new ArrayList<>(_listeners)) {
 			listener.handleInput(this.getBotName(),channel,sender,hostname,message);
 		}
 	}
@@ -1190,7 +1190,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 					String modeSymbols = prefixSegment.substring(secondBracket+1);
 					if (modeLetters.length() == modeSymbols.length()) {  // just to make sure nothing funny is going on
 						// recreate the _userPrefixes table with the server specific info
-						_userPrefixes = new HashMap<String,String>();
+						_userPrefixes = new HashMap<>();
 						_userPrefixOrder = "";
 						for (int x=0; x < modeLetters.length(); x++) {
 							_userPrefixes.put(modeLetters.charAt(x) +"", modeSymbols.charAt(x) +"");
@@ -2670,7 +2670,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		synchronized (_channels) {
 			HashMap<IrcUser,IrcUser> users = _channels.get(channel);
 			if (users == null) {
-				users = new HashMap<IrcUser,IrcUser>();
+				users = new HashMap<>();
 				_channels.put(channel, users);
 			}
 			users.put(user, user);
@@ -2737,7 +2737,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	 * Removes all channels from our memory of users.
 	 */
 	private final void removeAllChannels() {
-		_channels = new CaseInsensitiveHashMap<String,HashMap<IrcUser,IrcUser>>();
+		_channels = new CaseInsensitiveHashMap<>();
 	}
 
 
@@ -2830,7 +2830,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		}
 		if (proceed) {
 			// Find what outputs we should be sending the response to
-			ArrayList<OutputWriter> cmdOutputs = new ArrayList<OutputWriter>();
+			ArrayList<OutputWriter> cmdOutputs = new ArrayList<>();
 			String outputs = cmd.getProperty("output","");
 			StringTokenizer ost = new StringTokenizer(outputs);
 			while(ost.hasMoreTokens()) {
@@ -2941,7 +2941,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 	}
 
 	private void loadListeners() {
-		_listeners = new ArrayList<ListenerInterface>();
+		_listeners = new ArrayList<>();
 		try {
 			List<ListenerInterface> loadedListeners = CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Listener", "Class");
 			for (ListenerInterface listener : loadedListeners) {

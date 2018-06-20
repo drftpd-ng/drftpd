@@ -91,7 +91,7 @@ public class ApproveCommands extends CommandInterface {
 					return new CommandResponse(500, "Index Exception: " + e.getMessage());
 				}
 
-				ArrayList<DirectoryHandle> dirsToApprove = new ArrayList<DirectoryHandle>();
+				ArrayList<DirectoryHandle> dirsToApprove = new ArrayList<>();
 
 				for (Map.Entry<String,String> item : inodes.entrySet()) {
 					try {

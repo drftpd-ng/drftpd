@@ -48,8 +48,8 @@ import java.util.Properties;
 public class MediaInfoPostHook implements PostHookInterface {
 	private static final Logger logger = Logger.getLogger(MediaInfoPostHook.class);
     
-    private ArrayList<String> _exclSections = new ArrayList<String>();
-	private ArrayList<String> _extensions = new ArrayList<String>();
+    private ArrayList<String> _exclSections = new ArrayList<>();
+	private ArrayList<String> _extensions = new ArrayList<>();
 
 	public void initialize(StandardCommandManager manager) {
         loadConf();

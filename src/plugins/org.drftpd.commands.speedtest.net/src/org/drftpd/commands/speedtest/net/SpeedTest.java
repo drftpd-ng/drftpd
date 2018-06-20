@@ -119,7 +119,7 @@ public class SpeedTest extends CommandInterface {
 					_bundle, _keyPrefix+"servers.empty", env, request.getUser()));
 		}
 
-		ArrayList<RemoteSlave> rslaves = new ArrayList<RemoteSlave>();
+		ArrayList<RemoteSlave> rslaves = new ArrayList<>();
 		try {
 			if (allSlaves) {
 				rslaves.addAll(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
@@ -139,11 +139,11 @@ public class SpeedTest extends CommandInterface {
 					_bundle, _keyPrefix+"slavename.error", env, request.getUser()));
 		}
 
-		HashMap<String, SpeedTestServer> usedServers = new HashMap<String, SpeedTestServer>();
-		HashMap<String, SlaveLocation> slaveLocations = new HashMap<String, SlaveLocation>();
+		HashMap<String, SpeedTestServer> usedServers = new HashMap<>();
+		HashMap<String, SlaveLocation> slaveLocations = new HashMap<>();
 
 		ExecutorService executor = Executors.newFixedThreadPool(rslaves.size());
-		List<Future<SpeedTestInfo>> slaveThreadList = new ArrayList<Future<SpeedTestInfo>>();
+		List<Future<SpeedTestInfo>> slaveThreadList = new ArrayList<>();
 
 		for (RemoteSlave rslave : rslaves) {
 			env.add("slave.name", rslave.getName());
@@ -152,7 +152,7 @@ public class SpeedTest extends CommandInterface {
 						_bundle, _keyPrefix+"slave.offline", env, request.getUser()));
 				continue;
 			}
-			HashMap<String, SpeedTestServer> testServers = new HashMap<String, SpeedTestServer>();
+			HashMap<String, SpeedTestServer> testServers = new HashMap<>();
 
 			SlaveLocation slaveLocation = new SlaveLocation();
 			String lat = rslave.getProperty("lat");
@@ -176,7 +176,7 @@ public class SpeedTest extends CommandInterface {
 			// Sort servers based on slave location
 			DistanceFromMeComparator myComparator = new DistanceFromMeComparator(
 					slaveLocation.getLatitude(), slaveLocation.getLongitude());
-			TreeSet<SpeedTestServer> closestServers = new TreeSet<SpeedTestServer>(myComparator);
+			TreeSet<SpeedTestServer> closestServers = new TreeSet<>(myComparator);
 			closestServers.addAll(_servers);
 
 			if (listservers || testServerID == 0) {

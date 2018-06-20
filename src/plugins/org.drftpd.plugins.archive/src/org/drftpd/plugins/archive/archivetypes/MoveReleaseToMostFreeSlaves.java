@@ -53,8 +53,8 @@ public class MoveReleaseToMostFreeSlaves extends ArchiveType {
 	 */
 	@Override
 	public Set<RemoteSlave> findDestinationSlaves() {
-		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
-		for (RemoteSlave freeslave: GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves,new HashSet<RemoteSlave>(), false)) {
+		HashSet<RemoteSlave> destSlaves = new HashSet<>();
+		for (RemoteSlave freeslave: GlobalContext.getGlobalContext().getSlaveManager().findSlavesBySpace(_numOfSlaves, new HashSet<>(), false)) {
 			for (RemoteSlave confslave: _slaveList) {
 				if (freeslave.getName().equals(confslave.getName())) {
 					destSlaves.add(confslave);

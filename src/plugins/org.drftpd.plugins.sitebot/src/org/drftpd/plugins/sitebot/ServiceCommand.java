@@ -32,11 +32,11 @@ import java.util.StringTokenizer;
 @SuppressWarnings("serial")
 public class ServiceCommand extends Session {
 
-	public static final Key<String> IDENT = new Key<String>(ServiceCommand.class, "ident");
+	public static final Key<String> IDENT = new Key<>(ServiceCommand.class, "ident");
 
-	public static final Key<UserDetails> IRCUSER = new Key<UserDetails>(ServiceCommand.class, "ircuser");
+	public static final Key<UserDetails> IRCUSER = new Key<>(ServiceCommand.class, "ircuser");
 	
-	public static final Key<String> SOURCE = new Key<String>(ServiceCommand.class, "source");
+	public static final Key<String> SOURCE = new Key<>(ServiceCommand.class, "source");
 
 	private transient SiteBot _bot;
 

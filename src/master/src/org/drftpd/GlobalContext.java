@@ -71,7 +71,7 @@ public class GlobalContext {
 
 	private ConfigInterface _config;
 
-	private ArrayList<PluginInterface> _plugins = new ArrayList<PluginInterface>();
+	private ArrayList<PluginInterface> _plugins = new ArrayList<>();
 
 	protected SectionManagerInterface _sectionManager;
 
@@ -135,7 +135,7 @@ public class GlobalContext {
 	}
 
 	public List<PluginInterface> getPlugins() {
-		return new ArrayList<PluginInterface>(_plugins);
+		return new ArrayList<>(_plugins);
 	}
 
 	public SectionManagerInterface getSectionManager() {
@@ -367,7 +367,7 @@ public class GlobalContext {
 	}
 
 	public static HashMap<String, Properties> loadCommandConfig(String cmdConf) {
-		HashMap<String,Properties> commandsConfig = new HashMap<String,Properties>();
+		HashMap<String,Properties> commandsConfig = new HashMap<>();
 		LineNumberReader reader = null;
 		try {
 			reader = new LineNumberReader(new FileReader(cmdConf));
@@ -456,7 +456,7 @@ public class GlobalContext {
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
 		Set<PluginInterface> unloadedExtensions = MasterPluginUtils.getUnloadedExtensionObjects(this, "Plugin", event, _plugins);
 		if (!unloadedExtensions.isEmpty()) {
-			ArrayList<PluginInterface> clonedPlugins = new ArrayList<PluginInterface>(_plugins);
+			ArrayList<PluginInterface> clonedPlugins = new ArrayList<>(_plugins);
 			boolean pluginRemoved = false;
 			for (Iterator<PluginInterface> iter = clonedPlugins.iterator(); iter.hasNext();) {
 				PluginInterface plugin = iter.next();
@@ -478,7 +478,7 @@ public class GlobalContext {
 		try {
 			List<PluginInterface> loadedExtensions = MasterPluginUtils.getLoadedExtensionObjects(this, "master", "Plugin", "Class", event);
 			if (!loadedExtensions.isEmpty()) {
-				ArrayList<PluginInterface> clonedPlugins = new ArrayList<PluginInterface>(_plugins);
+				ArrayList<PluginInterface> clonedPlugins = new ArrayList<>(_plugins);
 				for (PluginInterface newExtension : loadedExtensions) {
 					newExtension.startPlugin();
 					logger.debug("Loading plugin "+CommonPluginUtils.getPluginIdForObject(newExtension));

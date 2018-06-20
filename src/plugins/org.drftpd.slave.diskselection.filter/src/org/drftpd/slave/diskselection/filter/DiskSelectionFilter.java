@@ -87,7 +87,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 	 * For example: 'minfreespace' filter, class = MinfreespaceFilter.class<br>
 	 */
 	private void loadFilters(Properties p) {
-		ArrayList<DiskFilter> filters = new ArrayList<DiskFilter>();
+		ArrayList<DiskFilter> filters = new ArrayList<>();
 		int i = 1;
 
 		logger.info("Loading DiskSelection filters...");
@@ -157,7 +157,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface{
 	}
 	
 	private void initFilters() {
-		CaseInsensitiveHashMap<String, Class<DiskFilter>> filtersMap = new CaseInsensitiveHashMap<String, Class<DiskFilter>>();
+		CaseInsensitiveHashMap<String, Class<DiskFilter>> filtersMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<DiskFilter>> loadedFilters =

@@ -125,7 +125,7 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 	
 	public ArrayList<FileHandle> getAllFilesRecursiveUnchecked() {
-		ArrayList<FileHandle> files = new ArrayList<FileHandle>();
+		ArrayList<FileHandle> files = new ArrayList<>();
 		try {
 			for (InodeHandle inode : getInodeHandlesUnchecked()) {
 				if (inode.isFile()) {
@@ -157,7 +157,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<FileHandle> getSortedFiles(User user) throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandles(user));
 		Collections.sort(sortedInodes,
 				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getFilesUnchecked(sortedInodes);
@@ -180,14 +180,14 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<FileHandle> getSortedFilesUnchecked() throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandlesUnchecked());
 		Collections.sort(sortedInodes,
 				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getFilesUnchecked(sortedInodes);
 	}
 	
 	private Set<FileHandle> getFilesUnchecked(Collection<InodeHandle> inodes) throws FileNotFoundException {
-		Set<FileHandle> set = new LinkedHashSet<FileHandle>();
+		Set<FileHandle> set = new LinkedHashSet<>();
 		for (InodeHandle handle : getInode().getInodes()) {
 			if (handle instanceof FileHandle) {
 				set.add((FileHandle) handle);
@@ -211,7 +211,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<DirectoryHandle> getSortedDirectories(User user) throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandles(user));
 		Collections.sort(sortedInodes,
 				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getDirectoriesUnchecked(sortedInodes);
@@ -232,7 +232,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<DirectoryHandle> getSortedDirectoriesUnchecked() throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandlesUnchecked());
 		Collections.sort(sortedInodes,
 				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getDirectoriesUnchecked(sortedInodes);
@@ -245,7 +245,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 */
 	private Set<DirectoryHandle> getDirectoriesUnchecked(Collection<InodeHandle> inodes)
 		throws FileNotFoundException {
-		Set<DirectoryHandle> set = new LinkedHashSet<DirectoryHandle>();
+		Set<DirectoryHandle> set = new LinkedHashSet<>();
 		
 		for (InodeHandle handle : inodes) {
 			if (handle instanceof DirectoryHandle) {
@@ -272,7 +272,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<LinkHandle> getSortedLinks(User user) throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandles(user));
 		Collections.sort(sortedInodes,
 				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getLinksUnchecked(sortedInodes);
@@ -295,14 +295,14 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<LinkHandle> getSortedLinksUnchecked() throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandlesUnchecked());
 		Collections.sort(sortedInodes,
 				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getLinksUnchecked(sortedInodes);
 	}
 	
 	private Set<LinkHandle> getLinksUnchecked(Collection<InodeHandle> inodes) {
-		Set<LinkHandle> set = new LinkedHashSet<LinkHandle>();
+		Set<LinkHandle> set = new LinkedHashSet<>();
         for (InodeHandle handle : inodes) {
             if (handle instanceof LinkHandle) {
                 set.add((LinkHandle) handle);
@@ -336,7 +336,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 */
 	private Set<FileHandle> getOfflineFiles(User user) throws FileNotFoundException {
 		Set<FileHandle> allFiles = user == null ? getFilesUnchecked() : getFiles(user);
-		Set<FileHandle> offlineFiles = new LinkedHashSet<FileHandle>(allFiles.size());
+		Set<FileHandle> offlineFiles = new LinkedHashSet<>(allFiles.size());
 
 		for (FileHandle file : allFiles) {
 			if (!file.isAvailable())
@@ -479,7 +479,7 @@ public class DirectoryHandle extends InodeHandle implements
 		// source comes pre-sorted from the slave
 		List<InodeHandle> destinationList = null;
 		try {
-			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+			destinationList = new ArrayList<>(getInodeHandlesUnchecked());
 		} catch (FileNotFoundException e) {
 			try {
 				// create directory for merging
@@ -492,7 +492,7 @@ public class DirectoryHandle extends InodeHandle implements
 			
 			// lets try this again, this time, if it doesn't work, we throw an
 			// IOException up the chain
-			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+			destinationList = new ArrayList<>(getInodeHandlesUnchecked());
 		}
 		try {
 			// Update the last modified on the dir, this allows us to get a correct

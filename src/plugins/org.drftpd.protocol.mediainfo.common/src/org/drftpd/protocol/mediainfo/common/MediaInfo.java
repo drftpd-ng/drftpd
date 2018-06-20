@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 public class MediaInfo implements Serializable {
 	private static final Logger logger = Logger.getLogger(MediaInfo.class);
 
-    public static final Key<MediaInfo> MEDIAINFO = new Key<MediaInfo>(MediaInfo.class, "mediainfo");
+    public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
 
 	private String _fileName = "";
 	private long _checksum;
@@ -47,9 +47,9 @@ public class MediaInfo implements Serializable {
 
 	private HashMap<String,String> _generalInfo = null;
 
-	private ArrayList<HashMap<String,String>> _videoInfos = new ArrayList<HashMap<String,String>>();
-	private ArrayList<HashMap<String,String>> _audioInfos = new ArrayList<HashMap<String,String>>();
-	private ArrayList<HashMap<String,String>> _subInfos = new ArrayList<HashMap<String,String>>();
+	private ArrayList<HashMap<String,String>> _videoInfos = new ArrayList<>();
+	private ArrayList<HashMap<String,String>> _audioInfos = new ArrayList<>();
+	private ArrayList<HashMap<String,String>> _subInfos = new ArrayList<>();
 
 	/**
 	 * Constructor for MediaInfo
@@ -155,7 +155,7 @@ public class MediaInfo implements Serializable {
 		Process pDD = builder.start();
 		BufferedReader stdout = new BufferedReader(new InputStreamReader(pDD.getInputStream()));
 
-		HashMap<String,String> props = new HashMap<String,String>();
+		HashMap<String,String> props = new HashMap<>();
 		String section = "";
 		String line;
 
@@ -173,7 +173,7 @@ public class MediaInfo implements Serializable {
 						mediaInfo.setGeneralInfo(props);
 					}
 					section = line;
-					props = new HashMap<String,String>();
+					props = new HashMap<>();
 				}
 				m = pValue.matcher(line);
 				if (m.find()) {

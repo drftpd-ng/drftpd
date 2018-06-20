@@ -60,7 +60,7 @@ public class FindUtils {
 	 */
 	public static HashSet<RemoteSlave> parseSlaves(String[] slaves) {
 		List<String> destSlaveNames = Arrays.asList(slaves);
-		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> destSlaves = new HashSet<>();
 		for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
 			if (destSlaveNames.contains(rslave.getName()))
 				destSlaves.add(rslave);

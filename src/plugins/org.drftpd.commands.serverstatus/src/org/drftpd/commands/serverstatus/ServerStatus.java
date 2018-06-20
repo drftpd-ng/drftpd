@@ -37,7 +37,7 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 public class ServerStatus extends CommandInterface {
-	protected static final Key<Long> CONNECTTIME = new Key<Long>(ServerStatus.class, "connecttime");
+	protected static final Key<Long> CONNECTTIME = new Key<>(ServerStatus.class, "connecttime");
 	
 	private ExtendedPropertyResourceBundle _bundle;
 	private String _keyPrefix;

@@ -33,7 +33,7 @@ public class AutoInstaller {
 
 	public AutoInstaller(PluginRegistry registry, InstallerConfig config, boolean cleanOnly) {
 
-		ArrayList<PluginData> toBuild = new ArrayList<PluginData>();
+		ArrayList<PluginData> toBuild = new ArrayList<>();
 
 		for (PluginData plugin : PluginTools.getPluginData(registry)) {
 			Boolean sel = config.getPluginSelections().get(plugin.getName());

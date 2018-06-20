@@ -94,7 +94,7 @@ public class Search extends CommandInterface {
 
 		CommandResponse response = new CommandResponse(200, "Search complete");
 
-		LinkedList<String> responses = new LinkedList<String>();
+		LinkedList<String> responses = new LinkedList<>();
 
 		boolean observePrivPath = request.getProperties().
 				getProperty("observe.privpath","true").equalsIgnoreCase("true");

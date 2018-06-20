@@ -72,7 +72,7 @@ public class MaxtransfersPerslaveFilter extends Filter {
 
     static ArrayList<AssignSlave> parseAssign(String assign, SlaveManager sm) throws ObjectNotFoundException {
         StringTokenizer st = new StringTokenizer(assign, ", ");
-        ArrayList<AssignSlave> assigns = new ArrayList<AssignSlave>();
+        ArrayList<AssignSlave> assigns = new ArrayList<>();
 
         while (st.hasMoreTokens()) {
             assigns.add(new AssignSlave(st.nextToken(), sm));

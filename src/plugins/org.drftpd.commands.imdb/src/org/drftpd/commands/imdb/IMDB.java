@@ -82,7 +82,7 @@ public class IMDB extends CommandInterface {
 				env.add("foundSD","No");
 				env.add("foundHD","No");
 
-				ArrayList<DirectoryHandle> results = new ArrayList<DirectoryHandle>();
+				ArrayList<DirectoryHandle> results = new ArrayList<>();
 
 				try {
 					for (SectionInterface section : IMDBConfig.getInstance().getHDSections()) {

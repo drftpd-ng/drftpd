@@ -57,7 +57,7 @@ public class JobManager implements PluginInterface {
 	}
 
 	public synchronized void addJobsToQueue(Collection<Job> jobs) {
-		ArrayList<Job> jobs2 = new ArrayList<Job>(jobs);
+		ArrayList<Job> jobs2 = new ArrayList<>(jobs);
 		for (Iterator<Job> jobiter = jobs2.iterator(); jobiter.hasNext();) {
 			Job job = jobiter.next();
 			Collection<RemoteSlave> slaves;
@@ -153,8 +153,8 @@ public class JobManager implements PluginInterface {
 			return; // can't transfer with no slaves
 		}
 
-		Set<RemoteSlave> busySlavesDown = new HashSet<RemoteSlave>();
-		Set<Job> skipJobs = new HashSet<Job>();
+		Set<RemoteSlave> busySlavesDown = new HashSet<>();
+		Set<Job> skipJobs = new HashSet<>();
 
 		synchronized (this) {
 			/*
@@ -327,7 +327,7 @@ public class JobManager implements PluginInterface {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 		logger.info("JobManager plugin loaded successfully");
-		_queuedJobSet = new TreeSet<Job>(new JobComparator());
+		_queuedJobSet = new TreeSet<>(new JobComparator());
 		reload();
 	}
 

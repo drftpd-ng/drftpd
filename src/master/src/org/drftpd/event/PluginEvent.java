@@ -33,7 +33,7 @@ public class PluginEvent {
 	private String _plugin;
 
 	public PluginEvent(String pluginName) {
-		_parentPlugins = new ArrayList<String>();
+		_parentPlugins = new ArrayList<>();
 		for (Extension parent : PluginManager.lookup(this).getRegistry()
 			.getPluginDescriptor(pluginName).getExtensions()) {
 			_parentPlugins.add(parent.getExtendedPluginId()+"@"+

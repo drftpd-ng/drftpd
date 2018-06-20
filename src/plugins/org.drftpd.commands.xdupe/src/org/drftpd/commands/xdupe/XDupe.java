@@ -8,7 +8,7 @@ import org.drftpd.dynamicdata.Key;
 
 public class XDupe extends CommandInterface {
 	
-	public static final Key<Integer> XDUPE = new Key<Integer>(XDupe.class, "XDUPE");
+	public static final Key<Integer> XDUPE = new Key<>(XDupe.class, "XDUPE");
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);

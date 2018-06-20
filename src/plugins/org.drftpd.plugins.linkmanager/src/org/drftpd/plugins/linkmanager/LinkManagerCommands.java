@@ -58,7 +58,7 @@ public class LinkManagerCommands extends CommandInterface {
 		public void run() {
 			if (dir != null) {
 				LinkManager _linkmanager = LinkManager.getLinkManager();
-				LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+				LinkedList<DirectoryHandle> dirs = new LinkedList<>();
 				dirs.add(dir); 
 				while (dirs.size() > 0) {
 					DirectoryHandle workingDir = dirs.poll();

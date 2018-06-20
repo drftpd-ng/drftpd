@@ -38,7 +38,7 @@ public class StripefilesFilter extends Filter {
 				return;
 			}
 
-			HashMap<String,Integer> hm = new HashMap<String,Integer>();
+			HashMap<String,Integer> hm = new HashMap<>();
 			for (FileHandle file : dir.getFilesUnchecked()){
 				try {
 					for (RemoteSlave slave : file.getAvailableSlaves()) {

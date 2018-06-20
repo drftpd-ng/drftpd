@@ -70,7 +70,7 @@ public class Misc extends CommandInterface {
     // LIST;NLST;RETR;STOR
     public CommandResponse doFEAT(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        ArrayList<String> featFound = new ArrayList<String>();
+        ArrayList<String> featFound = new ArrayList<>();
         conn.printOutput("211-Extensions supported:\r\n");
 
         for (CommandInstanceContainer container : _cManager.getCommandHandlersMap().values()) {
@@ -192,11 +192,11 @@ public class Misc extends CommandInterface {
     		return response;
     	}
     	// global list of commands with help
-    	HashMap<String, String> helpInfo = new HashMap<String, String>();
+    	HashMap<String, String> helpInfo = new HashMap<>();
     	HashMap<String, Properties> cmdProperties = request.getSession().getCommands();
     	// find which commands we should ignore
     	String noHelp = request.getProperties().getProperty("nohelp");
-    	ArrayList<String> noHelpCommands = new ArrayList<String>();
+    	ArrayList<String> noHelpCommands = new ArrayList<>();
     	if (noHelp != null) {
     		StringTokenizer st = new StringTokenizer(noHelp, ",");
     		while (st.hasMoreTokens()) {
@@ -236,7 +236,7 @@ public class Misc extends CommandInterface {
     			logger.error("Help command pad string too short");
     		}
     	}
-    	ArrayList<String> sortedList = new ArrayList<String>(helpInfo.keySet());
+    	ArrayList<String> sortedList = new ArrayList<>(helpInfo.keySet());
     	Collections.sort(sortedList);
     	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     	try {

@@ -30,7 +30,7 @@ public abstract class Config {
 	public Config(int i, Properties p) {
 		// Sections
 		if (_sections == null) {
-        	_sections  = new ArrayList<SectionInterface>();
+        	_sections  = new ArrayList<>();
 		} else {
 			_sections.clear();
 		}
@@ -51,7 +51,7 @@ public abstract class Config {
 
 		// Dated sections
 		if (_dated == null) {
-        	_dated  = new HashMap<String, Integer>();
+        	_dated  = new HashMap<>();
 		} else {
 			_dated.clear();
 		}

@@ -47,7 +47,7 @@ import java.util.Map;
 public class Pre extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(Pre.class);
 
-    public static final Key<DirectoryHandle> PREDIR = new Key<DirectoryHandle>(Pre.class, "predir");
+    public static final Key<DirectoryHandle> PREDIR = new Key<>(Pre.class, "predir");
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -106,7 +106,7 @@ public class Pre extends CommandInterface {
 		CommandResponse response = new CommandResponse(250, request.getCommand().toUpperCase() + " command successful.");
 		
 		//AWARD CREDITS
-        HashMap<User,Long> awards = new HashMap<User,Long>();
+        HashMap<User,Long> awards = new HashMap<>();
 		preAwardCredits(preDir, awards);
 
         for (Map.Entry<User,Long> entry : awards.entrySet()) {

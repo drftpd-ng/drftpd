@@ -33,7 +33,7 @@ public class AutoNukeSettings {
 	private String _nukeUser;
 
 	private AutoNukeSettings() {
-        _excludedSections = new ArrayList<SectionInterface>();
+        _excludedSections = new ArrayList<>();
 		_excludedDirs = "";
 		_excludedSubDirs = "";
 		_debug = true;

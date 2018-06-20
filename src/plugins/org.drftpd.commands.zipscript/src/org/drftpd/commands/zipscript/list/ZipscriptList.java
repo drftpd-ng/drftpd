@@ -51,7 +51,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 
 	private static final Logger logger = Logger.getLogger(ZipscriptList.class);
 
-	private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<ZipscriptListStatusBarInterface>();
+	private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<>();
 
 	public void initialize() {
 		// Subscribe to events
@@ -79,7 +79,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 		boolean missingFilesEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf").getProperty("files.missing.enabled", "false").equalsIgnoreCase("true");
 		if (statusBarEnabled || missingFilesEnabled) {
-			ArrayList<String> statusBarEntries = new ArrayList<String>();
+			ArrayList<String> statusBarEntries = new ArrayList<>();
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			try {
 				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
@@ -176,7 +176,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 		Set<ZipscriptListStatusBarInterface> unloadedStatusBarAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "ListStatusBarProviders", event, _statusBarProviders);
 		if (!unloadedStatusBarAddons.isEmpty()) {
-			ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<ZipscriptListStatusBarInterface>(_statusBarProviders);
+			ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<>(_statusBarProviders);
 			boolean providerRemoved = false;
 			for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
 				ZipscriptListStatusBarInterface sbAddon = iter.next();
@@ -199,7 +199,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "ListStatusBarProvider", "Class", event);
 			if (!loadedStatusBarAddons.isEmpty()) {
-				ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<ZipscriptListStatusBarInterface>(_statusBarProviders);
+				ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<>(_statusBarProviders);
 				for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
 					clonedProviders.add(sbAddon);
 				}

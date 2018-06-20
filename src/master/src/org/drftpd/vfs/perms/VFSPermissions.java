@@ -46,13 +46,13 @@ public class VFSPermissions {
 	public VFSPermissions() {
 		loadExtensions();
 		
-		_pathPerms = new HashMap<String, HashMap<String, LinkedList<PathPermission>>>();
+		_pathPerms = new HashMap<>();
 	}
 
 	public void loadExtensions() {
-		_handlersMap = new HashMap<String, PermissionWrapper>();
-		_directiveToType = new HashMap<String, String>();
-		_priorities = new HashMap<String, TreeMap<Integer, String>>();
+		_handlersMap = new HashMap<>();
+		_directiveToType = new HashMap<>();
+		_priorities = new HashMap<>();
 
 		/*
 		<extension-point id="VFSPerm">
@@ -90,7 +90,7 @@ public class VFSPermissions {
 				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
 				TreeMap<Integer, String> order = _priorities.get(type);
 				if (order == null) {
-					order = new TreeMap<Integer, String>();
+					order = new TreeMap<>();
 					_priorities.put(type, order);
 				}
 				while (true) {
@@ -134,13 +134,13 @@ public class VFSPermissions {
 		HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get(type);
 		
 		if (map == null) {
-			map = new HashMap<String, LinkedList<PathPermission>>();
+			map = new HashMap<>();
 			_pathPerms.put(type, map);
 		}
 		
 		LinkedList<PathPermission> list;
 		if (!map.containsKey(directive)) {
-			list = new LinkedList<PathPermission>();
+			list = new LinkedList<>();
 			map.put(directive, list);
 		} else {
 			list = map.get(directive);

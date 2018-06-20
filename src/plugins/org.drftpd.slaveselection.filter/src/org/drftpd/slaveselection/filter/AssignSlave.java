@@ -30,7 +30,7 @@ public class AssignSlave {
 	
 	public static ArrayList<AssignParser> parseAssign(String p) throws ObjectNotFoundException {
 		StringTokenizer st = new StringTokenizer(p.replaceAll(",", ""));
-		ArrayList<AssignParser> list = new ArrayList<AssignParser>();
+		ArrayList<AssignParser> list = new ArrayList<>();
 
 		while (st.hasMoreTokens()) {
 			String toParse = st.nextToken();

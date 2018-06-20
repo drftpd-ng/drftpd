@@ -96,7 +96,7 @@ public class SiteManagementHandler extends CommandInterface {
 			if (target.isFile()) {
 				inodes = Collections.singletonList(dir);
 			} else {
-				inodes = new ArrayList<InodeHandle>(dir.getInodeHandles(user));
+				inodes = new ArrayList<>(dir.getInodeHandles(user));
 			}
 			Collections.sort(inodes);
 
@@ -185,7 +185,7 @@ public class SiteManagementHandler extends CommandInterface {
 		response.addComment(session.jprintf(_bundle,
 				_keyPrefix+"plugins.header", env, request.getUser()));
 
-		TreeMap<String,String> plugins = new TreeMap<String,String>();
+		TreeMap<String,String> plugins = new TreeMap<>();
 		PluginManager manager = PluginManager.lookup(this);
 		for (PluginDescriptor pluginDesc : manager.getRegistry().getPluginDescriptors()) {
 			if (manager.isBadPlugin(pluginDesc)) {
@@ -291,7 +291,7 @@ public class SiteManagementHandler extends CommandInterface {
 		 * anything else it is assumed that unloading is permitted.
 		 */
 		List<PluginDescriptor> unloadingPlugins = getPluginsToUnload(pluginDesc, manager.getRegistry());
-		List<String> prohibitedPlugins = new ArrayList<String>();
+		List<String> prohibitedPlugins = new ArrayList<>();
 		for (PluginDescriptor unloadPlugin : unloadingPlugins) {
 			if (!unloadPlugin.getId().equals(pluginDesc.getId())) {
 				unloadAttribute = unloadPlugin.getAttribute("DenyUnload");
@@ -376,7 +376,7 @@ public class SiteManagementHandler extends CommandInterface {
 	}
 
 	private List<PluginDescriptor> getPluginsToUnload(PluginDescriptor unloadingPlugin, PluginRegistry registry) {
-		ArrayList<PluginDescriptor> unloadingPlugins = new ArrayList<PluginDescriptor>();
+		ArrayList<PluginDescriptor> unloadingPlugins = new ArrayList<>();
 		unloadingPlugins.add(unloadingPlugin);
 		for (PluginDescriptor descr : registry.getPluginDescriptors()) {
 			if (descr != unloadingPlugin) {
@@ -390,7 +390,7 @@ public class SiteManagementHandler extends CommandInterface {
 	}
 
 	private List<PluginDescriptor> getPluginsToLoad(PluginDescriptor loadingPlugin, PluginManager manager) {
-		ArrayList<PluginDescriptor> loadingPlugins = new ArrayList<PluginDescriptor>();
+		ArrayList<PluginDescriptor> loadingPlugins = new ArrayList<>();
 		loadingPlugins.add(loadingPlugin);
 		for (PluginDescriptor descr : manager.getRegistry().getPluginDescriptors()) {
 			if (descr != loadingPlugin) {
@@ -406,8 +406,8 @@ public class SiteManagementHandler extends CommandInterface {
 	private boolean isPluginDependant(PluginDescriptor plugin1, PluginDescriptor plugin2, PluginRegistry registry) {
 		// Circular (mutual) dependencies are treated as absence of dependency
 		// at all.
-		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
-		Set<PluginDescriptor> pre2 = new HashSet<PluginDescriptor>();
+		Set<PluginDescriptor> pre1 = new HashSet<>();
+		Set<PluginDescriptor> pre2 = new HashSet<>();
 		collectPluginPrerequisites(plugin1, pre1, registry);
 		collectPluginPrerequisites(plugin2, pre2, registry);
 		return pre1.contains(plugin2) && !pre2.contains(plugin1);

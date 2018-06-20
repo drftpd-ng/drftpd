@@ -126,7 +126,7 @@ public class ArchiveCommandHandler extends CommandInterface {
 			}
         }
 
-        HashSet<RemoteSlave> slaveSet = new HashSet<RemoteSlave>();
+        HashSet<RemoteSlave> slaveSet = new HashSet<>();
 
         while (st.hasMoreTokens()) {
             String slavename = st.nextToken();

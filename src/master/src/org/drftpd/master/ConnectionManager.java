@@ -53,7 +53,7 @@ public class ConnectionManager {
 
 	private CommandManagerInterface _commandManager = null;
 
-	private List<BaseFtpConnection> _conns = new Vector<BaseFtpConnection>();
+	private List<BaseFtpConnection> _conns = new Vector<>();
 
 	private ThreadPoolExecutor _pool;
 	
@@ -145,8 +145,8 @@ public class ConnectionManager {
 		int maxAliveThreads = maxUserConnected + GlobalContext.getConfig().getMaxUsersExempt();
 		int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
 
-		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS, 
-				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS,
+                new SynchronousQueue<>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		_pool.allowCoreThreadTimeOut(false);
 		_pool.prestartAllCoreThreads();
 	}
@@ -243,7 +243,7 @@ public class ConnectionManager {
 	 * returns a <code>Collection</code> of current connections
 	 */
 	public List<BaseFtpConnection> getConnections() {
-		return new ArrayList<BaseFtpConnection>(_conns);
+		return new ArrayList<>(_conns);
 	}
 
 	public static GlobalContext getGlobalContext() {

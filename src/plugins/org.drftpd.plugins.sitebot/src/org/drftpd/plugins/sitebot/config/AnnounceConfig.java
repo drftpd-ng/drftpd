@@ -40,14 +40,14 @@ public class AnnounceConfig {
 
 	private static final Logger logger = Logger.getLogger(AnnounceConfig.class);
 
-	private HashMap<String,ArrayList<AnnounceWriter>> _pathWriters = 
-		new HashMap<String,ArrayList<AnnounceWriter>>();
+	private HashMap<String,ArrayList<AnnounceWriter>> _pathWriters =
+            new HashMap<>();
 
 	private HashMap<String,ArrayList<AnnounceWriter>> _sectionWriters =
-		new HashMap<String,ArrayList<AnnounceWriter>>();
+            new HashMap<>();
 
 	private HashMap<String,AnnounceWriter> _simpleWriters =
-		new HashMap<String,AnnounceWriter>();
+            new HashMap<>();
 
 	private ArrayList<String> _eventTypes;
 
@@ -64,16 +64,16 @@ public class AnnounceConfig {
 	}
 
 	private synchronized void loadConfig(Properties cfg) {
-		ArrayList<String> clonedEvents = new ArrayList<String>(_eventTypes);
+		ArrayList<String> clonedEvents = new ArrayList<>(_eventTypes);
 		HashMap<String,ArrayList<AnnounceWriter>> pathWriters =
-			new HashMap<String,ArrayList<AnnounceWriter>>();
+                new HashMap<>();
 		HashMap<String,ArrayList<AnnounceWriter>> sectionWriters =
-			new HashMap<String,ArrayList<AnnounceWriter>>();
+                new HashMap<>();
 		HashMap<String,AnnounceWriter> simpleWriters =
-			new HashMap<String,AnnounceWriter>();
+                new HashMap<>();
 		for (String type : clonedEvents) {
 			// First check for any path settings for this type
-			ArrayList<AnnounceWriter> pWriters = new ArrayList<AnnounceWriter>();
+			ArrayList<AnnounceWriter> pWriters = new ArrayList<>();
 			for (int i = 1;; i++) {
 				String pathPattern = cfg.getProperty(type+".path."+i);
 				if (pathPattern == null) {
@@ -103,7 +103,7 @@ public class AnnounceConfig {
 			}
 
 			// Next check for any section settings for this type
-			ArrayList<AnnounceWriter> sWriters = new ArrayList<AnnounceWriter>();
+			ArrayList<AnnounceWriter> sWriters = new ArrayList<>();
 			for (int i = 1;; i++) {
 				String sectionName = cfg.getProperty(type+".section."+i);
 				if (sectionName == null) {
@@ -139,7 +139,7 @@ public class AnnounceConfig {
 	}
 
 	private ArrayList<OutputWriter> parseDestinations(String destination) {
-		ArrayList<OutputWriter> writers = new ArrayList<OutputWriter>();
+		ArrayList<OutputWriter> writers = new ArrayList<>();
 		StringTokenizer channels = new StringTokenizer(destination);
 		while (channels.hasMoreTokens()) {
 			String token = channels.nextToken();

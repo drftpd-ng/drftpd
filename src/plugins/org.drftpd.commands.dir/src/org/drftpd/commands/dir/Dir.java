@@ -47,19 +47,19 @@ public class Dir extends CommandInterface {
 	"yyyyMMddHHmmss.SSS");
 	private static final Logger logger = Logger.getLogger(Dir.class);
 
-	public static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
-	public static final Key<InodeHandle> RENAMETO = new Key<InodeHandle>(Dir.class, "renameto");
+	public static final Key<InodeHandle> RENAMEFROM = new Key<>(Dir.class, "renamefrom");
+	public static final Key<InodeHandle> RENAMETO = new Key<>(Dir.class, "renameto");
 	
 	// This Keys are place holders for usefull information that gets removed during
 	// deletion operations but are need to process hooks.
-	public static final Key<String> USERNAME = new Key<String>(Dir.class, "username");
-	public static final Key<Long> FILESIZE = new Key<Long>(Dir.class, "fileSize");
-	public static final Key<String> FILENAME = new Key<String>(Dir.class, "fileName");
-	public static final Key<Boolean> ISFILE = new Key<Boolean>(Dir.class, "isFile");
-	public static final Key<Long> XFERTIME = new Key<Long>(Dir.class, "xferTime");
+	public static final Key<String> USERNAME = new Key<>(Dir.class, "username");
+	public static final Key<Long> FILESIZE = new Key<>(Dir.class, "fileSize");
+	public static final Key<String> FILENAME = new Key<>(Dir.class, "fileName");
+	public static final Key<Boolean> ISFILE = new Key<>(Dir.class, "isFile");
+	public static final Key<Long> XFERTIME = new Key<>(Dir.class, "xferTime");
 
-	public static final Key<Boolean> WIPE_RECURSIVE = new Key<Boolean>(Dir.class, "wipe_recursive");
-	public static final Key<String> WIPE_PATH = new Key<String>(Dir.class, "wipe_path");
+	public static final Key<Boolean> WIPE_RECURSIVE = new Key<>(Dir.class, "wipe_recursive");
+	public static final Key<String> WIPE_PATH = new Key<>(Dir.class, "wipe_path");
 	
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>

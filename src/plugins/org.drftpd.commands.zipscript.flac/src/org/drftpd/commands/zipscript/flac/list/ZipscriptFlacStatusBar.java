@@ -45,7 +45,7 @@ public class ZipscriptFlacStatusBar implements ZipscriptListStatusBarInterface {
 		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
 		if (statusBarEnabled) {
 			try {
-				ArrayList<String> statusBarEntries = new ArrayList<String>();
+				ArrayList<String> statusBarEntries = new ArrayList<>();
 				ZipscriptVFSDataFlac flacData = new ZipscriptVFSDataFlac(dir);
 				FlacInfo flacInfo = flacData.getFlacInfo();
 				ReplacerEnvironment env = new ReplacerEnvironment();

@@ -105,7 +105,7 @@ public class IndexManager extends CommandInterface {
 			quiet = true;
 		}
 
-		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+		LinkedList<DirectoryHandle> dirs = new LinkedList<>();
 		dirs.add(request.getCurrentDirectory());
 		while (dirs.size() > 0 && !session.isAborted()) {
 			DirectoryHandle workingDir = dirs.poll();

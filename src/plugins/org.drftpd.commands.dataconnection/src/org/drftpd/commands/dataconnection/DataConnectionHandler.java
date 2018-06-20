@@ -59,24 +59,24 @@ import java.util.StringTokenizer;
 public class DataConnectionHandler extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
 
-	public static final Key<Long> CHECKSUM = new Key<Long>(DataConnectionHandler.class, "checksum");
+	public static final Key<Long> CHECKSUM = new Key<>(DataConnectionHandler.class, "checksum");
 
-	public static final Key<FileHandle> TRANSFER_FILE = new Key<FileHandle>(DataConnectionHandler.class, "transfer_file");
+	public static final Key<FileHandle> TRANSFER_FILE = new Key<>(DataConnectionHandler.class, "transfer_file");
 	
-	public static final Key<RemoteSlave> TRANSFER_SLAVE = new Key<RemoteSlave>(DataConnectionHandler.class, "transfer_slave");
+	public static final Key<RemoteSlave> TRANSFER_SLAVE = new Key<>(DataConnectionHandler.class, "transfer_slave");
 	
-	public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS = 
-		new Key<InetAddress>(DataConnectionHandler.class, "transfer_slave_inetAddress");
+	public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS =
+            new Key<>(DataConnectionHandler.class, "transfer_slave_inetAddress");
 	
-	public static final Key<Character> TRANSFER_TYPE = new Key<Character>(DataConnectionHandler.class, "transfer_type");
+	public static final Key<Character> TRANSFER_TYPE = new Key<>(DataConnectionHandler.class, "transfer_type");
 
-	public static final Key<String> INET_ADDRESS = new Key<String>(DataConnectionHandler.class, "inetAddress");
+	public static final Key<String> INET_ADDRESS = new Key<>(DataConnectionHandler.class, "inetAddress");
 
-	public static final Key<TransferStatus> XFER_STATUS = new Key<TransferStatus>(DataConnectionHandler.class, "transferStatus");
+	public static final Key<TransferStatus> XFER_STATUS = new Key<>(DataConnectionHandler.class, "transferStatus");
 	
-	public static final Key<Long> MIN_XFER_SPEED = new Key<Long>(DataConnectionHandler.class, "minTransferSpeed");
+	public static final Key<Long> MIN_XFER_SPEED = new Key<>(DataConnectionHandler.class, "minTransferSpeed");
 	
-	public static final Key<Long> MAX_XFER_SPEED = new Key<Long>(DataConnectionHandler.class, "maxTransferSpeed");
+	public static final Key<Long> MAX_XFER_SPEED = new Key<>(DataConnectionHandler.class, "maxTransferSpeed");
 
 	private ResourceBundle _bundle;
 

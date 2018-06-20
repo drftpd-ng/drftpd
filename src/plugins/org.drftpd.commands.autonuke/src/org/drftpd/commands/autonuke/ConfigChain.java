@@ -43,7 +43,7 @@ public class ConfigChain {
 	}
 
 	public Collection<Config> getConfigs() {
-		return new ArrayList<Config>(_configs);
+		return new ArrayList<>(_configs);
 	}
 
 	public ConfigChain(CaseInsensitiveHashMap<String, Class<Config>> configsMap) {
@@ -85,7 +85,7 @@ public class ConfigChain {
 	}
 
 	public void reload(Properties p) {
-		ArrayList<Config> configs = new ArrayList<Config>();
+		ArrayList<Config> configs = new ArrayList<>();
 		int i = 1;
 
 		for (;; i++) {

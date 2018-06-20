@@ -42,7 +42,7 @@ public class PluginsConfig {
 
 	private static final Logger logger = Logger.getLogger(PluginsConfig.class);
 			
-	private HashMap<String, Properties> _propertiesMap = new HashMap<String, Properties>();
+	private HashMap<String, Properties> _propertiesMap = new HashMap<>();
 
 	public PluginsConfig() {
 		searchForConfigurations(pluginsConfFile);

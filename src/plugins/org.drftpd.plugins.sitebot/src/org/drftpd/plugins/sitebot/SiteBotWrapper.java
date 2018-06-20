@@ -33,7 +33,7 @@ public class SiteBotWrapper implements PluginInterface {
 
 	private static final Logger logger = Logger.getLogger(SiteBotWrapper.class);
 	
-	private ArrayList<SiteBot> _bots = new ArrayList<SiteBot>();
+	private ArrayList<SiteBot> _bots = new ArrayList<>();
 
 	public void startPlugin() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()

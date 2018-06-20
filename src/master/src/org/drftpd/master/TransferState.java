@@ -43,7 +43,7 @@ import java.net.Socket;
  */
 public class TransferState {
 	
-	public static final Key<TransferState> TRANSFERSTATE = new Key<TransferState>(TransferState.class, "transferstate");
+	public static final Key<TransferState> TRANSFERSTATE = new Key<>(TransferState.class, "transferstate");
 	private static final Logger logger = Logger.getLogger(TransferState.class);
 	
 	/**

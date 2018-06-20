@@ -39,7 +39,7 @@ import java.util.StringTokenizer;
 public class DefaultConfigHandler extends ConfigHandler {
 	private static final Logger logger = Logger.getLogger(DefaultConfigHandler.class);
 	
-	protected static final Key<ArrayList<MessagePathPermission>> MSGPATH = new Key<ArrayList<MessagePathPermission>>(DefaultConfigHandler.class, "msgPath");
+	protected static final Key<ArrayList<MessagePathPermission>> MSGPATH = new Key<>(DefaultConfigHandler.class, "msgPath");
 	
 	public void handlePathPerm(String directive, StringTokenizer st) throws MalformedPatternException {
 		addPathPermission(directive, new GlobPathPermission(st.nextToken(), Permission.makeUsers(st)));
@@ -63,7 +63,7 @@ public class DefaultConfigHandler extends ConfigHandler {
 		KeyedMap<Key<?>, Object> map = GlobalContext.getConfig().getKeyedMap();		
 		ArrayList<MessagePathPermission> list = map.getObject(MSGPATH, null);		
 		if (list == null) { // in case that's the first directive that's being loaded
-			list = new ArrayList<MessagePathPermission>();
+			list = new ArrayList<>();
 			map.setObject(MSGPATH, list);
 		}
 		

@@ -74,7 +74,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 	public synchronized void initialize(HashMap<String,Properties> requiredCmds, String themeDir) {
 		loadThemes(themeDir);
 
-		HashMap<String,CommandInstanceContainer> commands = new HashMap<String,CommandInstanceContainer>();
+		HashMap<String,CommandInstanceContainer> commands = new HashMap<>();
 
 		/*	Iterate over the ArrayList of commands that the calling frontend
 		 * 	has stated it needs. Check to see whether we have a valid Command
@@ -257,8 +257,8 @@ public class StandardCommandManager implements CommandManagerInterface {
 	}
 
 	private static HashMap<String,CommandResponse> initGenericResponses() {
-		HashMap<String,CommandResponse> genericResponses = 
-			new HashMap<String,CommandResponse>();
+		HashMap<String,CommandResponse> genericResponses =
+                new HashMap<>();
 
 		/** 150 File status okay; about to open data connection. */
 		genericResponses.put("RESPONSE_150_OK",
@@ -396,7 +396,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			String extension = pluginExtension.substring(pointIndex+1);
 			if (plugin.equals(currentPlugin) && extension.equals("Command")) {
 				if (clonedCommands == null) {
-					clonedCommands = new HashMap<String,CommandInstanceContainer>(_commands);
+					clonedCommands = new HashMap<>(_commands);
 				}
 				boolean removedCmd = false;
 				for (Iterator<Entry<String,CommandInstanceContainer>> iter = clonedCommands.entrySet().iterator(); iter.hasNext();) {

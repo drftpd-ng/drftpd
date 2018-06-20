@@ -53,9 +53,9 @@ public class MasterProtocolCentral {
 	 * Iterate through all connected extensions, loading them.
 	 */
 	private void loadProtocolExtensions() {
-		HashMap<Class<?>, AbstractIssuer> issuersMap = 
-			new HashMap<Class<?>, AbstractIssuer>();
-		ArrayList<String> protocols = new ArrayList<String>();
+		HashMap<Class<?>, AbstractIssuer> issuersMap =
+                new HashMap<>();
+		ArrayList<String> protocols = new ArrayList<>();
 
 		try {
 			List<PluginObjectContainer<AbstractIssuer>> loadedIssuers =

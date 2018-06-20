@@ -95,7 +95,7 @@ public class TrialManager implements PluginInterface {
 	}
     
     private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<TrialType>> typesMap = new CaseInsensitiveHashMap<String, Class<TrialType>>();
+		CaseInsensitiveHashMap<String, Class<TrialType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<TrialType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.trialmanager", "TrialType", "ClassName", false);
@@ -111,7 +111,7 @@ public class TrialManager implements PluginInterface {
     
     public void loadConf() {
     	initTypes();
-		_trials = new ArrayList<TrialType>();
+		_trials = new ArrayList<>();
 		
 		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("trialmanager.conf");
     	int count = 1;
@@ -129,7 +129,7 @@ public class TrialManager implements PluginInterface {
      * Returns a copy of all the current trial types
      */
 	public ArrayList<TrialType> getTrials() {
-		return new ArrayList<TrialType>(_trials);
+		return new ArrayList<>(_trials);
 	}
 	
 }

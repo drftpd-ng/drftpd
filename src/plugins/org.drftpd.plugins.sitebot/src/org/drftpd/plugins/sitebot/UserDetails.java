@@ -37,7 +37,7 @@ public class UserDetails {
 
 	private static final Logger logger = Logger.getLogger(UserDetails.class);
 
-	public static final Key<String> BLOWKEY = new Key<String>(UserDetails.class, "blowfishkey");
+	public static final Key<String> BLOWKEY = new Key<>(UserDetails.class, "blowfishkey");
 
 	private SiteBot _bot;
 
@@ -55,7 +55,7 @@ public class UserDetails {
 
 	private OutputWriter _writer;
 
-	private ArrayList<ServiceCommand> _commandSessions = new ArrayList<ServiceCommand>();
+	private ArrayList<ServiceCommand> _commandSessions = new ArrayList<>();
 
 	public UserDetails(String nick, String ident, SiteBot bot) {
 		_bot = bot;

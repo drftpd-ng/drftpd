@@ -40,12 +40,12 @@ public class RootCollection {
 	public RootCollection(Slave slave, Collection<Root> roots) throws IOException {
 		/** sanity checks * */
 		validateRoots(roots);
-		_roots = new ArrayList<Root>(roots);
+		_roots = new ArrayList<>(roots);
 		_slave = slave;
 		if (_slave.concurrentRootIteration()) {
 			int numThreads = Math.min(_roots.size(), Runtime.getRuntime().availableProcessors());
-			_pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS, 
-					new LinkedBlockingQueue<Runnable>(), new RootListHandlerThreadFactory(),
+			_pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS,
+                    new LinkedBlockingQueue<>(), new RootListHandlerThreadFactory(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 			_pool.allowCoreThreadTimeOut(true);
 		}
@@ -57,7 +57,7 @@ public class RootCollection {
 	 * @return
 	 */
 	public TreeSet<String> getLocalInodes(String path) {
-		TreeSet<String> files = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		TreeSet<String> files = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		for (Root root : _roots) {
 			String[] fileArray = root.getFile(path).list();
 			if (fileArray == null) continue;
@@ -77,7 +77,7 @@ public class RootCollection {
 		CountDownLatch latch = new CountDownLatch(_roots.size());
 		File[][] rootFiles = new File[_roots.size()][];
 		Long[] rootLastModified = new Long[_roots.size()];
-		TreeMap<String,File> files = new TreeMap<String,File>(String.CASE_INSENSITIVE_ORDER);
+		TreeMap<String,File> files = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		for (int i = 0; i < _roots.size(); i++) {
 			_pool.execute(new RootListHandler(rootFiles, i, latch, path, rootLastModified));
 		}
@@ -169,7 +169,7 @@ public class RootCollection {
 	}
 
 	public List<File> getMultipleFiles(String path) throws FileNotFoundException {
-		ArrayList<File> files = new ArrayList<File>();
+		ArrayList<File> files = new ArrayList<>();
 
 		for (Root r : getMultipleRootsForFile(path)) {
 			files.add(r.getFile(path));
@@ -179,7 +179,7 @@ public class RootCollection {
 
 	public List<Root> getMultipleRootsForFile(String path)
 			throws FileNotFoundException {
-		ArrayList<Root> roots = new ArrayList<Root>();
+		ArrayList<Root> roots = new ArrayList<>();
 
 		
 		for (Root r : _roots) {
@@ -238,7 +238,7 @@ public class RootCollection {
 
 	private static void validateRoots(Collection<Root> roots) throws IOException {
 		File[] mountsArr = File.listRoots();
-		ArrayList<File> mounts = new ArrayList<File>(mountsArr.length);
+		ArrayList<File> mounts = new ArrayList<>(mountsArr.length);
 
         for (File aMountsArr : mountsArr) {
             mounts.add(aMountsArr);
@@ -279,7 +279,7 @@ public class RootCollection {
 
 			String fullpath = rootFile.getAbsolutePath();
 			
-			Hashtable<String, Object> usedMounts = new Hashtable<String, Object>();
+			Hashtable<String, Object> usedMounts = new Hashtable<>();
 
 			for (File mount : mounts) {
 

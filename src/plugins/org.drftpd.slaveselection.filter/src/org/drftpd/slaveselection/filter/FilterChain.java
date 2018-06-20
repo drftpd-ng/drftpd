@@ -51,7 +51,7 @@ public class FilterChain {
 	}
 	
 	public Collection<Filter> getFilters() {
-		return new ArrayList<Filter>(_filters);
+		return new ArrayList<>(_filters);
 	}
 
 	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<Filter>> filtersMap) throws FileNotFoundException, IOException {
@@ -101,7 +101,7 @@ public class FilterChain {
 	}
 
 	public void reload(Properties p) {
-		ArrayList<Filter> filters = new ArrayList<Filter>();
+		ArrayList<Filter> filters = new ArrayList<>();
 		int i = 1;
 
 		for (;; i++) {

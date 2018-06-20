@@ -61,11 +61,11 @@ public class ArchiveHandler extends Thread {
 		if (_jobs == null) {
 			return (ArrayList<Job>)Collections.<Job>emptyList();
 		}
-		return new ArrayList<Job>(_jobs);
+		return new ArrayList<>(_jobs);
 	}
 
 	public ArrayList getThreadByName(String threadName) {
-		ArrayList<Thread> threadArrayList = new ArrayList<Thread>();
+		ArrayList<Thread> threadArrayList = new ArrayList<>();
 		for (Thread t : Thread.getAllStackTraces().keySet()) {
 			if (t.isAlive() && t.getName().equals(threadName)) {
 				threadArrayList.add(t);

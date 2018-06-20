@@ -34,7 +34,7 @@ public class ThemeTask extends Task {
 
 	private File _baseDir;
 	private File _pluginDir;
-	private HashMap<String,String> _themes = new HashMap<String,String>();
+	private HashMap<String,String> _themes = new HashMap<>();
 	private final String themedir = "conf" + File.separator + "themes";
 
 	/**
@@ -185,7 +185,7 @@ public class ThemeTask extends Task {
 
 				// Copy all properties from file into theme
 				// adding the correct namespace prefix
-				TreeSet<String> sortedProps = new TreeSet<String>(inputBundle.keySet());
+				TreeSet<String> sortedProps = new TreeSet<>(inputBundle.keySet());
 				for (String propKey : sortedProps) {
 					output.append(keyPrefix);
 					output.append(propKey);

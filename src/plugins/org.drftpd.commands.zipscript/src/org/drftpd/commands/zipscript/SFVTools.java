@@ -39,7 +39,7 @@ public class SFVTools {
 
 	public static Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
-		Collection<FileHandle> files = new ArrayList<FileHandle>();
+		Collection<FileHandle> files = new ArrayList<>();
 		SFVInfo sfvInfo = sfvData.getSFVInfo();
 
 		for (String name : sfvInfo.getEntries().keySet()) {

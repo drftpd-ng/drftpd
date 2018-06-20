@@ -33,8 +33,8 @@ import java.util.Iterator;
 public class PortRangeTest extends TestCase {
     public void testGetPort() throws IOException {
         PortRange pr = new PortRange(45300, 45310, 0);
-        ArrayList<Integer> ports = new ArrayList<Integer>();
-        ArrayList<ServerSocket> sockets = new ArrayList<ServerSocket>();
+        ArrayList<Integer> ports = new ArrayList<>();
+        ArrayList<ServerSocket> sockets = new ArrayList<>();
 
         for (int x = 45300; x <= 45310; x++) {
             ports.add(x);

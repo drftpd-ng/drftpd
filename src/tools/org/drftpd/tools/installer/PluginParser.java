@@ -62,8 +62,8 @@ public class PluginParser {
 		ObjectFactory objectFactory = ObjectFactory.newInstance();
 		_registry = objectFactory.createRegistry();
 		File[] manifestFiles = getIncludedFiles();
-		List<URL> manifestUrls = new LinkedList<URL>();
-		final Map<String, URL> foldersMap = new HashMap<String, URL>();
+		List<URL> manifestUrls = new LinkedList<>();
+		final Map<String, URL> foldersMap = new HashMap<>();
         for (File manifestFile : manifestFiles) {
             try {
                 URL manifestUrl = getManifestURL(manifestFile);
@@ -107,7 +107,7 @@ public class PluginParser {
 	}
 
 	private File[] getIncludedFiles() {
-		Set<File> result = new HashSet<File>();
+		Set<File> result = new HashSet<>();
 		for (String file
 				: _fileSet.getDirectoryScanner().getIncludedFiles()) {
 			if (file != null) {

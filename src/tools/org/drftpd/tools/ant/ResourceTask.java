@@ -66,7 +66,7 @@ public class ResourceTask extends Task {
 		// See if this is a slave plugin
 		_slavePlugin = getProject().getProperty("slave.plugin").equalsIgnoreCase("true");
 		FileSet slaveFiles = getProject().getReference("slave.fileset");
-		_filePatterns = new ArrayList<String>();
+		_filePatterns = new ArrayList<>();
 		// Get the build start time as long
 		SimpleDateFormat simpleBuildDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
 		Date buildDate = null;

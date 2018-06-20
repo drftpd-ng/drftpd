@@ -120,20 +120,20 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	public RemoteSlave(String name) {
 		_name = name;
 		_keysAndValues = new Properties();
-		_transientKeyedMap = new KeyedMap<Key<?>, Object>();
+		_transientKeyedMap = new KeyedMap<>();
 		_ipMasks = new HostMaskCollection();
-		_renameQueue = new ConcurrentLinkedDeque<QueuedOperation>();
+		_renameQueue = new ConcurrentLinkedDeque<>();
 		_remergePaused = new AtomicBoolean();
-		_remergeQueue = new LinkedBlockingQueue<RemergeMessage>();
+		_remergeQueue = new LinkedBlockingQueue<>();
 		_crcQueue = new LinkedBlockingQueue<>();
 		_commandMonitor = new Object();
 	}
 	
-	public static final Key<Boolean> SSL = new Key<Boolean>(RemoteSlave.class, "ssl");
+	public static final Key<Boolean> SSL = new Key<>(RemoteSlave.class, "ssl");
 
 	public static Hashtable<String,RemoteSlave> rslavesToHashtable(Collection<RemoteSlave> rslaves) {
-		Hashtable<String, RemoteSlave> map = new Hashtable<String, RemoteSlave>(
-				rslaves.size());
+		Hashtable<String, RemoteSlave> map = new Hashtable<>(
+                rslaves.size());
 
 		for (RemoteSlave rslave : rslaves) {
 			map.put(rslave.getName(), rslave);
@@ -614,7 +614,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_sout = out;
 		_sin = in;
 		if (_indexPool == null) {
-			_indexPool = new LinkedBlockingDeque<String>(256);
+			_indexPool = new LinkedBlockingDeque<>(256);
 		} else {
 			_indexPool.clear();
 		}
@@ -630,13 +630,13 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		}
 
 		if (_indexWithCommands == null) {
-			_indexWithCommands = new ConcurrentHashMap<String, AsyncResponse>();
+			_indexWithCommands = new ConcurrentHashMap<>();
 		} else {
 			_indexWithCommands.clear();
 		}
 		
 		if (_transfers == null) {
-			_transfers = new ConcurrentHashMap<TransferIndex, RemoteTransfer>();
+			_transfers = new ConcurrentHashMap<>();
 		} else {
 			_transfers.clear();
 		}
@@ -1168,7 +1168,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 	public void setRenameQueue(ConcurrentLinkedDeque<QueuedOperation> renameQueue) {
 		if (renameQueue == null) {
-			_renameQueue = new ConcurrentLinkedDeque<QueuedOperation>();
+			_renameQueue = new ConcurrentLinkedDeque<>();
 		} else {
 			_renameQueue = renameQueue;
 		}

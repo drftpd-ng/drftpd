@@ -52,7 +52,7 @@ public class ZipscriptCommands extends CommandInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptCommands.class);
 
-	private ArrayList<RescanPostProcessDirInterface> _rescanAddons = new ArrayList<RescanPostProcessDirInterface>();
+	private ArrayList<RescanPostProcessDirInterface> _rescanAddons = new ArrayList<>();
 
 	private StandardCommandManager _commandManager;
 
@@ -113,7 +113,7 @@ public class ZipscriptCommands extends CommandInterface {
 		}
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+		LinkedList<DirectoryHandle> dirs = new LinkedList<>();
 		if (startPath != null) {
 			boolean validPath = false;
 			try {
@@ -249,7 +249,7 @@ public class ZipscriptCommands extends CommandInterface {
 		Set<RescanPostProcessDirInterface> unloadedRescanAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "RescanPostProcessDir", event, _rescanAddons);
 		if (!unloadedRescanAddons.isEmpty()) {
-			ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<RescanPostProcessDirInterface>(_rescanAddons);
+			ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<>(_rescanAddons);
 			boolean addonRemoved = false;
 			for (Iterator<RescanPostProcessDirInterface> iter = clonedRescanAddons.iterator(); iter.hasNext();) {
 				RescanPostProcessDirInterface rescanAddon = iter.next();
@@ -272,7 +272,7 @@ public class ZipscriptCommands extends CommandInterface {
 			List<RescanPostProcessDirInterface> loadedRescanAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "RescanPostProcessDir", "Class", event);
 			if (!loadedRescanAddons.isEmpty()) {
-				ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<RescanPostProcessDirInterface>(_rescanAddons);
+				ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<>(_rescanAddons);
 				for (RescanPostProcessDirInterface rescanAddon : loadedRescanAddons) {
 					rescanAddon.initialize(_commandManager);
 					clonedRescanAddons.add(rescanAddon);

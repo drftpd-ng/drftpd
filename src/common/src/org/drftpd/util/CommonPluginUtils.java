@@ -238,7 +238,7 @@ public class CommonPluginUtils {
 			Class<?>[] constructorSig, Object[] constructorArgs, boolean activatePlugin, boolean logError, boolean failOnError) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
-		List<T> pluginObjs = new ArrayList<T>();
+		List<T> pluginObjs = new ArrayList<>();
 		PluginManager manager = PluginManager.lookup(caller);
 		ExtensionPoint pluginExtPoint = 
 			manager.getRegistry().getExtensionPoint( 
@@ -1054,7 +1054,7 @@ public class CommonPluginUtils {
 			boolean activatePlugin, boolean logError, boolean failOnError) throws ClassNotFoundException, IllegalAccessException,
 			IllegalArgumentException, InstantiationException, InvocationTargetException, NoSuchMethodException,
 			PluginLifecycleException {
-		List<PluginObjectContainer<T>> pluginContainers = new ArrayList<PluginObjectContainer<T>>();
+		List<PluginObjectContainer<T>> pluginContainers = new ArrayList<>();
 		PluginManager manager = PluginManager.lookup(caller);
 		ExtensionPoint pluginExtPoint = 
 			manager.getRegistry().getExtensionPoint( 
@@ -1080,12 +1080,12 @@ public class CommonPluginUtils {
 						pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 					}
 					if (methodSig == null) {
-						container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin);
+						container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin);
 					} else {
 						try {
 							Method pluginMethod = pluginCls.getMethod(plugin.getParameter(methodParamName).valueAsString()
 									, methodSig);
-							container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin, pluginMethod);
+							container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin, pluginMethod);
 						} catch (NoSuchMethodException e) {
 							if (logError) {
 								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
@@ -1100,7 +1100,7 @@ public class CommonPluginUtils {
 						}
 					}
 				} else {
-					container = new PluginObjectContainer<T>(pluginCls, plugin);
+					container = new PluginObjectContainer<>(pluginCls, plugin);
 				}
 				pluginContainers.add(container);
 			} catch (ClassNotFoundException e) {
@@ -1319,11 +1319,11 @@ public class CommonPluginUtils {
 							pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 						}
 						if (methodSig == null) {
-							container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin);
+							container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin);
 						} else {
 							try {
 								Method pluginMethod = pluginCls.getMethod(methodName, methodSig);
-								container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin, pluginMethod);
+								container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin, pluginMethod);
 							} catch (NoSuchMethodException e) {
 								if (logError) {
 									logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
@@ -1334,7 +1334,7 @@ public class CommonPluginUtils {
 							}
 						}
 					} else {
-						container = new PluginObjectContainer<T>(pluginCls, plugin);
+						container = new PluginObjectContainer<>(pluginCls, plugin);
 					}
 					return container;
 				}

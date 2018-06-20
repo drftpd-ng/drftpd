@@ -32,15 +32,15 @@ import java.util.Vector;
 @SuppressWarnings("serial")
 public class CommandResponse extends KeyedMap<Key<?>, Object> implements CommandResponseInterface {
 	
-	public static final Key<Integer> CODE = new Key<Integer>(CommandResponse.class, "code");
+	public static final Key<Integer> CODE = new Key<>(CommandResponse.class, "code");
 
-	public static final Key<Vector<String>> COMMENT = new Key<Vector<String>>(CommandResponse.class, "comment");
+	public static final Key<Vector<String>> COMMENT = new Key<>(CommandResponse.class, "comment");
 
-	public static final Key<DirectoryHandle> CURRENTDIRECTORY = new Key<DirectoryHandle>(CommandResponse.class, "currentDirectory");
+	public static final Key<DirectoryHandle> CURRENTDIRECTORY = new Key<>(CommandResponse.class, "currentDirectory");
 
-	public static final Key<String> MESSAGE = new Key<String>(CommandResponse.class, "message");
+	public static final Key<String> MESSAGE = new Key<>(CommandResponse.class, "message");
 
-	public static final Key<String> USER = new Key<String>(CommandResponse.class, "user");
+	public static final Key<String> USER = new Key<>(CommandResponse.class, "user");
 
 	public CommandResponse(int code) {
 		setCode(code);
@@ -111,7 +111,7 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 	}
 
 	public Vector<String> getComment() {
-		return getObject(CommandResponse.COMMENT, new Vector<String>());
+		return getObject(CommandResponse.COMMENT, new Vector<>());
 	}
 
 	public DirectoryHandle getCurrentDirectory() {

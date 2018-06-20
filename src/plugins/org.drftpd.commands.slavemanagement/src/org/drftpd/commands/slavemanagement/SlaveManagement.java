@@ -581,7 +581,7 @@ public class SlaveManagement extends CommandInterface {
             slave = slavestofind;
         }
 
-		ArrayList<String> arr = new ArrayList<String>();
+		ArrayList<String> arr = new ArrayList<>();
 
 		for (RemoteSlave rslave : GlobalContext.getGlobalContext().getSlaveManager().getSlaves()) {
 			String name=rslave.getName().toLowerCase();

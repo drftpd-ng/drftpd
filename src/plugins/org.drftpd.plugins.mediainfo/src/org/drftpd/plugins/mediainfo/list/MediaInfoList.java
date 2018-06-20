@@ -42,8 +42,8 @@ import java.util.*;
 public class MediaInfoList implements AddListElementsInterface {
 	private static final Logger logger = Logger.getLogger(MediaInfoList.class);
 
-	private ArrayList<String> _exclSections = new ArrayList<String>();
-	private ArrayList<String> _extensions = new ArrayList<String>();
+	private ArrayList<String> _exclSections = new ArrayList<>();
+	private ArrayList<String> _extensions = new ArrayList<>();
 	private boolean _mediaBarEnabled;
 	private boolean _mediaBarIsDir;
 
@@ -82,7 +82,7 @@ public class MediaInfoList implements AddListElementsInterface {
 
 	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
 
-		ArrayList<String> mediaBarEntries = new ArrayList<String>();
+		ArrayList<String> mediaBarEntries = new ArrayList<>();
 
 		if (!_mediaBarEnabled) {
 			return container;
@@ -132,7 +132,7 @@ public class MediaInfoList implements AddListElementsInterface {
 			MediaInfoVFSData mediaData = new MediaInfoVFSData(file);
 			MediaInfo mediaInfo = mediaData.getMediaInfo();
 
-			ArrayList<String> mediaBarEntries = new ArrayList<String>();
+			ArrayList<String> mediaBarEntries = new ArrayList<>();
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			for (HashMap<String,String> props : mediaInfo.getVideoInfos()) {
 				for (Map.Entry<String,String> field : props.entrySet()) {

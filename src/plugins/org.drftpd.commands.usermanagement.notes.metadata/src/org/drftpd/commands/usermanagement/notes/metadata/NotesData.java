@@ -28,7 +28,7 @@ import java.util.ArrayList;
 @SuppressWarnings("serial")
 public class NotesData implements Serializable {
 
-	public static final Key<NotesData> NOTES = new Key<NotesData>(NotesData.class, "notes");
+	public static final Key<NotesData> NOTES = new Key<>(NotesData.class, "notes");
 
 	private ArrayList<String> _notes;
 	
@@ -42,7 +42,7 @@ public class NotesData implements Serializable {
 	
 	public void addNote(String note) {
 		if (_notes == null) {
-			_notes = new ArrayList<String>();
+			_notes = new ArrayList<>();
 		}
 		_notes.add(note);
 	}

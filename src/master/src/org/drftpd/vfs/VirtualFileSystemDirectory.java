@@ -43,7 +43,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	protected long _size = 0;
 
-	private Map<String,AtomicInteger> _slaveRefCounts = new TreeMap<String,AtomicInteger>();
+	private Map<String,AtomicInteger> _slaveRefCounts = new TreeMap<>();
 
 	public VirtualFileSystemDirectory(String user, String group) {
 		super(user, group);
@@ -59,8 +59,8 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @param inode
 	 */
 	protected synchronized void addChild(VirtualFileSystemInode inode, boolean updateLastModified) {
-		_files.put(inode.getName(), new SoftReference<VirtualFileSystemInode>(
-				inode));
+		_files.put(inode.getName(), new SoftReference<>(
+                inode));
 		if (updateLastModified && 
 				(getLastModified() < inode.getLastModified() || _placeHolderLastModified)) {
 			setLastModified(inode.getLastModified());
@@ -244,19 +244,19 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	 * @return a Set containing all inode names inside this directory.
 	 */
 	public synchronized Set<String> getInodeNames() {
-		return new HashSet<String>(_files.keySet());
+		return new HashSet<>(_files.keySet());
 	}
 
 	/**
 	 * @return a set containing all Inode objects inside this directory.
 	 */
 	public Set<InodeHandle> getInodes() {
-		HashSet<InodeHandle> set = new HashSet<InodeHandle>();
+		HashSet<InodeHandle> set = new HashSet<>();
 		String path = getPath() + (getPath().equals("/") ? "" : VirtualFileSystem.separator);
 		// not dynamically called for efficiency
 		HashSet<String> inodeKeys = null;
 		synchronized (this) {
-			inodeKeys = new HashSet<String>(_files.keySet());
+			inodeKeys = new HashSet<>(_files.keySet());
 		}
 		for (String inodeName : inodeKeys) {
 			VirtualFileSystemInode inode = null;
@@ -317,7 +317,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				inode.setParent(this);
 				// _files.remove(name);
 				// Map instance replaces what is previously there with put()
-				_files.put(name, new SoftReference<VirtualFileSystemInode>(inode));
+				_files.put(name, new SoftReference<>(inode));
 			}
 		}
 		return inode;
@@ -400,7 +400,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 
 	public Map<String,AtomicInteger> getSlaveRefCounts() {
 		synchronized (_slaveRefCounts) {
-			return new TreeMap<String,AtomicInteger>(_slaveRefCounts);
+			return new TreeMap<>(_slaveRefCounts);
 		}
 	}
 
@@ -492,7 +492,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 	}
 
 	protected void recalcSlaveRefCounts() {
-		TreeMap<String,AtomicInteger> updCounts = new TreeMap<String,AtomicInteger>();
+		TreeMap<String,AtomicInteger> updCounts = new TreeMap<>();
 		for (InodeHandle inode : getInodes()) {
 			if (inode.isDirectory()) {
 				try {

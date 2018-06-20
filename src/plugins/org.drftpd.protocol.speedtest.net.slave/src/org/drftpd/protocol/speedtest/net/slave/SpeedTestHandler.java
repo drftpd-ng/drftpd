@@ -188,14 +188,14 @@ public class SpeedTestHandler extends AbstractHandler {
 
 		ExecutorService executor = Executors.newFixedThreadPool(_upThreads);
 		List<Future<Long>> threadList;
-		Set<Callable<Long>> callables = new HashSet<Callable<Long>>();
+		Set<Callable<Long>> callables = new HashSet<>();
 
 		boolean limitReached = false;
 
 		int i = 2;
         while ((System.currentTimeMillis() - startTime) <= _upTime) {
 
-            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+            List<NameValuePair> nameValuePairs = new ArrayList<>();
             nameValuePairs.add(new BasicNameValuePair("content1", payload));
             try {
                 httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
@@ -287,7 +287,7 @@ public class SpeedTestHandler extends AbstractHandler {
 
 		ExecutorService executor = Executors.newFixedThreadPool(_downThreads);
 		List<Future<Long>> threadList;
-		Set<Callable<Long>> callables = new HashSet<Callable<Long>>();
+		Set<Callable<Long>> callables = new HashSet<>();
 
 		url = url.substring(0,url.lastIndexOf('/')+1) + "random";
 

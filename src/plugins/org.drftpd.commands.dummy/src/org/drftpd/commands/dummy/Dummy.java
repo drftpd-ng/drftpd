@@ -42,7 +42,7 @@ public class Dummy extends CommandInterface {
 	}
 
 	private ArrayList<String> getHandledCommands(Class<?> class1) {
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<>();
 
 		for (Map.Entry<String,CommandInstanceContainer> element : _cManager.getCommandHandlersMap().entrySet()) {
 			if (element.getValue().getCommandInterfaceInstance().getClass().equals(class1)) {

@@ -49,7 +49,7 @@ public class ConfigReader {
 			config.setPrintTrace(true);
 			config.setSuppressLog(false);
 			config.setDevMode(false);
-			config.setPluginSelections(new HashMap<String,Boolean>());
+			config.setPluginSelections(new HashMap<>());
 			return config;
 		} finally {
 			if (xd != null)

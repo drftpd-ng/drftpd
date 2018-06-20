@@ -72,7 +72,7 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 	 */
 	protected synchronized User createUser(String username) {
 		EncryptedBeanUser buser = new EncryptedBeanUser(this, username);
-		_users.put(username, new SoftReference<User>(buser));
+		_users.put(username, new SoftReference<>(buser));
 		return buser;
 	}
 	

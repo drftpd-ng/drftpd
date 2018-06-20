@@ -75,7 +75,7 @@ public class ImmutableInodeHandle {
 	
 	public Set<String> getSlaveNames() throws UnsupportedOperationException {
 		if (isFile()) {
-			return new HashSet<String>(((VirtualFileSystemFile)_inode).getSlaves());
+			return new HashSet<>(((VirtualFileSystemFile) _inode).getSlaves());
 		}
 		throw new UnsupportedOperationException("Slaves can only be retrieved from file inodes");
 	}

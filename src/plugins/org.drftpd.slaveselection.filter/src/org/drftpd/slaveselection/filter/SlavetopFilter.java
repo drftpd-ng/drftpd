@@ -66,7 +66,7 @@ public class SlavetopFilter extends Filter {
         }
 
         Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =
-        	new Hashtable<RemoteSlave, ScoreChart.SlaveScore>();
+                new Hashtable<>();
         
         for (ScoreChart.SlaveScore slaveScore : scorechart.getSlaveScores()) {
         	slavesmap.put(slaveScore.getRSlave(), new ScoreChart.SlaveScore(
@@ -89,8 +89,8 @@ public class SlavetopFilter extends Filter {
 				// file was removed, not much we can do, just continue
 			}
         }
-        ArrayList<ScoreChart.SlaveScore> slavescores = 
-        	new ArrayList<ScoreChart.SlaveScore>(slavesmap.values());
+        ArrayList<ScoreChart.SlaveScore> slavescores =
+                new ArrayList<>(slavesmap.values());
         ArrayList<ScoreChart.SlaveScore> ss = slavescores;
         Collections.sort(ss, Collections.reverseOrder());
 

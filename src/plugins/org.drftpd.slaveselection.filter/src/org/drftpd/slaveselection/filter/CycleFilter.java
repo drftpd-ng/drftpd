@@ -44,8 +44,8 @@ public class CycleFilter extends Filter {
 			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
 		
-		ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart
-				.getSlaveScores());
+		ArrayList<SlaveScore> tempList = new ArrayList<>(scorechart
+                .getSlaveScores());
 
 		while (true) {
 			if (tempList.isEmpty()) {
@@ -54,7 +54,7 @@ public class CycleFilter extends Filter {
 
 			SlaveScore first = tempList.get(0);
 			
-			ArrayList<SlaveScore> equalList = new ArrayList<SlaveScore>();
+			ArrayList<SlaveScore> equalList = new ArrayList<>();
 			equalList.add(first);
 			tempList.remove(first);
 

@@ -143,7 +143,7 @@ public class MoreStats extends CommandInterface {
             }
         }
         
-        ArrayList<MyGroupPosition> grpList = new ArrayList<MyGroupPosition>();
+        ArrayList<MyGroupPosition> grpList = new ArrayList<>();
         Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
         MyGroupPosition stat = null;

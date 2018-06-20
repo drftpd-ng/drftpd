@@ -90,14 +90,14 @@ public class Archive implements PluginInterface {
 	 * We don't want to allow modifications to this.
 	 */
 	public synchronized CaseInsensitiveHashMap<String, Class<ArchiveType>> getTypesMap() {
-		return new CaseInsensitiveHashMap<String, Class<ArchiveType>>(_typesMap);
+		return new CaseInsensitiveHashMap<>(_typesMap);
 	}		
 	
 	/*
 	 * Load the different Types of Archives specified in plugin.xml
 	 */
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<ArchiveType>> typesMap = new CaseInsensitiveHashMap<String, Class<ArchiveType>>();
+		CaseInsensitiveHashMap<String, Class<ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<ArchiveType>> loadedTypes =
@@ -203,7 +203,7 @@ public class Archive implements PluginInterface {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 		logger.info("Archive plugin loaded successfully");
-		_archiveHandlers = new HashSet<ArchiveHandler>();
+		_archiveHandlers = new HashSet<>();
 		reload();
 	}
 

@@ -54,7 +54,7 @@ public class NewRaceLeaderManager implements PluginInterface {
 	@Override
 	public void startPlugin() {
 		AnnotationProcessor.process(this);
-		_newraceleader = new ArrayList<NewRaceLeader>();
+		_newraceleader = new ArrayList<>();
 
 		_newraceleaderTimer = new TimerTask() {
    			public void run() {
@@ -87,7 +87,7 @@ public class NewRaceLeaderManager implements PluginInterface {
 	public void stopPlugin(String reason) {
 		AnnotationProcessor.unprocess(this);
 		synchronized (this) {
-			_newraceleader = new ArrayList<NewRaceLeader>();
+			_newraceleader = new ArrayList<>();
 		}
 		if (_newraceleaderTimer != null) {
 			_newraceleaderTimer.cancel();
