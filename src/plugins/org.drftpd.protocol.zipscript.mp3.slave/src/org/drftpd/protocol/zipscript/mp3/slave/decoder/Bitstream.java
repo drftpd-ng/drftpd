@@ -308,7 +308,7 @@ public final class Bitstream implements BitstreamErrors {
 	 */
 	public boolean isSyncCurrentPosition(int syncmode) throws BitstreamException {
 		int read = readBytes(syncbuf, 0, 4);
-		int headerstring = ((syncbuf[0] << 24) & 0xFF000000) | ((syncbuf[1] << 16) & 0x00FF0000) | ((syncbuf[2] << 8) & 0x0000FF00) | ((syncbuf[3] << 0) & 0x000000FF);
+		int headerstring = ((syncbuf[0] << 24) & 0xFF000000) | ((syncbuf[1] << 16) & 0x00FF0000) | ((syncbuf[2] << 8) & 0x0000FF00) | ((syncbuf[3]) & 0x000000FF);
 
 		try {
 			source.unread(syncbuf, 0, read);
@@ -364,7 +364,7 @@ public final class Bitstream implements BitstreamErrors {
 
 		if (bytesRead!=3) throw newBitstreamException(STREAM_EOF, null);
 
-		headerstring = ((syncbuf[0] << 16) & 0x00FF0000) | ((syncbuf[1] << 8) & 0x0000FF00) | ((syncbuf[2] << 0) & 0x000000FF);
+		headerstring = ((syncbuf[0] << 16) & 0x00FF0000) | ((syncbuf[1] << 8) & 0x0000FF00) | ((syncbuf[2]) & 0x000000FF);
 
 		do {
 			headerstring <<= 8;
