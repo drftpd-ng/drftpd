@@ -424,11 +424,7 @@ public class TvMazeUtils {
 		return m.find();
 	}
 
-	public static Comparator<TvEpisode> epNumberComparator = new Comparator<TvEpisode>() {
-		public int compare(TvEpisode tvEpisode1, TvEpisode tvEpisode2) {
-			return tvEpisode1.getNumber() - tvEpisode2.getNumber();
-		}
-	};
+	public static Comparator<TvEpisode> epNumberComparator = Comparator.comparingInt(TvEpisode::getNumber);
 
 	public static boolean containSection (SectionInterface section, ArrayList<SectionInterface> sectionList) {
 		boolean containsSection = false;

@@ -103,7 +103,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 					leechers.append(ReplacerUtils.jprintf(_keyPrefix + ".prebw.leechtop.empty",
 							tmpenv, _bundle));
 				} else {
-					Collections.sort(preInfo.getUsers(), new UserComparator());
+					preInfo.getUsers().sort(new UserComparator());
 					int i = 0;
 					for (UserInfo u : preInfo.getUsers()) {
 						if (i == event.getLeechtopCount())

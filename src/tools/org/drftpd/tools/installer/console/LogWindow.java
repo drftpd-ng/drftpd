@@ -92,11 +92,7 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 		_okButton = new JButton();
 		_okButton.setText("OK");
 		_okButton.setEnabled(false);
-		_okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-			}
-		});
+		_okButton.addActionListener(e -> setVisible(false));
 		southPanel.add(_okButton, new GridBagConstraints(0,1,1,1,100.0,0.0
 				,GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(0, 1, 0, 1), 0, 0));
 		contentPane.add(southPanel, BorderLayout.SOUTH);

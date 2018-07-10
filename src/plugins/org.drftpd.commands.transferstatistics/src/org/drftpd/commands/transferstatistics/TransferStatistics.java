@@ -226,29 +226,17 @@ public class TransferStatistics extends CommandInterface  {
 				 */
 				Permission perm = new Permission(Permission.makeUsers(st));
 
-				for (Iterator<User> iter = users.iterator(); iter.hasNext();) {
-					User user = iter.next();
-
-					if (!perm.check(user)) {
-						iter.remove();
-					}
-				}
+				users.removeIf(user -> !perm.check(user));
 			}
 		}
 
 		Permission perm = new Permission(Permission.makeUsers(new StringTokenizer(GlobalContext.getConfig().getHideInStats())));
 
-		for (Iterator<User> iter = users.iterator(); iter.hasNext();) {
-			User user = iter.next();
-
-			if (perm.check(user)) {
-				iter.remove();
-			}
-		}
+		users.removeIf(perm::check);
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ArrayList<User> users2 = new ArrayList<>(users);
-		Collections.sort(users2, new UserComparator(type));
+		users2.sort(new UserComparator(type));
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
 		String headerBundleKey = _keyPrefix + type + ".header"; 

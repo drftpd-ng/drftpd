@@ -118,7 +118,7 @@ public class New extends CommandInterface {
 		if (directories.size() == 0) {
 			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new.empty", env, request.getUser()));
 		} else {
-			Collections.sort(directories, new DateComparator());
+			directories.sort(new DateComparator());
 
 			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"header", env, request.getUser()));
 

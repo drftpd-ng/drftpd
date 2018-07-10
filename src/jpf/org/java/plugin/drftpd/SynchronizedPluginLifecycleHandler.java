@@ -55,13 +55,9 @@ public class SynchronizedPluginLifecycleHandler extends StandardPluginLifecycleH
 		SynchronizedPluginClassLoader result;
 		if (System.getSecurityManager() != null) {
 			result = AccessController.doPrivileged(
-					new PrivilegedAction<SynchronizedPluginClassLoader>() {
-						public SynchronizedPluginClassLoader run() {
-							return new SynchronizedPluginClassLoader(getPluginManager(), descr,
-									SynchronizedPluginLifecycleHandler.this.getClass()
-									.getClassLoader());
-						}
-					});
+                    (PrivilegedAction<SynchronizedPluginClassLoader>) () -> new SynchronizedPluginClassLoader(getPluginManager(), descr,
+                            SynchronizedPluginLifecycleHandler.this.getClass()
+                            .getClassLoader()));
 		} else {
 			result = new SynchronizedPluginClassLoader(getPluginManager(), descr,
 					SynchronizedPluginLifecycleHandler.this.getClass()

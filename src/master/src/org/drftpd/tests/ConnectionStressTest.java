@@ -77,7 +77,7 @@ public class ConnectionStressTest extends TestCase {
 			}
 			dead += 1;
 		}
-		
+
 		assertTrue(dead == success); // all threads were finalized.
 	}
 	

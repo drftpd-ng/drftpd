@@ -80,11 +80,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		fileLogLabel.setText("Enable file logging: ");
 		_fileLog = new JCheckBox();
 		_fileLog.setSelected(_config.getFileLogging());
-		_fileLog.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateLogLabel();
-			}
-		});
+		_fileLog.addActionListener(e -> updateLogLabel());
 		JLabel cleanLabel = new JLabel();
 		cleanLabel.setText("Clean before build: ");
 		_clean = new JCheckBox();

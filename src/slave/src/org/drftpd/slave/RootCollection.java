@@ -244,23 +244,23 @@ public class RootCollection {
             mounts.add(aMountsArr);
         }
 
-		Collections.sort(mounts, new Comparator<File>() {
-			public boolean equals(Object obj) {
-				if (obj == null) return false;
-				return obj.getClass() == getClass();
-			}
+		mounts.sort(new Comparator<File>() {
+            public boolean equals(Object obj) {
+                if (obj == null) return false;
+                return obj.getClass() == getClass();
+            }
 
-			public int hashCode() {
-				return getClass().hashCode();
-			}
+            public int hashCode() {
+                return getClass().hashCode();
+            }
 
-			public int compare(File o1, File o2) {
-				int thisVal = o1.getPath().length();
-				int anotherVal = o2.getPath().length();
+            public int compare(File o1, File o2) {
+                int thisVal = o1.getPath().length();
+                int anotherVal = o2.getPath().length();
 
-				return (Integer.compare(anotherVal, thisVal));
-			}
-		});
+                return (Integer.compare(anotherVal, thisVal));
+            }
+        });
 
 		for (Root root : roots) {
 

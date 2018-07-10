@@ -3051,12 +3051,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		// Remove unloaded listeneres
 		Set<ListenerInterface> unloadedListeners = MasterPluginUtils.getUnloadedExtensionObjects(this, "Listener", event, _listeners);
 		if (!unloadedListeners.isEmpty()) {
-			for (Iterator<ListenerInterface> iter = _listeners.iterator(); iter.hasNext();) {
-				ListenerInterface listener = iter.next();
-				if (unloadedListeners.contains(listener)) {
-					iter.remove();
-				}
-			}
+            _listeners.removeIf(unloadedListeners::contains);
 		}
 	}
 

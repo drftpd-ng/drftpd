@@ -201,13 +201,7 @@ public class ConfigManager implements ConfigInterface {
             } else if (blacklistPattern.trim().isEmpty()) {
                 continue;
             }
-            Iterator<String> i = cipherSuites.iterator();
-            while (i.hasNext()) {
-                String cipherSuite = i.next();
-                if (cipherSuite.matches(blacklistPattern)) {
-                    i.remove();
-                }
-            }
+            cipherSuites.removeIf(cipherSuite -> cipherSuite.matches(blacklistPattern));
         }
         if (cipherSuites.isEmpty()) {
             _cipherSuites = null;

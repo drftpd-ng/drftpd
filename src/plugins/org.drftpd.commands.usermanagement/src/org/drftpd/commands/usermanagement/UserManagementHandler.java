@@ -1197,7 +1197,7 @@ public class UserManagementHandler extends CommandInterface {
 		long allmbdn = 0;
 
 		ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
-		Collections.sort(users, UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
+		users.sort(UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
 
 		for (User user : users) {
 			if (!user.isMemberOf(group))
@@ -1979,16 +1979,10 @@ public class UserManagementHandler extends CommandInterface {
 					.makeUsers(new StringTokenizer(request.getArgument())),
 					true);
 
-			for (Iterator<User> iter = myUsers.iterator(); iter.hasNext();) {
-				User element = iter.next();
-
-				if (!perm.check(element)) {
-					iter.remove();
-				}
-			}
+			myUsers.removeIf(element -> !perm.check(element));
 		}
 
-		Collections.sort(myUsers, UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
+		myUsers.sort(UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
 		for (User myUser : myUsers) {
 			response.addComment(myUser.getName());
 		}

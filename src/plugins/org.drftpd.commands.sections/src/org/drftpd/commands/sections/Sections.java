@@ -53,7 +53,7 @@ public class Sections extends CommandInterface {
         ArrayList<SectionInterface> sections =
                 new ArrayList<>(GlobalContext.getGlobalContext().getSectionManager().getSections());
         
-       Collections.sort(sections, new SectionComparator());
+       sections.sort(new SectionComparator());
         
         for (SectionInterface section : sections) {
             env.add("section", section.getName());

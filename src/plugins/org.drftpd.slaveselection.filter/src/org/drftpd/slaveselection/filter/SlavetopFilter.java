@@ -92,7 +92,7 @@ public class SlavetopFilter extends Filter {
         ArrayList<ScoreChart.SlaveScore> slavescores =
                 new ArrayList<>(slavesmap.values());
         ArrayList<ScoreChart.SlaveScore> ss = slavescores;
-        Collections.sort(ss, Collections.reverseOrder());
+        ss.sort(Collections.reverseOrder());
 
 
         if(_assign == 0) {

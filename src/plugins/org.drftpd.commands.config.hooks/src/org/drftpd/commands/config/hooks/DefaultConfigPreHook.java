@@ -47,13 +47,8 @@ public class DefaultConfigPreHook implements PreHookInterface {
 	public CommandRequestInterface hideInWhoHook(CommandRequest request) {
 		List<BaseFtpConnection> conns = ConnectionManager.getConnectionManager().getConnections();
 		ConfigInterface cfg = GlobalContext.getConfig();
-		
-		for (Iterator<BaseFtpConnection> iter = conns.iterator(); iter.hasNext();) {
-			BaseFtpConnection conn = iter.next();
-			if (cfg.checkPathPermission("hideinwho", conn.getUserNull(), conn.getCurrentDirectory())) {
-				iter.remove();
-			}
-		}
+
+        conns.removeIf(conn -> cfg.checkPathPermission("hideinwho", conn.getUserNull(), conn.getCurrentDirectory()));
 		
 		request.getSession().setObject(UserManagementHandler.CONNECTIONS, conns);
 		

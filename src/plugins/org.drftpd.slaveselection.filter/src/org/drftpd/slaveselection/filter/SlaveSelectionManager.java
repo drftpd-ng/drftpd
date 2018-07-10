@@ -136,11 +136,8 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 		ArrayList<RemoteSlave> slaves = new ArrayList<>(destinationSlaves);
 		slaves.removeAll(file.getAvailableSlaves()); // a slave cannot have the same file twice ;P
 
-		for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
-			if (!iter.next().isAvailable()) {
-				iter.remove(); // slave is not online, cannot send a file to it.
-			}
-		}
+        // slave is not online, cannot send a file to it.
+        slaves.removeIf(remoteSlave -> !remoteSlave.isAvailable());
 
 		if (slaves.isEmpty()) {
 			throw new NoAvailableSlaveException();

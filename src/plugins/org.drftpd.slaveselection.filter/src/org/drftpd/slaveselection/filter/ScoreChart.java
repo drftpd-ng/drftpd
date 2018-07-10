@@ -91,13 +91,7 @@ public class ScoreChart {
 	}
 
 	public void removeSlaveFromChart(RemoteSlave rslave) {
-		for (Iterator<SlaveScore> iter = _scoreChart.iterator(); iter.hasNext();) {
-			SlaveScore score = iter.next();
-
-			if (score.getRSlave().equals(rslave)) {
-				iter.remove();
-			}
-		}
+        _scoreChart.removeIf(score -> score.getRSlave().equals(rslave));
 	}
 	
 	public void addScoreToSlave(RemoteSlave rslave, long score) throws ObjectNotFoundException {
