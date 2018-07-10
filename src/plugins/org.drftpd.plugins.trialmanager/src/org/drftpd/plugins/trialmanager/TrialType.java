@@ -117,7 +117,7 @@ public abstract class TrialType {
 				filteredusers.add(user);
 			}
 		}
-		Collections.sort(filteredusers,new UserComparator(getPeriodStr()));
+		filteredusers.sort(new UserComparator(getPeriodStr()));
 		return filteredusers;
 	}
 	

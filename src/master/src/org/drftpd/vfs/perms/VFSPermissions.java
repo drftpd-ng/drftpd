@@ -88,12 +88,8 @@ public class VFSPermissions {
 				
 				// building execution order.
 				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
-				TreeMap<Integer, String> order = _priorities.get(type);
-				if (order == null) {
-					order = new TreeMap<>();
-					_priorities.put(type, order);
-				}
-				while (true) {
+                TreeMap<Integer, String> order = _priorities.computeIfAbsent(type, k -> new TreeMap<>());
+                while (true) {
 					if (order.containsKey(priority)) {
 						logger.debug("The slot that " + directive + " is trying to use is already allocated, " +
 								"check the xmls, allocating the next available slot");
@@ -130,15 +126,10 @@ public class VFSPermissions {
 	
 	protected void addPermissionToMap(String directive, PathPermission pathPerm) {
 		String type = _directiveToType.get(directive);
-		
-		HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get(type);
-		
-		if (map == null) {
-			map = new HashMap<>();
-			_pathPerms.put(type, map);
-		}
-		
-		LinkedList<PathPermission> list;
+
+        HashMap<String, LinkedList<PathPermission>> map = _pathPerms.computeIfAbsent(type, k -> new HashMap<>());
+
+        LinkedList<PathPermission> list;
 		if (!map.containsKey(directive)) {
 			list = new LinkedList<>();
 			map.put(directive, list);

@@ -43,12 +43,7 @@ public class DirsToCheck {
 	}
 
 	public void del(String path) {
-		for (Iterator<DirectoryHandle> iter = _dirsToCheck.iterator(); iter.hasNext();) {
-			DirectoryHandle dir = iter.next();
-			if (dir.getPath().equals(path)) {
-				iter.remove();
-			}
-		}
+        _dirsToCheck.removeIf(dir -> dir.getPath().equals(path));
 	}
 
 	public int clear() {

@@ -38,7 +38,7 @@ public class PluginTools {
 		for (PluginDescriptor descr : descriptors) {
 			plugins.add(new PluginData(descr));
 		}
-		Collections.sort(plugins, new PluginComparator());
+		plugins.sort(new PluginComparator());
 		return plugins;
 	}
 

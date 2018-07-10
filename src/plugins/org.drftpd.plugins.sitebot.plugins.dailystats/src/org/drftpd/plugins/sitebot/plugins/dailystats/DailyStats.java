@@ -90,7 +90,7 @@ public class DailyStats implements UserResetHookInterface {
 			}
 		}
 
-		Collections.sort(initialUsers, new UserComparator(type));
+		initialUsers.sort(new UserComparator(type));
 
 		for (int i=0; ((i < _outputnum) && (i < initialUsers.size())); ++i) {
 			switch (type) {

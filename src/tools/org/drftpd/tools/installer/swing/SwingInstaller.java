@@ -85,11 +85,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		_exitButton = new JButton();
 		_exitButton.setText("Exit");
 		_exitButton.setPreferredSize(new Dimension(100,25));
-		_exitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				terminate();
-			}
-		});
+		_exitButton.addActionListener(e -> terminate());
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
 		_buildButton.setPreferredSize(new Dimension(100,25));

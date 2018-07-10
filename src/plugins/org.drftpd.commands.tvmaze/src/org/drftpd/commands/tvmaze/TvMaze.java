@@ -90,7 +90,7 @@ public class TvMaze extends CommandInterface {
 			} else {
 				ArrayList<TvEpisode> epList = new ArrayList<>(Arrays.asList(tvmaze.getTvShow().getEPList()));
 				if (epList.size() > 1) {
-					Collections.sort(epList, TvMazeUtils.epNumberComparator);
+					epList.sort(TvMazeUtils.epNumberComparator);
 					addResponse(env, request, response, "tv.ep.season.header", verbose);
 					for (TvEpisode ep : epList) {
 						env = TvMazeUtils.getEPEnv(tvmaze.getTvShow(), ep);

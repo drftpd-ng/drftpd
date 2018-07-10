@@ -186,15 +186,13 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 
 	protected void addShutdownHook() {
 		// add shutdown hook last
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public void run() {
-                getGlobalContext().getSlaveManager().listForSlaves(false);
-                logger.info("Running shutdown hook");
-				for (RemoteSlave rslave : _rslaves.values()) {
-					rslave.shutdown();
-				}
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+getGlobalContext().getSlaveManager().listForSlaves(false);
+logger.info("Running shutdown hook");
+            for (RemoteSlave rslave : _rslaves.values()) {
+                rslave.shutdown();
             }
-		});
+}));
 	}
 
 	public void delSlave(String slaveName) {
@@ -239,7 +237,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		if (ascending) {
 			Collections.sort(sorted);
 		} else {
-			Collections.sort(sorted, Collections.reverseOrder());
+			sorted.sort(Collections.reverseOrder());
 		}
 
 		HashSet<RemoteSlave> returnMe = new HashSet<>();

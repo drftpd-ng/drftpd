@@ -87,11 +87,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 
 		_exitButton = new JButton();
 		_exitButton.setText("Exit");
-		_exitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				terminate();
-			}
-		});
+		_exitButton.addActionListener(e -> terminate());
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
 		_buildButton.addActionListener(this);

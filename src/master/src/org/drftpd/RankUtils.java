@@ -124,7 +124,7 @@ public class RankUtils {
 			}
 		}
 
-		Collections.sort(ret, new UserComparator(type, sort));
+		ret.sort(new UserComparator(type, sort));
 
 		return ret;
 	}

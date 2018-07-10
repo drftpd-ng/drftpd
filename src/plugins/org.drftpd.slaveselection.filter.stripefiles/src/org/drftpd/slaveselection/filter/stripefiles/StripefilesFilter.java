@@ -43,11 +43,7 @@ public class StripefilesFilter extends Filter {
 				try {
 					for (RemoteSlave slave : file.getAvailableSlaves()) {
 						String slaveName = slave.getName();
-						Integer files = hm.get(slaveName);
-						if (files == null)
-							hm.put(slaveName, 1);
-						else
-							hm.put(slaveName, files + 1);
+                        hm.merge(slaveName, 1, (a, b) -> a + b);
 					}
 				} catch (NoAvailableSlaveException ex) {
 					// Just continue
