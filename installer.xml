@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <!-- $Id$ -->
-<project name="DrFTPd 3.2.0" default="build" basedir=".">
+<project name="DrFTPd 3.3.0" default="build" basedir=".">
 	<property name="app.name" value="drftpd" />
-	<property name="app.version" value="3.2.0" />
+	<property name="app.version" value="3.3.0" />
 
 	<property name="build.debug" value="true" />
 	<property name="build.javac" value="1.8" />

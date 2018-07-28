@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.nukefilter" version="3.2.0">
+<plugin id="org.drftpd.plugins.nukefilter" version="3.3.0">
     <doc>
 		<doc-text>This plugin matches directory names against different filters right after MKD and nukes the directory if required.</doc-text>
 	</doc>
