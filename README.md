@@ -85,7 +85,7 @@ Download DrFTPD from https://github.com/drftpd-ng/drftpd3
 
 Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
-git clone -b develop --single-branch https://github.com/drftpd-ng/drftpd3.git
+git clone -b master --single-branch https://github.com/drftpd-ng/drftpd3.git
 cd drftpd3
 ```
 
