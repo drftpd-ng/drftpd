@@ -17,15 +17,6 @@
  */
 package org.drftpd.commands.transferstatistics;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
@@ -44,6 +35,9 @@ import org.drftpd.usermanager.UserManager;
 import org.drftpd.usermanager.util.UserComparator;
 import org.drftpd.usermanager.util.UserTransferStats;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.IOException;
+import java.util.*;
 
 
 /**
@@ -232,29 +226,17 @@ public class TransferStatistics extends CommandInterface  {
 				 */
 				Permission perm = new Permission(Permission.makeUsers(st));
 
-				for (Iterator<User> iter = users.iterator(); iter.hasNext();) {
-					User user = iter.next();
-
-					if (!perm.check(user)) {
-						iter.remove();
-					}
-				}
+				users.removeIf(user -> !perm.check(user));
 			}
 		}
 
 		Permission perm = new Permission(Permission.makeUsers(new StringTokenizer(GlobalContext.getConfig().getHideInStats())));
 
-		for (Iterator<User> iter = users.iterator(); iter.hasNext();) {
-			User user = iter.next();
-
-			if (perm.check(user)) {
-				iter.remove();
-			}
-		}
+		users.removeIf(perm::check);
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ArrayList<User> users2 = new ArrayList<User>(users);
-		Collections.sort(users2, new UserComparator(type));
+		ArrayList<User> users2 = new ArrayList<>(users);
+		users2.sort(new UserComparator(type));
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
 		String headerBundleKey = _keyPrefix + type + ".header"; 
@@ -262,9 +244,9 @@ public class TransferStatistics extends CommandInterface  {
 				request.getUser());
 		if (headerText.equals(headerBundleKey)) {
 			try {
-				addTextToResponse(response, "text/" + type + "_header.txt");
+				addTextToResponse(response, "userdata/text/" + type + "_header.txt");
 			} catch (IOException ioe) {
-				logger.warn("Error reading " + "text/" + type + "_header.txt", ioe);
+				logger.warn("Error reading " + "userdata/text/" + type + "_header.txt", ioe);
 			}
 		} else {
 			response.addComment(headerText);
@@ -325,9 +307,9 @@ public class TransferStatistics extends CommandInterface  {
 				request.getUser());
 		if (footerText.equals(footerBundleKey)) {
 			try {
-				addTextToResponse(response, "text/" + type + "_footer.txt");
+				addTextToResponse(response, "userdata/text/" + type + "_footer.txt");
 			} catch (IOException ioe) {
-				logger.warn("Error reading " + "text/" + type + "_footer.txt", ioe);
+				logger.warn("Error reading " + "userdata/text/" + type + "_footer.txt", ioe);
 			}
 		} else {
 			response.addComment(footerText);

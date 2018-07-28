@@ -1,0 +1,17 @@
+SITE ADDNOTE {
+plugin org.drftpd.commands.usermanagement.notes
+class Notes
+method doSITE_ADDNOTE
+perms =siteop
+help Add's Note For User
+help.specific ${command} <username> <note>
+}
+
+SITE DELNOTE {
+plugin org.drftpd.commands.usermanagement.notes
+class Notes
+method doSITE_DELNOTE
+perms =siteop
+help Removes Note For User
+help.specific ${command} <username> <noteID>
+}

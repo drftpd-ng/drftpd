@@ -18,16 +18,16 @@
 
 package org.drftpd.master;
 
+import org.apache.log4j.Logger;
+import org.drftpd.GlobalContext;
+import org.drftpd.PropertyHelper;
+import org.drftpd.util.CommonPluginUtils;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
-import org.drftpd.PropertyHelper;
-import org.drftpd.util.CommonPluginUtils;
 
 /**
  * This classes handle all XML commits.
@@ -52,7 +52,7 @@ public class CommitManager {
 	 * Private constructor in order to make this class a Singleton.
 	 */
 	private CommitManager() {
-		_commitQueue = new ConcurrentLinkedQueue<CommitableWrapper>();
+		_commitQueue = new ConcurrentLinkedQueue<>();
 		_queueSize = new AtomicInteger();
 	}
 

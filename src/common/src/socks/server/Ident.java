@@ -121,8 +121,7 @@ public class Ident {
 				throw new IOException("Illegal username: " + userName);
 			}
 
-			return;
-		} else if (command.equals("ERROR")) {
+        } else if (command.equals("ERROR")) {
 			throw new IOException("Ident ERROR: " + response);
 		} else {
 			throw new IOException("Unexpected reply: " + response);

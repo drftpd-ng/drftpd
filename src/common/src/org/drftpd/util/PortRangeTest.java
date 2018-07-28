@@ -17,14 +17,13 @@
  */
 package org.drftpd.util;
 
+import junit.framework.TestCase;
+
+import javax.net.ServerSocketFactory;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import javax.net.ServerSocketFactory;
-
-import junit.framework.TestCase;
 
 
 /**
@@ -34,11 +33,11 @@ import junit.framework.TestCase;
 public class PortRangeTest extends TestCase {
     public void testGetPort() throws IOException {
         PortRange pr = new PortRange(45300, 45310, 0);
-        ArrayList<Integer> ports = new ArrayList<Integer>();
-        ArrayList<ServerSocket> sockets = new ArrayList<ServerSocket>();
+        ArrayList<Integer> ports = new ArrayList<>();
+        ArrayList<ServerSocket> sockets = new ArrayList<>();
 
         for (int x = 45300; x <= 45310; x++) {
-            ports.add(Integer.valueOf(x));
+            ports.add(x);
         }
 
         assertEquals(11, ports.size());
@@ -69,8 +68,8 @@ public class PortRangeTest extends TestCase {
         
         // clean up
         ss.close();
-        for (Iterator<ServerSocket> iter = sockets.iterator();iter.hasNext();) {
-        	iter.next().close();
+        for (ServerSocket socket : sockets) {
+            socket.close();
         }
     }
 }

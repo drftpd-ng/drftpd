@@ -17,12 +17,13 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.ArrayList;
-
 import org.drftpd.GlobalContext;
-import org.drftpd.plugins.sitebot.config.GlobPathMatcher;
+import org.drftpd.plugins.sitebot.config.PathMatcher;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.InodeHandle;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61
@@ -30,13 +31,13 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class AnnounceWriter {
 
-	private GlobPathMatcher _matcher;
+	private PathMatcher _matcher;
 
 	private ArrayList<OutputWriter> _writers;
 
 	private String _sectionName;
 
-	public AnnounceWriter(GlobPathMatcher matcher, ArrayList<OutputWriter> writers, String sectionName) {
+	public AnnounceWriter(PathMatcher matcher, ArrayList<OutputWriter> writers, String sectionName) {
 		_matcher = matcher;
 		_writers = writers;
 		_sectionName = sectionName;
@@ -46,8 +47,8 @@ public class AnnounceWriter {
 		return _writers;
 	}
 
-	public boolean pathMatches(DirectoryHandle dir) {
-		return _matcher.checkPath(dir);
+	public boolean pathMatches(InodeHandle inode) {
+		return _matcher.checkPath(inode);
 	}
 
 	public boolean sectionMatches(DirectoryHandle dir) {
@@ -74,22 +75,23 @@ public class AnnounceWriter {
 		return _sectionName;
 	}
 
-	public String getPath(DirectoryHandle dir) {
+	public String getPath(InodeHandle inode) {
 		if (_matcher != null && _sectionName != null) {
 			// Here we need to rewrite the path to make it relative
 			// to the pseudo section
-			return dir.getPath().substring(_matcher.getPathSuffix().length()+1);
+			return _matcher.getRelativePath(inode);
 		}
 		// Return path relative to section
 		// Special case to handle directories in the root
-		if (dir.getParent().isRoot()) {
-			return dir.getPath().substring(1);
+		if (inode.getParent().isRoot()) {
+			return inode.getPath().substring(1);
 		}
+		DirectoryHandle dir = inode.isDirectory() ? (DirectoryHandle)inode : inode.getParent();
 		DirectoryHandle sectionBase = 
 			GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getBaseDirectory();
 		if (sectionBase.isRoot()) {
-			return dir.getPath().substring(1);
+			return inode.getPath().substring(1);
 		}
-		return dir.getPath().substring(sectionBase.getPath().length()+1);
+		return inode.getPath().substring(sectionBase.getPath().length()+1);
 	}
 }

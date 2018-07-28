@@ -17,10 +17,6 @@
  */
 package org.drftpd.commands.indexmanager;
 
-import java.io.FileNotFoundException;
-import java.util.Map.Entry;
-import java.util.LinkedList;
-import java.util.ResourceBundle;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -35,6 +31,11 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.LinkedList;
+import java.util.Map.Entry;
+import java.util.ResourceBundle;
 
 /**
  * @author fr0w
@@ -104,7 +105,7 @@ public class IndexManager extends CommandInterface {
 			quiet = true;
 		}
 
-		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+		LinkedList<DirectoryHandle> dirs = new LinkedList<>();
 		dirs.add(request.getCurrentDirectory());
 		while (dirs.size() > 0 && !session.isAborted()) {
 			DirectoryHandle workingDir = dirs.poll();

@@ -17,28 +17,28 @@
  */
 package org.drftpd.commands.approve;
 
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.ArrayList;
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.approve.metadata.Approve;
-import org.drftpd.usermanager.User;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.Session;
+import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 public class ApproveCommands extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(ApproveCommands.class);
@@ -91,7 +91,7 @@ public class ApproveCommands extends CommandInterface {
 					return new CommandResponse(500, "Index Exception: " + e.getMessage());
 				}
 
-				ArrayList<DirectoryHandle> dirsToApprove = new ArrayList<DirectoryHandle>();
+				ArrayList<DirectoryHandle> dirsToApprove = new ArrayList<>();
 
 				for (Map.Entry<String,String> item : inodes.entrySet()) {
 					try {
@@ -155,7 +155,7 @@ public class ApproveCommands extends CommandInterface {
 				}
 				
 				try {
-					if (dir.getPluginMetaData(Approve.APPROVE) == false) {
+					if (!dir.getPluginMetaData(Approve.APPROVE)) {
 						throw new KeyNotFoundException();
 					}
 					return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"approve.approved", env, user));

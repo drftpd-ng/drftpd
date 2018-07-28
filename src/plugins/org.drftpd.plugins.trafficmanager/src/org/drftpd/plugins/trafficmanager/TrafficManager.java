@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.trafficmanager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -31,6 +27,10 @@ import org.drftpd.event.ReloadEvent;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author CyBeR
@@ -54,7 +54,7 @@ public class TrafficManager implements PluginInterface {
 	@Override
 	public void stopPlugin(String reason) {
 		AnnotationProcessor.unprocess(this);
-		_traffictypes = new ArrayList<TrafficType>();
+		_traffictypes = new ArrayList<>();
 	}
 	
     @EventSubscriber
@@ -86,7 +86,7 @@ public class TrafficManager implements PluginInterface {
 		} else {
 			try {
 				Class<TrafficType> clazz = _typesMap.get(type);
-				trafficType = clazz.getConstructor(SIG).newInstance(new Object[] { props, count, type.toLowerCase() });
+				trafficType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
 				logger.error("Unable to load TrafficType for section " + count + ".type=" + type, e);
 			}		
@@ -95,7 +95,7 @@ public class TrafficManager implements PluginInterface {
 	}
 	
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<TrafficType>> typesMap = new CaseInsensitiveHashMap<String, Class<TrafficType>>();
+		CaseInsensitiveHashMap<String, Class<TrafficType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<TrafficType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.trafficmanager", "TrafficType", "ClassName", false);
@@ -112,7 +112,7 @@ public class TrafficManager implements PluginInterface {
 	
 	public void loadConf() {
     	initTypes();
-		_traffictypes = new ArrayList<TrafficType>();
+		_traffictypes = new ArrayList<>();
 		
 		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("trafficmanager.conf");
     	int count = 1;
@@ -130,7 +130,7 @@ public class TrafficManager implements PluginInterface {
      * Returns a copy of the current traffic types
      */
     public ArrayList<TrafficType> getTrafficTypes() {
-    	return new ArrayList<TrafficType>(_traffictypes);
+    	return new ArrayList<>(_traffictypes);
     }
 
 	/*

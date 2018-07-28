@@ -17,8 +17,6 @@
  */
 package org.drftpd.commands.dataconnection.hooks;
 
-import java.net.InetAddress;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -30,6 +28,8 @@ import org.drftpd.event.TransferEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.vfs.FileHandle;
+
+import java.net.InetAddress;
 
 /**
  * @author djb61

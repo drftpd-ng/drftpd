@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.trialmanager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -30,6 +26,10 @@ import org.drftpd.event.ReloadEvent;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author CyBeR
@@ -86,7 +86,7 @@ public class TrialManager implements PluginInterface {
 		} else {
 			try {
 				Class<TrialType> clazz = _typesMap.get(type);
-				trialType = clazz.getConstructor(SIG).newInstance(new Object[] { props, count, type.toLowerCase() });
+				trialType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
 				logger.error("Unable to load TrialType for section " + count + ".type=" + type, e);
 			}		
@@ -95,7 +95,7 @@ public class TrialManager implements PluginInterface {
 	}
     
     private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<TrialType>> typesMap = new CaseInsensitiveHashMap<String, Class<TrialType>>();
+		CaseInsensitiveHashMap<String, Class<TrialType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<TrialType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.trialmanager", "TrialType", "ClassName", false);
@@ -111,7 +111,7 @@ public class TrialManager implements PluginInterface {
     
     public void loadConf() {
     	initTypes();
-		_trials = new ArrayList<TrialType>();
+		_trials = new ArrayList<>();
 		
 		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("trialmanager.conf");
     	int count = 1;
@@ -129,7 +129,7 @@ public class TrialManager implements PluginInterface {
      * Returns a copy of all the current trial types
      */
 	public ArrayList<TrialType> getTrials() {
-		return new ArrayList<TrialType>(_trials);
+		return new ArrayList<>(_trials);
 	}
 	
 }

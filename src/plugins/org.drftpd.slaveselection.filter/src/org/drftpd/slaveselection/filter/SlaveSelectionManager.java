@@ -17,13 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.event.ReloadEvent;
@@ -37,6 +30,13 @@ import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author mog
@@ -70,7 +70,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
     }	
 	
 	private void initFilters() {
-		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<String, Class<Filter>>();
+		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<Filter>> loadedFilters =
@@ -90,7 +90,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	
 	public CaseInsensitiveHashMap<String, Class<Filter>> getFiltersMap() {
 		// we dont want to pass this object around allowing it to be modified, make a copy of it.
-		return new CaseInsensitiveHashMap<String, Class<Filter>>(_filtersMap); 
+		return new CaseInsensitiveHashMap<>(_filtersMap);
 	}
 
 	/**
@@ -119,7 +119,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 
 	public RemoteSlave getASlaveForJobDownload(FileHandle file, Collection<RemoteSlave> destinationSlaves)
 			throws NoAvailableSlaveException, FileNotFoundException {		
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(file.getAvailableSlaves());
+		ArrayList<RemoteSlave> slaves = new ArrayList<>(file.getAvailableSlaves());
 		
 		slaves.removeAll(destinationSlaves); //remove all target slaves.
 
@@ -133,14 +133,11 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	public RemoteSlave getASlaveForJobUpload(FileHandle file, Collection<RemoteSlave> destinationSlaves, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException, FileNotFoundException {
 		
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(destinationSlaves);
+		ArrayList<RemoteSlave> slaves = new ArrayList<>(destinationSlaves);
 		slaves.removeAll(file.getAvailableSlaves()); // a slave cannot have the same file twice ;P
 
-		for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
-			if (!iter.next().isAvailable()) {
-				iter.remove(); // slave is not online, cannot send a file to it.
-			}
-		}
+        // slave is not online, cannot send a file to it.
+        slaves.removeIf(remoteSlave -> !remoteSlave.isAvailable());
 
 		if (slaves.isEmpty()) {
 			throw new NoAvailableSlaveException();
@@ -164,16 +161,17 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	
 	public FilterChain getFilterChain(String type) {
 		type = type.toLowerCase();
-		if (type.equals("down")) {
-			return _downChain;
-		} else if (type.equals("up")) {
-			return _upChain;
-		} else if (type.equals("jobup")) {
-			return _jobUpChain;
-		} else if (type.equals("jobdown")) {
-			return _jobDownChain;
-		} else {
-			throw new IllegalArgumentException();
-		}
+        switch (type) {
+            case "down":
+                return _downChain;
+            case "up":
+                return _upChain;
+            case "jobup":
+                return _jobUpChain;
+            case "jobdown":
+                return _jobDownChain;
+            default:
+                throw new IllegalArgumentException();
+        }
 	}
 }

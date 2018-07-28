@@ -18,10 +18,10 @@
 package org.drftpd.event;
 
 
-import java.util.Map;
-
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.usermanager.User;
+
+import java.util.Map;
 
 /**
  * @author mog

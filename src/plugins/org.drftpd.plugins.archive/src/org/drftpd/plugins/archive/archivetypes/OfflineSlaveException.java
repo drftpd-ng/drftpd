@@ -19,7 +19,7 @@ package org.drftpd.plugins.archive.archivetypes;
 
 /*
  * @author zubov
- * 
+ *
  * @version $Id$
  */
 @SuppressWarnings("serial")

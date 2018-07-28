@@ -16,22 +16,18 @@
  */
 package org.drftpd.protocol.imdb.slave;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
-
-import org.drftpd.protocol.slave.AbstractHandler;
-import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.protocol.imdb.common.async.AsyncResponseIMDBInfo;
+import org.drftpd.protocol.slave.AbstractHandler;
+import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseException;
+
+import java.io.*;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 /**
  * Handler for NFO requests.

@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.linkmanager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -35,6 +31,10 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author CyBeR
@@ -91,7 +91,7 @@ public class LinkManager implements PluginInterface {
 		} else {
 			try {
 				Class<LinkType> clazz = _typesMap.get(type);
-				linkType = clazz.getConstructor(SIG).newInstance(new Object[] { props, count, type.toLowerCase() });
+				linkType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
 				logger.error("Unable to load LinkType for section " + count + ".type=" + type, e);
 			}		
@@ -100,7 +100,7 @@ public class LinkManager implements PluginInterface {
 	}
     
     private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<LinkType>> typesMap = new CaseInsensitiveHashMap<String, Class<LinkType>>();
+		CaseInsensitiveHashMap<String, Class<LinkType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<LinkType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.linkmanager", "LinkType", "ClassName", false);
@@ -116,7 +116,7 @@ public class LinkManager implements PluginInterface {
     
     public void loadConf() {
     	initTypes();
-		_links = new ArrayList<LinkType>();
+		_links = new ArrayList<>();
 		
 		Properties _props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("linkmanager.conf");
     	int count = 1;
@@ -134,7 +134,7 @@ public class LinkManager implements PluginInterface {
      * Returns a copy of all the current links types
      */
 	public ArrayList<LinkType> getLinks() {
-		return new ArrayList<LinkType>(_links);
+		return new ArrayList<>(_links);
 	}
 	
 	/*

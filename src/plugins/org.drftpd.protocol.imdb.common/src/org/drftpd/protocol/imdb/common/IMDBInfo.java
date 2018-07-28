@@ -29,7 +29,7 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class IMDBInfo implements Serializable {
 
-    public static final Key<IMDBInfo> IMDBINFO = new Key<IMDBInfo>(IMDBInfo.class, "imdb");
+    public static final Key<IMDBInfo> IMDBINFO = new Key<>(IMDBInfo.class, "imdb");
 	
 	private String _nfoFileName = null;
 	private String _nfoURL = null;
@@ -38,13 +38,14 @@ public class IMDBInfo implements Serializable {
     // IMDB DATA
     private String _title = "N|A";
     private Integer _year;
-	private String _director = "N|A";
-    private String _genre = "N|A";
+    private String _language = "N|A";
+    private String _country = "N|A";
+    private String _director = "N|A";
+    private String _genres = "N|A";
     private String _plot = "N|A";
-    private Integer _votes;
     private Integer _rating;
-	private Integer _screens;
-	private String _limited = "";
+    private Integer _votes;
+    private Integer _runtime;
     private boolean _foundMovie = false;
 
 	/**
@@ -116,6 +117,22 @@ public class IMDBInfo implements Serializable {
         _year = year;
     }
 
+	public String getLanguage() {
+        return _language;
+    }
+
+	public void setLanguage(String language) {
+        _language = language;
+    }
+
+	public String getCountry() {
+        return _country;
+    }
+
+    public void setCountry(String country) {
+        _country = country;
+    }
+	
     public String getDirector() {
         return _director;
     }
@@ -124,28 +141,12 @@ public class IMDBInfo implements Serializable {
         _director = director;
     }
 
-    public String getGenre() {
-        return _genre;
+    public String getGenres() {
+        return _genres;
     }
 
-    public void setGenre(String genre) {
-        _genre = genre;
-    }
-
-    public String getPlot() {
-        return _plot;
-    }
-
-    public void setPlot(String plot) {
-        _plot = plot;
-    }
-
-    public Integer getVotes() {
-        return _votes;
-    }
-
-    public void setVotes(Integer votes) {
-        _votes = votes;
+    public void setGenres(String genres) {
+        _genres = genres;
     }
 
     public Integer getRating() {
@@ -156,20 +157,28 @@ public class IMDBInfo implements Serializable {
         _rating = rating;
     }
 
-    public Integer getScreens() {
-        return _screens;
+    public String getPlot() {
+        return _plot;
     }
 
-    public void setScreens(Integer screens) {
-        _screens = screens;
+    public void setPlot(String plot) {
+        _plot = plot;
+    }
+	
+    public Integer getVotes() {
+        return _votes;
     }
 
-    public String getLimited() {
-        return _limited;
+    public void setVotes(Integer votes) {
+        _votes = votes;
     }
 
-    public void setLimited(String limited) {
-        _limited = limited;
+    public Integer getRuntime() {
+        return _runtime;
+    }
+
+    public void setRuntime(Integer runtime) {
+		_runtime = runtime;
     }
 
     public boolean getMovieFound() {

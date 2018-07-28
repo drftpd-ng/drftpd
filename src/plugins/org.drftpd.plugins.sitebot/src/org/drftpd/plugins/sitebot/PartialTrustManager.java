@@ -17,11 +17,12 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import org.apache.log4j.Logger;
+
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+import java.io.*;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -32,12 +33,6 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
-import org.apache.log4j.Logger;
-
 /**
  * @author djb61
  * @version $Id$
@@ -46,7 +41,7 @@ public class PartialTrustManager implements X509TrustManager {
 
 	private static final Logger logger = Logger.getLogger(PartialTrustManager.class);
 
-	private HashMap<String,X509Certificate> _certs = new HashMap<String,X509Certificate>();
+	private HashMap<String,X509Certificate> _certs = new HashMap<>();
 
 	private CertificateFactory _factory; 
 

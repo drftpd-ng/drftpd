@@ -17,16 +17,14 @@
  */
 package org.drftpd.tools.installer.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.util.ArrayList;
+import org.drftpd.tools.installer.InstallerConfig;
+import org.drftpd.tools.installer.PluginData;
+import org.drftpd.tools.installer.PluginTools;
+import org.java.plugin.registry.Documentation;
+import org.java.plugin.registry.PluginDescriptor;
+import org.java.plugin.registry.PluginRegistry;
 
-import javax.swing.JTabbedPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -36,13 +34,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-
-import org.drftpd.tools.installer.InstallerConfig;
-import org.drftpd.tools.installer.PluginData;
-import org.drftpd.tools.installer.PluginTools;
-import org.java.plugin.registry.Documentation;
-import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.PluginRegistry;
+import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * @author djb61
@@ -176,7 +169,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 
 	public Object getValueAt(int row, int col) {
 		switch(col) {
-		case 0: return Boolean.valueOf(_plugins.get(row).isSelected()); 
+		case 0: return _plugins.get(row).isSelected();
 		case 1: return _plugins.get(row).getName();
 		case 2: return _plugins.get(row).getDescriptor().getVersion().toString();
 		default: return null;
@@ -190,11 +183,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 	public boolean isCellEditable(int row, int col) {
 		if (col > 0) {
 			return false;
-		} else if (!_plugins.get(row).isModifiable()) {
-			return false;
-		} else {
-			return true;
-		}
+		} else return _plugins.get(row).isModifiable();
 	}
 
 	public void setValueAt(Object value, int row, int col) {
@@ -222,7 +211,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 						if (!dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
-							setValueAt(Boolean.valueOf(dep.isSelected()),i,0);
+							setValueAt(dep.isSelected(),i,0);
 							_internalChange = false;
 						}
 					}
@@ -233,7 +222,7 @@ class SwingTableModel extends AbstractTableModel implements TableModelListener {
 						if (dep.isSelected()) {
 							dep.invertSelected();
 							_internalChange = true;
-							setValueAt(Boolean.valueOf(dep.isSelected()),i,0);
+							setValueAt(dep.isSelected(),i,0);
 							_internalChange = false;
 						}
 					}

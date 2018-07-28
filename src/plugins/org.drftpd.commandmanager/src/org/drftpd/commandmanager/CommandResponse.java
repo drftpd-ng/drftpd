@@ -17,13 +17,13 @@
  */
 package org.drftpd.commandmanager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.Vector;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyedMap;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.Vector;
 
 /**
  * @author djb61
@@ -32,15 +32,15 @@ import org.drftpd.vfs.DirectoryHandle;
 @SuppressWarnings("serial")
 public class CommandResponse extends KeyedMap<Key<?>, Object> implements CommandResponseInterface {
 	
-	public static final Key<Integer> CODE = new Key<Integer>(CommandResponse.class, "code");
+	public static final Key<Integer> CODE = new Key<>(CommandResponse.class, "code");
 
-	public static final Key<Vector<String>> COMMENT = new Key<Vector<String>>(CommandResponse.class, "comment");
+	public static final Key<Vector<String>> COMMENT = new Key<>(CommandResponse.class, "comment");
 
-	public static final Key<DirectoryHandle> CURRENTDIRECTORY = new Key<DirectoryHandle>(CommandResponse.class, "currentDirectory");
+	public static final Key<DirectoryHandle> CURRENTDIRECTORY = new Key<>(CommandResponse.class, "currentDirectory");
 
-	public static final Key<String> MESSAGE = new Key<String>(CommandResponse.class, "message");
+	public static final Key<String> MESSAGE = new Key<>(CommandResponse.class, "message");
 
-	public static final Key<String> USER = new Key<String>(CommandResponse.class, "user");
+	public static final Key<String> USER = new Key<>(CommandResponse.class, "user");
 
 	public CommandResponse(int code) {
 		setCode(code);
@@ -79,8 +79,8 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 		if (resp.indexOf('\n') != -1) {
 			String[] lines = resp.split("\n");
 
-			for (int i = 0; i < lines.length; i++) {
-				_comments.add(lines[i]);
+			for (String line : lines) {
+				_comments.add(line);
 			}
 		} else {
 			_comments.add(resp);
@@ -107,11 +107,11 @@ public class CommandResponse extends KeyedMap<Key<?>, Object> implements Command
 	}
 
 	public int getCode() {
-		return getObject(CommandResponse.CODE, Integer.valueOf(500)).intValue();
+		return getObject(CommandResponse.CODE, 500);
 	}
 
 	public Vector<String> getComment() {
-		return getObject(CommandResponse.COMMENT, new Vector<String>());
+		return getObject(CommandResponse.COMMENT, new Vector<>());
 	}
 
 	public DirectoryHandle getCurrentDirectory() {

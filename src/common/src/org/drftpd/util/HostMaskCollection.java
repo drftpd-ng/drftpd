@@ -17,18 +17,16 @@
  */
 package org.drftpd.util;
 
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.exceptions.DuplicateElementException;
+import socks.server.Ident;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-
-
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.drftpd.exceptions.DuplicateElementException;
-
-import socks.server.Ident;
 
 /**
  * @author mog

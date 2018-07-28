@@ -17,17 +17,16 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Properties;
-
-
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Checks ScoreChart for slaves with 0 bw usage and assigns 1 extra point to the
@@ -45,8 +44,8 @@ public class CycleFilter extends Filter {
 			char direction, InodeHandleInterface dir, RemoteSlave sourceSlave)
 			throws NoAvailableSlaveException {
 		
-		ArrayList<SlaveScore> tempList = new ArrayList<SlaveScore>(scorechart
-				.getSlaveScores());
+		ArrayList<SlaveScore> tempList = new ArrayList<>(scorechart
+                .getSlaveScores());
 
 		while (true) {
 			if (tempList.isEmpty()) {
@@ -55,7 +54,7 @@ public class CycleFilter extends Filter {
 
 			SlaveScore first = tempList.get(0);
 			
-			ArrayList<SlaveScore> equalList = new ArrayList<SlaveScore>();
+			ArrayList<SlaveScore> equalList = new ArrayList<>();
 			equalList.add(first);
 			tempList.remove(first);
 
@@ -70,14 +69,12 @@ public class CycleFilter extends Filter {
 
 			SlaveScore leastUsed = first;
 
-			for (Iterator<SlaveScore> iter = equalList.iterator(); iter.hasNext();) {
-				SlaveScore match = iter.next();
-
-				if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
-						.getRSlave().getLastTransferForDirection(direction)) {
-					leastUsed = match;
-				}
-			}
+            for (SlaveScore match : equalList) {
+                if (match.getRSlave().getLastTransferForDirection(direction) < leastUsed
+                        .getRSlave().getLastTransferForDirection(direction)) {
+                    leastUsed = match;
+                }
+            }
 
 			if (leastUsed != null) {
 				leastUsed.addScore(1);

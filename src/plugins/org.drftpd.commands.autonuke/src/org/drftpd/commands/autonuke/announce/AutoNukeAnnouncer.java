@@ -16,25 +16,26 @@
  */
 package org.drftpd.commands.autonuke.announce;
 
-import java.util.ResourceBundle;
-import java.io.FileNotFoundException;
-
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.Bytes;
+import org.drftpd.commands.autonuke.NukeItem;
+import org.drftpd.commands.autonuke.event.AutoNukeEvent;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.commands.autonuke.event.AutoNukeEvent;
-import org.drftpd.commands.autonuke.NukeItem;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.vfs.DirectoryHandle;
+import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
-import org.tanesha.replacer.FormatterException;
-import org.apache.log4j.Logger;
+
+import java.io.FileNotFoundException;
+import java.util.ResourceBundle;
 
 /**
  * @author scitz0
@@ -75,7 +76,9 @@ public class AutoNukeAnnouncer extends AbstractAnnouncer {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("dir", dir.getName());
 			env.add("path", dir.getPath());
-			env.add("section", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getName());
+			SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			try {
 				env.add("user", dir.getUsername());
 				env.add("group", dir.getGroup());

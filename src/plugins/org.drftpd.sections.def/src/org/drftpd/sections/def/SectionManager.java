@@ -17,14 +17,6 @@
  */
 package org.drftpd.sections.def;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
@@ -32,6 +24,9 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author mog
@@ -68,7 +63,7 @@ public class SectionManager implements SectionManagerInterface {
 
 	@SuppressWarnings("unchecked")
 	public Collection<SectionInterface> getSections() {
-		ArrayList<SectionInterface> sections = new ArrayList<SectionInterface>();
+		ArrayList<SectionInterface> sections = new ArrayList<>();
 		
 		Set<DirectoryHandle> dirs;
 		try {
@@ -153,7 +148,7 @@ public class SectionManager implements SectionManagerInterface {
 
 	@SuppressWarnings("unchecked")
 	public Map<String, SectionInterface> getSectionsMap() {
-		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
+		HashMap<String, SectionInterface> sections = new HashMap<>();
 		
 		try {
 			for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectoriesUnchecked()) {

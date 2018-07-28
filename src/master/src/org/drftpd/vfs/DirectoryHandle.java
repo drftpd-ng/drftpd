@@ -17,22 +17,16 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.usermanager.User;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 
 
 /**
@@ -131,7 +125,7 @@ public class DirectoryHandle extends InodeHandle implements
 	}
 	
 	public ArrayList<FileHandle> getAllFilesRecursiveUnchecked() {
-		ArrayList<FileHandle> files = new ArrayList<FileHandle>();
+		ArrayList<FileHandle> files = new ArrayList<>();
 		try {
 			for (InodeHandle inode : getInodeHandlesUnchecked()) {
 				if (inode.isFile()) {
@@ -163,9 +157,8 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<FileHandle> getSortedFiles(User user) throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
-		Collections.sort(sortedInodes,
-				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandles(user));
+		sortedInodes.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getFilesUnchecked(sortedInodes);
 	}
 	
@@ -186,14 +179,13 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<FileHandle> getSortedFilesUnchecked() throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
-		Collections.sort(sortedInodes,
-				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandlesUnchecked());
+		sortedInodes.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getFilesUnchecked(sortedInodes);
 	}
 	
 	private Set<FileHandle> getFilesUnchecked(Collection<InodeHandle> inodes) throws FileNotFoundException {
-		Set<FileHandle> set = new LinkedHashSet<FileHandle>();
+		Set<FileHandle> set = new LinkedHashSet<>();
 		for (InodeHandle handle : getInode().getInodes()) {
 			if (handle instanceof FileHandle) {
 				set.add((FileHandle) handle);
@@ -217,9 +209,8 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<DirectoryHandle> getSortedDirectories(User user) throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
-		Collections.sort(sortedInodes,
-				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandles(user));
+		sortedInodes.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getDirectoriesUnchecked(sortedInodes);
 	}
 	
@@ -238,9 +229,8 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<DirectoryHandle> getSortedDirectoriesUnchecked() throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
-		Collections.sort(sortedInodes,
-				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandlesUnchecked());
+		sortedInodes.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getDirectoriesUnchecked(sortedInodes);
 	}
 	
@@ -251,7 +241,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 */
 	private Set<DirectoryHandle> getDirectoriesUnchecked(Collection<InodeHandle> inodes)
 		throws FileNotFoundException {
-		Set<DirectoryHandle> set = new LinkedHashSet<DirectoryHandle>();
+		Set<DirectoryHandle> set = new LinkedHashSet<>();
 		
 		for (InodeHandle handle : inodes) {
 			if (handle instanceof DirectoryHandle) {
@@ -278,9 +268,8 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<LinkHandle> getSortedLinks(User user) throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandles(user));
-		Collections.sort(sortedInodes,
-				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandles(user));
+		sortedInodes.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getLinksUnchecked(sortedInodes);
 	}
 	
@@ -301,21 +290,18 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @throws FileNotFoundException
 	 */
 	public Set<LinkHandle> getSortedLinksUnchecked() throws FileNotFoundException {
-		ArrayList<InodeHandle> sortedInodes = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
-		Collections.sort(sortedInodes,
-				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		ArrayList<InodeHandle> sortedInodes = new ArrayList<>(getInodeHandlesUnchecked());
+		sortedInodes.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		return getLinksUnchecked(sortedInodes);
 	}
 	
 	private Set<LinkHandle> getLinksUnchecked(Collection<InodeHandle> inodes) {
-		Set<LinkHandle> set = new LinkedHashSet<LinkHandle>();
-		for (Iterator<InodeHandle> iter = inodes.iterator(); iter
-				.hasNext();) {
-			InodeHandle handle = iter.next();
-			if (handle instanceof LinkHandle) {
-				set.add((LinkHandle) handle);
-			}
-		}
+		Set<LinkHandle> set = new LinkedHashSet<>();
+        for (InodeHandle handle : inodes) {
+            if (handle instanceof LinkHandle) {
+                set.add((LinkHandle) handle);
+            }
+        }
 		return set;
 	}
 	
@@ -344,7 +330,7 @@ public class DirectoryHandle extends InodeHandle implements
 	 */
 	private Set<FileHandle> getOfflineFiles(User user) throws FileNotFoundException {
 		Set<FileHandle> allFiles = user == null ? getFilesUnchecked() : getFiles(user);
-		Set<FileHandle> offlineFiles = new LinkedHashSet<FileHandle>(allFiles.size());
+		Set<FileHandle> offlineFiles = new LinkedHashSet<>(allFiles.size());
 
 		for (FileHandle file : allFiles) {
 			if (!file.isAvailable())
@@ -471,9 +457,10 @@ public class DirectoryHandle extends InodeHandle implements
 		}
 		FileHandle newFile = createFileUnchecked(name, "drftpd", "drftpd",
 				rslave, lrf.lastModified(), true, lrf.length());
-		//newFile.setCheckSum(rslave.getCheckSumForPath(newFile.getPath()));
-		// TODO Implement a Checksum queue on remerge
 		newFile.setCheckSum(0);
+		if (rslave.remergeChecksums() && lrf.length() != 0L) {
+			rslave.putCRCQueue(newFile);
+		}
 	}
 
     public void collisionHandler(LightRemoteInode lrf, RemoteSlave rslave) {
@@ -486,7 +473,7 @@ public class DirectoryHandle extends InodeHandle implements
 		// source comes pre-sorted from the slave
 		List<InodeHandle> destinationList = null;
 		try {
-			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+			destinationList = new ArrayList<>(getInodeHandlesUnchecked());
 		} catch (FileNotFoundException e) {
 			try {
 				// create directory for merging
@@ -499,7 +486,7 @@ public class DirectoryHandle extends InodeHandle implements
 			
 			// lets try this again, this time, if it doesn't work, we throw an
 			// IOException up the chain
-			destinationList = new ArrayList<InodeHandle>(getInodeHandlesUnchecked());
+			destinationList = new ArrayList<>(getInodeHandlesUnchecked());
 		}
 		try {
 			// Update the last modified on the dir, this allows us to get a correct
@@ -512,8 +499,7 @@ public class DirectoryHandle extends InodeHandle implements
 			// Not sure this should be able to happen, for now log an error
 			logger.error("Directory not found but was there a second ago!",e);
 		}
-		Collections.sort(destinationList,
-				VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
+		destinationList.sort(VirtualFileSystem.INODE_HANDLE_CASE_INSENSITIVE_COMPARATOR);
 		Iterator<InodeHandle> destinationIter = destinationList.iterator();
 		LightRemoteInode source = null;
 		InodeHandle destination = null;
@@ -671,18 +657,20 @@ public class DirectoryHandle extends InodeHandle implements
 				} else if (source.isFile() && destination.isFile()) {
 					// both files
 					FileHandle destinationFile = (FileHandle) destination;
-/*					long sourceCRC = rslave.getCheckSumForPath(getPath()
-							+ VirtualFileSystem.separator + source.getName());
 					long destinationCRC;
 					try {
-						destinationCRC = destinationFile.getCheckSum();
-					} catch (NoAvailableSlaveException e) {
+						destinationCRC = destinationFile.getCheckSumCached();
+					} catch (FileNotFoundException e) {
 						destinationCRC = 0L;
 					}
-*/					
-					
+
+					if (rslave.remergeChecksums() && destinationCRC == 0L && source.length() != 0L
+							&& source.length() == destinationFile.getSize()) {
+						// source file and dest file same size but no crc found in vfs, get crc from slave
+						rslave.putCRCQueue(destinationFile);
+					}
+
 					if (source.length() != destinationFile.getSize()) {
-//							|| (sourceCRC != destinationCRC && destinationCRC != 0L)) {
 						// handle collision
 						Set<RemoteSlave> rslaves = destinationFile.getSlaves();
 						if (rslaves.contains(rslave) && rslaves.size() == 1) {

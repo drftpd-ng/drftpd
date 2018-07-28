@@ -36,35 +36,41 @@
 			<attribute id="Native9" value="lib/wrapper-windows-x86-32.dll">
 				<attribute id="Executable" value="false" />
 			</attribute>
-			<attribute id="Native10" value="lib/wrapper.jar">
+			<attribute id="Native10" value="lib/wrapper-windows-x86-64.dll">
 				<attribute id="Executable" value="false" />
 			</attribute>
-			<attribute id="Native11" value="bin/wrapper-linux-x86-32">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native12" value="bin/wrapper-linux-x86-64">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native13" value="bin/wrapper-freebsd-x86-32">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native14" value="bin/wrapper-freebsd-x86-64">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native15" value="bin/wrapper-macosx-universal-32">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native16" value="bin/wrapper-macosx-universal-64">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native17" value="bin/wrapper-solaris-x86-32">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native18" value="bin/wrapper-solaris-x86-64">
-				<attribute id="Executable" value="true" />
-			</attribute>
-			<attribute id="Native19" value="bin/wrapper-windows-x86-32.exe">
+			<attribute id="Native11" value="lib/wrapper.jar">
 				<attribute id="Executable" value="false" />
+			</attribute>
+			<attribute id="Native12" value="bin/wrapper-linux-x86-32">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native13" value="bin/wrapper-linux-x86-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native14" value="bin/wrapper-freebsd-x86-32">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native15" value="bin/wrapper-freebsd-x86-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native16" value="bin/wrapper-macosx-universal-32">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native17" value="bin/wrapper-macosx-universal-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native18" value="bin/wrapper-solaris-x86-32">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native19" value="bin/wrapper-solaris-x86-64">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native20" value="bin/wrapper-windows-x86-32.exe">
+				<attribute id="Executable" value="true" />
+			</attribute>
+			<attribute id="Native21" value="bin/wrapper-windows-x86-64.exe">
+				<attribute id="Executable" value="true" />
 			</attribute>
 		</attribute>
 	</attributes>
@@ -78,7 +84,7 @@
 		<library id="log4j" path="../../lib/log4j-1.2.17.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="oro" path="../../lib/jakarta-oro-2.0.8.jar" type="code">
+		<library id="jakarta-oro" path="../../lib/jakarta-oro-2.0.8.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="commons-logging" path="../../lib/commons-logging-1.2.jar" type="code">
@@ -93,7 +99,10 @@
 		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.2.0.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-lang" path="../../lib/commons-lang3-3.4.jar" type="code">
+		<library id="commons-lang3" path="../../lib/commons-lang3-3.7.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="commons-text" path="../../lib/commons-text-1.4.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

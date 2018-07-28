@@ -17,14 +17,7 @@
  */
 package org.drftpd.tools.installer;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -65,7 +58,7 @@ public class UserFileConverter {
 		}
 		
 		System.out.println("Converting "+userFiles.length+" user files");
-		File outputDir = new File(_installDir+File.separator+"users"+File.separator+"javabeans");
+		File outputDir = new File(_installDir+File.separator+"userdata"+File.separator+"users"+File.separator+"javabeans");
 		if (!outputDir.exists()) {
 			if (!outputDir.mkdirs()) {
 				System.out.println("Abandoning conversion as target dir could not be created");
@@ -78,7 +71,7 @@ public class UserFileConverter {
 	}
 
 	private void convertUser(File origUser,File targetDir,ResourceBundle patterns) {
-		StringBuffer inputContents = new StringBuffer();
+		StringBuilder inputContents = new StringBuilder();
 		FileReader userReader = null;
 		BufferedReader buffInput = null;
 		try {
@@ -137,8 +130,7 @@ public class UserFileConverter {
 			buffOutput.flush();
 		} catch (IOException e) {
 			System.out.println("Skipping "+origUser.getName()+" as an IO error occurred during writing");
-			return;
-		} finally {
+        } finally {
 			try {
 				buffOutput.close();
 			} catch (IOException e) {

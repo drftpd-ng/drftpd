@@ -17,29 +17,6 @@
  */
 package org.drftpd.tools.installer.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.InstallerConfig;
@@ -47,6 +24,16 @@ import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginBuilderThread;
 import org.drftpd.tools.installer.PluginData;
 import org.java.plugin.registry.PluginRegistry;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author djb61
@@ -98,11 +85,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 		_exitButton = new JButton();
 		_exitButton.setText("Exit");
 		_exitButton.setPreferredSize(new Dimension(100,25));
-		_exitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				terminate();
-			}
-		});
+		_exitButton.addActionListener(e -> terminate());
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
 		_buildButton.setPreferredSize(new Dimension(100,25));
@@ -158,8 +141,8 @@ public class SwingInstaller extends JFrame implements ActionListener {
 			_config.setSuppressLog(_configPanel.getSuppressLog());
 			_config.setPrintTrace(_configPanel.getPrintTrace());
 			_config.setDevMode(_configPanel.getDevMode());
-			HashMap<String,Boolean> selPlugins = new HashMap<String,Boolean>();
-			ArrayList<PluginData> toBuild = new ArrayList<PluginData>();
+			HashMap<String,Boolean> selPlugins = new HashMap<>();
+			ArrayList<PluginData> toBuild = new ArrayList<>();
 			for (PluginData plugin : _pluginPanel.getPlugins()) {
 				selPlugins.put(plugin.getName(), plugin.isSelected());
 				if (plugin.isSelected()) {

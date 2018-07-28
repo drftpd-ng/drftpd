@@ -25,25 +25,17 @@ import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
 import charva.awt.event.KeyEvent;
 import charva.awt.event.KeyListener;
-
-import charvax.swing.JButton;
-import charvax.swing.JFrame;
-import charvax.swing.JMenu;
-import charvax.swing.JMenuBar;
-import charvax.swing.JMenuItem;
-import charvax.swing.JPanel;
-import charvax.swing.JTabbedPane;
-
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-
+import charvax.swing.*;
 import org.apache.log4j.Logger;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginData;
 import org.java.plugin.registry.PluginRegistry;
+
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * @author djb61
@@ -95,11 +87,7 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 
 		_exitButton = new JButton();
 		_exitButton.setText("Exit");
-		_exitButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				terminate();
-			}
-		});
+		_exitButton.addActionListener(e -> terminate());
 		_buildButton = new JButton();
 		_buildButton.setText("Build");
 		_buildButton.addActionListener(this);
@@ -153,8 +141,8 @@ public class ConsoleInstaller extends JFrame implements ActionListener, KeyListe
 			_config.setSuppressLog(_configPanel.getSuppressLog());
 			_config.setPrintTrace(_configPanel.getPrintTrace());
 			_config.setDevMode(_configPanel.getDevMode());
-			HashMap<String,Boolean> selPlugins = new HashMap<String,Boolean>();
-			ArrayList<PluginData> toBuild = new ArrayList<PluginData>();
+			HashMap<String,Boolean> selPlugins = new HashMap<>();
+			ArrayList<PluginData> toBuild = new ArrayList<>();
 			for (PluginData plugin : _pluginPanel.getPlugins()) {
 				selPlugins.put(plugin.getName(), plugin.isSelected());
 				if (plugin.isSelected()) {

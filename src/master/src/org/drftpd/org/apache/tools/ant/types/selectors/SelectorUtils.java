@@ -126,14 +126,7 @@ public final class SelectorUtils {
 		if (strIdxStart > strIdxEnd) {
 			// String is exhausted
 			return true;
-		} else if (patIdxStart > patIdxEnd) {
-			// String not exhausted, but pattern is. Failure.
-			return false;
-		} else {
-			// pattern now holds ** while string is not exhausted
-			// this will generate false positives but we can live with that.
-			return true;
-		}
+		} else return patIdxStart <= patIdxEnd;
 	}
 
 	/**
@@ -341,12 +334,12 @@ public final class SelectorUtils {
 		char ch;
 
 		boolean containsStar = false;
-		for (int i = 0; i < patArr.length; i++) {
-			if (patArr[i] == '*') {
-				containsStar = true;
-				break;
-			}
-		}
+        for (char aPatArr : patArr) {
+            if (aPatArr == '*') {
+                containsStar = true;
+                break;
+            }
+        }
 
 		if (!containsStar) {
 			// No '*'s, so we make a shortcut
@@ -508,7 +501,7 @@ public final class SelectorUtils {
 	 * @since Ant 1.6
 	 */
 	public static Vector<String> tokenizePath(String path, String separator) {
-		Vector<String> ret = new Vector<String>();
+		Vector<String> ret = new Vector<>();
 		StringTokenizer st = new StringTokenizer(path, separator);
 		while (st.hasMoreTokens()) {
 			ret.addElement(st.nextToken());
@@ -577,11 +570,8 @@ public final class SelectorUtils {
 		if (!target.exists()) {
 			return true;
 		}
-		if ((src.lastModified() - granularity) > target.lastModified()) {
-			return true;
-		}
-		return false;
-	}
+        return (src.lastModified() - granularity) > target.lastModified();
+    }
 
 	/**
 	 * "Flattens" a string by removing all whitespace (space, tab, linefeed,
@@ -593,7 +583,7 @@ public final class SelectorUtils {
 	 * @return a String that has had all whitespace removed.
 	 */
 	public static String removeWhitespace(String input) {
-		StringBuffer result = new StringBuffer();
+		StringBuilder result = new StringBuilder();
 		if (input != null) {
 			StringTokenizer st = new StringTokenizer(input);
 			while (st.hasMoreTokens()) {
@@ -623,7 +613,7 @@ public final class SelectorUtils {
 	 */
 	public static String rtrimWildcardTokens(String input) {
 		Vector<String> v = tokenizePath(input, File.separator);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int counter = 0; counter < v.size(); counter++) {
 			if (hasWildcards(v.elementAt(counter))) {
 				break;

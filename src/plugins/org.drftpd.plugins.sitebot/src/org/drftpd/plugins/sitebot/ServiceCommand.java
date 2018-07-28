@@ -17,13 +17,13 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * @author djb61
@@ -32,11 +32,11 @@ import org.tanesha.replacer.ReplacerEnvironment;
 @SuppressWarnings("serial")
 public class ServiceCommand extends Session {
 
-	public static final Key<String> IDENT = new Key<String>(ServiceCommand.class, "ident");
+	public static final Key<String> IDENT = new Key<>(ServiceCommand.class, "ident");
 
-	public static final Key<UserDetails> IRCUSER = new Key<UserDetails>(ServiceCommand.class, "ircuser");
+	public static final Key<UserDetails> IRCUSER = new Key<>(ServiceCommand.class, "ircuser");
 	
-	public static final Key<String> SOURCE = new Key<String>(ServiceCommand.class, "source");
+	public static final Key<String> SOURCE = new Key<>(ServiceCommand.class, "source");
 
 	private transient SiteBot _bot;
 

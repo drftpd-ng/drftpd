@@ -31,7 +31,7 @@ public class DirsToCheck {
 	private ConcurrentLinkedQueue<DirectoryHandle> _dirsToCheck;
 
 	private DirsToCheck() {
-		_dirsToCheck = new ConcurrentLinkedQueue<DirectoryHandle>();
+		_dirsToCheck = new ConcurrentLinkedQueue<>();
 	}
 
 	public ConcurrentLinkedQueue<DirectoryHandle> get() {
@@ -43,12 +43,7 @@ public class DirsToCheck {
 	}
 
 	public void del(String path) {
-		for (Iterator<DirectoryHandle> iter = _dirsToCheck.iterator(); iter.hasNext();) {
-			DirectoryHandle dir = (DirectoryHandle) iter.next();
-			if (dir.getPath().equals(path)) {
-				iter.remove();
-			}
-		}
+        _dirsToCheck.removeIf(dir -> dir.getPath().equals(path));
 	}
 
 	public int clear() {

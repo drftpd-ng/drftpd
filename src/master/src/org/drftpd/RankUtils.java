@@ -18,16 +18,15 @@
 
 package org.drftpd;
 
+import org.drftpd.util.GroupPosition;
+import org.drftpd.util.UploaderPosition;
+import org.drftpd.vfs.FileHandle;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-
-
-import org.drftpd.util.GroupPosition;
-import org.drftpd.util.UploaderPosition;
-import org.drftpd.vfs.FileHandle;
 
 /**
  * Set of usefull commnads to sort users/groups.
@@ -38,7 +37,7 @@ import org.drftpd.vfs.FileHandle;
 public class RankUtils {
 	public static Collection<GroupPosition> topFileGroup(
 			Collection<FileHandle> files) {
-		ArrayList<GroupPosition> ret = new ArrayList<GroupPosition>();
+		ArrayList<GroupPosition> ret = new ArrayList<>();
 
 		for (FileHandle file : files) {
 			String groupname;
@@ -75,8 +74,7 @@ public class RankUtils {
 					stat.updateFiles(1);
 					stat.updateXfertime(file.getXfertime());
 				} catch (FileNotFoundException e) {
-					continue;
-					// file was deleted or moved
+                    // file was deleted or moved
 				}
 			}
 		}
@@ -88,7 +86,7 @@ public class RankUtils {
 
 	public static Collection<UploaderPosition> userSort(Collection<FileHandle> files,
 			String type, String sort) {
-		ArrayList<UploaderPosition> ret = new ArrayList<UploaderPosition>();
+		ArrayList<UploaderPosition> ret = new ArrayList<>();
 
 		for (FileHandle file :  files) {
 			UploaderPosition stat = null;
@@ -102,8 +100,7 @@ public class RankUtils {
 						break;
 					}
 				} catch (FileNotFoundException e) {
-					continue;
-					// file was deleted or moved
+                    // file was deleted or moved
 				}
 			}
 
@@ -122,13 +119,12 @@ public class RankUtils {
 					stat.updateFiles(1);
 					stat.updateXfertime(file.getXfertime());
 				} catch (FileNotFoundException e) {
-					continue;
-					// file was deleted or moved
+                    // file was deleted or moved
 				}
 			}
 		}
 
-		Collections.sort(ret, new UserComparator(type, sort));
+		ret.sort(new UserComparator(type, sort));
 
 		return ret;
 	}
@@ -145,12 +141,13 @@ class UserComparator implements Comparator<UploaderPosition> {
 	}
 
 	static long getType(String type, UploaderPosition user) {
-		if (type.equals("bytes")) {
-			return user.getBytes();
-		} else if (type.equals("xferspeed")) {
-			return user.getXferspeed();
-		} else if (type.equals("xfertime")) {
-			return user.getXfertime();
+		switch (type) {
+			case "bytes":
+				return user.getBytes();
+			case "xferspeed":
+				return user.getXferspeed();
+			case "xfertime":
+				return user.getXfertime();
 		}
 
 		return 0;
@@ -162,11 +159,9 @@ class UserComparator implements Comparator<UploaderPosition> {
 		long anotherVal = getType(_type, u2);
 
 		if (_sort.equals("low")) {
-			return ((thisVal < anotherVal) ? (-1)
-					: ((thisVal == anotherVal) ? 0 : 1));
+			return (Long.compare(thisVal, anotherVal));
 		}
 
-		return ((thisVal > anotherVal) ? (-1) : ((thisVal == anotherVal) ? 0
-				: 1));
+		return (Long.compare(anotherVal, thisVal));
 	}
 }

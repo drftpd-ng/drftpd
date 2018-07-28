@@ -17,18 +17,6 @@
  */
 package org.drftpd.commandmanager;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.Method;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -40,6 +28,14 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
+
+import java.io.*;
+import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * @author djb61
@@ -61,8 +57,8 @@ public abstract class CommandInterface {
 	}
 
 	public synchronized void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		TreeMap<Integer,HookContainer<PreHookInterface>> preHooks = new TreeMap<Integer,HookContainer<PreHookInterface>>();
-		TreeMap<Integer,HookContainer<PostHookInterface>> postHooks = new TreeMap<Integer,HookContainer<PostHookInterface>>();
+		TreeMap<Integer,HookContainer<PreHookInterface>> preHooks = new TreeMap<>();
+		TreeMap<Integer,HookContainer<PostHookInterface>> postHooks = new TreeMap<>();
 
 		// Populate all available pre hooks
 		try {
@@ -81,7 +77,7 @@ public abstract class CommandInterface {
 				PreHookInterface preHookInstance = container.getPluginObject();
 				preHookInstance.initialize(cManager);
 				preHooks.put(priority,
-						new HookContainer<PreHookInterface>(container.getPluginMethod(),preHookInstance));
+                        new HookContainer<>(container.getPluginMethod(), preHookInstance));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for "+pluginName+" extension point 'PreHook', possibly the "+pluginName
@@ -105,7 +101,7 @@ public abstract class CommandInterface {
 				PostHookInterface postHookInstance = container.getPluginObject();
 				postHookInstance.initialize(cManager);
 				postHooks.put(priority,
-						new HookContainer<PostHookInterface>(container.getPluginMethod(),postHookInstance));
+                        new HookContainer<>(container.getPluginMethod(), postHookInstance));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for "+pluginName+" extension point 'PostHook', possibly the "+pluginName
@@ -119,7 +115,7 @@ public abstract class CommandInterface {
 		for (HookContainer<PostHookInterface> hook : _postHooks.values()) {
 			Method m = hook.getMethod();
 			try {
-				m.invoke(hook.getHookInterfaceInstance(), new Object[] {request, response});
+				m.invoke(hook.getHookInterfaceInstance(), request, response);
 			}
 			catch (Exception e) {
 				logger.error("Error while loading/invoking posthook " + m.toString(), e.getCause());
@@ -179,7 +175,7 @@ public abstract class CommandInterface {
 			String extension = pluginExtension.substring(pointIndex+1);
 			if (plugin.equals(currentPlugin) && extension.equals("PostHook")) {
 				if (clonedPostHooks == null) {
-					clonedPostHooks = new TreeMap<Integer,HookContainer<PostHookInterface>>(_postHooks);
+					clonedPostHooks = new TreeMap<>(_postHooks);
 				}
 				boolean hookRemoved = false;
 				for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = clonedPostHooks.entrySet().iterator(); iter.hasNext();) {
@@ -196,7 +192,7 @@ public abstract class CommandInterface {
 			}
 			if (plugin.equals(currentPlugin) && extension.equals("PreHook")) {
 				if (clonedPreHooks == null) {
-					clonedPreHooks = new TreeMap<Integer,HookContainer<PreHookInterface>>(_preHooks);
+					clonedPreHooks = new TreeMap<>(_preHooks);
 				}
 				boolean hookRemoved = false;
 				for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = clonedPreHooks.entrySet().iterator(); iter.hasNext();) {

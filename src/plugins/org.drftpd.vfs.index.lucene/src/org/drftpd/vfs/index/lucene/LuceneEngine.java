@@ -18,49 +18,15 @@
 
 package org.drftpd.vfs.index.lucene;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.LinkedHashMap;
-import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.FieldComparator;
-import org.apache.lucene.search.FieldComparatorSource;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.NumericRangeQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TotalHitCountCollector;
+import org.apache.lucene.search.*;
 import org.apache.lucene.search.regex.RegexQuery;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopFieldCollector;
-import org.apache.lucene.search.TopScoreDocCollector;
-import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NativeFSLockFactory;
@@ -78,13 +44,19 @@ import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.index.AdvancedSearchParams;
+import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.drftpd.vfs.index.IndexingVirtualFileSystemListener;
-import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
 import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
 import org.drftpd.vfs.index.lucene.extensions.IndexDataExtensionInterface;
 import org.drftpd.vfs.index.lucene.extensions.QueryTermExtensionInterface;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.*;
 
 
 /**
@@ -103,7 +75,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
 
 	protected static final Analyzer ANALYZER = new AlphanumericalAnalyzer();
-	protected static final String INDEX_DIR = "index";
+	protected static final String INDEX_DIR = "userdata/index";
 
 	private static final Document INDEX_DOCUMENT = new Document();
 
@@ -168,8 +140,8 @@ public class LuceneEngine implements IndexEngineInterface {
 	private IndexingVirtualFileSystemListener _listener;
 	private boolean _rebuilding;
 	
-	private List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<IndexDataExtensionInterface>();
-	private List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<QueryTermExtensionInterface>();
+	private List<IndexDataExtensionInterface> _dataExtensions = new ArrayList<>();
+	private List<QueryTermExtensionInterface> _queryExtensions = new ArrayList<>();
 
 	/**
 	 * Creates all the needed resources for the Index to work.
@@ -248,7 +220,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				_storage = FSDirectory.open(new File(INDEX_DIR));
 			}
 
-			IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_32 ,ANALYZER);
+			IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_36 ,ANALYZER);
 			conf.setMaxBufferedDocs(_maxDocsBuffer);
 			conf.setRAMBufferSizeMB(_maxRAMBufferSize);
 
@@ -438,6 +410,8 @@ public class LuceneEngine implements IndexEngineInterface {
 			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		} catch (IOException e) {
 			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
+		} catch (RuntimeException e) {
+			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		}
 	}
 
@@ -448,6 +422,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
 		} catch (IOException e) {
+			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
+		} catch (RuntimeException e) {
 			throw new IndexException("Unable to delete " + inode.getPath() + " from the index", e);
 		}
 	}
@@ -463,6 +439,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		} catch (IOException e) {
+			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
+		} catch (RuntimeException e) {
 			throw new IndexException("Unable to update " + inode.getPath() + " in the index", e);
 		}
 	}
@@ -531,6 +509,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (IOException e) {
 			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
 					toInode.getPath() + " in the index", e);
+		} catch (RuntimeException e) {
+			throw new IndexException("Unable to rename " + fromInode.getPath() + " to " +
+					toInode.getPath() + " in the index", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
@@ -559,6 +540,8 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to commit the index", e);
 		} catch (IOException e) {
+			throw new IndexException("Unable to commit the index", e);
+		} catch (RuntimeException e) {
 			throw new IndexException("Unable to commit the index", e);
 		}
 	}
@@ -642,7 +625,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		IndexSearcher iSearcher = null;
 		IndexReader iReader = null;
 		try {
-			Map<String,String> inodes = new LinkedHashMap<String,String>();
+			Map<String,String> inodes = new LinkedHashMap<>();
 
 			BooleanQuery query = new BooleanQuery();
 
@@ -778,6 +761,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (IOException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
+		} catch (RuntimeException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
+			throw new IndexException("Unable to search the index", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
@@ -808,7 +794,7 @@ public class LuceneEngine implements IndexEngineInterface {
 		IndexSearcher iSearcher = null;
 		IndexReader iReader = null;
 		try {
-			Set<String> inodes = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+			Set<String> inodes = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
 			BooleanQuery query = new BooleanQuery();
 
@@ -852,6 +838,9 @@ public class LuceneEngine implements IndexEngineInterface {
 		} catch (IOException e) {
 			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
 			throw new IndexException("Unable to search the index", e);
+		} catch (RuntimeException e) {
+			logger.error(EXCEPTION_OCCURED_WHILE_SEARCHING, e);
+			throw new IndexException("Unable to search the index", e);
 		} finally {
 			if (iSearcher != null) {
 				try {
@@ -886,7 +875,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	 * </ul>
 	 */
 	public Map<String, String> getStatus() {
-		Map<String, String> status = new LinkedHashMap<String, String>();
+		Map<String, String> status = new LinkedHashMap<>();
 
 		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.LONG);
 		String lastOp = df.format(new Date(_maintenanceThread.getLastOptimizationTime()));
@@ -953,7 +942,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			List<IndexDataExtensionInterface> loadedDataExtensions =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "IndexData", "Class", event);
 			if (!loadedDataExtensions.isEmpty()) {
-				List<IndexDataExtensionInterface> clonedDataExtensions = new ArrayList<IndexDataExtensionInterface>(_dataExtensions);
+				List<IndexDataExtensionInterface> clonedDataExtensions = new ArrayList<>(_dataExtensions);
 				for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
 					logger.debug("Loading lucene index data extension from plugin "
 							+ CommonPluginUtils.getPluginIdForObject(dataExtension));
@@ -973,7 +962,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			List<QueryTermExtensionInterface> loadedQueryExtensions =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "QueryTerm", "Class", event);
 			if (!loadedQueryExtensions.isEmpty()) {
-				List<QueryTermExtensionInterface> clonedQueryExtensions = new ArrayList<QueryTermExtensionInterface>(_queryExtensions);
+				List<QueryTermExtensionInterface> clonedQueryExtensions = new ArrayList<>(_queryExtensions);
 				for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
 					logger.debug("Loading lucene query term extension from plugin "
 							+ CommonPluginUtils.getPluginIdForObject(queryExtension));

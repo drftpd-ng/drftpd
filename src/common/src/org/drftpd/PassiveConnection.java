@@ -17,19 +17,17 @@
  */
 package org.drftpd;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import org.apache.log4j.Logger;
+import org.drftpd.slave.Connection;
+import org.drftpd.util.PortRange;
 
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
-
-
-import org.apache.log4j.Logger;
-import org.drftpd.slave.Connection;
-import org.drftpd.util.PortRange;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * @author mog

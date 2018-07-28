@@ -28,7 +28,7 @@ import org.apache.lucene.util.Version;
  */
 public class AlphanumericalTokenizer extends CharTokenizer {
 	public AlphanumericalTokenizer(Reader input) {
-		super(Version.LUCENE_32, input);
+		super(Version.LUCENE_36, input);
 	}
 
 	@Override

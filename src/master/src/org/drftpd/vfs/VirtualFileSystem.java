@@ -17,32 +17,20 @@
  */
 package org.drftpd.vfs;
 
-import java.beans.XMLDecoder;
-import java.beans.XMLEncoder;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.Set;
-
+import com.cedarsoftware.util.io.JsonIoException;
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.vfs.event.VirtualFileSystemEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeCreatedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemInodeRefreshEvent;
-import org.drftpd.vfs.event.VirtualFileSystemLastModifiedEvent;
-import org.drftpd.vfs.event.VirtualFileSystemOwnershipEvent;
-import org.drftpd.vfs.event.VirtualFileSystemRenameEvent;
-import org.drftpd.vfs.event.VirtualFileSystemSizeEvent;
-import org.drftpd.vfs.event.VirtualFileSystemSlaveEvent;
+import org.drftpd.vfs.event.*;
+
+import java.io.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class VirtualFileSystem {
 
@@ -69,7 +57,7 @@ public class VirtualFileSystem {
 
 	public static final String dirName = ".dirProperties";
 
-	public static final String fileSystemPath = "files";
+	public static final String fileSystemPath = "userdata/vfs";
 
 	private static final Logger logger = Logger.getLogger(VirtualFileSystem.class);
 
@@ -221,22 +209,17 @@ public class VirtualFileSystem {
 	protected VirtualFileSystemInode loadInode(String path)
 			throws FileNotFoundException {
 		String fullPath = fileSystemPath + path;
-		//logger.debug("Loading inode - " + fullPath);
-		File xmlFile = new File(fullPath);
+		logger.debug("Loading inode - " + fullPath);
+		File jsonFile = new File(fullPath);
 		File realDirectory = null;
-		if (xmlFile.isDirectory()) {
-			realDirectory = xmlFile;
+		if (jsonFile.isDirectory()) {
+			realDirectory = jsonFile;
 			fullPath = fullPath + separator + dirName;
-			xmlFile = new File(fullPath);
+			jsonFile = new File(fullPath);
 		}
-		XMLDecoder xmlDec = null;
-		try {
-			xmlDec = new XMLDecoder(new BufferedInputStream(new FileInputStream(fullPath)));
-			xmlDec.setExceptionListener(new VFSExceptionListener(fullPath));
-			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
-			VirtualFileSystemInode inode = (VirtualFileSystemInode) xmlDec.readObject();
-			Thread.currentThread().setContextClassLoader(prevCL);
+		try (InputStream in = new FileInputStream(fullPath);
+			 JsonReader reader = new JsonReader(in)) {
+			VirtualFileSystemInode inode = (VirtualFileSystemInode) reader.readObject();
 			inode.setName(getLast(path));
 			if (inode.isDirectory()) {
 				VirtualFileSystemDirectory dir = (VirtualFileSystemDirectory) inode;
@@ -245,10 +228,10 @@ public class VirtualFileSystem {
 			inode.inodeLoadCompleted();
 			return inode;
 		} catch (Exception e) {
-			boolean corruptedXMLFile = xmlFile.exists();
-			if (corruptedXMLFile) {
+			boolean corruptedJsonFile = jsonFile.exists();
+			if (corruptedJsonFile) {
 				// parsing error! Let's get rid of the offending bugger
-				xmlFile.delete();
+				jsonFile.delete();
 			}
 			// if this object is the Root object, let's create it and get outta
 			// here
@@ -256,7 +239,7 @@ public class VirtualFileSystem {
 				return createRootDirectory();
 			}
 
-			VirtualFileSystemDirectory parentInode = null;
+			VirtualFileSystemDirectory parentInode;
 			{
 				VirtualFileSystemInode inode = getInodeByPath(stripLast(path));
 				if (inode.isDirectory()) {
@@ -273,17 +256,13 @@ public class VirtualFileSystem {
 				parentInode.createDirectoryRaw(getLast(path), "drftpd", "drftpd");
 				return parentInode.getInodeByName(getLast(path));
 			}
-			if (corruptedXMLFile) {
+			if (corruptedJsonFile) {
 				// we already deleted the file, but we need to tell the parent
 				// directory that it doesn't exist anymore
 				logger.debug("Error loading " + fullPath + ", deleting file", e);
 				parentInode.removeMissingChild(getLast(path));
 			}
 			throw new FileNotFoundException();
-		} finally {
-			if (xmlDec != null) {
-				xmlDec.close();
-			}
 		}
 	}
 
@@ -297,9 +276,9 @@ public class VirtualFileSystem {
 	private void recursiveDelete(File file) {
 		if (file.isDirectory()) {
 			File[] files = file.listFiles();
-			for (int x = 0; x < files.length; x++) {
-				recursiveDelete(files[x]);
-			}
+            for (File file1 : files) {
+                recursiveDelete(file1);
+            }
 		}
 		if (file.exists() && !file.delete()) {
 			logger.error("Could not delete local entry "
@@ -337,30 +316,24 @@ public class VirtualFileSystem {
 	 */
 	protected void writeInode(VirtualFileSystemInode inode) {
 		String fullPath = getRealPath(inode.getPath());
-		XMLEncoder enc = null;
-		try {
-			if (inode instanceof VirtualFileSystemRoot) {
-				new File(fileSystemPath).mkdirs();
-				fullPath = fullPath + separator + dirName;
-			} else if (inode.isDirectory()) {
-				new File(fullPath).mkdirs();
-				fullPath = fullPath + separator + dirName;
-			} else {
-				new File(getRealPath(inode.getParent().getPath())).mkdirs();
-			}
-			enc = new XMLEncoder(new BufferedOutputStream(
-					new SafeFileOutputStream(fullPath)));
-			inode.setupXML(enc);
-			enc.setExceptionListener(new VFSExceptionListener(fullPath));
-			enc.writeObject(inode);
-		} catch (IOException e) {
-			logger.error("Unable to write " + fullPath + " to disk", e);
-		} finally {
-			if (enc != null) {
-				enc.close();
-			}
+		if (inode instanceof VirtualFileSystemRoot) {
+			new File(fileSystemPath).mkdirs();
+			fullPath = fullPath + separator + dirName;
+		} else if (inode.isDirectory()) {
+			new File(fullPath).mkdirs();
+			fullPath = fullPath + separator + dirName;
+		} else {
+			new File(getRealPath(inode.getParent().getPath())).mkdirs();
 		}
-		logger.debug("Wrote fullPath " + fullPath);
+		Map<String,Object> params = new HashMap<>();
+		params.put(JsonWriter.PRETTY_PRINT, true);
+		try (OutputStream out = new SafeFileOutputStream(fullPath);
+			 JsonWriter writer = new JsonWriter(out, params)) {
+			writer.write(inode);
+			logger.debug("Wrote fullPath " + fullPath);
+		} catch (IOException | JsonIoException e) {
+			logger.error("Unable to write " + fullPath + " to disk", e);
+		}
 	}
 
 	/**

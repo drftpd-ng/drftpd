@@ -1,0 +1,11 @@
+# Sections to exclude this plugin from, separate with space
+sections.exclude=PRE
+
+# Media bar as directory(true) or file(false)?
+mediabar.directory=true
+
+# Enable media bar?
+mediabar.enabled=true
+
+# Extensions to listen for on STOR, separate with space
+extensions=avi mkv

@@ -17,18 +17,6 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -43,8 +31,15 @@ import org.drftpd.plugins.jobmanager.JobManager;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
+
+import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author CyBeR
@@ -66,8 +61,8 @@ public abstract class ArchiveType {
 
 	// Current section directory is in.
 	protected SectionInterface _section;
-	
-	// Current .conf loop number we are on.  Used for other archive types to grab extra configureations 
+
+	// Current .conf loop number we are on.  Used for other archive types to grab extra configureations
 	protected int _confnum;
 
 	protected Set<RemoteSlave> _slaveList;
@@ -77,31 +72,31 @@ public abstract class ArchiveType {
 
 	// Uses For: setting priority vs other archives/jobs
 	protected int _priority;
-	
+
 	// Used for: archiving only dirs that match this regex form. (Default is .*)
 	private String _archiveRegex;
-	
+
 	// Used for: moving directory to another folder
 	protected DirectoryHandle _archiveToFolder;
-	
+
 	// Used for: setting destincation directory ONLY after moving it (more for events)
 	protected DirectoryHandle _destinationDirectory;
-	
+
 	// Used for: a specific type of folder to archive too.  (Alpha/Dated)
 	protected String _archiveDirType;
-	
+
 	// Check to see if we are going to move the relase after archive
 	protected boolean _moveRelease;
-	
+
 	// Checks to see if we are moving the release only (no slave -> slave archive)
 	protected boolean _moveReleaseOnly;
-	
+
 	// Used for: how many times to repeat during each cycle
 	private int _repeat;
 
 	//  Used for holding all failed directorys during each cycle
 	private ArrayList<String> _failedDirs;
-	
+
 	// Used for scanning subdirs of archived dir, instead of just the parent dir
 	private boolean _scansubdirs;
 
@@ -110,7 +105,7 @@ public abstract class ArchiveType {
 	 * implementing ArchiveType still needs to check/validate these figures to
 	 * their specific needs After the constructor finishes, _slaveList is
 	 * guaranteed to be non-null, but can still be empty
-	 * 
+	 *
 	 * @param archive
 	 * @param section
 	 * @param p
@@ -125,7 +120,7 @@ public abstract class ArchiveType {
 
 	/**
 	 * Used to determine a list of slaves specified in from the conf file
-	 * 
+	 *
 	 * @return
 	 */
 	public abstract Set<RemoteSlave> findDestinationSlaves();
@@ -133,22 +128,22 @@ public abstract class ArchiveType {
 	/**
 	 * if the directory is archived by this type's definition, this method
 	 * returns true
-	 * @throws FileNotFoundException 
+	 * @throws FileNotFoundException
 	 */
-	protected abstract boolean isArchivedDir(DirectoryHandle directory) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException;	
+	protected abstract boolean isArchivedDir(DirectoryHandle directory) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException;
 
 	/*
 	 * Returns the string eqivilant for the archive type
 	 */
 	public abstract String toString();
-	
+
 	/*
 	 * Returns the current directory being archived
 	 */
 	public final DirectoryHandle getDirectory() {
 		return _directory;
 	}
-	
+
 	/*
 	 * Returns how many times loop should repeat during each cycle
 	 */
@@ -157,14 +152,14 @@ public abstract class ArchiveType {
 	}
 
 	/*
-	 * This is used for getting all non archived dirs.  
+	 * This is used for getting all non archived dirs.
 	 * In case of a Section with "sub sections" this handles that as well.
 	 */
 	private void getOldestNonArchivedDir2(ArrayList<DirectoryHandle> oldDirs, DirectoryHandle lrf) {
 		if (checkFailedDir(lrf.getPath())) {
 			return;
-		}				
-		
+		}
+
 		try {
 			// Checks regex to see if dir should be archived or not
 			if (lrf.getName().matches(getArchiveRegex())) {
@@ -179,7 +174,7 @@ public abstract class ArchiveType {
 					if (_moveRelease) {
 						if (age > getArchiveAfter() && (age < getIgnoreAfter() || getIgnoreAfter() == -1)) {
 							oldDirs.add(lrf);
-						}								
+						}
 					}
 				}
 			}
@@ -187,64 +182,58 @@ public abstract class ArchiveType {
 		} catch (OfflineSlaveException e) {
 		} catch (FileNotFoundException e) {
 		}
-		return;
 	}
-	
+
 	/**
 	 * Returns the oldest LinkedRemoteFile(directory) that needs to be archived
 	 * by this type's definition If no such directory exists, it returns null
-	 * 
+	 *
 	 * Checks dir by regex, and by creationTime.
 	 */
 	public final DirectoryHandle getOldestNonArchivedDir() {
-		ArrayList<DirectoryHandle> oldDirs = new ArrayList<DirectoryHandle>();
-		
+		ArrayList<DirectoryHandle> oldDirs = new ArrayList<>();
+
 		try {
 			DirectoryHandle dir = getSection().getCurrentDirectory();
-			
+
 			// checks to see if the section is a dated section
 			// done this way so don't have to load other classes to figure it out
 			if (!getSection().getCurrentDirectory().equals(getSection().getBaseDirectory())) {
 				dir = getSection().getBaseDirectory();
 			}
-			
-			for (Iterator<DirectoryHandle> iter = dir.getDirectoriesUnchecked().iterator(); iter.hasNext();) {
-				DirectoryHandle lrf = iter.next();
-			
-				try {
-					_parent.checkPathForArchiveStatus(lrf.getPath());
-				} catch (DuplicateArchiveException e1) {
-					/*
-					 *	we are already archiving something for this path..
-					 *  ..lets wait until thats done before we continue 
-					 */
-					logger.debug(getClass().toString() + " - Already archiving something from this path. Skip it.");
-					continue;
-				}
 
-				if (_scansubdirs) {
-					for (Iterator<DirectoryHandle> iter2 = lrf.getDirectoriesUnchecked().iterator(); iter2.hasNext();) {
-						DirectoryHandle lrf2 = iter2.next();
+            for (DirectoryHandle lrf : dir.getDirectoriesUnchecked()) {
+                try {
+                    _parent.checkPathForArchiveStatus(lrf.getPath());
+                } catch (DuplicateArchiveException e1) {
+                    /*
+                     *	we are already archiving something for this path..
+                     *  ..lets wait until thats done before we continue
+                     */
+                    logger.debug(getClass().toString() + " - Already archiving something from this path. Skip it.");
+                    continue;
+                }
+
+                if (_scansubdirs) {
+                    for (DirectoryHandle lrf2 : lrf.getDirectoriesUnchecked()) {
                         if (lrf2.getName().matches("(?i)^(season.*|(\\d+|\\d+\\W\\d+|\\d+\\W\\d+\\W\\d+)$)")) // this matches season.\d+ and datum formats number, number-number, number-number-number
                         {
-                            for (Iterator<DirectoryHandle> iter3 = lrf2.getDirectoriesUnchecked().iterator(); iter3.hasNext();) {
-                                DirectoryHandle lrf3 = iter3.next();
-                                getOldestNonArchivedDir2(oldDirs,lrf3);
+                            for (DirectoryHandle lrf3 : lrf2.getDirectoriesUnchecked()) {
+                                getOldestNonArchivedDir2(oldDirs, lrf3);
                             }
+                        } else {
+                            getOldestNonArchivedDir2(oldDirs, lrf2);
                         }
-                        else {
-                            getOldestNonArchivedDir2(oldDirs,lrf2);
-                        }
-					}
-				} else {
-					// we do this check so we can't move a dated dir
-					if (getSection().getCurrentDirectory().equals(lrf) && (_moveRelease)) {
-						continue;
-					}	
-					getOldestNonArchivedDir2(oldDirs,lrf);
-				}
-				
-			}
+                    }
+                } else {
+                    // we do this check so we can't move a dated dir
+                    if (getSection().getCurrentDirectory().equals(lrf) && (_moveRelease)) {
+                        continue;
+                    }
+                    getOldestNonArchivedDir2(oldDirs, lrf);
+                }
+
+            }
 		} catch (FileNotFoundException e) {
 			// section does not exist, no directories to archive
 			// list is empty so the rest of the code will handle that
@@ -271,7 +260,6 @@ public abstract class ArchiveType {
 				}
 			} catch (FileNotFoundException e) {
 				iter.remove();
-				continue;
 			}
 		}
 		if (oldestDir != null) {
@@ -297,7 +285,7 @@ public abstract class ArchiveType {
 	/**
 	 * Adds relevant Jobs to the JobManager and returns an ArrayList of those
 	 * Job's
-	 * 
+	 *
 	 * @throws FileNotFoundException
 	 */
 	public ArrayList<Job> send() throws FileNotFoundException {
@@ -311,17 +299,16 @@ public abstract class ArchiveType {
 	 * Adds the files in the directory (and subdirs) to the job manager to be archived
 	 */
 	protected ArrayList<Job> recursiveSend(DirectoryHandle lrf) throws FileNotFoundException {
-		ArrayList<Job> jobQueue = new ArrayList<Job>();
+		ArrayList<Job> jobQueue = new ArrayList<>();
 
-		for (Iterator<DirectoryHandle> iter = lrf.getDirectoriesUnchecked().iterator(); iter.hasNext();) {
-			jobQueue.addAll(recursiveSend(iter.next()));
-		}
-		for (Iterator<FileHandle> iter = lrf.getFilesUnchecked().iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
-			logger.info("Adding " + file.getPath() + " to the job queue");
-			Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
-			jobQueue.add(job);
-		}
+        for (DirectoryHandle directoryHandle : lrf.getDirectoriesUnchecked()) {
+            jobQueue.addAll(recursiveSend(directoryHandle));
+        }
+        for (FileHandle file : lrf.getFilesUnchecked()) {
+            logger.info("Adding " + file.getPath() + " to the job queue");
+            Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
+            jobQueue.add(job);
+        }
 
 		return jobQueue;
 	}
@@ -341,34 +328,33 @@ public abstract class ArchiveType {
 			return true;
 		}
 
-		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
-			if (!isArchivedToAllSlaves(iter.next(), x)) {
-				return false;
-			}
-		}
-		
-		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
-			Collection<RemoteSlave> availableSlaves;
-			try {
-				if (!file.isAvailable()) {
-					throw new OfflineSlaveException(file.getPath() + " is offline");
-				}
-				availableSlaves = file.getSlaves();
-			} catch (FileNotFoundException e) {
-				// can't archive a directory with files that have been moved,
-				// we'll come back later
-				return true;
-			}
+        for (DirectoryHandle directory : directories) {
+            if (!isArchivedToAllSlaves(directory, x)) {
+                return false;
+            }
+        }
 
-			if (slaveSet == null) {
-				slaveSet = new HashSet<RemoteSlave>(availableSlaves);
-			} else {
-				if (!(slaveSet.containsAll(availableSlaves) && availableSlaves.containsAll(slaveSet))) {
-					return false;
-				}
-			}
-		}
+        for (FileHandle file : files) {
+            Collection<RemoteSlave> availableSlaves;
+            try {
+                if (!file.isAvailable()) {
+                    throw new OfflineSlaveException(file.getPath() + " is offline");
+                }
+                availableSlaves = file.getSlaves();
+            } catch (FileNotFoundException e) {
+                // can't archive a directory with files that have been moved,
+                // we'll come back later
+                return true;
+            }
+
+            if (slaveSet == null) {
+                slaveSet = new HashSet<>(availableSlaves);
+            } else {
+                if (!(slaveSet.containsAll(availableSlaves) && availableSlaves.containsAll(slaveSet))) {
+                    return false;
+                }
+            }
+        }
 
 		if (slaveSet == null) { // no files found in directory
 			return true;
@@ -397,45 +383,44 @@ public abstract class ArchiveType {
 			return true;
 		}
 
-		for (Iterator<DirectoryHandle> iter = directories.iterator(); iter.hasNext();) {
-			if (!isArchivedToSpecificSlaves(iter.next(), x,rslaves)) {
-				return false;
-			}
-		}
-		
-		for (Iterator<FileHandle> iter = files.iterator(); iter.hasNext();) {
-			FileHandle file = iter.next();
-			Collection<RemoteSlave> availableSlaves;
-			try {
-				if (!file.isAvailable()) {
-					throw new OfflineSlaveException(file.getPath() + " is offline");
-				}
-				availableSlaves = file.getSlaves();
-			} catch (FileNotFoundException e) {
-				// can't archive a directory with files that have been moved,
-				// we'll come back later
-				return true;
-			}
+        for (DirectoryHandle directory : directories) {
+            if (!isArchivedToSpecificSlaves(directory, x, rslaves)) {
+                return false;
+            }
+        }
 
-			
-			int checknumslaves = 0;
-			for (RemoteSlave fileslaves: availableSlaves) {
-				for (RemoteSlave listslaves: rslaves) {
-					if (listslaves.getName().equals(fileslaves.getName())) {
-						checknumslaves++;
-					}
-				}
-			}
-			if (checknumslaves < x) {
-				return false;
-			}
-			
-		}
+        for (FileHandle file : files) {
+            Collection<RemoteSlave> availableSlaves;
+            try {
+                if (!file.isAvailable()) {
+                    throw new OfflineSlaveException(file.getPath() + " is offline");
+                }
+                availableSlaves = file.getSlaves();
+            } catch (FileNotFoundException e) {
+                // can't archive a directory with files that have been moved,
+                // we'll come back later
+                return true;
+            }
+
+
+            int checknumslaves = 0;
+            for (RemoteSlave fileslaves : availableSlaves) {
+                for (RemoteSlave listslaves : rslaves) {
+                    if (listslaves.getName().equals(fileslaves.getName())) {
+                        checknumslaves++;
+                    }
+                }
+            }
+            if (checknumslaves < x) {
+                return false;
+            }
+
+        }
 		return true;
 	}
-	
-	
-	
+
+
+
 	/*
 	 * Checks to see if directory is currently being archived.
 	 */
@@ -470,12 +455,12 @@ public abstract class ArchiveType {
 	public final String getArchiveRegex() {
 		return _archiveRegex;
 	}
-	
+
 	/**
 	 * Sets standard properties for this ArchiveType
 	 */
 	private void setProperties(Properties properties) {
-		_failedDirs = new ArrayList<String>();
+		_failedDirs = new ArrayList<>();
 		_archiveAfter = 60000 * Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".archiveafter","0").trim());
 		_ignoreAfter = Long.parseLong(PropertyHelper.getProperty(properties, _confnum + ".ignoreafter","-1").trim());
 		_numOfSlaves = Integer.parseInt(properties.getProperty(_confnum + ".numofslaves", "0").trim());
@@ -488,7 +473,7 @@ public abstract class ArchiveType {
 			_ignoreAfter = 60000 * _ignoreAfter;
 		}
 
-		
+
 		/*
 		 * Grabs archiveRegex property to check if archive dir matches.  If empty, archives all dirs
 		 */
@@ -499,7 +484,7 @@ public abstract class ArchiveType {
 			logger.error("Regex Entry for " + _confnum + " is invalid");
 			_archiveRegex = ".*";
 		}
-		
+
 
 		/*
 		 * Gets toDirectory property to check if the folder should be moved after archiving
@@ -508,45 +493,45 @@ public abstract class ArchiveType {
 		_destinationDirectory = null;
 		_moveRelease = false;
 		_archiveDirType = "";
-		String _moveToDirProp = properties.getProperty(_confnum + ".todirectory","").trim(); 
+		String _moveToDirProp = properties.getProperty(_confnum + ".todirectory","").trim();
 		if (_moveToDirProp != "") {
 			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().getSection(_moveToDirProp);
-	        if (sec.getName().isEmpty()) {
-	        	try {
-			        DirectoryHandle moveInode = new DirectoryHandle(_moveToDirProp);
-			        if (!moveInode.exists()) {
-			        	// dir doesn't exist.  Lets check if Parent does
-			        	if (!moveInode.getParent().exists()) {
-			        		// parent dir doesn't exist either, really don't wanna make 3 sets of dirs.
-			        		logger.error("Directory and ParentDirectory for conf number '" + _confnum + "' Not Found: " + _moveToDirProp);        		
-			        	} else {
-			        		// Parent Exists = Good we can do this
-			        		_archiveToFolder = moveInode;
-			        	}
-			        } else {
-			        	// Destination exists = Good we can do this
-			        	_archiveToFolder = moveInode;
-			        }
-	        	} catch (IllegalArgumentException e) {
-	        		//todirectory does not exist.
-	        	}
-	        } else {
-	        	// Section exists = Good we can do this
-	        	_archiveToFolder = sec.getCurrentDirectory();
-	        }
-	        
-	        if (_archiveToFolder != null) {
-	        	_moveRelease = true;
-	        	
-		        /*
-		         * If a dir/section is selected, check to see if a specific type of subdir needs to be created.
-		         */
-	        	_archiveDirType = properties.getProperty(_confnum + ".todirectorytype","").trim();
-		        
-	        }
+			if (sec.getName().isEmpty()) {
+				try {
+					DirectoryHandle moveInode = new DirectoryHandle(_moveToDirProp);
+					if (!moveInode.exists()) {
+						// dir doesn't exist.  Lets check if Parent does
+						if (!moveInode.getParent().exists()) {
+							// parent dir doesn't exist either, really don't wanna make 3 sets of dirs.
+							logger.error("Directory and ParentDirectory for conf number '" + _confnum + "' Not Found: " + _moveToDirProp);
+						} else {
+							// Parent Exists = Good we can do this
+							_archiveToFolder = moveInode;
+						}
+					} else {
+						// Destination exists = Good we can do this
+						_archiveToFolder = moveInode;
+					}
+				} catch (IllegalArgumentException e) {
+					//todirectory does not exist.
+				}
+			} else {
+				// Section exists = Good we can do this
+				_archiveToFolder = sec.getCurrentDirectory();
+			}
+
+			if (_archiveToFolder != null) {
+				_moveRelease = true;
+
+				/*
+				 * If a dir/section is selected, check to see if a specific type of subdir needs to be created.
+				 */
+				_archiveDirType = properties.getProperty(_confnum + ".todirectorytype","").trim();
+
+			}
 		}
-		
-		HashSet<RemoteSlave> destSlaves = new HashSet<RemoteSlave>();
+
+		HashSet<RemoteSlave> destSlaves = new HashSet<>();
 
 		for (int i = 1;; i++) {
 			String slavename = null;
@@ -566,14 +551,14 @@ public abstract class ArchiveType {
 			}
 		}
 		_slaveList = destSlaves;
-		
+
 		/*
 		 * Checks to see if any slaves were in the conf file and
-		 * if none were to check it the conf wants to move the rls which sets the 
+		 * if none were to check it the conf wants to move the rls which sets the
 		 * variable correctly.
 		 */
 		_moveReleaseOnly = ((_slaveList.isEmpty()) && (_moveRelease));
-		
+
 		_priority = Integer.parseInt(properties.getProperty(_confnum + ".priority", "3").trim());
 	}
 
@@ -595,25 +580,22 @@ public abstract class ArchiveType {
 	 * Loops through and waits for all files to archive to configured slaves.
 	 */
 	public final void waitForSendOfFiles(ArrayList<Job> jobQueue) {
-		while (true) {
-			for (Iterator<Job> iter = jobQueue.iterator(); iter.hasNext();) {
-				Job job = iter.next();
+        do {
+            for (Iterator<Job> iter = jobQueue.iterator(); iter.hasNext(); ) {
+                Job job = iter.next();
 
-				if (job.isDone()) {
-					logger.debug(job + " - is done being sent");
-					iter.remove();
-				}
-			}
+                if (job.isDone()) {
+                    logger.debug(job + " - is done being sent");
+                    iter.remove();
+                }
+            }
 
-			try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-			}
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+            }
 
-			if (jobQueue.isEmpty()) {
-				break;
-			}
-		}
+        } while (!jobQueue.isEmpty());
 	}
 
 	/*
@@ -621,7 +603,7 @@ public abstract class ArchiveType {
 	 */
 	protected String outputSlaves(Collection<RemoteSlave> slaveList) {
 		StringBuilder slaveBuilder = new StringBuilder();
-		
+
 		for (Iterator<RemoteSlave> iter = slaveList.iterator(); iter.hasNext();) {
 			RemoteSlave rslave = iter.next();
 			slaveBuilder.append(rslave.getName());
@@ -646,19 +628,19 @@ public abstract class ArchiveType {
 					return false;
 				}
 			}
-			
+
 			try {
-    			dir.getParent().createDirectorySystem(dir.getName());
-    		} catch (FileExistsException e) {
-    			// ignore...directory now exists 
-    		} catch (FileNotFoundException e) {
-    			return false;
-    		}		
-					    				
+				dir.getParent().createDirectorySystem(dir.getName());
+			} catch (FileExistsException e) {
+				// ignore...directory now exists
+			} catch (FileNotFoundException e) {
+				return false;
+			}
+
 		}
 		return true;
 	}
-	
+
 	/*
 	 * This will move the release to the folder specified
 	 * It will check if it exists, if not it will create all its parent directories
@@ -666,23 +648,23 @@ public abstract class ArchiveType {
 	public boolean moveRelease(DirectoryHandle fromDir) {
 		if (_moveRelease) {
 			if (!_archiveToFolder.exists()) {
-	        	// dir doesn't exist.  Lets check if Parent does        	
-	        	if (!createDirectories(_archiveToFolder.getParent())) {
-		        	logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " : Failed to create Parent Directories");
-		        	return false;
-	        	}
-	        	
-	        	// Now that all parents are there...create the new dir
-	    		try {
-	    			_archiveToFolder.getParent().createDirectorySystem(_archiveToFolder.getName());
-	    		} catch (FileExistsException e) {
-	    			// ignore...directory now exists 
-	    		} catch (FileNotFoundException e) {
-	    			logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " unable to create '" + _archiveToFolder.getPath() + "'" );
-	    			return false;
-	    		}		    			
+				// dir doesn't exist.  Lets check if Parent does
+				if (!createDirectories(_archiveToFolder.getParent())) {
+					logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " : Failed to create Parent Directories");
+					return false;
+				}
+
+				// Now that all parents are there...create the new dir
+				try {
+					_archiveToFolder.getParent().createDirectorySystem(_archiveToFolder.getName());
+				} catch (FileExistsException e) {
+					// ignore...directory now exists
+				} catch (FileNotFoundException e) {
+					logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " unable to create '" + _archiveToFolder.getPath() + "'" );
+					return false;
+				}
 			}
-			
+
 			// Check if we need to add another extension to the destination folder
 			String type = getDirType(_archiveDirType,fromDir);
 			if (!_archiveDirType.isEmpty()) {
@@ -690,78 +672,81 @@ public abstract class ArchiveType {
 					DirectoryHandle typeInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type);
 					if (!typeInode.exists()) {
 
-			        	// dir doesn't exist.  Lets check if Parent does
-			        	if (!createDirectories(typeInode.getParent())) {
-				        	logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " : Failed to create Parent Directories");
-				        	return false;
-			        	}
-			        	
-			        	// Now that all parents are there...create the new dir
-			    		try {
-			    			typeInode.getParent().createDirectorySystem(typeInode.getName());
-			    		} catch (FileExistsException e) {
-			    			// ignore...directory now exists
-			    		} catch (FileNotFoundException e) {
-			    			logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " unable to create dir type '" + typeInode.getPath() + "'" );
-			    			return false;
-			    		}	
-			    	}
+						// dir doesn't exist.  Lets check if Parent does
+						if (!createDirectories(typeInode.getParent())) {
+							logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " : Failed to create Parent Directories");
+							return false;
+						}
+
+						// Now that all parents are there...create the new dir
+						try {
+							typeInode.getParent().createDirectorySystem(typeInode.getName());
+						} catch (FileExistsException e) {
+							// ignore...directory now exists
+						} catch (FileNotFoundException e) {
+							logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " unable to create dir type '" + typeInode.getPath() + "'" );
+							return false;
+						}
+					}
 				}
 			}
 
 			try {
 				DirectoryHandle toInode;
 				if (type != null) {
-                    String toDir = null;
-                    if (_archiveDirType.startsWith("rls:")) {
-                        /**
-                         * Here we will fix ${rls} and "icorrect issue"
-                         * toDir may not be same format as first created dir, hence we want to read the
-                         * vfs archive dir instead of relying on content in 'type'
-                         */
+					String toDir = null;
+					if (_archiveDirType.startsWith("rls:")) {
+						/**
+						 * Here we will fix ${rls} and "icorrect issue"
+						 * toDir may not be same format as first created dir, hence we want to read the
+						 * vfs archive dir instead of relying on content in 'type'
+						 */
 
-                        String[] paths = type.split("/");
-                        String maindir = paths[0];
-                        String season = null;
-                        if (paths.length > 1) {
-                            season = paths[1];
-                        }
+						String[] paths = type.split("/");
+						String maindir = paths[0];
+						String season = null;
+						if (paths.length > 1) {
+							season = paths[1];
+						}
 
-                        DirectoryHandle inode = new DirectoryHandle(_archiveToFolder.getPath());
-                        try {
-                            toDir = inode.getDirectoryUnchecked(_archiveToFolder.getPath() + VirtualFileSystem.separator + maindir).getPath();
+						DirectoryHandle inode = new DirectoryHandle(_archiveToFolder.getPath());
+						try {
+							toDir = inode.getDirectoryUnchecked(_archiveToFolder.getPath() + VirtualFileSystem.separator + maindir).getPath();
 
-                            if (season != null) {
-                                toDir = toDir + VirtualFileSystem.separator + season;
-                            }
+							if (season != null) {
+								toDir = toDir + VirtualFileSystem.separator + season;
+							}
 
-                        } catch (FileNotFoundException e) {
-                            logger.error("Failed getting DirectoryHandle for somedir ");
-                        } catch (ObjectNotValidException e) {
-                            logger.error("Failed getting DirectoryHandle for somedir");
-                        }
-                    }
+						} catch (FileNotFoundException e) {
+							logger.error("Failed getting DirectoryHandle for somedir ");
+						} catch (ObjectNotValidException e) {
+							logger.error("Failed getting DirectoryHandle for somedir");
+						}
+					}
 
-                    if (toDir != null)
-                    {
-                        toInode = new DirectoryHandle(toDir + VirtualFileSystem.separator + fromDir.getName());
-                    }
-                    else {
-                        toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type + VirtualFileSystem.separator + fromDir.getName());
-                    }
-                }
-                else
-                {
-                    toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + fromDir.getName());
-                }
+					if (toDir != null)
+					{
+						toInode = new DirectoryHandle(toDir + VirtualFileSystem.separator + fromDir.getName());
+					}
+					else {
+						toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + type + VirtualFileSystem.separator + fromDir.getName());
+					}
+				}
+				else
+				{
+					toInode = new DirectoryHandle(_archiveToFolder.getPath() + VirtualFileSystem.separator + fromDir.getName());
+				}
 
+				// Copy modifiedTime
+				long time = fromDir.lastModified();
+				fromDir.renameToUnchecked(toInode);
+				toInode.setLastModified(time);
 
-                fromDir.renameToUnchecked(toInode);
-                _destinationDirectory = toInode;
-                return true;
+				_destinationDirectory = toInode;
+				return true;
 
 			} catch (FileExistsException e) {
-				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because it already exists at destination"); 
+				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because it already exists at destination");
 			} catch (FileNotFoundException e) {
 				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because '" + getDirectory().getPath() + "' no longer exists");
 			}
@@ -780,7 +765,7 @@ public abstract class ArchiveType {
 		if (type.equals("alpha")) {
 			if (inode.getName().matches("^[0-9].*$")) {
 				return "0-9";
-			} else if (inode.getName().matches("^[a-zA-Z].*$")) { 
+			} else if (inode.getName().matches("^[a-zA-Z].*$")) {
 				return "" + inode.getName().toUpperCase().charAt(0);
 			} else {
 				return "UNKNOWN";
@@ -804,37 +789,37 @@ public abstract class ArchiveType {
 					}
 				}
 				if (retstr.contains("${rls}")) {
-					return "UNKNOWN"; 
-				}				
+					return "UNKNOWN";
+				}
 				if (retstr.contains("${season}")) {
 					Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s(\\d|\\d\\d)((\\.|\\-|_)(e|d)|(e|d)).*");
 					Matcher matcher = pattern.matcher(inode.getName());
 					if(matcher.matches()) {
 						if (matcher.group(2).length() < 2) {
-							retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));	
+							retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));
 						} else {
 							retstr = retstr.replaceAll("\\$\\{season\\}", matcher.group(2));
 						}
 					}
 				}
 				if (retstr.contains("${season}")) {
-					return "UNKNOWN"; 
+					return "UNKNOWN";
 				}
 				if (retstr.contains("${episode}")) {
 					Pattern pattern = Pattern.compile("(?i)(.*\\.|\\-|_)s\\d.*e(\\d|\\d\\d)(\\.|\\-|_).*");
 					Matcher matcher = pattern.matcher(inode.getName());
 					if(matcher.matches()) {
 						if (matcher.group(2).length() < 2) {
-							retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));	
+							retstr = retstr.replaceAll("\\$\\{season\\}", 0 + matcher.group(2));
 						} else {
 							retstr = retstr.replaceAll("\\$\\{season\\}", matcher.group(2));
 						}
 					}
 				}
 				if (retstr.contains("${episode}")) {
-					return "UNKNOWN"; 
+					return "UNKNOWN";
 				}
-				
+
 				while (retstr.contains("${regex:")) {
 					String regexstr = retstr.substring(retstr.indexOf("${regex:") + 8, retstr.indexOf("}"));
 					if (regexstr.length() < 1) {
@@ -850,11 +835,11 @@ public abstract class ArchiveType {
 					} catch (PatternSyntaxException e) {
 						logger.error("Regex Syntax Error in '" + regexstr + "' for '" + fullstr + "'",e);
 					}
-					
+
 					if (retstr.contains(fullstr)) {
 						return "UNKNOWN";
 					}
-					
+
 				}
 				return retstr;
 			}
@@ -871,10 +856,10 @@ public abstract class ArchiveType {
 			return "UNKNOWN";
 		}
 
-        if (type != "")
-        {
-            logger.warn("No valid type found for: " + type);
-        }
+		if (type != "")
+		{
+			logger.warn("No valid type found for: " + type);
+		}
 
 		return null;
 	}
@@ -892,7 +877,7 @@ public abstract class ArchiveType {
 	public boolean isMovingRelease() {
 		return _moveRelease;
 	}
-	
+
 	/*
 	 * returns the destination directory (including type) after move (mostly for events)
 	 */
@@ -906,12 +891,12 @@ public abstract class ArchiveType {
 	public void addFailedDir(String path) {
 		_failedDirs.add(path);
 	}
-	
+
 	/*
 	 * Returns if dir has been added to the Failed dirs
 	 */
 	public boolean checkFailedDir(String path) {
 		return _failedDirs.contains(path);
-	}	
-	
+	}
+
 }

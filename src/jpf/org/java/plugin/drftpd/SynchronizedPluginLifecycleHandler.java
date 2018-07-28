@@ -17,14 +17,14 @@
  */
 package org.java.plugin.drftpd;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.standard.StandardPluginLifecycleHandler;
 import org.java.plugin.util.ExtendedProperties;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * Standard implementation of plug-in life cycle handler.
@@ -55,13 +55,9 @@ public class SynchronizedPluginLifecycleHandler extends StandardPluginLifecycleH
 		SynchronizedPluginClassLoader result;
 		if (System.getSecurityManager() != null) {
 			result = AccessController.doPrivileged(
-					new PrivilegedAction<SynchronizedPluginClassLoader>() {
-						public SynchronizedPluginClassLoader run() {
-							return new SynchronizedPluginClassLoader(getPluginManager(), descr,
-									SynchronizedPluginLifecycleHandler.this.getClass()
-									.getClassLoader());
-						}
-					});
+                    (PrivilegedAction<SynchronizedPluginClassLoader>) () -> new SynchronizedPluginClassLoader(getPluginManager(), descr,
+                            SynchronizedPluginLifecycleHandler.this.getClass()
+                            .getClassLoader()));
 		} else {
 			result = new SynchronizedPluginClassLoader(getPluginManager(), descr,
 					SynchronizedPluginLifecycleHandler.this.getClass()

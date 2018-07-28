@@ -17,9 +17,8 @@
  */
 package org.drftpd.usermanager.javabeans;
 
-import java.beans.XMLEncoder;
-import java.io.IOException;
-
+import com.cedarsoftware.util.io.JsonIoException;
+import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.io.SafeFileOutputStream;
@@ -27,7 +26,11 @@ import org.drftpd.master.CommitManager;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
-import org.drftpd.util.CommonPluginUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author mog
@@ -41,7 +44,7 @@ public class BeanUser extends AbstractUser {
 
 	private String _password = "";
 
-	private boolean _purged;
+	private transient boolean _purged;
 
 	public BeanUser(String username) {
 		super(username);
@@ -103,18 +106,14 @@ public class BeanUser extends AbstractUser {
 	public void writeToDisk() throws IOException {
 		if (_purged)
 			return;
-		XMLEncoder out = null;
-		try {
-			out = _um.getXMLEncoder(new SafeFileOutputStream(_um
-					.getUserFile(getName())));
-			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
-			out.writeObject(this);
-			Thread.currentThread().setContextClassLoader(prevCL);
+		Map<String,Object> params = new HashMap<>();
+		params.put(JsonWriter.PRETTY_PRINT, true);
+		try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
+			 JsonWriter writer = new JsonWriter(out, params)) {
+			writer.write(this);
 			logger.debug("Wrote userfile for " + this.getName());
-		} finally {
-			if (out != null)
-				out.close();
+		} catch (IOException | JsonIoException e) {
+			throw new IOException("Unable to write " + _um.getUserFile(getName()) + " to disk", e);
 		}
 	}
 

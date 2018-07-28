@@ -17,14 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileNotFoundException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
@@ -38,6 +30,10 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.io.FileNotFoundException;
+import java.net.InetAddress;
+import java.util.*;
 
 /**
  * @author mog
@@ -61,19 +57,16 @@ public class SlavetopFilter extends Filter {
     public void process(ScoreChart scorechart, DirectoryHandle dir) {
         //// find the section part of the path name
         SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-        while (true) {
-        	if (dir.getParent().equals(section.getBaseDirectory())) {
-        		break;
-        	}
-        	if (dir.equals(GlobalContext.getGlobalContext().getRoot())) {
-        		// this is not a "release", don't process
-        		return;
-        	}
-        	dir = dir.getParent();
+        while (!dir.getParent().equals(section.getBaseDirectory())) {
+            if (dir.equals(GlobalContext.getGlobalContext().getRoot())) {
+                // this is not a "release", don't process
+                return;
+            }
+            dir = dir.getParent();
         }
 
         Hashtable<RemoteSlave, ScoreChart.SlaveScore> slavesmap =
-        	new Hashtable<RemoteSlave, ScoreChart.SlaveScore>();
+                new Hashtable<>();
         
         for (ScoreChart.SlaveScore slaveScore : scorechart.getSlaveScores()) {
         	slavesmap.put(slaveScore.getRSlave(), new ScoreChart.SlaveScore(
@@ -96,10 +89,10 @@ public class SlavetopFilter extends Filter {
 				// file was removed, not much we can do, just continue
 			}
         }
-        ArrayList<ScoreChart.SlaveScore> slavescores = 
-        	new ArrayList<ScoreChart.SlaveScore>(slavesmap.values());
+        ArrayList<ScoreChart.SlaveScore> slavescores =
+                new ArrayList<>(slavesmap.values());
         ArrayList<ScoreChart.SlaveScore> ss = slavescores;
-        Collections.sort(ss, Collections.reverseOrder());
+        ss.sort(Collections.reverseOrder());
 
 
         if(_assign == 0) {

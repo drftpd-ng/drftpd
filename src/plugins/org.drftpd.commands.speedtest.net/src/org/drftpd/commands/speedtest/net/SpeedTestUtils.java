@@ -17,6 +17,9 @@
  */
 package org.drftpd.commands.speedtest.net;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.util.HttpUtils;
@@ -30,6 +33,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -45,120 +49,105 @@ public class SpeedTestUtils {
 			"http://www.speedtest.net/speedtest-servers.php",
 			"http://c.speedtest.net/speedtest-servers.php"};
 
-	private static final String _freegeoip = "http://freegeoip.net/xml/";
-
 	/**
 	 * Determine the 5 closest speedtest.net servers based on geographic distance
 	 */
 	public static HashSet<SpeedTestServer> getClosetsServers() {
 
-		HashSet<SpeedTestServer> serverList = new HashSet<SpeedTestServer>();
+		HashSet<SpeedTestServer> serverList = new HashSet<>();
 
 		// Get servers from speedtest.net
 		for (String url : _speedTestURLS) {
 			try {
 				String data = HttpUtils.retrieveHttpAsString(url);
 				serverList.addAll(parseXML(data));
+			} catch (UnsupportedEncodingException e) {
+				logger.warn("UnsupportedEncodingException parsing " + url + " :: " + e.getMessage());
+			} catch (XMLStreamException e) {
+				logger.warn("XMLStreamException parsing " + url + " :: " + e.getMessage());
 			} catch (Exception e) {
 				logger.warn("Failed to get data from " + url + " :: " + e.getMessage());
-				return null;
 			}
 		}
 
 		return serverList;
 	}
 
-	private static HashSet<SpeedTestServer> parseXML(String xmlString) {
-		HashSet<SpeedTestServer> serverList = new HashSet<SpeedTestServer>();
-
-		try {
-			XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-			XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
-					new ByteArrayInputStream(xmlString.getBytes("UTF-8")));
-			while(xmlEventReader.hasNext()) {
-				//Get next event.
-				XMLEvent xmlEvent = xmlEventReader.nextEvent();
-				//Check if event is the start element.
-				if (xmlEvent.isStartElement()) {
-					//Get event as start element.
-					StartElement startElement = xmlEvent.asStartElement();
-					if (startElement.getName().getLocalPart().equals("server")) {
-						SpeedTestServer server = new SpeedTestServer();
-						//Iterate and process attributes.
-						Iterator iterator = startElement.getAttributes();
-						while (iterator.hasNext()) {
-							Attribute attribute = (Attribute) iterator.next();
-							String name = attribute.getName().getLocalPart();
-							String value = attribute.getValue();
-							if (name.equals("url")) {
-								server.setUrl(value);
-							} else if (name.equals("url2")) {
-								server.setUrl2(value);
-							} else if (name.equals("lat")) {
-								server.setLatitude(Double.parseDouble(value));
-							} else if (name.equals("lon")) {
-								server.setLongitude(Double.parseDouble(value));
-							} else if (name.equals("name")) {
-								server.setName(value);
-							} else if (name.equals("country")) {
-								server.setCountry(value);
-							} else if (name.equals("cc")) {
-								server.setCc(value);
-							} else if (name.equals("sponsor")) {
-								server.setSponsor(value);
-							} else if (name.equals("id")) {
-								server.setId(Integer.parseInt(value));
-							} else if (name.equals("host")) {
-								server.setHost(value);
-							}
-						}
-						serverList.add(server);
+	private static HashSet<SpeedTestServer> parseXML(String xmlString)
+			throws UnsupportedEncodingException, XMLStreamException {
+		HashSet<SpeedTestServer> serverList = new HashSet<>();
+		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+		XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
+				new ByteArrayInputStream(xmlString.getBytes("UTF-8")));
+		while(xmlEventReader.hasNext()) {
+			//Get next event.
+			XMLEvent xmlEvent = xmlEventReader.nextEvent();
+			//Check if event is the start element.
+			if (xmlEvent.isStartElement()) {
+				//Get event as start element.
+				StartElement startElement = xmlEvent.asStartElement();
+				if (startElement.getName().getLocalPart().equals("server")) {
+					SpeedTestServer server = new SpeedTestServer();
+					//Iterate and process attributes.
+					Iterator iterator = startElement.getAttributes();
+					while (iterator.hasNext()) {
+						Attribute attribute = (Attribute) iterator.next();
+						String name = attribute.getName().getLocalPart();
+						String value = attribute.getValue();
+                        switch (name) {
+                            case "url":
+                                server.setUrl(value);
+                                break;
+                            case "url2":
+                                server.setUrl2(value);
+                                break;
+                            case "lat":
+                                server.setLatitude(Double.parseDouble(value));
+                                break;
+                            case "lon":
+                                server.setLongitude(Double.parseDouble(value));
+                                break;
+                            case "name":
+                                server.setName(value);
+                                break;
+                            case "country":
+                                server.setCountry(value);
+                                break;
+                            case "cc":
+                                server.setCc(value);
+                                break;
+                            case "sponsor":
+                                server.setSponsor(value);
+                                break;
+                            case "id":
+                                server.setId(Integer.parseInt(value));
+                                break;
+                            case "host":
+                                server.setHost(value);
+                                break;
+                        }
 					}
+					serverList.add(server);
 				}
 			}
-		} catch (UnsupportedEncodingException e) {
-			logger.error("UnsupportedEncodingException, run speedtest with -refresh option to redownload server list: " + e.getMessage());
-		} catch (XMLStreamException e) {
-			logger.error("XMLStreamException, run speedtest with -refresh option to redownload server list: " + e.getMessage());
-		} catch (Exception e) {
-			logger.error("Something went wrong parsing speedtest.net server list: " + e.getMessage());
 		}
-
 		return serverList;
 	}
 
 	public static SlaveLocation getSlaveLocation(RemoteSlave rslave) {
 		SlaveLocation slaveLocation = new SlaveLocation();
-
 		try {
-			String xmlString = HttpUtils.retrieveHttpAsString(_freegeoip + rslave.getPASVIP());
-			XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
-			XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
-					new ByteArrayInputStream(xmlString.getBytes("UTF-8")));
-			while (xmlEventReader.hasNext()) {
-				//Get next event.
-				XMLEvent xmlEvent = xmlEventReader.nextEvent();
-				//Check if event is the start element.
-				if (xmlEvent.isStartElement()) {
-					//Get event as start element.
-					StartElement startElement = xmlEvent.asStartElement();
-					if (startElement.getName().getLocalPart().equals("Latitude")) {
-						xmlEvent = xmlEventReader.nextEvent();
-						slaveLocation.setLatitude(Double.parseDouble(xmlEvent.asCharacters().getData()));
-					} else if (startElement.getName().getLocalPart().equals("Longitude")) {
-						xmlEvent = xmlEventReader.nextEvent();
-						slaveLocation.setLongitude(Double.parseDouble(xmlEvent.asCharacters().getData()));
-					}
-				}
-			}
-		} catch (UnsupportedEncodingException e) {
-			logger.error("UnsupportedEncodingException, failed parsing slave lat/lon: " + e.getMessage());
-		} catch (XMLStreamException e) {
-			logger.error("XMLStreamException, failed parsing slave lat/lon: " + e.getMessage());
+			String ip = InetAddress.getByName(rslave.getPASVIP()).getHostAddress();
+			String data = HttpUtils.retrieveHttpAsString("http://ipinfo.io/" + ip + "/json");
+			JsonParser jp = new JsonParser();
+			JsonElement root = jp.parse(data);
+			JsonObject rootobj = root.getAsJsonObject();
+			String[] loc = rootobj.get("loc").getAsString().split(",");
+			slaveLocation.setLatitude(Double.parseDouble(loc[0]));
+			slaveLocation.setLongitude(Double.parseDouble(loc[1]));
 		} catch (Exception e) {
 			logger.error("Something went wrong getting slave location: " + e.getMessage());
 		}
-
 		return slaveLocation;
 	}
 

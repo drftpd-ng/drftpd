@@ -16,26 +16,12 @@
  */
 package org.drftpd.commands.find;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.find.action.ActionInterface;
 import org.drftpd.commands.find.option.OptionInterface;
 import org.drftpd.event.LoadPluginEvent;
@@ -54,6 +40,9 @@ import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.io.FileNotFoundException;
+import java.util.*;
+
 
 /**
  * @author pyrrhic
@@ -68,8 +57,8 @@ public class Find extends CommandInterface {
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 
-	private CaseInsensitiveHashMap<String, OptionInterface> _optionsMap = new CaseInsensitiveHashMap<String, OptionInterface>();
-	private CaseInsensitiveHashMap<String, ActionInterface> _actionsMap = new CaseInsensitiveHashMap<String, ActionInterface>();
+	private CaseInsensitiveHashMap<String, OptionInterface> _optionsMap = new CaseInsensitiveHashMap<>();
+	private CaseInsensitiveHashMap<String, ActionInterface> _actionsMap = new CaseInsensitiveHashMap<>();
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
@@ -119,14 +108,14 @@ public class Find extends CommandInterface {
 
 		User user = request.getSession().getUserNull(request.getUser());
 
-		ArrayList<ActionInterface> actions = new ArrayList<ActionInterface>();
+		ArrayList<ActionInterface> actions = new ArrayList<>();
 
 		int limit = Integer.parseInt(request.getProperties().getProperty("limit.default","5"));
 		int maxLimit = Integer.parseInt(request.getProperties().getProperty("limit.max","20"));
 
 		boolean quiet = false;
 
-		LinkedList<String> args = new LinkedList<String>(Arrays.asList(request.getArgument().split("\\s+")));
+		LinkedList<String> args = new LinkedList<>(Arrays.asList(request.getArgument().split("\\s+")));
 
 		if (args.isEmpty()) {
 			throw new ImproperUsageException();
@@ -215,7 +204,7 @@ public class Find extends CommandInterface {
 			return response;
 		}
 
-		LinkedList<String> responses = new LinkedList<String>();
+		LinkedList<String> responses = new LinkedList<>();
 		int results = 0;
 		boolean observePrivPath = request.getProperties().
 				getProperty("observe.privpath","true").equalsIgnoreCase("true");
@@ -307,7 +296,7 @@ public class Find extends CommandInterface {
 		Collection<OptionInterface> unloadedOptions =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "Option", event, _optionsMap.values());
 		if (!unloadedOptions.isEmpty()) {
-			CaseInsensitiveHashMap<String, OptionInterface> clonedOptionAddons = new CaseInsensitiveHashMap<String, OptionInterface>(_optionsMap);
+			CaseInsensitiveHashMap<String, OptionInterface> clonedOptionAddons = new CaseInsensitiveHashMap<>(_optionsMap);
 			boolean addonRemoved = false;
 			for (Iterator<Map.Entry<String, OptionInterface>> iter = clonedOptionAddons.entrySet().iterator(); iter.hasNext();) {
 				OptionInterface optionAddon = iter.next().getValue();
@@ -325,7 +314,7 @@ public class Find extends CommandInterface {
 		Collection<ActionInterface> unloadedActions =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "Action", event, _actionsMap.values());
 		if (!unloadedActions.isEmpty()) {
-			CaseInsensitiveHashMap<String, ActionInterface> clonedActionAddons = new CaseInsensitiveHashMap<String, ActionInterface>(_actionsMap);
+			CaseInsensitiveHashMap<String, ActionInterface> clonedActionAddons = new CaseInsensitiveHashMap<>(_actionsMap);
 			boolean addonRemoved = false;
 			for (Iterator<Map.Entry<String, ActionInterface>> iter = clonedActionAddons.entrySet().iterator(); iter.hasNext();) {
 				ActionInterface actionAddon = iter.next().getValue();
@@ -349,7 +338,7 @@ public class Find extends CommandInterface {
 			List<PluginObjectContainer<OptionInterface>> loadedOptions =
 				MasterPluginUtils.getLoadedExtensionObjectsInContainer(this, "org.drftpd.commands.find", "Option", event, "ClassName");
 			if (!loadedOptions.isEmpty()) {
-				CaseInsensitiveHashMap<String, OptionInterface> clonedOptionAddons = new CaseInsensitiveHashMap<String, OptionInterface>(_optionsMap);
+				CaseInsensitiveHashMap<String, OptionInterface> clonedOptionAddons = new CaseInsensitiveHashMap<>(_optionsMap);
 				for (PluginObjectContainer<OptionInterface> container : loadedOptions) {
 					String optionName = container.getPluginExtension().getParameter("OptionName").valueAsString();
 					clonedOptionAddons.put("-" + optionName, container.getPluginObject());
@@ -367,7 +356,7 @@ public class Find extends CommandInterface {
 			List<PluginObjectContainer<ActionInterface>> loadedActions =
 				MasterPluginUtils.getLoadedExtensionObjectsInContainer(this, "org.drftpd.commands.find", "Action", event, "ClassName");
 			if (!loadedActions.isEmpty()) {
-				CaseInsensitiveHashMap<String, ActionInterface> clonedActionAddons = new CaseInsensitiveHashMap<String, ActionInterface>(_actionsMap);
+				CaseInsensitiveHashMap<String, ActionInterface> clonedActionAddons = new CaseInsensitiveHashMap<>(_actionsMap);
 				for (PluginObjectContainer<ActionInterface> container : loadedActions) {
 					String actionName = container.getPluginExtension().getParameter("ActionName").valueAsString();
 					clonedActionAddons.put("-" + actionName, container.getPluginObject());

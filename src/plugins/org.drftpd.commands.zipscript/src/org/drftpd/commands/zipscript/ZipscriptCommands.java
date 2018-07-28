@@ -17,25 +17,11 @@
  */
 package org.drftpd.commands.zipscript;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Map.Entry;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
@@ -43,7 +29,6 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.Session;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
-//import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
@@ -51,6 +36,13 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+
+//import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
 
 /**
  * @author djb61
@@ -60,7 +52,7 @@ public class ZipscriptCommands extends CommandInterface {
 
 	private static final Logger logger = Logger.getLogger(ZipscriptCommands.class);
 
-	private ArrayList<RescanPostProcessDirInterface> _rescanAddons = new ArrayList<RescanPostProcessDirInterface>();
+	private ArrayList<RescanPostProcessDirInterface> _rescanAddons = new ArrayList<>();
 
 	private StandardCommandManager _commandManager;
 
@@ -121,7 +113,7 @@ public class ZipscriptCommands extends CommandInterface {
 		}
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		LinkedList<DirectoryHandle> dirs = new LinkedList<DirectoryHandle>();
+		LinkedList<DirectoryHandle> dirs = new LinkedList<>();
 		if (startPath != null) {
 			boolean validPath = false;
 			try {
@@ -257,7 +249,7 @@ public class ZipscriptCommands extends CommandInterface {
 		Set<RescanPostProcessDirInterface> unloadedRescanAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "RescanPostProcessDir", event, _rescanAddons);
 		if (!unloadedRescanAddons.isEmpty()) {
-			ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<RescanPostProcessDirInterface>(_rescanAddons);
+			ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<>(_rescanAddons);
 			boolean addonRemoved = false;
 			for (Iterator<RescanPostProcessDirInterface> iter = clonedRescanAddons.iterator(); iter.hasNext();) {
 				RescanPostProcessDirInterface rescanAddon = iter.next();
@@ -280,7 +272,7 @@ public class ZipscriptCommands extends CommandInterface {
 			List<RescanPostProcessDirInterface> loadedRescanAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "RescanPostProcessDir", "Class", event);
 			if (!loadedRescanAddons.isEmpty()) {
-				ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<RescanPostProcessDirInterface>(_rescanAddons);
+				ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<>(_rescanAddons);
 				for (RescanPostProcessDirInterface rescanAddon : loadedRescanAddons) {
 					rescanAddon.initialize(_commandManager);
 					clonedRescanAddons.add(rescanAddon);

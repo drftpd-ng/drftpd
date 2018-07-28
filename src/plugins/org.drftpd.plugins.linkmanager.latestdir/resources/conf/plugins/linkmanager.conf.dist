@@ -1,0 +1,15 @@
+################################################################################
+#	LATESTDIR:
+#
+#	This will just make links of last races (by default 10, check latestdir.conf to change)
+#
+#	x.type=LATESTDIR
+#	x.dirname=/_LAST_RACES_
+#	x.section=*
+#	x.exclude=
+#	x.sectionexclude=^(?i)(pre|staff|speedtests)$
+#	x.deleteon=*
+#	x.linkname=(last)-${dirname}
+#	x.addparentdir=^(?i)(((cd|dvd|dis[ck])[1-9])|sample|subs|rarfix)$
+#
+################################################################################

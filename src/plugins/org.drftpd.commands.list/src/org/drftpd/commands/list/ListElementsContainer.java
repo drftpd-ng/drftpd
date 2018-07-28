@@ -16,11 +16,11 @@
  */
 package org.drftpd.commands.list;
 
-import java.util.ArrayList;
-
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.Session;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61
@@ -28,10 +28,10 @@ import org.drftpd.vfs.InodeHandleInterface;
  */
 public class ListElementsContainer {
 
-	private ArrayList<String> _fileTypes = new ArrayList<String>();
+	private ArrayList<String> _fileTypes = new ArrayList<>();
 
-	private ArrayList<InodeHandleInterface> _elements = 
-		new ArrayList<InodeHandleInterface>();
+	private ArrayList<InodeHandleInterface> _elements =
+            new ArrayList<>();
 
 	private int _numOnline;
 

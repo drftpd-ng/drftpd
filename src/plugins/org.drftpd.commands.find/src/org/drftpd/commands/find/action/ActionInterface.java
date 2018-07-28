@@ -26,13 +26,13 @@ import org.drftpd.vfs.InodeHandle;
  */
 public interface ActionInterface {
 
-	public void initialize(String action, String[] args) throws ImproperUsageException;
+	void initialize(String action, String[] args) throws ImproperUsageException;
 
-	public String exec(CommandRequest request, InodeHandle inode);
+	String exec(CommandRequest request, InodeHandle inode);
 
-	public boolean execInDirs();
+	boolean execInDirs();
 
-	public boolean execInFiles();
+	boolean execInFiles();
 	
-	public boolean failed();
+	boolean failed();
 }

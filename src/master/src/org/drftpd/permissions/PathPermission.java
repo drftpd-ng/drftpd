@@ -17,9 +17,9 @@
  */
 package org.drftpd.permissions;
 
-import java.util.Collection;
-
 import org.drftpd.vfs.InodeHandle;
+
+import java.util.Collection;
 
 /**
  * @author mog

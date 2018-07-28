@@ -25,7 +25,7 @@ import org.drftpd.dynamicdata.Key;
  */
 public class TvMazeQueryParams {
 
-	public static final Key<TvMazeQueryParams> TvMazeQUERYPARAMS = new Key<TvMazeQueryParams>(TvMazeQueryParams.class, "tvmazequeryparams");
+	public static final Key<TvMazeQueryParams> TvMazeQUERYPARAMS = new Key<>(TvMazeQueryParams.class, "tvmazequeryparams");
 	
 	private String _name;
 	private String _genre;

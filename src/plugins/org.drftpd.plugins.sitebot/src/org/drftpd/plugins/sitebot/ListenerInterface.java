@@ -23,6 +23,6 @@ package org.drftpd.plugins.sitebot;
  */
 public interface ListenerInterface {
 
-	public void handleInput(String bot, String channel, String sender, String hostname, String message);
+	void handleInput(String bot, String channel, String sender, String hostname, String message);
 		
 }

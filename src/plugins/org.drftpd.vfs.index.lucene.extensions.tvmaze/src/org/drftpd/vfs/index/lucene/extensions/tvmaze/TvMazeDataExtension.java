@@ -26,10 +26,6 @@ import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.vfs.event.ImmutableInodeHandle;
 import org.drftpd.vfs.index.lucene.extensions.IndexDataExtensionInterface;
 
-/**
- * @author scitz0
- * @version $Id: MP3DataExtension.java 2491 2011-07-11 21:56:53Z scitz0 $
- */
 public class TvMazeDataExtension implements IndexDataExtensionInterface {
 
 	private static final Field FIELD_NAME = new Field("tvmazename", "", Field.Store.YES, Field.Index.ANALYZED);
@@ -80,7 +76,7 @@ public class TvMazeDataExtension implements IndexDataExtensionInterface {
 				FIELD_SEASON.setIntValue(tvmazeInfo.getEPList()[0].getSeason());
 				FIELD_NUMBER.setIntValue(tvmazeInfo.getEPList()[0].getNumber());
 			}
-			FIELD_TYPE.setValue(tvmazeInfo.getName());
+			FIELD_TYPE.setValue(tvmazeInfo.getType());
 			FIELD_STATUS.setValue(tvmazeInfo.getStatus());
 			FIELD_LANGUAGE.setValue(tvmazeInfo.getLanguage());
 			FIELD_COUNTRY.setValue(tvmazeInfo.getCountry());

@@ -16,13 +16,6 @@
  */
 package org.drftpd.plugins.trialmanager;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
@@ -31,6 +24,8 @@ import org.drftpd.master.cron.TimeManager;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.util.UserComparator;
+
+import java.util.*;
 
 /**
  * @author CyBeR
@@ -116,13 +111,13 @@ public abstract class TrialType {
 	
 	protected ArrayList<User> getUsers() {
 		Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
-		ArrayList<User> filteredusers = new ArrayList<User>();
+		ArrayList<User> filteredusers = new ArrayList<>();
 		for (User user : users) {
 			if ((getPerms().check(user)) && (!user.isDeleted())) {
 				filteredusers.add(user);
 			}
 		}
-		Collections.sort(filteredusers,new UserComparator(getPeriodStr()));
+		filteredusers.sort(new UserComparator(getPeriodStr()));
 		return filteredusers;
 	}
 	

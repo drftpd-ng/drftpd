@@ -1,0 +1,6 @@
+# Announce file upload and where the announce will appear.
+# Path is case insensitive.
+# NFO:
+store.path.1=^.+\\.nfo$
+store.path.1.destination=public
+store.path.1.regex=true

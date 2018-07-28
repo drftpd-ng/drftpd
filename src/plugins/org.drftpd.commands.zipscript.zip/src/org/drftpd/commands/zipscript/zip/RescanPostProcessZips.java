@@ -16,8 +16,6 @@
  */
 package org.drftpd.commands.zipscript.zip;
 
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.StandardCommandManager;
@@ -30,6 +28,8 @@ import org.drftpd.master.Session;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
 
 /**
  * @author djb61

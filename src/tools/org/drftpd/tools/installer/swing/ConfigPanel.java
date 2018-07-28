@@ -17,27 +17,15 @@
  */
 package org.drftpd.tools.installer.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import org.drftpd.tools.installer.InstallerConfig;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
-import org.drftpd.tools.installer.InstallerConfig;
 
 /**
  * @author djb61
@@ -92,11 +80,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		fileLogLabel.setText("Enable file logging: ");
 		_fileLog = new JCheckBox();
 		_fileLog.setSelected(_config.getFileLogging());
-		_fileLog.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateLogLabel();
-			}
-		});
+		_fileLog.addActionListener(e -> updateLogLabel());
 		JLabel cleanLabel = new JLabel();
 		cleanLabel.setText("Clean before build: ");
 		_clean = new JCheckBox();

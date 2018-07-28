@@ -162,7 +162,7 @@ public class IrcUser implements Comparable<IrcUser> {
 	 * @return true if the user has the given prefix.
 	 */
 	public boolean hasPrefix(String prefix) {
-		return _prefix.indexOf(prefix) >= 0;
+		return _prefix.contains(prefix);
 	}
 
 	/**

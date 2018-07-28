@@ -107,8 +107,7 @@ public class ZipscriptVFSDataMP3 {
 						}
 					} catch (SlaveUnavailableException e) {
 						// okay, it went offline while trying, continue
-						continue;
-					} catch (RemoteIOException e) {
+                    } catch (RemoteIOException e) {
 						throw new IOException(e.getMessage());
 					}
 				}

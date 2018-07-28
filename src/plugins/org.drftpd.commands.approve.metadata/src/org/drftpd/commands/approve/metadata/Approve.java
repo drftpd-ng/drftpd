@@ -27,11 +27,11 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class Approve implements Serializable {
 
-    public static final Key<Boolean> APPROVE = new Key<Boolean>(Approve.class, "approve");
+    public static final Key<Boolean> APPROVE = new Key<>(Approve.class, "approve");
 
 	public static boolean isApproved(DirectoryHandle dir) {
 		try {
-			if (dir.getPluginMetaData(APPROVE) == true) {
+			if (dir.getPluginMetaData(APPROVE)) {
 				return true;
 			}
 		} catch (FileNotFoundException e) {

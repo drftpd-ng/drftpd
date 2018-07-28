@@ -16,26 +16,18 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * CommandHandler plugin for viewing and manipulating the JobManager queue.
@@ -108,7 +100,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		HashSet<String> destSlaves = new HashSet<String>();
+		HashSet<String> destSlaves = new HashSet<>();
 
 		while (st.hasMoreTokens()) {
 			String slaveName = st.nextToken();
@@ -155,7 +147,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 
 		for (Job job : treeSet) {
@@ -188,7 +180,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		ReplacerEnvironment env = new ReplacerEnvironment();
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 
 		for (Job job : treeSet) {
@@ -216,7 +208,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 	}
 
 	public CommandResponse doREMOVEJOBS(CommandRequest request) {
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		for (Job job : treeSet) {
@@ -249,11 +241,11 @@ public class JobManagerCommandHandler extends CommandInterface {
 			}
 		}
 
-		ArrayList<Range> rangeList = new ArrayList<Range>();
+		ArrayList<Range> rangeList = new ArrayList<>();
 		String rangeString = request.getArgument();
 		String[] ranges = rangeString.split(" ");
 		for (String range : ranges) {
-			if (range.indexOf("-") == -1) {
+			if (!range.contains("-")) {
 				long val = Long.parseLong(range);
 				rangeList.add(new Range(val, val));
 			} else {
@@ -262,7 +254,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 						.parseLong(vals[1])));
 			}
 		}
-		TreeSet<Job> treeSet = new TreeSet<Job>(new JobIndexComparator());
+		TreeSet<Job> treeSet = new TreeSet<>(new JobIndexComparator());
 		treeSet.addAll(getJobManager().getAllJobsFromQueue());
 		ReplacerEnvironment env = new ReplacerEnvironment();
 

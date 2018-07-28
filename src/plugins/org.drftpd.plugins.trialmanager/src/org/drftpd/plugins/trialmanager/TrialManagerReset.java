@@ -1,10 +1,10 @@
 package org.drftpd.plugins.trialmanager;
 
-import java.util.Date;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.usermanager.UserResetHookInterface;
+
+import java.util.Date;
 
 public class TrialManagerReset implements UserResetHookInterface {
 	private static final Logger logger = Logger.getLogger(TrialManagerReset.class);
@@ -22,11 +22,8 @@ public class TrialManagerReset implements UserResetHookInterface {
 		} catch (RuntimeException e) {
 			logger.debug("Could Not Load Trial Manager - ",e);
 		}
-		if (trialmanager == null) {
-			return false;
-		}
-		return true;
-	}
+        return trialmanager != null;
+    }
 	
 	@Override
 	public void resetDay(Date d) {

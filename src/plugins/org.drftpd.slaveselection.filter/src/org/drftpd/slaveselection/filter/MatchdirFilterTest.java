@@ -17,12 +17,8 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.util.Arrays;
-import java.util.Properties;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -31,6 +27,9 @@ import org.drftpd.tests.DummyGlobalContext;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.Arrays;
+import java.util.Properties;
 
 
 /**

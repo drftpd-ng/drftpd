@@ -17,29 +17,29 @@
  */
 package org.drftpd.sections;
 
+import org.drftpd.vfs.DirectoryHandle;
+
 import java.util.Collection;
 import java.util.Map;
-
-import org.drftpd.vfs.DirectoryHandle;
 
 /**
  * @author mog
  * @version $Id$
  */
 public interface SectionManagerInterface {
-	public Collection<SectionInterface> getSections();
+	Collection<SectionInterface> getSections();
 	
-	public Map<String, SectionInterface> getSectionsMap();
+	Map<String, SectionInterface> getSectionsMap();
 
 	/**
 	 * getSectionByName()
 	 */
-	public SectionInterface getSection(String string);
+    SectionInterface getSection(String string);
 
-	public void reload();
+	void reload();
 
 	/**
 	 * Return the section the Directory is in.
 	 */
-	public SectionInterface lookup(DirectoryHandle dir);
+    SectionInterface lookup(DirectoryHandle dir);
 }

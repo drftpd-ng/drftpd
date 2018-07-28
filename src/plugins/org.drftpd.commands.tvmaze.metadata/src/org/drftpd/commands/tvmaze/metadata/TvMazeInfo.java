@@ -27,7 +27,7 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class TvMazeInfo implements Serializable {
 
-    public static final Key<TvMazeInfo> TVMAZEINFO = new Key<TvMazeInfo>(TvMazeInfo.class, "tvmaze");
+    public static final Key<TvMazeInfo> TVMAZEINFO = new Key<>(TvMazeInfo.class, "tvmaze");
 
 	int _id;
 	String _url = "";

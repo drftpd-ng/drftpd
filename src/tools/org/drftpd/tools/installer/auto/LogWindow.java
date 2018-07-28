@@ -17,19 +17,9 @@
  */
 package org.drftpd.tools.installer.auto;
 
-import org.drftpd.tools.installer.FileLogger;
-import org.drftpd.tools.installer.InstallerConfig;
-import org.drftpd.tools.installer.LogWindowInterface;
-import org.drftpd.tools.installer.PluginBuilder;
-import org.drftpd.tools.installer.PluginBuilderThread;
+import org.drftpd.tools.installer.*;
 
-import java.io.BufferedReader;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PrintStream;
+import java.io.*;
 
 public class LogWindow implements LogWindowInterface {
 

@@ -49,8 +49,8 @@ public class IMDBOption implements OptionInterface {
 		} else if (option.equalsIgnoreCase("-imdbdirector")) {
 			queryParams.setDirector(args[0]);
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-imdbgenre")) {
-			queryParams.setGenre(args[0]);
+		} else if (option.equalsIgnoreCase("-imdbgenres")) {
+			queryParams.setGenres(args[0]);
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
 		} else if (option.equalsIgnoreCase("-imdbvotes")) {
 			Integer[] range = getIntRange(args[0]);
@@ -67,10 +67,10 @@ public class IMDBOption implements OptionInterface {
 			queryParams.setMinYear(range[0]);
 			queryParams.setMaxYear(range[1]);
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		} else if (option.equalsIgnoreCase("-imdbscreens")) {
+		} else if (option.equalsIgnoreCase("-imdbruntime")) {
 			Integer[] range = getIntRange(args[0]);
-			queryParams.setMinScreens(range[0]);
-			queryParams.setMaxScreens(range[1]);
+			queryParams.setMinRuntime(range[0]);
+			queryParams.setMaxRuntime(range[1]);
 			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
 		}
 	}

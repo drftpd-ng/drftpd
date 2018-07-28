@@ -17,10 +17,10 @@
  */
 package org.drftpd;
 
+import org.drftpd.vfs.InodeHandle;
+
 import java.io.FileNotFoundException;
 import java.util.Comparator;
-
-import org.drftpd.vfs.InodeHandle;
 
 /**
  * @author zubov

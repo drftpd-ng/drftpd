@@ -27,7 +27,7 @@ public class UserInfo {
     private String _group;
     private int _files;
     private long _bytes;
-    private ArrayList<Long> _speeds = new ArrayList<Long>();
+    private ArrayList<Long> _speeds = new ArrayList<>();
 
     public UserInfo(String userName, String group, int files, long bytes, long speed) {
         _userName = userName;

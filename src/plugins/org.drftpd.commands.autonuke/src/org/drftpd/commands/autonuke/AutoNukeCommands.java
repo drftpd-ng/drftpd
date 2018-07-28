@@ -17,15 +17,9 @@
  */
 package org.drftpd.commands.autonuke;
 
-import java.util.ResourceBundle;
-import java.util.ArrayList;
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -33,10 +27,16 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.master.Session;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.conf.DatedSection;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.ResourceBundle;
 
 /**
  * FTP/IRC commands available to the AutoNuke plugin
@@ -77,7 +77,9 @@ public class AutoNukeCommands extends CommandInterface {
 		boolean foundItem = false;
 		for (NukeItem ni : DirsToNuke.getDirsToNuke().get()) {
 			if (ni.getDir().getPath().startsWith(request.getArgument(), 1)) {
-				env.add("section", GlobalContext.getGlobalContext().getSectionManager().lookup(ni.getDir()).getName());
+				SectionInterface niSection = GlobalContext.getGlobalContext().getSectionManager().lookup(ni.getDir());
+				env.add("section", niSection.getName());
+				env.add("sectioncolor", niSection.getColor());
 				env.add("dir", ni.getDir().getName());
 				env.add("path", ni.getDir().getPath());
 				env.add("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
@@ -91,6 +93,7 @@ public class AutoNukeCommands extends CommandInterface {
 
 		if (!foundItem && !DirsToNuke.getDirsToNuke().empty()) {
 			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			env.add("nbrtotal", ""+DirsToNuke.getDirsToNuke().size());
 			response.addComment(session.jprintf(
 					_bundle, _keyPrefix+"autonukes.section.empty", request.getUser()));
@@ -150,7 +153,7 @@ public class AutoNukeCommands extends CommandInterface {
 				dir = section.getBaseDirectory();
 			}
 		}
-		ArrayList<SectionInterface> sectionsToCheck = new ArrayList<SectionInterface>();
+		ArrayList<SectionInterface> sectionsToCheck = new ArrayList<>();
 		if (dir.isRoot()) {
             for (SectionInterface section : GlobalContext.getGlobalContext().getSectionManager().getSections()) {
                 if (!AutoNukeSettings.getSettings().getExcludedSections().contains(section)) {
@@ -170,12 +173,13 @@ public class AutoNukeCommands extends CommandInterface {
         for (SectionInterface section : sectionsToCheck) {
 			DirectoryHandle sectionRoot = section.getBaseDirectory();
 			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			request.getSession().printOutput(200, request.getSession().jprintf(
 					_bundle, _keyPrefix+"autonukescan.start", env, request.getUser()));
 
 			if (request.getSession().isAborted()) { break; }
 			try {
-				ArrayList<DirectoryHandle> sectionDirs = new ArrayList<DirectoryHandle>();
+				ArrayList<DirectoryHandle> sectionDirs = new ArrayList<>();
 				if (section instanceof DatedSection) {
 					sectionDirs.addAll(sectionRoot.getDirectoriesUnchecked());
 				} else {

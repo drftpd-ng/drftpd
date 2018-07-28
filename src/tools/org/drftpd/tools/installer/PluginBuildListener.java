@@ -17,26 +17,16 @@
  */
 package org.drftpd.tools.installer;
 
-import java.io.OutputStreamWriter;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.TreeSet;
-
-import org.apache.tools.ant.BuildEvent;
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.SubBuildListener;
-import org.apache.tools.ant.Task;
+import org.apache.tools.ant.*;
 import org.apache.tools.ant.taskdefs.Zip;
 import org.apache.tools.ant.types.FileSet;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginRegistry;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.TreeSet;
 
 /**
  * @author djb61
@@ -68,12 +58,12 @@ public class PluginBuildListener implements SubBuildListener {
 		_logLevel = config.getLogLevel();
 		_config = config;
 		_logWindow = logWindow;
-		_pluginMap = new HashMap<String,PluginDescriptor>();
+		_pluginMap = new HashMap<>();
 		_cleanOnly = cleanOnly;
 		for (PluginData plugin : buildPlugins) {
 			_pluginMap.put(plugin.getName(),plugin.getDescriptor());
 		}
-		ArrayList<PluginDescriptor> initialPlugins = new ArrayList<PluginDescriptor>();
+		ArrayList<PluginDescriptor> initialPlugins = new ArrayList<>();
 		initialPlugins.add(_pluginMap.get("slave"));
 		for (PluginData plugin : buildPlugins) {
 			if (plugin.getName().equals("master")) {
@@ -83,7 +73,7 @@ public class PluginBuildListener implements SubBuildListener {
 				initialPlugins.add(plugin.getDescriptor());
 			}
 		}
-		_slavePluginMap = new HashMap<String,PluginDescriptor>();
+		_slavePluginMap = new HashMap<>();
 		for (PluginDescriptor desc : initialPlugins) {
 			_slavePluginMap.put(desc.getId(), desc);
 			for (PluginData plugin : buildPlugins) {
@@ -93,8 +83,8 @@ public class PluginBuildListener implements SubBuildListener {
 			}
 		}
 		_slaveFiles = new FileSet();
-		_installedConfs = new ArrayList<String>();
-		_missingLibs = new TreeSet<String>();
+		_installedConfs = new ArrayList<>();
+		_missingLibs = new TreeSet<>();
 		_pluginsDone = 0;
 	}
 

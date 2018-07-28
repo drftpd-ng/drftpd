@@ -17,21 +17,6 @@
  */
 package org.drftpd.vfs;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.beans.XMLEncoder;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.exceptions.ObjectNotFoundException;
@@ -39,39 +24,33 @@ import org.drftpd.master.RemoteTransfer;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.stats.StatsInterface;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * Lowest representation of a File object.
  */
 public class VirtualFileSystemFile extends VirtualFileSystemInode implements StatsInterface  {
 
-	protected static final Collection<String> transientListFile = Arrays
-			.asList("name", "parent", "xfertime", "checksum",
-					"downloadedBytes", "downloadedFiles", "downloadedTime",
-					"uploadedBytes", "uploadedFiles", "uploadedTime");
-	// the following fields AREN'T transient, they're simply stored in the
-	// KeyedMap instead of as their own independent javabeans element
-	//
-	// xfertime, checksum, downloadedBytes, downloadedFiles, downloadedTime,
-	// uploadedBytes, uploadedFiles, uploadedTime
+	public static final Key<Long> CRC = new Key<>(VirtualFileSystemFile.class, "checksum");
 
-	public static final Key<Long> CRC = new Key<Long>(VirtualFileSystemFile.class, "checksum");
+	public static final Key<Long> MD5 = new Key<>(VirtualFileSystemFile.class, "md5");
 
-	public static final Key<Long> MD5 = new Key<Long>(VirtualFileSystemFile.class, "md5");
-
-	public static final Key<Long> XFERTIME = new Key<Long>(VirtualFileSystemFile.class,	"xfertime");
+	public static final Key<Long> XFERTIME = new Key<>(VirtualFileSystemFile.class, "xfertime");
 	
 	protected Set<String> _slaves;
 	
 	
-	public static final Key<Integer> DOWNLOADEDTIMES = new Key<Integer>(VirtualFileSystemFile.class, 
-			"dltimes");
+	public static final Key<Integer> DOWNLOADEDTIMES = new Key<>(VirtualFileSystemFile.class,
+            "dltimes");
 	
-	public static final Key<Long> DOWNLOADDURATION = new Key<Long>(VirtualFileSystemFile.class, 
-			"dlduration");
+	public static final Key<Long> DOWNLOADDURATION = new Key<>(VirtualFileSystemFile.class,
+            "dlduration");
 
-	private transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<RemoteTransfer>();
+	private transient Queue<RemoteTransfer> _uploads = new ConcurrentLinkedQueue<>();
 
-	private transient Queue<RemoteTransfer> _downloads = new ConcurrentLinkedQueue<RemoteTransfer>();
+	private transient Queue<RemoteTransfer> _downloads = new ConcurrentLinkedQueue<>();
 
 	private long _size;
 
@@ -80,7 +59,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	 */
 	public Set<String> getSlaves() {
 		synchronized (_slaves) {
-			return new HashSet<String>(_slaves);
+			return new HashSet<>(_slaves);
 		}
 	}
 	
@@ -102,8 +81,8 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 
 	public VirtualFileSystemFile(String username, String group, long size,
 			String initialSlave) {
-		this(username, group, size, new HashSet<String>(Arrays
-				.asList(new String[] { initialSlave })));
+		this(username, group, size, new HashSet<>(Arrays
+                .asList(initialSlave)));
 	}
 
 	public VirtualFileSystemFile(String username, String group, long size,
@@ -174,34 +153,6 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	public void setChecksum(long checksum) {
 		getKeyedMap().setObject(CRC, checksum);
 		commit();
-	}
-
-	/**
-	 * Configure the serialization of the File.
-	 */
-	@Override
-	protected void setupXML(XMLEncoder enc) {
-		super.setupXML(enc);
-		
-		PropertyDescriptor[] pdArr;
-		try {
-			pdArr = Introspector.getBeanInfo(VirtualFileSystemFile.class)
-					.getPropertyDescriptors();
-		} catch (IntrospectionException e) {
-			logger.error("I don't know what to do here", e);
-			throw new RuntimeException(e);
-		}
-		for (PropertyDescriptor pd : pdArr) {
-			// logger.debug("PropertyDescriptor - VirtualFileSystemFile - "
-			// + pd.getDisplayName());
-			if (transientListFile.contains(pd.getName())) {
-				pd.setValue("transient", Boolean.TRUE);
-			}
-		}
-		// needed to create a VFSFile object during unserialization
-		enc.setPersistenceDelegate(VirtualFileSystemFile.class,
-				new DefaultPersistenceDelegate(new String[] { "username",
-						"group", "size", "slaves" }));
 	}
 
 	/**
@@ -393,7 +344,7 @@ public class VirtualFileSystemFile extends VirtualFileSystemInode implements Sta
 	}
 
 	protected Map<String,AtomicInteger> getSlaveRefCounts() {
-		Map<String,AtomicInteger> slaveRefCounts = new TreeMap<String,AtomicInteger>();
+		Map<String,AtomicInteger> slaveRefCounts = new TreeMap<>();
 		synchronized(_slaves) {
 			for (String slave : _slaves) {
 				slaveRefCounts.put(slave, new AtomicInteger(1));

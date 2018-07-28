@@ -17,13 +17,13 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * @author mog
@@ -34,7 +34,7 @@ public class ScoreChart {
 
 
 	public ScoreChart(Collection<RemoteSlave> slaves) {
-		_scoreChart = new ArrayList<SlaveScore>();
+		_scoreChart = new ArrayList<>();
 		for (RemoteSlave rslave : slaves) {
 			_scoreChart.add(new SlaveScore(rslave));
 		}
@@ -91,13 +91,7 @@ public class ScoreChart {
 	}
 
 	public void removeSlaveFromChart(RemoteSlave rslave) {
-		for (Iterator<SlaveScore> iter = _scoreChart.iterator(); iter.hasNext();) {
-			SlaveScore score = iter.next();
-
-			if (score.getRSlave().equals(rslave)) {
-				iter.remove();
-			}
-		}
+        _scoreChart.removeIf(score -> score.getRSlave().equals(rslave));
 	}
 	
 	public void addScoreToSlave(RemoteSlave rslave, long score) throws ObjectNotFoundException {
@@ -117,7 +111,7 @@ public class ScoreChart {
 		}
 
 		public int compareTo(SlaveScore s) {
-			return ((getScore() < s.getScore()) ? (-1) : ((getScore() == s.getScore()) ? 0 : 1));
+			return (Long.compare(getScore(), s.getScore()));
 		}
 
 		public RemoteSlave getRSlave() {

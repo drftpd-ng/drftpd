@@ -53,7 +53,7 @@ public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStat
 				DizStatus dizStatus = zipData.getDizStatus();
 				ReplacerEnvironment env = new ReplacerEnvironment();
 
-				ArrayList<String> statusBarEntries = new ArrayList<String>();
+				ArrayList<String> statusBarEntries = new ArrayList<>();
 				if (dizInfo.getTotal() != 0) {
 					env.add("complete.total", "" + dizInfo.getTotal());
 					env.add("complete.number", "" + dizStatus.getPresent());

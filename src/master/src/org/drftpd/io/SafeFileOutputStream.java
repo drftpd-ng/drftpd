@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 
 /**
  * @author mog
@@ -30,7 +29,7 @@ import java.io.OutputStreamWriter;
 public class SafeFileOutputStream extends OutputStream {
 	private File _actualFile;
 
-	private OutputStreamWriter _out;
+	private FileOutputStream _out;
 
 	private File _tempFile;
 
@@ -54,7 +53,7 @@ public class SafeFileOutputStream extends OutputStream {
 			prefix = "x" + prefix;
 		}
 		_tempFile = File.createTempFile(prefix, null, dir);
-		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
+		_out = new FileOutputStream(_tempFile);
 	}
 
 	public SafeFileOutputStream(String fileName) throws IOException {

@@ -38,16 +38,12 @@ public class StripefilesFilter extends Filter {
 				return;
 			}
 
-			HashMap<String,Integer> hm = new HashMap<String,Integer>();
+			HashMap<String,Integer> hm = new HashMap<>();
 			for (FileHandle file : dir.getFilesUnchecked()){
 				try {
 					for (RemoteSlave slave : file.getAvailableSlaves()) {
 						String slaveName = slave.getName();
-						Integer files = hm.get(slaveName);
-						if (files == null)
-							hm.put(slaveName, 1);
-						else
-							hm.put(slaveName, files + 1);
+                        hm.merge(slaveName, 1, (a, b) -> a + b);
 					}
 				} catch (NoAvailableSlaveException ex) {
 					// Just continue

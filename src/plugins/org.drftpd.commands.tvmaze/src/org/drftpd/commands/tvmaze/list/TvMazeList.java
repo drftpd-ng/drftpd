@@ -16,20 +16,20 @@
  */
 package org.drftpd.commands.tvmaze.list;
 
-import java.io.FileNotFoundException;
-import java.util.ResourceBundle;
-
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
 import org.drftpd.commands.tvmaze.TvMazeConfig;
 import org.drftpd.commands.tvmaze.TvMazeUtils;
-import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
-import org.apache.log4j.Logger;
+
+import java.io.FileNotFoundException;
+import java.util.ResourceBundle;
 
 /**
  * @author lh

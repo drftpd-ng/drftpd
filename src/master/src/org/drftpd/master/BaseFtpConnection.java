@@ -17,26 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Executors;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLSocket;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
@@ -54,6 +34,14 @@ import org.drftpd.usermanager.UserFileException;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.DirectoryHandle;
 
+import javax.net.ssl.SSLSocket;
+import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 /**
  * This is a generic ftp connection handler. It delegates the request to
  * appropriate methods in subclasses.
@@ -68,14 +56,14 @@ public class BaseFtpConnection extends Session implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
 
-	public static final Key<InetAddress> ADDRESS = new Key<InetAddress>(BaseFtpConnection.class, "address");
-	public static final Key<String> IDENT = new Key<String>(BaseFtpConnection.class, "ident");
+	public static final Key<InetAddress> ADDRESS = new Key<>(BaseFtpConnection.class, "address");
+	public static final Key<String> IDENT = new Key<>(BaseFtpConnection.class, "ident");
 	
-	public static final Key<Boolean> FAILEDLOGIN = new Key<Boolean>(BaseFtpConnection.class, "failedlogin");
+	public static final Key<Boolean> FAILEDLOGIN = new Key<>(BaseFtpConnection.class, "failedlogin");
 	
-	public static final Key<String> FAILEDREASON = new Key<String>(BaseFtpConnection.class, "failedreason");
+	public static final Key<String> FAILEDREASON = new Key<>(BaseFtpConnection.class, "failedreason");
 	
-	public static final Key<String> FAILEDUSERNAME = new Key<String>(BaseFtpConnection.class, "failedusername");
+	public static final Key<String> FAILEDUSERNAME = new Key<>(BaseFtpConnection.class, "failedusername");
 	
 	public static final String NEWLINE = "\r\n";
 
@@ -280,7 +268,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		}
 		
 		_pool = new ThreadPoolExecutor(1, Integer.MAX_VALUE,
-                60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(),
+                60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
                 new CommandThreadFactory(_thread.getName()));
 
 		try {
@@ -466,7 +454,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	}
 
 	public String toString() {
-		StringBuffer buf = new StringBuffer("[BaseFtpConnection");
+		StringBuilder buf = new StringBuilder("[BaseFtpConnection");
 
 		if (_user != null) {
 			buf.append("[user: " + _user + "]");
@@ -518,8 +506,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		for (BaseFtpConnection conn : GlobalContext.getConnectionManager().getConnections()) {
 			if (conn.getUsername() == null) {
 				// User authentication not completed yet for this connection
-				continue;
-			} else if (conn.getUsername().equals(oldUsername)) {
+            } else if (conn.getUsername().equals(oldUsername)) {
 				conn.setUser(newUsername);
 			}
 		}

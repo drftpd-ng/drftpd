@@ -17,17 +17,6 @@
  */
 package org.drftpd.tools.installer;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
@@ -37,6 +26,12 @@ import org.java.plugin.PathResolver;
 import org.java.plugin.registry.Identity;
 import org.java.plugin.registry.PluginRegistry;
 import org.java.plugin.util.IoUtil;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author djb61
@@ -67,32 +62,31 @@ public class PluginParser {
 		ObjectFactory objectFactory = ObjectFactory.newInstance();
 		_registry = objectFactory.createRegistry();
 		File[] manifestFiles = getIncludedFiles();
-		List<URL> manifestUrls = new LinkedList<URL>();
-		final Map<String, URL> foldersMap = new HashMap<String, URL>();
-		for (int i = 0; i < manifestFiles.length; i++) {
-			File manifestFile = manifestFiles[i];
-			try {
-				URL manifestUrl = getManifestURL(manifestFile);
-				if (manifestUrl == null) {
-					logger.debug("Skipped file: " + manifestFile);
-					continue;
-				}
-				manifestUrls.add(manifestUrl);
-				logger.debug("Added URL: " + manifestUrl);
-				if (usePathResolver) {
-					if ("jar".equals(manifestUrl.getProtocol())) {
-						foldersMap.put(manifestUrl.toExternalForm(),
-								IoUtil.file2url(manifestFile));
-					} else {
-						foldersMap.put(manifestUrl.toExternalForm(),
-								IoUtil.file2url(manifestFile.getParentFile()));
-					}
-				}
-			} catch (MalformedURLException mue) {
-				throw new PluginParseException("can't create URL for file "
-						+ manifestFile);
-			}
-		}
+		List<URL> manifestUrls = new LinkedList<>();
+		final Map<String, URL> foldersMap = new HashMap<>();
+        for (File manifestFile : manifestFiles) {
+            try {
+                URL manifestUrl = getManifestURL(manifestFile);
+                if (manifestUrl == null) {
+                    logger.debug("Skipped file: " + manifestFile);
+                    continue;
+                }
+                manifestUrls.add(manifestUrl);
+                logger.debug("Added URL: " + manifestUrl);
+                if (usePathResolver) {
+                    if ("jar".equals(manifestUrl.getProtocol())) {
+                        foldersMap.put(manifestUrl.toExternalForm(),
+                                IoUtil.file2url(manifestFile));
+                    } else {
+                        foldersMap.put(manifestUrl.toExternalForm(),
+                                IoUtil.file2url(manifestFile.getParentFile()));
+                    }
+                }
+            } catch (MalformedURLException mue) {
+                throw new PluginParseException("can't create URL for file "
+                        + manifestFile);
+            }
+        }
 		final Map<String, Identity> processedPlugins;
 		try {
 			processedPlugins = _registry.register(
@@ -113,7 +107,7 @@ public class PluginParser {
 	}
 
 	private File[] getIncludedFiles() {
-		Set<File> result = new HashSet<File>();
+		Set<File> result = new HashSet<>();
 		for (String file
 				: _fileSet.getDirectoryScanner().getIncludedFiles()) {
 			if (file != null) {

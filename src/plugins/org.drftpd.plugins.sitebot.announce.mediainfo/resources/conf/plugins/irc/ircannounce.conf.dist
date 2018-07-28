@@ -1,0 +1,6 @@
+# To specify where the mediainfo for media file announces will appear rather than just using your
+# default channels, uncomment the next lines and set them there.
+#mediainfo.path.1=/path/subpath/*
+#mediainfo.path.1.destination=public
+#mediainfo.section.1=*
+#mediainfo.section.1.destination=public

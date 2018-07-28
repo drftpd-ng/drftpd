@@ -38,5 +38,5 @@ public interface QueryTermExtensionInterface {
 	 * @param inode
 	 *            The inode currently being indexed.
 	 */
-	public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params);
+    void addQueryTerms(BooleanQuery query, AdvancedSearchParams params);
 }

@@ -17,17 +17,16 @@
  */
 package org.drftpd;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
+import org.apache.log4j.Logger;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
-import org.apache.log4j.Logger;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 
 /**
  * @author mog
@@ -61,10 +60,10 @@ public class SSLGetContext {
 
 		KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
 
-		KeyStore ks = KeyStore.getInstance("JKS");
+		KeyStore ks = KeyStore.getInstance("PKCS12");
 		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream("drftpd.key");
+			fis = new FileInputStream("userdata/drftpd.key");
 			ks.load(fis, "drftpd".toCharArray());
 		} finally {
 			if (fis != null) {

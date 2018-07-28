@@ -43,7 +43,7 @@ public class DeleteFromSlavesAction implements ActionInterface {
 	public String exec(CommandRequest request, InodeHandle inode) {
 		FileHandle file = (FileHandle) inode;
 
-		HashSet<RemoteSlave> deleteFromSlaves = new HashSet<RemoteSlave>(_deleteFromSlaves);
+		HashSet<RemoteSlave> deleteFromSlaves = new HashSet<>(_deleteFromSlaves);
 		String ret = file.getPath() + " deleted from ";
 
 		for (RemoteSlave rslave : deleteFromSlaves) {

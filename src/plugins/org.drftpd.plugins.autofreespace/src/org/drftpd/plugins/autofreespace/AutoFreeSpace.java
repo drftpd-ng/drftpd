@@ -1,25 +1,24 @@
 package org.drftpd.plugins.autofreespace;
 
-import java.io.FileNotFoundException;
-import java.util.*;
-
+import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.plugins.autofreespace.event.AFSEvent;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-
-import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.sections.SectionInterface;
 import org.drftpd.PropertyHelper;
+import org.drftpd.event.ReloadEvent;
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.RemoteSlave;
+import org.drftpd.plugins.autofreespace.event.AFSEvent;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.InodeHandle;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 
 /**
@@ -35,14 +34,16 @@ public class AutoFreeSpace implements PluginInterface {
 	private static Logger logger = Logger.getLogger(AutoFreeSpace.class);
 	private HashMap<String,Section> sections;
 	private ArrayList<String> _excludeFiles;
+	private ArrayList<String> _excludeSlaves;
 	private Timer _timer;
 	private boolean _onlyAnnounce;
 	private boolean deleteOnDate=false;
 	private boolean deleteOnSpace=false;
 
 	public void startPlugin() {
-		_excludeFiles = new ArrayList<String>();
-		sections = new HashMap<String, Section>();
+		_excludeFiles = new ArrayList<>();
+		_excludeSlaves = new ArrayList<>();
+		sections = new HashMap<>();
 		reload();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
@@ -73,14 +74,15 @@ public class AutoFreeSpace implements PluginInterface {
 		}
 
 		_excludeFiles.clear();
-
+		_excludeSlaves.clear();
 
 		int id = 1;
 		String name;
 		long minFreeSpace = Bytes.parseBytes(p.getProperty("keepFree"));
 		long cycleTime = Long.parseLong(p.getProperty("cycleTime")) * 60000;
-		deleteOnDate = Boolean.valueOf(p.getProperty("delete.on.date")).booleanValue();
-		deleteOnSpace = Boolean.valueOf(p.getProperty("delete.on.space")).booleanValue();
+		deleteOnDate = Boolean.valueOf(p.getProperty("delete.on.date"));
+		deleteOnSpace = Boolean.valueOf(p.getProperty("delete.on.space"));
+		_excludeSlaves.addAll(Arrays.asList(p.getProperty("excluded.slaves", "").trim().split("\\s")));
 		long wipeAfter;
 
 		while((name=PropertyHelper.getProperty(p,id + ".section", null)) != null) {
@@ -102,11 +104,11 @@ public class AutoFreeSpace implements PluginInterface {
 		_timer.schedule(new MrCleanit(_excludeFiles, minFreeSpace, sections), cycleTime, cycleTime);
 	}
 
-	public class MrCleanit extends TimerTask {
+	private class MrCleanit extends TimerTask {
 		private ArrayList<String> _excludeFiles;
 		private HashMap<String,Section> _sections;
 		private long _minFreeSpace;
-		private ArrayList<String> checkedReleases = new ArrayList<String>();
+		private ArrayList<String> checkedReleases = new ArrayList<>();
 
 		public MrCleanit(ArrayList<String> excludeFiles, long minFreeSpace, HashMap<String,Section> sections) {
 			_excludeFiles = excludeFiles;
@@ -143,7 +145,7 @@ public class AutoFreeSpace implements PluginInterface {
 			}
 		}
 
-		public InodeHandle getOldestFile(DirectoryHandle dir, RemoteSlave slave) throws FileNotFoundException {
+		private InodeHandle getOldestFile(DirectoryHandle dir, RemoteSlave slave) throws FileNotFoundException {
 
 			Collection<InodeHandle> collection = dir.getInodeHandlesUnchecked();
 
@@ -152,7 +154,7 @@ public class AutoFreeSpace implements PluginInterface {
 				return null; //empty section, just ignore
 			}
 
-			TreeSet<InodeHandle> sortedCollection = new TreeSet<InodeHandle>(new AgeComparator());
+			TreeSet<InodeHandle> sortedCollection = new TreeSet<>(new AgeComparator());
 			sortedCollection.addAll(collection);
 
 			for (InodeHandle inode : sortedCollection) {
@@ -175,9 +177,7 @@ public class AutoFreeSpace implements PluginInterface {
 				throws NoAvailableSlaveException, FileNotFoundException {
 
 			if (inode.isFile()) {
-				if(((FileHandle)inode).getAvailableSlaves().contains(slave)) {
-					return true;
-				}
+                return ((FileHandle) inode).getAvailableSlaves().contains(slave);
 			} else if (inode.isDirectory()) {
 				for (FileHandle file : ((DirectoryHandle)inode).getAllFilesRecursiveUnchecked()) {
 					if (file.getAvailableSlaves().contains(slave)) {
@@ -238,10 +238,13 @@ public class AutoFreeSpace implements PluginInterface {
 			try {
 				for (RemoteSlave remoteSlave :
 						GlobalContext.getGlobalContext().getSlaveManager().getAvailableSlaves()) {
+					if (_excludeSlaves.contains(remoteSlave.getName())) {
+						continue;
+					}
 
 					if (deleteOnDate) {
 						try {
-							InodeHandle oldestRelease = null;
+							InodeHandle oldestRelease;
 							while ((oldestRelease = getOldestRelease(remoteSlave)) != null) {
 								GlobalContext.getEventService().publishAsync(new AFSEvent(oldestRelease, remoteSlave));
 								if (_onlyAnnounce) {
@@ -275,7 +278,7 @@ public class AutoFreeSpace implements PluginInterface {
 
 							while (freespace < _minFreeSpace) {
 	
-								InodeHandle oldestRelease = null;
+								InodeHandle oldestRelease;
 	
 								try {
 									oldestRelease = getOldestRelease(remoteSlave);

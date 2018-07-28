@@ -17,16 +17,6 @@
  */
 package org.drftpd.sections.conf;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
@@ -36,6 +26,10 @@ import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * @author mog
@@ -78,17 +72,14 @@ public class SectionManager implements SectionManagerInterface {
 		int matchlen = 0;
 		SectionInterface match = EMPTYSECTION;
 
-		for (Iterator<SectionInterface> iter = _sections.values().iterator(); iter
-				.hasNext();) {
-			SectionInterface section = iter.next();
-
-			if (string.startsWith(section.getBaseDirectory().getPath())
-					&& (matchlen < section.getCurrentDirectory().getPath()
-							.length())) {
-				match = section;
-				matchlen = section.getCurrentDirectory().getPath().length();
-			}
-		}
+        for (SectionInterface section : _sections.values()) {
+            if (string.startsWith(section.getBaseDirectory().getPath())
+                    && (matchlen < section.getCurrentDirectory().getPath()
+                    .length())) {
+                match = section;
+                matchlen = section.getCurrentDirectory().getPath().length();
+            }
+        }
 		return match;
 	}
 	
@@ -96,7 +87,7 @@ public class SectionManager implements SectionManagerInterface {
 	 * Load the different Section Types specified in plugin.xml
 	 */
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>>();
+		CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<ConfigurableSectionInterface>> loadedTypes =
@@ -115,7 +106,7 @@ public class SectionManager implements SectionManagerInterface {
 	public void reload() {
 		initTypes();
 		Properties p = new Properties();
-		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
+		HashMap<String, SectionInterface> sections = new HashMap<>();
 		FileInputStream stream = null;
         try {
         	stream = new FileInputStream("conf/sections.conf");
@@ -148,7 +139,7 @@ public class SectionManager implements SectionManagerInterface {
 			} else {
 				try {
 					Class<ConfigurableSectionInterface> clazz = _typesMap.get(type);
-					ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(new Object[] { Integer.valueOf(i), p });
+					ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(i, p);
 					sections.put(name, section);
 					if (_mkdirs) {
 						section.createSectionDir();

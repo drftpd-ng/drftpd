@@ -8,7 +8,7 @@ To upgrade from 2.x to 3.0 you will not be able to keep the virtual file system
 or slave files. Userfiles will be converted correctly if password is not encrypted.
 
 Follow the installation documentation and do now install into the version 2.x:
-  http://www.drftpd.org/index.php/Official_Install_Guide_3
+  https://github.com/drftpd-ng/drftpd3/blob/master/README.md
 
 During the execution of ./build.sh you have the option to convert 2.x userfiles.
 Check that option and you are asked to point to the folder where version 2.x is

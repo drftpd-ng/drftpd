@@ -17,10 +17,10 @@
  */
 package org.drftpd.event;
 
+import org.bushe.swing.event.ThreadSafeEventService;
+
 import java.lang.reflect.Type;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import org.bushe.swing.event.ThreadSafeEventService;
 
 /**
  * @author djb61
@@ -28,7 +28,7 @@ import org.bushe.swing.event.ThreadSafeEventService;
  */
 public final class AsyncThreadSafeEventService extends ThreadSafeEventService {
 
-	private LinkedBlockingQueue<QueuedAsyncEvent> _eventQueue = new LinkedBlockingQueue<QueuedAsyncEvent>();
+	private LinkedBlockingQueue<QueuedAsyncEvent> _eventQueue = new LinkedBlockingQueue<>();
 
 	public AsyncThreadSafeEventService() {
 		super();

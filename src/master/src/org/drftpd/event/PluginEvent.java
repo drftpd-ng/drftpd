@@ -17,10 +17,10 @@
  */
 package org.drftpd.event;
 
-import java.util.ArrayList;
-
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
+
+import java.util.ArrayList;
 
 /**
  * @author djb61
@@ -33,7 +33,7 @@ public class PluginEvent {
 	private String _plugin;
 
 	public PluginEvent(String pluginName) {
-		_parentPlugins = new ArrayList<String>();
+		_parentPlugins = new ArrayList<>();
 		for (Extension parent : PluginManager.lookup(this).getRegistry()
 			.getPluginDescriptor(pluginName).getExtensions()) {
 			_parentPlugins.add(parent.getExtendedPluginId()+"@"+

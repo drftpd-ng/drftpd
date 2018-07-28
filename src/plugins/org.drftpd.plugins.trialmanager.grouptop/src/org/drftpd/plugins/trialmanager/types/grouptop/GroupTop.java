@@ -209,7 +209,7 @@ public class GroupTop extends TrialType {
         MyGroupPosition stat = null;
         String groupname = "";
         ArrayList<User> users = getUsers();
-        ArrayList<MyGroupPosition> grpList = new ArrayList<MyGroupPosition>();
+        ArrayList<MyGroupPosition> grpList = new ArrayList<>();
         long minPercentage = getTop() / 100 * getMinPercent();
         for (User user : users) {
             groupname=user.getGroup();
@@ -331,7 +331,7 @@ public class GroupTop extends TrialType {
 		MyGroupPosition stat=null;
 		String groupname="";
 		ArrayList<User> users = getUsers();
-		ArrayList<MyGroupPosition> grpList = new ArrayList<MyGroupPosition>();
+		ArrayList<MyGroupPosition> grpList = new ArrayList<>();
 		for (User user : users) {
 			groupname = user.getGroup(); 
 				for (MyGroupPosition stat2 : grpList) {
@@ -426,7 +426,7 @@ public class GroupTop extends TrialType {
 			MyGroupPosition mo = (MyGroupPosition) o;
             long thisVal = getBytes()/getMembers();
 			long anotherVal = mo.getBytes()/mo.getMembers();
-			return ((thisVal < anotherVal) ? 1 : ((thisVal == anotherVal) ? 0 : (-1)));
+			return (Long.compare(anotherVal, thisVal));
 		}
 
 

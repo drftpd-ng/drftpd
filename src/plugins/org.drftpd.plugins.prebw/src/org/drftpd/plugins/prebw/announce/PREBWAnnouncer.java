@@ -16,24 +16,24 @@
  */
 package org.drftpd.plugins.prebw.announce;
 
-import java.util.ResourceBundle;
-import java.util.Collections;
-import java.util.Comparator;
-
-import org.drftpd.GlobalContext;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
+import org.drftpd.plugins.prebw.PreInfo;
+import org.drftpd.plugins.prebw.UserInfo;
+import org.drftpd.plugins.prebw.event.PREBWEvent;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.plugins.prebw.event.PREBWEvent;
-import org.drftpd.plugins.prebw.PreInfo;
-import org.drftpd.plugins.prebw.UserInfo;
+import org.drftpd.sections.SectionInterface;
 import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.ResourceBundle;
 
 /**
  * @author lh
@@ -75,10 +75,10 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			String section = preInfo.getSection().getName();
+			SectionInterface section = preInfo.getSection();
 			env.add("dir", dir.getName());
-			env.add("section", section);
-			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
+			env.add("section", section.getName());
+			env.add("sectioncolor", section.getColor());
 			StringBuilder bw = new StringBuilder();
 			String delim = ReplacerUtils.jprintf(_keyPrefix+".prebw.bw.separator", env, _bundle).trim();
 			for (String messure : preInfo.getMessures().keySet()) {
@@ -94,34 +94,34 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 			}
 			env.add("bw", bw);
 			StringBuilder leechers = new StringBuilder();
-			int leechCount = Integer.parseInt(ReplacerUtils.jprintf(_keyPrefix+
-					".prebw.leechtop.count", new ReplacerEnvironment(), _bundle));
-			if (leechCount == 0 || preInfo.getUsers().isEmpty()) {
-				ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-				tmpenv.add("dir", dir);
-				tmpenv.add("section", section);
-				tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
-				leechers.append(ReplacerUtils.jprintf(_keyPrefix+".prebw.leechtop.empty",
-						tmpenv, _bundle));
-			} else {
-				Collections.sort(preInfo.getUsers(), new UserComparator());
-				int i = 0;
-				for (UserInfo u : preInfo.getUsers()) {
-					if (i == leechCount)
-						break;
+			if (event.getLeechtopCount() != 0) {
+				if (preInfo.getUsers().isEmpty()) {
 					ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-					tmpenv.add("dir", dir);
-					tmpenv.add("section", section);
-					tmpenv.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(preInfo.getDir()).getColor());
-					tmpenv.add("username", u.getName());
-					tmpenv.add("group", u.getGroup());
-					tmpenv.add("bytes", Bytes.formatBytes(u.getBytes()));
-					tmpenv.add("files", u.getFiles());
-					tmpenv.add("avgspeed", Bytes.formatBytes(u.getAvgSpeed())+"/s");
-					tmpenv.add("topspeed", Bytes.formatBytes(u.getTopSpeed())+"/s");
-					leechers.append(ReplacerUtils.jprintf(_keyPrefix+".prebw.leechtop.format",
+					tmpenv.add("dir", dir.getName());
+					tmpenv.add("section", section.getName());
+					tmpenv.add("sectioncolor", section.getColor());
+					leechers.append(ReplacerUtils.jprintf(_keyPrefix + ".prebw.leechtop.empty",
 							tmpenv, _bundle));
-					i++;
+				} else {
+					preInfo.getUsers().sort(new UserComparator());
+					int i = 0;
+					for (UserInfo u : preInfo.getUsers()) {
+						if (i == event.getLeechtopCount())
+							break;
+						ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+						tmpenv.add("dir", dir);
+						tmpenv.add("section", section.getName());
+						tmpenv.add("sectioncolor", section.getColor());
+						tmpenv.add("username", u.getName());
+						tmpenv.add("group", u.getGroup());
+						tmpenv.add("bytes", Bytes.formatBytes(u.getBytes()));
+						tmpenv.add("files", u.getFiles());
+						tmpenv.add("avgspeed", Bytes.formatBytes(u.getAvgSpeed()) + "/s");
+						tmpenv.add("topspeed", Bytes.formatBytes(u.getTopSpeed()) + "/s");
+						leechers.append(ReplacerUtils.jprintf(_keyPrefix + ".prebw.leechtop.format",
+								tmpenv, _bundle));
+						i++;
+					}
 				}
 			}
 			env.add("leechtop", leechers);

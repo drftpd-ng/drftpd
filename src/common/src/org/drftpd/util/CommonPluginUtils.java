@@ -17,17 +17,17 @@
  */
 package org.drftpd.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.java.plugin.Plugin;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A collection of helper methods to perform common tasks with the plugin framework.
@@ -238,7 +238,7 @@ public class CommonPluginUtils {
 			Class<?>[] constructorSig, Object[] constructorArgs, boolean activatePlugin, boolean logError, boolean failOnError) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
-		List<T> pluginObjs = new ArrayList<T>();
+		List<T> pluginObjs = new ArrayList<>();
 		PluginManager manager = PluginManager.lookup(caller);
 		ExtensionPoint pluginExtPoint = 
 			manager.getRegistry().getExtensionPoint( 
@@ -359,7 +359,7 @@ public class CommonPluginUtils {
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException, PluginLifecycleException {
 		T retObj = null;
 		try {
-			retObj = CommonPluginUtils.<T>getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
+			retObj = CommonPluginUtils.getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
 					null, null, true, true);
 		} catch (InvocationTargetException e) {
 			// can't happen as called with nullary constructor
@@ -427,7 +427,7 @@ public class CommonPluginUtils {
 			String desiredPlugin, Class<?>[] constructorSig, Object[] constructorArgs) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
-		return CommonPluginUtils.<T>getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
+		return CommonPluginUtils.getSinglePluginObject(caller, parentPluginName, extName, classParamName, desiredPlugin,
 				constructorSig, constructorArgs, true, true);
 	}
 
@@ -1054,7 +1054,7 @@ public class CommonPluginUtils {
 			boolean activatePlugin, boolean logError, boolean failOnError) throws ClassNotFoundException, IllegalAccessException,
 			IllegalArgumentException, InstantiationException, InvocationTargetException, NoSuchMethodException,
 			PluginLifecycleException {
-		List<PluginObjectContainer<T>> pluginContainers = new ArrayList<PluginObjectContainer<T>>();
+		List<PluginObjectContainer<T>> pluginContainers = new ArrayList<>();
 		PluginManager manager = PluginManager.lookup(caller);
 		ExtensionPoint pluginExtPoint = 
 			manager.getRegistry().getExtensionPoint( 
@@ -1080,12 +1080,12 @@ public class CommonPluginUtils {
 						pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 					}
 					if (methodSig == null) {
-						container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin);
+						container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin);
 					} else {
 						try {
 							Method pluginMethod = pluginCls.getMethod(plugin.getParameter(methodParamName).valueAsString()
 									, methodSig);
-							container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin, pluginMethod);
+							container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin, pluginMethod);
 						} catch (NoSuchMethodException e) {
 							if (logError) {
 								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
@@ -1100,7 +1100,7 @@ public class CommonPluginUtils {
 						}
 					}
 				} else {
-					container = new PluginObjectContainer<T>(pluginCls, plugin);
+					container = new PluginObjectContainer<>(pluginCls, plugin);
 				}
 				pluginContainers.add(container);
 			} catch (ClassNotFoundException e) {
@@ -1319,11 +1319,11 @@ public class CommonPluginUtils {
 							pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 						}
 						if (methodSig == null) {
-							container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin);
+							container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin);
 						} else {
 							try {
 								Method pluginMethod = pluginCls.getMethod(methodName, methodSig);
-								container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin, pluginMethod);
+								container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin, pluginMethod);
 							} catch (NoSuchMethodException e) {
 								if (logError) {
 									logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
@@ -1334,7 +1334,7 @@ public class CommonPluginUtils {
 							}
 						}
 					} else {
-						container = new PluginObjectContainer<T>(pluginCls, plugin);
+						container = new PluginObjectContainer<>(pluginCls, plugin);
 					}
 					return container;
 				}

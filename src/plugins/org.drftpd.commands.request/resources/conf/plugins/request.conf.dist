@@ -1,5 +1,5 @@
 # Request path
-request.dirpath=/requests
+request.dirpath=/REQUESTS
 
 # Creates 'request.dirpath' if it does not exist.
 request.createpath=true
@@ -10,6 +10,10 @@ request.weekmax=2
 request.weekexempt=
 # Decrease the usage of the weekly allotment when reqdel
 request.weekdecrease=false
+
+# Regex pattern to deny unwanted chars in request name
+# Deny if any non ASCII character in request name
+request.deny.1=[^\\p{ASCII}]
 
 # Customize the directories prefix
 reqfilled.prefix=FILLED-for.

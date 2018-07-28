@@ -66,9 +66,8 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 	}
 
 	public String[] getEventTypes() {
-		String[] types = {"mkdir","rmdir","wipe","addslave",
-				"delslave","store","invite"};
-		return types;
+		return new String[]{"mkdir","rmdir","wipe","addslave",
+				"delslave","msgslave", "msgmaster","invite"};
 	}
 	
 	public void setResourceBundle(ResourceBundle bundle) {
@@ -94,25 +93,29 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 		env.add("slave", event.getRSlave().getName());
 		env.add("message", event.getMessage());
 
-		if (event.getCommand().equals("ADDSLAVE")) {
-			SlaveStatus status;
+        switch (event.getCommand()) {
+            case "ADDSLAVE":
+                SlaveStatus status;
 
-			try {
-				status = event.getRSlave().getSlaveStatusAvailable();
-			} catch (SlaveUnavailableException e) {
-				logger.warn("in ADDSLAVE event handler", e);
+                try {
+                    status = event.getRSlave().getSlaveStatusAvailable();
+                } catch (SlaveUnavailableException e) {
+                    logger.warn("in ADDSLAVE event handler", e);
 
-				return;
-			}
+                    return;
+                }
 
-			SlaveManagement.fillEnvWithSlaveStatus(env, status);
+                SlaveManagement.fillEnvWithSlaveStatus(env, status);
 
-			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".addslave", env, _bundle), "addslave");
-		} else if (event.getCommand().equals("DELSLAVE")) {
-			outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".delslave", env, _bundle), "delslave");
-                } else if (event.getCommand().equals("MSGSLAVE")) {
-                        outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgslave", env, _bundle), "msgslave");
-		}
+                outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix + ".addslave", env, _bundle), "addslave");
+                break;
+            case "DELSLAVE":
+                outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix + ".delslave", env, _bundle), "delslave");
+                break;
+            case "MSGSLAVE":
+                outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix + ".msgslave", env, _bundle), "msgslave");
+                break;
+        }
 	}
 
 	@EventSubscriber

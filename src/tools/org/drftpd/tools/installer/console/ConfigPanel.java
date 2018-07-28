@@ -17,29 +17,16 @@
  */
 package org.drftpd.tools.installer.console;
 
-import java.io.File;
-import java.util.ArrayList;
-
-import charva.awt.BorderLayout;
-import charva.awt.FlowLayout;
-import charva.awt.GridBagConstraints;
-import charva.awt.GridBagLayout;
-import charva.awt.Insets;
-import charva.awt.Toolkit;
+import charva.awt.*;
 import charva.awt.event.ActionEvent;
 import charva.awt.event.ActionListener;
 import charva.awt.event.ItemEvent;
 import charva.awt.event.ItemListener;
-
-import charvax.swing.JButton;
-import charvax.swing.JCheckBox;
-import charvax.swing.JComboBox;
-import charvax.swing.JFileChooser;
-import charvax.swing.JLabel;
-import charvax.swing.JPanel;
-import charvax.swing.JTextField;
-
+import charvax.swing.*;
 import org.drftpd.tools.installer.InstallerConfig;
+
+import java.io.File;
+import java.util.ArrayList;
 
 /**
  * @author djb61
@@ -64,7 +51,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 
 	public ConfigPanel(InstallerConfig config) {
 		_config = config;
-		_logList = new ArrayList<String>();
+		_logList = new ArrayList<>();
 		setLayout(new BorderLayout());
 		JPanel centerPanel = new JPanel();
 		centerPanel.setLayout(new GridBagLayout());
@@ -108,11 +95,7 @@ public class ConfigPanel extends JPanel implements ActionListener, ItemListener 
 		fileLogLabel.setText("Enable file logging: ");
 		_fileLog = new JCheckBox();
 		_fileLog.setSelected(_config.getFileLogging());
-		_fileLog.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateLogLabel();
-			}
-		});
+		_fileLog.addActionListener(e -> updateLogLabel());
 		JLabel cleanLabel = new JLabel();
 		cleanLabel.setText("Clean before build: ");
 		_clean = new JCheckBox();

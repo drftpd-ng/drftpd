@@ -27,21 +27,21 @@ import java.io.FileNotFoundException;
  * @version $Id$
  */
 public interface InodeHandleInterface {
-	public String getGroup() throws FileNotFoundException;
+	String getGroup() throws FileNotFoundException;
 
-	public String getName();
+	String getName();
 
-	public long getSize() throws FileNotFoundException;
+	long getSize() throws FileNotFoundException;
 
-	public String getUsername() throws FileNotFoundException;
+	String getUsername() throws FileNotFoundException;
 
-	public long lastModified() throws FileNotFoundException;
+	long lastModified() throws FileNotFoundException;
 
-	public boolean isDirectory() throws FileNotFoundException;
+	boolean isDirectory() throws FileNotFoundException;
 	
-	public boolean isFile() throws FileNotFoundException;
+	boolean isFile() throws FileNotFoundException;
 	
-	public boolean isLink() throws FileNotFoundException;
+	boolean isLink() throws FileNotFoundException;
 	
-	public String getPath();
+	String getPath();
 }

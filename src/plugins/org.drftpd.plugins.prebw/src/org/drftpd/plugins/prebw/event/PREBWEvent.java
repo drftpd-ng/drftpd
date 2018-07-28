@@ -24,13 +24,18 @@ import org.drftpd.plugins.prebw.PreInfo;
 public class PREBWEvent {
 
 	private PreInfo _preInfo;
+	private int _leechtopCount;
 
-	public PREBWEvent(PreInfo preInfo) {
+	public PREBWEvent(PreInfo preInfo, int leechtopCount) {
 		_preInfo = preInfo;
+		_leechtopCount = leechtopCount;
 	}
 
 	public PreInfo getPreInfo() {
 		return _preInfo;
 	}
 
+	public int getLeechtopCount() {
+		return _leechtopCount;
+	}
 }

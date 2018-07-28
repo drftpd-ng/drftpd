@@ -27,7 +27,7 @@ import org.drftpd.dynamicdata.Key;
 @SuppressWarnings("serial")
 public class FlacInfo implements Serializable {
 
-	public static final Key<FlacInfo> FLACINFO = new Key<FlacInfo>(FlacInfo.class, "flac");
+	public static final Key<FlacInfo> FLACINFO = new Key<>(FlacInfo.class, "flac");
 
 	private VorbisTag _vorbisTag;
 

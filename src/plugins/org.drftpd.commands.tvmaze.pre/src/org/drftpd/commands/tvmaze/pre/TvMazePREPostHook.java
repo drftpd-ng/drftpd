@@ -25,6 +25,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.pre.Pre;
 import org.drftpd.commands.tvmaze.TvMazeConfig;
 import org.drftpd.commands.tvmaze.TvMazePrintThread;
+import org.drftpd.commands.tvmaze.TvMazeUtils;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -51,7 +52,7 @@ public class TvMazePREPostHook implements PostHookInterface {
 		}
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(preDir);
-		if (!TvMazeConfig.getInstance().getRaceSections().contains(sec.getName().toLowerCase()))
+		if (!TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getRaceSections()))
 			return;
 
 		if (preDir.getName().matches(TvMazeConfig.getInstance().getExclude()))

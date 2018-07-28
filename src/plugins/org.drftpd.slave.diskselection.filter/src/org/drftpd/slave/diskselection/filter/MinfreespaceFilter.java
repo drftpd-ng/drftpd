@@ -58,21 +58,19 @@ public class MinfreespaceFilter extends DiskFilter {
 	public void process(ScoreChart sc, String path) {
 		AssignRoot.addScoresToChart(this, _assignList, sc);
 
-		for (Iterator<Root> iter = getRootList().iterator(); iter.hasNext();) {
-			Root o = iter.next();
+        for (Root o : getRootList()) {
+            if (!AssignRoot.isAssignedRoot(this, o, _assignList))
+                continue;
 
-			if (!AssignRoot.isAssignedRoot(this, o, _assignList))
-				continue;
-
-			long df = o.getDiskSpaceAvailable();
-			if (df < _minfreespace) {
-				if (_multiplier == 0) {
-					sc.removeFromChart(o);
-				} else {
-					sc.addScore(o, -(long) ((_minfreespace - df) * _multiplier));
-				}
-			}
-		}
+            long df = o.getDiskSpaceAvailable();
+            if (df < _minfreespace) {
+                if (_multiplier == 0) {
+                    sc.removeFromChart(o);
+                } else {
+                    sc.addScore(o, -(long) ((_minfreespace - df) * _multiplier));
+                }
+            }
+        }
 	}
 	
 	public String toString() {

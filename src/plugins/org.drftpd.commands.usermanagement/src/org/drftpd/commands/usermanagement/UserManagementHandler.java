@@ -16,32 +16,12 @@
  */
 package org.drftpd.commands.usermanagement;
 
-import java.io.FileNotFoundException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.MissingResourceException;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.exceptions.DuplicateElementException;
@@ -58,6 +38,11 @@ import org.drftpd.usermanager.UserFileException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
+
+import java.io.FileNotFoundException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author mog
@@ -80,7 +65,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 	}
 	
-	public static final Key<List<BaseFtpConnection>> CONNECTIONS = new Key<List<BaseFtpConnection>>(UserManagement.class, "connections");
+	public static final Key<List<BaseFtpConnection>> CONNECTIONS = new Key<>(UserManagement.class, "connections");
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
@@ -455,7 +440,7 @@ public class UserManagementHandler extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		Collection<User> users = new ArrayList<User>();
+		Collection<User> users = new ArrayList<>();
 
 		User userToChange;
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -516,25 +501,24 @@ public class UserManagementHandler extends CommandInterface {
 
 		fullCommandArgument = fullCommandArgument.trim();
 
-		Iterator<User> userIterator = users.iterator();
-		while (userIterator.hasNext()) {
-			userToChange = (User) userIterator.next();
+		for (User user1 : users) {
+			userToChange = user1;
 
-		if ("ratio".equals(command)) {
-			// //// Ratio //////
-			if (commandArguments.length != 1) {
-				throw new ImproperUsageException();
-			}
-
-			float ratio = Float.parseFloat(commandArguments[0]);
-
-			if (session.getUserNull(request.getUser()).isGroupAdmin()
-					&& !session.getUserNull(request.getUser()).isAdmin()) {
-				// //// Group Admin Ratio //////
-
-				if (!userToChange.isMemberOf(session.getUserNull(request.getUser()).getGroup())) {
-					return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			if ("ratio".equals(command)) {
+				// //// Ratio //////
+				if (commandArguments.length != 1) {
+					throw new ImproperUsageException();
 				}
+
+				float ratio = Float.parseFloat(commandArguments[0]);
+
+				if (session.getUserNull(request.getUser()).isGroupAdmin()
+						&& !session.getUserNull(request.getUser()).isAdmin()) {
+					// //// Group Admin Ratio //////
+
+					if (!userToChange.isMemberOf(session.getUserNull(request.getUser()).getGroup())) {
+						return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+					}
 
 
 			/*	if (!session.getUserNull(request.getUser()).getGroup().equals(
@@ -542,356 +526,355 @@ public class UserManagementHandler extends CommandInterface {
 					return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 				}
 			*/
-				if (ratio == 0F) {
-					int usedleechslots = 0;
+					if (ratio == 0F) {
+						int usedleechslots = 0;
 
-					for (Iterator<User> iter = GlobalContext.getGlobalContext()
-							.getUserManager().getAllUsersByGroup(
-									session.getUserNull(request.getUser()).getGroup())
-							.iterator(); iter.hasNext();) {
-						if ((iter.next()).getKeyedMap()
-								.getObjectFloat(UserManagement.RATIO) == 0F) {
-							usedleechslots++;
+						for (User user : GlobalContext.getGlobalContext()
+								.getUserManager().getAllUsersByGroup(
+										session.getUserNull(request.getUser()).getGroup())) {
+							if ((user).getKeyedMap()
+									.getObjectFloat(UserManagement.RATIO) == 0F) {
+								usedleechslots++;
+							}
 						}
-					}
 
-					if (usedleechslots >= session.getUserNull(request.getUser()).getKeyedMap()
-							.getObjectInteger(UserManagement.LEECHSLOTS)) {
+						if (usedleechslots >= session.getUserNull(request.getUser()).getKeyedMap()
+								.getObjectInteger(UserManagement.LEECHSLOTS)) {
+							return new CommandResponse(452, session.jprintf(_bundle,
+									_keyPrefix + "changeratio.nomoreslots", request.getUser()));
+						}
+					} else if (ratio < session.getUserNull(request.getUser()).getMinRatio()
+							|| ratio > session.getUserNull(request.getUser()).getMaxRatio()) {
+						env.add("minratio", session.getUserNull(request.getUser()).getMinRatio());
+						env.add("maxratio", session.getUserNull(request.getUser()).getMaxRatio());
 						return new CommandResponse(452, session.jprintf(_bundle,
-										_keyPrefix+"changeratio.nomoreslots", request.getUser()));
+								_keyPrefix + "changeratio.invalidratio", env, request.getUser()));
 					}
-				} else if (ratio < session.getUserNull(request.getUser()).getMinRatio()
-						|| ratio > session.getUserNull(request.getUser()).getMaxRatio()) {
-					env.add("minratio", session.getUserNull(request.getUser()).getMinRatio());
-					env.add("maxratio", session.getUserNull(request.getUser()).getMaxRatio());
-					return new CommandResponse(452, session.jprintf(_bundle,
-							_keyPrefix+"changeratio.invalidratio", env, request.getUser()));
-				}
 
-				logger.info("'"
-						+ session.getUserNull(request.getUser()).getName()
-						+ "' changed ratio for '"
-						+ userToChange.getName()
-						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectFloat(
-								UserManagement.RATIO) + "' to '" + ratio + "'");
-				userToChange.getKeyedMap().setObject(UserManagement.RATIO,
-						new Float(ratio));
-				env.add("newratio", Float.toString(userToChange.getKeyedMap()
-						.getObjectFloat(UserManagement.RATIO)));
-				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"changeratio.success", env, request.getUser()));
-			} else {
-				// Ratio changes by an admin //
-				logger.info("'"
-						+ session.getUserNull(request.getUser()).getName()
-						+ "' changed ratio for '"
-						+ userToChange.getName()
-						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectFloat(
-								UserManagement.RATIO) + " to '" + ratio + "'");
-				userToChange.getKeyedMap().setObject(UserManagement.RATIO,
-						new Float(ratio));
-				env.add("newratio", Float.toString(userToChange.getKeyedMap()
-						.getObjectFloat(UserManagement.RATIO)));
-				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"changeratio.success", env, request.getUser()));
-			}
-		} else if ("credits".equals(command)) {
-			if (commandArguments.length != 1) {
-				throw new ImproperUsageException();
-			}
-
-			long credits = 0L;
-			
-			try {
-				credits = Bytes.parseBytes(commandArguments[0]);
-			} catch (NumberFormatException e) {
-				return new CommandResponse(452, "The string " + commandArguments[0]
-						+ " cannot be interpreted");				
-			}
-			
-			logger.info("'" + session.getUserNull(request.getUser()).getName()
-					+ "' changed credits for '" + userToChange.getName()
-					+ "' from '" + userToChange.getCredits() + " to '"
-					+ credits + "'");
-			userToChange.setCredits(credits);
-			env.add("newcredits", Bytes.formatBytes(userToChange.getCredits()));
-			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"changecredits.success", env, request.getUser()));
-		} else if ("comment".equals(command)) {
-			logger.info("'"
-					+ session.getUserNull(request.getUser()).getName()
-					+ "' changed comment for '"
-					+ userToChange.getName()
-					+ "' from '"
-					+ userToChange.getKeyedMap().getObjectString(
-							UserManagement.COMMENT) + " to '"
-					+ fullCommandArgument + "'");
-			userToChange.getKeyedMap().setObject(UserManagement.COMMENT,
-					fullCommandArgument);
-			env.add("comment", userToChange.getKeyedMap().getObjectString(
-					UserManagement.COMMENT));
-			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"changecomment.success", env, request.getUser()));
-		} else if ("idle_time".equals(command)) {
-			if (commandArguments.length != 1) {
-				throw new ImproperUsageException();
-			}
-
-			int idleTime = Integer.parseInt(commandArguments[0]);
-			env.add("oldidletime", "" + userToChange.getIdleTime());
-			logger.info("'" + session.getUserNull(request.getUser()).getName()
-					+ "' changed idle_time for '" + userToChange.getName()
-					+ "' from '" + userToChange.getIdleTime() + " to '"
-					+ idleTime + "'");
-			userToChange.setIdleTime(idleTime);
-			env.add("newidletime", "" + idleTime);
-			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"changeidletime.success", env, request.getUser()));
-		} else if ("num_logins".equals(command)) {
-			// [# sim logins] [# sim logins/ip]
-			try {
-				int numLogins;
-				int numLoginsIP;
-
-				if ((commandArguments.length < 1)
-						|| (commandArguments.length > 2)) {
-					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-				}
-
-				numLogins = Integer.parseInt(commandArguments[0]);
-
-				if (commandArguments.length == 2) {
-					numLoginsIP = Integer.parseInt(commandArguments[1]);
+					logger.info("'"
+							+ session.getUserNull(request.getUser()).getName()
+							+ "' changed ratio for '"
+							+ userToChange.getName()
+							+ "' from '"
+							+ userToChange.getKeyedMap().getObjectFloat(
+							UserManagement.RATIO) + "' to '" + ratio + "'");
+					userToChange.getKeyedMap().setObject(UserManagement.RATIO,
+							ratio);
+					env.add("newratio", Float.toString(userToChange.getKeyedMap()
+							.getObjectFloat(UserManagement.RATIO)));
+					response.addComment(session.jprintf(_bundle,
+							_keyPrefix + "changeratio.success", env, request.getUser()));
 				} else {
-					numLoginsIP = userToChange.getKeyedMap().getObjectInteger(
-							UserManagement.MAXLOGINSIP);
+					// Ratio changes by an admin //
+					logger.info("'"
+							+ session.getUserNull(request.getUser()).getName()
+							+ "' changed ratio for '"
+							+ userToChange.getName()
+							+ "' from '"
+							+ userToChange.getKeyedMap().getObjectFloat(
+							UserManagement.RATIO) + " to '" + ratio + "'");
+					userToChange.getKeyedMap().setObject(UserManagement.RATIO,
+							ratio);
+					env.add("newratio", Float.toString(userToChange.getKeyedMap()
+							.getObjectFloat(UserManagement.RATIO)));
+					response.addComment(session.jprintf(_bundle,
+							_keyPrefix + "changeratio.success", env, request.getUser()));
+				}
+			} else if ("credits".equals(command)) {
+				if (commandArguments.length != 1) {
+					throw new ImproperUsageException();
 				}
 
-				logger.info("'"
-						+ session.getUserNull(request.getUser()).getName()
-						+ "' changed num_logins for '"
-						+ userToChange.getName()
-						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectInteger(
-								UserManagement.MAXLOGINS)
-						+ "' '"
-						+ userToChange.getKeyedMap().getObjectInteger(
-								UserManagement.MAXLOGINSIP) + "' to '"
-						+ numLogins + "' '" + numLoginsIP + "'");
-				userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS,
-						numLogins);
-				userToChange.getKeyedMap().setObject(
-						UserManagement.MAXLOGINSIP, numLoginsIP);
-				env.add("numlogins", "" + numLogins);
-				env.add("numloginsip", "" + numLoginsIP);
-				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"changenumlogins.success", env, request.getUser()));
-			} catch (NumberFormatException ex) {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			}
+				long credits = 0L;
 
-			// } else if ("max_dlspeed".equalsIgnoreCase(command)) {
-			// myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
-			// } else if ("max_ulspeed".equals(command)) {
-			// myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
-		} else if ("group_ratio".equals(command)) {
-			// [# min] [# max]
-			if (commandArguments.length != 2) {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			}
-
-			try {
-				float minRatio = Float.parseFloat(commandArguments[0]);
-				float maxRatio = Float.parseFloat(commandArguments[1]);
-
-				env.add("minratio", "" + minRatio);
-				env.add("maxratio", "" + maxRatio);
+				try {
+					credits = Bytes.parseBytes(commandArguments[0]);
+				} catch (NumberFormatException e) {
+					return new CommandResponse(452, "The string " + commandArguments[0]
+							+ " cannot be interpreted");
+				}
 
 				logger.info("'" + session.getUserNull(request.getUser()).getName()
-						+ "' changed gadmin min/max ratio for user '"
-						+ userToChange.getName() + "' group '"
-						+ userToChange.getGroup() + "' from '"
-						+ userToChange.getMinRatio() + "/"
-						+ userToChange.getMaxRatio() + "' to '" + minRatio
-						+ "/" + maxRatio + "'");
-
-				if (minRatio < 1 || maxRatio < minRatio)
-					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-
-				userToChange.setMinRatio(minRatio);
-				userToChange.setMaxRatio(maxRatio);
-
+						+ "' changed credits for '" + userToChange.getName()
+						+ "' from '" + userToChange.getCredits() + " to '"
+						+ credits + "'");
+				userToChange.setCredits(credits);
+				env.add("newcredits", Bytes.formatBytes(userToChange.getCredits()));
 				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"changegadminratio.success", env, request.getUser()));
+						_keyPrefix + "changecredits.success", env, request.getUser()));
+			} else if ("comment".equals(command)) {
+				logger.info("'"
+						+ session.getUserNull(request.getUser()).getName()
+						+ "' changed comment for '"
+						+ userToChange.getName()
+						+ "' from '"
+						+ userToChange.getKeyedMap().getObjectString(
+						UserManagement.COMMENT) + " to '"
+						+ fullCommandArgument + "'");
+				userToChange.getKeyedMap().setObject(UserManagement.COMMENT,
+						fullCommandArgument);
+				env.add("comment", userToChange.getKeyedMap().getObjectString(
+						UserManagement.COMMENT));
+				response.addComment(session.jprintf(_bundle,
+						_keyPrefix + "changecomment.success", env, request.getUser()));
+			} else if ("idle_time".equals(command)) {
+				if (commandArguments.length != 1) {
+					throw new ImproperUsageException();
+				}
 
-			} catch (NumberFormatException ex) {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			}
-		} else if ("max_sim".equals(command)) {
-			// [# DN] [# UP]
+				int idleTime = Integer.parseInt(commandArguments[0]);
+				env.add("oldidletime", "" + userToChange.getIdleTime());
+				logger.info("'" + session.getUserNull(request.getUser()).getName()
+						+ "' changed idle_time for '" + userToChange.getName()
+						+ "' from '" + userToChange.getIdleTime() + " to '"
+						+ idleTime + "'");
+				userToChange.setIdleTime(idleTime);
+				env.add("newidletime", "" + idleTime);
+				response.addComment(session.jprintf(_bundle,
+						_keyPrefix + "changeidletime.success", env, request.getUser()));
+			} else if ("num_logins".equals(command)) {
+				// [# sim logins] [# sim logins/ip]
+				try {
+					int numLogins;
+					int numLoginsIP;
 
-			try {
-				int maxup;
-				int maxdn;
+					if ((commandArguments.length < 1)
+							|| (commandArguments.length > 2)) {
+						return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+					}
 
+					numLogins = Integer.parseInt(commandArguments[0]);
+
+					if (commandArguments.length == 2) {
+						numLoginsIP = Integer.parseInt(commandArguments[1]);
+					} else {
+						numLoginsIP = userToChange.getKeyedMap().getObjectInteger(
+								UserManagement.MAXLOGINSIP);
+					}
+
+					logger.info("'"
+							+ session.getUserNull(request.getUser()).getName()
+							+ "' changed num_logins for '"
+							+ userToChange.getName()
+							+ "' from '"
+							+ userToChange.getKeyedMap().getObjectInteger(
+							UserManagement.MAXLOGINS)
+							+ "' '"
+							+ userToChange.getKeyedMap().getObjectInteger(
+							UserManagement.MAXLOGINSIP) + "' to '"
+							+ numLogins + "' '" + numLoginsIP + "'");
+					userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS,
+							numLogins);
+					userToChange.getKeyedMap().setObject(
+							UserManagement.MAXLOGINSIP, numLoginsIP);
+					env.add("numlogins", "" + numLogins);
+					env.add("numloginsip", "" + numLoginsIP);
+					response.addComment(session.jprintf(_bundle,
+							_keyPrefix + "changenumlogins.success", env, request.getUser()));
+				} catch (NumberFormatException ex) {
+					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+				}
+
+				// } else if ("max_dlspeed".equalsIgnoreCase(command)) {
+				// myUser.setMaxDownloadRate(Integer.parseInt(commandArgument));
+				// } else if ("max_ulspeed".equals(command)) {
+				// myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
+			} else if ("group_ratio".equals(command)) {
+				// [# min] [# max]
 				if (commandArguments.length != 2) {
 					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 				}
 
-				maxdn = Integer.parseInt(commandArguments[0]);
-				maxup = Integer.parseInt(commandArguments[1]);
+				try {
+					float minRatio = Float.parseFloat(commandArguments[0]);
+					float maxRatio = Float.parseFloat(commandArguments[1]);
 
-				logger
-						.info("'"
-								+ session.getUserNull(request.getUser()).getName()
-								+ "' changed max simultaneous download/upload slots for '"
-								+ userToChange.getName() + "' from '"
-								+ userToChange.getMaxSimDown() + "' '"
-								+ userToChange.getMaxSimUp() + "' to '" + maxdn
-								+ "' '" + maxup + "'");
+					env.add("minratio", "" + minRatio);
+					env.add("maxratio", "" + maxRatio);
 
-				userToChange.getKeyedMap().setObject(UserManagement.MAXSIMDN,
-						maxdn);
-				userToChange.getKeyedMap().setObject(UserManagement.MAXSIMUP,
-						maxup);
-				userToChange.setMaxSimUp(maxup);
-				userToChange.setMaxSimDown(maxdn);
-				env.add("maxdn", "" + maxdn);
-				env.add("maxup", "" + maxup);
-				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"changemaxsim.success", env, request.getUser()));
+					logger.info("'" + session.getUserNull(request.getUser()).getName()
+							+ "' changed gadmin min/max ratio for user '"
+							+ userToChange.getName() + "' group '"
+							+ userToChange.getGroup() + "' from '"
+							+ userToChange.getMinRatio() + "/"
+							+ userToChange.getMaxRatio() + "' to '" + minRatio
+							+ "/" + maxRatio + "'");
 
-			} catch (NumberFormatException ex) {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			}
-		} else if ("group".equals(command)) {
-			if (commandArguments.length != 1) {
-				throw new ImproperUsageException();
-			}
+					if (minRatio < 1 || maxRatio < minRatio)
+						return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 
-			logger.info("'" + session.getUserNull(request.getUser()).getName()
-					+ "' changed primary group for '" + userToChange.getName()
-					+ "' from '" + userToChange.getGroup() + "' to '"
-					+ commandArguments[0] + "'");
-			userToChange.setGroup(commandArguments[0]);
-			env.add("primgroup", userToChange.getGroup());
-			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"changeprimgroup.success", env, request.getUser()));
+					userToChange.setMinRatio(minRatio);
+					userToChange.setMaxRatio(maxRatio);
 
-			// group_slots Number of users a GADMIN is allowed to add.
-			// If you specify a second argument, it will be the
-			// number of leech accounts the gadmin can give (done by
-			// "site change user ratio 0") (2nd arg = leech slots)
-		} else if ("group_slots".equals(command)) {
-			try {
-				if ((commandArguments.length < 1)
-						|| (commandArguments.length > 2)) {
+					response.addComment(session.jprintf(_bundle,
+							_keyPrefix + "changegadminratio.success", env, request.getUser()));
+
+				} catch (NumberFormatException ex) {
 					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 				}
+			} else if ("max_sim".equals(command)) {
+				// [# DN] [# UP]
 
-				int groupSlots = Short.parseShort(commandArguments[0]);
-				int groupLeechSlots;
+				try {
+					int maxup;
+					int maxdn;
 
-				if (commandArguments.length >= 2) {
-					groupLeechSlots = Integer.parseInt(commandArguments[1]);
+					if (commandArguments.length != 2) {
+						return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+					}
+
+					maxdn = Integer.parseInt(commandArguments[0]);
+					maxup = Integer.parseInt(commandArguments[1]);
+
+					logger
+							.info("'"
+									+ session.getUserNull(request.getUser()).getName()
+									+ "' changed max simultaneous download/upload slots for '"
+									+ userToChange.getName() + "' from '"
+									+ userToChange.getMaxSimDown() + "' '"
+									+ userToChange.getMaxSimUp() + "' to '" + maxdn
+									+ "' '" + maxup + "'");
+
+					userToChange.getKeyedMap().setObject(UserManagement.MAXSIMDN,
+							maxdn);
+					userToChange.getKeyedMap().setObject(UserManagement.MAXSIMUP,
+							maxup);
+					userToChange.setMaxSimUp(maxup);
+					userToChange.setMaxSimDown(maxdn);
+					env.add("maxdn", "" + maxdn);
+					env.add("maxup", "" + maxup);
+					response.addComment(session.jprintf(_bundle,
+							_keyPrefix + "changemaxsim.success", env, request.getUser()));
+
+				} catch (NumberFormatException ex) {
+					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+				}
+			} else if ("group".equals(command)) {
+				if (commandArguments.length != 1) {
+					throw new ImproperUsageException();
+				}
+
+				logger.info("'" + session.getUserNull(request.getUser()).getName()
+						+ "' changed primary group for '" + userToChange.getName()
+						+ "' from '" + userToChange.getGroup() + "' to '"
+						+ commandArguments[0] + "'");
+				userToChange.setGroup(commandArguments[0]);
+				env.add("primgroup", userToChange.getGroup());
+				response.addComment(session.jprintf(_bundle,
+						_keyPrefix + "changeprimgroup.success", env, request.getUser()));
+
+				// group_slots Number of users a GADMIN is allowed to add.
+				// If you specify a second argument, it will be the
+				// number of leech accounts the gadmin can give (done by
+				// "site change user ratio 0") (2nd arg = leech slots)
+			} else if ("group_slots".equals(command)) {
+				try {
+					if ((commandArguments.length < 1)
+							|| (commandArguments.length > 2)) {
+						return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+					}
+
+					int groupSlots = Short.parseShort(commandArguments[0]);
+					int groupLeechSlots;
+
+					if (commandArguments.length >= 2) {
+						groupLeechSlots = Integer.parseInt(commandArguments[1]);
+					} else {
+						groupLeechSlots = userToChange.getKeyedMap().getObjectInteger(
+								UserManagement.LEECHSLOTS);
+					}
+
+					logger.info("'"
+							+ session.getUserNull(request.getUser()).getName()
+							+ "' changed group_slots for '"
+							+ userToChange.getName()
+							+ "' from '"
+							+ userToChange.getKeyedMap().getObjectInteger(
+							UserManagement.GROUPSLOTS)
+							+ "' "
+							+ userToChange.getKeyedMap().getObjectInteger(
+							UserManagement.LEECHSLOTS) + "' to '"
+							+ groupSlots + "' '" + groupLeechSlots + "'");
+					userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS,
+							groupSlots);
+					userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS,
+							groupLeechSlots);
+					env.add("groupslots", ""
+							+ userToChange.getKeyedMap().getObjectInteger(
+							UserManagement.GROUPSLOTS));
+					env.add("groupleechslots", ""
+							+ userToChange.getKeyedMap().getObjectInteger(
+							UserManagement.LEECHSLOTS));
+					response.addComment(session.jprintf(_bundle,
+							_keyPrefix + "changegroupslots.success", env, request.getUser()));
+				} catch (NumberFormatException ex) {
+					return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+				}
+			} else if ("created".equals(command)) {
+				Date myDate;
+
+				if (commandArguments.length == 0) {
+					try {
+						myDate = new SimpleDateFormat("yyyy-MM-dd")
+								.parse(commandArguments[0]);
+					} catch (ParseException e1) {
+						logger.log(Level.INFO, e1);
+
+						return new CommandResponse(452, e1.getMessage());
+					}
 				} else {
-					groupLeechSlots = userToChange.getKeyedMap().getObjectInteger(
-							UserManagement.LEECHSLOTS);
+					myDate = new Date();
 				}
 
 				logger.info("'"
 						+ session.getUserNull(request.getUser()).getName()
-						+ "' changed group_slots for '"
+						+ "' changed created for '"
 						+ userToChange.getName()
 						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectInteger(
-								UserManagement.GROUPSLOTS)
-						+ "' "
-						+ userToChange.getKeyedMap().getObjectInteger(
-								UserManagement.LEECHSLOTS) + "' to '"
-						+ groupSlots + "' '" + groupLeechSlots + "'");
-				userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS,
-						groupSlots);
-				userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS,
-						groupLeechSlots);
-				env.add("groupslots", ""
-						+ userToChange.getKeyedMap().getObjectInteger(
-								UserManagement.GROUPSLOTS));
-				env.add("groupleechslots", ""
-						+ userToChange.getKeyedMap().getObjectInteger(
-								UserManagement.LEECHSLOTS));
-				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"changegroupslots.success", env, request.getUser()));
-			} catch (NumberFormatException ex) {
-				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-			}
-		} else if ("created".equals(command)) {
-			Date myDate;
+						+ userToChange.getKeyedMap().getObject(
+						UserManagement.CREATED, new Date(0)) + "' to '" + myDate + "'");
+				userToChange.getKeyedMap()
+						.setObject(UserManagement.CREATED, myDate);
 
-			if (commandArguments.length == 0) {
-				try {
-					myDate = new SimpleDateFormat("yyyy-MM-dd")
-							.parse(commandArguments[0]);
-				} catch (ParseException e1) {
-					logger.log(Level.INFO, e1);
-
-					return new CommandResponse(452, e1.getMessage());
+				response = new CommandResponse(200, session.jprintf(_bundle,
+						_keyPrefix + "changecreated.success", env, request.getUser()));
+			} else if ("wkly_allotment".equals(command)) {
+				if (commandArguments.length != 1) {
+					throw new ImproperUsageException();
 				}
+
+				long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
+				logger.info("'"
+						+ session.getUserNull(request.getUser()).getName()
+						+ "' changed wkly_allotment for '"
+						+ userToChange.getName()
+						+ "' from '"
+						+ userToChange.getKeyedMap().getObjectLong(
+						UserManagement.WKLY_ALLOTMENT) + "' to "
+						+ weeklyAllotment + "'");
+				userToChange.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT,
+						weeklyAllotment);
+
+				response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+			} else if ("tagline".equals(command)) {
+				if (commandArguments.length < 1) {
+					throw new ImproperUsageException();
+				}
+
+				logger.info("'" + session.getUserNull(request.getUser()).getName()
+						+ "' changed tagline for '" + userToChange.getName()
+						+ "' from '"
+						+ userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE)
+						+ "' to '" + fullCommandArgument + "'");
+				userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
+						fullCommandArgument);
+
+				response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 			} else {
-				myDate = new Date();
-			}
-
-			logger.info("'"
-					+ session.getUserNull(request.getUser()).getName()
-					+ "' changed created for '"
-					+ userToChange.getName()
-					+ "' from '"
-					+ userToChange.getKeyedMap().getObject(
-							UserManagement.CREATED, new Date(0)) + "' to '" + myDate + "'");
-			userToChange.getKeyedMap()
-					.setObject(UserManagement.CREATED, myDate);
-
-			response = new CommandResponse(200, session.jprintf(_bundle,
-					_keyPrefix+"changecreated.success", env, request.getUser()));
-		} else if ("wkly_allotment".equals(command)) {
-			if (commandArguments.length != 1) {
 				throw new ImproperUsageException();
 			}
 
-			long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
-			logger.info("'"
-					+ session.getUserNull(request.getUser()).getName()
-					+ "' changed wkly_allotment for '"
-					+ userToChange.getName()
-					+ "' from '"
-					+ userToChange.getKeyedMap().getObjectLong(
-							UserManagement.WKLY_ALLOTMENT) + "' to "
-					+ weeklyAllotment + "'");
-			userToChange.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT,
-					weeklyAllotment);
-
-			response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		} else if ("tagline".equals(command)) {
-			if (commandArguments.length < 1) {
-				throw new ImproperUsageException();
-			}
-
-			logger.info("'" + session.getUserNull(request.getUser()).getName()
-					+ "' changed tagline for '" + userToChange.getName()
-					+ "' from '"
-					+ userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE)
-					+ "' to '" + fullCommandArgument + "'");
-			userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
-					fullCommandArgument);
-
-			response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		} else {
-			throw new ImproperUsageException();
-		}
-
-		userToChange.commit();
+			userToChange.commit();
 
 		}
 
@@ -1077,8 +1060,7 @@ public class UserManagementHandler extends CommandInterface {
 				response.addComment("Mask " + string + " not found: "
 						+ e1.getMessage());
 
-				continue;
-			}
+            }
 		}
 		
 		myUser.commit();
@@ -1214,8 +1196,8 @@ public class UserManagementHandler extends CommandInterface {
 		long allmbup = 0;
 		long allmbdn = 0;
 
-		ArrayList<User> users = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
-		Collections.sort(users, UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
+		ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+		users.sort(UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
 
 		for (User user : users) {
 			if (!user.isMemberOf(group))
@@ -1435,22 +1417,26 @@ public class UserManagementHandler extends CommandInterface {
 			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
-		if (opt.equals("num_logins")) {
-			numLogin = Integer.parseInt(st.nextToken());
-			if (st.hasMoreTokens()) {
-				ip = true;
-				numLoginIP = Integer.parseInt(st.nextToken());
-			}
-		} else if (opt.equals("ratio")) {
-			ratio = Float.parseFloat(st.nextToken());
-		} else if (opt.equals("max_sim")) {
-			maxUp = Integer.parseInt(st.nextToken());
-			if (!st.hasMoreTokens()) {
-				throw new ImproperUsageException();
-			}
-			maxDn = Integer.parseInt(st.nextToken());
-		} else {
-			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+		switch (opt) {
+			case "num_logins":
+				numLogin = Integer.parseInt(st.nextToken());
+				if (st.hasMoreTokens()) {
+					ip = true;
+					numLoginIP = Integer.parseInt(st.nextToken());
+				}
+				break;
+			case "ratio":
+				ratio = Float.parseFloat(st.nextToken());
+				break;
+			case "max_sim":
+				maxUp = Integer.parseInt(st.nextToken());
+				if (!st.hasMoreTokens()) {
+					throw new ImproperUsageException();
+				}
+				maxDn = Integer.parseInt(st.nextToken());
+				break;
+			default:
+				return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 		}
 
 		// getting data
@@ -1479,7 +1465,7 @@ public class UserManagementHandler extends CommandInterface {
 				}
 				if (opt.equals("ratio")) {
 					userToChange.getKeyedMap().setObject(UserManagement.RATIO,
-							new Float(ratio));
+                            ratio);
 				}
 				userToChange.commit();
 				response.addComment("Changed " + userToChange.getName() + "!");
@@ -1536,9 +1522,7 @@ public class UserManagementHandler extends CommandInterface {
 		CommandResponse response = new CommandResponse(200);
 		response.addComment("Renaming group " + oldGroup + " to " + newGroup);
 
-		for (Iterator<User> iter = users.iterator(); iter.hasNext();) {
-			User userToChange = iter.next();
-
+		for (User userToChange : users) {
 			if (userToChange.getGroup().equals(oldGroup)) {
 				userToChange.setGroup(newGroup);
 			} else {
@@ -1643,7 +1627,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 		
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ArrayList<BaseFtpConnection> conns = new ArrayList<BaseFtpConnection>(GlobalContext.getConnectionManager().getConnections());
+		ArrayList<BaseFtpConnection> conns = new ArrayList<>(GlobalContext.getConnectionManager().getConnections());
 		for (BaseFtpConnection conn2 : conns) {
 			if (conn2.getThreadID() == threadId) {
 				conn2.stop("Session Killed: " + reason);
@@ -1834,12 +1818,12 @@ public class UserManagementHandler extends CommandInterface {
 		if (!request.hasArgument()) {
 			user.getKeyedMap().setObject(
 					UserManagement.DEBUG,
-					Boolean.valueOf(!user.getKeyedMap().getObjectBoolean(
-							UserManagement.DEBUG)));
+                    !user.getKeyedMap().getObjectBoolean(
+                            UserManagement.DEBUG));
 		} else {
 			String arg = request.getArgument();
 			user.getKeyedMap().setObject(UserManagement.DEBUG,
-					Boolean.valueOf(arg.equals("true") || arg.equals("on")));
+                    arg.equals("true") || arg.equals("on"));
 		}
 		user.commit();
 		return new CommandResponse(200, session.jprintf(_bundle, _keyPrefix+"debug", request.getUser()));
@@ -1988,23 +1972,17 @@ public class UserManagementHandler extends CommandInterface {
 	public CommandResponse doSITE_USERS(CommandRequest request) {
 
 		CommandResponse response = new CommandResponse(200);
-		ArrayList<User> myUsers = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+		ArrayList<User> myUsers = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
 
 		if (request.hasArgument()) {
 			Permission perm = new Permission(Permission
 					.makeUsers(new StringTokenizer(request.getArgument())),
 					true);
 
-			for (Iterator<User> iter = myUsers.iterator(); iter.hasNext();) {
-				User element = iter.next();
-
-				if (!perm.check(element)) {
-					iter.remove();
-				}
-			}
+			myUsers.removeIf(element -> !perm.check(element));
 		}
 
-		Collections.sort(myUsers, UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
+		myUsers.sort(UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
 		for (User myUser : myUsers) {
 			response.addComment(myUser.getName());
 		}
@@ -2464,7 +2442,7 @@ public class UserManagementHandler extends CommandInterface {
 		long totalcredits = 0;
 		ReplacerEnvironment env = new ReplacerEnvironment();
 
-		ArrayList<User> users = new ArrayList<User>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
+		ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsers());
 		for (User user : users) {
 			totalcredits += user.getCredits();
 		}

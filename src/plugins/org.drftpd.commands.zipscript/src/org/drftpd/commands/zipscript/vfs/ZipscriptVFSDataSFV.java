@@ -17,9 +17,6 @@
  */
 package org.drftpd.commands.zipscript.vfs;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.zipscript.SFVTools;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -34,6 +31,9 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @author djb61

@@ -16,12 +16,12 @@
  */
 package org.drftpd.plugins.trialmanager;
 
-import java.util.ResourceBundle;
-
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
+
+import java.util.ResourceBundle;
 
 /**
  * @author CyBeR

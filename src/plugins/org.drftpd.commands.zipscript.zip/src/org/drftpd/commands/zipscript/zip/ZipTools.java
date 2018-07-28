@@ -16,11 +16,6 @@
  */
 package org.drftpd.commands.zipscript.zip;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
@@ -30,6 +25,11 @@ import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * @author djb61
  * @version $Id$
@@ -38,7 +38,7 @@ public class ZipTools {
 
 	public static Collection<FileHandle> getZipFiles(DirectoryHandle dir) 
 	throws IOException, FileNotFoundException {
-		Collection<FileHandle> files = new ArrayList<FileHandle>();
+		Collection<FileHandle> files = new ArrayList<>();
 
 		for (FileHandle file : dir.getFilesUnchecked()) {
 			if (file.getName().toLowerCase().endsWith(".zip") && file.getXfertime() != -1) {

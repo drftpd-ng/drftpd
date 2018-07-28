@@ -21,10 +21,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.kc7bfi.jflac.FLACDecoder;
-import org.kc7bfi.jflac.metadata.Metadata;
-import org.kc7bfi.jflac.metadata.StreamInfo;
-import org.kc7bfi.jflac.metadata.VorbisComment;
+import org.jflac.FLACDecoder;
+import org.jflac.metadata.Metadata;
+import org.jflac.metadata.StreamInfo;
+import org.jflac.metadata.VorbisComment;
 
 import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
 import org.drftpd.protocol.zipscript.flac.common.VorbisTag;

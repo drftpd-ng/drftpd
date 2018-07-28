@@ -17,13 +17,6 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import java.io.FileNotFoundException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
@@ -31,90 +24,93 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 
+import java.io.FileNotFoundException;
+import java.util.*;
+
 /**
  * @author CyBeR
  */
 public class ConstantMirroring extends ArchiveType {
-    private long _slaveDeadAfter;
-    
-    private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
+	private long _slaveDeadAfter;
 
-    /*
-     * Consturctor:
-     * 
-     * Loads slaveDeadAfter which is a special config just for this archivetype
-     */
-    public ConstantMirroring(Archive archive, SectionInterface section,Properties p, int confnum) {
-        super(archive, section, p, confnum);
-        _slaveDeadAfter = 1000 * 60 * Long.parseLong(p.getProperty(confnum + ".slavedeadafter", "0"));
-        int size = 0;
-        
+	private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
+
+	/*
+	 * Consturctor:
+	 *
+	 * Loads slaveDeadAfter which is a special config just for this archivetype
+	 */
+	public ConstantMirroring(Archive archive, SectionInterface section,Properties p, int confnum) {
+		super(archive, section, p, confnum);
+		_slaveDeadAfter = 1000 * 60 * Long.parseLong(p.getProperty(confnum + ".slavedeadafter", "0"));
+		int size = 0;
+
 		if (_slaveList.isEmpty()) {
-		    throw new NullPointerException("Cannot continue, 0 destination slaves found for ConstantMirroring for conf number " + confnum);
-		}        
+			throw new NullPointerException("Cannot continue, 0 destination slaves found for ConstantMirroring for conf number " + confnum);
+		}
 		size = _slaveList.size();
-        
-        if (_numOfSlaves > size && _numOfSlaves < 1) {
+
+		if (_numOfSlaves > size && _numOfSlaves < 1) {
 			throw new IllegalArgumentException("numOfSlaves has to be 1 <= numOfSlaves <= the size of the destination slave for conf number " + confnum);
 		}
-    }
+	}
 
 	/*
 	 *  We do NOT want to return any other destination slaves than what is listed
-	 *  inside the .conf file 
+	 *  inside the .conf file
 	 */
-    @Override
-    public Set<RemoteSlave> findDestinationSlaves() {
-    	return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
-    }
+	@Override
+	public Set<RemoteSlave> findDestinationSlaves() {
+		return _slaveList == null ? null : Collections.unmodifiableSet(_slaveList);
+	}
 
-    @Override
-    protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-    	for (FileHandle src : lrf.getFilesUnchecked()) {
+	@Override
+	protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+		for (FileHandle src : lrf.getFilesUnchecked()) {
 
-    		Collection<RemoteSlave> slaves;
+			Collection<RemoteSlave> slaves;
 
-    		slaves = src.getSlaves();
+			slaves = src.getSlaves();
 
-    		/*
-    		 * Only check if this slave is dead if slaveDeadAfter is
-    		 * configured to a non-zero value
-    		 */
+			/*
+			 * Only check if this slave is dead if slaveDeadAfter is
+			 * configured to a non-zero value
+			 */
 
-    		if (_slaveDeadAfter > 0) {
-    			for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
-    				RemoteSlave rslave = slaveIter.next();
-    				if (!rslave.isAvailable()) {
-    					long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
-    					if (offlineTime > _slaveDeadAfter) {
-    						// slave is considered dead
-    						slaveIter.remove();
-    					}
-    				}
-    			}
-    		}
+			if (_slaveDeadAfter > 0) {
+				for (Iterator<RemoteSlave> slaveIter = slaves.iterator(); slaveIter.hasNext();) {
+					RemoteSlave rslave = slaveIter.next();
+					if (!rslave.isAvailable()) {
+						long offlineTime = System.currentTimeMillis() - rslave.getLastTimeOnline();
+						if (offlineTime > _slaveDeadAfter) {
+							// slave is considered dead
+							slaveIter.remove();
+						}
+					}
+				}
+			}
 
-    		if (!findDestinationSlaves().containsAll(slaves)) {
-    			return false;
-    		}
+			if (!findDestinationSlaves().containsAll(slaves)) {
+				return false;
+			}
 
-    		logger.debug("Constant Mirroring DEBUG - FILE: '" + lrf.getName() + "' - NumOfSlaves: '" + _numOfSlaves + "' - Slave Size: '" + slaves.size() + "'");
-    		
-    		if (slaves.size() != _numOfSlaves) {
-    			return false;
-    		}
+			logger.debug("Constant Mirroring DEBUG - FILE: '" + lrf.getName() + "' - NumOfSlaves: '" + _numOfSlaves + "' - Slave Size: '" + slaves.size() + "'");
 
-    	}
-    	for (DirectoryHandle dir : lrf.getDirectoriesUnchecked()) {
-    		if (!isArchivedDir(dir)) {
-    			return false;
-    		}
-    	}
+			if (slaves.size() != _numOfSlaves) {
+				return false;
+			}
+
+		}
+		for (DirectoryHandle dir : lrf.getDirectoriesUnchecked()) {
+			if (!isArchivedDir(dir)) {
+				return false;
+			}
+		}
 		return true;
-    }
-    
-    @Override
-    public String toString() {
-    	return "ConstantMirroring=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
-    }
+	}
+
+	@Override
+	public String toString() {
+		return "ConstantMirroring=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+	}
 }

@@ -17,16 +17,26 @@
  */
 package org.drftpd.plugins.sitebot;
 
+import org.drftpd.plugins.sitebot.config.AnnounceConfig;
+
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 
 /**
  * @author djb61
  * @version $Id: AnnounceAnnouncer.java 2070 2010-09-18 00:15:11Z djb61 $
  */
 public abstract class AbstractAnnouncer {
+
+	private String _confDir;
+
+	protected void setConfDir(String confDir) {
+		_confDir = confDir;
+	}
+
+	protected String getConfDir() {
+		return _confDir;
+	}
 
 	protected abstract void initialise(AnnounceConfig config, ResourceBundle bundle);
 

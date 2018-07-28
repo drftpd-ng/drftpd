@@ -17,12 +17,6 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import java.io.FileNotFoundException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
@@ -30,6 +24,12 @@ import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.InodeHandle;
+
+import java.io.FileNotFoundException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author CyBeR
@@ -43,14 +43,14 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
 		super(archive, section, props, confnum);
 
 		if (_slaveList.isEmpty()) {
-		    throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
+			throw new NullPointerException("Cannot continue, 0 destination slaves found for MoveReleaseOffSlavesToMostFreeSlaves for conf number " + confnum);
 		}
-		
+
 		if (_numOfSlaves < 1) {
-		    throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
+			throw new IllegalArgumentException("numOfSlaves has to be > 0 for conf number " + confnum);
 		}
 	}
-	
+
 	/*
 	 *  This finds
 	 */
@@ -64,49 +64,43 @@ public class MoveReleaseOffMultipleSlavesToSpecificSlaves extends ArchiveType {
 	 * Also checks if it is removed from all slaves.
 	 */
 	@Override
-    protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
-    	for (Iterator<InodeHandle> iter = lrf.getInodeHandlesUnchecked().iterator(); iter.hasNext();) {
-            InodeHandle inode = iter.next();
-
+	protected boolean isArchivedDir(DirectoryHandle lrf) throws IncompleteDirectoryException, OfflineSlaveException, FileNotFoundException {
+        for (InodeHandle inode : lrf.getInodeHandlesUnchecked()) {
             if (inode.isLink()) {
-            	continue;
             } else if (inode instanceof DirectoryHandle) {
-            	if (!isArchivedDir((DirectoryHandle) inode)) {
-            		return false;
-            	}
+                if (!isArchivedDir((DirectoryHandle) inode)) {
+                    return false;
+                }
             } else {
-            	try {
-            		
-            		int found = 0;
-	            	for (Iterator<RemoteSlave> iter2 = ((FileHandle) inode).getAvailableSlaves().iterator(); iter2.hasNext();) {
-	            		RemoteSlave rslave = iter2.next();
-	            		
-	            		if (findDestinationSlaves().contains(rslave)) {
-	            			found++;
-	            		}
-	            		
-	                    if (found > _numOfSlaves) {
-	                        return false;
-	                    }            		
-	            		
-	            	}
-            	} catch (NoAvailableSlaveException e) {
-            		throw new OfflineSlaveException("There were no available slaves for " + inode.getPath());
-            	} catch (FileNotFoundException e) {
-            		throw new FileNotFoundException("File was not found " + inode.getPath());            		
-            	}
-            	
+                try {
+
+                    int found = 0;
+                    for (RemoteSlave rslave : ((FileHandle) inode).getAvailableSlaves()) {
+                        if (findDestinationSlaves().contains(rslave)) {
+                            found++;
+                        }
+
+                        if (found > _numOfSlaves) {
+                            return false;
+                        }
+
+                    }
+                } catch (NoAvailableSlaveException e) {
+                    throw new OfflineSlaveException("There were no available slaves for " + inode.getPath());
+                } catch (FileNotFoundException e) {
+                    throw new FileNotFoundException("File was not found " + inode.getPath());
+                }
+
             }
         }
-    	return isArchivedToSpecificSlaves(lrf, _numOfSlaves,_slaveList);
-    }
+		return isArchivedToSpecificSlaves(lrf, _numOfSlaves,_slaveList);
+	}
 
-    /*
-     * Outs this as a string to show what is being archived.
-     */
+	/*
+	 * Outs this as a string to show what is being archived.
+	 */
 	@Override
-    public String toString() {
-    	return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
-    }	
-
+	public String toString() {
+		return "MoveReleaseOffSlavesToMostFreeSlaves=[directory=[" + getDirectory().getPath() + "]dest=[" + outputSlaves(findDestinationSlaves()) + "]numOfSlaves=[" + _numOfSlaves + "]]";
+	}
 }

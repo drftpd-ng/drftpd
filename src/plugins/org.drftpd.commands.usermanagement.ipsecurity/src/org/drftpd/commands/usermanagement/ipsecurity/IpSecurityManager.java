@@ -88,11 +88,11 @@ public class IpSecurityManager implements PluginInterface {
      * Must be done this way as we read the same "command" string multiple times
      */
 	private void loadConf() {
-		_ident = new ArrayList<Integer>();
-		_octets = new ArrayList<String>();
-		_numip = new ArrayList<Integer>();
-		_hostm = new ArrayList<Integer>();
-		_perms = new ArrayList<String>();		
+		_ident = new ArrayList<>();
+		_octets = new ArrayList<>();
+		_numip = new ArrayList<>();
+		_hostm = new ArrayList<>();
+		_perms = new ArrayList<>();
 		LineNumberReader inRead = null;
 	
 	   try{
@@ -142,11 +142,8 @@ public class IpSecurityManager implements PluginInterface {
 	 * Checks if host has an Ident line and returns if permitted
 	 */
 	private boolean checkIdent(String ident, int currentident ) {
-		if ((currentident == 1) && (ident.equals("*")) ) {
-			return false;
-		}
-		return true;
-	}
+        return (currentident != 1) || (!ident.equals("*"));
+    }
 	
 	/*
 	 * This checks the octects to make sure they are correct and not a insecure set

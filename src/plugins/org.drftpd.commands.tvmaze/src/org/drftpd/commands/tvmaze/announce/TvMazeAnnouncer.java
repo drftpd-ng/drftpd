@@ -16,15 +16,15 @@
  */
 package org.drftpd.commands.tvmaze.announce;
 
-import java.util.ResourceBundle;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.commands.tvmaze.event.TvMazeEvent;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.commands.tvmaze.event.TvMazeEvent;
 import org.drftpd.util.ReplacerUtils;
+
+import java.util.ResourceBundle;
 
 /**
  * @author lh

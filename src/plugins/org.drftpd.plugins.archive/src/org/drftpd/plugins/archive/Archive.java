@@ -16,14 +16,6 @@
  */
 package org.drftpd.plugins.archive;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.TimerTask;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -37,6 +29,8 @@ import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
+
+import java.util.*;
 
 /**
  * @author CyBeR
@@ -79,7 +73,7 @@ public class Archive implements PluginInterface {
 	        if (!sec.getName().isEmpty()) {
 				try {
 					Class<ArchiveType> clazz = _typesMap.get(type);
-					archiveType = clazz.getConstructor(SIG).newInstance(new Object[] { this, sec, props, count });
+					archiveType = clazz.getConstructor(SIG).newInstance(this, sec, props, count);
 	
 				} catch (Exception e) {
 					logger.error("Unable to load ArchiveType for section " + count + "." + type, e);
@@ -96,14 +90,14 @@ public class Archive implements PluginInterface {
 	 * We don't want to allow modifications to this.
 	 */
 	public synchronized CaseInsensitiveHashMap<String, Class<ArchiveType>> getTypesMap() {
-		return new CaseInsensitiveHashMap<String, Class<ArchiveType>>(_typesMap);
+		return new CaseInsensitiveHashMap<>(_typesMap);
 	}		
 	
 	/*
 	 * Load the different Types of Archives specified in plugin.xml
 	 */
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<ArchiveType>> typesMap = new CaseInsensitiveHashMap<String, Class<ArchiveType>>();
+		CaseInsensitiveHashMap<String, Class<ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
 			List<PluginObjectContainer<ArchiveType>> loadedTypes =
@@ -185,20 +179,19 @@ public class Archive implements PluginInterface {
 	 * Throws DuplicateArchive expcetion if it is.
 	 */
 	public synchronized void checkPathForArchiveStatus(String handlerPath) throws DuplicateArchiveException {
-		for (Iterator<ArchiveHandler> iter = _archiveHandlers.iterator(); iter.hasNext();) {
-			ArchiveHandler ah = iter.next();
-			String ahPath = ah.getArchiveType().getDirectory().getPath();
+        for (ArchiveHandler ah : _archiveHandlers) {
+            String ahPath = ah.getArchiveType().getDirectory().getPath();
 
-			if (ahPath.length() > handlerPath.length()) {
-				if (ahPath.startsWith(handlerPath)) {
-					throw new DuplicateArchiveException(ahPath + " is already being archived");
-				}
-			} else {
-				if (handlerPath.startsWith(ahPath)) {
-					throw new DuplicateArchiveException(handlerPath + " is already being archived");
-				}
-			}
-		}
+            if (ahPath.length() > handlerPath.length()) {
+                if (ahPath.startsWith(handlerPath)) {
+                    throw new DuplicateArchiveException(ahPath + " is already being archived");
+                }
+            } else {
+                if (handlerPath.startsWith(ahPath)) {
+                    throw new DuplicateArchiveException(handlerPath + " is already being archived");
+                }
+            }
+        }
 	}
 
 	@EventSubscriber
@@ -210,7 +203,7 @@ public class Archive implements PluginInterface {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 		logger.info("Archive plugin loaded successfully");
-		_archiveHandlers = new HashSet<ArchiveHandler>();
+		_archiveHandlers = new HashSet<>();
 		reload();
 	}
 

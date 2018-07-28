@@ -16,20 +16,10 @@
  */
 package org.drftpd.plugins.dupecheck;
 
-import java.io.FileNotFoundException;
-import java.util.Map;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.master.config.ConfigInterface;
@@ -42,6 +32,12 @@ import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.AdvancedSearchParams;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.drftpd.vfs.index.IndexException;
+
+import java.io.FileNotFoundException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author CyBeR
@@ -115,9 +111,7 @@ public class DupeCheckHooks implements PreHookInterface {
 	private boolean checkFile(String file) {
 		if (_exempt != null) {
 			Matcher matcher = _exempt.matcher(file.toLowerCase());
-			if (matcher.find()) {
-				return true;
-			}
+            return matcher.find();
 		}
 		return false;
 	}

@@ -35,7 +35,7 @@ public class IMDBQueryExtension implements QueryTermExtensionInterface {
 
 	private static final Term TERM_TITLE = new Term("imdbtitle", "");
 	private static final Term TERM_DIRECTOR = new Term("imdbdirector", "");
-	private static final Term TERM_GENRE = new Term("imdbgenre", "");
+	private static final Term TERM_GENRES = new Term("imdbgenres", "");
 	
 	@Override
 	public void addQueryTerms(BooleanQuery query, AdvancedSearchParams params) {
@@ -49,9 +49,9 @@ public class IMDBQueryExtension implements QueryTermExtensionInterface {
 				Query directorQuery = LuceneUtils.analyze("imdbdirector", TERM_DIRECTOR, queryParams.getDirector());
 				query.add(directorQuery, Occur.MUST);
 			}
-			if (queryParams.getGenre() != null) {
-				Query genreQuery = LuceneUtils.analyze("imdbgenre", TERM_GENRE, queryParams.getGenre());
-				query.add(genreQuery, Occur.MUST);
+			if (queryParams.getGenres() != null) {
+				Query genresQuery = LuceneUtils.analyze("imdbgenres", TERM_GENRES, queryParams.getGenres());
+				query.add(genresQuery, Occur.MUST);
 			}
 			if (queryParams.getMinVotes() != null || queryParams.getMaxVotes() != null) {
 				Query votesQuery = NumericRangeQuery.newIntRange("imdbvotes",
@@ -68,10 +68,10 @@ public class IMDBQueryExtension implements QueryTermExtensionInterface {
 						queryParams.getMinYear(), queryParams.getMaxYear(), true, true);
 				query.add(yearQuery, Occur.MUST);
 			}
-			if (queryParams.getMinScreens() != null || queryParams.getMaxScreens() != null) {
-				Query screensQuery = NumericRangeQuery.newIntRange("imdbscreens",
-						queryParams.getMinScreens(), queryParams.getMaxScreens(), true, true);
-				query.add(screensQuery, Occur.MUST);
+			if (queryParams.getMinRuntime() != null || queryParams.getMaxRuntime() != null) {
+				Query runtimeQuery = NumericRangeQuery.newIntRange("imdbruntime",
+						queryParams.getMinRuntime(), queryParams.getMaxRuntime(), true, true);
+				query.add(runtimeQuery, Occur.MUST);
 			}
 		} catch (KeyNotFoundException e) {
 			// No IMDB terms to include, return without amending query

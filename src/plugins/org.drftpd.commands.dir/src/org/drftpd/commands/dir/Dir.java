@@ -17,20 +17,11 @@
  */
 package org.drftpd.commands.dir;
 
-import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.event.DirectoryFtpEvent;
 import org.drftpd.exceptions.FileExistsException;
@@ -38,13 +29,12 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.Session;
 import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.LinkHandle;
-import org.drftpd.vfs.ListUtils;
-import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.vfs.*;
+
+import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.StringTokenizer;
 
 
 /**
@@ -57,19 +47,19 @@ public class Dir extends CommandInterface {
 	"yyyyMMddHHmmss.SSS");
 	private static final Logger logger = Logger.getLogger(Dir.class);
 
-	public static final Key<InodeHandle> RENAMEFROM = new Key<InodeHandle>(Dir.class, "renamefrom");
-	public static final Key<InodeHandle> RENAMETO = new Key<InodeHandle>(Dir.class, "renameto");
+	public static final Key<InodeHandle> RENAMEFROM = new Key<>(Dir.class, "renamefrom");
+	public static final Key<InodeHandle> RENAMETO = new Key<>(Dir.class, "renameto");
 	
 	// This Keys are place holders for usefull information that gets removed during
 	// deletion operations but are need to process hooks.
-	public static final Key<String> USERNAME = new Key<String>(Dir.class, "username");
-	public static final Key<Long> FILESIZE = new Key<Long>(Dir.class, "fileSize");
-	public static final Key<String> FILENAME = new Key<String>(Dir.class, "fileName");
-	public static final Key<Boolean> ISFILE = new Key<Boolean>(Dir.class, "isFile");
-	public static final Key<Long> XFERTIME = new Key<Long>(Dir.class, "xferTime");
+	public static final Key<String> USERNAME = new Key<>(Dir.class, "username");
+	public static final Key<Long> FILESIZE = new Key<>(Dir.class, "fileSize");
+	public static final Key<String> FILENAME = new Key<>(Dir.class, "fileName");
+	public static final Key<Boolean> ISFILE = new Key<>(Dir.class, "isFile");
+	public static final Key<Long> XFERTIME = new Key<>(Dir.class, "xferTime");
 
-	public static final Key<Boolean> WIPE_RECURSIVE = new Key<Boolean>(Dir.class, "wipe_recursive");
-	public static final Key<String> WIPE_PATH = new Key<String>(Dir.class, "wipe_path");
+	public static final Key<Boolean> WIPE_RECURSIVE = new Key<>(Dir.class, "wipe_recursive");
+	public static final Key<String> WIPE_PATH = new Key<>(Dir.class, "wipe_path");
 	
 	/**
 	 * <code>CDUP &lt;CRLF&gt;</code><br>

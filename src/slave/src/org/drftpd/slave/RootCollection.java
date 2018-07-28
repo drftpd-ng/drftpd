@@ -17,28 +17,14 @@
  */
 package org.drftpd.slave;
 
+import org.apache.log4j.Logger;
+import org.drftpd.io.PhysicalFile;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.log4j.Logger;
-import org.drftpd.io.PhysicalFile;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * @author mog
@@ -54,12 +40,12 @@ public class RootCollection {
 	public RootCollection(Slave slave, Collection<Root> roots) throws IOException {
 		/** sanity checks * */
 		validateRoots(roots);
-		_roots = new ArrayList<Root>(roots);
+		_roots = new ArrayList<>(roots);
 		_slave = slave;
 		if (_slave.concurrentRootIteration()) {
 			int numThreads = Math.min(_roots.size(), Runtime.getRuntime().availableProcessors());
-			_pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS, 
-					new LinkedBlockingQueue<Runnable>(), new RootListHandlerThreadFactory(),
+			_pool = new ThreadPoolExecutor(numThreads, numThreads, 300, TimeUnit.SECONDS,
+                    new LinkedBlockingQueue<>(), new RootListHandlerThreadFactory(),
 					new ThreadPoolExecutor.CallerRunsPolicy());
 			_pool.allowCoreThreadTimeOut(true);
 		}
@@ -71,7 +57,7 @@ public class RootCollection {
 	 * @return
 	 */
 	public TreeSet<String> getLocalInodes(String path) {
-		TreeSet<String> files = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+		TreeSet<String> files = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 		for (Root root : _roots) {
 			String[] fileArray = root.getFile(path).list();
 			if (fileArray == null) continue;
@@ -91,7 +77,7 @@ public class RootCollection {
 		CountDownLatch latch = new CountDownLatch(_roots.size());
 		File[][] rootFiles = new File[_roots.size()][];
 		Long[] rootLastModified = new Long[_roots.size()];
-		TreeMap<String,File> files = new TreeMap<String,File>(String.CASE_INSENSITIVE_ORDER);
+		TreeMap<String,File> files = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		for (int i = 0; i < _roots.size(); i++) {
 			_pool.execute(new RootListHandler(rootFiles, i, latch, path, rootLastModified));
 		}
@@ -113,8 +99,8 @@ public class RootCollection {
 				}
 			}
 			if (rootLastModified[i] != null) {
-				if (rootLastModified[i].longValue() > lastModified) {
-					lastModified = rootLastModified[i].longValue();
+				if (rootLastModified[i] > lastModified) {
+					lastModified = rootLastModified[i];
 				}
 			}
 		}
@@ -183,7 +169,7 @@ public class RootCollection {
 	}
 
 	public List<File> getMultipleFiles(String path) throws FileNotFoundException {
-		ArrayList<File> files = new ArrayList<File>();
+		ArrayList<File> files = new ArrayList<>();
 
 		for (Root r : getMultipleRootsForFile(path)) {
 			files.add(r.getFile(path));
@@ -193,7 +179,7 @@ public class RootCollection {
 
 	public List<Root> getMultipleRootsForFile(String path)
 			throws FileNotFoundException {
-		ArrayList<Root> roots = new ArrayList<Root>();
+		ArrayList<Root> roots = new ArrayList<>();
 
 		
 		for (Root r : _roots) {
@@ -252,30 +238,29 @@ public class RootCollection {
 
 	private static void validateRoots(Collection<Root> roots) throws IOException {
 		File[] mountsArr = File.listRoots();
-		ArrayList<File> mounts = new ArrayList<File>(mountsArr.length);
+		ArrayList<File> mounts = new ArrayList<>(mountsArr.length);
 
-		for (int i = 0; i < mountsArr.length; i++) {
-			mounts.add(mountsArr[i]);
-		}
+        for (File aMountsArr : mountsArr) {
+            mounts.add(aMountsArr);
+        }
 
-		Collections.sort(mounts, new Comparator<File>() {
-			public boolean equals(Object obj) {
-				if (obj == null) return false;
-				return obj.getClass() == getClass();
-			}
+		mounts.sort(new Comparator<File>() {
+            public boolean equals(Object obj) {
+                if (obj == null) return false;
+                return obj.getClass() == getClass();
+            }
 
-			public int hashCode() {
-				return getClass().hashCode();
-			}
+            public int hashCode() {
+                return getClass().hashCode();
+            }
 
-			public int compare(File o1, File o2) {
-				int thisVal = o1.getPath().length();
-				int anotherVal = o2.getPath().length();
+            public int compare(File o1, File o2) {
+                int thisVal = o1.getPath().length();
+                int anotherVal = o2.getPath().length();
 
-				return ((thisVal < anotherVal) ? 1
-						: ((thisVal == anotherVal) ? 0 : (-1)));
-			}
-		});
+                return (Integer.compare(anotherVal, thisVal));
+            }
+        });
 
 		for (Root root : roots) {
 
@@ -294,7 +279,7 @@ public class RootCollection {
 
 			String fullpath = rootFile.getAbsolutePath();
 			
-			Hashtable<String, Object> usedMounts = new Hashtable<String, Object>();
+			Hashtable<String, Object> usedMounts = new Hashtable<>();
 
 			for (File mount : mounts) {
 

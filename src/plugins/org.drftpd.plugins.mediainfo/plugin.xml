@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<plugin id="org.drftpd.plugins.mediainfo" version="3.2.0">
+	<doc>
+		<doc-text>(MediaInfo) - This plugin provides media info on directory listing.
+			Mediainfo application required on the slaves, download from http://mediainfo.sourceforge.net</doc-text>
+	</doc>
+	<requires>
+		<import plugin-id="org.drftpd.commands.list" exported="true"/>
+		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.protocol.mediainfo.master" exported="true" />
+	</requires>
+	<runtime>
+		<library id="org.drftpd.plugins.mediainfo" path="classes/" type="code">
+			<export prefix="*"/>
+		</library>
+	</runtime>
+
+	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="MediaInfoSTORPostHook">
+		<parameter id="ParentMethod" value="doSTOR" />
+		<parameter id="HookClass" value="org.drftpd.plugins.mediainfo.MediaInfoPostHook" />
+		<parameter id="HookMethod" value="doSTORPostHook" />
+		<parameter id="Priority" value="100" />
+	</extension>
+
+	<extension plugin-id="org.drftpd.commands.list" point-id="AddElements" id="MediaInfoListElements">
+		<parameter id="Class" value="org.drftpd.plugins.mediainfo.list.MediaInfoList"/>
+	</extension>
+</plugin>

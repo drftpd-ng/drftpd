@@ -28,8 +28,8 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class RequestUserData implements Serializable {
 
-	public static final Key<Integer> REQUESTSFILLED = new Key<Integer>(RequestUserData.class,	"requestsFilled");
-	public static final Key<Integer> REQUESTS = new Key<Integer>(RequestUserData.class, "requests");
-	public static final Key<Integer> WEEKREQS = new Key<Integer>(RequestUserData.class, "weekReqs");
+	public static final Key<Integer> REQUESTSFILLED = new Key<>(RequestUserData.class, "requestsFilled");
+	public static final Key<Integer> REQUESTS = new Key<>(RequestUserData.class, "requests");
+	public static final Key<Integer> WEEKREQS = new Key<>(RequestUserData.class, "weekReqs");
 
 }

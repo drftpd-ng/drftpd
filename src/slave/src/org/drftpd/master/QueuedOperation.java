@@ -32,7 +32,7 @@ public class QueuedOperation implements Serializable {
 	private String _destination;
 
 	public boolean equals(Object obj) {
-		if (obj == null || !(obj instanceof QueuedOperation)) {
+		if (!(obj instanceof QueuedOperation)) {
 			return false;
 		}
 		

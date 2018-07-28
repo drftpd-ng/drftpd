@@ -16,17 +16,6 @@
  */
 package org.drftpd.usermanager;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -41,6 +30,11 @@ import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.util.*;
+
 
 /**
  * This is the base class of all the user manager classes. If we want to add a
@@ -54,9 +48,9 @@ public abstract class AbstractUserManager implements UserManager {
 
 	protected HashMap<String, SoftReference<User>> _users;
 
-	private ArrayList<UserResetHookInterface> _preResetHooks = new ArrayList<UserResetHookInterface>();
+	private ArrayList<UserResetHookInterface> _preResetHooks = new ArrayList<>();
 
-	private ArrayList<UserResetHookInterface> _postResetHooks = new ArrayList<UserResetHookInterface>();
+	private ArrayList<UserResetHookInterface> _postResetHooks = new ArrayList<>();
 
 	public void init() throws UserFileException {
 		// Subscribe to events
@@ -70,7 +64,7 @@ public abstract class AbstractUserManager implements UserManager {
 		User user = createUser("drftpd");
 		user.setGroup("drftpd");
 		user.setPassword("drftpd");
-		user.getKeyedMap().setObject(UserManagement.RATIO, new Float(0));
+		user.getKeyedMap().setObject(UserManagement.RATIO, (float) 0);
 		user.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
 		user.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXLOGINS, 0);
@@ -81,7 +75,7 @@ public abstract class AbstractUserManager implements UserManager {
 		user.getKeyedMap().setObject(UserManagement.CREATED, new Date());
 		user.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
 		user.getKeyedMap()
-		.setObject(UserManagement.WKLY_ALLOTMENT, Long.valueOf(0));
+		.setObject(UserManagement.WKLY_ALLOTMENT, 0L);
 		user.getKeyedMap().setObject(UserManagement.COMMENT, "Auto-Generated");
 		user.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
 		user.getKeyedMap().setObject(UserManagement.TAGLINE, "drftpd");
@@ -106,7 +100,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public User create(String username) throws UserFileException {
 		try {
 			getUserByName(username);
-			// bad, .xml file already exists.
+			// bad, .json file already exists.
 			throw new FileExistsException("User " +username+ " already exists");
 		} catch (IOException e) {
 			// bad, some I/O error ocurred.
@@ -136,7 +130,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 	public Collection<String> getAllGroups() {
 		Collection<User> users = getAllUsers();
-		ArrayList<String> ret = new ArrayList<String>();
+		ArrayList<String> ret = new ArrayList<>();
 
 		for (User myUser : users) {
 			Collection<String> myGroups = myUser.getGroups();
@@ -162,7 +156,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public abstract Collection<User> getAllUsers();
 
 	public Collection<User> getAllUsersByGroup(String group) {
-		Collection<User> c = new ArrayList<User>();
+		Collection<User> c = new ArrayList<>();
 
 		for (User user : getAllUsers()) {
 
@@ -200,16 +194,16 @@ public abstract class AbstractUserManager implements UserManager {
 			try {
 				String uidentList = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
 				String[] identArray = uidentList.split(",");
-				for (int i = 0; i < identArray.length;i++) {
-					if (identArray[i].startsWith(botName + "|")) {
-						String[] botIdent = identArray[i].split("\\|");
-						if (botIdent.length == 2) {
-							if (botIdent[1].equals(ident)) {
-								return user;
-							}
-						}
-					}
-				}
+                for (String anIdentArray : identArray) {
+                    if (anIdentArray.startsWith(botName + "|")) {
+                        String[] botIdent = anIdentArray.split("\\|");
+                        if (botIdent.length == 2) {
+                            if (botIdent[1].equals(ident)) {
+                                return user;
+                            }
+                        }
+                    }
+                }
 			} catch (KeyNotFoundException e1) {
 			}
 		}
@@ -226,7 +220,7 @@ public abstract class AbstractUserManager implements UserManager {
 				getUserByNameUnchecked(newUsername);
 			} catch (NoSuchUserException e) {
 				_users.remove(oldUser.getName());
-				_users.put(newUsername, new SoftReference<User>(oldUser));
+				_users.put(newUsername, new SoftReference<>(oldUser));
 				return;
 			}
 		}
@@ -364,7 +358,7 @@ public abstract class AbstractUserManager implements UserManager {
 		Set<UserResetHookInterface> unloadedPreResetHooks =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "PreUserResetHook", event, _preResetHooks);
 		if (!unloadedPreResetHooks.isEmpty()) {
-			ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<UserResetHookInterface>(_preResetHooks);
+			ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<>(_preResetHooks);
 			boolean hookRemoved = false;
 			for (Iterator<UserResetHookInterface> iter = clonedPreResetHooks.iterator(); iter.hasNext();) {
 				UserResetHookInterface preResetHook = iter.next();
@@ -384,7 +378,7 @@ public abstract class AbstractUserManager implements UserManager {
 		Set<UserResetHookInterface> unloadedPostResetHooks =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "PostUserResetHook", event, _postResetHooks);
 		if (!unloadedPostResetHooks.isEmpty()) {
-			ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<UserResetHookInterface>(_postResetHooks);
+			ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<>(_postResetHooks);
 			boolean hookRemoved = false;
 			for (Iterator<UserResetHookInterface> iter = clonedPostResetHooks.iterator(); iter.hasNext();) {
 				UserResetHookInterface postResetHook = iter.next();
@@ -408,7 +402,7 @@ public abstract class AbstractUserManager implements UserManager {
 			List<UserResetHookInterface> loadedPreResetHooks = 
 				MasterPluginUtils.getLoadedExtensionObjects(this, "master", "PreUserResetHook", "Class", event);
 			if (!loadedPreResetHooks.isEmpty()) {
-				ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<UserResetHookInterface>(_preResetHooks);
+				ArrayList<UserResetHookInterface> clonedPreResetHooks = new ArrayList<>(_preResetHooks);
 				for (UserResetHookInterface preResetHook : loadedPreResetHooks) {
 					preResetHook.init();
 					clonedPreResetHooks.add(preResetHook);
@@ -427,7 +421,7 @@ public abstract class AbstractUserManager implements UserManager {
 			List<UserResetHookInterface> loadedPostResetHooks = 
 				MasterPluginUtils.getLoadedExtensionObjects(this, "master", "PostUserResetHook", "Class", event);
 			if (!loadedPostResetHooks.isEmpty()) {
-				ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<UserResetHookInterface>(_postResetHooks);
+				ArrayList<UserResetHookInterface> clonedPostResetHooks = new ArrayList<>(_postResetHooks);
 				for (UserResetHookInterface postResetHook : loadedPostResetHooks) {
 					postResetHook.init();
 					clonedPostResetHooks.add(postResetHook);

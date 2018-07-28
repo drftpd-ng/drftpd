@@ -17,19 +17,13 @@
  */
 package org.drftpd.tools.installer;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.java.plugin.registry.PluginAttribute;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.registry.PluginRegistry;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * @author djb61
@@ -40,32 +34,32 @@ public class PluginTools {
 
 	public static ArrayList<PluginData> getPluginData(PluginRegistry registry) {
 		Collection<PluginDescriptor> descriptors = registry.getPluginDescriptors();
-		ArrayList<PluginData> plugins = new ArrayList<PluginData>();
+		ArrayList<PluginData> plugins = new ArrayList<>();
 		for (PluginDescriptor descr : descriptors) {
 			plugins.add(new PluginData(descr));
 		}
-		Collections.sort(plugins, new PluginComparator());
+		plugins.sort(new PluginComparator());
 		return plugins;
 	}
 
 	public static boolean isDepends(PluginData plugin1, PluginData plugin2, PluginRegistry registry) {
 		// Circular (mutual) dependencies are treated as absence of dependency
 		// at all.
-		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
-		Set<PluginDescriptor> pre2 = new HashSet<PluginDescriptor>();
+		Set<PluginDescriptor> pre1 = new HashSet<>();
+		Set<PluginDescriptor> pre2 = new HashSet<>();
 		collectPrerequisites(plugin1.getDescriptor(), pre1, registry);
 		collectPrerequisites(plugin2.getDescriptor(), pre2, registry);
 		return pre1.contains(plugin2.getDescriptor()) && !pre2.contains(plugin1.getDescriptor());
 	}
 
 	public static boolean isSlaveDepends(PluginDescriptor plugin1, PluginDescriptor plugin2, PluginDescriptor master, PluginRegistry registry) {
-		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
+		Set<PluginDescriptor> pre1 = new HashSet<>();
 		collectPrerequisites(plugin1, pre1, registry);
 		return pre1.contains(plugin2) && ! pre1.contains(master);
 	}
 
 	public static boolean isDependsInclImpl(PluginData plugin1, PluginData plugin2, PluginRegistry registry) {
-		Set<PluginDescriptor> pre1 = new HashSet<PluginDescriptor>();
+		Set<PluginDescriptor> pre1 = new HashSet<>();
 		collectImplPrerequisites(plugin1.getDescriptor(), pre1, registry);
 		return pre1.contains(plugin2.getDescriptor());
 	}
@@ -118,7 +112,7 @@ public class PluginTools {
 	}
 
 	public static ArrayList<String> getMissingPlugins(PluginRegistry pr, InstallerConfig config) {
-		ArrayList<String> plugins = new ArrayList<String>();
+		ArrayList<String> plugins = new ArrayList<>();
 		for (String pId : config.getPluginSelections().keySet()) {
 			boolean foundPlugin = false;
 			for (PluginDescriptor pd : pr.getPluginDescriptors()) {
@@ -137,7 +131,7 @@ public class PluginTools {
 	}
 
 	public static ArrayList<String> getUnconfiguredPlugins(PluginRegistry pr, InstallerConfig config) {
-		ArrayList<String> plugins = new ArrayList<String>();
+		ArrayList<String> plugins = new ArrayList<>();
 		for (PluginDescriptor pd : pr.getPluginDescriptors()) {
 			if (!config.getPluginSelections().containsKey(pd.getId())) {
 				//Installed plugin not found in build configuration

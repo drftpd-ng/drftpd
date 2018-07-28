@@ -18,9 +18,9 @@
 
 package org.drftpd.vfs.event;
 
-import java.util.Set;
-
 import org.drftpd.vfs.VirtualFileSystemFile;
+
+import java.util.Set;
 
 /**
  * This event is fired whenever a slave is added or removed from a {@link VirtualFileSystemFile}

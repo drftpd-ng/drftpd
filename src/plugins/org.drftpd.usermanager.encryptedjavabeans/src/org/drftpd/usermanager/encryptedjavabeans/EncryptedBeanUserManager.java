@@ -1,21 +1,18 @@
 package org.drftpd.usermanager.encryptedjavabeans;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.lang.ref.SoftReference;
-import java.util.Properties;
-import java.io.OutputStream;
-import java.beans.XMLEncoder;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.event.ReloadEvent;
-import org.drftpd.usermanager.javabeans.BeanUser;
-import org.drftpd.usermanager.javabeans.BeanUserManager;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+import org.drftpd.usermanager.javabeans.BeanUser;
+import org.drftpd.usermanager.javabeans.BeanUserManager;
+
+import java.lang.ref.SoftReference;
+import java.util.Properties;
 
 public class EncryptedBeanUserManager extends BeanUserManager {
 
@@ -75,24 +72,15 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 	 */
 	protected synchronized User createUser(String username) {
 		EncryptedBeanUser buser = new EncryptedBeanUser(this, username);
-		_users.put(username, new SoftReference<User>(buser));
+		_users.put(username, new SoftReference<>(buser));
 		return buser;
-	}
-	
-	@Override
-	public XMLEncoder getXMLEncoder(OutputStream out) {
-		XMLEncoder e = super.getXMLEncoder(out);
-		e.setPersistenceDelegate(EncryptedBeanUser.class,
-				new DefaultPersistenceDelegate(new String[] { "name" }));
-		return e;
 	}
 	
 	@Override
 	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
 		User user = super.loadUser(userName);
 		if ( !(user instanceof EncryptedBeanUser) && (user instanceof BeanUser)) {
-			EncryptedBeanUser buser = new EncryptedBeanUser(this,(BeanUser) user);
-			return buser;
+			return new EncryptedBeanUser(this,(BeanUser) user);
 		}
 		return user;
 	}

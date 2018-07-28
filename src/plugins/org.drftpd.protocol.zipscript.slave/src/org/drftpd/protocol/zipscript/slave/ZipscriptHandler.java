@@ -16,14 +16,6 @@
  */
 package org.drftpd.protocol.zipscript.slave;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
-
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
@@ -32,6 +24,10 @@ import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.slave.async.AsyncResponseException;
+
+import java.io.*;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 /**
  * Handler for SFV requests.

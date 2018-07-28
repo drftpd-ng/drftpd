@@ -17,28 +17,28 @@
  */
 package org.drftpd.commands.request;
 
-import java.io.FileNotFoundException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.RequestEvent;
 import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.master.Session;
 import org.drftpd.master.BaseFtpConnection;
+import org.drftpd.master.Session;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.ListUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author mog
@@ -56,6 +56,8 @@ public class Request extends CommandInterface {
 	private String _reqFilledPrefix;
 	private String _requestPrefix;
 
+	private ArrayList<Pattern> _requestDenyRegex;
+
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
 
@@ -64,6 +66,8 @@ public class Request extends CommandInterface {
 		
     	_bundle = cManager.getResourceBundle();
     	_keyPrefix = this.getClass().getName()+".";
+
+		_requestDenyRegex = new ArrayList<>();
     	
     	readConfig();
     	
@@ -76,11 +80,20 @@ public class Request extends CommandInterface {
 	private void readConfig() {
 		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("request");
 		
-		_requestPath = props.getProperty("request.dirpath", "/requests/");
+		_requestPath = props.getProperty("request.dirpath", "/REQUESTS/");
 		_createRequestPath = Boolean.parseBoolean(props.getProperty("request.createpath", "false"));
 		
 		_reqFilledPrefix = props.getProperty("reqfilled.prefix", "FILLED-for.");
 		_requestPrefix = props.getProperty("request.prefix", "REQUEST-by.");
+
+		_requestDenyRegex.clear();
+		int i = 1;
+		String regex = props.getProperty("request.deny."+i);
+		while(regex != null){
+			Pattern p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+			_requestDenyRegex.add(p);
+			regex = props.getProperty("request.deny."+i++);
+		}
 	}
 	
 	/**
@@ -178,6 +191,15 @@ public class Request extends CommandInterface {
 
 		User user = session.getUserNull(request.getUser());
 		String requestName = request.getArgument().trim();
+		if (!ListUtils.isLegalFileName(requestName)) {
+			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+		}
+		for (Pattern regex : _requestDenyRegex) {
+			Matcher m = regex.matcher(requestName);
+			if (m.find()) {
+				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			}
+		}
 		String createdDirName = _requestPrefix + user.getName() + "-" + requestName;
 		DirectoryHandle requestDir = getRequestDirectory(request);
 		

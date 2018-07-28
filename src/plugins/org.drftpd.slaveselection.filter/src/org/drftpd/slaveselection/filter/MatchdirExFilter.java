@@ -17,9 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FatalException;
@@ -30,6 +27,8 @@ import org.drftpd.vfs.InodeHandleInterface;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Example slaveselection entry:
@@ -90,7 +89,7 @@ public class MatchdirExFilter extends Filter {
 	public void process(ScoreChart scorechart, User user, InetAddress source,
 			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
 		Matcher m = _p.matcher(file.getPath());
-		boolean validPath = _negateExpr ? !m.find() : m.find();
+		boolean validPath = _negateExpr != m.find();
 		if (validPath) {
 			AssignSlave.addScoresToChart(_assigns, scorechart);
 		}

@@ -17,13 +17,6 @@
  */
 package org.drftpd.vfs;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.beans.XMLEncoder;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,9 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VirtualFileSystemLink extends VirtualFileSystemInode {
 
 	private String _link;
-
-	protected static final Collection<String> transientListLink = Arrays
-			.asList(new String[] { "name", "parent", "size" });
 
 	public VirtualFileSystemLink(String user, String group, String link) {
 		super(user, group);
@@ -65,8 +55,7 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 	 */
 	@Override
 	public void setSize(long l) {
-		return;
-		// size of links are always zero
+        // size of links are always zero
 	}
 
 	@Override
@@ -74,32 +63,8 @@ public class VirtualFileSystemLink extends VirtualFileSystemInode {
 		return "Link" + super.toString() + "[link=" + getLinkPath() + "]";
 	}
 
-	@Override
-	protected void setupXML(XMLEncoder enc) {
-		super.setupXML(enc);
-		
-		PropertyDescriptor[] pdArr;
-		try {
-			pdArr = Introspector.getBeanInfo(VirtualFileSystemLink.class)
-					.getPropertyDescriptors();
-		} catch (IntrospectionException e) {
-			logger.error("I don't know what to do here", e);
-			throw new RuntimeException(e);
-		}
-		for (int x = 0; x < pdArr.length; x++) {
-			// logger.debug("PropertyDescriptor - VirtualFileSystemLink - "
-			// + pdArr[x].getDisplayName());
-			if (transientListLink.contains(pdArr[x].getName())) {
-				pdArr[x].setValue("transient", Boolean.TRUE);
-			}
-		}
-		enc.setPersistenceDelegate(VirtualFileSystemLink.class,
-				new DefaultPersistenceDelegate(new String[] { "username",
-						"group", "linkPath" }));
-	}
-
 	protected Map<String,AtomicInteger> getSlaveRefCounts() {
 		// Links don't reside on slaves so return an empty Map
-		return new TreeMap<String,AtomicInteger>();
+		return new TreeMap<>();
 	}
 }
