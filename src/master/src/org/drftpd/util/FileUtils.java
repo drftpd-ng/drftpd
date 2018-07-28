@@ -17,12 +17,12 @@
  */
 package org.drftpd.util;
 
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
+
 import java.io.FileNotFoundException;
 import java.util.Comparator;
 import java.util.TreeSet;
-
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
 
 /**
  * @author djb61
@@ -31,7 +31,7 @@ import org.drftpd.vfs.FileHandle;
 public class FileUtils {
 
 	public static FileHandle getOldestFile(DirectoryHandle dir) throws FileNotFoundException {
-		TreeSet<FileHandle> files = new TreeSet<FileHandle>(new FileAgeComparator());
+		TreeSet<FileHandle> files = new TreeSet<>(new FileAgeComparator());
 		files.addAll(dir.getFilesUnchecked());
 		return files.first();
 	}
@@ -41,8 +41,7 @@ public class FileUtils {
 		public int compare(FileHandle f1, FileHandle f2) {
 
 			try {
-				return ((f1.lastModified() < f2.lastModified()) ? (-1) : ((f1.lastModified() == f2.lastModified()) ? 0
-						: 1));
+				return (Long.compare(f1.lastModified(), f2.lastModified()));
 			}
 			catch (FileNotFoundException e) {
 				return 0;

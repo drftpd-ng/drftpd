@@ -17,17 +17,16 @@
  */
 package org.drftpd.vfs;
 
+import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.RemoteSlave;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
-
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.master.RemoteSlave;
 
 /**
  * @author zubov
@@ -65,7 +64,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 * @throws FileNotFoundException
 	 */
 	public Set<String> getSlaveNames() throws FileNotFoundException {
-		return new HashSet<String>(getInode().getSlaves());		
+		return new HashSet<>(getInode().getSlaves());
 	}
 
 	/**
@@ -73,7 +72,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 * @throws FileNotFoundException
 	 */
 	public Set<RemoteSlave> getSlaves() throws FileNotFoundException {
-		HashSet<RemoteSlave> slaves = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> slaves = new HashSet<>();
 		for (String slave : getInode().getSlaves()) {
 			try {
 				slaves.add(getGlobalContext().getSlaveManager().getRemoteSlave(
@@ -93,7 +92,7 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 	 */
 	public Collection<RemoteSlave> getAvailableSlaves()
 			throws NoAvailableSlaveException, FileNotFoundException {
-		HashSet<RemoteSlave> rslaves = new HashSet<RemoteSlave>();
+		HashSet<RemoteSlave> rslaves = new HashSet<>();
 		for (RemoteSlave rslave : getSlaves()) {
 			if (rslave.isAvailable()) {
 				rslaves.add(rslave);
@@ -149,6 +148,14 @@ public class FileHandle extends InodeHandle implements FileHandleInterface {
 			return getCheckSumFromSlave();
 		}
 		return checksum;
+	}
+
+	/**
+	 * @return the cached CRC32 of the file.
+	 * @throws FileNotFoundException if there's no such file.
+	 */
+	public long getCheckSumCached() throws FileNotFoundException {
+		return getInode().getChecksum();
 	}
 
 	/**

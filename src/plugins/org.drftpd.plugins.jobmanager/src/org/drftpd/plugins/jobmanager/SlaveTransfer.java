@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-
 import org.drftpd.exceptions.SSLUnavailableException;
 import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
@@ -30,6 +26,9 @@ import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * @author mog
@@ -172,13 +171,10 @@ public class SlaveTransfer {
 			}
 		}
 
-		if (_srcTransfer.getChecksum() == _destTransfer.getChecksum()
-				|| _destTransfer.getChecksum() == 0
-				|| _srcTransfer.getChecksum() == 0) {
-			return true;
-		}
-		return false;
-	}
+        return _srcTransfer.getChecksum() == _destTransfer.getChecksum()
+                || _destTransfer.getChecksum() == 0
+                || _srcTransfer.getChecksum() == 0;
+    }
 
 	/**
 	 * @return Returns the _destSlave.

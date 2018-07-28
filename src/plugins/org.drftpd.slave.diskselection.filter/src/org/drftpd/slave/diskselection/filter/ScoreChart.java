@@ -42,7 +42,7 @@ public class ScoreChart {
 	 */
 	public ScoreChart(RootCollection rootCollection) {
 		_rootCollection = rootCollection;
-		_scoreList = new ArrayList<RootScore>();
+		_scoreList = new ArrayList<>();
 
 		for (Root root : _rootCollection.getRootList()) {
 			_scoreList.add(new RootScore(root, 0));

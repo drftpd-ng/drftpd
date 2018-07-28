@@ -17,10 +17,10 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
+
+import java.io.FileNotFoundException;
 
 /**
  * @author zubov

@@ -16,17 +16,6 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimerTask;
-import java.util.TreeSet;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -37,6 +26,9 @@ import org.drftpd.event.ReloadEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author zubov
@@ -65,7 +57,7 @@ public class JobManager implements PluginInterface {
 	}
 
 	public synchronized void addJobsToQueue(Collection<Job> jobs) {
-		ArrayList<Job> jobs2 = new ArrayList<Job>(jobs);
+		ArrayList<Job> jobs2 = new ArrayList<>(jobs);
 		for (Iterator<Job> jobiter = jobs2.iterator(); jobiter.hasNext();) {
 			Job job = jobiter.next();
 			Collection<RemoteSlave> slaves;
@@ -77,20 +69,18 @@ public class JobManager implements PluginInterface {
 				continue;
 			}
 
-			for (Iterator<RemoteSlave> iter = slaves.iterator(); iter.hasNext();) {
-				RemoteSlave slave = iter.next();
-
-				if (job.getDestinationSlaves().contains(slave.getName())) {
-					try {
-						job.sentToSlave(slave);
-					} catch (FileNotFoundException e) {
-						// I'd like to simply remove it, but I'm not sure how to handle that
-						// the job may be isDone() and the code below will throw an error if true
-						// this is going to be a small race condition since above we check if file exists
-						// bug I'm willing to accept --zubov
-					}
-				}
-			}
+            for (RemoteSlave slave : slaves) {
+                if (job.getDestinationSlaves().contains(slave.getName())) {
+                    try {
+                        job.sentToSlave(slave);
+                    } catch (FileNotFoundException e) {
+                        // I'd like to simply remove it, but I'm not sure how to handle that
+                        // the job may be isDone() and the code below will throw an error if true
+                        // this is going to be a small race condition since above we check if file exists
+                        // bug I'm willing to accept --zubov
+                    }
+                }
+            }
 			if (job.isDone()) {
 				jobiter.remove();
 			}
@@ -163,8 +153,8 @@ public class JobManager implements PluginInterface {
 			return; // can't transfer with no slaves
 		}
 
-		Set<RemoteSlave> busySlavesDown = new HashSet<RemoteSlave>();
-		Set<Job> skipJobs = new HashSet<Job>();
+		Set<RemoteSlave> busySlavesDown = new HashSet<>();
+		Set<Job> skipJobs = new HashSet<>();
 
 		synchronized (this) {
 			/*
@@ -237,8 +227,7 @@ public class JobManager implements PluginInterface {
 					// ready to accept it
 					skipJobs.add(job);
 
-					continue;
-				} catch (FileNotFoundException e) {
+                } catch (FileNotFoundException e) {
 					// can't transfer
 					return;
 				}
@@ -299,7 +288,14 @@ public class JobManager implements PluginInterface {
 	}
 
 	public synchronized void removeJobFromQueue(Job job) {
-		_queuedJobSet.remove(job);
+		// A TreeSet inserts/removes according to the results of Comparable, not .equals()/.hashCode()!
+		for (Iterator<Job> iter = _queuedJobSet.iterator(); iter.hasNext();) {
+			Job tempJob = iter.next();
+			if (tempJob.equals(job)) {
+				iter.remove();
+				return;
+			}
+		}
 	}
 
 	public void startJobs() {
@@ -331,7 +327,7 @@ public class JobManager implements PluginInterface {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 		logger.info("JobManager plugin loaded successfully");
-		_queuedJobSet = new TreeSet<Job>(new JobComparator());
+		_queuedJobSet = new TreeSet<>(new JobComparator());
 		reload();
 	}
 

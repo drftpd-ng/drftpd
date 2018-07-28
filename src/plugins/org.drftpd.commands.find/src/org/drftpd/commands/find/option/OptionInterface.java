@@ -25,5 +25,5 @@ import org.drftpd.vfs.index.AdvancedSearchParams;
  */
 public interface OptionInterface {
 
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException;
+	void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException;
 }

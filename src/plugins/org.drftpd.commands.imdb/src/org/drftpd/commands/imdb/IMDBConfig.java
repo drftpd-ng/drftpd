@@ -38,16 +38,16 @@ public class IMDBConfig {
 
 	private static final Logger logger = Logger.getLogger(IMDBConfig.class);
 
-	private ArrayList<SectionInterface> _rSections = new ArrayList<SectionInterface>();
-	private ArrayList<SectionInterface> _sSDSections = new ArrayList<SectionInterface>();
-	private ArrayList<SectionInterface> _sHDSections = new ArrayList<SectionInterface>();
+	private ArrayList<SectionInterface> _rSections = new ArrayList<>();
+	private ArrayList<SectionInterface> _sSDSections = new ArrayList<>();
+	private ArrayList<SectionInterface> _sHDSections = new ArrayList<>();
 	private int _startDelay, _endDelay;
 	private String _exclude;
-	private ArrayList<String> _filters = new ArrayList<String>();
+	private ArrayList<String> _filters = new ArrayList<>();
 	private boolean _bar_enabled, _bar_directory, _sRelease;
 
 	private IMDBThread _imdbThread = new IMDBThread();
-	private ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<DirectoryHandle>();
+	private ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<>();
 
 	public static IMDBConfig getInstance() {
 		if (ourInstance == null)
@@ -161,8 +161,8 @@ public class IMDBConfig {
 
 	/**
 	 * Method called whenever an inode is created.
-	 * Spawns a {@link TvMazeThread} if all criteria are met to not stall running thread
-	 * while getting the info from TvMaze.
+	 * Spawns a {@link IMDBThread} if all criteria are met to not stall running thread
+	 * while getting the info from IMDB.
 	 * Depends on {@link VirtualFileSystemInodeCreatedEvent} <code>type</code> property.
 	 * @param event
 	 */

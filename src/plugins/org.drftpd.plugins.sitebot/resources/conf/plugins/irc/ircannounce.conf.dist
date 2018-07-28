@@ -10,6 +10,7 @@
 # type.path.1=/path/subpath/*
 # type.path.1.destination=#channel1 #channel2
 # type.path.1.displayname=PSUEDOSECTION
+# type.path.1.regex=false
 #
 # type.section.1=SECTION_NAME
 # type.section.1.destination=#channel1 #channel2
@@ -31,6 +32,18 @@
 # The displayname value for path parameters allow you to make the bot format
 # the output for those events as if it came from a section with that name, and
 # truncating the path announced to only show the subpath below the path set.
+# The regex value(true/false) for path determines if regex style matching
+# is to be used, else glob matching. Use double backslashes to escape character.
+# Regex pattern is case insensitive.
+# A named regex group of either "truncate" or "announce" has to be included in
+# the regex string if you want to exclude parts of the path in the announce.
+# The former to exclude this part from the announce and the
+# latter to specificaly include only this part in the annonce.
+# Example:
+# default.path.1=^(?<truncate>/SECTION1/\\d{4}/).+
+# default.path.1.destination=#irc-channel
+# default.path.1.displayname=SECTION1
+# default.path.1.regex=true
 #
 # When looking for somewhere to announce an event the bot will start with the
 # first path rule for the event type, then proceed to the second path rule.
@@ -52,6 +65,7 @@
 # default.path.1=/path/subpath/*
 # default.path.1.destination=#channel1 #channel2
 # default.path.1.displayname=PSUEDOSECTION
+# default.path.1.regex=false
 #
 # default.section.1=SECTION_NAME
 # default.section.1.destination=#channel1 #channel2
@@ -70,6 +84,7 @@
 # default.path.1=*
 # default.path.1.destination=#mainchannel
 # default.path.1.displayname=DEFAULT
+# default.path.1.regex=false
 #
 # This will announce any directories made inside /incoming/ or any sub directories
 # of there in #newstuff. Any directories made inside /specialdir/ or any sub
@@ -104,10 +119,12 @@
 # default.path.1=/SECTION1/****/*
 # default.path.1.destination=#irc-channel
 # default.path.1.displayname=SECTION1
+# default.path.1.regex=false
 #
 # default.path.2=/SECTION2/****-**/*
 # default.path.2.destination=#irc-channel
 # default.path.2.displayname=SECTION2
+# default.path.2.regex=false
 #
 # The first section is an example howto remove date from the announcement defined as MMdd.
 # The second section is an example howto remove year and week from the announcement

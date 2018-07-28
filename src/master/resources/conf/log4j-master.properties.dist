@@ -11,7 +11,7 @@ log4j.appender.root.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
 log4j.logger.org.java.plugin=DEBUG, jpf
 log4j.additivity.org.java.plugin=false
 
-log4j.appender.jpf=org.apache.log4j.FileAppender
+log4j.appender.jpf=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.jpf.File=logs/jpf-master.log
 log4j.appender.jpf.layout=org.apache.log4j.PatternLayout
 log4j.appender.jpf.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
@@ -20,7 +20,7 @@ log4j.appender.jpf.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
 log4j.logger.org.drftpd.commands.usermanagement=DEBUG, sysop
 log4j.additivity.org.drftpd.commands.usermanagement=false
 
-log4j.appender.sysop=org.apache.log4j.FileAppender
+log4j.appender.sysop=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.sysop.File=logs/sysop.log
 log4j.appender.sysop.layout=org.apache.log4j.PatternLayout
 log4j.appender.sysop.layout.ConversionPattern=%p %d{ISO8601} - [%t] %c %x - %m%n
@@ -31,7 +31,7 @@ log4j.additivity.org.drftpd.master.SlaveManager=false
 log4j.logger.org.drftpd.master.RemoteSlave=DEBUG, slave
 log4j.additivity.org.drftpd.master.RemoteSlave=false
 
-log4j.appender.slave=org.apache.log4j.FileAppender
+log4j.appender.slave=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.slave.File=logs/remoteslave.log
 log4j.appender.slave.layout=org.apache.log4j.PatternLayout
 log4j.appender.slave.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
@@ -40,15 +40,21 @@ log4j.appender.slave.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
 log4j.logger.org.drftpd.master.BaseFtpConnection.service=DEBUG, debug
 log4j.additivity.org.drftpd.master.BaseFtpConnection.service=false
 
-log4j.appender.debug=org.apache.log4j.FileAppender
+log4j.appender.debug=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.debug.File=logs/debug.log
 log4j.appender.debug.layout=org.apache.log4j.PatternLayout
-log4j.appender.debug.layout.ConversionPattern=%p %d{ISO8601} - [%t] - %m%n
+log4j.appender.debug.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
 
 log4j.logger.org.drftpd.vfs.index=DEBUG, index
 log4j.additivity.org.drftpd.vfs.index=false
 
-log4j.appender.index=org.apache.log4j.FileAppender
+log4j.appender.index=org.apache.log4j.DailyRollingFileAppender
 log4j.appender.index.File=logs/index.log
 log4j.appender.index.layout=org.apache.log4j.PatternLayout
-log4j.appender.index.layout.ConversionPattern=%p %d{ISO8601} - [%t] - %m%n
+log4j.appender.index.layout.ConversionPattern=%p %d{ISO8601} [%t] %c %x - %m%n
+
+
+log4j.logger.org.apache.http.impl.conn=WARN
+log4j.logger.org.apache.http.impl.client=WARN
+log4j.logger.org.apache.http.client=WARN
+log4j.logger.org.apache.http.wire=ERROR

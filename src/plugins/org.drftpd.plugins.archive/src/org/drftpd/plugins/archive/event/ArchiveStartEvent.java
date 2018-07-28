@@ -16,10 +16,10 @@
  */
 package org.drftpd.plugins.archive.event;
 
-import java.util.ArrayList;
-
 import org.drftpd.plugins.archive.archivetypes.ArchiveType;
 import org.drftpd.plugins.jobmanager.Job;
+
+import java.util.ArrayList;
 
 /**
  * @author CyBeR
@@ -27,7 +27,7 @@ import org.drftpd.plugins.jobmanager.Job;
  */
 public class ArchiveStartEvent {
 
-	private ArrayList<Job> _jobs = new ArrayList<Job>();
+	private ArrayList<Job> _jobs = new ArrayList<>();
 	private ArchiveType _archivetype;
 
 	public ArchiveStartEvent(ArchiveType archivetype, ArrayList<Job> jobs) {

@@ -17,10 +17,6 @@
  */
 package org.drftpd.commandmanager;
 
-import java.util.Collections;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -32,6 +28,10 @@ import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
 
+import java.util.Collections;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
 /**
  * @author djb61
  * @version $Id$
@@ -39,21 +39,21 @@ import org.drftpd.vfs.DirectoryHandle;
 @SuppressWarnings("serial")
 public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandRequestInterface {
 
-	public static final Key<Boolean> ALLOWED = new Key<Boolean>(CommandRequest.class, "allowed");
+	public static final Key<Boolean> ALLOWED = new Key<>(CommandRequest.class, "allowed");
 
-	public static final Key<CommandResponse> DENIED_RESPONSE = new Key<CommandResponse>(CommandRequest.class, "denied_response");
+	public static final Key<CommandResponse> DENIED_RESPONSE = new Key<>(CommandRequest.class, "denied_response");
 
-	public static final Key<String> ARGUMENT = new Key<String>(CommandRequest.class, "argument");
+	public static final Key<String> ARGUMENT = new Key<>(CommandRequest.class, "argument");
 
-	public static final Key<String> COMMAND = new Key<String>(CommandRequest.class, "command");
+	public static final Key<String> COMMAND = new Key<>(CommandRequest.class, "command");
 
-	public static final Key<DirectoryHandle> CURRENT_DIRECTORY = new Key<DirectoryHandle>(CommandRequest.class, "current_directory");
+	public static final Key<DirectoryHandle> CURRENT_DIRECTORY = new Key<>(CommandRequest.class, "current_directory");
 
-	public static final Key<Session> SESSION = new Key<Session>(CommandRequest.class, "session");
+	public static final Key<Session> SESSION = new Key<>(CommandRequest.class, "session");
 
-	public static final Key<String> USER = new Key<String>(CommandRequest.class, "user");
+	public static final Key<String> USER = new Key<>(CommandRequest.class, "user");
 
-	private static final Key<Properties> PROPERTIES = new Key<Properties>(CommandRequest.class, "properties");
+	private static final Key<Properties> PROPERTIES = new Key<>(CommandRequest.class, "properties");
 
 	public CommandRequest(String argument, String command,
 			DirectoryHandle directory, String user) {

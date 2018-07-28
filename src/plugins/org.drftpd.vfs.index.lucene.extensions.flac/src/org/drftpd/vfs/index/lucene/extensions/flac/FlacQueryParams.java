@@ -24,7 +24,7 @@ import org.drftpd.dynamicdata.Key;
  */
 public class FlacQueryParams {
 
-	public static final Key<FlacQueryParams> FLACQUERYPARAMS = new Key<FlacQueryParams>(FlacQueryParams.class, "flacqueryparams");
+	public static final Key<FlacQueryParams> FLACQUERYPARAMS = new Key<>(FlacQueryParams.class, "flacqueryparams");
 	
 	private String _genre;
 	private String _title;

@@ -17,19 +17,6 @@
  */
 package org.drftpd;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Timer;
-
-import javax.net.ssl.SSLContext;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
@@ -62,6 +49,12 @@ import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.index.IndexEngineInterface;
 import org.tanukisoftware.wrapper.WrapperManager;
 
+import javax.net.ssl.SSLContext;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.util.*;
+
 /**
  * @author mog
  * @author zubov
@@ -78,7 +71,7 @@ public class GlobalContext {
 
 	private ConfigInterface _config;
 
-	private ArrayList<PluginInterface> _plugins = new ArrayList<PluginInterface>();
+	private ArrayList<PluginInterface> _plugins = new ArrayList<>();
 
 	protected SectionManagerInterface _sectionManager;
 
@@ -142,7 +135,7 @@ public class GlobalContext {
 	}
 
 	public List<PluginInterface> getPlugins() {
-		return new ArrayList<PluginInterface>(_plugins);
+		return new ArrayList<>(_plugins);
 	}
 
 	public SectionManagerInterface getSectionManager() {
@@ -374,7 +367,7 @@ public class GlobalContext {
 	}
 
 	public static HashMap<String, Properties> loadCommandConfig(String cmdConf) {
-		HashMap<String,Properties> commandsConfig = new HashMap<String,Properties>();
+		HashMap<String,Properties> commandsConfig = new HashMap<>();
 		LineNumberReader reader = null;
 		try {
 			reader = new LineNumberReader(new FileReader(cmdConf));
@@ -463,7 +456,7 @@ public class GlobalContext {
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
 		Set<PluginInterface> unloadedExtensions = MasterPluginUtils.getUnloadedExtensionObjects(this, "Plugin", event, _plugins);
 		if (!unloadedExtensions.isEmpty()) {
-			ArrayList<PluginInterface> clonedPlugins = new ArrayList<PluginInterface>(_plugins);
+			ArrayList<PluginInterface> clonedPlugins = new ArrayList<>(_plugins);
 			boolean pluginRemoved = false;
 			for (Iterator<PluginInterface> iter = clonedPlugins.iterator(); iter.hasNext();) {
 				PluginInterface plugin = iter.next();
@@ -485,7 +478,7 @@ public class GlobalContext {
 		try {
 			List<PluginInterface> loadedExtensions = MasterPluginUtils.getLoadedExtensionObjects(this, "master", "Plugin", "Class", event);
 			if (!loadedExtensions.isEmpty()) {
-				ArrayList<PluginInterface> clonedPlugins = new ArrayList<PluginInterface>(_plugins);
+				ArrayList<PluginInterface> clonedPlugins = new ArrayList<>(_plugins);
 				for (PluginInterface newExtension : loadedExtensions) {
 					newExtension.startPlugin();
 					logger.debug("Loading plugin "+CommonPluginUtils.getPluginIdForObject(newExtension));

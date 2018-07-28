@@ -25,7 +25,7 @@ import org.drftpd.dynamicdata.Key;
  */
 public class MP3QueryParams {
 
-	public static final Key<MP3QueryParams> MP3QUERYPARAMS = new Key<MP3QueryParams>(MP3QueryParams.class, "mp3queryparams");
+	public static final Key<MP3QueryParams> MP3QUERYPARAMS = new Key<>(MP3QueryParams.class, "mp3queryparams");
 	
 	private String _genre;
 	private String _title;

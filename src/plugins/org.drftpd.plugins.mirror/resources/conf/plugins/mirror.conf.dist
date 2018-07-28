@@ -1,0 +1,43 @@
+############
+## Mirror ##
+############
+
+## Global path exclude for unmirror command
+## x.unmirrorExclude (regex) (optional)
+## Example (unmirror all files but sfv/nfo):
+## 1.unmirrorExclude=(?i).*\.(nfo|sfv)$
+
+###################################
+## Configuration
+##
+## Number of slaves file should be mirrored on, must be a value > 2
+## x.nbrOfMirrors
+##
+## Priority for job when added to the job queue
+## x.priority (optional)
+##
+## Path this configuration applies to and all its subdirs
+## Matched against full path incl filename
+## Multiple path lines accepted
+## x.path.y (regex)
+##
+## Exclude these paths
+## Multiple path lines accepted
+## x.excludePath.y (regex) (optional)
+##
+## Valid slaves to mirror file on, else all is valid
+## Slave(s) file exist on are added automatically
+## x.slaves (optional) (space separated)
+##
+## If no valid slaves are specified with x.slaves all
+## slaves are valid except the exluded by this setting
+## x.excludeSlaves (optional) (space separated)
+##
+## Example:
+## 1.nbrOfMirrors=2
+## 1.path.1=/GROUPS/FIRSTGROUP/.*
+## 1.path.2=/GROUPS/SECONDGROUP/.*
+## 1.excludePath.1=(?i).*/(sample|cover)/.*
+## 1.excludeSlaves=SLAVE8 SLAVE9
+###################################
+

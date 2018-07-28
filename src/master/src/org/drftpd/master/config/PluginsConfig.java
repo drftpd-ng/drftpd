@@ -18,15 +18,15 @@
 
 package org.drftpd.master.config;
 
+import org.apache.log4j.Logger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Map.Entry;
-
-import org.apache.log4j.Logger;
+import java.util.Properties;
 
 /**
  * Plugin Configuraiton loader.<br>
@@ -42,7 +42,7 @@ public class PluginsConfig {
 
 	private static final Logger logger = Logger.getLogger(PluginsConfig.class);
 			
-	private HashMap<String, Properties> _propertiesMap = new HashMap<String, Properties>();
+	private HashMap<String, Properties> _propertiesMap = new HashMap<>();
 
 	public PluginsConfig() {
 		searchForConfigurations(pluginsConfFile);
@@ -76,8 +76,7 @@ public class PluginsConfig {
 		for (File file : dir.listFiles()) {
 			// TODO: by doing startsWith(".") i'm preveting people using a config file like '.hidden.conf' is that a problem?
 			if (file.getName().startsWith(".")) {
-				continue;
-			} else if (file.isFile() && file.getName().endsWith(".conf")) {
+            } else if (file.isFile() && file.getName().endsWith(".conf")) {
 				loadConf(file);
 			} else if (file.isDirectory()){
 				searchForConfigurations(file);

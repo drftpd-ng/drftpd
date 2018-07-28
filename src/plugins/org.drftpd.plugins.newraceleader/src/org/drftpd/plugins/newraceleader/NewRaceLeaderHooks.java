@@ -16,10 +16,6 @@
  */
 package org.drftpd.plugins.newraceleader;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Collection;
-
 import org.drftpd.RankUtils;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -35,6 +31,10 @@ import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.util.UploaderPosition;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * @author CyBeR

@@ -1,7 +1,5 @@
 package org.drftpd.plugins.nukefilter.announce;
 
-import java.util.ResourceBundle;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.plugins.nukefilter.NukeFilterNukeItem;
@@ -12,6 +10,8 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.ResourceBundle;
 
 /**
  * @author phew
@@ -53,6 +53,7 @@ public class NukeFilterAnnouncer extends AbstractAnnouncer {
 			env.add("path", nfni.getPath());
 			env.add("delay", String.valueOf(nfni.getDelay()));
 			env.add("section", nfni.getSectionName());
+			env.add("sectioncolor", nfni.getSectionColor());
 			env.add("element", nfni.getElement());
 			env.add("nukex", String.valueOf(nfni.getNukex()));
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+event.getIRCString(), env, _bundle), writer);

@@ -17,15 +17,12 @@
  */
 package org.drftpd.commands.speedtest.net;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -34,18 +31,8 @@ import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.TreeSet;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * @author scitz0
@@ -65,7 +52,7 @@ public class SpeedTest extends CommandInterface {
 		AnnotationProcessor.process(this);
 		_bundle = cManager.getResourceBundle();
 		_keyPrefix = this.getClass().getName()+".";
-		_servers = SpeedTestUtils.getClosetsServers();
+		_servers = null;
 		readConfig();
 	}
 
@@ -110,6 +97,12 @@ public class SpeedTest extends CommandInterface {
 			return new CommandResponse(200, request.getSession().jprintf(
 					_bundle, _keyPrefix+"servers.refresh", env, request.getUser()));
 		}
+		if (_servers == null) {
+			// First run?, load server list
+			_servers = SpeedTestUtils.getClosetsServers();
+			request.getSession().printOutput(200, request.getSession().jprintf(
+					_bundle, _keyPrefix+"servers.refresh", env, request.getUser()));
+		}
 		if (args.length == 2 && !allSlaves && !wildcardSlaves && args[1].equals("-list")) {
 			listservers = true;
 		} else if (args.length == 2 && args[1].matches("\\d+")) {
@@ -126,7 +119,7 @@ public class SpeedTest extends CommandInterface {
 					_bundle, _keyPrefix+"servers.empty", env, request.getUser()));
 		}
 
-		ArrayList<RemoteSlave> rslaves = new ArrayList<RemoteSlave>();
+		ArrayList<RemoteSlave> rslaves = new ArrayList<>();
 		try {
 			if (allSlaves) {
 				rslaves.addAll(GlobalContext.getGlobalContext().getSlaveManager().getSlaves());
@@ -146,11 +139,11 @@ public class SpeedTest extends CommandInterface {
 					_bundle, _keyPrefix+"slavename.error", env, request.getUser()));
 		}
 
-		HashMap<String, SpeedTestServer> usedServers = new HashMap<String, SpeedTestServer>();
-		HashMap<String, SlaveLocation> slaveLocations = new HashMap<String, SlaveLocation>();
+		HashMap<String, SpeedTestServer> usedServers = new HashMap<>();
+		HashMap<String, SlaveLocation> slaveLocations = new HashMap<>();
 
 		ExecutorService executor = Executors.newFixedThreadPool(rslaves.size());
-		List<Future<SpeedTestInfo>> slaveThreadList = new ArrayList<Future<SpeedTestInfo>>();
+		List<Future<SpeedTestInfo>> slaveThreadList = new ArrayList<>();
 
 		for (RemoteSlave rslave : rslaves) {
 			env.add("slave.name", rslave.getName());
@@ -159,12 +152,23 @@ public class SpeedTest extends CommandInterface {
 						_bundle, _keyPrefix+"slave.offline", env, request.getUser()));
 				continue;
 			}
-			HashMap<String, SpeedTestServer> testServers = new HashMap<String, SpeedTestServer>();
+			HashMap<String, SpeedTestServer> testServers = new HashMap<>();
 
-			SlaveLocation slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
-			if (slaveLocation.getLatitude() == 0 || slaveLocation.getLongitude() == 0) {
-				request.getSession().printOutput(500, request.getSession().jprintf(
-						_bundle, _keyPrefix+"slave.geoip.error", env, request.getUser()));
+			SlaveLocation slaveLocation = new SlaveLocation();
+			String lat = rslave.getProperty("lat");
+			String lon = rslave.getProperty("lon");
+			if (NumberUtils.isParsable(lat)) {
+				slaveLocation.setLatitude(Double.parseDouble(lat));
+			}
+			if (NumberUtils.isParsable(lon)) {
+				slaveLocation.setLongitude(Double.parseDouble(lon));
+			}
+			if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
+				slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
+				if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
+					request.getSession().printOutput(500, request.getSession().jprintf(
+							_bundle, _keyPrefix + "slave.geoip.error", env, request.getUser()));
+				}
 			}
 
 			slaveLocations.put(rslave.getName(), slaveLocation);
@@ -172,7 +176,7 @@ public class SpeedTest extends CommandInterface {
 			// Sort servers based on slave location
 			DistanceFromMeComparator myComparator = new DistanceFromMeComparator(
 					slaveLocation.getLatitude(), slaveLocation.getLongitude());
-			TreeSet<SpeedTestServer> closestServers = new TreeSet<SpeedTestServer>(myComparator);
+			TreeSet<SpeedTestServer> closestServers = new TreeSet<>(myComparator);
 			closestServers.addAll(_servers);
 
 			if (listservers || testServerID == 0) {
@@ -250,7 +254,7 @@ public class SpeedTest extends CommandInterface {
 		//shut down the executor service now
 		executor.shutdown();
 
-		return null;
+		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
 	@EventSubscriber

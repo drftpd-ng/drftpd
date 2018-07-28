@@ -72,7 +72,7 @@ public class MaxtransfersPerslaveFilter extends Filter {
 
     static ArrayList<AssignSlave> parseAssign(String assign, SlaveManager sm) throws ObjectNotFoundException {
         StringTokenizer st = new StringTokenizer(assign, ", ");
-        ArrayList<AssignSlave> assigns = new ArrayList<AssignSlave>();
+        ArrayList<AssignSlave> assigns = new ArrayList<>();
 
         while (st.hasMoreTokens()) {
             assigns.add(new AssignSlave(st.nextToken(), sm));
@@ -86,10 +86,10 @@ public class MaxtransfersPerslaveFilter extends Filter {
 	       throws NoAvailableSlaveException {
 
 		Matcher m = _p.matcher(dir.getPath());
-		boolean validPath = _negateExpr ? !m.find() : m.find();
+		boolean validPath = _negateExpr != m.find();
 
 	 	for (Iterator<ScoreChart.SlaveScore> iterator = scorechart.getSlaveScores().iterator(); iterator.hasNext();) {
-	 		ScoreChart.SlaveScore slavescore = (ScoreChart.SlaveScore) iterator.next();
+	 		ScoreChart.SlaveScore slavescore = iterator.next();
 
 	 		for(AssignSlave assign : _assigns) {
 	 			SlaveStatus status;

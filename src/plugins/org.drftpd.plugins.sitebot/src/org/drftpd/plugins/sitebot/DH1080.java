@@ -17,13 +17,13 @@
  */
 package org.drftpd.plugins.sitebot;
 
+import org.apache.log4j.Logger;
+
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Arrays; 
-
-import org.apache.log4j.Logger;
+import java.util.Arrays;
 
 /**
  * @author djb61

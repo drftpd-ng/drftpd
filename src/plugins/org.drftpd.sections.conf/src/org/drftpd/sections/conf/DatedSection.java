@@ -17,15 +17,6 @@
  */
 package org.drftpd.sections.conf;
 
-import java.io.FileNotFoundException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.Properties;
-import java.util.TimeZone;
-
 import org.apache.log4j.Logger;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FileExistsException;
@@ -33,6 +24,10 @@ import org.drftpd.master.cron.TimeEventInterface;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.LinkHandle;
 import org.drftpd.vfs.ObjectNotValidException;
+
+import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author mog
@@ -202,8 +197,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 			return;
 		}
 		createLink(newDir);
-		return;
-	}
+    }
 
 	private void createLink(DirectoryHandle targetDir) {
 		// creating the symlink

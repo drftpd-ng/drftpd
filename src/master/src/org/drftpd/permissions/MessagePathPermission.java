@@ -35,7 +35,7 @@ public class MessagePathPermission extends StringPathPermission {
 			Collection<String> users) throws IOException {
 		super(pattern, users);
 		
-		_message = new ArrayList<String>();
+		_message = new ArrayList<>();
 
 		BufferedReader in = new BufferedReader(new FileReader(messageFile));
 		String line;

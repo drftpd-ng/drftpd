@@ -17,27 +17,16 @@
  */
 package org.drftpd.commands.misc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-import java.util.Map.Entry;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInstanceContainer;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.master.BaseFtpConnection;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 
 /**
@@ -81,7 +70,7 @@ public class Misc extends CommandInterface {
     // LIST;NLST;RETR;STOR
     public CommandResponse doFEAT(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
-        ArrayList<String> featFound = new ArrayList<String>();
+        ArrayList<String> featFound = new ArrayList<>();
         conn.printOutput("211-Extensions supported:\r\n");
 
         for (CommandInstanceContainer container : _cManager.getCommandHandlersMap().values()) {
@@ -90,11 +79,11 @@ public class Misc extends CommandInterface {
         	if (feat == null) {
         		continue;  
         	}
-        	
-        	for (int i = 0; i < feat.length; i++) {
-                if (!featFound.contains(feat[i])) {
-                	conn.printOutput(" " + feat[i] + "\r\n");
-                	featFound.add(feat[i]);
+
+            for (String aFeat : feat) {
+                if (!featFound.contains(aFeat)) {
+                    conn.printOutput(" " + aFeat + "\r\n");
+                    featFound.add(aFeat);
                 }
             }
         }
@@ -203,11 +192,11 @@ public class Misc extends CommandInterface {
     		return response;
     	}
     	// global list of commands with help
-    	HashMap<String, String> helpInfo = new HashMap<String, String>();
+    	HashMap<String, String> helpInfo = new HashMap<>();
     	HashMap<String, Properties> cmdProperties = request.getSession().getCommands();
     	// find which commands we should ignore
     	String noHelp = request.getProperties().getProperty("nohelp");
-    	ArrayList<String> noHelpCommands = new ArrayList<String>();
+    	ArrayList<String> noHelpCommands = new ArrayList<>();
     	if (noHelp != null) {
     		StringTokenizer st = new StringTokenizer(noHelp, ",");
     		while (st.hasMoreTokens()) {
@@ -247,7 +236,7 @@ public class Misc extends CommandInterface {
     			logger.error("Help command pad string too short");
     		}
     	}
-    	ArrayList<String> sortedList = new ArrayList<String>(helpInfo.keySet());
+    	ArrayList<String> sortedList = new ArrayList<>(helpInfo.keySet());
     	Collections.sort(sortedList);
     	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     	try {

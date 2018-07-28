@@ -16,17 +16,17 @@
  */
 package org.drftpd.commands.imdb.list;
 
-import java.io.FileNotFoundException;
-import java.util.ResourceBundle;
-
 import org.drftpd.commands.imdb.IMDBConfig;
+import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ResourceBundle;
 
 /**
  * @author scitz0
@@ -47,14 +47,15 @@ public class IMDBList implements AddListElementsInterface {
 					ReplacerEnvironment env = new ReplacerEnvironment();
 					env.add("title", imdbInfo.getTitle());
 					env.add("year", imdbInfo.getYear() != null ? imdbInfo.getYear() : "9999");
+					env.add("language", imdbInfo.getLanguage());
+					env.add("country", imdbInfo.getCountry());
 					env.add("director", imdbInfo.getDirector());
-					env.add("genre", imdbInfo.getGenre());
+					env.add("genres", imdbInfo.getGenres());
 					env.add("plot", imdbInfo.getPlot());
 					env.add("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "0");
 					env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "0");
 					env.add("url", imdbInfo.getURL());
-					env.add("screens", imdbInfo.getScreens() != null ? imdbInfo.getScreens() : "0");
-					env.add("limited", imdbInfo.getLimited());
+					env.add("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "0");
 					String imdbDirName = container.getSession().jprintf(bundle,
 							keyPrefix+"imdb.dir", env, container.getUser());
 					try {

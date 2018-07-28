@@ -32,7 +32,7 @@ public class Queue {
 	 * Constructs a Queue object of Integer.MAX_VALUE size.
 	 */
 	public Queue() {
-		_queue = new LinkedBlockingQueue<String>();
+		_queue = new LinkedBlockingQueue<>();
 	}
 
 	/**

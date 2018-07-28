@@ -27,6 +27,9 @@ public class ID3GenreList {
 
 	private static final Logger logger = Logger.getLogger(ID3GenreList.class);
 
+	/*
+	 * From https://eyed3.readthedocs.io/en/latest/plugins/genres_plugin.html
+	 */
 	public static final String[] genres = {
 		"Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk",
 		"Grunge", "Hip-Hop", "Jazz", "Metal", "New Age", "Oldies",
@@ -40,7 +43,7 @@ public class ID3GenreList {
 		"Ethnic", "Gothic", "Darkwave", "Techno-Industrial",
 		"Electronic", "Pop-Folk", "Eurodance", "Dream",
 		"Southern Rock", "Comedy", "Cult", "Gangsta", "Top 40",
-		"Christian Rap", "Pop/Funk", "Jungle", "Native US", "Cabaret",
+		"Christian Rap", "Pop / Funk", "Jungle", "Native US", "Cabaret",
 		"New Wave", "Psychadelic", "Rave", "Showtunes", "Trailer",
 		"Lo-Fi", "Tribal", "Acid Punk", "Acid Jazz", "Polka", "Retro",
 		"Musical", "Rock & Roll", "Hard Rock", "Folk", "Folk-Rock",
@@ -58,7 +61,16 @@ public class ID3GenreList {
 		"Negerpunk", "Polsk Punk", "Beat", "Christian Gangsta",
 		"Heavy Metal", "Black Metal", "Crossover", "Contemporary C",
 		"Christian Rock", "Merengue", "Salsa", "Thrash Metal",
-		"Anime", "JPop", "SynthPop"
+		"Anime", "JPop", "SynthPop", "Abstract", "Art Rock",
+		"Baroque", "Bhangra", "Big Beat", "Breakbeat", "Chillout",
+		"Downtempo", "Dub", "EBM", "Eclectic", "Electro",
+		"Electroclash", "Emo", "Experimental", "Garage", "Global",
+		"IDM", "Illbient", "Industro-Goth", "Jam Band", "Krautrock",
+		"Leftfield", "Lounge", "Math Rock", "New Romantic", "Nu-Breakz",
+		"Post-Punk", "Post-Rock", "Psytrance", "Shoegaze", "Space Rock",
+		"Trop Rock", "World Music", "Neoclassical", "Audiobook", "Audio Theatre",
+		"Neue Deutsche Welle", "Podcast", "Indie Rock", "G-Funk", "Dubstep",
+		"Garage Rock", "Psybient"
 	};
 
 	/** Returns the Genre for given number

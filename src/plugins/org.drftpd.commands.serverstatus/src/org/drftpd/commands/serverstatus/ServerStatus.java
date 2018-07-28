@@ -17,24 +17,10 @@
  */
 package org.drftpd.commands.serverstatus;
 
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.GarbageCollectorMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryUsage;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadMXBean;
-import java.util.List;
-import java.util.StringTokenizer;
-
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
@@ -42,12 +28,16 @@ import org.drftpd.master.Session;
 import org.drftpd.util.ExtendedPropertyResourceBundle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.lang.management.*;
+import java.util.List;
+import java.util.StringTokenizer;
+
 /**
  * @author fr0w
  * @version $Id$
  */
 public class ServerStatus extends CommandInterface {
-	protected static final Key<Long> CONNECTTIME = new Key<Long>(ServerStatus.class, "connecttime");
+	protected static final Key<Long> CONNECTTIME = new Key<>(ServerStatus.class, "connecttime");
 	
 	private ExtendedPropertyResourceBundle _bundle;
 	private String _keyPrefix;
@@ -130,7 +120,7 @@ public class ServerStatus extends CommandInterface {
 		StringTokenizer st = new StringTokenizer(args);
 		boolean isAll = false;
 		
-		if (args.indexOf("all") != -1) {
+		if (args.contains("all")) {
 			// avoid output repetition
 			// ex: gc, vm, all
 			isAll = true;

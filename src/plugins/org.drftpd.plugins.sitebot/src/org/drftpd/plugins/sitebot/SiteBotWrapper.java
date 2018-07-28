@@ -17,13 +17,13 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
+
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * @author djb61
@@ -33,7 +33,7 @@ public class SiteBotWrapper implements PluginInterface {
 
 	private static final Logger logger = Logger.getLogger(SiteBotWrapper.class);
 	
-	private ArrayList<SiteBot> _bots = new ArrayList<SiteBot>();
+	private ArrayList<SiteBot> _bots = new ArrayList<>();
 
 	public void startPlugin() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()

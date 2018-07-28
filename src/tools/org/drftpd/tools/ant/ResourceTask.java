@@ -17,22 +17,16 @@
  */
 package org.drftpd.tools.ant;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
+
+import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * @author djb61
@@ -71,8 +65,8 @@ public class ResourceTask extends Task {
 	public void execute() throws BuildException {
 		// See if this is a slave plugin
 		_slavePlugin = getProject().getProperty("slave.plugin").equalsIgnoreCase("true");
-		FileSet slaveFiles = (FileSet)getProject().getReference("slave.fileset");
-		_filePatterns = new ArrayList<String>();
+		FileSet slaveFiles = getProject().getReference("slave.fileset");
+		_filePatterns = new ArrayList<>();
 		// Get the build start time as long
 		SimpleDateFormat simpleBuildDate = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS");
 		Date buildDate = null;
@@ -82,7 +76,7 @@ public class ResourceTask extends Task {
 			throw new BuildException("Plugin build timestamp not set correctly");
 		}
 		_longDate = buildDate.getTime();
-		_installedConfs = (ArrayList<String>)getProject().getReference("installed.confs");
+		_installedConfs = getProject().getReference("installed.confs");
 		findResources(_resourceDir);
 		if (_slavePlugin && !_filePatterns.isEmpty()) {
 			String[] patterns = _filePatterns.toArray(new String[_filePatterns.size()]);
@@ -106,8 +100,7 @@ public class ResourceTask extends Task {
 
 		for (File file : dir.listFiles()) {
 			if (file.getName().startsWith(".")) {
-				continue;
-			} else if (file.isFile()) {
+            } else if (file.isFile()) {
 				copyResource(file);
 			} else if (file.isDirectory()){
 				findResources(file);

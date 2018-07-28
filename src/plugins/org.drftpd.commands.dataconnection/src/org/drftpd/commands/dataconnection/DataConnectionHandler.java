@@ -16,19 +16,6 @@
  */
 package org.drftpd.commands.dataconnection;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-
 import org.apache.log4j.Logger;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
@@ -40,30 +27,28 @@ import org.drftpd.commandmanager.CommandResponse;
 import org.drftpd.commandmanager.StandardCommandManager;
 import org.drftpd.commands.dataconnection.event.SlowTransferEvent;
 import org.drftpd.dynamicdata.Key;
-import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SSLUnavailableException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.exceptions.TransferDeniedException;
+import org.drftpd.exceptions.*;
 import org.drftpd.io.PermissionDeniedException;
-import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.master.FtpReply;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.SlaveManager;
-import org.drftpd.master.TransferState;
-import org.drftpd.slave.ConnectInfo;
-import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferFailedException;
-import org.drftpd.slave.TransferSlowException;
-import org.drftpd.slave.TransferStatus;
+import org.drftpd.master.*;
+import org.drftpd.slave.*;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.FtpRequest;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.ListUtils;
 import org.drftpd.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 
 /**
@@ -74,24 +59,24 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class DataConnectionHandler extends CommandInterface {
 	private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
 
-	public static final Key<Long> CHECKSUM = new Key<Long>(DataConnectionHandler.class, "checksum");
+	public static final Key<Long> CHECKSUM = new Key<>(DataConnectionHandler.class, "checksum");
 
-	public static final Key<FileHandle> TRANSFER_FILE = new Key<FileHandle>(DataConnectionHandler.class, "transfer_file");
+	public static final Key<FileHandle> TRANSFER_FILE = new Key<>(DataConnectionHandler.class, "transfer_file");
 	
-	public static final Key<RemoteSlave> TRANSFER_SLAVE = new Key<RemoteSlave>(DataConnectionHandler.class, "transfer_slave");
+	public static final Key<RemoteSlave> TRANSFER_SLAVE = new Key<>(DataConnectionHandler.class, "transfer_slave");
 	
-	public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS = 
-		new Key<InetAddress>(DataConnectionHandler.class, "transfer_slave_inetAddress");
+	public static final Key<InetAddress> TRANSFER_SLAVE_INET_ADDRESS =
+            new Key<>(DataConnectionHandler.class, "transfer_slave_inetAddress");
 	
-	public static final Key<Character> TRANSFER_TYPE = new Key<Character>(DataConnectionHandler.class, "transfer_type");
+	public static final Key<Character> TRANSFER_TYPE = new Key<>(DataConnectionHandler.class, "transfer_type");
 
-	public static final Key<String> INET_ADDRESS = new Key<String>(DataConnectionHandler.class, "inetAddress");
+	public static final Key<String> INET_ADDRESS = new Key<>(DataConnectionHandler.class, "inetAddress");
 
-	public static final Key<TransferStatus> XFER_STATUS = new Key<TransferStatus>(DataConnectionHandler.class, "transferStatus");
+	public static final Key<TransferStatus> XFER_STATUS = new Key<>(DataConnectionHandler.class, "transferStatus");
 	
-	public static final Key<Long> MIN_XFER_SPEED = new Key<Long>(DataConnectionHandler.class, "minTransferSpeed");
+	public static final Key<Long> MIN_XFER_SPEED = new Key<>(DataConnectionHandler.class, "minTransferSpeed");
 	
-	public static final Key<Long> MAX_XFER_SPEED = new Key<Long>(DataConnectionHandler.class, "maxTransferSpeed");
+	public static final Key<Long> MAX_XFER_SPEED = new Key<>(DataConnectionHandler.class, "maxTransferSpeed");
 
 	private ResourceBundle _bundle;
 
@@ -365,7 +350,7 @@ public class DataConnectionHandler extends CommandInterface {
 			response.addComment("And set up port forwarding in your router.");
 			response.addComment(
 			"Or you can just use a PRET capable client, see");
-			response.addComment("  http://drftpd.org/ for PRET capable clients");
+			response.addComment("  https://github.com/drftpd-ng/drftpd3/wiki for PRET capable clients");
 
 			reset(conn);
 			return response;
@@ -435,49 +420,52 @@ public class DataConnectionHandler extends CommandInterface {
 			reset(conn);
 			return new CommandResponse(550, "Unable to get PretRequest Argument");			
 		}
-	
-		if (cmd.equals("RETR")) {
-			FileHandle file;
-			try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
-			} catch (FileNotFoundException e) {
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
-			} catch (ObjectNotValidException e) {
-				reset(conn);
-				return new CommandResponse(550, "Requested target is not a file");
-			}
-			ts.setTransferFile(file);
-			return new CommandResponse(200, "OK, planning for upcoming download");
-		} else if (cmd.equals("STOR")) {
-			FileHandle file = null;
-			try {
-				file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
-			} catch (FileNotFoundException e) {
-				// this is good, do nothing
-			} catch (ObjectNotValidException e) {
-				// this is not good, file exists
-				// until we can upload multiple instances of files
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-			}
-			if (file != null) {
-				// this is not good, file exists
-				// until we can upload multiple instances of files
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
-			}
-			file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
 
-			if (!ListUtils.isLegalFileName(file.getName())) {
-				reset(conn);
-				return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
-			}
-			ts.setTransferFile(file);
-			return new CommandResponse(200, "OK, planning for upcoming upload");
-		} else {
-			return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
-		}
+        switch (cmd) {
+            case "RETR": {
+                FileHandle file;
+                try {
+                    file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
+                } catch (FileNotFoundException e) {
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
+                } catch (ObjectNotValidException e) {
+                    reset(conn);
+                    return new CommandResponse(550, "Requested target is not a file");
+                }
+                ts.setTransferFile(file);
+                return new CommandResponse(200, "OK, planning for upcoming download");
+            }
+            case "STOR": {
+                FileHandle file = null;
+                try {
+                    file = conn.getCurrentDirectory().getFile(ts.getPretRequest().getArgument(), user);
+                } catch (FileNotFoundException e) {
+                    // this is good, do nothing
+                } catch (ObjectNotValidException e) {
+                    // this is not good, file exists
+                    // until we can upload multiple instances of files
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+                }
+                if (file != null) {
+                    // this is not good, file exists
+                    // until we can upload multiple instances of files
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS");
+                }
+                file = conn.getCurrentDirectory().getNonExistentFileHandle(ts.getPretRequest().getArgument());
+
+                if (!ListUtils.isLegalFileName(file.getName())) {
+                    reset(conn);
+                    return StandardCommandManager.genericResponse("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN");
+                }
+                ts.setTransferFile(file);
+                return new CommandResponse(200, "OK, planning for upcoming upload");
+            }
+            default:
+                return StandardCommandManager.genericResponse("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM");
+        }
 	}
 
 	public CommandResponse doSSCN(CommandRequest request) {

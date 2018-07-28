@@ -17,9 +17,6 @@
  */
 package org.drftpd.commands.config.hooks;
 
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
@@ -31,6 +28,9 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.vfs.perms.VFSPermissions;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * PreHooks that implements some of the functionalities "required" by the directives in perms.conf
@@ -47,13 +47,8 @@ public class DefaultConfigPreHook implements PreHookInterface {
 	public CommandRequestInterface hideInWhoHook(CommandRequest request) {
 		List<BaseFtpConnection> conns = ConnectionManager.getConnectionManager().getConnections();
 		ConfigInterface cfg = GlobalContext.getConfig();
-		
-		for (Iterator<BaseFtpConnection> iter = conns.iterator(); iter.hasNext();) {
-			BaseFtpConnection conn = iter.next();
-			if (cfg.checkPathPermission("hideinwho", conn.getUserNull(), conn.getCurrentDirectory())) {
-				iter.remove();
-			}
-		}
+
+        conns.removeIf(conn -> cfg.checkPathPermission("hideinwho", conn.getUserNull(), conn.getCurrentDirectory()));
 		
 		request.getSession().setObject(UserManagementHandler.CONNECTIONS, conns);
 		

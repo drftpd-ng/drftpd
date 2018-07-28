@@ -17,12 +17,12 @@
  */
 package org.drftpd.vfs.index;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * @author fr0w
@@ -54,7 +54,7 @@ public class AdvancedSearchParams {
 	private KeyedMap<Key<?>, Object> _extensionMap;
 
 	public AdvancedSearchParams() {
-		_extensionMap = new KeyedMap<Key<?>, Object>();
+		_extensionMap = new KeyedMap<>();
 	}
 
 	public void setName(String name) {

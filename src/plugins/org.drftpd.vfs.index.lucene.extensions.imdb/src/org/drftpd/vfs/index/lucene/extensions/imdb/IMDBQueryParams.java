@@ -25,19 +25,19 @@ import org.drftpd.dynamicdata.Key;
  */
 public class IMDBQueryParams {
 
-	public static final Key<IMDBQueryParams> IMDBQUERYPARAMS = new Key<IMDBQueryParams>(IMDBQueryParams.class, "imdbqueryparams");
+	public static final Key<IMDBQueryParams> IMDBQUERYPARAMS = new Key<>(IMDBQueryParams.class, "imdbqueryparams");
 	
 	private String _title;
 	private String _director;
-	private String _genre;
+	private String _genres;
 	private Integer _minVotes;
 	private Integer _maxVotes;
 	private Integer _minRating;
 	private Integer _maxRating;
 	private Integer _minYear;
 	private Integer _maxYear;
-	private Integer _minScreens;
-	private Integer _maxScreens;
+	private Integer _minRuntime;
+	private Integer _maxRuntime;
 
 	public String getTitle() {
 		return _title;
@@ -47,8 +47,8 @@ public class IMDBQueryParams {
 		return _director;
 	}
 	
-	public String getGenre() {
-		return _genre;
+	public String getGenres() {
+		return _genres;
 	}
 
 	public Integer getMinVotes() {
@@ -75,12 +75,12 @@ public class IMDBQueryParams {
 		return _maxYear;
 	}
 
-	public Integer getMinScreens() {
-		return _minScreens;
+	public Integer getMinRuntime() {
+		return _minRuntime;
 	}
 
-	public Integer getMaxScreens() {
-		return _maxScreens;
+	public Integer getMaxRuntime() {
+		return _maxRuntime;
 	}
 
 	public void setTitle(String title) {
@@ -91,8 +91,8 @@ public class IMDBQueryParams {
 		_director = director;
 	}
 	
-	public void setGenre(String genre) {
-		_genre = genre;
+	public void setGenres(String genres) {
+		_genres = genres;
 	}
 
 	public void setMinVotes(Integer votes) {
@@ -119,12 +119,12 @@ public class IMDBQueryParams {
 		_maxYear = year;
 	}
 
-	public void setMinScreens(Integer screens) {
-		_minScreens = screens;
+	public void setMinRuntime(Integer runtime) {
+		_minRuntime = runtime;
 	}
 
-	public void setMaxScreens(Integer screens) {
-		_maxScreens = screens;
+	public void setMaxRuntime(Integer runtime) {
+		_maxRuntime = runtime;
 	}
 
 }

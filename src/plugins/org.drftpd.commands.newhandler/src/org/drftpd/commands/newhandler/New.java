@@ -17,28 +17,18 @@
  */
 package org.drftpd.commands.newhandler;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
-
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.sections.SectionManagerInterface;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 
 /**
@@ -64,7 +54,7 @@ public class New extends CommandInterface {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
 		SectionManagerInterface sectionManager = GlobalContext.getGlobalContext().getSectionManager();
-		HashMap<String, SectionInterface> sections = new HashMap<String, SectionInterface>();
+		HashMap<String, SectionInterface> sections = new HashMap<>();
 
 		// site new
 		// site new <number>
@@ -115,7 +105,7 @@ public class New extends CommandInterface {
 		User user = request.getSession().getUserNull(request.getUser());
 
 		// Collect all dirs from all sections
-		ArrayList<DirectoryHandle> directories = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> directories = new ArrayList<>();
 		for (SectionInterface section : sections.values()) {
 			try {
 				directories.addAll(section.getCurrentDirectory().getDirectories(user));
@@ -128,7 +118,7 @@ public class New extends CommandInterface {
 		if (directories.size() == 0) {
 			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new.empty", env, request.getUser()));
 		} else {
-			Collections.sort(directories, new DateComparator());
+			directories.sort(new DateComparator());
 
 			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"header", env, request.getUser()));
 
@@ -145,6 +135,9 @@ public class New extends CommandInterface {
 					}
 					env.add("pos", "" + pos);
 					env.add("name", allSections ? dir.getPath() : dir.getName());
+					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
+					env.add("section", section.getName());
+					env.add("sectioncolor", section.getColor());
 					env.add("diruser", dir.getUsername());
 					env.add("files", "" + dir.getInodeHandles(user).size());
 					env.add("size", Bytes.formatBytes(dir.getSize()));

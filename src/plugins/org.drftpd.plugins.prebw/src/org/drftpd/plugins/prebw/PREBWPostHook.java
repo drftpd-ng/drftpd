@@ -17,39 +17,40 @@
  */
 package org.drftpd.plugins.prebw;
 
-import java.util.*;
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
-import org.drftpd.GlobalContext;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.*;
+import org.drftpd.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.commands.pre.Pre;
+import org.drftpd.event.ReloadEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.TransferState;
+import org.drftpd.plugins.prebw.event.PREBWEvent;
+import org.drftpd.sections.SectionInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferStatus;
-import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.commands.pre.Pre;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.plugins.prebw.event.PREBWEvent;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.commandmanager.*;
-import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author lh
  */
 public class PREBWPostHook implements PostHookInterface {
 	private static final Logger logger = Logger.getLogger(PREBWPostHook.class);
-    private ArrayList<TimeSetting> _timeSettings = new ArrayList<TimeSetting>();
+    private ArrayList<TimeSetting> _timeSettings = new ArrayList<>();
     private String _exclude;
     private String[] _sections;
 	private boolean _realSpeed;
+	private int _leechtopCount;
 
     public void initialize(StandardCommandManager manager) {
         logger.info("Starting PREBW plugin");
@@ -69,6 +70,7 @@ public class PREBWPostHook implements PostHookInterface {
         _sections = cfg.getProperty("sections", "").split(";");
 		_exclude = cfg.getProperty("exclude", "");
 		_realSpeed = cfg.getProperty("real.speed", "false").equalsIgnoreCase("true");
+		_leechtopCount = Integer.parseInt(cfg.getProperty("prebw.leechtop.count", "3"));
 		for (int i = 1;; i++) {
 			String times = cfg.getProperty(i + ".times");
 			if (times == null) break;
@@ -214,7 +216,7 @@ public class PREBWPostHook implements PostHookInterface {
 					_preInfo.setMessures(prebwTimeTotal+"s", Bytes.formatBytes(speed)+"/s");
 				}
 				_preInfo.setMtime(prebwTimeTotal);
-				GlobalContext.getEventService().publishAsync(new PREBWEvent(_preInfo));
+				GlobalContext.getEventService().publishAsync(new PREBWEvent(_preInfo, _leechtopCount));
 				PreInfos.getPreInfosSingleton().getPreInfos().remove(_preInfo);
 			} catch(NumberFormatException ex) {
 				logger.warn("",ex);

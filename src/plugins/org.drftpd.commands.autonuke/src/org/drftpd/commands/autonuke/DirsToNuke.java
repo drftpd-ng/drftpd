@@ -31,7 +31,7 @@ public class DirsToNuke {
     private ConcurrentLinkedQueue<NukeItem> _dirsToNuke;
 
     private DirsToNuke() {
-        _dirsToNuke = new ConcurrentLinkedQueue<NukeItem>();
+        _dirsToNuke = new ConcurrentLinkedQueue<>();
     }
 
     public ConcurrentLinkedQueue<NukeItem> get() {
@@ -55,7 +55,7 @@ public class DirsToNuke {
 
 	public boolean del(String path) {
 		for (Iterator<NukeItem> iter = _dirsToNuke.iterator(); iter.hasNext();) {
-			NukeItem ni = (NukeItem) iter.next();
+			NukeItem ni = iter.next();
 			DirectoryHandle dir = ni.getDir();
 			if (ni.isSubdir()) {
 				dir = dir.getParent();

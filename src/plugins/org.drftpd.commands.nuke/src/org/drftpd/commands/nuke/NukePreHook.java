@@ -17,11 +17,7 @@
  */
 package org.drftpd.commands.nuke;
 
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.vfs.VirtualFileSystem;
 

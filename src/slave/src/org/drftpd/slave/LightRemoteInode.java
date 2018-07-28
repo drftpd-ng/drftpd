@@ -17,11 +17,11 @@
  */
 package org.drftpd.slave;
 
+import org.drftpd.vfs.InodeHandleInterface;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
-
-import org.drftpd.vfs.InodeHandleInterface;
 
 /**
  * @author zubov
@@ -44,7 +44,7 @@ public class LightRemoteInode implements Serializable, InodeHandleInterface {
 	private String _group = "drftpd";
 
 	private void setName(String name) {
-		if (name.indexOf("\\") != -1) {
+		if (name.contains("\\")) {
 			throw new RuntimeException(
 					"\\ is not an allowed character in filenames");
 		}
@@ -133,4 +133,5 @@ public class LightRemoteInode implements Serializable, InodeHandleInterface {
 	public String getPath() {
 		return Slave.separator + getName();
 	}
+
 }

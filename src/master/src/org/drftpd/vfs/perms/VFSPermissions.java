@@ -17,14 +17,6 @@
  */
 package org.drftpd.vfs.perms;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.TreeMap;
-import java.util.Map.Entry;
-
 import org.apache.log4j.Logger;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.PathPermission;
@@ -32,6 +24,9 @@ import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
 import org.drftpd.vfs.InodeHandle;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * This object handles all the permissions releated to the VFS.
@@ -51,13 +46,13 @@ public class VFSPermissions {
 	public VFSPermissions() {
 		loadExtensions();
 		
-		_pathPerms = new HashMap<String, HashMap<String, LinkedList<PathPermission>>>();
+		_pathPerms = new HashMap<>();
 	}
 
 	public void loadExtensions() {
-		_handlersMap = new HashMap<String, PermissionWrapper>();
-		_directiveToType = new HashMap<String, String>();
-		_priorities = new HashMap<String, TreeMap<Integer, String>>();
+		_handlersMap = new HashMap<>();
+		_directiveToType = new HashMap<>();
+		_priorities = new HashMap<>();
 
 		/*
 		<extension-point id="VFSPerm">
@@ -93,12 +88,8 @@ public class VFSPermissions {
 				
 				// building execution order.
 				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
-				TreeMap<Integer, String> order = _priorities.get(type);
-				if (order == null) {
-					order = new TreeMap<Integer, String>();
-					_priorities.put(type, order);
-				}
-				while (true) {
+                TreeMap<Integer, String> order = _priorities.computeIfAbsent(type, k -> new TreeMap<>());
+                while (true) {
 					if (order.containsKey(priority)) {
 						logger.debug("The slot that " + directive + " is trying to use is already allocated, " +
 								"check the xmls, allocating the next available slot");
@@ -117,14 +108,11 @@ public class VFSPermissions {
 	
 	private boolean verifyType(String type) {
 		type = type.toLowerCase();
-		if (type.equals("upload") || type.equals("makedir") || type.equals("delete") 
-				|| type.equals("deleteown")	|| type.startsWith("rename") || type.equals("renameown")
-				|| type.equals("privpath") || type.equals("download")) {
-			return true;
-		}
-		
-		return false;
-	}
+        return type.equals("upload") || type.equals("makedir") || type.equals("delete")
+                || type.equals("deleteown") || type.startsWith("rename") || type.equals("renameown")
+                || type.equals("privpath") || type.equals("download");
+
+    }
 	
 	public void handleLine(String directive, StringTokenizer st) {
 		if (!_handlersMap.containsKey(directive)) {
@@ -138,17 +126,12 @@ public class VFSPermissions {
 	
 	protected void addPermissionToMap(String directive, PathPermission pathPerm) {
 		String type = _directiveToType.get(directive);
-		
-		HashMap<String, LinkedList<PathPermission>> map = _pathPerms.get(type);
-		
-		if (map == null) {
-			map = new HashMap<String, LinkedList<PathPermission>>();
-			_pathPerms.put(type, map);
-		}
-		
-		LinkedList<PathPermission> list;
+
+        HashMap<String, LinkedList<PathPermission>> map = _pathPerms.computeIfAbsent(type, k -> new HashMap<>());
+
+        LinkedList<PathPermission> list;
 		if (!map.containsKey(directive)) {
-			list = new LinkedList<PathPermission>();
+			list = new LinkedList<>();
 			map.put(directive, list);
 		} else {
 			list = map.get(directive);
@@ -255,16 +238,15 @@ public class VFSPermissions {
 			
 			logger.debug(type + " is handling:");
 			TreeMap<Integer, String> order = _priorities.get(type);
-			for (Iterator<Entry<Integer, String>> iter = order.entrySet().iterator(); iter.hasNext();) {
-				Entry<Integer, String> e2 = iter.next();
-				String directive = e2.getValue();
-				logger.debug(e2.getKey()+". "+ directive);
-				if (map.get(directive) == null) {
-					// 'directive' was not found in perms.conf
-					continue;
-				}
-				logger.debug(map.get(directive).toString());
-			}
+            for (Entry<Integer, String> e2 : order.entrySet()) {
+                String directive = e2.getValue();
+                logger.debug(e2.getKey() + ". " + directive);
+                if (map.get(directive) == null) {
+                    // 'directive' was not found in perms.conf
+                    continue;
+                }
+                logger.debug(map.get(directive).toString());
+            }
 		}
 	}
 }

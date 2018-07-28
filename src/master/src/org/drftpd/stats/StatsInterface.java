@@ -11,66 +11,66 @@ public interface StatsInterface {
 	/**
 	 * @return the amount of data downloaded.
 	 */
-	public long getDownloadedBytes();
+    long getDownloadedBytes();
 	
 	/**
 	 * Set the amount of data downloaded.
 	 * @param bytes
 	 */
-	public void setDownloadedBytes(long bytes);
+    void setDownloadedBytes(long bytes);
 	
 	/**
 	 * @return how many times it was/has downloaded.
 	 */
-	public int getDownloadedFiles();
+    int getDownloadedFiles();
 	
 	/**
 	 * Set how many times it was/has downloaded.
 	 * @param files
 	 */
-	public void setDownloadedFiles(int files) ;
+    void setDownloadedFiles(int files) ;
 	
 	/**
 	 * @return duration of downloads.
 	 */
-	public long getDownloadedTime();
+    long getDownloadedTime();
 	
 	/**
 	 * Set the duration of the downloads.
 	 * @param millis
 	 */
-	public void setDownloadedTime(long millis);
+    void setDownloadedTime(long millis);
 	
 	/**
 	 * @return the amount of data uplaoded.
 	 */
-	public long getUploadedBytes();
+    long getUploadedBytes();
 	
 	/**
 	 * Set the amount of data uploaded.
 	 * @param bytes
 	 */
-	public void setUploadedBytes(long bytes);
+    void setUploadedBytes(long bytes);
 	
 	/**
 	 * @return how many times it was/has uploaded.
 	 */
-	public int getUploadedFiles();
+    int getUploadedFiles();
 	
 	/**
 	 * Set how many times it was/has uploaded.
 	 * @param files
 	 */
-	public void setUploadedFiles(int files);
+    void setUploadedFiles(int files);
 	
 	/**
 	 * @return duration of uploads.
 	 */
-	public long getUploadedTime();
+    long getUploadedTime();
 	
 	/**
 	 * Set the duration of the uploads.
 	 * @param millis
 	 */
-	public void setUploadedTime(long millis);
+    void setUploadedTime(long millis);
 }

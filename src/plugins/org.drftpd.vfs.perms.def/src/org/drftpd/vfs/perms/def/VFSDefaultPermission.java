@@ -17,12 +17,12 @@
  */
 package org.drftpd.vfs.perms.def;
 
-import java.util.StringTokenizer;
-
 import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.Permission;
 import org.drftpd.vfs.perms.VFSPermHandler;
+
+import java.util.StringTokenizer;
 
 /**
  * Default handler. Uses Glob patterns.

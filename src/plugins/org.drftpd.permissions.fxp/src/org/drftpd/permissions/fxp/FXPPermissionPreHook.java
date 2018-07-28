@@ -16,8 +16,6 @@
  */
 package org.drftpd.permissions.fxp;
 
-import java.net.InetAddress;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandRequestInterface;
@@ -28,6 +26,8 @@ import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.net.InetAddress;
 
 /**
  * @author fr0w

@@ -17,10 +17,10 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.util.Vector;
-
 import org.apache.log4j.Logger;
 import org.drftpd.commandmanager.CommandResponseInterface;
+
+import java.util.Vector;
 
 /**
  * @author djb61
@@ -32,7 +32,7 @@ public class IrcReply {
 
 	protected int _code;
 
-	protected Vector<String> _lines = new Vector<String>();
+	protected Vector<String> _lines = new Vector<>();
 
 	protected String _message;
 
@@ -48,9 +48,9 @@ public class IrcReply {
 		if (resp.indexOf('\n') != -1) {
 			String[] lines = resp.split("\n");
 
-			for (int i = 0; i < lines.length; i++) {
-				_lines.add(lines[i]);
-			}
+            for (String line : lines) {
+                _lines.add(line);
+            }
 		} else {
 			_lines.add(resp);
 		}
@@ -82,7 +82,7 @@ public class IrcReply {
 	}
 
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		if ((_lines.size() == 0) && (_message == null)) {
 			setMessage("No text specified");

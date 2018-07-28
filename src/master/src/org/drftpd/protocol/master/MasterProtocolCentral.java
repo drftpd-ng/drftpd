@@ -16,21 +16,17 @@
  */
 package org.drftpd.protocol.master;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.apache.log4j.Logger;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.HandshakeWrapper;
 import org.drftpd.protocol.ProtocolException;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.PluginObjectContainer;
+
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * MasterProtocolCentral handles the load of all connected Protocol Extensions,
@@ -57,9 +53,9 @@ public class MasterProtocolCentral {
 	 * Iterate through all connected extensions, loading them.
 	 */
 	private void loadProtocolExtensions() {
-		HashMap<Class<?>, AbstractIssuer> issuersMap = 
-			new HashMap<Class<?>, AbstractIssuer>();
-		ArrayList<String> protocols = new ArrayList<String>();
+		HashMap<Class<?>, AbstractIssuer> issuersMap =
+                new HashMap<>();
+		ArrayList<String> protocols = new ArrayList<>();
 
 		try {
 			List<PluginObjectContainer<AbstractIssuer>> loadedIssuers =

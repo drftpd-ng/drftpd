@@ -10,7 +10,7 @@ public class PreInfos {
     private LinkedList<PreInfo> _preInfos;
 
     private PreInfos() {
-        _preInfos = new LinkedList<PreInfo>();
+        _preInfos = new LinkedList<>();
     }
 
     public LinkedList<PreInfo> getPreInfos() {

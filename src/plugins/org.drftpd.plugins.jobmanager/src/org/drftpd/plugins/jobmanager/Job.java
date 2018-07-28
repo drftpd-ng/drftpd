@@ -16,14 +16,6 @@
  */
 package org.drftpd.plugins.jobmanager;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
@@ -34,6 +26,9 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * @author zubov
@@ -72,7 +67,7 @@ public class Job {
 	
 	public Job(FileHandle file, int priority, int transferNum, Collection<RemoteSlave> destSlaves) {
 		this(file, priority, transferNum);
-		HashSet<String> slaves = new HashSet<String>();
+		HashSet<String> slaves = new HashSet<>();
 		for (RemoteSlave rslave : destSlaves) {
 			slaves.add(rslave.getName());
 		}
@@ -105,7 +100,7 @@ public class Job {
 
 	public Job(FileHandle file, Collection<String> destSlaves, int priority, int transferNum, boolean onlyCountOnlineSlaves) {
 		this(file, priority, transferNum);
-		_destSlaves = new HashSet<String>(destSlaves);
+		_destSlaves = new HashSet<>(destSlaves);
 		_onlyCountOnlineSlaves = onlyCountOnlineSlaves;
 		if (_transferNum > destSlaves.size()) {
 			throw new IllegalArgumentException(
@@ -123,7 +118,7 @@ public class Job {
 	}
 	
 	public Collection<String> getSlavesToTransferTo() throws FileNotFoundException {
-		ArrayList<String> toTransferTo = new ArrayList<String>(_destSlaves);
+		ArrayList<String> toTransferTo = new ArrayList<>(_destSlaves);
 		toTransferTo.removeAll(getFile().getSlaveNames());
 		return toTransferTo;
 	}
@@ -135,14 +130,14 @@ public class Job {
 	public void cleanup() {
 		try {
 				// remove slaves that aren't in the destination list
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile().getSlaves())) {
+				for (RemoteSlave rslave : new ArrayList<>(getFile().getSlaves())) {
 					if (!_destSlaves.contains(rslave.getName())) {
 						rslave.simpleDelete(getFile().getPath());
 						getFile().removeSlave(rslave);
 					}
 				}
 				// remove slaves if they aren't online and we have too many copies
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile().getSlaves())) {
+				for (RemoteSlave rslave : new ArrayList<>(getFile().getSlaves())) {
                     if (getFile().getSlaves().size() <= _originalTransferNum) {
                         return;
                     }
@@ -152,7 +147,7 @@ public class Job {
                     }
                 }
 				// remove slaves if they are online and we have too many copies
-				for (RemoteSlave rslave : new ArrayList<RemoteSlave>(getFile().getSlaves())) {
+				for (RemoteSlave rslave : new ArrayList<>(getFile().getSlaves())) {
 					if (getFile().getSlaves().size() <= _originalTransferNum) {
 						return;
 					}
@@ -170,8 +165,8 @@ public class Job {
 
 	
 	public Collection<RemoteSlave> getSlaveObjects(Collection<String> names) throws ObjectNotFoundException {
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>();
-		ArrayList<String> stringSlaves = new ArrayList<String>(names);
+		ArrayList<RemoteSlave> slaves = new ArrayList<>();
+		ArrayList<String> stringSlaves = new ArrayList<>(names);
 		for (String rslave : stringSlaves) {
 			try {
 				slaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(rslave));
@@ -185,8 +180,8 @@ public class Job {
 	}
 	
 	public Collection<String> getSlaveNames(Collection<RemoteSlave> names) {
-		ArrayList<RemoteSlave> slaves = new ArrayList<RemoteSlave>(names);
-		ArrayList<String> stringSlaves = new ArrayList<String>();
+		ArrayList<RemoteSlave> slaves = new ArrayList<>(names);
+		ArrayList<String> stringSlaves = new ArrayList<>();
 		for (RemoteSlave rslave : slaves) {
 				stringSlaves.add(rslave.getName());
 		}
@@ -199,8 +194,8 @@ public class Job {
 	 */
 	public Set<String> getDestinationSlaves() {
 		if (_onlyCountOnlineSlaves) {
-			HashSet<String> onlineDestinationSlaves = new HashSet<String>();
-			for (String rslave : new HashSet<String>(_destSlaves)) {
+			HashSet<String> onlineDestinationSlaves = new HashSet<>();
+			for (String rslave : new HashSet<>(_destSlaves)) {
 				RemoteSlave remoteSlave;
 				try {
 					remoteSlave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(rslave);
@@ -288,7 +283,7 @@ public class Job {
 	private String outputDestinationSlaves() {
 		StringBuilder slaveBuilder = new StringBuilder();
 
-		for (String rslave : new HashSet<String>(_destSlaves)) {
+		for (String rslave : new HashSet<>(_destSlaves)) {
 			slaveBuilder.append(rslave);
 			slaveBuilder.append(',');
 		}
@@ -462,11 +457,22 @@ public class Job {
 	 * 
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
+	@Override
 	public boolean equals(Object arg0) {
-		if (arg0 instanceof Job) {
-			return _file == ((Job) arg0)._file;
+		if (!(arg0 instanceof Job)) {
+			return false;
 		}
-		return super.equals(arg0);
+		Job compareMe = (Job) arg0;
+		return _file.equals(compareMe._file);
+	}
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return _file.hashCode();
 	}
 
 	public long getIndex() {
@@ -483,10 +489,11 @@ public class Job {
 	 * on at least "_trasnferNum" of them.
 	 */
 	public boolean checkIfArchived() {
-		int numofslaves = _transferNum;
+		int numofslaves = _originalTransferNum;
         try {
         	for (String destslave : _destSlaves) {
-				if (destslave.equals(getFile().getSlaveNames())) {
+				if (getFile().getSlaveNames().contains(destslave)) {
+					// File exist on destination slave
 					numofslaves--;
 				}
 			}

@@ -16,17 +16,12 @@
  */
 package org.drftpd.master.cron;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * @author zubov
@@ -90,7 +85,7 @@ public class TimeManager {
 	private void doMethodOnTimeEvents(String methodName, Date d) {
 		List<TimeEventInterface> tempList = null;
 		synchronized (this) {
-			tempList = new ArrayList<TimeEventInterface>(_timedEvents);
+			tempList = new ArrayList<>(_timedEvents);
 		}
 		Class<?>[] classArg = new Class<?>[1];
 		classArg[0] = Date.class;
@@ -129,7 +124,7 @@ public class TimeManager {
 	}
 	
 	protected TimeManager (Calendar cal) {
-		_timedEvents = new ArrayList<TimeEventInterface>();
+		_timedEvents = new ArrayList<>();
 		Timer timer = GlobalContext.getGlobalContext().getTimer();
 		// setup the next time we need to run an event
 		// roll the calendar to the next Hour

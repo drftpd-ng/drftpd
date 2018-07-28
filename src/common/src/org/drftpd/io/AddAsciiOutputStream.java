@@ -51,11 +51,7 @@ public class AddAsciiOutputStream extends OutputStream {
 			_out.write('\r');
 		}
 
-		_lastWasCarriageReturn = false;
-
-		if (i == '\r') {
-			_lastWasCarriageReturn = true;
-		}
+        _lastWasCarriageReturn = i == '\r';
 
 		_out.write(i);
 	}

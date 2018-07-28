@@ -1,12 +1,12 @@
 package org.drftpd.slaveselection.filter;
 
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
+
+import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 public class AssignSlave {
 	private static GlobalContext _gctx;
@@ -30,7 +30,7 @@ public class AssignSlave {
 	
 	public static ArrayList<AssignParser> parseAssign(String p) throws ObjectNotFoundException {
 		StringTokenizer st = new StringTokenizer(p.replaceAll(",", ""));
-		ArrayList<AssignParser> list = new ArrayList<AssignParser>();
+		ArrayList<AssignParser> list = new ArrayList<>();
 
 		while (st.hasMoreTokens()) {
 			String toParse = st.nextToken();

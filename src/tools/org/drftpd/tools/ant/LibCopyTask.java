@@ -17,16 +17,6 @@
  */
 package org.drftpd.tools.ant;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.TreeSet;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -34,6 +24,10 @@ import org.apache.tools.ant.types.FileSet;
 import org.java.plugin.registry.Library;
 import org.java.plugin.registry.PluginAttribute;
 import org.java.plugin.registry.PluginDescriptor;
+
+import java.io.*;
+import java.util.Collection;
+import java.util.TreeSet;
 
 /**
  * @author djb61
@@ -58,9 +52,9 @@ public class LibCopyTask extends Task {
 		_installDir = getProject().getProperty("installdir");
 		// See if this is a slave plugin
 		_slavePlugin = getProject().getProperty("slave.plugin").equalsIgnoreCase("true");
-		_slaveFiles = (FileSet)getProject().getReference("slave.fileset");
-		TreeSet<String> missingLibs = (TreeSet<String>)getProject().getReference("libs.missing");
-		PluginDescriptor descriptor = (PluginDescriptor)getProject().getReference("plugin.descriptor");
+		_slaveFiles = getProject().getReference("slave.fileset");
+		TreeSet<String> missingLibs = getProject().getReference("libs.missing");
+		PluginDescriptor descriptor = getProject().getReference("plugin.descriptor");
 		// First handle java libraries specified in the plugin manifest
 		Collection<Library> jpfLibs = descriptor.getLibraries();
 		for (Library lib : jpfLibs) {

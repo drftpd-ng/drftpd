@@ -17,27 +17,14 @@
  */
 package org.drftpd.tools.ant;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.MissingResourceException;
-import java.util.PropertyResourceBundle;
-import java.util.ResourceBundle;
-import java.util.TreeSet;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+
+import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author djb61
@@ -47,7 +34,7 @@ public class ThemeTask extends Task {
 
 	private File _baseDir;
 	private File _pluginDir;
-	private HashMap<String,String> _themes = new HashMap<String,String>();
+	private HashMap<String,String> _themes = new HashMap<>();
 	private final String themedir = "conf" + File.separator + "themes";
 
 	/**
@@ -152,8 +139,7 @@ public class ThemeTask extends Task {
 
 		for (File file : dir.listFiles()) {
 			if (file.getName().startsWith(".")) {
-				continue;
-			} else if (file.isFile() && file.getName().endsWith(".properties")) {
+            } else if (file.isFile() && file.getName().endsWith(".properties")) {
 				loadProperties(file);
 			} else if (file.isDirectory()){
 				findProperties(file);
@@ -199,7 +185,7 @@ public class ThemeTask extends Task {
 
 				// Copy all properties from file into theme
 				// adding the correct namespace prefix
-				TreeSet<String> sortedProps = new TreeSet<String>(inputBundle.keySet());
+				TreeSet<String> sortedProps = new TreeSet<>(inputBundle.keySet());
 				for (String propKey : sortedProps) {
 					output.append(keyPrefix);
 					output.append(propKey);

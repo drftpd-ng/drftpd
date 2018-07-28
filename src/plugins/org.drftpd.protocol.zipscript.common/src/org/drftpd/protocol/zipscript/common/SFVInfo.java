@@ -17,12 +17,12 @@
  */
 package org.drftpd.protocol.zipscript.common;
 
+import org.drftpd.dynamicdata.Key;
+import org.drftpd.vfs.CaseInsensitiveTreeMap;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Serializable;
-
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.vfs.CaseInsensitiveTreeMap;
 
 /**
  * @author mog
@@ -31,7 +31,7 @@ import org.drftpd.vfs.CaseInsensitiveTreeMap;
 @SuppressWarnings("serial")
 public class SFVInfo implements Serializable {
 
-	public static final Key<SFVInfo> SFVINFO = new Key<SFVInfo>(SFVInfo.class, "sfv");
+	public static final Key<SFVInfo> SFVINFO = new Key<>(SFVInfo.class, "sfv");
 
 	private CaseInsensitiveTreeMap<String, Long> _entries = null;
 	private String _sfvFileName = null;
@@ -66,7 +66,7 @@ public class SFVInfo implements Serializable {
 
 	public static SFVInfo importSFVInfoFromFile(BufferedReader in) throws IOException {
 		String line;
-		CaseInsensitiveTreeMap<String, Long> entries = new CaseInsensitiveTreeMap<String, Long>();
+		CaseInsensitiveTreeMap<String, Long> entries = new CaseInsensitiveTreeMap<>();
 		try {
 			while ((line = in.readLine()) != null) {
 				if (line.length() == 0) {

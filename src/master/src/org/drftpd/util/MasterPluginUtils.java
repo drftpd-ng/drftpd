@@ -17,15 +17,6 @@
  */
 package org.drftpd.util;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
@@ -33,6 +24,10 @@ import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * A collection of helper methods to perform common tasks with the plugin framework.
@@ -73,7 +68,7 @@ public class MasterPluginUtils extends CommonPluginUtils {
 	 *          extension point then an empty <tt>Set</tt> is returned.
 	 */
 	public static <T> Set<T> getUnloadedExtensionObjects(Object caller, String extName, UnloadPluginEvent event, Collection<T> loadedExtensions) {
-		Set<T> unloadedExtensions = new HashSet<T>();
+		Set<T> unloadedExtensions = new HashSet<>();
 		PluginManager manager = PluginManager.lookup(caller);
 		String currentPlugin = manager.getPluginFor(caller).getDescriptor().getId();
 		for (String pluginExtension : event.getParentPlugins()) {
@@ -81,12 +76,11 @@ public class MasterPluginUtils extends CommonPluginUtils {
 			String pluginName = pluginExtension.substring(0, pointIndex);
 			String extension = pluginExtension.substring(pointIndex+1);
 			if (pluginName.equals(currentPlugin) && extension.equals(extName)) {
-				for (Iterator<T> iter = loadedExtensions.iterator(); iter.hasNext();) {
-					T extObj = iter.next();
-					if (manager.getPluginFor(extObj).getDescriptor().getId().equals(event.getPlugin())) {
-						unloadedExtensions.add(extObj);
-					}
-				}
+                for (T extObj : loadedExtensions) {
+                    if (manager.getPluginFor(extObj).getDescriptor().getId().equals(event.getPlugin())) {
+                        unloadedExtensions.add(extObj);
+                    }
+                }
 			}
 		}
 		return unloadedExtensions;
@@ -283,7 +277,7 @@ public class MasterPluginUtils extends CommonPluginUtils {
 			boolean activatePlugin, boolean logError, boolean failOnError) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
-		List<T> loadedExtensions = new ArrayList<T>();
+		List<T> loadedExtensions = new ArrayList<>();
 		PluginManager manager = PluginManager.lookup(caller);
 		String currentPlugin = manager.getPluginFor(caller).getDescriptor().getId();
 		for (String pluginExtension : event.getParentPlugins()) {
@@ -859,7 +853,7 @@ public class MasterPluginUtils extends CommonPluginUtils {
 			boolean createInstance, boolean activatePlugin, boolean logError, boolean failOnError) throws
 			ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InstantiationException,
 			InvocationTargetException, NoSuchMethodException, PluginLifecycleException {
-		List<PluginObjectContainer<T>> loadedExtensions = new ArrayList<PluginObjectContainer<T>>();
+		List<PluginObjectContainer<T>> loadedExtensions = new ArrayList<>();
 		PluginManager manager = PluginManager.lookup(caller);
 		String currentPlugin = manager.getPluginFor(caller).getDescriptor().getId();
 		for (String pluginExtension : event.getParentPlugins()) {
@@ -892,12 +886,12 @@ public class MasterPluginUtils extends CommonPluginUtils {
 									pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 								}
 								if (methodSig == null) {
-									container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin);
+									container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin);
 								} else {
 									try {
 										Method pluginMethod = pluginCls.getMethod(plugin.getParameter(methodParamName).valueAsString()
 												, methodSig);
-										container = new PluginObjectContainer<T>(pluginCls, pluginInstance, plugin, pluginMethod);
+										container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin, pluginMethod);
 									} catch (NoSuchMethodException e) {
 										if (logError) {
 											logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
@@ -912,7 +906,7 @@ public class MasterPluginUtils extends CommonPluginUtils {
 									}
 								}
 							} else {
-								container = new PluginObjectContainer<T>(pluginCls, plugin);
+								container = new PluginObjectContainer<>(pluginCls, plugin);
 							}
 							loadedExtensions.add(container);
 						} catch (ClassNotFoundException e) {

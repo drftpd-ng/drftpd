@@ -26,7 +26,7 @@ import org.drftpd.dynamicdata.Key;
 public class ZipscriptQueryParams {
 
 	public static final Key<ZipscriptQueryParams> ZIPSCRIPTQUERYPARAMS =
-			new Key<ZipscriptQueryParams>(ZipscriptQueryParams.class, "zipscriptqueryparams");
+            new Key<>(ZipscriptQueryParams.class, "zipscriptqueryparams");
 	
 	private Integer _minPresent;
 	private Integer _maxPresent;

@@ -17,24 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
-import java.util.Vector;
-import java.util.concurrent.Executors;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -46,6 +28,14 @@ import org.drftpd.event.ReloadEvent;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.tanukisoftware.wrapper.WrapperManager;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * @version $Id$
@@ -63,7 +53,7 @@ public class ConnectionManager {
 
 	private CommandManagerInterface _commandManager = null;
 
-	private List<BaseFtpConnection> _conns = new Vector<BaseFtpConnection>();
+	private List<BaseFtpConnection> _conns = new Vector<>();
 
 	private ThreadPoolExecutor _pool;
 	
@@ -92,8 +82,8 @@ public class ConnectionManager {
 	}
 
 	public static void boot() {
-		System.out.println(GlobalContext.VERSION + " master server starting.");
-		System.out.println("http://drftpd.org/");
+		System.out.println(GlobalContext.VERSION + " Master starting.");
+		System.out.println("https://github.com/drftpd-ng/drftpd3");
 		System.out.println("Further logging will be done using (mostly) log4j, check logs/");
 		// Set current thread name to make it clear in logfiles what is coming from the main master process 
 		// instead of being named after the wrapper
@@ -147,7 +137,6 @@ public class ConnectionManager {
 			logger.error("", th);
 			WrapperManager.stop(0);
 
-			return;
 		}
 	}
 
@@ -156,8 +145,8 @@ public class ConnectionManager {
 		int maxAliveThreads = maxUserConnected + GlobalContext.getConfig().getMaxUsersExempt();
 		int minAliveThreads = (int) Math.round(maxAliveThreads * 0.25);
 
-		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS, 
-				new SynchronousQueue<Runnable>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
+		_pool = new ThreadPoolExecutor(minAliveThreads, maxAliveThreads, 3*60, TimeUnit.SECONDS,
+                new SynchronousQueue<>(), new ConnectionThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
 		_pool.allowCoreThreadTimeOut(false);
 		_pool.prestartAllCoreThreads();
 	}
@@ -254,7 +243,7 @@ public class ConnectionManager {
 	 * returns a <code>Collection</code> of current connections
 	 */
 	public List<BaseFtpConnection> getConnections() {
-		return new ArrayList<BaseFtpConnection>(_conns);
+		return new ArrayList<>(_conns);
 	}
 
 	public static GlobalContext getGlobalContext() {

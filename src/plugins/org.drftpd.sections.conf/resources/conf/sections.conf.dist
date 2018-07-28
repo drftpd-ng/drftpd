@@ -6,12 +6,12 @@
 # create the section dirs, if needed of cource.
 make.section.dirs=true
 
-1.path=/apps
+1.path=/APPS
 1.name=APPS
 1.color=15
 
 2.type=dated
-2.path=/mp3
+2.path=/MP3
 2.name=MP3
 2.dated=MMdd
 2.now=-today

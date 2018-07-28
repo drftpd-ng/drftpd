@@ -17,15 +17,15 @@
  */
 package org.drftpd.commands.autonuke;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
-
+import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.vfs.DirectoryHandle;
-import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * @author scitz0
@@ -43,7 +43,7 @@ public class ConfigChain {
 	}
 
 	public Collection<Config> getConfigs() {
-		return new ArrayList<Config>(_configs);
+		return new ArrayList<>(_configs);
 	}
 
 	public ConfigChain(CaseInsensitiveHashMap<String, Class<Config>> configsMap) {
@@ -85,7 +85,7 @@ public class ConfigChain {
 	}
 
 	public void reload(Properties p) {
-		ArrayList<Config> configs = new ArrayList<Config>();
+		ArrayList<Config> configs = new ArrayList<>();
 		int i = 1;
 
 		for (;; i++) {

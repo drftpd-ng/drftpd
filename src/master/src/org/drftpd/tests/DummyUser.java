@@ -1,12 +1,12 @@
 package org.drftpd.tests;
 
-import java.io.IOException;
-import java.util.Date;
-
 import org.drftpd.commands.UserManagement;
 import org.drftpd.usermanager.AbstractUser;
 import org.drftpd.usermanager.AbstractUserManager;
 import org.drftpd.usermanager.UserManager;
+
+import java.io.IOException;
+import java.util.Date;
 
 
 public class DummyUser extends AbstractUser {

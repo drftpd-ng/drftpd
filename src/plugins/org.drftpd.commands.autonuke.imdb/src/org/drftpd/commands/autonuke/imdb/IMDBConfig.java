@@ -1,15 +1,15 @@
 package org.drftpd.commands.autonuke.imdb;
 
+import org.apache.log4j.Logger;
+import org.drftpd.PropertyHelper;
 import org.drftpd.commands.autonuke.Config;
 import org.drftpd.commands.autonuke.ConfigData;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.PropertyHelper;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.apache.log4j.Logger;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.vfs.DirectoryHandle;
 
-import java.util.Properties;
 import java.io.FileNotFoundException;
+import java.util.Properties;
 
 /**
  * @author scitz0
@@ -36,22 +36,24 @@ public class IMDBConfig extends Config {
 			IMDBInfo imdbInfo = dir.getPluginMetaData(IMDBInfo.IMDBINFO);
 			if (_field.equalsIgnoreCase("Title")) {
 				return _operator.equals("!") == imdbInfo.getTitle().matches(_value);
+			} else if (_field.equalsIgnoreCase("Language")) {
+				return _operator.equals("!") == imdbInfo.getLanguage().matches(_value);
+			} else if (_field.equalsIgnoreCase("Country")) {
+				return _operator.equals("!") == imdbInfo.getCountry().matches(_value);
 			} else if (_field.equalsIgnoreCase("Year")) {
 				return !handleDigitComparison(imdbInfo.getYear());
 			} else if (_field.equalsIgnoreCase("Director")) {
 				return _operator.equals("!") == imdbInfo.getDirector().matches(_value);
-			} else if (_field.equalsIgnoreCase("Genre")) {
-				return _operator.equals("!") == imdbInfo.getGenre().matches(_value);
+			} else if (_field.equalsIgnoreCase("Genres")) {
+				return _operator.equals("!") == imdbInfo.getGenres().matches(_value);
 			} else if (_field.equalsIgnoreCase("Plot")) {
 				return _operator.equals("!") == imdbInfo.getPlot().matches(_value);
-			} else if (_field.equalsIgnoreCase("Votes")) {
-				return !handleDigitComparison(imdbInfo.getVotes());
 			} else if (_field.equalsIgnoreCase("Rating")) {
 				return !handleDigitComparison(imdbInfo.getRating());
-			} else if (_field.equalsIgnoreCase("Screens")) {
-				return !handleDigitComparison(imdbInfo.getScreens());
-			} else if (_field.equalsIgnoreCase("Limited")) {
-				return _operator.equals("!") == imdbInfo.getLimited().matches(_value);
+			} else if (_field.equalsIgnoreCase("Votes")) {
+				return !handleDigitComparison(imdbInfo.getVotes());
+			} else if (_field.equalsIgnoreCase("Runtime")) {
+				return !handleDigitComparison(imdbInfo.getRuntime());
 			}
         } catch (KeyNotFoundException e1) {
 			// No IMDB info found, return true
@@ -69,15 +71,16 @@ public class IMDBConfig extends Config {
 	private boolean handleDigitComparison(Integer meta) {
 		if (meta != null) {
 			int conf_value = Integer.valueOf(_value.replaceAll("\\D",""));
-			if (_operator.equals("<")) {
-				return meta < conf_value;
-			} else if (_operator.equals("=")) {
-				return meta == conf_value;
-			} else if (_operator.equals("!=")) {
-				return meta != conf_value;
-			} else if (_operator.equals(">")) {
-				return meta > conf_value;
-			}
+            switch (_operator) {
+                case "<":
+                    return meta < conf_value;
+                case "=":
+                    return meta == conf_value;
+                case "!=":
+                    return meta != conf_value;
+                case ">":
+                    return meta > conf_value;
+            }
 		}
 		return false;
 	}

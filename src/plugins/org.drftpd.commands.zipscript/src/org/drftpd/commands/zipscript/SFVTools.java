@@ -16,11 +16,6 @@
  */
 package org.drftpd.commands.zipscript;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.exceptions.SlaveUnavailableException;
@@ -31,6 +26,11 @@ import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * @author djb61
  * @version $Id$
@@ -39,7 +39,7 @@ public class SFVTools {
 
 	public static Collection<FileHandle> getSFVFiles(DirectoryHandle dir, ZipscriptVFSDataSFV sfvData) 
 	throws IOException, FileNotFoundException, NoAvailableSlaveException, SlaveUnavailableException {
-		Collection<FileHandle> files = new ArrayList<FileHandle>();
+		Collection<FileHandle> files = new ArrayList<>();
 		SFVInfo sfvInfo = sfvData.getSFVInfo();
 
 		for (String name : sfvInfo.getEntries().keySet()) {
@@ -100,11 +100,24 @@ public class SFVTools {
 		CaseInsensitiveTreeMap<String, Long> sfvEntries = sfvInfo.getEntries();
 		for (FileHandle file : dir.getFilesUnchecked()) {
 			if (file.isFile() && sfvEntries.containsKey(file.getName())) {
-				if (!file.isUploading()) {
-					present++;
-				}
-				if (!file.isAvailable()) {
-					offline++;
+				try {
+					// file.isUploading() returns true if sent to additional slaves with jobmanager
+					// The checksum control should be enough to verify successful upload
+					//if (!file.isUploading()) {
+						// Verify checksum of file
+						try {
+							if (file.getCheckSum() == sfvEntries.get(file.getName())) {
+								present++;
+							}
+						} catch (NoAvailableSlaveException e) {
+							// Unable to get a slave for checksum, caught by check below
+						}
+					//}
+					if (!file.isAvailable()) {
+						offline++;
+					}
+				} catch (FileNotFoundException e) {
+					// Ignore, marked as missing
 				}
 			}
 		}

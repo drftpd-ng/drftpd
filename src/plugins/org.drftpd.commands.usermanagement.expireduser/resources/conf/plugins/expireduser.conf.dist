@@ -1,0 +1,11 @@
+################################################################################
+#   Expired User Configuration
+#
+#   Examples:
+#
+#   delete = Delete the user (true/false)
+#   purge = Purge the user (true/false)
+#	chgrp = Change group of user (groups to change to/from)
+#	setgrp = Sets the primary group of user (groupname)
+#
+################################################################################

@@ -17,14 +17,6 @@
  */
 package org.drftpd.vfs;
 
-import java.beans.DefaultPersistenceDelegate;
-import java.beans.XMLEncoder;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.log4j.Logger;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -33,6 +25,12 @@ import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.io.PermissionDeniedException;
 import org.drftpd.master.CommitManager;
 import org.drftpd.master.Commitable;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -59,11 +57,11 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	
 	protected String _group;
 
-	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<Key<?>, Object>();
+	protected KeyedMap<Key<?>, Object> _keyedMap = new KeyedMap<>();
 
-	protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<Key<?>, Object>();
+	protected KeyedMap<Key<?>, Object> _pluginMap = new KeyedMap<>();
 
-	protected Map<String,Object> _untypedPluginMap = new TreeMap<String,Object>();
+	protected Map<String,Object> _untypedPluginMap = new TreeMap<>();
 
 	protected long _lastModified;
 	
@@ -312,11 +310,6 @@ public abstract class VirtualFileSystemInode implements Commitable {
 		_parent = directory;
 	}
 
-	protected void setupXML(XMLEncoder enc) {
-		enc.setPersistenceDelegate(Key.class,
-				new DefaultPersistenceDelegate(new String[] { "owner", "key" }));
-	}
-
 	/**
 	 * @param user
 	 *            The user to set.
@@ -391,7 +384,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 */
 	@Override
 	public String toString() {
-		StringBuffer ret = new StringBuffer();
+		StringBuilder ret = new StringBuilder();
 		ret.append("[path=").append(getPath()).append("]");
 		ret.append("[user,group=").append(getUsername()).append(",").append(getGroup()).append("]");
 		ret.append("[creationTime=").append(getCreationTime()).append("]");

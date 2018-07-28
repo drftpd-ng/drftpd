@@ -48,38 +48,36 @@ public class PropertyBuilder {
 	private void findAndReadFiles(File file) throws IOException {
 		File[] files = file.listFiles();
 
-		for (int i = 0; i < files.length; i++) {
-			File file2 = files[i];
+        for (File file2 : files) {
+            if (file2.isDirectory()) {
+                findAndReadFiles(file2);
+            } else if (file2.getName().endsWith(".properties")) {
+                String classname = file2.getPath().substring(_prefixLength);
+                classname = classname.replaceAll("\\.properties$", "");
+                classname = classname.replace(File.separatorChar, '.');
 
-			if (file2.isDirectory()) {
-				findAndReadFiles(file2);
-			} else if (file2.getName().endsWith(".properties")) {
-				String classname = file2.getPath().substring(_prefixLength);
-				classname = classname.replaceAll("\\.properties$", "");
-				classname = classname.replace(File.separatorChar, '.');
+                BufferedReader in = null;
+                try {
+                    in = new BufferedReader(new FileReader(file2));
+                    System.out.println("## START: " + classname);
 
-				BufferedReader in = null;
-				try {
-					in = new BufferedReader(new FileReader(file2));
-					System.out.println("## START: " + classname);
+                    String line;
 
-					String line;
+                    while ((line = in.readLine()) != null) {
+                        if (line.trim().equals("") || line.startsWith("#")) {
+                            System.out.println(line);
 
-					while ((line = in.readLine()) != null) {
-						if (line.trim().equals("") || line.startsWith("#")) {
-							System.out.println(line);
+                            continue;
+                        }
 
-							continue;
-						}
-
-						System.out.println(classname + "." + line);
-					}
-				} finally {
-                	if(in != null) {
-                		in.close();
-                	}
-				}
-			}
-		}
+                        System.out.println(classname + "." + line);
+                    }
+                } finally {
+                    if (in != null) {
+                        in.close();
+                    }
+                }
+            }
+        }
 	}
 }

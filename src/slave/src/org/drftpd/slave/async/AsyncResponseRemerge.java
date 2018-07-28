@@ -17,11 +17,11 @@
  */
 package org.drftpd.slave.async;
 
+import org.drftpd.slave.LightRemoteInode;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-
-import org.drftpd.slave.LightRemoteInode;
 
 /**
  * @author zubov

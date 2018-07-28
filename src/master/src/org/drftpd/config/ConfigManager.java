@@ -17,19 +17,6 @@
  */
 package org.drftpd.config;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
@@ -44,6 +31,11 @@ import org.drftpd.util.PortRange;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.perms.VFSPermissions;
 
+import javax.net.ssl.SSLContext;
+import java.io.*;
+import java.net.InetAddress;
+import java.util.*;
+
 /**
  * Handles the loading of 'master.conf' and 'conf/perms.conf'<br>
  * The directives that are going to be handled by this class are loaded during
@@ -55,12 +47,12 @@ import org.drftpd.vfs.perms.VFSPermissions;
 public class ConfigManager implements ConfigInterface {
     private static final Logger logger = Logger.getLogger(ConfigManager.class);
     private static final File permsFile = new File("conf/perms.conf");
-    private static final File mainFile = new File("master.conf");
+    private static final File mainFile = new File("conf/master.conf");
 
     private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
-            = new Key<Hashtable<String, ArrayList<PathPermission>>>(ConfigManager.class, "pathPerms");
+            = new Key<>(ConfigManager.class, "pathPerms");
     private static final Key<Hashtable<String, Permission>> PERMS
-            = new Key<Hashtable<String, Permission>>(ConfigManager.class, "perms");
+            = new Key<>(ConfigManager.class, "perms");
 
     private String hideInStats="";
 
@@ -71,7 +63,7 @@ public class ConfigManager implements ConfigInterface {
     private VFSPermissions _vfsPerms;
 
     private ArrayList<InetAddress> _bouncerIps;
-    private String _loginPrompt = GlobalContext.VERSION + " http://drftpd.org";
+    private String _loginPrompt = GlobalContext.VERSION + " https://github.com/drftpd-ng/drftpd3";
     private String _allowConnectionsDenyReason = "";
     private String _pasvAddr = null;
     private PortRange _portRange = new PortRange(0);
@@ -96,7 +88,7 @@ public class ConfigManager implements ConfigInterface {
 
         initializeKeyedMap();
 
-        _bouncerIps = new ArrayList<InetAddress>();
+        _bouncerIps = new ArrayList<>();
 
         readConf();
     }
@@ -127,7 +119,7 @@ public class ConfigManager implements ConfigInterface {
      * Load all connected handlers.
      */
     private void loadConfigHandlers() {
-        _directivesMap = new HashMap<String, ConfigContainer>();
+        _directivesMap = new HashMap<>();
 
         try {
             List<PluginObjectContainer<ConfigHandler>> loadedDirectives =
@@ -169,16 +161,49 @@ public class ConfigManager implements ConfigInterface {
     }
 
     private void parseCipherSuites() {
-        ArrayList<String> cipherSuites = new ArrayList<String>();
+        List<String> cipherSuites = new ArrayList<>();
+        List<String> supportedCipherSuites = new ArrayList<>();
+        try {
+			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
+        } catch (Exception e) {
+            logger.error("Unable to get supported cipher suites, using default.", e);
+        }
+        // Parse cipher suite whitelist rules
+        boolean whitelist = false;
         for (int x = 1;; x++) {
-            String cipherSuite = _mainCfg.getProperty("cipher." + x);
-            if (cipherSuite != null) {
-                cipherSuites.add(cipherSuite);
-            } else {
+            String whitelistPattern = _mainCfg.getProperty("cipher.whitelist." + x);
+            if (whitelistPattern == null) {
                 break;
+            } else if (whitelistPattern.trim().length() == 0) {
+                continue;
+            }
+            if (!whitelist) whitelist = true;
+            for (String cipherSuite : supportedCipherSuites) {
+                if (cipherSuite.matches(whitelistPattern)) {
+                    cipherSuites.add(cipherSuite);
+                }
             }
         }
-        if (cipherSuites.size() == 0) {
+        if (cipherSuites.isEmpty()) {
+            // No whitelist rule or whitelist pattern bad, add default set
+            cipherSuites.addAll(supportedCipherSuites);
+            if (whitelist) {
+                // There are at least one whitelist pattern specified
+                logger.warn("Bad whitelist pattern, no matching ciphers found. " +
+                        "Adding default cipher set before continuing with blacklist check");
+            }
+        }
+        // Parse cipher suite blacklist rules and remove matching ciphers from set
+        for (int x = 1;; x++) {
+            String blacklistPattern = _mainCfg.getProperty("cipher.blacklist." + x);
+            if (blacklistPattern == null) {
+                break;
+            } else if (blacklistPattern.trim().isEmpty()) {
+                continue;
+            }
+            cipherSuites.removeIf(cipherSuite -> cipherSuite.matches(blacklistPattern));
+        }
+        if (cipherSuites.isEmpty()) {
             _cipherSuites = null;
         } else {
             _cipherSuites = cipherSuites.toArray(new String[cipherSuites.size()]);
@@ -186,14 +211,20 @@ public class ConfigManager implements ConfigInterface {
     }
 
     private void parseSSLProtocols() {
-        ArrayList<String> sslProtocols = new ArrayList<String>();
-        for (int x = 1;; x++) {
-            String sslProtocol = _mainCfg.getProperty("protocol." + x);
-            if (sslProtocol != null) {
-                sslProtocols.add(sslProtocol);
-            } else {
-                break;
+        List<String> sslProtocols = new ArrayList<>();
+        List<String> supportedSSLProtocols;
+        try {
+            supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
+            for (int x = 1;; x++) {
+                String sslProtocol = _mainCfg.getProperty("protocol." + x);
+                if (sslProtocol == null) {
+                    break;
+                } else if (supportedSSLProtocols.contains(sslProtocol)) {
+                    sslProtocols.add(sslProtocol);
+                }
             }
+        } catch (Exception e) {
+            logger.error("Unable to get supported SSL protocols, using default.", e);
         }
         if (sslProtocols.size() == 0) {
             _sslProtocols = null;
@@ -207,10 +238,10 @@ public class ConfigManager implements ConfigInterface {
      * @see #getKeyedMap()
      */
     private void initializeKeyedMap() {
-        _keyedMap = new KeyedMap<Key<?>, Object>();
+        _keyedMap = new KeyedMap<>();
 
-        _keyedMap.setObject(PATHPERMS, new Hashtable<String, ArrayList<PathPermission>>());
-        _keyedMap.setObject(PERMS, new Hashtable<String, Permission>());
+        _keyedMap.setObject(PATHPERMS, new Hashtable<>());
+        _keyedMap.setObject(PERMS, new Hashtable<>());
     }
 
     private Hashtable<String, ArrayList<PathPermission>> getPathPermsMap() {
@@ -250,36 +281,48 @@ public class ConfigManager implements ConfigInterface {
 				 * Built-in directives.
 				 */
 
-                if (drct.equals("login_prompt")) {
-                    _loginPrompt = line.substring("login_prompt".length()).trim();
-                } else if (drct.equals("max_users")) {
-                    _maxUsersTotal = Integer.parseInt(st.nextToken());
-                    _maxUsersExempt = Integer.parseInt(st.nextToken());
-                } else if (drct.equals("pasv_addr")) {
-                    _pasvAddr = st.nextToken();
-                } else if (drct.equals("pasv_ports")) {
-                    String[] temp = st.nextToken().split("-");
-                    _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
-                } else if (drct.equals("hide_ips")) {
-                    _hideIps = st.nextToken().equalsIgnoreCase("true");
-                } else if (drct.equals("allow_connections")) {
-                    getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
-                } else if (drct.equals("allow_connections_deny_reason")) {
-                    _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
+                switch (drct) {
+                    case "login_prompt":
+                        _loginPrompt = line.substring("login_prompt".length()).trim();
+                        break;
+                    case "max_users":
+                        _maxUsersTotal = Integer.parseInt(st.nextToken());
+                        _maxUsersExempt = Integer.parseInt(st.nextToken());
+                        break;
+                    case "pasv_addr":
+                        _pasvAddr = st.nextToken();
+                        break;
+                    case "pasv_ports":
+                        String[] temp = st.nextToken().split("-");
+                        _portRange = new PortRange(Integer.parseInt(temp[0]), Integer.parseInt(temp[1]), 0);
+                        break;
+                    case "hide_ips":
+                        _hideIps = st.nextToken().equalsIgnoreCase("true");
+                        break;
+                    case "allow_connections":
+                        getPermissionsMap().put("allow_connections", new Permission(Permission.makeUsers(st)));
+                        break;
+                    case "allow_connections_deny_reason":
+                        _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
 
-                } else if (drct.equals("exempt")) {
-                    getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
-                } else if (drct.equals("bouncer_ips")) {
-                    ArrayList<InetAddress> ips = new ArrayList<InetAddress>();
-                    while (st.hasMoreTokens()) {
-                        ips.add(InetAddress.getByName(st.nextToken()));
-                    }
-                    _bouncerIps = ips;
-                } else if (drct.equals("hideinstats")) {
-                    while (st.hasMoreTokens())
-                        hideInStats=hideInStats+st.nextToken()+" ";
-                } else {
-                    handleLine(drct, st);
+                        break;
+                    case "exempt":
+                        getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
+                        break;
+                    case "bouncer_ips":
+                        ArrayList<InetAddress> ips = new ArrayList<>();
+                        while (st.hasMoreTokens()) {
+                            ips.add(InetAddress.getByName(st.nextToken()));
+                        }
+                        _bouncerIps = ips;
+                        break;
+                    case "hideinstats":
+                        while (st.hasMoreTokens())
+                            hideInStats = hideInStats + st.nextToken() + " ";
+                        break;
+                    default:
+                        handleLine(drct, st);
+                        break;
                 }
             }
         } catch (IOException e) {
@@ -317,7 +360,7 @@ public class ConfigManager implements ConfigInterface {
     public void addPathPermission(String directive, PathPermission perm) {
         ArrayList<PathPermission> list;
         if (!getPathPermsMap().containsKey(directive)) {
-            list = new ArrayList<PathPermission>();
+            list = new ArrayList<>();
             getPathPermsMap().put(directive, list);
         } else {
             list = getPathPermsMap().get(directive);
@@ -361,7 +404,7 @@ public class ConfigManager implements ConfigInterface {
 
     public boolean checkPermission(String key, User user) {
         Permission perm = getPermissionsMap().get(key);
-        return (perm == null) ? false : perm.check(user);
+        return (perm != null) && perm.check(user);
     }
 
     public List<InetAddress> getBouncerIps() {

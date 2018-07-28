@@ -56,7 +56,7 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 	}
 
 	public String[] getEventTypes() {
-		return new String[] {"toptrial"};
+		return new String[] {"trialmanager.toptrial"};
 	}
 	
 	public void setResourceBundle(ResourceBundle bundle) {
@@ -65,7 +65,6 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 
     @EventSubscriber
 	public void onTopTrialEvent(TopTrialEvent event) {
-		if (event.getName().equalsIgnoreCase("toptrial")) {
 		AnnounceWriter writer = _config.getSimpleWriter("trialmanager.toptrial");
 		if (writer != null) {
 			ReplacerEnvironment env_header = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -94,5 +93,4 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 			}
 		}
 	}
-   }
 }

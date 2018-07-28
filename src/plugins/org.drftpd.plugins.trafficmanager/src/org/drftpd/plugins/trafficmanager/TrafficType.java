@@ -16,18 +16,17 @@
  */
 package org.drftpd.plugins.trafficmanager;
 
-import java.io.FileNotFoundException;
-import java.util.Properties;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import org.apache.log4j.Logger;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.permissions.Permission;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.FileHandle;
+
+import java.io.FileNotFoundException;
+import java.util.Properties;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author CyBeR
@@ -92,8 +91,8 @@ public abstract class TrafficType {
 			throw new RuntimeException("Invalid Regex For " + confnum + ".exclude - Skipping Config");
 		}		
 		
-		_up = p.getProperty(confnum + ".up","false").trim().equalsIgnoreCase("true") ? true : false;
-		_dn = p.getProperty(confnum + ".dn","false").trim().equalsIgnoreCase("true") ? true : false;		
+		_up = p.getProperty(confnum + ".up", "false").trim().equalsIgnoreCase("true");
+		_dn = p.getProperty(confnum + ".dn", "false").trim().equalsIgnoreCase("true");
 	}
 	
 	protected String getName() {

@@ -58,7 +58,7 @@ public class KeyedMap<K extends Key<?>, V> extends Hashtable<K, V> {
 	}
 
 	public Map<K, V> getAllObjects() {
-		return new KeyedMap<K, V>(this);
+		return new KeyedMap<>(this);
 	}
 
 	@SuppressWarnings("unchecked")

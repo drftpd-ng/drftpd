@@ -17,11 +17,10 @@
  */
 package org.drftpd.slave;
 
+import org.drftpd.slave.Slave;
 import org.java.plugin.boot.Application;
 import org.java.plugin.boot.ApplicationPlugin;
 import org.java.plugin.util.ExtendedProperties;
-
-import org.drftpd.slave.Slave;
 
 /**
  * @author djb61

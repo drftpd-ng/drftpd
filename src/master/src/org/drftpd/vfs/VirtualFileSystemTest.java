@@ -17,11 +17,10 @@
  */
 package org.drftpd.vfs;
 
-import java.io.FileNotFoundException;
-
+import junit.framework.TestCase;
 import org.drftpd.exceptions.FileExistsException;
 
-import junit.framework.TestCase;
+import java.io.FileNotFoundException;
 
 public class VirtualFileSystemTest extends TestCase {
 

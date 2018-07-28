@@ -17,14 +17,6 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Properties;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -33,6 +25,14 @@ import org.drftpd.master.RemoteSlave;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.InodeHandleInterface;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * @author mog
@@ -51,7 +51,7 @@ public class FilterChain {
 	}
 	
 	public Collection<Filter> getFilters() {
-		return new ArrayList<Filter>(_filters);
+		return new ArrayList<>(_filters);
 	}
 
 	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<Filter>> filtersMap) throws FileNotFoundException, IOException {
@@ -101,7 +101,7 @@ public class FilterChain {
 	}
 
 	public void reload(Properties p) {
-		ArrayList<Filter> filters = new ArrayList<Filter>();
+		ArrayList<Filter> filters = new ArrayList<>();
 		int i = 1;
 
 		for (;; i++) {
@@ -118,7 +118,7 @@ public class FilterChain {
 
 			try {
 				Class<Filter> clazz = _filtersMap.get(filterName);
-				Filter filter = clazz.getConstructor(SIG).newInstance(new Object[] { Integer.valueOf(i), p });
+				Filter filter = clazz.getConstructor(SIG).newInstance(i, p);
 				filters.add(filter);
 			} catch (Exception e) {
 				throw new FatalException(i + ".filter = " + filterName, e);

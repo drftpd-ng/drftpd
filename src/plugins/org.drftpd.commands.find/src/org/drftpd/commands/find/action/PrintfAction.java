@@ -54,7 +54,7 @@ public class PrintfAction implements ActionInterface {
 
 	private String formatOutput(InodeHandle inode) {
 
-		HashMap<String, String> formats = new HashMap<String, String>();
+		HashMap<String, String> formats = new HashMap<>();
 
 		try {
 			logger.debug("printf name: " + inode.getName());

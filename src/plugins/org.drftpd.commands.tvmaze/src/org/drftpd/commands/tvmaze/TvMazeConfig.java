@@ -39,17 +39,17 @@ public class TvMazeConfig {
 
 	private static final Logger logger = Logger.getLogger(TvMaze.class);
 
-	private ArrayList<SectionInterface> _rSections = new ArrayList<SectionInterface>();
-	private ArrayList<SectionInterface> _sHDSections = new ArrayList<SectionInterface>();
-	private ArrayList<SectionInterface> _sSDSections = new ArrayList<SectionInterface>();
-	private ArrayList<String> _filters = new ArrayList<String>();
+	private ArrayList<SectionInterface> _rSections = new ArrayList<>();
+	private ArrayList<SectionInterface> _sHDSections = new ArrayList<>();
+	private ArrayList<SectionInterface> _sSDSections = new ArrayList<>();
+	private ArrayList<String> _filters = new ArrayList<>();
 	private String _date, _time, _exclude;
 	private DateTimeZone _dtz;
 	private int _startDelay, _endDelay;
 	private boolean _bar_enabled, _bar_directory, _sRelease;
 
 	private TvMazeThread _tvmazeThread = new TvMazeThread();
-	private ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<DirectoryHandle>();
+	private ConcurrentLinkedQueue<DirectoryHandle> _parseQueue = new ConcurrentLinkedQueue<>();
 
 	public static TvMazeConfig getInstance() {
 		if (ourInstance == null)

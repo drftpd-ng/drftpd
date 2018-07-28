@@ -17,33 +17,17 @@
  */
 package org.drftpd.tools.installer.swing;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
-
 import org.drftpd.tools.installer.FileLogger;
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.LogWindowInterface;
+
+import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.*;
 
 /**
  * @author djb61
@@ -112,12 +96,10 @@ public class LogWindow extends JFrame implements LogWindowInterface {
 		_okButton.setText("OK");
 		_okButton.setEnabled(false);
 		_okButton.setPreferredSize(new Dimension(100,25));
-		_okButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
-				dispose();
-			}
-		});
+		_okButton.addActionListener(e -> {
+            setVisible(false);
+            dispose();
+        });
 		southPanel.add(_okButton, new GridBagConstraints(0,1,1,1,0.0,0.0
 				,GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(5, 5, 5, 0), 0, 0));
 		contentPane.add(southPanel, BorderLayout.SOUTH);

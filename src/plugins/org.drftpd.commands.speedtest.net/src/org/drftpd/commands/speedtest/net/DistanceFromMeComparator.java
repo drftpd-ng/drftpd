@@ -46,6 +46,13 @@ public class DistanceFromMeComparator implements Comparator<SpeedTestServer> {
 
 	@Override
 	public int compare(SpeedTestServer s1, SpeedTestServer s2) {
-		return distanceFromMe(s1).compareTo(distanceFromMe(s2));
+		int result = distanceFromMe(s1).compareTo(distanceFromMe(s2));
+		if (result != 0) {
+			return result;
+		} else {
+			int a = s1.getId();
+			int b = s2.getId();
+			return Integer.compare(a, b);
+		}
 	}
 }

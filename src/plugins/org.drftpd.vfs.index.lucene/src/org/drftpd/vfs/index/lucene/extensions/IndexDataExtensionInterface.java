@@ -34,7 +34,7 @@ public interface IndexDataExtensionInterface {
 	 * @param doc
 	 *            The document to add fields to.
 	 */
-	public void initializeFields(Document doc);
+    void initializeFields(Document doc);
 	
 	/**
 	 * This method is called whenever an inode is being added to the index.
@@ -48,5 +48,5 @@ public interface IndexDataExtensionInterface {
 	 * @param inode
 	 *            The inode currently being indexed.
 	 */
-	public void addData(Document doc, ImmutableInodeHandle inode);
+    void addData(Document doc, ImmutableInodeHandle inode);
 }

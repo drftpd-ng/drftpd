@@ -17,15 +17,15 @@
  */
 package org.drftpd.vfs.event;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.drftpd.vfs.VirtualFileSystemFile;
 import org.drftpd.vfs.VirtualFileSystemInode;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author djb61
@@ -75,13 +75,13 @@ public class ImmutableInodeHandle {
 	
 	public Set<String> getSlaveNames() throws UnsupportedOperationException {
 		if (isFile()) {
-			return new HashSet<String>(((VirtualFileSystemFile)_inode).getSlaves());
+			return new HashSet<>(((VirtualFileSystemFile) _inode).getSlaves());
 		}
 		throw new UnsupportedOperationException("Slaves can only be retrieved from file inodes");
 	}
 	
 	public <T> T getUntypedPluginMetaData(String key, Class<T> clazz) {
-		return _inode.<T>getUntypedPluginMetaData(key);
+		return _inode.getUntypedPluginMetaData(key);
 	}
 	
 	public String getUsername() {

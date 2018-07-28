@@ -17,31 +17,27 @@
  */
 package org.drftpd.commands.imdb;
 
+import org.apache.log4j.Logger;
+import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.*;
+import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.sections.SectionInterface;
+import org.drftpd.usermanager.NoSuchUserException;
+import org.drftpd.usermanager.User;
+import org.drftpd.usermanager.UserFileException;
+import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.vfs.FileHandle;
+import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.vfs.index.IndexException;
+import org.tanesha.replacer.ReplacerEnvironment;
+
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.ResourceBundle;
-
-import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.GlobalContext;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
-import org.apache.log4j.Logger;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.index.IndexException;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author scitz0
@@ -86,7 +82,7 @@ public class IMDB extends CommandInterface {
 				env.add("foundSD","No");
 				env.add("foundHD","No");
 
-				ArrayList<DirectoryHandle> results = new ArrayList<DirectoryHandle>();
+				ArrayList<DirectoryHandle> results = new ArrayList<>();
 
 				try {
 					for (SectionInterface section : IMDBConfig.getInstance().getHDSections()) {
@@ -185,21 +181,31 @@ public class IMDB extends CommandInterface {
 					if (IMDBUtils.containSection(sec, IMDBConfig.getInstance().getRaceSections())) {
 						DirectoryHandle parent = nfo.getParent();
 						IMDBInfo imdbInfo = IMDBUtils.getIMDBInfo(parent, false);
-						if (imdbInfo == null || imdbInfo.getMovieFound()) {
+						if (imdbInfo == null) {
 							continue;
 						}
-						IMDBUtils.addMetadata(imdbInfo, parent);
 						env.add("dirname", parent.getName());
 						env.add("dirpath", parent.getPath());
 						env.add("filename", nfo.getName());
 						env.add("filepath", nfo.getPath());
-						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix +
-								"createimdb.add", env, request.getUser()));
-						try {
-							// Sleep for randomly generated seconds specified in conf
-							Thread.sleep(IMDBUtils.randomNumber());
-						} catch (InterruptedException ie) {
-							// Thread interrupted
+						if (imdbInfo.getMovieFound()) {
+							request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix +
+									"createimdb.cache", env, request.getUser()));
+						} else {
+							IMDBUtils.addMetadata(imdbInfo, parent);
+							if (imdbInfo.getMovieFound()) {
+								request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix +
+										"createimdb.add", env, request.getUser()));
+							} else {
+								request.getSession().printOutput(500, request.getSession().jprintf(_bundle, _keyPrefix +
+										"createimdb.fail", env, request.getUser()));
+							}
+							try {
+								// Sleep for randomly generated seconds specified in conf
+								Thread.sleep(IMDBUtils.randomNumber());
+							} catch (InterruptedException ie) {
+								// Thread interrupted
+							}
 						}
 					}
 				}

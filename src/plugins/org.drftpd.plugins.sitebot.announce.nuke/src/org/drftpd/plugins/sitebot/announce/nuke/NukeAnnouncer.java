@@ -26,6 +26,7 @@ import org.drftpd.commands.UserManagement;
 import org.drftpd.commands.nuke.NukeBeans;
 import org.drftpd.commands.nuke.NukeUtils;
 import org.drftpd.commands.nuke.NukedUser;
+import org.drftpd.sections.SectionInterface;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
@@ -74,16 +75,16 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 	@EventSubscriber
 	public void onNukeEvent(NukeEvent event) {
 		String type = "NUKE".equals(event.getCommand()) ? "nuke" : "unnuke";
-		StringBuffer output = new StringBuffer();
+		StringBuilder output = new StringBuilder();
 
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		DirectoryHandle nukeDir = new DirectoryHandle(event.getPath());
-		String section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getName();
-		env.add("section", section);
-		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir).getColor());
+		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir);
+		env.add("section", section.getName());
+		env.add("sectioncolor", section.getColor());
 		env.add("dir", nukeDir.getName());
 		env.add("path", event.getPath());
-		env.add("relpath", event.getPath().replaceAll("/.*?"+section+"/",""));
+		env.add("relpath", event.getPath().replaceAll("/.*?"+section.getName()+"/",""));
 		env.add("user", event.getUser().getName());
 		env.add("multiplier", ""+event.getMultiplier());
 		env.add("nukedamount", Bytes.formatBytes(event.getNukedAmount()));

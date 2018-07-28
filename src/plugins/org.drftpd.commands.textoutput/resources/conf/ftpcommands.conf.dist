@@ -4,7 +4,7 @@ class Textoutput
 method doTEXT_OUTPUT
 perms *
 help Displays the site rules
-file text/rules.txt
+file userdata/text/rules.txt
 }
 
 SITE WELCOME {
@@ -13,5 +13,5 @@ class Textoutput
 method doTEXT_OUTPUT
 perms *
 help Displays site welcome message
-file text/welcome.txt
+file userdata/text/welcome.txt
 }

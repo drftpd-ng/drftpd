@@ -17,18 +17,20 @@
  */
 package org.drftpd.plugins.stats;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.apache.oro.text.regex.MalformedPatternException;
+import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.config.ConfigHandler;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.master.config.ConfigInterface;
+import org.drftpd.permissions.CreditLimitPathPermission;
 import org.drftpd.permissions.Permission;
 import org.drftpd.permissions.RatioPathPermission;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.StringTokenizer;
 
 /**
  * Handles 'creditcheck' and 'creditloss' lines from perms.conf
@@ -37,6 +39,13 @@ import org.drftpd.permissions.RatioPathPermission;
  */
 public class StatsHandler extends ConfigHandler {
 	private static final Logger logger = Logger.getLogger(StatsHandler.class);
+
+	protected static final int DIRECTION_UP = 0;
+	protected static final int DIRECTION_DN = 1;
+	protected static final String PERIOD_ALL = "ALL";
+	protected static final String PERIOD_DAY = "DAY";
+	protected static final String PERIOD_WEEK = "WEEK";
+	protected static final String PERIOD_MONTH = "MONTH";
 	
 	private void handleRatioPathPerm(Key<ArrayList<RatioPathPermission>> key, StringTokenizer st) {	
 		ConfigInterface cfg = GlobalContext.getConfig();
@@ -44,11 +53,11 @@ public class StatsHandler extends ConfigHandler {
 		ArrayList<RatioPathPermission> list = cfg.getKeyedMap().getObject(key, null);
 		
 		if (list == null) {
-			list = new ArrayList<RatioPathPermission>();
+			list = new ArrayList<>();
 			cfg.getKeyedMap().setObject(key, list);
 		}
 		
-		RatioPathPermission perm = null;
+		RatioPathPermission perm;
 		
 		String path = "";
 		float ratio = 0F;
@@ -61,10 +70,75 @@ public class StatsHandler extends ConfigHandler {
 			perm = new RatioPathPermission(path, ratio, coll);
 			
 			list.add(perm);
-		} catch (NumberFormatException e) {
-			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+ratio+" "+coll.toString(), e);
-		} catch (MalformedPatternException e) {
-			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+ratio+" "+coll.toString(), e);
+		} catch (NumberFormatException|MalformedPatternException e) {
+			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+ratio+" "+(coll!=null? coll.toString():""), e);
+		}
+	}
+
+	private void handleCreditLimitPathPerm(Key<ArrayList<CreditLimitPathPermission>> key, StringTokenizer st) {
+		ConfigInterface cfg = GlobalContext.getConfig();
+
+		ArrayList<CreditLimitPathPermission> list = cfg.getKeyedMap().getObject(key, null);
+
+		if (list == null) {
+			list = new ArrayList<>();
+			cfg.getKeyedMap().setObject(key, list);
+		}
+
+		CreditLimitPathPermission perm;
+
+		String path = "";
+		String dString = "";
+		String pString = "";
+		String bString = "";
+		int direction;
+		String period = null;
+		long bytes;
+		Collection<String> coll = null;
+
+		try {
+			path = st.nextToken();
+			dString = st.nextToken();
+			pString = st.nextToken();
+			bString = st.nextToken();
+
+			switch (dString.toUpperCase()) {
+				case "UP":
+					direction = DIRECTION_UP;
+					break;
+				case "DN":
+					direction = DIRECTION_DN;
+					break;
+				default:
+					throw new NumberFormatException("direction value incorrect");
+			}
+
+			switch (pString.toUpperCase()) {
+				case PERIOD_ALL:
+					period = PERIOD_ALL;
+					break;
+				case PERIOD_DAY:
+					period = PERIOD_DAY;
+					break;
+				case PERIOD_WEEK:
+					period = PERIOD_WEEK;
+					break;
+				case PERIOD_MONTH:
+					period = PERIOD_MONTH;
+					break;
+				default:
+					throw new NumberFormatException("period value incorrect");
+			}
+
+			bytes = Bytes.parseBytes(bString);
+
+			coll = Permission.makeUsers(st);
+			perm = new CreditLimitPathPermission(path, direction, period, bytes, coll);
+
+			list.add(perm);
+		} catch (NumberFormatException|MalformedPatternException e) {
+			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+dString+" "+pString+" "+bString+" "+
+					(coll!=null? coll.toString():""), e);
 		}
 	}
 	
@@ -74,6 +148,10 @@ public class StatsHandler extends ConfigHandler {
 	
 	public void handleCreditLoss(String directive, StringTokenizer st) {
 		handleRatioPathPerm(StatsManager.CREDITLOSS, st);
+	}
+
+	public void handleCreditLimit(String directive, StringTokenizer st) {
+		handleCreditLimitPathPerm(StatsManager.CREDITLIMIT, st);
 	}
 
 }

@@ -17,30 +17,26 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.ResourceBundle;
-import java.io.FileNotFoundException;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
+import org.drftpd.commandmanager.*;
 import org.drftpd.commands.tvmaze.metadata.TvEpisode;
+import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.UserFileException;
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.ResourceBundle;
 
 /**
  * @author lh
@@ -92,9 +88,9 @@ public class TvMaze extends CommandInterface {
 				}
 				addResponse(env, request, response, "tv.show", verbose);
 			} else {
-				ArrayList<TvEpisode> epList = new ArrayList<TvEpisode>(Arrays.asList(tvmaze.getTvShow().getEPList()));
+				ArrayList<TvEpisode> epList = new ArrayList<>(Arrays.asList(tvmaze.getTvShow().getEPList()));
 				if (epList.size() > 1) {
-					Collections.sort(epList, TvMazeUtils.epNumberComparator);
+					epList.sort(TvMazeUtils.epNumberComparator);
 					addResponse(env, request, response, "tv.ep.season.header", verbose);
 					for (TvEpisode ep : epList) {
 						env = TvMazeUtils.getEPEnv(tvmaze.getTvShow(), ep);
@@ -108,7 +104,7 @@ public class TvMaze extends CommandInterface {
 						env.add("foundSD","No");
 						env.add("foundHD","No");
 
-						ArrayList<DirectoryHandle> results = new ArrayList<DirectoryHandle>();
+						ArrayList<DirectoryHandle> results = new ArrayList<>();
 
 						try {
 							for (SectionInterface section : TvMazeConfig.getInstance().getHDSections()) {
@@ -192,17 +188,27 @@ public class TvMaze extends CommandInterface {
 		if (request.getSession().isAborted()) { return; }
 		try {
 			if (!dir.isHidden(request.getUserObject()) && TvMazeUtils.isRelease(dir.getName())) {
-				TvMazeInfo tvmazeInfo = TvMazeUtils.getTvMazeInfo(dir);
+				boolean cache = false;
+				TvMazeInfo tvmazeInfo = TvMazeUtils.getTvMazeInfoFromCache(dir);
+				if (tvmazeInfo != null) {
+					cache = true;
+				} else {
+					tvmazeInfo = TvMazeUtils.getTvMazeInfo(dir);
+				}
 				if (tvmazeInfo != null) {
 					ReplacerEnvironment env = TvMazeUtils.getShowEnv(tvmazeInfo);
 					env.add("dirname", dir.getName());
 					env.add("dirpath", dir.getPath());
-					request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.add", env, request.getUser()));
-					try {
-						// Sleep for randomly generated seconds specified in conf
-						Thread.sleep(TvMazeUtils.randomNumber());
-					} catch (InterruptedException ie) {
-						// Thread interrupted
+					if (cache) {
+						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.cache", env, request.getUser()));
+					} else {
+						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.add", env, request.getUser()));
+						try {
+							// Sleep for randomly generated seconds specified in conf
+							Thread.sleep(TvMazeUtils.randomNumber());
+						} catch (InterruptedException ie) {
+							// Thread interrupted
+						}
 					}
 				}
 			}
@@ -281,7 +287,7 @@ public class TvMaze extends CommandInterface {
 	}
 
 	private ArrayList<DirectoryHandle> getDirsToCheck(CommandRequest request, DirectoryHandle dir) {
-		ArrayList<DirectoryHandle> dirsToCheck = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> dirsToCheck = new ArrayList<>();
 		ArrayList<SectionInterface> joinedSectionList = TvMazeConfig.getInstance().getRaceSections();
 		for (SectionInterface section : TvMazeConfig.getInstance().getHDSections()) {
 			if (!joinedSectionList.contains(section)) {

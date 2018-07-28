@@ -7,7 +7,7 @@
 # Each server is defined by host (the hostname or IP of the server), the port to
 # connect to, the password for the server (if required) and whether to connect
 # using ssl or not.
-server.1.host=irc.cabnet.se
+server.1.host=127.0.0.1
 server.1.port=6667
 server.1.password=
 server.1.use_ssl=false
@@ -116,11 +116,13 @@ blowfish.unencrypted.reason=Unencrypted text is not permitted
 channel.1=#drftpd-test
 channel.1.perms=*
 channel.1.blowkey=drftpd
+channel.1.blowmode=cbc
 #channel.1.chankey=drftpd
 
 #channel.2=#drftpd-test2
 #channel.2.perms=!=iND *
 #channel.2.blowkey=drftpd2
+#channel.2.blowmode=ecb
 #channel.2.chankey=drftpd
 
 # Auto join a channel when invited, for security reasons the bot even with this

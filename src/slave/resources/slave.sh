@@ -15,10 +15,14 @@
 # Application
 APP_NAME="slave"
 APP_LONG_NAME="DrFTPD Slave"
+SLAVE_CONF="conf/slave.conf"
 
 # Wrapper
 WRAPPER_CMD="bin/wrapper"
 WRAPPER_CONF="conf/wrapper-slave.conf"
+
+# Validroots
+VALIDROOTS="conf/.validroots"
 
 # Priority at which to run the wrapper.  See "man nice" for valid priorities.
 #  nice is only used if a priority is specified.
@@ -46,49 +50,6 @@ PIDDIR="."
 
 # Do not modify anything beyond this point
 #-----------------------------------------------------------------------------
-
-# Slave roots
-if [ ! -e "slave.conf" ]; then
-    echo "No slave.conf not found, can not continue."
-    exit 1
-fi
-getroots() {
-    for r in `cat slave.conf |grep "^slave\.root\."`; do
-        fs=`echo $r |awk -F '=' '{ print $2 }'`
-        dev_size=`df -P -B M $fs |tail -1 |awk '{ print $1":"$2 }'`
-        echo $r":"$dev_size
-    done
-}
-ROOTS=$(getroots)
-
-initroots() {
-    printf "$ROOTS" > .validroots
-}
-
-if [ ! -e ".validroots" ]; then
-    echo "First run? no valid roots file found, running initroots."
-    initroots
-fi
-
-compareroots() {
-    if [ ! -e ".validroots" ]; then
-        echo "Valid roots not found."
-        exit 1
-    fi
-    
-    tmp=`cat .validroots`
-    if [ "$tmp" != "$ROOTS" ]; then
-        echo "root(s) for drftpd do not matchup anymore."
-        echo "======== root(s) in file ========"
-        printf "$tmp"
-        echo ""
-        echo "========   root(s) now   ========"
-        printf "$ROOTS"
-        echo ""
-        echo "If this is correct run script with argument initroots."
-        exit 1
-    fi
-}
 
 # Get the fully qualified path to the script
 case $0 in
@@ -145,20 +106,69 @@ REALDIR=`pwd`
 FIRST_CHAR=`echo $PIDDIR | cut -c1,1`
 if [ "$FIRST_CHAR" != "/" ]
 then
-    PIDDIR=$REALDIR/$PIDDIR
+    PIDDIR="$REALDIR/$PIDDIR"
 fi
 # Same test for WRAPPER_CMD
 FIRST_CHAR=`echo $WRAPPER_CMD | cut -c1,1`
 if [ "$FIRST_CHAR" != "/" ]
 then
-    WRAPPER_CMD=$REALDIR/$WRAPPER_CMD
+    WRAPPER_CMD="$REALDIR/$WRAPPER_CMD"
 fi
 # Same test for WRAPPER_CONF
 FIRST_CHAR=`echo $WRAPPER_CONF | cut -c1,1`
 if [ "$FIRST_CHAR" != "/" ]
 then
-    WRAPPER_CONF=$REALDIR/$WRAPPER_CONF
+    WRAPPER_CONF="$REALDIR/$WRAPPER_CONF"
 fi
+# Same test for SLAVE_CONF
+FIRST_CHAR=`echo $SLAVE_CONF | cut -c1,1`
+if [ "$FIRST_CHAR" != "/" ]
+then
+    SLAVE_CONF="$REALDIR/$SLAVE_CONF"
+fi
+
+# Slave roots
+if [ ! -e "$SLAVE_CONF" ]; then
+    echo "$SLAVE_CONF not found, can not continue."
+    exit 1
+fi
+getroots() {
+    for r in `cat "$SLAVE_CONF" |grep "^slave\.root\."`; do
+        fs=`echo $r |gawk -F '=' '{ print $2 }'`
+        dev_size=`df -P -k $fs |tail -1 |gawk '{ print $1":"$2 }'`
+        echo $r":"$dev_size
+    done
+}
+ROOTS=$(getroots)
+
+initroots() {
+    printf "$ROOTS" > "$VALIDROOTS"
+}
+
+if [ ! -e "$VALIDROOTS" ]; then
+    echo "First run? no valid roots file found, running initroots."
+    initroots
+fi
+
+compareroots() {
+    if [ ! -e "$VALIDROOTS" ]; then
+        echo "Valid roots not found."
+        exit 1
+    fi
+
+    tmp=`cat $VALIDROOTS`
+    if [ "$tmp" != "$ROOTS" ]; then
+        echo "root(s) for drftpd do not matchup anymore."
+        echo "======== root(s) in file ========"
+        printf "$tmp"
+        echo ""
+        echo "========   root(s) now   ========"
+        printf "$ROOTS"
+        echo ""
+        echo "If this is correct run script with argument initroots."
+        exit 1
+    fi
+}
 
 # Create logs dir if not present
 mkdir -p "$REALDIR/logs"

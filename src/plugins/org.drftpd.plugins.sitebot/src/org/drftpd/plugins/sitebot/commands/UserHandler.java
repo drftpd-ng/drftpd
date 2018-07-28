@@ -17,8 +17,6 @@
  */
 package org.drftpd.plugins.sitebot.commands;
 
-import java.util.StringTokenizer;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -34,6 +32,8 @@ import org.drftpd.plugins.sitebot.event.InviteEvent;
 import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
+
+import java.util.StringTokenizer;
 
 /**
  * @author djb61

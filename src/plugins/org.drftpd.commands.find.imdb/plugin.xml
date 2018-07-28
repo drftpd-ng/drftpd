@@ -24,9 +24,9 @@
 		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
 		<parameter id="OptionName" value="IMDBDirector"/>
 	</extension>
-	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBGenreOption">
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBGenresOption">
 		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
-		<parameter id="OptionName" value="IMDBGenre"/>
+		<parameter id="OptionName" value="IMDBGenres"/>
 	</extension>
 	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBVotesOption">
 		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
@@ -40,9 +40,9 @@
 		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
 		<parameter id="OptionName" value="IMDBYear"/>
 	</extension>
-	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBScreensOption">
+	<extension plugin-id="org.drftpd.commands.find" point-id="Option" id="IMDBRuntimeOption">
 		<parameter id="ClassName" value="org.drftpd.commands.find.imdb.IMDBOption"/>
-		<parameter id="OptionName" value="IMDBScreens"/>
+		<parameter id="OptionName" value="IMDBRuntime"/>
 	</extension>
 	<!-- End Options -->
 

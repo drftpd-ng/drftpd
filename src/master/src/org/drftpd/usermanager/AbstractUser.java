@@ -16,11 +16,6 @@
  */
 package org.drftpd.usermanager;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
@@ -30,6 +25,11 @@ import org.drftpd.event.UserEvent;
 import org.drftpd.exceptions.DuplicateElementException;
 import org.drftpd.master.Commitable;
 import org.drftpd.util.HostMaskCollection;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Implements basic functionality for the User interface.
@@ -50,11 +50,11 @@ public abstract class AbstractUser extends User implements Commitable {
 
 	private long _credits;
 
-	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<Key<?>, Object>();
+	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
 
 	private String _group = "nogroup";
 
-	private ArrayList<String> _groups = new ArrayList<String>();
+	private ArrayList<String> _groups = new ArrayList<>();
 
 	private HostMaskCollection _hostMasks = new HostMaskCollection();
 
@@ -175,7 +175,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void setGroups(List<String> groups) {
-		_groups = new ArrayList<String>(groups);
+		_groups = new ArrayList<>(groups);
 	}
 
 	public void setHostMaskCollection(HostMaskCollection masks) {

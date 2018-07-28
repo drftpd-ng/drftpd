@@ -16,14 +16,6 @@
  */
 package org.drftpd.commands.zipscript.list;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -47,6 +39,10 @@ import org.drftpd.vfs.FileHandle;
 import org.drftpd.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
+
 /**
  * @author djb61
  * @version $Id$
@@ -55,7 +51,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 
 	private static final Logger logger = Logger.getLogger(ZipscriptList.class);
 
-	private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<ZipscriptListStatusBarInterface>();
+	private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<>();
 
 	public void initialize() {
 		// Subscribe to events
@@ -83,7 +79,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 		boolean missingFilesEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf").getProperty("files.missing.enabled", "false").equalsIgnoreCase("true");
 		if (statusBarEnabled || missingFilesEnabled) {
-			ArrayList<String> statusBarEntries = new ArrayList<String>();
+			ArrayList<String> statusBarEntries = new ArrayList<>();
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			try {
 				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
@@ -122,13 +118,13 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 					}
 				}
 			} catch (NoAvailableSlaveException e) {
-				logger.warn("No available slaves for SFV file", e);
+				logger.warn("No available slaves for SFV file in" + dir.getPath());
 			} catch (FileNotFoundException e) {
 				// no sfv file in directory - just skip it
 			} catch (IOException e) {
 				// unable to read sfv - just skip it
 			} catch (SlaveUnavailableException e) {
-				logger.warn("No available slaves for SFV file", e);
+				logger.warn("No available slaves for SFV file in" + dir.getPath());
 			}
 			if (statusBarEnabled) {
 				for (ZipscriptListStatusBarInterface zle : _statusBarProviders) {
@@ -180,7 +176,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 		Set<ZipscriptListStatusBarInterface> unloadedStatusBarAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "ListStatusBarProviders", event, _statusBarProviders);
 		if (!unloadedStatusBarAddons.isEmpty()) {
-			ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<ZipscriptListStatusBarInterface>(_statusBarProviders);
+			ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<>(_statusBarProviders);
 			boolean providerRemoved = false;
 			for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
 				ZipscriptListStatusBarInterface sbAddon = iter.next();
@@ -203,7 +199,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "ListStatusBarProvider", "Class", event);
 			if (!loadedStatusBarAddons.isEmpty()) {
-				ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<ZipscriptListStatusBarInterface>(_statusBarProviders);
+				ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<>(_statusBarProviders);
 				for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
 					clonedProviders.add(sbAddon);
 				}

@@ -17,17 +17,12 @@
  */
 package org.drftpd.master;
 
+import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.slave.*;
+import org.drftpd.vfs.TransferPointer;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
-
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.slave.ConnectInfo;
-import org.drftpd.slave.RemoteIOException;
-import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferFailedException;
-import org.drftpd.slave.TransferIndex;
-import org.drftpd.slave.TransferStatus;
-import org.drftpd.vfs.TransferPointer;
 
 /**
  * @author zubov

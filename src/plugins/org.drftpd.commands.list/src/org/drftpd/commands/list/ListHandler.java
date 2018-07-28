@@ -17,56 +17,28 @@
  */
 package org.drftpd.commands.list;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TimeZone;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
+import org.drftpd.commandmanager.*;
 import org.drftpd.event.LoadPluginEvent;
 import org.drftpd.event.UnloadPluginEvent;
 import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.master.ConnectionManager;
-import org.drftpd.master.FtpReply;
-import org.drftpd.master.RemoteSlave;
-import org.drftpd.master.Session;
-import org.drftpd.master.TransferState;
+import org.drftpd.master.*;
 import org.drftpd.slave.LightRemoteInode;
 import org.drftpd.usermanager.User;
 import org.drftpd.util.CommonPluginUtils;
 import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.FileHandleInterface;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.InodeHandleInterface;
-import org.drftpd.vfs.LinkHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.vfs.*;
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author djb61
@@ -97,7 +69,7 @@ public class ListHandler extends CommandInterface {
 
 	private static final String PADDING = "          ";
 
-	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<AddListElementsInterface>();
+	private ArrayList<AddListElementsInterface> _listAddons = new ArrayList<>();
 
 	private StandardCommandManager _cManager;
 
@@ -174,7 +146,7 @@ public class ListHandler extends CommandInterface {
 			TransferState ts = conn.getTransferState();
 
 			if (request.hasArgument()) {
-				StringBuffer optionsSb = new StringBuffer(4);
+				StringBuilder optionsSb = new StringBuilder(4);
 				StringTokenizer st = new StringTokenizer(request.getArgument()," ");
 
 				while (st.hasMoreTokens() && (!isMlst)) {
@@ -254,9 +226,9 @@ public class ListHandler extends CommandInterface {
 				}
 			}
 			ListElementsContainer container = null;
-
+			boolean slavenames = request.getProperties().getProperty("slavenames","false").equalsIgnoreCase("true");
 			try {
-				container = listElements(directoryFile, conn, request.getUser());
+				container = listElements(directoryFile, conn, request.getUser(), slavenames);
 			} catch (IOException e) {
 				logger.error(e);
 				return new CommandResponse(450, e.getMessage());
@@ -270,7 +242,7 @@ public class ListHandler extends CommandInterface {
 			try {
 				if (isStat || isList) {
 					os.write("total 0" + NEWLINE);
-					os.write(toList(container.getElements(), fulldate));
+					os.write(toList(container.getElements(), fulldate, slavenames));
 				} else {
 					os.write(toMLST(container.getElements(),request.getArgument()));
 				}
@@ -290,9 +262,9 @@ public class ListHandler extends CommandInterface {
 		}
 	}
 
-	protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user) throws IOException {
+	protected ListElementsContainer listElements(DirectoryHandle dir, Session session, String user, boolean slavenames) throws IOException {
 		ListElementsContainer container = new ListElementsContainer(session, user, _cManager);
-		ArrayList<InodeHandle> tempFileList = new ArrayList<InodeHandle>(dir.getInodeHandles(session.getUserNull(user)));
+		ArrayList<InodeHandle> tempFileList = new ArrayList<>(dir.getInodeHandles(session.getUserNull(user)));
 		ArrayList<InodeHandleInterface> listFiles = container.getElements();
 		ArrayList<String> fileTypes = container.getFileTypes();
 		int numOnline = container.getNumOnline();
@@ -308,7 +280,8 @@ public class ListHandler extends CommandInterface {
 						env.add("ofilename", element.getName());
 						String oFileName = session.jprintf(_bundle, _keyPrefix+"files.offline.filename", env, user);
 	
-						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(), element.getGroup(), element.lastModified(), element.getSize()));
+						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(),
+								slavenames ? getSlaveList((FileHandle)element) : element.getGroup(), element.lastModified(), element.getSize()));
 						numTotal++;
 					}
 				} catch (IOException e) {
@@ -412,7 +385,7 @@ public class ListHandler extends CommandInterface {
 		return output.toString();
 	}
 
-	private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate) {
+	private String toList(Collection<InodeHandleInterface> listElements, boolean fulldate, boolean slavenames) {
 		StringBuilder output = new StringBuilder();
 
 		for (InodeHandleInterface inode : listElements) {
@@ -430,7 +403,12 @@ public class ListHandler extends CommandInterface {
 				line.append(DELIM);
 				line.append(padToLength(inode.getUsername(), 8));
 				line.append(DELIM);
-				line.append(padToLength(inode.getGroup(), 8));
+				if (inode.isFile() && slavenames && inode instanceof FileHandle) {
+					// Replace group name with a list of all slaves file exist on.
+					line.append(padToLength(getSlaveList((FileHandle)inode), 8));
+				} else {
+					line.append(padToLength(inode.getGroup(), 8));
+				}
 				line.append(DELIM);
 				line.append(inode.getSize());
 				line.append(DELIM);
@@ -447,6 +425,16 @@ public class ListHandler extends CommandInterface {
 			}
 		}
 		return output.toString();
+	}
+
+	private String getSlaveList(FileHandle file) {
+		String slaveList = "";
+		try {
+			slaveList = StringUtils.join(file.getSlaveNames(), ",");
+		} catch (FileNotFoundException e) {
+			//File removed
+		}
+		return slaveList;
 	}
 
 	protected void addPermission(InodeHandleInterface inode, StringBuilder output) throws FileNotFoundException {
@@ -523,7 +511,7 @@ public class ListHandler extends CommandInterface {
 		Set<AddListElementsInterface> unloadedListAddons =
 			MasterPluginUtils.getUnloadedExtensionObjects(this, "AddElements", event, _listAddons);
 		if (!unloadedListAddons.isEmpty()) {
-			ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<AddListElementsInterface>(_listAddons);
+			ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<>(_listAddons);
 			boolean addonRemoved = false;
 			for (Iterator<AddListElementsInterface> iter = clonedListAddons.iterator(); iter.hasNext();) {
 				AddListElementsInterface listAddon = iter.next();
@@ -547,7 +535,7 @@ public class ListHandler extends CommandInterface {
 			List<AddListElementsInterface> loadedListAddons =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.list", "AddElements", "Class", event);
 			if (!loadedListAddons.isEmpty()) {
-				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<AddListElementsInterface>(_listAddons);
+				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<>(_listAddons);
 				for (AddListElementsInterface listAddon : loadedListAddons) {
 					listAddon.initialize();
 					clonedListAddons.add(listAddon);
@@ -564,6 +552,6 @@ public class ListHandler extends CommandInterface {
 	 * Returning a copy of listAddons, so we can't change them.
 	 */
 	public ArrayList<AddListElementsInterface> getAddons() {
-		return new ArrayList<AddListElementsInterface>(_listAddons);
+		return new ArrayList<>(_listAddons);
 	}
 }

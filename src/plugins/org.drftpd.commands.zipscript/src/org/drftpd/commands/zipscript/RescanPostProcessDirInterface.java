@@ -25,7 +25,7 @@ import org.drftpd.commandmanager.StandardCommandManager;
  */
 public interface RescanPostProcessDirInterface {
 
-	public void initialize(StandardCommandManager cManager);
+	void initialize(StandardCommandManager cManager);
 
-	public void postProcessDir(CommandRequest workingDirReq, boolean quiet);
+	void postProcessDir(CommandRequest workingDirReq, boolean quiet);
 }

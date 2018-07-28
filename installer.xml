@@ -5,7 +5,7 @@
 	<property name="app.version" value="3.2.0" />
 
 	<property name="build.debug" value="true" />
-	<property name="build.javac" value="1.7" />
+	<property name="build.javac" value="1.8" />
 	<property name="build.optimize" value="false" />
 	<property name="build.verbose" value="true" />
 
@@ -50,13 +50,13 @@
 		<!-- create plugin framework jar -->
 		<jar destfile="lib/${app.name}-jpf-${app.version}.jar">
 			<manifest>
-				<attribute name="Class-Path" value="ant.jar" />
+				<attribute name="Class-Path" value="ant-1.10.5.jar" />
 				<attribute name="Specification-Title" value="DrFTPd - plugin framework library" />
 				<attribute name="Specification-Version" value="${app.version}" />
-				<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
+				<attribute name="Specification-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
 				<attribute name="Implementation-Title" value="org.java.plugin.drftpd" />
 				<attribute name="Implementation-Version" value="${app.version}" />
-				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
+				<attribute name="Implementation-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
 			</manifest>
 			<fileset dir="${jpf.dest}" includes="**/*.class" />
 		</jar>
@@ -79,13 +79,13 @@
 		<!-- create tools jar -->
 		<jar destfile="lib/${app.name}-tools-${app.version}.jar">
 			<manifest>
-				<attribute name="Class-Path" value="ant.jar" />
+				<attribute name="Class-Path" value="ant-1.10.5.jar" />
 				<attribute name="Specification-Title" value="DrFTPd - tools library" />
 				<attribute name="Specification-Version" value="${app.version}" />
-				<attribute name="Specification-Vendor" value="http://www.drftpd.org" />
+				<attribute name="Specification-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
 				<attribute name="Implementation-Title" value="org.drftpd.tools" />
 				<attribute name="Implementation-Version" value="${app.version}" />
-				<attribute name="Implementation-Vendor" value="http://www.drftpd.org" />
+				<attribute name="Implementation-Vendor" value="https://github.com/drftpd-ng/drftpd3" />
 			</manifest>
 			<fileset dir="${tools.dest}" includes="**/*.class,**/*.properties" />
 		</jar>

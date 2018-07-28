@@ -17,13 +17,8 @@
  */
 package org.drftpd.master;
 
-import java.io.IOException;
-import java.net.SocketException;
-import java.util.HashSet;
-
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import org.drftpd.GlobalContext;
 import org.drftpd.event.Event;
 import org.drftpd.exceptions.SlaveUnavailableException;
@@ -31,6 +26,10 @@ import org.drftpd.slave.async.AsyncResponse;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.tests.DummySlaveManager;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.HashSet;
 
 
 /**
@@ -74,7 +73,7 @@ public class RemoteSlaveTest extends TestCase {
         rslave.simpleDelete("/deleteme");
         rslave.simpleRename("/renameme", "/indir", "tofile");
 
-        HashSet<String> filelist = new HashSet<String>();
+        HashSet<String> filelist = new HashSet<>();
         filelist.add("/deleteme");
         filelist.add("/renameme");
         filelist.add("/indir");

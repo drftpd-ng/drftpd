@@ -17,8 +17,8 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
 import org.drftpd.sections.SectionInterface;
 import org.drftpd.vfs.DirectoryHandle;
 

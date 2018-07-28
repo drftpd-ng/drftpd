@@ -17,13 +17,6 @@
  */
 package org.drftpd.tools.installer;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
@@ -33,6 +26,13 @@ import org.apache.tools.ant.taskdefs.Ant.TargetElement;
 import org.apache.tools.ant.taskdefs.SubAnt;
 import org.apache.tools.ant.types.FileList;
 import org.java.plugin.registry.PluginRegistry;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * @author djb61

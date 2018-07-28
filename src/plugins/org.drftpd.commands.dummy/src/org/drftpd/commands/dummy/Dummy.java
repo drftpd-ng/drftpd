@@ -17,14 +17,10 @@
  */
 package org.drftpd.commands.dummy;
 
+import org.drftpd.commandmanager.*;
+
 import java.util.ArrayList;
 import java.util.Map;
-
-import org.drftpd.commandmanager.CommandInstanceContainer;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
 
 /**
  * returns 200 Command OK on all commands
@@ -46,7 +42,7 @@ public class Dummy extends CommandInterface {
 	}
 
 	private ArrayList<String> getHandledCommands(Class<?> class1) {
-		ArrayList<String> list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<>();
 
 		for (Map.Entry<String,CommandInstanceContainer> element : _cManager.getCommandHandlersMap().entrySet()) {
 			if (element.getValue().getCommandInterfaceInstance().getClass().equals(class1)) {

@@ -17,9 +17,9 @@
  */
 package org.drftpd.util;
 
-import java.lang.reflect.Method;
-
 import org.java.plugin.registry.Extension;
+
+import java.lang.reflect.Method;
 
 /**
  * A wrapper object used to contain a class loaded by the plugin framework and optionally

@@ -16,20 +16,6 @@
  */
 package org.drftpd.protocol.slave.def;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.log4j.Logger;
 import org.drftpd.ActiveConnection;
 import org.drftpd.PassiveConnection;
@@ -39,26 +25,22 @@ import org.drftpd.io.PhysicalFile;
 import org.drftpd.master.QueuedOperation;
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
-import org.drftpd.slave.ConnectInfo;
-import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.slave.RootCollection;
-import org.drftpd.slave.RootPathContents;
-import org.drftpd.slave.Slave;
-import org.drftpd.slave.Transfer;
-import org.drftpd.slave.TransferIndex;
-import org.drftpd.slave.TransferStatus;
-import org.drftpd.slave.async.AsyncCommandArgument;
-import org.drftpd.slave.async.AsyncResponse;
-import org.drftpd.slave.async.AsyncResponseChecksum;
-import org.drftpd.slave.async.AsyncResponseDiskStatus;
-import org.drftpd.slave.async.AsyncResponseException;
-import org.drftpd.slave.async.AsyncResponseMaxPath;
-import org.drftpd.slave.async.AsyncResponseRemerge;
-import org.drftpd.slave.async.AsyncResponseSSLCheck;
-import org.drftpd.slave.async.AsyncResponseTransfer;
-import org.drftpd.slave.async.AsyncResponseTransferStatus;
-import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
+import org.drftpd.slave.*;
+import org.drftpd.slave.async.*;
 import org.tanukisoftware.wrapper.WrapperManager;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Basic operations handling. 
@@ -81,7 +63,7 @@ public class BasicHandler extends AbstractHandler {
 	private HandleRemergeRecursiveThread[] mergeThreads;
 	private AtomicInteger threadMergeCount = new AtomicInteger(0);
 	private static Object threadMergeWaitObj = new Object();
-	private ArrayList<String> threadMergeDepth = new ArrayList<String>();
+	private ArrayList<String> threadMergeDepth = new ArrayList<>();
 	private static Object threadMergeDepthWaitObj = new Object();
 
 	private int remergeDepth=0;
@@ -103,7 +85,7 @@ public class BasicHandler extends AbstractHandler {
 	public AsyncResponse handleAbort(AsyncCommandArgument ac) {
 		TransferIndex ti = new TransferIndex(Integer.parseInt(ac.getArgsArray()[0]));
 		
-		HashMap<TransferIndex, Transfer> transfers = getSlaveObject().getTransferMap();
+		Map<TransferIndex, Transfer> transfers = getSlaveObject().getTransferMap();
 
 		if (!transfers.containsKey(ti)) {
 			return null;
@@ -143,10 +125,8 @@ public class BasicHandler extends AbstractHandler {
 				getSlaveObject().delete(mapPathToRenameQueue(ac.getArgs()));
 			} catch (PermissionDeniedException e) {
 				if (Slave.isWin32) {
-					synchronized (getSlaveObject().getRenameQueue()) {
-						getSlaveObject().getRenameQueue()
-								.add(new QueuedOperation(ac.getArgs(), null));
-					}
+					getSlaveObject().getRenameQueue()
+							.add(new QueuedOperation(ac.getArgs(), null));
 				} else {
 					throw e;
 				}
@@ -229,6 +209,7 @@ public class BasicHandler extends AbstractHandler {
 
 	public AsyncResponse handleRemerge(AsyncCommandArgument ac) {
 		try {
+			Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 			String[] argsArray = ac.getArgsArray();
 			long skipAgeCutoff = 0L;
 			boolean partialRemerge = Boolean.parseBoolean(argsArray[1]) && !getSlaveObject().ignorePartialRemerge() && !Boolean.parseBoolean(argsArray[4]);
@@ -275,6 +256,10 @@ public class BasicHandler extends AbstractHandler {
 			// Make sure we dont make the slave avalible online until the whole filesystem is sent
 			if (getSlaveObject().threadedRemerge()) {
 				while (threadMergeCount.get() != 0) {
+					if (!getSlaveObject().isOnline()) {
+						// Slave has shut down, no need to continue with remerge
+						return null;
+					}
 					synchronized(threadMergeWaitObj) {
 						try {
 							threadMergeWaitObj.wait(5000);
@@ -318,14 +303,19 @@ public class BasicHandler extends AbstractHandler {
 			this.rootCollection = rootCollection;
 			this.partialRemerge = partialRemerge;
 			this.skipAgeCutoff = skipAgeCutoff;
+			this.setPriority(Thread.MIN_PRIORITY);
 		}
 
 		public void run() {
 			while (true) {
-				while (remergePaused.get()) {
+				if (!getSlaveObject().isOnline()) {
+					// Slave has shut down, no need to continue with remerge
+					return;
+				}
+				while (remergePaused.get() && getSlaveObject().isOnline()) {
 					synchronized(remergeWaitObj) {
 						try {
-							remergeWaitObj.wait();
+							remergeWaitObj.wait(5000);
 						} catch (InterruptedException e) {
 							// Either we have been woken properly in which case we will exit the
 							// loop or we have not in which case we will wait again.
@@ -334,7 +324,7 @@ public class BasicHandler extends AbstractHandler {
 				}
 
 				while (path == null) {
-					if (exit) {
+					if (exit || !getSlaveObject().isOnline()) {
 						return;
 					}
 					synchronized(localWaitObj) {
@@ -348,8 +338,8 @@ public class BasicHandler extends AbstractHandler {
 				}
 
 				TreeSet<String> inodes = rootCollection.getLocalInodes(path);
-				ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
-				ArrayList<String> dirList = new ArrayList<String>();
+				ArrayList<LightRemoteInode> fileList = new ArrayList<>();
+				ArrayList<String> dirList = new ArrayList<>();
 
 				boolean inodesModified = false;
 				long pathLastModified = rootCollection.getLastModifiedForPath(path);
@@ -410,7 +400,7 @@ public class BasicHandler extends AbstractHandler {
 							boolean restoreRun = localRun;
 							String oldPath = path;
 							path = fullPath;
-							if (localRun == false) {
+							if (!localRun) {
 								localRun = true;
 							}
 							run();
@@ -467,7 +457,7 @@ public class BasicHandler extends AbstractHandler {
 				}
 				updateDepth(path + "/");
 
-				if (localRun == false) {
+				if (!localRun) {
 					available();
 				} else {
 					return;
@@ -541,7 +531,7 @@ public class BasicHandler extends AbstractHandler {
 				}
 			}
 
-			if (add == true) {
+			if (add) {
 				threadMergeDepth.add(path);
 			}
 		}
@@ -553,6 +543,10 @@ public class BasicHandler extends AbstractHandler {
 
 	private void waitForDepth(String path) {
 		while(true) {
+			if (!getSlaveObject().isOnline()) {
+				// Slave has shut down, no need to continue with remerge
+				return;
+			}
 			synchronized(threadMergeDepth) {
 				for (String dir : threadMergeDepth) {
 					if (dir.startsWith(path)) {
@@ -574,10 +568,14 @@ public class BasicHandler extends AbstractHandler {
 	private void handleRemergeRecursive2(RootCollection rootCollection,
 			String path, boolean partialRemerge, long skipAgeCutoff) {
 		remergeDepth++;
-		while (remergePaused.get()) {
+		if (!getSlaveObject().isOnline()) {
+			// Slave has shut down, no need to continue with remerge
+			return;
+		}
+		while (remergePaused.get() && getSlaveObject().isOnline()) {
 			synchronized(remergeWaitObj) {
 				try {
-					remergeWaitObj.wait();
+					remergeWaitObj.wait(5000);
 				} catch (InterruptedException e) {
 					// Either we have been woken properly in which case we will exit the
 					// loop or we have not in which case we will wait again.
@@ -585,7 +583,7 @@ public class BasicHandler extends AbstractHandler {
 			}
 		}
 		TreeSet<String> inodes = rootCollection.getLocalInodes(path);
-		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+		ArrayList<LightRemoteInode> fileList = new ArrayList<>();
 
 		boolean inodesModified = false;
 		long pathLastModified = rootCollection.getLastModifiedForPath(path);
@@ -643,10 +641,14 @@ public class BasicHandler extends AbstractHandler {
 	private void handleRemergeRecursiveConcurrent(RootCollection rootCollection,
 			String path, boolean partialRemerge, long skipAgeCutoff) {
 		remergeConcurrentDepth++;
-		while (remergePaused.get()) {
+		if (!getSlaveObject().isOnline()) {
+			// Slave has shut down, no need to continue with remerge
+			return;
+		}
+		while (remergePaused.get() && getSlaveObject().isOnline()) {
 			synchronized(remergeWaitObj) {
 				try {
-					remergeWaitObj.wait();
+					remergeWaitObj.wait(5000);
 				} catch (InterruptedException e) {
 					// Either we have been woken properly in which case we will exit the
 					// loop or we have not in which case we will wait again.
@@ -655,7 +657,7 @@ public class BasicHandler extends AbstractHandler {
 		}
 
 		RootPathContents rootContents = rootCollection.getLocalInodesConcurrent(path);
-		ArrayList<LightRemoteInode> fileList = new ArrayList<LightRemoteInode>();
+		ArrayList<LightRemoteInode> fileList = new ArrayList<>();
 
 		boolean inodesModified = false;
 		long pathLastModified = rootContents.getLastModified();
@@ -715,9 +717,7 @@ public class BasicHandler extends AbstractHandler {
 					} else {
 						simplePath = toDir + "/" + toFile;
 					}
-					synchronized (getSlaveObject().getRenameQueue()) {
-						getSlaveObject().getRenameQueue().add(new QueuedOperation(from, simplePath));
-					}
+					getSlaveObject().getRenameQueue().add(new QueuedOperation(from, simplePath));
 				} else {
 					throw e;
 				}
@@ -765,13 +765,8 @@ public class BasicHandler extends AbstractHandler {
 	
 	public AsyncResponse handleShutdown(AsyncCommandArgument ac) {
 		logger.info("The master has requested that I shutdown");
+		getSlaveObject().shutdown();
 		WrapperManager.stop(0);
-		return null;
-	}
-	
-	public AsyncResponse handleError(AsyncCommandArgument ac) {
-		System.err.println("error - " + ac);
-		System.exit(0);
 		return null;
 	}
 

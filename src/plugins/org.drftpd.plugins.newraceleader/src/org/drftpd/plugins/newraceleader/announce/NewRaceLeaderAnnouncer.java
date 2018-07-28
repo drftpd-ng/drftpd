@@ -17,22 +17,20 @@
  */
 package org.drftpd.plugins.newraceleader.announce;
 
-import java.util.ResourceBundle;
-
 import org.apache.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-
 import org.drftpd.Bytes;
+import org.drftpd.GlobalContext;
 import org.drftpd.plugins.newraceleader.event.NewRaceLeaderEvent;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-
 import org.drftpd.util.ReplacerUtils;
-
 import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.ResourceBundle;
 
 /**
  * @author CyBeR
@@ -76,6 +74,7 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("store.newraceleader", event.getDirectory());
 		if (writer != null) {
 			env.add("section",writer.getSectionName(event.getDirectory()));
+			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDirectory()).getColor());
 			env.add("dir",writer.getPath(event.getDirectory()));
 
 			env.add("path",event.getDirectory().getPath());
@@ -86,7 +85,7 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 			env.add("size",Bytes.formatBytes(event.getUploaderPosition().getBytes()));
 			env.add("files", event.getUploaderPosition().getFiles());
 			env.add("speed", Bytes.formatBytes(event.getUploaderPosition().getXferspeed()));
-			env.add("percent", new Integer(event.getFiles() / event.getUploaderPosition().getFiles()));
+			env.add("percent", event.getFiles() / event.getUploaderPosition().getFiles());
 
 			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.newraceleader", env, _bundle), writer);
 		}

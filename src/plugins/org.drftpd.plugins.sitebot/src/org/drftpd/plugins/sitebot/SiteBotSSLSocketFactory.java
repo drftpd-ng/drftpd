@@ -17,15 +17,14 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.Socket;
+import org.apache.log4j.Logger;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-
-import org.apache.log4j.Logger;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 
 /**
  * @author djb61

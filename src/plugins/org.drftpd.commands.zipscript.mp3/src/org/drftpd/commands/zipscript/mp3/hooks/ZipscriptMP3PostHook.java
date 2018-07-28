@@ -78,8 +78,7 @@ public class ZipscriptMP3PostHook implements PostHookInterface {
 			}
 		} catch (KeyNotFoundException e) {
 			// We don't have a file, we shouldn't have ended up here but return anyway
-			return;
-		}
+        }
 	}
 
 	public void doZipscriptDELEMP3Hook(CommandRequest request, CommandResponse response) {

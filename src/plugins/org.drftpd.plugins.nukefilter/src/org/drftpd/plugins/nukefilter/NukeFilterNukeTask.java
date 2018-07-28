@@ -1,7 +1,5 @@
 package org.drftpd.plugins.nukefilter;
 
-import java.util.TimerTask;
-
 import org.apache.log4j.Logger;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.approve.metadata.Approve;
@@ -13,6 +11,8 @@ import org.drftpd.usermanager.NoSuchUserException;
 import org.drftpd.usermanager.User;
 import org.drftpd.usermanager.UserFileException;
 import org.drftpd.vfs.DirectoryHandle;
+
+import java.util.TimerTask;
 
 /**
  * @author phew

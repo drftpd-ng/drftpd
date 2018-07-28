@@ -17,10 +17,7 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -52,11 +49,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -151,40 +144,53 @@ public class TvMazeUtils {
 	public static TvMazeInfo createTvMazeInfo(JsonObject jObj) throws Exception {
 		TvMazeInfo tvmazeInfo = new TvMazeInfo();
 
-		tvmazeInfo.setID(jObj.get("id").getAsInt());
-		tvmazeInfo.setURL(jObj.get("url").getAsString());
-		tvmazeInfo.setName(jObj.get("name").getAsString());
-		tvmazeInfo.setType(jObj.get("type").getAsString());
-		tvmazeInfo.setLanguage(jObj.get("language").getAsString());
-		tvmazeInfo.setGenres((String[])new Gson().fromJson(jObj.getAsJsonArray("genres"), new TypeToken<String[]>() {}.getType()));
-		tvmazeInfo.setStatus(jObj.get("status").getAsString());
-		tvmazeInfo.setRuntime(jObj.get("runtime").getAsInt());
-		tvmazeInfo.setPremiered(jObj.get("premiered").getAsString());
-		JsonObject networkJsonObj = null;
-		if (jObj.get("network").isJsonObject()) {
-			networkJsonObj = jObj.getAsJsonObject("network");
-		} else if (jObj.get("webChannel").isJsonObject()) {
-			networkJsonObj = jObj.getAsJsonObject("webChannel");
+		if (jObj.get("id").isJsonPrimitive()) tvmazeInfo.setID(jObj.get("id").getAsInt());
+		if (jObj.get("url").isJsonPrimitive()) tvmazeInfo.setURL(jObj.get("url").getAsString());
+		if (jObj.get("name").isJsonPrimitive()) tvmazeInfo.setName(jObj.get("name").getAsString());
+		if (jObj.get("type").isJsonPrimitive()) tvmazeInfo.setType(jObj.get("type").getAsString());
+		if (jObj.get("language").isJsonPrimitive()) tvmazeInfo.setLanguage(jObj.get("language").getAsString());
+		if (jObj.get("genres").isJsonArray()) tvmazeInfo.setGenres(
+                new Gson().fromJson(jObj.getAsJsonArray("genres"), new TypeToken<String[]>() {}.getType()));
+		if (jObj.get("status").isJsonPrimitive()) tvmazeInfo.setStatus(jObj.get("status").getAsString());
+		if (jObj.get("runtime").isJsonPrimitive()) tvmazeInfo.setRuntime(jObj.get("runtime").getAsInt());
+		if (jObj.get("premiered").isJsonPrimitive()) {
+			tvmazeInfo.setPremiered(jObj.get("premiered").getAsString());
+		} else {
+			tvmazeInfo.setPremiered("1900-01-01");
 		}
-		if (networkJsonObj != null) {
-			tvmazeInfo.setNetwork(networkJsonObj.get("name").getAsString());
-			JsonObject countryJsonObj = networkJsonObj.getAsJsonObject("country");
-			tvmazeInfo.setCountry(countryJsonObj.get("name").getAsString());
-		}
-		tvmazeInfo.setSummary(HttpUtils.htmlToString(jObj.get("summary").getAsString()));
+        JsonObject networkJsonObj = null;
+        if (jObj.get("network").isJsonObject()) {
+            networkJsonObj = jObj.getAsJsonObject("network");
+        } else if (jObj.get("webChannel").isJsonObject()) {
+            networkJsonObj = jObj.getAsJsonObject("webChannel");
+        }
+        if (networkJsonObj != null) {
+            if (networkJsonObj.get("name").isJsonPrimitive()) tvmazeInfo.setNetwork(networkJsonObj.get("name").getAsString());
+            if (networkJsonObj.get("country").isJsonObject()){
+                JsonObject countryJsonObj = networkJsonObj.getAsJsonObject("country");
+                if (countryJsonObj.get("name").isJsonPrimitive()) tvmazeInfo.setCountry(countryJsonObj.get("name").getAsString());
+            } else {
+                tvmazeInfo.setCountry("Unknown Country");
+			}
+        }
+		if (jObj.get("summary").isJsonPrimitive()) tvmazeInfo.setSummary(HttpUtils.htmlToString(jObj.get("summary").getAsString()));
 		JsonObject linksObj = jObj.getAsJsonObject("_links");
 		if (linksObj != null) {
 			JsonObject prevEPObj = linksObj.getAsJsonObject("previousepisode");
 			if (prevEPObj != null) {
 				// Fetch and parse EP
-				String epURL = prevEPObj.get("href").getAsString();
-				tvmazeInfo.setPreviousEP(createTvEpisode(fetchEpisodeData(epURL)));
+				if (prevEPObj.get("href").isJsonPrimitive()) {
+					String epURL = prevEPObj.get("href").getAsString();
+					tvmazeInfo.setPreviousEP(createTvEpisode(fetchEpisodeData(epURL)));
+				}
 			}
 			JsonObject nextEPObj = linksObj.getAsJsonObject("nextepisode");
 			if (nextEPObj != null) {
 				// Fetch and parse EP
-				String epURL = nextEPObj.get("href").getAsString();
-				tvmazeInfo.setNextEP(createTvEpisode(fetchEpisodeData(epURL)));
+				if (nextEPObj.get("href").isJsonPrimitive()) {
+					String epURL = nextEPObj.get("href").getAsString();
+					tvmazeInfo.setNextEP(createTvEpisode(fetchEpisodeData(epURL)));
+				}
 			}
 		}
 
@@ -193,14 +199,15 @@ public class TvMazeUtils {
 
 	public static TvMazeInfo createTvMazeInfo(JsonObject jObj, int season, int number) throws Exception{
 		TvMazeInfo tvmazeInfo = createTvMazeInfo(jObj);
-		ArrayList<TvEpisode> epList = new ArrayList<TvEpisode>();
+		ArrayList<TvEpisode> epList = new ArrayList<>();
 		JsonObject embeddedObj = jObj.getAsJsonObject("_embedded");
 		if (embeddedObj != null) {
 			// Add all episodes to a map with sXXeYY as key
 			HashMap<String,TvEpisode> episodes = parseEpisodes(embeddedObj);
 			if (number >= 0) {
 				// Find the single show wanted and add to _epList
-				epList.add(episodes.get("s" + season + "e" + number));
+				TvEpisode ep = episodes.get("s" + season + "e" + number);
+				if (ep != null) epList.add(ep);
 			} else if (season >= 0) {
 				// All episodes of specified season wanted
 				for (TvEpisode ep : episodes.values()) {
@@ -210,13 +217,49 @@ public class TvMazeUtils {
 				}
 			}
 		}
-		tvmazeInfo.setEPList(epList.toArray(new TvEpisode[epList.size()]));
+		if (!epList.isEmpty()) tvmazeInfo.setEPList(epList.toArray(new TvEpisode[epList.size()]));
 
 		return tvmazeInfo;
 	}
 
+	public static String getBestMatch(JsonArray jarray, String year, String countrycode) {
+		ArrayList<JsonElement> shows = new Gson().fromJson(jarray, new TypeToken<ArrayList<JsonElement>>() {}.getType());
+		for (JsonElement show : shows) {
+			JsonObject showObj = show.getAsJsonObject().getAsJsonObject("show");
+			boolean yearCheck = true;
+			boolean countryCheck = true;
+			if (!year.isEmpty() && showObj.get("premiered").isJsonPrimitive()) {
+				if (!showObj.get("premiered").getAsString().startsWith(year)) {
+					yearCheck = false;
+				}
+			}
+			if (!countrycode.isEmpty()) {
+				JsonObject networkJsonObj = null;
+				if (showObj.get("network").isJsonObject()) {
+					networkJsonObj = showObj.getAsJsonObject("network");
+				} else if (showObj.get("webChannel").isJsonObject()) {
+					networkJsonObj = showObj.getAsJsonObject("webChannel");
+				}
+				if (networkJsonObj != null) {
+					JsonObject countryJsonObj = networkJsonObj.getAsJsonObject("country");
+					if (countryJsonObj.get("code").isJsonPrimitive()) {
+						if (!countryJsonObj.get("code").getAsString().equals(countrycode)) {
+							countryCheck = false;
+						}
+					}
+				}
+			}
+			if (yearCheck && countryCheck) {
+				if (showObj.get("id").isJsonPrimitive()) {
+					return showObj.get("id").getAsString();
+				}
+			}
+		}
+		return null;
+	}
+
 	private static HashMap<String,TvEpisode> parseEpisodes (JsonObject embeddedObj) throws Exception{
-		HashMap<String,TvEpisode> episodes = new HashMap<String,TvEpisode>();
+		HashMap<String,TvEpisode> episodes = new HashMap<>();
 		ArrayList<JsonElement> episodesElement = new Gson().fromJson(embeddedObj.getAsJsonArray("episodes"), new TypeToken<ArrayList<JsonElement>>() {}.getType());
 		for (JsonElement episode : episodesElement) {
 			TvEpisode ep = createTvEpisode(episode.getAsJsonObject());
@@ -234,14 +277,18 @@ public class TvMazeUtils {
 
 	public static TvEpisode createTvEpisode(JsonObject jobj) throws Exception {
 		TvEpisode tvEP = new TvEpisode();
-		tvEP.setID(jobj.get("id").getAsInt());
-		tvEP.setURL(jobj.get("url").getAsString());
-		tvEP.setName(jobj.get("name").getAsString());
-		tvEP.setSeason(jobj.get("season").getAsInt());
-		tvEP.setNumber(jobj.get("number").getAsInt());
-		tvEP.setAirDate(jobj.get("airstamp").getAsString());
-		tvEP.setRuntime(jobj.get("runtime").getAsInt());
-		tvEP.setSummary(HttpUtils.htmlToString(jobj.get("summary").getAsString()));
+		if (jobj.get("id").isJsonPrimitive()) tvEP.setID(jobj.get("id").getAsInt());
+		if (jobj.get("url").isJsonPrimitive()) tvEP.setURL(jobj.get("url").getAsString());
+		if (jobj.get("name").isJsonPrimitive()) tvEP.setName(jobj.get("name").getAsString());
+		if (jobj.get("season").isJsonPrimitive()) tvEP.setSeason(jobj.get("season").getAsInt());
+		if (jobj.get("number").isJsonPrimitive()) tvEP.setNumber(jobj.get("number").getAsInt());
+		if (jobj.get("airstamp").isJsonPrimitive()) {
+			tvEP.setAirDate(jobj.get("airstamp").getAsString());
+		} else {
+			tvEP.setAirDate("1900-01-01T01:00:00-04:00");
+		}
+		if (jobj.get("runtime").isJsonPrimitive()) tvEP.setRuntime(jobj.get("runtime").getAsInt());
+		if (jobj.get("summary").isJsonPrimitive()) tvEP.setSummary(HttpUtils.htmlToString(jobj.get("summary").getAsString()));
 		return tvEP;
 	}
 
@@ -309,7 +356,7 @@ public class TvMazeUtils {
 			throw new FileNotFoundException("Index Exception: "+e.getMessage());
 		}
 
-		ArrayList<DirectoryHandle> releases = new ArrayList<DirectoryHandle>();
+		ArrayList<DirectoryHandle> releases = new ArrayList<>();
 
 		for (Map.Entry<String,String> item : inodes.entrySet()) {
 			try {
@@ -330,6 +377,11 @@ public class TvMazeUtils {
 		return (TvMazeConfig.getInstance().getStartDelay() + (new Random()).nextInt(
 				TvMazeConfig.getInstance().getEndDelay()-TvMazeConfig.getInstance().getStartDelay()
 				))*1000;
+	}
+
+	public static TvMazeInfo getTvMazeInfoFromCache(DirectoryHandle dir) {
+		TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
+		return tvmazeData.getTvMazeInfoFromCache();
 	}
 
 	public static TvMazeInfo getTvMazeInfo(DirectoryHandle dir) {
@@ -361,7 +413,7 @@ public class TvMazeUtils {
 			}
 			env.add("release", dir.getName());
 			env.add("section", section.getName());
-			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
+			env.add("sectioncolor", section.getColor());
 			GlobalContext.getEventService().publishAsync(new TvMazeEvent(env, dir));
 		}
 	}
@@ -372,11 +424,7 @@ public class TvMazeUtils {
 		return m.find();
 	}
 
-	public static Comparator<TvEpisode> epNumberComparator = new Comparator<TvEpisode>() {
-		public int compare(TvEpisode tvEpisode1, TvEpisode tvEpisode2) {
-			return tvEpisode1.getNumber() - tvEpisode2.getNumber();
-		}
-	};
+	public static Comparator<TvEpisode> epNumberComparator = Comparator.comparingInt(TvEpisode::getNumber);
 
 	public static boolean containSection (SectionInterface section, ArrayList<SectionInterface> sectionList) {
 		boolean containsSection = false;
