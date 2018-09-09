@@ -99,7 +99,7 @@
 		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.3.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-lang3" path="../../lib/commons-lang3-3.7.jar" type="code">
+		<library id="commons-lang3" path="../../lib/commons-lang3-3.8.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="commons-text" path="../../lib/commons-text-1.4.jar" type="code">
