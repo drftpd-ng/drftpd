@@ -218,7 +218,7 @@ public class CommitManager {
 	/**
 	 * Creates a wrapping object for the Commitable object and current time.
 	 */
-	private class CommitableWrapper {
+	private static class CommitableWrapper {
 		private Commitable _object;
 		private long _time;
 
