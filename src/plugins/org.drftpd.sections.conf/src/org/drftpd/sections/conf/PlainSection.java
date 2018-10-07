@@ -85,7 +85,7 @@ public class PlainSection implements ConfigurableSectionInterface {
 		try {
 			return getBaseDirectory().getDirectoriesUnchecked();
 		} catch (FileNotFoundException e) {
-			return Collections.EMPTY_SET;
+			return Collections.emptySet();
 		}
 	}
 	
