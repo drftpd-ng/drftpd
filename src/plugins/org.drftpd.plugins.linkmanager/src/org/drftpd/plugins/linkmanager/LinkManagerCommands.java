@@ -52,7 +52,7 @@ public class LinkManagerCommands extends CommandInterface {
 	}
 	
 	
-	private class runFixLinks extends Thread {
+	private static class runFixLinks extends Thread {
 		public DirectoryHandle dir;
 		
 		public void run() {
