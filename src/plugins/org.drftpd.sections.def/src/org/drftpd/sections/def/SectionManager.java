@@ -69,7 +69,7 @@ public class SectionManager implements SectionManagerInterface {
 		try {
 			dirs = GlobalContext.getGlobalContext().getRoot().getDirectoriesUnchecked();
 		} catch (FileNotFoundException e) {
-			return Collections.EMPTY_SET;
+			return Collections.emptySet();
 		}
 		
 		for (DirectoryHandle dir : dirs) {
@@ -112,7 +112,7 @@ public class SectionManager implements SectionManagerInterface {
 			try {
 				return _dir.getDirectoriesUnchecked();
 			} catch (FileNotFoundException e) {
-				return Collections.EMPTY_SET;
+				return Collections.emptySet();
 			}
 		}
 
@@ -155,7 +155,7 @@ public class SectionManager implements SectionManagerInterface {
 				sections.put(dir.getName(), new Section(dir));
 			}
 		} catch (FileNotFoundException e) {
-			return Collections.EMPTY_MAP;
+			return Collections.emptyMap();
 		}
 		
 		return sections;
