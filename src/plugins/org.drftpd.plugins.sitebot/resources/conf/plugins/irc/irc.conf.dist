@@ -153,7 +153,7 @@ commands.full=queue
 bind.host=
 
 # Character set to use when sending to the irc server
-charset=ISO-8859-1
+charset=UTF-8
 
 # Maximum length of lines to use when sending messages to the server, this is the
 # length of the full raw command including the CRLF at the end
