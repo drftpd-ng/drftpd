@@ -112,7 +112,7 @@ public class RemoteSlaveTest extends TestCase {
         assertFalse(rslave.isAvailable());
     }
 
-    public class GC extends GlobalContext {
+    public static class GC extends GlobalContext {
         public SlaveManager getSlaveManager() {
             return super.getSlaveManager();
         }
@@ -131,7 +131,7 @@ public class RemoteSlaveTest extends TestCase {
         }
     }
 
-    public class RemergeRemoteSlave extends RemoteSlave {
+    public static class RemergeRemoteSlave extends RemoteSlave {
         private HashSet<String> _filelist = null;
 
         public RemergeRemoteSlave(String name, GlobalContext gctx) {

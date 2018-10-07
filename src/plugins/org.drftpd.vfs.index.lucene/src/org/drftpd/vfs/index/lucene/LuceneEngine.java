@@ -1010,7 +1010,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	/**
 	 * Custom FieldComparator to get a random result from index
 	 */
-	public class RandomOrderFieldComparator extends FieldComparator<Integer> {
+	public static class RandomOrderFieldComparator extends FieldComparator<Integer> {
 
 		private final Random random = new Random();
 

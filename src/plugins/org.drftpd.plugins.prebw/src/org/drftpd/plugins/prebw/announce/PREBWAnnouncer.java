@@ -135,7 +135,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 		}
 	}
 
-	private class UserComparator implements Comparator<UserInfo> {
+	private static class UserComparator implements Comparator<UserInfo> {
 		// Compare two Users.
 		public final int compare ( UserInfo a, UserInfo b )	{
 			Long aLong = a.getBytes();
