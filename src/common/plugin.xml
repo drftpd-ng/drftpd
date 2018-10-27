@@ -102,7 +102,7 @@
 		<library id="commons-lang3" path="../../lib/commons-lang3-3.8.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-text" path="../../lib/commons-text-1.5.jar" type="code">
+		<library id="commons-text" path="../../lib/commons-text-1.6.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
