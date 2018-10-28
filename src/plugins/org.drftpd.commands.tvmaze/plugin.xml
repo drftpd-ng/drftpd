@@ -24,7 +24,7 @@ IRC announce on MKD/PRE event and tvmaze info dir in release dir is also availab
 		<library id="gson" path="../../../lib/gson-2.8.5.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="joda-time" path="../../../lib/joda-time-2.10.jar" type="code">
+		<library id="joda-time" path="../../../lib/joda-time-2.10.1.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
