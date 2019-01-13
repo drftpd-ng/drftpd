@@ -19,7 +19,7 @@
 package org.drftpd.slave.diskselection.filter;
 
 import java.util.Properties;
-import java.util.Random;
+import java.security.SecureRandom;
 
 import org.drftpd.slave.Root;
 
@@ -36,7 +36,7 @@ public class RandomspreadFilter extends DiskFilter {
 		super(diskSelection, p, i);
 	}
 
-	private Random _rand = new Random();
+	private SecureRandom _rand = new SecureRandom();
 
 	public void process(ScoreChart sc, String path) {
 		int i = _rand.nextInt(getRootList().size());

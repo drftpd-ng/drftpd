@@ -49,6 +49,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -374,7 +375,7 @@ public class TvMazeUtils {
 	}
 
 	public static long randomNumber() {
-		return (TvMazeConfig.getInstance().getStartDelay() + (new Random()).nextInt(
+		return (TvMazeConfig.getInstance().getStartDelay() + (new SecureRandom()).nextInt(
 				TvMazeConfig.getInstance().getEndDelay()-TvMazeConfig.getInstance().getStartDelay()
 				))*1000;
 	}
