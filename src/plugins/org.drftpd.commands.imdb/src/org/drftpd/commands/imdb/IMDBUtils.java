@@ -40,9 +40,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,7 +85,7 @@ public class IMDBUtils {
 	}
 
 	public static long randomNumber() {
-		return (IMDBConfig.getInstance().getStartDelay() + (new Random()).nextInt(
+		return (IMDBConfig.getInstance().getStartDelay() + (new SecureRandom()).nextInt(
 				IMDBConfig.getInstance().getEndDelay()-IMDBConfig.getInstance().getStartDelay()
 				))*1000;
 	}
