@@ -27,6 +27,7 @@ import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
+import org.junit.Assert;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,7 +64,7 @@ public class MinfreespaceFilterTest extends TestCase {
         Filter f = new MinfreespaceFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
 
-        assertEquals(Bytes.parseBytes("-50MB"),
+        Assert.assertEquals(Bytes.parseBytes("-50MB"),
             sc.getScoreForSlave(rslaves[0]).getScore());
     }
 

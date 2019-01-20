@@ -25,6 +25,7 @@ import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
 import org.drftpd.vfs.DirectoryHandle;
+import org.junit.Assert;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,7 +63,7 @@ public class MaxbandwidthFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
 
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, new DirectoryHandle("/"), null);
-        assertEquals(sc.getBestSlave(), rslaves[1]);
+        Assert.assertEquals(sc.getBestSlave(), rslaves[1]);
     }
 
     static class RS extends DummyRemoteSlave {

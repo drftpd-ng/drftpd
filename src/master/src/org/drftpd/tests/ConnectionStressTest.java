@@ -22,6 +22,7 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.log4j.Logger;
+import org.junit.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +67,7 @@ public class ConnectionStressTest extends TestCase {
 			} 
 		}
 
-		assertTrue(success == i); // means that every attemp was successful when connecting
+		Assert.assertTrue(success == i); // means that every attemp was successful when connecting
 
 		Collections.reverse(list); // must reverse the order in order to iterate thru the first client firstly.
 		
@@ -78,7 +79,7 @@ public class ConnectionStressTest extends TestCase {
 			dead += 1;
 		}
 
-		assertTrue(dead == success); // all threads were finalized.
+		Assert.assertTrue(dead == success); // all threads were finalized.
 	}
 	
 	public void addFailure() {
