@@ -19,6 +19,7 @@ package org.drftpd;
 
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.junit.Assert;
 
 
 /**
@@ -35,19 +36,19 @@ public class TimeTest extends TestCase {
     }
 
     public void testParseSeconds() {
-        assertEquals(1000, Time.parseTime("1s"));
-        assertEquals(1000, Time.parseTime("1S"));
+        Assert.assertEquals(1000, Time.parseTime("1s"));
+        Assert.assertEquals(1000, Time.parseTime("1S"));
     }
 
     public void testParseMillis() {
-        assertEquals(1, Time.parseTime("1ms"));
+        Assert.assertEquals(1, Time.parseTime("1ms"));
     }
 
     public void testParse() {
-        assertEquals(1, Time.parseTime("1"));
+        Assert.assertEquals(1, Time.parseTime("1"));
     }
 
     public void testParseMinutes() {
-        assertEquals(60000, Time.parseTime("1m"));
+        Assert.assertEquals(60000, Time.parseTime("1m"));
     }
 }

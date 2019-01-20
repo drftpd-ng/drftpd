@@ -23,6 +23,7 @@ import org.drftpd.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
+import org.junit.Assert;
 
 import java.util.Arrays;
 
@@ -54,8 +55,8 @@ public class CycleFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         Filter f = new CycleFilter(0, null);
         f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
-        assertEquals(1, sc.getScoreForSlave(rslaves[0]).getScore());
-        assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
-        assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
+        Assert.assertEquals(1, sc.getScoreForSlave(rslaves[0]).getScore());
+        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[1]).getScore());
+        Assert.assertEquals(0, sc.getScoreForSlave(rslaves[2]).getScore());
     }
 }
