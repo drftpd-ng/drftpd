@@ -18,6 +18,7 @@
 package org.drftpd.util;
 
 import junit.framework.TestCase;
+import org.junit.Assert;
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
@@ -40,27 +41,27 @@ public class PortRangeTest extends TestCase {
             ports.add(x);
         }
 
-        assertEquals(11, ports.size());
+        Assert.assertEquals(11, ports.size());
 
         ServerSocket ss = new ServerSocket(45305);
         sockets.add(ss);
         ports.remove(Integer.valueOf(ss.getLocalPort()));
-        assertEquals(10, ports.size());
+        Assert.assertEquals(10, ports.size());
 
         for (int x = 0; x < 10; x++) {
             ServerSocket socket = pr.getPort(ServerSocketFactory.getDefault(),null);
             sockets.add(socket);
             ports.remove(Integer.valueOf(socket.getLocalPort()));
-            assertEquals(9 - x, ports.size());
+            Assert.assertEquals(9 - x, ports.size());
         }
 
-        assertEquals(0, ports.size());
+        Assert.assertEquals(0, ports.size());
 
         try {
             pr.getPort(ServerSocketFactory.getDefault(),null);
             throw new RuntimeException("PortRange should be exhausted!");
         } catch (RuntimeException e) {
-            assertTrue(e.getMessage().equals("PortRange exhausted"));
+            Assert.assertTrue(e.getMessage().equals("PortRange exhausted"));
         }
 
         ss.close();

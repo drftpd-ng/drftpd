@@ -23,6 +23,7 @@ import org.drftpd.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
+import org.junit.Assert;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -47,7 +48,7 @@ public class MintimeonlineFilterTest extends TestCase {
         ScoreChart sc = new ScoreChart(Arrays.asList(rslaves));
         MintimeonlineFilter f = new MintimeonlineFilter(1, p);
         f.process(sc, null, null, Transfer.TRANSFER_UNKNOWN, null, time);
-        assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
+        Assert.assertEquals(-Time.parseTime("1m"), sc.getBestSlaveScore().getScore());
     }
 
     public static class RS extends DummyRemoteSlave {

@@ -19,6 +19,7 @@ package org.drftpd.vfs;
 
 import junit.framework.TestCase;
 import org.drftpd.exceptions.FileExistsException;
+import org.junit.Assert;
 
 import java.io.FileNotFoundException;
 
@@ -52,8 +53,8 @@ public class VirtualFileSystemTest extends TestCase {
 	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.getLast(String)'
 	 */
 	public void testGetLast() {
-		assertEquals(VirtualFileSystem.getLast("/full/path/to/file"), "file");
-		assertEquals(VirtualFileSystem.getLast("/full/path/to"), "to");
+		Assert.assertEquals(VirtualFileSystem.getLast("/full/path/to/file"), "file");
+		Assert.assertEquals(VirtualFileSystem.getLast("/full/path/to"), "to");
 	}
 
 	/*
@@ -111,18 +112,18 @@ public class VirtualFileSystemTest extends TestCase {
 		//vfs.getRoot().createDirectory("Test", "drftpd", "drftpd");
 		VirtualFileSystemInode inode = vfs.getInodeByPath("/Test");
 		((VirtualFileSystemDirectory) inode).createFile("testme", "drftpd", "drftpd", "testSlave");
-		assertEquals("/Test", inode.getPath());
+		Assert.assertEquals("/Test", inode.getPath());
 		inode.rename("/Test2");
-		assertEquals("/Test2", inode.getPath());
-		assertNotNull(((VirtualFileSystemDirectory) inode).getInodeByName("testme"));
+		Assert.assertEquals("/Test2", inode.getPath());
+		Assert.assertNotNull(((VirtualFileSystemDirectory) inode).getInodeByName("testme"));
 	}
 
 	/*
 	 * Test method for 'org.drftpd.vfs.VirtualFileSystem.stripLast(String)'
 	 */
 	public void testStripLast() {
-		assertEquals(VirtualFileSystem.stripLast("/full/path/to/file"), "/full/path/to");
-		assertEquals(VirtualFileSystem.stripLast("/full/path/to"), "/full/path");
+		Assert.assertEquals(VirtualFileSystem.stripLast("/full/path/to/file"), "/full/path/to");
+		Assert.assertEquals(VirtualFileSystem.stripLast("/full/path/to"), "/full/path");
 	}
 
 }

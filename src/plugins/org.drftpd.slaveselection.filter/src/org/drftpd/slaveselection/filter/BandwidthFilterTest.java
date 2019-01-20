@@ -25,6 +25,7 @@ import org.drftpd.slave.DiskStatus;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
 import org.drftpd.tests.DummyRemoteSlave;
+import org.junit.Assert;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -47,7 +48,7 @@ public class BandwidthFilterTest extends TestCase {
 		
 		f.process(sc, null, null, Transfer.TRANSFER_SENDING_DOWNLOAD, null, null);
 		
-		assertEquals(-300, sc.getScoreForSlave(list[0]).getScore());
+		Assert.assertEquals(-300, sc.getScoreForSlave(list[0]).getScore());
 	}
 	
 	static class RS extends DummyRemoteSlave {
