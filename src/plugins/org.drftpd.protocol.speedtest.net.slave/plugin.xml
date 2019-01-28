@@ -15,7 +15,7 @@
 	<runtime>
 		<library id="org.drftpd.protocol.speedtest.net.slave" path="classes/" type="code">
 		</library>
-		<library id="httpclient" path="../../../lib/httpclient-4.5.6.jar" type="code">
+		<library id="httpclient" path="../../../lib/httpclient-4.5.7.jar" type="code">
 		</library>
 		<library id="httpcore" path="../../../lib/httpcore-4.4.11.jar" type="code">
 		</library>
