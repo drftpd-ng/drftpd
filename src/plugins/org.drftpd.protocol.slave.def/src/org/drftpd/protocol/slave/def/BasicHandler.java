@@ -228,7 +228,7 @@ public class BasicHandler extends AbstractHandler {
 				sendResponse(new AsyncResponseSiteBotMessage("Instant online enabled, performing full remerge in background"));
             } else {
 				logger.info("Partial remerge disabled, performing full remerge");
-				sendResponse(new AsyncResponseSiteBotMessage("Partital remerge disabled, performing full remerge"));
+				sendResponse(new AsyncResponseSiteBotMessage("Partial remerge disabled, performing full remerge"));
 			}
 
 			if (getSlaveObject().threadedRemerge()) {
