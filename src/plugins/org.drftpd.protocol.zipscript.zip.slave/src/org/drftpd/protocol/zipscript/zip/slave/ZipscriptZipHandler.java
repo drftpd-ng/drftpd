@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -38,7 +39,6 @@ import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
 import org.apache.log4j.Logger;
-import org.drftpd.util.Base64;
 
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
@@ -150,7 +150,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 							if (total > 0) {
 								dizInfo.setValid(true);
 								dizInfo.setTotal(total);
-								dizString = Base64.encodeToString(dizString.getBytes("8859_1"), Base64.RFC2045);
+								dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes("8859_1"));
 								dizInfo.setString(dizString);
 								return FileVisitResult.TERMINATE;
 							}
