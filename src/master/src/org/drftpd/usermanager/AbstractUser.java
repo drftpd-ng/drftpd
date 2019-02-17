@@ -122,30 +122,6 @@ public abstract class AbstractUser extends User implements Commitable {
 		_groups.add(group);
 	}
 
-	/*
-	 * public boolean checkIP(String[] masks, boolean useIdent) { Perl5Matcher m =
-	 * new Perl5Matcher();
-	 * 
-	 * for (Iterator e2 = ipMasks.iterator(); e2.hasNext();) { String mask =
-	 * (String) e2.next();
-	 * 
-	 * if (!useIdent) { mask = mask.substring(mask.indexOf('@') + 1);
-	 * 
-	 * for (int i = 0; i < masks.length; i++) { masks[i] =
-	 * masks[i].substring(masks[i].indexOf('@') + 1); } }
-	 * 
-	 * Pattern p;
-	 * 
-	 * try { p = new GlobCompiler().compile(mask); } catch
-	 * (MalformedPatternException ex) { ex.printStackTrace();
-	 * 
-	 * return false; }
-	 * 
-	 * for (int i = 0; i < masks.length; i++) { if (m.matches(masks[i], p)) {
-	 * return true; } } }
-	 * 
-	 * return false; }
-	 */
 	public boolean equals(Object obj) {
 		if (!(obj instanceof User))
 			return false;

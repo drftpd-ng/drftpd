@@ -17,16 +17,16 @@
  */
 package org.drftpd.permissions;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Matcher;
+import org.drftpd.util.GlobPattern;
 import org.drftpd.vfs.InodeHandle;
 
 import java.util.Collection;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author mog
+ * @author Epochyx
  * @version $Id$
  */
 public class GlobPathPermission extends PathPermission {
@@ -36,28 +36,27 @@ public class GlobPathPermission extends PathPermission {
 		super(users);
 		_pat = pat;
 	}
-	
-	public GlobPathPermission(String pattern, Collection<String> users) throws MalformedPatternException {
-		super(users);	
-		_pat = new GlobCompiler().compile(pattern);		
+
+	public GlobPathPermission(String pattern, Collection<String> users) throws PatternSyntaxException {
+		super(users);
+		_pat = GlobPattern.compile(pattern);
 	}
 
 	public boolean checkPath(InodeHandle inode) {
-		Perl5Matcher m = new Perl5Matcher();
-		
+
 		String path = inode.getPath();
 		if (inode.isDirectory() && !inode.getPath().endsWith("/")) {
 			path = inode.getPath().concat("/");
 		}
-		
-		return m.matches(path, _pat);
+
+		return _pat.matcher(path).matches();
 	}
 
 	public Pattern getPattern() {
 		return _pat;
 	}
-	
+
 	public String toString() {
-		return getClass().getCanonicalName()+",pat="+_pat.getPattern()+",users="+_users.toString();
+		return getClass().getCanonicalName() + ",pat=" + _pat.pattern() + ",users=" + _users.toString();
 	}
 }
