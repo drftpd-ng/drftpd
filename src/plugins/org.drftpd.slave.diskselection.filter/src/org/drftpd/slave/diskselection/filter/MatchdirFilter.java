@@ -20,10 +20,9 @@ package org.drftpd.slave.diskselection.filter;
 
 import java.util.Properties;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Matcher;
+import java.util.regex.Pattern;
 import org.drftpd.PropertyHelper;
+import org.drftpd.util.GlobPattern;
 
 /**
  * Sample configuration.
@@ -42,8 +41,6 @@ import org.drftpd.PropertyHelper;
 public class MatchdirFilter extends DiskFilter {
 
 	private Pattern _p;
-
-	private Perl5Matcher _m = new Perl5Matcher();
 
 	private boolean _negateExpr;
 
@@ -76,21 +73,21 @@ public class MatchdirFilter extends DiskFilter {
 				equalsIgnoreCase("true");
 
 		try {
-			_p = new GlobCompiler().compile(PropertyHelper.getProperty(p, i + ".match"),
-					GlobCompiler.CASE_INSENSITIVE_MASK);
+			_p = GlobPattern.compile(PropertyHelper.getProperty(p, i + ".match"),
+					Pattern.CASE_INSENSITIVE);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	public void process(ScoreChart sc, String path) {
-		boolean validPath = _negateExpr != _m.matches(path, _p);
+		boolean validPath = _negateExpr != _p.matcher(path).matches();
 		if (validPath) {
 			AssignRoot.addScoresToChart(this, _assignList, sc);
 		}
 	}
 	
 	public String toString() {
-		return getClass().getName()+"[pattern="+_p.getPattern()+",roots="+getAssignList()+"]";
+		return getClass().getName()+"[pattern="+_p.pattern()+",roots="+getAssignList()+"]";
 	}
 }

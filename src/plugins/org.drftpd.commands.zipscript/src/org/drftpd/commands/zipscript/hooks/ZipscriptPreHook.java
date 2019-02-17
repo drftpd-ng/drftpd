@@ -18,8 +18,6 @@
 package org.drftpd.commands.zipscript.hooks;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
@@ -30,6 +28,7 @@ import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.Permission;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.GlobPattern;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.FileHandle;
 
@@ -79,8 +78,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 				while (st.hasMoreTokens()) {
 					GlobalContext.getConfig().addPathPermission(
 							"sfvfirst.pathcheck",
-							new GlobPathPermission(new GlobCompiler()
-									.compile(st.nextToken()), Permission
+							new GlobPathPermission(GlobPattern.compile(st.nextToken()), Permission
 									.makeUsers(new StringTokenizer(
 											sfvFirstUsers, " "))));
 				}
@@ -89,11 +87,10 @@ public class ZipscriptPreHook implements PreHookInterface {
 				while (st.hasMoreTokens()) {
 					GlobalContext.getConfig().addPathPermission(
 							"sfvfirst.pathignore",
-							new GlobPathPermission(new GlobCompiler()
-									.compile(st.nextToken()), Permission
+							new GlobPathPermission(GlobPattern.compile(st.nextToken()), Permission
 									.makeUsers(new StringTokenizer("*", " "))));
 				}
-			} catch (MalformedPatternException e) {
+			} catch (PatternSyntaxException e) {
 				logger.warn("Exception when reading conf/plugins/zipscript.conf", e);
 			}
 		}

@@ -17,13 +17,12 @@
  */
 package org.drftpd.plugins.sitebot.config;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Perl5Matcher;
+import org.drftpd.util.GlobPattern;
 import org.drftpd.vfs.InodeHandle;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 
 /**
@@ -32,18 +31,18 @@ import java.util.regex.Pattern;
  */
 public class PathMatcher {
 
-	private org.apache.oro.text.regex.Pattern _globPat;
+	private java.util.regex.Pattern _globPat;
 	private Pattern _regexPat;
 
 	private boolean _regex;
 
 	private String _pathPattern;
 
-	public PathMatcher(String pathPattern, boolean regex) throws MalformedPatternException {
+	public PathMatcher(String pathPattern, boolean regex) throws PatternSyntaxException {
 		if (regex) {
 			_regexPat = Pattern.compile(pathPattern, Pattern.CASE_INSENSITIVE);
 		} else {
-			_globPat = new GlobCompiler().compile(pathPattern);
+			_globPat = GlobPattern.compile(pathPattern);
 		}
 		_regex = regex;
 		_pathPattern = pathPattern;
@@ -56,8 +55,8 @@ public class PathMatcher {
 			Matcher m = _regexPat.matcher(path);
 			return m.matches();
 		} else {
-			Perl5Matcher m = new Perl5Matcher();
-			return m.matches(path, _globPat);
+			Matcher m = _globPat.matcher(path);
+			return m.matches();
 		}
 	}
 
