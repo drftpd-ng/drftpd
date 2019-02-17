@@ -217,7 +217,7 @@ public class VFSPermissions {
 					// not first perm to add, add a | prefix
 					sb.append('|');
 				}
-				sb.append(((GlobPathPermission)perm).getPattern().getPattern());
+				sb.append(((GlobPathPermission)perm).getPattern().pattern());
 			}
 		}
 
