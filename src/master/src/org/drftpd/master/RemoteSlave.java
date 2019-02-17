@@ -20,7 +20,6 @@ package org.drftpd.master;
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -46,6 +45,7 @@ import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author mog
@@ -1091,7 +1091,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 		_lastCommandSent = System.currentTimeMillis();
 	}
 
-	public boolean checkConnect(Socket socket) throws MalformedPatternException {
+	public boolean checkConnect(Socket socket) throws PatternSyntaxException {
 		return getMasks().check(socket);
 	}
 

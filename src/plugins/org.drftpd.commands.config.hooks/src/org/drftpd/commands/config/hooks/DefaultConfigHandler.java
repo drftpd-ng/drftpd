@@ -18,7 +18,6 @@
 package org.drftpd.commands.config.hooks;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.config.ConfigHandler;
 import org.drftpd.dynamicdata.Key;
@@ -30,6 +29,7 @@ import org.drftpd.permissions.Permission;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Handles most of the perms.conf directives that aren't releated to the VFS.
@@ -41,7 +41,7 @@ public class DefaultConfigHandler extends ConfigHandler {
 	
 	protected static final Key<ArrayList<MessagePathPermission>> MSGPATH = new Key<>(DefaultConfigHandler.class, "msgPath");
 	
-	public void handlePathPerm(String directive, StringTokenizer st) throws MalformedPatternException {
+	public void handlePathPerm(String directive, StringTokenizer st) throws PatternSyntaxException {
 		addPathPermission(directive, new GlobPathPermission(st.nextToken(), Permission.makeUsers(st)));
 	}
 	

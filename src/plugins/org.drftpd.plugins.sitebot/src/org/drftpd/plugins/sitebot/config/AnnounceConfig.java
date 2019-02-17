@@ -18,7 +18,6 @@
 package org.drftpd.plugins.sitebot.config;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.NullOutputWriter;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author djb61
@@ -92,7 +92,7 @@ public class AnnounceConfig {
 				PathMatcher matcher;
 				try {
 					matcher = new PathMatcher(pathPattern, useRegex);
-				} catch (MalformedPatternException e) {
+				} catch (PatternSyntaxException e) {
 					logger.warn("Bad entry "+type+"."+i+".path in sitebot announce conf");
 					continue;
 				}
