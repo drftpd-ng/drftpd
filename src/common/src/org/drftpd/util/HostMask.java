@@ -17,10 +17,9 @@
  */
 package org.drftpd.util;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.MalformedPatternException;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Matcher;
+import org.drftpd.util.GlobPattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.regex.Pattern;
 
 import java.net.InetAddress;
 
@@ -83,25 +82,19 @@ public class HostMask {
 		return !_identMask.equals("*");
 	}
 
-	public boolean matchesHost(InetAddress a) throws MalformedPatternException {
-		Perl5Matcher m = new Perl5Matcher();
-		GlobCompiler c = new GlobCompiler();
-		Pattern p = c.compile(getHostMask());
+	public boolean matchesHost(InetAddress a) throws PatternSyntaxException {
+		Pattern p = GlobPattern.compile(getHostMask());
 
-		return (m.matches(a.getHostAddress(), p) || m.matches(a.getHostName(),
-				p));
+		return (p.matcher(a.getHostAddress()).matches() || p.matcher(a.getHostName()).matches());
 	}
 
-	public boolean matchesIdent(String ident) throws MalformedPatternException {
-		Perl5Matcher m = new Perl5Matcher();
-		GlobCompiler c = new GlobCompiler();
-
+	public boolean matchesIdent(String ident) throws PatternSyntaxException {
 		if (ident == null) {
 			ident = "";
 		}
 
 		return !isIdentMaskSignificant()
-				|| m.matches(ident, c.compile(getIdentMask()));
+				|| GlobPattern.matches(getIdentMask(), ident);
 	}
 
 	public String toString() {
