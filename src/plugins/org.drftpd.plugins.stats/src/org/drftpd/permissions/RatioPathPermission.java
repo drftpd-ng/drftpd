@@ -17,9 +17,9 @@
  */
 package org.drftpd.permissions;
 
-import org.apache.oro.text.regex.MalformedPatternException;
 
 import java.util.Collection;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author mog
@@ -32,10 +32,10 @@ public class RatioPathPermission extends GlobPathPermission {
 	 * @param pattern
 	 * @param ratio
 	 * @param users
-	 * @throws MalformedPatternException 
+	 * @throws PatternSyntaxException 
 	 */
 	public RatioPathPermission(String pattern, float ratio, Collection<String> users)
-			throws MalformedPatternException {
+			throws PatternSyntaxException {
 		super(pattern, users);
 		_ratio = ratio;
 	}

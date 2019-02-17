@@ -18,7 +18,6 @@
 package org.drftpd.commands.login;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author mog
@@ -257,7 +257,7 @@ public class LoginHandler extends CommandInterface {
                         conn.jprintf(_bundle, _keyPrefix+"user.success", env, request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());
             }
-        } catch (MalformedPatternException e) {
+        } catch (PatternSyntaxException e) {
         	return new CommandResponse(530, e.getMessage());
         }
 
