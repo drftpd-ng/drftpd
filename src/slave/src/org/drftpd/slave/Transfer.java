@@ -18,7 +18,6 @@
 package org.drftpd.slave;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
@@ -33,6 +32,7 @@ import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.regex.PatternSyntaxException;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.CheckedOutputStream;
@@ -478,7 +478,7 @@ public class Transfer {
 
 		try {
 			return mask.matchesHost(connectedAddress);
-		} catch (MalformedPatternException e) {
+		} catch (PatternSyntaxException e) {
 			// if it's not well formed, no need to worry about it, just ignore it.
 			return false;
 		}

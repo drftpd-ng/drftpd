@@ -18,11 +18,11 @@
 package org.drftpd.util;
 
 import junit.framework.TestCase;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.junit.Assert;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.regex.PatternSyntaxException;
 
 
 /**
@@ -34,7 +34,7 @@ public class HostMaskTest extends TestCase {
     }
 
     public void testMatchesHost()
-        throws UnknownHostException, MalformedPatternException {
+        throws UnknownHostException, PatternSyntaxException {
         HostMask h = new HostMask("*@1.1.1.1");
         Assert.assertTrue(h.matchesHost(InetAddress.getByName("1.1.1.1")));
         Assert.assertFalse(h.matchesHost(InetAddress.getByName("1.1.1.2")));
@@ -43,7 +43,7 @@ public class HostMaskTest extends TestCase {
         Assert.assertFalse(h.matchesHost(InetAddress.getByName("2.2.3.4")));
     }
 
-    public void testMatchesIdent() throws MalformedPatternException {
+    public void testMatchesIdent() throws PatternSyntaxException {
         HostMask h = new HostMask("*@1.1.1.1");
         Assert.assertTrue(h.matchesIdent(null));
         Assert.assertTrue(h.matchesIdent("anything"));

@@ -17,7 +17,6 @@
  */
 package org.drftpd.util;
 
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.exceptions.DuplicateElementException;
 import socks.server.Ident;
 
@@ -27,6 +26,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * @author mog
@@ -70,12 +70,12 @@ public class HostMaskCollection extends ArrayList<HostMask> {
 		add(newMask);
 	}
 
-	public boolean check(Socket s) throws MalformedPatternException {
+	public boolean check(Socket s) throws PatternSyntaxException {
 		return check(null, s.getInetAddress(), s);
 	}
 
 	public boolean check(String ident, InetAddress a, Socket s)
-			throws MalformedPatternException {
+			throws PatternSyntaxException {
 		if (a == null) {
 			throw new NullPointerException();
 		}
