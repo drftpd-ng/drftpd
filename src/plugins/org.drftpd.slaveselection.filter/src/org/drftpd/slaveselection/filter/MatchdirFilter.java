@@ -17,15 +17,12 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import org.apache.oro.text.GlobCompiler;
-import org.apache.oro.text.regex.Pattern;
-import org.apache.oro.text.regex.Perl5Compiler;
-import org.apache.oro.text.regex.Perl5Matcher;
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
+import org.drftpd.util.GlobPattern;
 import org.drftpd.vfs.InodeHandleInterface;
 
 import java.net.InetAddress;
@@ -49,7 +46,7 @@ import java.util.Properties;
 public class MatchdirFilter extends Filter {
 	private ArrayList<AssignParser> _assigns;
 
-	private Pattern _p;
+	private java.util.regex.Pattern _p;
 
 	private boolean _negateExpr;
 	
@@ -78,7 +75,7 @@ public class MatchdirFilter extends Filter {
 				}
 			}
 
-			_p = new GlobCompiler().compile(PropertyHelper.getProperty(p, i	+ ".match"),Perl5Compiler.READ_ONLY_MASK);
+			_p = GlobPattern.compile(PropertyHelper.getProperty(p, i	+ ".match"));
 
 			_negateExpr = PropertyHelper.getProperty(p, i + ".negate.expression", "false").
 					equalsIgnoreCase("true");
@@ -89,8 +86,7 @@ public class MatchdirFilter extends Filter {
 
 	public void process(ScoreChart scorechart, User user, InetAddress source,
 			char direction, InodeHandleInterface file, RemoteSlave sourceSlave) {
-		Perl5Matcher m = new Perl5Matcher();
-		boolean validPath = _negateExpr != m.matches(file.getPath(), _p);
+		boolean validPath = _negateExpr != _p.matcher(file.getPath()).matches();
 		if (validPath) {
 			AssignSlave.addScoresToChart(_assigns, scorechart);
 		}

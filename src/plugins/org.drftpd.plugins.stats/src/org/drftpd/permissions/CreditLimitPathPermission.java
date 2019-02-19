@@ -17,9 +17,8 @@
  */
 package org.drftpd.permissions;
 
-import org.apache.oro.text.regex.MalformedPatternException;
-
 import java.util.Collection;
+import java.util.regex.PatternSyntaxException;
 
 public class CreditLimitPathPermission extends GlobPathPermission {
 	private int _direction;
@@ -32,10 +31,10 @@ public class CreditLimitPathPermission extends GlobPathPermission {
 	 * @param period
 	 * @param bytes
 	 * @param users
-	 * @throws MalformedPatternException
+	 * @throws PatternSyntaxException
 	 */
 	public CreditLimitPathPermission(String pattern, int direction, String period, long bytes, Collection<String> users)
-			throws MalformedPatternException {
+			throws PatternSyntaxException {
 		super(pattern, users);
 		_direction = direction;
 		_period = period;

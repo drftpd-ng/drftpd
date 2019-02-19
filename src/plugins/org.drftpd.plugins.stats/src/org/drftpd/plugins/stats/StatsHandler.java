@@ -18,7 +18,6 @@
 package org.drftpd.plugins.stats;
 
 import org.apache.log4j.Logger;
-import org.apache.oro.text.regex.MalformedPatternException;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.config.ConfigHandler;
@@ -31,6 +30,7 @@ import org.drftpd.permissions.RatioPathPermission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.StringTokenizer;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Handles 'creditcheck' and 'creditloss' lines from perms.conf
@@ -70,7 +70,7 @@ public class StatsHandler extends ConfigHandler {
 			perm = new RatioPathPermission(path, ratio, coll);
 			
 			list.add(perm);
-		} catch (NumberFormatException|MalformedPatternException e) {
+		} catch (NumberFormatException|PatternSyntaxException e) {
 			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+ratio+" "+(coll!=null? coll.toString():""), e);
 		}
 	}
@@ -136,7 +136,7 @@ public class StatsHandler extends ConfigHandler {
 			perm = new CreditLimitPathPermission(path, direction, period, bytes, coll);
 
 			list.add(perm);
-		} catch (NumberFormatException|MalformedPatternException e) {
+		} catch (NumberFormatException|PatternSyntaxException e) {
 			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+dString+" "+pString+" "+bString+" "+
 					(coll!=null? coll.toString():""), e);
 		}
