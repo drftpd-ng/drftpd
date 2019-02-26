@@ -48,7 +48,7 @@ set LOGS_DIR=%~dp0\logs
 if not exist "%LOGS_DIR%" (
   mkdir "%LOGS_DIR%"
   if "%errorlevel%" NEQ "0" (
-    echo Error while creating userdata folder %LOGS_DIR%
+    echo Error while creating logs folder %LOGS_DIR%
 	goto :eof
   )
 )
