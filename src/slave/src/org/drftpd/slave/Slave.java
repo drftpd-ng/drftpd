@@ -481,16 +481,15 @@ public class Slave {
 						break;
 					}
 
-					if (!dir.exists()) {
-						logger.info("Parent dir was empty, but doesn't exist anymore, that is fine " + dir.getPath());
-						break;
-					}
-
 					java.io.File tmpFile = dir.getParentFile();
 					logger.info("Dir empty, rmdir: " + dir.getPath());
 
-					if (!dir.delete()) {
-						throw new PermissionDeniedException("delete of parent dir failed on " + path);
+					if (!dir.exists()) {
+						logger.info("dir was empty, but doesn't exist anymore, that is fine " + dir.getPath());
+					} else {
+						if (!dir.delete()) {
+							throw new PermissionDeniedException("delete of parent dir failed on " + path);
+						}
 					}
 
 					if (tmpFile == null) {
