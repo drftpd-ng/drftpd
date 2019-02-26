@@ -494,7 +494,7 @@ public class Slave {
 						logger.info("dir was empty, but doesn't exist anymore, that is fine " + dir.getPath());
 					}
 
-					// If the parent dir doesn't exist, break the loopS
+					// If the parent dir doesn't exist, break the loop
 					if (tmpFile == null) {
 						break;
 					}
