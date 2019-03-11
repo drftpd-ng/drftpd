@@ -84,7 +84,7 @@ public class MediaInfoList implements AddListElementsInterface {
 
 		ArrayList<String> mediaBarEntries = new ArrayList<>();
 
-		if (!_mediaBarEnabled) {
+		if (!_mediaBarEnabled || dir.isRoot()) {
 			return container;
 		}
 
