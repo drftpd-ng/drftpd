@@ -38,6 +38,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -484,21 +485,26 @@ public class Slave {
 					if (dir.getPath().length() <= root.getPath().length()) {
 						break;
 					}
-					
+
 					// Get the parent dir
 					java.io.File tmpFile = dir.getParentFile();
 
-					if (Files.deleteIfExists(dir.toPath())) {
-						logger.info("Dir empty, rmdir: " + dir.getPath());
-					} else {
-						logger.info("dir was empty, but doesn't exist anymore, that is fine " + dir.getPath());
+					try {
+						if (Files.deleteIfExists(dir.toPath())) {
+							logger.info("Dir empty, rmdir: " + dir.getPath());
+						} else {
+							logger.info("dir was empty, but doesn't exist anymore, that is fine " + dir.getPath());
+						}
+					} catch (DirectoryNotEmptyException dnee) {
+						logger.info("dir was not empty, that is fine, we keep " + dir.getPath());
+						break;
 					}
 
 					// If the parent dir doesn't exist, break the loop
 					if (tmpFile == null) {
 						break;
 					}
-					
+
 					// Rearm the loop on the parent dir
 					dir = new PhysicalFile(tmpFile);
 					dirList = dir.list();
