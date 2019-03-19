@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.slaveselection.filter.archive" version="3.3.0">
+<plugin id="org.drftpd.slaveselection.filter.archive" version="3.4.0">
 	<doc>
 		<doc-text>This plugin provides the Archive Filter configuration for Slave Selection</doc-text>
 	</doc>
