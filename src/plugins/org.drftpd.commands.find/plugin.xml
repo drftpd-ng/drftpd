@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.find" version="3.3.0">
+<plugin id="org.drftpd.commands.find" version="3.4.0">
 	<doc>
 		<doc-text>This plugin provides find command.
 (SITE FIND)</doc-text>
