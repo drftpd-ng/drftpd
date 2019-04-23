@@ -24,6 +24,9 @@ wrapper.java.command=java
 # Working Dir
 wrapper.working.dir=../
 
+# Tell the Wrapper to log the full generated Java command line.
+#wrapper.java.command.loglevel=INFO
+
 # Java Main class. This class must implement the WrapperListener interface
 # or guarantee that the WrapperManager class is initialized. Helper
 # classes are provided to do this for you.
@@ -116,6 +119,12 @@ wrapper.console.title=Distributed Daemon FTP Server v3 Master
 #********************************************************************
 # Wrapper JVM Checks
 #********************************************************************
+# Detect DeadLocked Threads in the JVM. (Requires Standard Edition)
+#wrapper.check.deadlock=TRUE
+#wrapper.check.deadlock.interval=60
+#wrapper.check.deadlock.action=RESTART
+#wrapper.check.deadlock.output=FULL
+
 # Out Of Memory detection.
 # Ignore -verbose:class output to avoid false positives.
 wrapper.filter.trigger.1000=[Loaded java.lang.OutOfMemoryError
@@ -129,12 +138,48 @@ wrapper.filter.action.1001=RESTART
 wrapper.filter.message.1001=The JVM has run out of memory.
 
 #********************************************************************
-# Wrapper NT Service Properties
+# Wrapper Email Notifications. (Requires Professional Edition)
+#********************************************************************
+# Common Event Email settings.
+#wrapper.event.default.email.debug=TRUE
+#wrapper.event.default.email.smtp.host=<SMTP_Host>
+#wrapper.event.default.email.smtp.port=25
+#wrapper.event.default.email.subject=[%WRAPPER_HOSTNAME%:%WRAPPER_NAME%:%WRAPPER_EVENT_NAME%] Event Notification
+#wrapper.event.default.email.sender=<Sender email>
+#wrapper.event.default.email.recipient=<Recipient email>
+
+# Configure the log attached to event emails.
+#wrapper.event.default.email.maillog=ATTACHMENT
+#wrapper.event.default.email.maillog.lines=50
+#wrapper.event.default.email.maillog.format=LPTM
+#wrapper.event.default.email.maillog.loglevel=INFO
+
+# Enable specific event emails.
+#wrapper.event.wrapper_start.email=TRUE
+#wrapper.event.jvm_prelaunch.email=TRUE
+#wrapper.event.jvm_start.email=TRUE
+#wrapper.event.jvm_started.email=TRUE
+#wrapper.event.jvm_deadlock.email=TRUE
+#wrapper.event.jvm_stop.email=TRUE
+#wrapper.event.jvm_stopped.email=TRUE
+#wrapper.event.jvm_restart.email=TRUE
+#wrapper.event.jvm_failed_invocation.email=TRUE
+#wrapper.event.jvm_max_failed_invocations.email=TRUE
+#wrapper.event.jvm_kill.email=TRUE
+#wrapper.event.jvm_killed.email=TRUE
+#wrapper.event.jvm_unexpected_exit.email=TRUE
+#wrapper.event.wrapper_stop.email=TRUE
+
+# Specify custom mail content
+#wrapper.event.jvm_restart.email.body=The JVM was restarted.\n\nPlease check on its status.\n
+
+#********************************************************************
+# Wrapper Windows Service Properties
 #********************************************************************
 # WARNING - Do not modify any of these properties when an application
-# using this configuration file has been installed as a service.
-# Please uninstall the service before modifying this section. The
-# service can then be reinstalled.
+#  using this configuration file has been installed as a service.
+#  Please uninstall the service before modifying this section.  The
+#  service can then be reinstalled.
 
 # Name of the service
 wrapper.ntservice.name=drftpd-master
