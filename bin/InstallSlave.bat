@@ -37,10 +37,17 @@ rem Makes it possible to override the Wrapper configuration file by specifying i
 rem  as the first parameter.
 rem set _WRAPPER_CONF_OVERRIDE=true
 
-rem _PASS_THROUGH tells the script to pass all parameters through to the JVM
-rem  as is.  
-rem  If _WRAPPER_CONF_OVERRIDE is specified then all parameters will be passed.
-rem  If not set then all parameters starting with the second will be passed.
+rem _PASS_THROUGH controls how the script arguments should be passed to the
+rem  Wrapper. Possible values are:
+rem  - commented or 'false': the arguments will be ignored (not passed).
+rem  - 'app_args' or 'true': the arguments will be passed through the Wrapper as
+rem                          arguments for the Java Application.
+rem  - 'both': both Wrapper properties and Application arguments can be passed to
+rem            the Wrapper. The Wrapper properties come in first position. The
+rem            user can optionally add a '--' separator followed by application
+rem            arguments.
+rem NOTE - If _WRAPPER_CONF_OVERRIDE is set to true the above applies to arguments
+rem        starting with the second, otherwise it applies to all arguments.
 set _PASS_THROUGH=true
 
 rem Create logs dir if not present
