@@ -11,7 +11,7 @@ rem You shall use it only in accordance with the terms of the
 rem license agreement you entered into with Tanuki Software.
 rem http://wrapper.tanukisoftware.com/doc/english/licenseOverview.html
 rem
-rem Java Service Wrapper script - Uninstall/remove an NT service.
+rem Java Service Wrapper script - Install as an NT service.
 rem
 
 rem -----------------------------------------------------------------------------
