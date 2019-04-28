@@ -8,4 +8,4 @@ mediabar.directory=true
 mediabar.enabled=true
 
 # Extensions to listen for on STOR, separate with space
-extensions=avi mkv
+extensions=avi mkv mp4
