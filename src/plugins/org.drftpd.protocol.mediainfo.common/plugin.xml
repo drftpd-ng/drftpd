@@ -14,7 +14,7 @@
 		<library id="mediainfo-aspectjrt" path="../../../lib/aspectjrt-1.9.3.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="mediainfo-isoparser" path="../../../lib/isoparser-1.9.37.jar" type="code">
+		<library id="mediainfo-isoparser" path="../../../lib/isoparser-1.9.38.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
