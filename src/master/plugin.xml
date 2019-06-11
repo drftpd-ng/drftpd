@@ -22,7 +22,7 @@
 		<library id="commons-collections4" path="../../lib/commons-collections4-4.3.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="httpclient" path="../../lib/httpclient-4.5.8.jar" type="code">
+		<library id="httpclient" path="../../lib/httpclient-4.5.9.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="httpcore" path="../../lib/httpcore-4.4.11.jar" type="code">
