@@ -99,7 +99,7 @@
 		<library id="commons-lang3" path="../../lib/commons-lang3-3.9.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-text" path="../../lib/commons-text-1.6.jar" type="code">
+		<library id="commons-text" path="../../lib/commons-text-1.7.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
