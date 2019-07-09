@@ -19,7 +19,7 @@
 		<library id="replacer" path="../../lib/replacer.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-collections4" path="../../lib/commons-collections4-4.3.jar" type="code">
+		<library id="commons-collections4" path="../../lib/commons-collections4-4.4.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="httpclient" path="../../lib/httpclient-4.5.9.jar" type="code">
