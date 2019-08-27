@@ -80,6 +80,7 @@ public class MP3Parser {
 		// Get ID3 tag
 		ID3Parser id3parser = new ID3Parser(_mp3file,"r");
 		mp3info.setID3Tag(id3parser.getID3Tag());
+		id3parser.close();
 
 		return mp3info;
 	}
