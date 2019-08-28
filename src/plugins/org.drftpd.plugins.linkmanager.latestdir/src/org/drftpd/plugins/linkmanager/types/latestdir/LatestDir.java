@@ -16,13 +16,8 @@
  */
 package org.drftpd.plugins.linkmanager.types.latestdir;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Properties;
 
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.plugins.linkmanager.LinkType;
 import org.drftpd.vfs.DirectoryHandle;
 

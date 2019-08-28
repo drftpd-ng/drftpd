@@ -18,7 +18,6 @@
 
 package org.drftpd.slave.diskselection.filter;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.drftpd.Bytes;
