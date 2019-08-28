@@ -18,7 +18,6 @@ package org.drftpd.plugins.sitebot.announce.pre;
 
 import java.util.ResourceBundle;
 
-import org.drftpd.GlobalContext;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;

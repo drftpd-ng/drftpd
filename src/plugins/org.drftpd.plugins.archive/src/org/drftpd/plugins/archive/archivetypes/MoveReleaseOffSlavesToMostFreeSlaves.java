@@ -30,7 +30,6 @@ import org.drftpd.vfs.InodeHandle;
 
 import java.io.FileNotFoundException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 

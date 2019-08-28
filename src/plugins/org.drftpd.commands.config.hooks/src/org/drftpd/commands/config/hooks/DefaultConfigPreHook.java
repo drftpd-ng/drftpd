@@ -29,7 +29,6 @@ import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.vfs.perms.VFSPermissions;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
