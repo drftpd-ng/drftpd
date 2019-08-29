@@ -19,7 +19,6 @@ package org.drftpd.commands.autonuke;
 
 import org.drftpd.vfs.DirectoryHandle;
 
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**

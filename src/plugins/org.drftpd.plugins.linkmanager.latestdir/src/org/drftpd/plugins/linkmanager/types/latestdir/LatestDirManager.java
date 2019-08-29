@@ -16,8 +16,6 @@
  */
 package org.drftpd.plugins.linkmanager.types.latestdir;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Properties;
@@ -28,14 +26,10 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.event.ReloadEvent;
 import org.drftpd.event.DirectoryFtpEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
 import org.drftpd.plugins.linkmanager.LinkManager;
 import org.drftpd.plugins.linkmanager.LinkType;
-import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.LinkHandle;
 /**

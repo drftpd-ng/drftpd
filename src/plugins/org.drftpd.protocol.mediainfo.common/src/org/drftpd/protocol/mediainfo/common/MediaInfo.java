@@ -252,8 +252,6 @@ public class MediaInfo implements Serializable {
                         mediaInfo.getVideoInfos().get(0).containsKey("Stream size") &&
                         !mediaInfo.getAudioInfos().isEmpty() && mediaInfo.getAudioInfos().get(0) != null &&
                         mediaInfo.getAudioInfos().get(0).containsKey("Stream size")) {
-                    HashMap videodata = mediaInfo.getVideoInfos().get(0);
-                    HashMap audiodata = mediaInfo.getAudioInfos().get(0);
                     String[] videoStream = (mediaInfo.getVideoInfos().get(0).get("Stream size")).split("\\s");
                     String[] audioStream = (mediaInfo.getAudioInfos().get(0).get("Stream size")).split("\\s");
                     long videoStreamSize = 0L;

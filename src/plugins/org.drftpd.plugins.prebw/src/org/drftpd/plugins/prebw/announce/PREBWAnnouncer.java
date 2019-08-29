@@ -31,7 +31,6 @@ import org.drftpd.util.ReplacerUtils;
 import org.drftpd.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.ResourceBundle;
 
