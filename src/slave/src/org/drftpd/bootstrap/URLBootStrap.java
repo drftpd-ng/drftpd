@@ -17,6 +17,7 @@
  */
 package org.drftpd.bootstrap;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
