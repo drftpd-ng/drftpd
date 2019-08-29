@@ -47,7 +47,6 @@ public class Wrapper {
 		ConfigReader cr = new ConfigReader();
 		InstallerConfig config = cr.getConfig();
 
-		boolean autoBuild = false;
 		if (args.length > 0 && args[0].equalsIgnoreCase("-a")) {
 			AutoInstaller installer = new AutoInstaller(parser.getRegistry(), config, false);
 		} else if (userChoice("Automatically build using saved build.conf settings")) {

@@ -17,9 +17,14 @@ package org.drftpd.tools.installer.console;
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-import charva.awt.*;
-import charva.awt.event.ActionEvent;
-import charva.awt.event.ActionListener;
+import charva.awt.BorderLayout;
+import charva.awt.Container;
+import charva.awt.Color;
+import charva.awt.Dimension;
+import charva.awt.Insets;
+import charva.awt.GridBagLayout;
+import charva.awt.GridBagConstraints;
+import charva.awt.Toolkit;
 import charvax.swing.*;
 import charvax.swing.border.LineBorder;
 import charvax.swing.border.TitledBorder;

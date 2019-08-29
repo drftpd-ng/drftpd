@@ -25,7 +25,6 @@ import org.tanesha.replacer.ReplacerEnvironment;
 public class IMDBEvent {
 
 	private ReplacerEnvironment _env;
-	private boolean _imdbURL;
 	private DirectoryHandle _dir;
 	
 	public IMDBEvent(ReplacerEnvironment env, DirectoryHandle dir) {

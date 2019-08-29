@@ -27,7 +27,6 @@ import org.drftpd.vfs.InodeHandle;
 
 import java.io.FileNotFoundException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
