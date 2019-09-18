@@ -64,13 +64,18 @@ public class DirectoryHandle extends InodeHandle implements
 	 * @return
 	 */
 	public DirectoryHandle getNonExistentDirectoryHandle(String name) {
-		if (isRoot()) {
-			// We are at the root, file must start with a single separator
-			return new DirectoryHandle(VirtualFileSystem.separator + name);
-		}
+		// There are more than one use cases here
+		// We can be in the root and still pass a absolute path
+
+		// First we check if the path starts with the expected separator and then asume absolute path
 		if (name.startsWith(VirtualFileSystem.separator)) {
 			// absolute path, easy to handle
 			return new DirectoryHandle(name);
+		}
+		// If we are in root and we did not present an absolute path we add the root here
+		if (isRoot()) {
+			// We are at the root, file must start with a single separator
+			return new DirectoryHandle(VirtualFileSystem.separator + name);
 		}
 		// path must be relative
 		return new DirectoryHandle(getPath() + VirtualFileSystem.separator + name);
