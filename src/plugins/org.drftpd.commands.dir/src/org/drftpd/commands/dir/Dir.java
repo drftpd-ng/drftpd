@@ -166,7 +166,7 @@ public class Dir extends CommandInterface {
 			// The Permission Denied Exception actually tells why it is not allowed
 			// It is too much (potentially unsafe) information for all users
 			// If the logging is set to debug we can see the underlying exception which helps troubleshooting
-			logger.debug(e)
+			logger.debug(e);
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 		if (victim.isFile() || victim.isLink()) { // link or file
@@ -274,7 +274,7 @@ public class Dir extends CommandInterface {
 				// The Permission Denied Exception actually tells why it is not allowed
 				// It is too much (potentially unsafe) information for all users
 				// If the logging is set to debug we can see the underlying exception which helps troubleshooting
-			logger.debug(e)
+				logger.debug(e);
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
 
@@ -482,7 +482,7 @@ public class Dir extends CommandInterface {
 			// The Permission Denied Exception actually tells why it is not allowed
 			// It is too much (potentially unsafe) information for all users
 			// If the logging is set to debug we can see the underlying exception which helps troubleshooting
-			logger.debug(e)
+			logger.debug(e);
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		} catch (FileNotFoundException e) {
 			logger.info("FileNotFoundException on renameTo()", e);
@@ -607,7 +607,7 @@ public class Dir extends CommandInterface {
 			// The Permission Denied Exception actually tells why it is not allowed
 			// It is too much (potentially unsafe) information for all users
 			// If the logging is set to debug we can see the underlying exception which helps troubleshooting
-			logger.debug(e)
+			logger.debug(e);
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
 
@@ -698,7 +698,7 @@ public class Dir extends CommandInterface {
 			// The Permission Denied Exception actually tells why it is not allowed
 			// It is too much (potentially unsafe) information for all users
 			// If the logging is set to debug we can see the underlying exception which helps troubleshooting
-			logger.debug(e)
+			logger.debug(e);
 			return StandardCommandManager.genericResponse("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN");
 		}
 
