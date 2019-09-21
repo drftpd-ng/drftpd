@@ -16,7 +16,7 @@
 
 #-----------------------------------------------------------------------------
 # These settings can be modified to fit the needs of your application
-# Optimized for use with version 3.5.38 of the Wrapper.
+# Optimized for use with version 3.5.40 of the Wrapper.
 
 # IMPORTANT - Please always stop and uninstall an application before making
 #             any changes to this file.  Failure to do so could remove the
@@ -92,7 +92,7 @@ PIDFILE_CHECK_PID=true
 # NOTE - Passing arguments is only valid with the following commands:
 #          - 'console'
 #          - 'start', 'restart', 'condrestart' (if not installed as a daemon)
-#PASS_THROUGH=app_args
+PASS_THROUGH=app_args
 
 # If uncommented, causes the Wrapper to be shutdown using an anchor file.
 #  When launched with the 'start' command, it will also ignore all INT and

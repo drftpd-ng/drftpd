@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.approve" version="3.4.0">
+<plugin id="org.drftpd.commands.approve" version="3.4.1">
     <attributes>
 		<attribute id="DefaultBuild" value="false" />
 		<attribute id="MustBuild" value="false" />

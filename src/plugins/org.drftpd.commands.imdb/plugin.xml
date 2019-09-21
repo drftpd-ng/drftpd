@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.imdb" version="3.4.0">
+<plugin id="org.drftpd.commands.imdb" version="3.4.1">
 	<doc>
 		<doc-text>This plugin provides IRC/FTP commands for listing/creating/removing movie information from imdb.com.
 IRC announce on NFO upload and imdb info in directory metadata.</doc-text>

@@ -32,7 +32,7 @@ This is an advantage as it simplifies administration of the slaves.
 
 # Installation steps
 
-DrFTPD 3.4.0 installation requires a number of steps before you can utilize the software to its full extend.
+DrFTPD 3.4.1 installation requires a number of steps before you can utilize the software to its full extend.
 To give an overview of the installation process the different steps are listed below in this section.
 
 On the master you will need to:

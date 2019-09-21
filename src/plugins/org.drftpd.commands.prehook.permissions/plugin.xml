@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.prehook.permissions" version="3.4.0">
+<plugin id="org.drftpd.commands.prehook.permissions" version="3.4.1">
 	<doc>
 		<doc-text>(Required) - This is the Permissions interface to set permissions for the FTP.</doc-text>
 	</doc>

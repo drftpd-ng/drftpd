@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.protocol.zipscript.master" version="3.4.0">
+<plugin id="org.drftpd.protocol.zipscript.master" version="3.4.1">
 	<doc>
 		<doc-text>(Zipscript) - This plugin provides Protocol Extensions for Zipscript on the Master Side</doc-text>
 	</doc>
