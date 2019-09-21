@@ -85,7 +85,7 @@ Download DrFTPD from https://github.com/drftpd-ng/drftpd3
 
 Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
-git clone -b master --single-branch https://github.com/drftpd-ng/drftpd3.git
+git clone -b develop --single-branch https://github.com/drftpd-ng/drftpd3.git
 cd drftpd3
 ```
 
@@ -182,4 +182,4 @@ Search on libTerminal.so where you can test a few versions that people have uplo
 
 # Online Help 
 
-If you use IRC, connect to EFnet and join #drftpd, #drftpd-develop. Alternatively use the github repository https://github.com/drftpd-ng/drftpd3
+If you use IRC, connect to EFnet and join #drftpd, #drftpd-devel. Alternatively use the github repository https://github.com/drftpd-ng/drftpd3
