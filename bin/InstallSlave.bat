@@ -51,7 +51,7 @@ rem        starting with the second, otherwise it applies to all arguments.
 set _PASS_THROUGH=true
 
 rem Create logs dir if not present
-set LOGS_DIR=%~dp0\logs
+set LOGS_DIR=%~dp0\..\logs
 if not exist "%LOGS_DIR%" (
   mkdir "%LOGS_DIR%"
   if "%errorlevel%" NEQ "0" (

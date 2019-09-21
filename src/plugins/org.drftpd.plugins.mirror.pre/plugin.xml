@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.mirror.pre" version="3.4.0">
+<plugin id="org.drftpd.plugins.mirror.pre" version="3.4.1">
 	<doc>
 		<doc-text>Unmirror files after configured amount of time after PRE</doc-text>
 	</doc>
