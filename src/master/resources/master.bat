@@ -50,16 +50,6 @@ rem NOTE - If _WRAPPER_CONF_OVERRIDE is set to true the above applies to argumen
 rem        starting with the second, otherwise it applies to all arguments.
 rem set _PASS_THROUGH=app_args
 
-rem Create logs dir if not present
-set LOGS_DIR=%~dp0\logs
-if not exist "%LOGS_DIR%" (
-  mkdir "%LOGS_DIR%"
-  if "%errorlevel%" NEQ "0" (
-    echo Error while creating logs folder %LOGS_DIR%
-	goto :eof
-  )
-)
-
 rem Do not modify anything beyond this point
 rem -----------------------------------------------------------------------------
 

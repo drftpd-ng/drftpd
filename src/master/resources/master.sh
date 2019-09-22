@@ -462,9 +462,6 @@ if [ "X$APP_LONG_NAME" = "X" -o "$APP_LONG_NAME" = "${DELIMITER}app.long.name${D
     APP_LONG_NAME=$APP_NAME
 fi
 
-# Create logs dir if not present
-mkdir -p "$REALDIR/logs"
-
 # default location for the service file
 SYSTEMD_SERVICE_FILE="/etc/systemd/system/$APP_NAME.service"
 
