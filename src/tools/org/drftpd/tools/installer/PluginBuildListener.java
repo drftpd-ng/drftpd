@@ -152,6 +152,8 @@ public class PluginBuildListener implements SubBuildListener {
 			for (String missLib : _missingLibs) {
 				writeLog(missLib);
 			}
+			// Build failed, exit... Exit code used by CI
+			System.exit(1);
 		}
 		writeLog("");
 		if (be.getException() != null) {
@@ -160,6 +162,8 @@ public class PluginBuildListener implements SubBuildListener {
 			} else {
 				writeLog("BUILD FAILED");
 			}
+			// Build failed, exit... Exit code used by CI
+			System.exit(1);
 		} else {
 			if (_cleanOnly) {
 				writeLog("CLEAN SUCCESSFUL");
@@ -206,6 +210,8 @@ public class PluginBuildListener implements SubBuildListener {
 				_logWindow.setProgressMessage("Clean failed");
 			} else {
 				_logWindow.setProgressMessage("Build failed");
+				// Build failed, exit... Exit code used by CI
+				System.exit(1);
 			}
 		}
 	}
