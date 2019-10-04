@@ -1,0 +1,584 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="11.0.4" class="java.beans.XMLDecoder">
+ <object class="org.drftpd.tools.installer.InstallerConfig">
+  <void property="devMode">
+   <boolean>true</boolean>
+  </void>
+  <void property="fileLogging">
+   <boolean>true</boolean>
+  </void>
+  <void property="installDir">
+   <string>./1_compiled</string>
+  </void>
+  <void property="logLevel">
+   <int>1</int>
+  </void>
+  <void property="pluginSelections">
+   <object class="java.util.HashMap">
+    <void method="put">
+     <string>org.drftpd.commands.find</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.nukefilter</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.dupecheck.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.tvmaze.pre</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.linkmanager</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.jobmanager</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.request</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.request.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.mediainfo</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.index.lucene.extensions.flac</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.request</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.dataconnection</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.find.imdb</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.slaveselection.filter.archive</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.find.zipscript</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.linkmanager.sfvincomplete</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.pre</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.archive</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.stats.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.autonuke.imdb</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.zipscript.mp3</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.misc</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.slaveselection.filter</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.archive</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.trialmanager</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.trialmanager.grouptop</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.index.lucene.extensions.tvmaze</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.plugins.sysop</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.mediainfo</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.trafficmanager</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.plugins.dailystats</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.tvmaze.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.usermanagement.expireduser.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.trafficmanager.kick</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.trafficmanager.kick</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.zip.master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.slave.def</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.flac.slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.usermanagement</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.nuke</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.speedtest.net</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.transferstatistics</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.usermanagement.notes</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.perms.regex</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.linkmanager.latestdir</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.speedtest.net.slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.config.hooks</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.zip.common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.zipscript</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.permissions.denydownload</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.prehook.permissions</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.newhandler</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.linkmanager.nfomissing</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.flac.common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.autofreespace</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.mediainfo.master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.zip.slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.slave.diskselection.filter</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.zipscript.zip</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.zipscript.zip</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.sections.def</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.speedtest.net.master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.textoutput</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.index.lucene.extensions.mp3</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.find.mp3</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.mediainfo.slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.prebw</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.dummy</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.usermanager.javabeans</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.trafficmanager.def</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.zipscript.flac</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.autonuke</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.xdupe</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.speedtest</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.flac.master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.imdb.master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.dupecheck</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.mirror</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.nuke.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.slavemanagement</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.sections</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.imdb.slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.mp3.common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.newraceleader</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.store</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.trialmanager.toptrial</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.trialmanager.grouptop</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.zipscript.flac</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.mediainfo.common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.indexmanager</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.permissions.fxp</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.perms.def</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.zipscript.mp3</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.speedtest.net.common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.pre</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.index.lucene.extensions.zipscript</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.approve.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.imdb.pre</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.usermanagement.ipsecurity</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.trafficmanager.ban</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.nuke</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.index.lucene</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.dir</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.stats</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.mirror.pre</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.usermanagement.expireduser</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.vfs.index.lucene.extensions.imdb</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.def</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.sections.conf</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.linkmanager.sfvmissing</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.slaveselection.filter.maxtransfers</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.find.tvmaze</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.tvmaze</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.linkmanager.zipincomplete</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.serverstatus</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.usermanagement.securepass</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.login</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.find.flac</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.slaveselection.filter.stripefiles</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.trafficmanager.ban</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.mp3.master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.zipscript.mp3.slave</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.trialmanager.toptrial</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.imdb.common</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.protocol.master.def</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.approve</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>master</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commandmanager</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.plugins.sitebot.announce.zipscript</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.sitemanagement</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.usermanager.encryptedjavabeans</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.usermanagement.notes.metadata</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.list</string>
+     <boolean>true</boolean>
+    </void>
+    <void method="put">
+     <string>org.drftpd.commands.imdb</string>
+     <boolean>true</boolean>
+    </void>
+   </object>
+  </void>
+  <void property="printTrace">
+   <boolean>true</boolean>
+  </void>
+ </object>
+</java>
