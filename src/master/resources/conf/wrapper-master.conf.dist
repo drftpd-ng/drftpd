@@ -100,7 +100,7 @@ wrapper.console.format=PM
 wrapper.console.loglevel=INFO
 
 # Log file to use for wrapper output logging.
-wrapper.logfile=logs/wrapper-master.log
+wrapper.logfile=logs/wrapper-master-YYYYMMDD.log
 
 # Format of output for the log file.  (See docs for formats)
 wrapper.logfile.format=LPTM
@@ -116,10 +116,13 @@ wrapper.logfile.maxsize=0
 
 # Maximum number of rolled log files which will be allowed before old
 #  files are deleted.  The default value of 0 implies no limit.
-wrapper.logfile.maxfiles=0
+wrapper.logfile.maxfiles=15
 
 # Log Level for sys/event log output.  (See docs for log levels)
 wrapper.syslog.loglevel=NONE
+
+# This property controls the roll mode of the log file. (See docs for rollmode values)
+wrapper.logfile.rollmode=DATE
 
 #********************************************************************
 # Wrapper General Properties
