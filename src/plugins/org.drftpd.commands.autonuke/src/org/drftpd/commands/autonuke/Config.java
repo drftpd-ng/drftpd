@@ -1,6 +1,8 @@
 package org.drftpd.commands.autonuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.autonuke.event.AutoNukeEvent;
@@ -19,7 +21,7 @@ import java.util.Properties;
  * @author scitz0
  */
 public abstract class Config {
-	private static final Logger logger = Logger.getLogger(Config.class);
+	private static final Logger logger = LogManager.getLogger(Config.class);
 	private int _nuke_mult;
 	private long _min_age, _max_age, _nuke_delay;
 	private String _irc, _nuke_reason, _sub_directories, _dated_format;

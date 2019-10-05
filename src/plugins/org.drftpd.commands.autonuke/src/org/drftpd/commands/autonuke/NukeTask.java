@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.autonuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.commands.nuke.NukeException;
@@ -39,7 +41,7 @@ import java.util.TimerTask;
  * @author scitz0
  */
 public class NukeTask extends TimerTask {
-	private static final Logger logger = Logger.getLogger(NukeTask.class);
+	private static final Logger logger = LogManager.getLogger(NukeTask.class);
 
 	public NukeTask() {
 	}

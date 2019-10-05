@@ -17,7 +17,9 @@
  */
 package org.drftpd;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -35,7 +37,7 @@ import java.security.KeyStore;
 public class SSLGetContext {
 	static SSLContext ctx = null;
 
-	private static final Logger logger = Logger.getLogger(SSLGetContext.class);
+	private static final Logger logger = LogManager.getLogger(SSLGetContext.class);
 
 	public static SSLContext getSSLContext() throws GeneralSecurityException,
 			IOException {

@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.mirror;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -32,7 +34,7 @@ import java.util.Properties;
  * @author lh
  */
 public class Mirror extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(Mirror.class);
+	private static final Logger logger = LogManager.getLogger(Mirror.class);
 	private ArrayList<String> _excludePaths;
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {

@@ -17,8 +17,10 @@
  */
 package org.drftpd.master;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandManagerInterface;
@@ -52,9 +54,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings("serial")
 public class BaseFtpConnection extends Session implements Runnable {
-	private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
-
-	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
+	private static final Logger debuglogger = LogManager.getLogger(BaseFtpConnection.class.getName() + ".service");
+	
+	private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
 
 	public static final Key<InetAddress> ADDRESS = new Key<>(BaseFtpConnection.class, "address");
 	public static final Key<String> IDENT = new Key<>(BaseFtpConnection.class, "ident");
@@ -334,7 +336,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 				_request = new FtpRequest(commandLine);
 
 				if (!_request.getCommand().equals("PASS")) {
-					debuglogger.debug("<< " + _request.getCommandLine());
+					logger.debug("<< " + _request.getCommandLine());
 				}
 
 				// execute command

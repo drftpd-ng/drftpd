@@ -1,6 +1,8 @@
 package org.drftpd.commands.autonuke.imdb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.PropertyHelper;
 import org.drftpd.commands.autonuke.Config;
 import org.drftpd.commands.autonuke.ConfigData;
@@ -15,7 +17,7 @@ import java.util.Properties;
  * @author scitz0
  */
 public class IMDBConfig extends Config {
-	private static final Logger logger = Logger.getLogger(IMDBConfig.class);
+	private static final Logger logger = LogManager.getLogger(IMDBConfig.class);
 	String _field, _operator, _value;
 
 	public IMDBConfig(int i, Properties p) {

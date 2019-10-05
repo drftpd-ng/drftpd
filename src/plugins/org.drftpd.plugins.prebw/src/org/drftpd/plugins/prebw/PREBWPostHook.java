@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.prebw;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -45,7 +47,7 @@ import java.util.*;
  * @author lh
  */
 public class PREBWPostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(PREBWPostHook.class);
+	private static final Logger logger = LogManager.getLogger(PREBWPostHook.class);
     private ArrayList<TimeSetting> _timeSettings = new ArrayList<>();
     private String _exclude;
     private String[] _sections;

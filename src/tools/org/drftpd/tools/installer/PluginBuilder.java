@@ -17,7 +17,9 @@
  */
 package org.drftpd.tools.installer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
@@ -40,7 +42,7 @@ import java.util.Iterator;
  */
 public class PluginBuilder {
 
-	private static final Logger logger = Logger.getLogger(PluginBuilder.class);
+	private static final Logger logger = LogManager.getLogger(PluginBuilder.class);
 	private SubAnt _antBuilder = new SubAnt();
 	private PluginBuildListener _pbListener;
 	private Project _builderProject;

@@ -21,7 +21,9 @@ import junit.framework.TestCase;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.junit.Assert;
 
 import java.util.ArrayList;
@@ -37,7 +39,7 @@ import java.util.Collections;
  */
 public class ConnectionStressTest extends TestCase {
 	
-	private static final Logger logger = Logger.getLogger(ConnectionStressTest.class);
+	private static final Logger logger = LogManager.getLogger(ConnectionStressTest.class);
 	
 	@SuppressWarnings("unused")
 	private int failures = 0;
@@ -93,7 +95,7 @@ public class ConnectionStressTest extends TestCase {
 
 class DummyClient implements Runnable {
 	private static FTPClientConfig ftpConfig = new FTPClientConfig(FTPClientConfig.SYST_UNIX);
-	private static final Logger logger = Logger.getLogger(DummyClient.class);
+	private static final Logger logger = LogManager.getLogger(DummyClient.class);
 	
 	private ConnectionStressTest _sc;
 	

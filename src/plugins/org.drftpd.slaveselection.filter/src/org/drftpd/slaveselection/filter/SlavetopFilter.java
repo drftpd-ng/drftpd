@@ -17,7 +17,9 @@
  */
 package org.drftpd.slaveselection.filter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.exceptions.NoAvailableSlaveException;
@@ -43,7 +45,7 @@ import java.util.*;
 public class SlavetopFilter extends Filter {
     private long _assign;
     private int _topslaves;
-	private static final Logger logger = Logger.getLogger(SlavetopFilter.class
+	private static final Logger logger = LogManager.getLogger(SlavetopFilter.class
 			.getName());
 
     public SlavetopFilter(int i, Properties p) {

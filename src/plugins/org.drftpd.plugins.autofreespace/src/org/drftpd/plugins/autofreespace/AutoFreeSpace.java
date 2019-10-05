@@ -1,6 +1,8 @@
 package org.drftpd.plugins.autofreespace;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -31,7 +33,7 @@ import java.util.*;
  */
 
 public class AutoFreeSpace implements PluginInterface {
-	private static Logger logger = Logger.getLogger(AutoFreeSpace.class);
+	private static Logger logger = LogManager.getLogger(AutoFreeSpace.class);
 	private HashMap<String,Section> sections;
 	private ArrayList<String> _excludeFiles;
 	private ArrayList<String> _excludeSlaves;

@@ -18,7 +18,9 @@
 package org.drftpd.master;
 
 import com.cedarsoftware.util.io.JsonReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
@@ -47,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id$
  */
 public class SlaveManager implements Runnable, TimeEventInterface {
-	private static final Logger logger = Logger.getLogger(SlaveManager.class
+	private static final Logger logger = LogManager.getLogger(SlaveManager.class
 			.getName());
 
 	private static final String slavePath = "userdata/slaves/";

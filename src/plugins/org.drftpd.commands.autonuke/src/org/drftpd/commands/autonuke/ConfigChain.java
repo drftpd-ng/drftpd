@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.autonuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.misc.CaseInsensitiveHashMap;
@@ -31,7 +33,7 @@ import java.util.Properties;
  * @author scitz0
  */
 public class ConfigChain {
-	private static final Logger logger = Logger.getLogger(ConfigChain.class);
+	private static final Logger logger = LogManager.getLogger(ConfigChain.class);
 
 	private static Class<?>[] SIG = new Class<?>[] { int.class, Properties.class };
 

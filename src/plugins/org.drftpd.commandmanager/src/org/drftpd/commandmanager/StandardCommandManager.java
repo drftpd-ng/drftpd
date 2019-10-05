@@ -17,7 +17,9 @@
  */
 package org.drftpd.commandmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.event.UnloadPluginEvent;
@@ -48,8 +50,7 @@ import java.util.Properties;
  */
 public class StandardCommandManager implements CommandManagerInterface {
 
-	private static final Logger logger = Logger
-	.getLogger(StandardCommandManager.class);
+	private static final Logger logger = LogManager.getLogger(StandardCommandManager.class);
 
 	private static final String _defaultThemeDir = "conf/themes/ftp";
 	private static HashMap<String,CommandResponse> _genericResponses = initGenericResponses();

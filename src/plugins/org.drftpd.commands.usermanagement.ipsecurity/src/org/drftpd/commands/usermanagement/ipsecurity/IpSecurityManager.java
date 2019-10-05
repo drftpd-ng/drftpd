@@ -31,7 +31,9 @@ import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -46,7 +48,7 @@ import org.drftpd.usermanager.User;
  */
 
 public class IpSecurityManager implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(IpSecurityManager.class);
+	private static final Logger logger = LogManager.getLogger(IpSecurityManager.class);
 
 	private ArrayList<Integer> _ident;
 	private ArrayList<String> _octets;

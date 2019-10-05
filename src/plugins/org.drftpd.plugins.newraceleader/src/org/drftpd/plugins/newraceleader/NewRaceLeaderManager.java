@@ -25,7 +25,9 @@
 
 package org.drftpd.plugins.newraceleader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -44,7 +46,7 @@ import java.util.TimerTask;
  * @version $Id: NewRaceLeaderManager.java 2393 2011-04-11 20:47:51Z cyber1331 $
  */
 public class NewRaceLeaderManager implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(NewRaceLeaderManager.class);
+	private static final Logger logger = LogManager.getLogger(NewRaceLeaderManager.class);
 
 	private static final long _delay = 1800000; // = 30 minutes
 

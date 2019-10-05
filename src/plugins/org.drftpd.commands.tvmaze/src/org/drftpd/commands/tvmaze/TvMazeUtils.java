@@ -20,7 +20,9 @@ package org.drftpd.commands.tvmaze;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.tvmaze.event.TvMazeEvent;
 import org.drftpd.commands.tvmaze.metadata.TvEpisode;
@@ -58,7 +60,7 @@ import java.util.regex.Pattern;
  * @author scitz0
  */
 public class TvMazeUtils {
-	private static final Logger logger = Logger.getLogger(TvMazeUtils.class);
+	private static final Logger logger = LogManager.getLogger(TvMazeUtils.class);
 
 	private static final String[] _seperators = {".","-","_"};
 

@@ -26,7 +26,9 @@ import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -67,7 +69,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
  */
 public class SFVAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = Logger.getLogger(SFVAnnouncer.class);
+	private static final Logger logger = LogManager.getLogger(SFVAnnouncer.class);
 
 	public static final Key<Boolean> SFV_FIRST = new Key<>(SFVAnnouncer.class, "sfv_first");
 

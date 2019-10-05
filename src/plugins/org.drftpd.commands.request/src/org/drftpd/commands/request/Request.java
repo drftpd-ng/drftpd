@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.request;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -45,7 +47,7 @@ import java.util.regex.Pattern;
  * @version $Id$
  */
 public class Request extends CommandInterface {	
-	private static final Logger logger = Logger.getLogger(Request.class);
+	private static final Logger logger = LogManager.getLogger(Request.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

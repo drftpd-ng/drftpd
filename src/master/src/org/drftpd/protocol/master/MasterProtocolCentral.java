@@ -16,7 +16,9 @@
  */
 package org.drftpd.protocol.master;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.HandshakeWrapper;
 import org.drftpd.protocol.ProtocolException;
@@ -36,7 +38,7 @@ import java.util.Map.Entry;
  * @version $Id$
  */
 public class MasterProtocolCentral {
-	private static final Logger logger = Logger.getLogger(MasterProtocolCentral.class);	
+	private static final Logger logger = LogManager.getLogger(MasterProtocolCentral.class);	
 	
 	private Map<Class<?>, AbstractIssuer> _issuersMap;
 	private List<String> _protocols;

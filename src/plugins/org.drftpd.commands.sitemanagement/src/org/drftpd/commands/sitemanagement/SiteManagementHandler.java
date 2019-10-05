@@ -17,10 +17,10 @@
  */
 package org.drftpd.commands.sitemanagement;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.helpers.OptionConverter;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.commandmanager.*;
@@ -58,7 +58,7 @@ import java.util.Map.Entry;
  * @version $Id$
  */
 public class SiteManagementHandler extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(SiteManagementHandler.class);
+	private static final Logger logger = LogManager.getLogger(SiteManagementHandler.class);
 
 	private static final String jpfConf = "conf/boot-master.properties";
 
@@ -231,7 +231,7 @@ public class SiteManagementHandler extends CommandInterface {
 		}
 		// Clear base system classloader also
 		ResourceBundle.clearCache(ClassLoader.getSystemClassLoader());
-
+        /*
 		try {
 			OptionConverter.selectAndConfigure(
 					new URL(PropertyHelper.getProperty(System.getProperties(),
@@ -242,6 +242,7 @@ public class SiteManagementHandler extends CommandInterface {
 			return new CommandResponse(500, e.getMessage());
 		} finally {
 		}
+		*/
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 

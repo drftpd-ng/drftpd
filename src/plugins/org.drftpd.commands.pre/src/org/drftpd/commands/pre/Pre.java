@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.pre;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
@@ -45,7 +47,7 @@ import java.util.Map;
  * @version $Id$
  */
 public class Pre extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(Pre.class);
+	private static final Logger logger = LogManager.getLogger(Pre.class);
 
     public static final Key<DirectoryHandle> PREDIR = new Key<>(Pre.class, "predir");
 

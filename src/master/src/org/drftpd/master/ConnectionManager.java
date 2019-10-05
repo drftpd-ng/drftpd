@@ -17,7 +17,9 @@
  */
 package org.drftpd.master;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -41,7 +43,7 @@ import java.util.concurrent.*;
  * @version $Id$
  */
 public class ConnectionManager {
-	private static final Logger logger = Logger.getLogger(ConnectionManager.class.getName());
+	private static final Logger logger = LogManager.getLogger(ConnectionManager.class.getName());
 
 	private static final String cmdConf = "conf/ftpcommands.conf";
 

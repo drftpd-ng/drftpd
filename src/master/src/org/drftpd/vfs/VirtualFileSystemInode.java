@@ -17,7 +17,9 @@
  */
 package org.drftpd.vfs;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
 import org.drftpd.dynamicdata.KeyedMap;
@@ -39,8 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class VirtualFileSystemInode implements Commitable {
 
-	protected static final Logger logger = Logger
-			.getLogger(VirtualFileSystemInode.class);
+	protected static final Logger logger = LogManager.getLogger(VirtualFileSystemInode.class);
 
 	/**
 	 * @return the VirtualFileSystem instance.

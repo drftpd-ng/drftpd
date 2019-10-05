@@ -16,7 +16,9 @@
  */
 package org.drftpd.master.cron;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 
 import java.lang.reflect.InvocationTargetException;
@@ -31,7 +33,7 @@ public class TimeManager {
 	
 	private ArrayList<TimeEventInterface> _timedEvents;
 	
-	private static final Logger logger = Logger.getLogger(TimeManager.class);
+	private static final Logger logger = LogManager.getLogger(TimeManager.class);
 
 	private static final long MINUTE = 60 * 1000L;
 	

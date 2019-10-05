@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.imdb.event.IMDBEvent;
 import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
@@ -50,7 +52,7 @@ import java.util.regex.Pattern;
  * @author scitz0
  */
 public class IMDBUtils {
-	private static final Logger logger = Logger.getLogger(IMDBUtils.class);
+	private static final Logger logger = LogManager.getLogger(IMDBUtils.class);
 
 	private static final String[] _seperators = {".","-","_"};
 

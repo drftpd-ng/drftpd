@@ -17,7 +17,9 @@
  */
 package org.drftpd.io;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import java.io.*;
 
@@ -66,7 +68,7 @@ public class SafeFileWriter extends Writer {
 		_out.close();
 
 		if (!failed) {
-			Logger.getLogger(SafeFileWriter.class).debug(
+			LogManager.getLogger(SafeFileWriter.class).debug(
 					"Renaming " + _tempFile + " (" + _tempFile.length()
 							+ ") to " + _actualFile);
 

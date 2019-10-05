@@ -17,7 +17,9 @@
  */
 package org.drftpd.sections.conf;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FatalException;
 import org.drftpd.misc.CaseInsensitiveHashMap;
@@ -36,7 +38,7 @@ import java.util.*;
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
-	private static final Logger logger = Logger.getLogger(SectionManager.class);
+	private static final Logger logger = LogManager.getLogger(SectionManager.class);
 	
 	private static final PlainSection EMPTYSECTION = new PlainSection("", GlobalContext.getGlobalContext().getRoot());
 

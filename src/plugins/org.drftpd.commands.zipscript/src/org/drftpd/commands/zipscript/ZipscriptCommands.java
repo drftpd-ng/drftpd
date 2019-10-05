@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.zipscript;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
@@ -50,7 +52,7 @@ import java.util.Map.Entry;
  */
 public class ZipscriptCommands extends CommandInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptCommands.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptCommands.class);
 
 	private ArrayList<RescanPostProcessDirInterface> _rescanAddons = new ArrayList<>();
 

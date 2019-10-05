@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -32,7 +34,7 @@ import java.net.Socket;
  */
 public class SiteBotSSLSocketFactory extends SSLSocketFactory {
 
-	private static final Logger logger = Logger.getLogger(SiteBotSSLSocketFactory.class);
+	private static final Logger logger = LogManager.getLogger(SiteBotSSLSocketFactory.class);
 
 	private SSLSocketFactory _factory;
 	

@@ -19,7 +19,9 @@ package org.drftpd.master;
 
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.dynamicdata.Key;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -55,7 +57,7 @@ import java.util.regex.PatternSyntaxException;
 public class RemoteSlave extends ExtendedTimedStats implements Runnable, Comparable<RemoteSlave>,
 		Entity, Commitable {
 
-	private static final Logger logger = Logger.getLogger(RemoteSlave.class);
+	private static final Logger logger = LogManager.getLogger(RemoteSlave.class);
 
 	private transient boolean _isAvailable;
 

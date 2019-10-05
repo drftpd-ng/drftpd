@@ -21,7 +21,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.http.HttpException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.util.HttpUtils;
 
@@ -32,7 +34,7 @@ import java.util.regex.Pattern;
  * @author lh
  */
 public class TvMazeParser {
-	private static final Logger logger = Logger.getLogger(TvMazeParser.class); 
+	private static final Logger logger = LogManager.getLogger(TvMazeParser.class); 
 
 	private static final String _searchUrl = "http://api.tvmaze.com/search/shows?q=";
 	private static final String _showUrl = "http://api.tvmaze.com/shows/";

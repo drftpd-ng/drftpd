@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.zipscript.list;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -49,7 +51,7 @@ import java.util.*;
  */
 public class ZipscriptList extends SFVTools implements AddListElementsInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptList.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptList.class);
 
 	private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<>();
 

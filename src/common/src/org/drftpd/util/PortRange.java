@@ -17,7 +17,9 @@
  */
 package org.drftpd.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import javax.net.ServerSocketFactory;
 import java.io.IOException;
@@ -30,7 +32,7 @@ import java.security.SecureRandom;
  * @version $Id$
  */
 public class PortRange {
-	private static final Logger logger = Logger.getLogger(PortRange.class);
+	private static final Logger logger = LogManager.getLogger(PortRange.class);
 
 	private int _minPort;
 

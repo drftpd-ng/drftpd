@@ -17,7 +17,9 @@
  */
 package org.drftpd;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.slave.Connection;
 import org.drftpd.util.PortRange;
 
@@ -34,8 +36,7 @@ import java.net.SocketException;
  * @version $Id$
  */
 public class PassiveConnection extends Connection {
-	private static final Logger logger = Logger
-			.getLogger(PassiveConnection.class);
+	private static final Logger logger = LogManager.getLogger(PassiveConnection.class);
 
 	private ServerSocket _serverSocket;
 

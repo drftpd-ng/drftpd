@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.mirror;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.usermanager.User;
 import org.drftpd.vfs.DirectoryHandle;
@@ -31,7 +33,7 @@ import java.util.ArrayList;
  * @author lh
  */
 public class MirrorUtils {
-	private static final Logger logger = Logger.getLogger(MirrorUtils.class);
+	private static final Logger logger = LogManager.getLogger(MirrorUtils.class);
 
 	public static void unMirrorDir(DirectoryHandle dir, User user, ArrayList<String> excludePaths) throws FileNotFoundException {
 		for (String excludePath : excludePaths) {

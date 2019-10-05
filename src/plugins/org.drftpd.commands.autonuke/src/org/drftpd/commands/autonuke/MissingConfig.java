@@ -1,6 +1,8 @@
 package org.drftpd.commands.autonuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.PropertyHelper;
 import org.drftpd.vfs.DirectoryHandle;
 import org.drftpd.vfs.InodeHandle;
@@ -12,7 +14,7 @@ import java.util.Properties;
  * @author scitz0
  */
 public class MissingConfig extends Config {
-	private static final Logger logger = Logger.getLogger(MissingConfig.class);
+	private static final Logger logger = LogManager.getLogger(MissingConfig.class);
 	String _missing;
 
 	public MissingConfig(int i, Properties p) {

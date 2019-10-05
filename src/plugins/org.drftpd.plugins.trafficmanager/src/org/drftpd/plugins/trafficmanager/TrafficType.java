@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.trafficmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.permissions.Permission;
@@ -34,7 +36,7 @@ import java.util.regex.PatternSyntaxException;
  */
 
 public abstract class TrafficType {
-	protected static final Logger logger = Logger.getLogger(TrafficType.class);
+	protected static final Logger logger = LogManager.getLogger(TrafficType.class);
 	
 	private String _type;
 	private String _name;

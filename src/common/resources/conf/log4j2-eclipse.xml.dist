@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="A1" target="SYSTEM_OUT">
+      <PatternLayout> 
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+    </Console> 
+	<Console name="jpf" target="SYSTEM_OUT">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+    </Console>
+	<Console name="eventbus" target="SYSTEM_OUT">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+    </Console>
+  </Appenders>
+  <Loggers>
+    <Root level="debug">
+      <AppenderRef ref="A1"/>
+    </Root>
+	<Logger name="org.java.plugin" level="debug" additivity="false">
+      <AppenderRef ref="jpf"/>
+    </Logger>
+	<Logger name="org.bushe.swing.event" level="debug" additivity="false">
+      <AppenderRef ref="eventbus"/>
+    </Logger>
+  </Loggers>
+</Configuration>

@@ -17,7 +17,9 @@
  */
 package org.drftpd.usermanager.encryptedjavabeans;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.usermanager.javabeans.BeanUser;
 import org.drftpd.usermanager.javabeans.BeanUserManager;
 import org.mindrot.jbcrypt.BCrypt;
@@ -31,7 +33,7 @@ import java.security.NoSuchAlgorithmException;
  * @version $Id: EncryptedBeanUser.java
  */
 public class EncryptedBeanUser extends BeanUser {
-	private static final Logger logger = Logger.getLogger(EncryptedBeanUser.class);
+	private static final Logger logger = LogManager.getLogger(EncryptedBeanUser.class);
 
 	private transient EncryptedBeanUserManager _um;
 	

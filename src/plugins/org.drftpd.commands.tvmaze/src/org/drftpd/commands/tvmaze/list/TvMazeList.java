@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.tvmaze.list;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
@@ -35,7 +37,7 @@ import java.util.ResourceBundle;
  * @author lh
  */
 public class TvMazeList implements AddListElementsInterface {
-	private static final Logger logger = Logger.getLogger(TvMazeList.class);
+	private static final Logger logger = LogManager.getLogger(TvMazeList.class);
 
 	public void initialize() { }
 

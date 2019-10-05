@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -31,7 +33,7 @@ import java.util.Arrays;
  */
 public class DH1080 {
 
-	private static final Logger logger = Logger.getLogger(DH1080.class);
+	private static final Logger logger = LogManager.getLogger(DH1080.class);
 
 	private static final char[] CA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 

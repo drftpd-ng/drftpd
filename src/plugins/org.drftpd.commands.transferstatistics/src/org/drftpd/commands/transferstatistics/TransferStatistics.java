@@ -17,8 +17,10 @@
  */
 package org.drftpd.commands.transferstatistics;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -49,7 +51,7 @@ public class TransferStatistics extends CommandInterface  {
 	public static final int PERIOD_WEEKLY = 2;
 	public static final int PERIOD_DAILY = 3;
 	
-	private static final Logger logger = Logger.getLogger(TransferStatistics.class);
+	private static final Logger logger = LogManager.getLogger(TransferStatistics.class);
 
 	private ResourceBundle _bundle;
 

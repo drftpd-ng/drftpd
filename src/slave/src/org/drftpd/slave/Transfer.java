@@ -17,7 +17,9 @@
  */
 package org.drftpd.slave;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
@@ -42,7 +44,7 @@ import java.util.zip.CheckedOutputStream;
  * @version $Id$
  */
 public class Transfer {
-	private static final Logger logger = Logger.getLogger(Transfer.class);
+	private static final Logger logger = LogManager.getLogger(Transfer.class);
 
 	private String _abortReason = null;
 

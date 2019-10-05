@@ -17,7 +17,9 @@
  */
 package org.drftpd.master;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.commandmanager.CommandResponseInterface;
 
 import java.util.Iterator;
@@ -29,8 +31,7 @@ import java.util.Vector;
  * @version $Id$
  */
 public class FtpReply {
-	private static final Logger logger = Logger
-			.getLogger(FtpReply.class.getName());
+	private static final Logger logger = LogManager.getLogger(FtpReply.class.getName());
 
 	protected int _code;
 	

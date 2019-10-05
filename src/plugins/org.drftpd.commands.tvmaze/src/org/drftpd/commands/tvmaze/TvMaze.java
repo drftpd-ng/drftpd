@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -41,7 +43,7 @@ import java.util.ResourceBundle;
  * @author lh
  */
 public class TvMaze extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(TvMaze.class);
+	private static final Logger logger = LogManager.getLogger(TvMaze.class);
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 

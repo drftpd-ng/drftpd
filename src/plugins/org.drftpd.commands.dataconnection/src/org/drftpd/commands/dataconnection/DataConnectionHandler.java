@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.dataconnection;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
@@ -57,7 +59,7 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 public class DataConnectionHandler extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(DataConnectionHandler.class);
+	private static final Logger logger = LogManager.getLogger(DataConnectionHandler.class);
 
 	public static final Key<Long> CHECKSUM = new Key<>(DataConnectionHandler.class, "checksum");
 

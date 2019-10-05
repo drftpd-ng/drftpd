@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.find;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -52,7 +54,7 @@ import java.util.*;
  * @version $Id$
  */
 public class Find extends CommandInterface {
-	public static final Logger logger = Logger.getLogger(Find.class);
+	public static final Logger logger = LogManager.getLogger(Find.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;

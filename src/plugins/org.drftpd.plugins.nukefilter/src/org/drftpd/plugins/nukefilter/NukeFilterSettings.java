@@ -1,6 +1,8 @@
 package org.drftpd.plugins.nukefilter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 
@@ -11,7 +13,7 @@ import java.util.Properties;
  * @author phew
  */
 public class NukeFilterSettings {
-	private static final Logger logger = Logger.getLogger(NukeFilterSettings.class);
+	private static final Logger logger = LogManager.getLogger(NukeFilterSettings.class);
 	
 	private NukeFilterGlobalConfig nfgc;
 	private HashMap<String, NukeFilterSectionConfig> nfscMap;
