@@ -85,7 +85,10 @@ Download DrFTPD from https://github.com/drftpd-ng/drftpd3
 
 Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
-git clone -b master --single-branch https://github.com/drftpd-ng/drftpd3.git
+For Master Branch:
+git clone -b master --single-branch https://github.com/drftpd-ng/drftpd3.git 
+For Develop Branch:
+git clone -b develop --single-branch https://github.com/drftpd-ng/drftpd3.git 
 cd drftpd3
 ```
 
@@ -125,7 +128,13 @@ Copy the slave.zip file from your master to the server that you plan to run the 
 chmod 744 slave.sh
 chmod 744 bin/wrapper
 ```
-
+- Copy conf/diskselection.conf.dist to conf/diskselection.conf
+- Copy conf/log4j-debug.xml.dist to conf/log4j-debug.xml
+- Copy conf/log4j-eclipse.xml.dist to conf/log4j-eclipse.xml
+- Copy conf/log4j-slave.xml.dist to conf/log4j-slave.xml
+- Copy conf/slave.conf.dist to conf/slave.conf
+- Copy conf/wrapper-slave.conf.dist to conf/wrapper-slave.conf
+- Copy conf/plugins/speedtest.net.slave.conf.dist to conf/plugins/speedtest.net.slave.conf
 - Edit slave.conf
 
   - The minimum changes that you must complete in slave.conf is to change slave.name, master.host and master.port.
