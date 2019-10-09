@@ -273,8 +273,7 @@ public class TvMazeUtils {
 
 	private static JsonObject fetchEpisodeData(String epURL) throws Exception{
 		String data = HttpUtils.retrieveHttpAsString(epURL);
-		JsonParser jp = new JsonParser();
-		JsonElement root = jp.parse(data);
+		JsonElement root = JsonParser.parseString(data);
 		return root.getAsJsonObject();
 	}
 
