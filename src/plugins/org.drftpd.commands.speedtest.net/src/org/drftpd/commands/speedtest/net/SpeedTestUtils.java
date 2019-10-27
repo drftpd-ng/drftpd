@@ -71,7 +71,6 @@ public class SpeedTestUtils {
 				logger.warn("Failed to get data from " + url + " :: " + e.getMessage());
 			}
 		}
-
 		return serverList;
 	}
 
@@ -141,8 +140,7 @@ public class SpeedTestUtils {
 		try {
 			String ip = InetAddress.getByName(rslave.getPASVIP()).getHostAddress();
 			String data = HttpUtils.retrieveHttpAsString("http://ipinfo.io/" + ip + "/json");
-			JsonParser jp = new JsonParser();
-			JsonElement root = jp.parse(data);
+			JsonElement root = JsonParser.parseString(data);
 			JsonObject rootobj = root.getAsJsonObject();
 			String[] loc = rootobj.get("loc").getAsString().split(",");
 			slaveLocation.setLatitude(Double.parseDouble(loc[0]));

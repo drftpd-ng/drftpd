@@ -104,20 +104,18 @@ public class TvMazeParser {
 			}
 
 			newSearchString = TvMazeUtils.filterTitle(newSearchString);
-
 			newSearchString = _searchUrl + newSearchString;
 
 			String data = HttpUtils.retrieveHttpAsString(newSearchString);
 
-			JsonParser jp = new JsonParser();
-			JsonElement root = jp.parse(data);
-			if (!root.isJsonArray()) {
+			JsonElement body = JsonParser.parseString(data);
+			if (!body.isJsonArray()) {
 				_error = "No Show Results Were Found For \"" + searchString + "\"";
 				logger.info(_error);
 				return null;
 			}
 
-			String id = TvMazeUtils.getBestMatch(root.getAsJsonArray(), year, countrycode);
+			String id = TvMazeUtils.getBestMatch(body.getAsJsonArray(), year, countrycode);
 
 			if (id == null) {
 				_error = "No show matched search criteria [show=" + searchString + ",year="+ year + ",country=" + countrycode + "]";
@@ -132,10 +130,10 @@ public class TvMazeParser {
 			}
 
 			data = HttpUtils.retrieveHttpAsString(newSearchString);
-			root = jp.parse(data);
-			JsonObject rootobj = root.getAsJsonObject();
+			JsonElement body2 = JsonParser.parseString(data);
+			JsonObject jsonobj = body2.getAsJsonObject();
 
-			return TvMazeUtils.createTvMazeInfo(rootobj, season, number);
+			return TvMazeUtils.createTvMazeInfo(jsonobj, season, number);
 
 		} catch (HttpException e) {
 			// Ignore stack trace for HttpException and just log error message as an info
