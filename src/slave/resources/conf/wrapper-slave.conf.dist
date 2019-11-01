@@ -68,7 +68,7 @@ wrapper.java.classpath.6=lib/log4j-core-2.12.1.jar
 wrapper.java.classpath.7=lib/drftpd-jpf-3.4.1.jar
 
 # URLBootStrap (more options further down, need to comment out item 3 above)
-#wrapper.java.classpath.3=classes
+#wrapper.java.classpath.x=classes
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib
@@ -86,7 +86,7 @@ wrapper.java.additional.5=-XX:+UseG1GC
 # Uncommenting the following time will increase initial startup time but should
 #  improve performance once running.  This option requires you to have a full JDK
 #  installed, not simply a JRE.
-#wrapper.java.additional.4=-server
+#wrapper.java.additional.x=-server
 
 # Initial Java Heap Size (in MB)
 wrapper.java.initmemory=128
