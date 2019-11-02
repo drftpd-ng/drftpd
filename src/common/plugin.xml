@@ -78,6 +78,9 @@
 		<library id="common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
+		<library id="commons-logging" path="../../lib/commons-logging-1.2.jar" type="code">
+			<export prefix="*" />
+		</library>
 		<library id="junit" path="../../lib/junit-4.12.jar" type="code">
 			<export prefix="*" />
 		</library>
@@ -87,7 +90,7 @@
 		<library id="log4j-core" path="../../lib/log4j-core-2.12.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="commons-logging" path="../../lib/commons-logging-1.2.jar" type="code">
+		<library id="log4j-jcl" path="../../lib/log4j-jcl-2.12.1.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="jpf" path="../../lib/jpf-1.5.1.jar" type="code">
