@@ -23,6 +23,18 @@
     </RollingFile>
    </Appenders>
   <Loggers>
+	<Logger name="org.apache.http.impl.conn" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+	<Logger name="org.apache.http.impl.client" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+    <Logger name="org.apache.http.client" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+    <Logger name="org.apache.http.wire" level="error" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
 	<Logger name="org.java.plugin" level="debug" additivity="false">
       <AppenderRef ref="jpf"/>
     </Logger>
