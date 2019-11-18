@@ -15,6 +15,7 @@ package org.drftpd.plugins.sitebot.blowfish;
 
 import javax.crypto.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Blowfish ECB
@@ -27,7 +28,7 @@ public class BlowfishECB extends Blowfish {
     /**
      * Default charset for encoding
      */
-    private static final String ENCODED_CHARSET = "8859_1";
+    private static final String ENCODED_CHARSET = "StandardCharsets.ISO_8859_1";
 
     /**
      * Custom Base64 string

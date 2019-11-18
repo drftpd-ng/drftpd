@@ -41,6 +41,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -417,11 +418,11 @@ public class BaseFtpConnection extends Session implements Runnable {
 		try {
 			_controlSocket = socket;
 			_in = new BufferedReader(new InputStreamReader(_controlSocket
-					.getInputStream(), "ISO-8859-1"));
+					.getInputStream(), StandardCharsets.ISO_8859_1));
 
 			_out = new PrintWriter(new OutputStreamWriter(
 					new AddAsciiOutputStream(new BufferedOutputStream(
-							_controlSocket.getOutputStream())), "ISO-8859-1"));
+							_controlSocket.getOutputStream())), StandardCharsets.ISO_8859_1));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

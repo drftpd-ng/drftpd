@@ -152,7 +152,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 							if (total > 0) {
 								dizInfo.setValid(true);
 								dizInfo.setTotal(total);
-								dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes("8859_1"));
+								dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes(StandardCharsets.ISO_8859_1));
 								dizInfo.setString(dizString);
 								return FileVisitResult.TERMINATE;
 							}

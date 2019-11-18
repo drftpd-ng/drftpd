@@ -33,6 +33,7 @@ import org.drftpd.util.PluginObjectContainer;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -157,7 +158,7 @@ public abstract class CommandInterface {
 	throws FileNotFoundException, IOException {
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "ISO-8859-1"));
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.ISO_8859_1));
 			response.addComment(reader);
 			reader.close();
 		} finally {

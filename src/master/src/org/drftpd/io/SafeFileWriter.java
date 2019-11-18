@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author mog
@@ -53,7 +54,7 @@ public class SafeFileWriter extends Writer {
 		}
 
 		_tempFile = File.createTempFile(_actualFile.getName(), null, dir);
-		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
+		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), StandardCharsets.UTF_8);
 	}
 
 	/**

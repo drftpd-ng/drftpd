@@ -22,6 +22,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -85,7 +86,7 @@ public class ThemeTask extends Task {
 			OutputStreamWriter output = null;
 			try {
 				fos = new FileOutputStream(themeFile,true);
-				output = new OutputStreamWriter(fos,"8859_1");
+				output = new OutputStreamWriter(fos, StandardCharsets.ISO_8859_1);
 				if (newFile) {
 					// Since this is the first entry in the file during this build
 					// session add the comment block at the top of the file
@@ -166,7 +167,7 @@ public class ThemeTask extends Task {
 			try {
 				// Create a BufferedReader to read the file
 				fis = new FileInputStream(file);
-				input = new InputStreamReader(fis,"8859_1");
+				input = new InputStreamReader(fis, StandardCharsets.ISO_8859_1);
 				PropertyResourceBundle inputBundle = new PropertyResourceBundle(input);
 
 				// Retrieve string object for the theme this

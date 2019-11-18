@@ -36,6 +36,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -79,7 +80,7 @@ public class SpeedTestUtils {
 		HashSet<SpeedTestServer> serverList = new HashSet<>();
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
 		XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
-				new ByteArrayInputStream(xmlString.getBytes("UTF-8")));
+				new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
 		while(xmlEventReader.hasNext()) {
 			//Get next event.
 			XMLEvent xmlEvent = xmlEventReader.nextEvent();

@@ -20,6 +20,7 @@ package org.drftpd.commands.zipscript.zip.hooks;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Properties;
@@ -164,7 +165,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			try {
 				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
 				DizInfo dizInfo = zipData.getDizInfo();
-				response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()),"8859_1")); 
+				response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()), StandardCharsets.ISO_8859_1)); 
 			} catch (FileNotFoundException e) {
 				//Error fetching .diz, ignore
 			} catch (IOException e) {
