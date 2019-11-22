@@ -16,7 +16,7 @@ rem
 
 rem -----------------------------------------------------------------------------
 rem These settings can be modified to fit the needs of your application
-rem Optimized for use with version 3.5.40 of the Wrapper.
+rem Optimized for use with version 3.5.41 of the Wrapper.
 
 rem The base name for the Wrapper binary.
 set _WRAPPER_BASE=wrapper
@@ -48,7 +48,7 @@ rem            user can optionally add a '--' separator followed by application
 rem            arguments.
 rem NOTE - If _WRAPPER_CONF_OVERRIDE is set to true the above applies to arguments
 rem        starting with the second, otherwise it applies to all arguments.
-set _PASS_THROUGH=true
+set _PASS_THROUGH=app_args
 
 rem Create logs dir if not present
 set LOGS_DIR=%~dp0\..\logs

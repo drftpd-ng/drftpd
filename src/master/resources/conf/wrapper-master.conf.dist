@@ -205,13 +205,13 @@ wrapper.filter.message.1001=The JVM has run out of memory.
 #  service can then be reinstalled.
 
 # Name of the service
-wrapper.ntservice.name=drftpd-master
+wrapper.name=drftpd-master
 
 # Display name of the service
-wrapper.ntservice.displayname=DrFTPD Master
+wrapper.displayname=DrFTPD Master
 
 # Description of the service
-wrapper.ntservice.description=Distributed Daemon FTP Server 3.4.1 Master https://github.com/drftpd-ng/drftpd3
+wrapper.description=Distributed Daemon FTP Server 3.4.1 Master https://github.com/drftpd-ng/drftpd3
 
 # Service dependencies.  Add dependencies as needed starting from 1
 wrapper.ntservice.dependency.1=
