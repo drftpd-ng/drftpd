@@ -794,7 +794,7 @@ public class DirectoryHandle extends InodeHandle implements
 			getParent().createDirectoryRecursive(getName(), placeHolderLastModified);
 		} catch (FileExistsException e) {
 			throw new FileExistsException("Object already exists -- "
-					+ getPath() + VirtualFileSystem.separator + name);
+					+ getPath() + name);
 		}
 		if (dir == null) {
 			dir = createDirectorySystem(name, placeHolderLastModified);
