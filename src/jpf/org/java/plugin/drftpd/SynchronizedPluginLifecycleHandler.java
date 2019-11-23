@@ -80,21 +80,17 @@ public class SynchronizedPluginLifecycleHandler extends StandardPluginLifecycleH
 	public void configure(ExtendedProperties config) {
 		probeParentLoaderLast = "true".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("probeParentLoaderLast", "false")); //$NON-NLS-1$ //$NON-NLS-2$
-		logger.debug("probeParentLoaderLast parameter value is " //$NON-NLS-1$
-				+ probeParentLoaderLast);
+        logger.debug("probeParentLoaderLast parameter value is {}", probeParentLoaderLast);
 		stickySynchronizing = "true".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("stickySynchronizing", "false")); //$NON-NLS-1$ //$NON-NLS-2$
-		logger.debug("stickySynchronizing parameter value is " //$NON-NLS-1$
-				+ stickySynchronizing);
+        logger.debug("stickySynchronizing parameter value is {}", stickySynchronizing);
 		localClassLoadingOptimization = !"false".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("localClassLoadingOptimization", //$NON-NLS-1$
 				"true")); //$NON-NLS-1$
-		logger.debug("localLoadingClassOptimization parameter value is " //$NON-NLS-1$
-				+ localClassLoadingOptimization);
+        logger.debug("localLoadingClassOptimization parameter value is {}", localClassLoadingOptimization);
 		foreignClassLoadingOptimization = !"false".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("foreignClassLoadingOptimization", //$NON-NLS-1$
 				"true")); //$NON-NLS-1$
-		logger.debug("foreignClassLoadingOptimization parameter value is " //$NON-NLS-1$
-				+ foreignClassLoadingOptimization);
+        logger.debug("foreignClassLoadingOptimization parameter value is {}", foreignClassLoadingOptimization);
 	}
 }

@@ -127,9 +127,7 @@ public class PassiveConnection extends Connection {
 
 	protected void finalize() throws Throwable {
 		if (_serverSocket != null) {
-			logger.debug("Closing extraneous ServerSocket - "
-					+ _serverSocket.getLocalPort()
-					+ ", accept() was never called on the ServerSocket");
+            logger.debug("Closing extraneous ServerSocket - {}, accept() was never called on the ServerSocket", _serverSocket.getLocalPort());
 			_serverSocket.close();
 		}
 	}

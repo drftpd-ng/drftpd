@@ -121,7 +121,7 @@ public class ArchiveCommandHandler extends CommandInterface {
             
             archiveType = archive.getArchiveType(0,archiveTypeName,section,props);
             if (archiveType == null) {
-				logger.error("Serious error, ArchiveType: " + archiveTypeName + " does not exists");
+                logger.error("Serious error, ArchiveType: {} does not exists", archiveTypeName);
 				env.add("archivetypename", archiveTypeName);
 				response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "incompatible"));
 				return response;

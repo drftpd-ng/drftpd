@@ -113,7 +113,7 @@ public class BeanUser extends AbstractUser {
 		try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
 			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(this);
-			logger.debug("Wrote userfile for " + this.getName());
+            logger.debug("Wrote userfile for {}", this.getName());
 		} catch (IOException | JsonIoException e) {
 			throw new IOException("Unable to write " + _um.getUserFile(getName()) + " to disk", e);
 		}

@@ -103,7 +103,7 @@ public class PREMirrorPostHook implements PostHookInterface {
 			try {
 				MirrorUtils.unMirrorDir(dir, null, _excludePaths);
 			} catch (FileNotFoundException e) {
-				logger.error("Unmirror error: " + e.getMessage());
+                logger.error("Unmirror error: {}", e.getMessage());
 			}
 		}
 	}

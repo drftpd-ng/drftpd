@@ -88,8 +88,7 @@ public class FtpReply {
 		if (pos != -1) {
 			addComment(response.substring(pos + 1));
 			response = response.substring(0, pos);
-			logger.debug("Truncated response message with multiple lines: "
-							+ response);
+            logger.debug("Truncated response message with multiple lines: {}", response);
 		}
 
 		_message = response;

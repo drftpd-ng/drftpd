@@ -248,7 +248,7 @@ public class TransferStatistics extends CommandInterface  {
 			try {
 				addTextToResponse(response, "userdata/text/" + type + "_header.txt");
 			} catch (IOException ioe) {
-				logger.warn("Error reading " + "userdata/text/" + type + "_header.txt", ioe);
+                logger.warn("Error reading userdata/text/{}_header.txt", type, ioe);
 			}
 		} else {
 			response.addComment(headerText);
@@ -311,7 +311,7 @@ public class TransferStatistics extends CommandInterface  {
 			try {
 				addTextToResponse(response, "userdata/text/" + type + "_footer.txt");
 			} catch (IOException ioe) {
-				logger.warn("Error reading " + "userdata/text/" + type + "_footer.txt", ioe);
+                logger.warn("Error reading userdata/text/{}_footer.txt", type, ioe);
 			}
 		} else {
 			response.addComment(footerText);

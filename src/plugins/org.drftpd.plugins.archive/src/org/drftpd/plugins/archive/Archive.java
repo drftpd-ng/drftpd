@@ -69,7 +69,7 @@ public class Archive implements PluginInterface {
 		
 		if (!_typesMap.containsKey(type)) {
 			// if we can't find one filter that will be enought to brake the whole chain.
-			logger.error("Archive Type: " + type + " wasn't loaded.");
+            logger.error("Archive Type: {} wasn't loaded.", type);
 			
 		} else {
 	        if (!sec.getName().isEmpty()) {
@@ -78,10 +78,10 @@ public class Archive implements PluginInterface {
 					archiveType = clazz.getConstructor(SIG).newInstance(this, sec, props, count);
 	
 				} catch (Exception e) {
-					logger.error("Unable to load ArchiveType for section " + count + "." + type, e);
+                    logger.error("Unable to load ArchiveType for section {}.{}", count, type, e);
 				}		
 	        } else {
-	        	logger.error("Unable to load Section for Archive " + count + "." + type);
+                logger.error("Unable to load Section for Archive {}.{}", count, type);
 	        }
 		}
 		return archiveType;	

@@ -147,7 +147,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.inodeLoadCompleted();
 		inode.commit();
 		addChild(inode, !placeHolderLastModified);
-		logger.info("createDirectory(" + inode + ")");
+        logger.info("createDirectory({})", inode);
 
 		return inode;
 	}
@@ -209,7 +209,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.inodeLoadCompleted();
 		addChild(inode, true);
 		commit();
-		logger.info("createFile(" + inode + ")");
+        logger.info("createFile({})", inode);
 
 		getVFS().notifyInodeCreated(inode);
 	}
@@ -235,7 +235,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 		inode.inodeLoadCompleted();
 		addChild(inode, true);
 		commit();
-		logger.info("createLink(" + inode + ")");
+        logger.info("createLink({})", inode);
 
 		getVFS().notifyInodeCreated(inode);
 	}
@@ -432,10 +432,7 @@ public class VirtualFileSystemDirectory extends VirtualFileSystemInode {
 				if (currentCount == null) {
 					// Shouldn't happen since we're removing a child, therefore we should have
 					// counts for the slaves referenced by the child
-					logger.error("Removing child " + childInode.getPath() + " from " + getPath()
-							+ " child contained a count of " + refEntry.getValue().intValue()
-							+ " for slave " + refEntry.getKey() + " but the slave has no count"
-							+ " against this directory");
+                    logger.error("Removing child {} from {} child contained a count of {} for slave {} but the slave has no count against this directory", childInode.getPath(), getPath(), refEntry.getValue().intValue(), refEntry.getKey());
 					continue;
 				}
 				currentCount.addAndGet(-refEntry.getValue().intValue());

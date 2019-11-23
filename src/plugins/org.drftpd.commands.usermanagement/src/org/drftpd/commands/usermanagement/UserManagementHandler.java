@@ -113,9 +113,7 @@ public class UserManagementHandler extends CommandInterface {
 					myUser.addIPMask(string);
 					response.addComment(session.jprintf(_bundle,
 							_keyPrefix+"addip.success", env, request.getUser()));
-					logger.info("'" + session.getUserNull(request.getUser()).getName()
-							+ "' added ip '" + string + "' to '"
-							+ myUser.getName() + "'");
+                    logger.info("'{}' added ip '{}' to '{}'", session.getUserNull(request.getUser()).getName(), string, myUser.getName());
 				} catch (DuplicateElementException e) {
 					response.addComment(session.jprintf(_bundle,
 							_keyPrefix+"addip.dupe", env, request.getUser()));
@@ -195,12 +193,9 @@ public class UserManagementHandler extends CommandInterface {
 			users = GlobalContext.getGlobalContext().getUserManager()
 					.getAllUsersByGroup(session.getUserNull(request.getUser()).getGroup())
 					.size();
-			logger.debug("Group "
-					+ session.getUserNull(request.getUser()).getGroup()
-					+ " is "
-					+ GlobalContext.getGlobalContext().getUserManager()
-							.getAllUsersByGroup(
-									session.getUserNull(request.getUser()).getGroup()));
+            logger.debug("Group {} is {}", session.getUserNull(request.getUser()).getGroup(), GlobalContext.getGlobalContext().getUserManager()
+                    .getAllUsersByGroup(
+                            session.getUserNull(request.getUser()).getGroup()));
 
 			if (users >= session.getUserNull(request.getUser()).getKeyedMap().getObjectInteger(
 					UserManagement.GROUPSLOTS)) {
@@ -285,13 +280,11 @@ public class UserManagementHandler extends CommandInterface {
 			
 			if (newGroup != null) {
 				newUser.setGroup(newGroup);
-				logger.info("'" + request.getUser() + "' added '"
-						+ newUser.getName() + "' with group "
-						+ newUser.getGroup() + "'");
+                logger.info("'{}' added '{}' with group {}'", request.getUser(), newUser.getName(), newUser.getGroup());
 				env.add("primgroup", newUser.getGroup());
 				response.addComment(session.jprintf(_bundle, _keyPrefix+"adduser.primgroup", env, request.getUser()));
 			} else {
-				logger.info("'" + request.getUser() + "' added '"+ newUser.getName() + "'");
+                logger.info("'{}' added '{}'", request.getUser(), newUser.getName());
 				newUser.setGroup(group);
 			}
 			
@@ -314,7 +307,7 @@ public class UserManagementHandler extends CommandInterface {
 			try {
 				newUser.addIPMask(string);
 				response.addComment(session.jprintf(_bundle, _keyPrefix+"addip.success", env, request.getUser()));
-				logger.info("'" + request.getUser() + "' added ip '" + string + "' to '"+ newUser.getName() + "'");
+                logger.info("'{}' added ip '{}' to '{}'", request.getUser(), string, newUser.getName());
 			} catch (DuplicateElementException e1) {
 				response.addComment(session.jprintf(_bundle, _keyPrefix+"addip.dupe", env, request.getUser()));
 			}
@@ -553,13 +546,8 @@ public class UserManagementHandler extends CommandInterface {
 								_keyPrefix + "changeratio.invalidratio", env, request.getUser()));
 					}
 
-					logger.info("'"
-							+ session.getUserNull(request.getUser()).getName()
-							+ "' changed ratio for '"
-							+ userToChange.getName()
-							+ "' from '"
-							+ userToChange.getKeyedMap().getObjectFloat(
-							UserManagement.RATIO) + "' to '" + ratio + "'");
+                    logger.info("'{}' changed ratio for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectFloat(
+                            UserManagement.RATIO), ratio);
 					userToChange.getKeyedMap().setObject(UserManagement.RATIO,
 							ratio);
 					env.add("newratio", Float.toString(userToChange.getKeyedMap()
@@ -568,13 +556,8 @@ public class UserManagementHandler extends CommandInterface {
 							_keyPrefix + "changeratio.success", env, request.getUser()));
 				} else {
 					// Ratio changes by an admin //
-					logger.info("'"
-							+ session.getUserNull(request.getUser()).getName()
-							+ "' changed ratio for '"
-							+ userToChange.getName()
-							+ "' from '"
-							+ userToChange.getKeyedMap().getObjectFloat(
-							UserManagement.RATIO) + " to '" + ratio + "'");
+                    logger.info("'{}' changed ratio for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectFloat(
+                            UserManagement.RATIO), ratio);
 					userToChange.getKeyedMap().setObject(UserManagement.RATIO,
 							ratio);
 					env.add("newratio", Float.toString(userToChange.getKeyedMap()
@@ -596,23 +579,14 @@ public class UserManagementHandler extends CommandInterface {
 							+ " cannot be interpreted");
 				}
 
-				logger.info("'" + session.getUserNull(request.getUser()).getName()
-						+ "' changed credits for '" + userToChange.getName()
-						+ "' from '" + userToChange.getCredits() + " to '"
-						+ credits + "'");
+                logger.info("'{}' changed credits for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getCredits(), credits);
 				userToChange.setCredits(credits);
 				env.add("newcredits", Bytes.formatBytes(userToChange.getCredits()));
 				response.addComment(session.jprintf(_bundle,
 						_keyPrefix + "changecredits.success", env, request.getUser()));
 			} else if ("comment".equals(command)) {
-				logger.info("'"
-						+ session.getUserNull(request.getUser()).getName()
-						+ "' changed comment for '"
-						+ userToChange.getName()
-						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectString(
-						UserManagement.COMMENT) + " to '"
-						+ fullCommandArgument + "'");
+                logger.info("'{}' changed comment for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(
+                        UserManagement.COMMENT), fullCommandArgument);
 				userToChange.getKeyedMap().setObject(UserManagement.COMMENT,
 						fullCommandArgument);
 				env.add("comment", userToChange.getKeyedMap().getObjectString(
@@ -626,10 +600,7 @@ public class UserManagementHandler extends CommandInterface {
 
 				int idleTime = Integer.parseInt(commandArguments[0]);
 				env.add("oldidletime", "" + userToChange.getIdleTime());
-				logger.info("'" + session.getUserNull(request.getUser()).getName()
-						+ "' changed idle_time for '" + userToChange.getName()
-						+ "' from '" + userToChange.getIdleTime() + " to '"
-						+ idleTime + "'");
+                logger.info("'{}' changed idle_time for '{}' from '{} to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getIdleTime(), idleTime);
 				userToChange.setIdleTime(idleTime);
 				env.add("newidletime", "" + idleTime);
 				response.addComment(session.jprintf(_bundle,
@@ -654,17 +625,9 @@ public class UserManagementHandler extends CommandInterface {
 								UserManagement.MAXLOGINSIP);
 					}
 
-					logger.info("'"
-							+ session.getUserNull(request.getUser()).getName()
-							+ "' changed num_logins for '"
-							+ userToChange.getName()
-							+ "' from '"
-							+ userToChange.getKeyedMap().getObjectInteger(
-							UserManagement.MAXLOGINS)
-							+ "' '"
-							+ userToChange.getKeyedMap().getObjectInteger(
-							UserManagement.MAXLOGINSIP) + "' to '"
-							+ numLogins + "' '" + numLoginsIP + "'");
+                    logger.info("'{}' changed num_logins for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectInteger(
+                            UserManagement.MAXLOGINS), userToChange.getKeyedMap().getObjectInteger(
+                            UserManagement.MAXLOGINSIP), numLogins, numLoginsIP);
 					userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS,
 							numLogins);
 					userToChange.getKeyedMap().setObject(
@@ -694,13 +657,7 @@ public class UserManagementHandler extends CommandInterface {
 					env.add("minratio", "" + minRatio);
 					env.add("maxratio", "" + maxRatio);
 
-					logger.info("'" + session.getUserNull(request.getUser()).getName()
-							+ "' changed gadmin min/max ratio for user '"
-							+ userToChange.getName() + "' group '"
-							+ userToChange.getGroup() + "' from '"
-							+ userToChange.getMinRatio() + "/"
-							+ userToChange.getMaxRatio() + "' to '" + minRatio
-							+ "/" + maxRatio + "'");
+                    logger.info("'{}' changed gadmin min/max ratio for user '{}' group '{}' from '{}/{}' to '{}/{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getGroup(), userToChange.getMinRatio(), userToChange.getMaxRatio(), minRatio, maxRatio);
 
 					if (minRatio < 1 || maxRatio < minRatio)
 						return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -728,14 +685,8 @@ public class UserManagementHandler extends CommandInterface {
 					maxdn = Integer.parseInt(commandArguments[0]);
 					maxup = Integer.parseInt(commandArguments[1]);
 
-					logger
-							.info("'"
-									+ session.getUserNull(request.getUser()).getName()
-									+ "' changed max simultaneous download/upload slots for '"
-									+ userToChange.getName() + "' from '"
-									+ userToChange.getMaxSimDown() + "' '"
-									+ userToChange.getMaxSimUp() + "' to '" + maxdn
-									+ "' '" + maxup + "'");
+                    logger
+                            .info("'{}' changed max simultaneous download/upload slots for '{}' from '{}' '{}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getMaxSimDown(), userToChange.getMaxSimUp(), maxdn, maxup);
 
 					userToChange.getKeyedMap().setObject(UserManagement.MAXSIMDN,
 							maxdn);
@@ -756,10 +707,7 @@ public class UserManagementHandler extends CommandInterface {
 					throw new ImproperUsageException();
 				}
 
-				logger.info("'" + session.getUserNull(request.getUser()).getName()
-						+ "' changed primary group for '" + userToChange.getName()
-						+ "' from '" + userToChange.getGroup() + "' to '"
-						+ commandArguments[0] + "'");
+                logger.info("'{}' changed primary group for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getGroup(), commandArguments[0]);
 				userToChange.setGroup(commandArguments[0]);
 				env.add("primgroup", userToChange.getGroup());
 				response.addComment(session.jprintf(_bundle,
@@ -786,17 +734,9 @@ public class UserManagementHandler extends CommandInterface {
 								UserManagement.LEECHSLOTS);
 					}
 
-					logger.info("'"
-							+ session.getUserNull(request.getUser()).getName()
-							+ "' changed group_slots for '"
-							+ userToChange.getName()
-							+ "' from '"
-							+ userToChange.getKeyedMap().getObjectInteger(
-							UserManagement.GROUPSLOTS)
-							+ "' "
-							+ userToChange.getKeyedMap().getObjectInteger(
-							UserManagement.LEECHSLOTS) + "' to '"
-							+ groupSlots + "' '" + groupLeechSlots + "'");
+                    logger.info("'{}' changed group_slots for '{}' from '{}' {}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectInteger(
+                            UserManagement.GROUPSLOTS), userToChange.getKeyedMap().getObjectInteger(
+                            UserManagement.LEECHSLOTS), groupSlots, groupLeechSlots);
 					userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS,
 							groupSlots);
 					userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS,
@@ -828,13 +768,8 @@ public class UserManagementHandler extends CommandInterface {
 					myDate = new Date();
 				}
 
-				logger.info("'"
-						+ session.getUserNull(request.getUser()).getName()
-						+ "' changed created for '"
-						+ userToChange.getName()
-						+ "' from '"
-						+ userToChange.getKeyedMap().getObject(
-						UserManagement.CREATED, new Date(0)) + "' to '" + myDate + "'");
+                logger.info("'{}' changed created for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(
+                        UserManagement.CREATED, new Date(0)), myDate);
 				userToChange.getKeyedMap()
 						.setObject(UserManagement.CREATED, myDate);
 
@@ -846,14 +781,8 @@ public class UserManagementHandler extends CommandInterface {
 				}
 
 				long weeklyAllotment = Bytes.parseBytes(commandArguments[0]);
-				logger.info("'"
-						+ session.getUserNull(request.getUser()).getName()
-						+ "' changed wkly_allotment for '"
-						+ userToChange.getName()
-						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectLong(
-						UserManagement.WKLY_ALLOTMENT) + "' to "
-						+ weeklyAllotment + "'");
+                logger.info("'{}' changed wkly_allotment for '{}' from '{}' to {}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectLong(
+                        UserManagement.WKLY_ALLOTMENT), weeklyAllotment);
 				userToChange.getKeyedMap().setObject(UserManagement.WKLY_ALLOTMENT,
 						weeklyAllotment);
 
@@ -863,11 +792,7 @@ public class UserManagementHandler extends CommandInterface {
 					throw new ImproperUsageException();
 				}
 
-				logger.info("'" + session.getUserNull(request.getUser()).getName()
-						+ "' changed tagline for '" + userToChange.getName()
-						+ "' from '"
-						+ userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE)
-						+ "' to '" + fullCommandArgument + "'");
+                logger.info("'{}' changed tagline for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectString(UserManagement.TAGLINE), fullCommandArgument);
 				userToChange.getKeyedMap().setObject(UserManagement.TAGLINE,
 						fullCommandArgument);
 
@@ -931,16 +856,13 @@ public class UserManagementHandler extends CommandInterface {
 
 			try {
 				myUser.removeSecondaryGroup(string);
-				logger.info("'" + session.getUserNull(request.getUser()).getName() + "' removed '"
-						+ myUser.getName() + "' from group '" + string + "'");
+                logger.info("'{}' removed '{}' from group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
 				response.addComment(myUser.getName() + " removed from group "
 						+ string);
 			} catch (NoSuchFieldException e1) {
 				try {
 					myUser.addSecondaryGroup(string);
-					logger.info("'" + session.getUserNull(request.getUser()).getName()
-							+ "' added '" + myUser.getName() + "' to group '"
-							+ string + "'");
+                    logger.info("'{}' added '{}' to group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
 					response.addComment(myUser.getName() + " added to group "
 							+ string);
 				} catch (DuplicateElementException e2) {
@@ -990,8 +912,7 @@ public class UserManagementHandler extends CommandInterface {
 			}
 			myUser.setPassword(args[1]);
 			myUser.commit();
-			logger.info("'" + session.getUserNull(request.getUser()).getName()
-					+ "' changed password for '" + myUser.getName() + "'");
+            logger.info("'{}' changed password for '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName());
 
 			return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 		} catch (NoSuchUserException e) {
@@ -1053,10 +974,8 @@ public class UserManagementHandler extends CommandInterface {
 
 			try {
 				myUser.removeIpMask(string);
-				logger
-						.info("'" + session.getUserNull(request.getUser()).getName()
-								+ "' removed ip '" + string + "' from '"
-								+ myUser + "'");
+                logger
+                        .info("'{}' removed ip '{}' from '{}'", session.getUserNull(request.getUser()).getName(), string, myUser);
 				response.addComment("Removed " + string);
 			} catch (NoSuchFieldException e1) {
 				response.addComment("Mask " + string + " not found: "
@@ -1101,14 +1020,11 @@ public class UserManagementHandler extends CommandInterface {
                                         reason = st.nextToken("").substring(1));
                 }
                 myUser.commit();
-                logger.info("'" + session.getUserNull(request.getUser()).getName() + "' deleted user '"
-                                + myUser.getName() + "' with reason '" + reason + "'");
-                logger.debug("reason "
-                                + myUser.getKeyedMap().getObjectString(UserManagement.REASON));
+        logger.info("'{}' deleted user '{}' with reason '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), reason);
+        logger.debug("reason {}", myUser.getKeyedMap().getObjectString(UserManagement.REASON));
 
                 myUser.purge();
-                logger.info("'" + session.getUserNull(request.getUser()).getName() + "' purged '"
-                                + myUser.getName() + "'");
+        logger.info("'{}' purged '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName());
 
                 return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
@@ -1150,10 +1066,8 @@ public class UserManagementHandler extends CommandInterface {
 					reason = st.nextToken("").substring(1));
 		}
 		myUser.commit();
-		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' deleted user '"
-				+ myUser.getName() + "' with reason '" + reason + "'");
-		logger.debug("reason "
-				+ myUser.getKeyedMap().getObjectString(UserManagement.REASON));
+        logger.info("'{}' deleted user '{}' with reason '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), reason);
+        logger.debug("reason {}", myUser.getKeyedMap().getObjectString(UserManagement.REASON));
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
 
@@ -1319,7 +1233,7 @@ public class UserManagementHandler extends CommandInterface {
 			return new CommandResponse(452,"You cannot give more credits than you have.");
 		}
 
-		logger.info("'" + srcUser.getName() + "' transfered " + Bytes.formatBytes(credits) + " ('" + credits + "') to '" + destUser.getName() + "'");
+        logger.info("'{}' transfered {} ('{}') to '{}'", srcUser.getName(), Bytes.formatBytes(credits), credits, destUser.getName());
 		
 		srcUser.updateCredits(-credits);
 		srcUser.commit();
@@ -1381,9 +1295,7 @@ public class UserManagementHandler extends CommandInterface {
 			session.getUserNull(request.getUser()).commit();
 		}
 
-		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' transfered "
-				+ Bytes.formatBytes(credits) + " ('" + credits + "') to '"
-				+ myUser.getName() + "'");
+        logger.info("'{}' transfered {} ('{}') to '{}'", session.getUserNull(request.getUser()).getName(), Bytes.formatBytes(credits), credits, myUser.getName());
 		myUser.updateCredits(credits);
 		myUser.commit();
 
@@ -1647,8 +1559,7 @@ public class UserManagementHandler extends CommandInterface {
 			throw new ImproperUsageException();
 		}
 
-		logger.info("'" + session.getUserNull(request.getUser()).getName()
-				+ "' changed his password");
+        logger.info("'{}' changed his password", session.getUserNull(request.getUser()).getName());
 		session.getUserNull(request.getUser()).setPassword(request.getArgument());
 		session.getUserNull(request.getUser()).commit();
 
@@ -1690,8 +1601,7 @@ public class UserManagementHandler extends CommandInterface {
 		}
 */
 		myUser.purge();
-		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' purged '"
-				+ myUser.getName() + "'");
+        logger.info("'{}' purged '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName());
 
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
@@ -1731,8 +1641,7 @@ public class UserManagementHandler extends CommandInterface {
 
 		myUser.setDeleted(false);
 		myUser.getKeyedMap().remove(UserManagement.REASON);
-		logger.info("'" + session.getUserNull(request.getUser()).getName() + "' readded '"
-				+ myUser.getName() + "'");
+        logger.info("'{}' readded '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName());
 		myUser.commit();
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
@@ -1758,8 +1667,7 @@ public class UserManagementHandler extends CommandInterface {
 			myUser.rename(args[1]);
 			BaseFtpConnection.fixBaseFtpConnUser(oldUsername, myUser.getName());
 			myUser.commit();
-			logger.info("'" + session.getUserNull(request.getUser()).getName() + "' renamed '"
-					+ oldUsername + "' to '" + myUser.getName() + "'");
+            logger.info("'{}' renamed '{}' to '{}'", session.getUserNull(request.getUser()).getName(), oldUsername, myUser.getName());
 		} catch (NoSuchUserException e) {
 			return new CommandResponse(452, "No such user: " + e.getMessage());
 		} catch (UserExistsException e) {
@@ -1803,10 +1711,8 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		User u = session.getUserNull(request.getUser());
-		
-		logger.info("'" + request.getUser()	+ "' changed his tagline from '"
-				+ u.getKeyedMap().getObjectString(UserManagement.TAGLINE)
-				+ "' to '" + request.getArgument() + "'");
+
+        logger.info("'{}' changed his tagline from '{}' to '{}'", request.getUser(), u.getKeyedMap().getObjectString(UserManagement.TAGLINE), request.getArgument());
 		
 		u.getKeyedMap().setObject(UserManagement.TAGLINE,	request.getArgument());
 		u.commit();
@@ -1873,9 +1779,7 @@ public class UserManagementHandler extends CommandInterface {
 				return new CommandResponse(452, "Credits must be a positive number.");
 			}
 
-			logger.info("'" + session.getUserNull(request.getUser()).getName() + "' took "
-					+ Bytes.formatBytes(credits) + " ('" + credits
-					+ "') from '" + myUser.getName() + "'");
+            logger.info("'{}' took {} ('{}') from '{}'", session.getUserNull(request.getUser()).getName(), Bytes.formatBytes(credits), credits, myUser.getName());
 			myUser.updateCredits(-credits);
 			myUser.commit();
 		} catch (NumberFormatException ex) {
@@ -2416,7 +2320,7 @@ public class UserManagementHandler extends CommandInterface {
 				// this can't happen as we are running the command as this user, therefore they must exist
 				return response;
 			} catch (UserFileException e) {
-				logger.warn("Error loading userfile for "+request.getUser(),e);
+                logger.warn("Error loading userfile for {}", request.getUser(), e);
 				return response;
 			}
 		} else if (request.getArgument().equals("*")) {
@@ -2430,7 +2334,7 @@ public class UserManagementHandler extends CommandInterface {
 				response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"credits.error", env, request.getUser()));
 				return response;
 			} catch (UserFileException e) {
-				logger.warn("Error loading userfile for "+request.getUser(),e);
+                logger.warn("Error loading userfile for {}", request.getUser(), e);
 				return response;
 			}
 		}

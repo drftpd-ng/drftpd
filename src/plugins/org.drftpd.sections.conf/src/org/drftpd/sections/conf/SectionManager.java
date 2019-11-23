@@ -136,7 +136,7 @@ public class SectionManager implements SectionManagerInterface {
 			boolean notloaded = false;
 			if (!_typesMap.containsKey(type)) {
 				// Section Type does not exist
-				logger.error("Section Type: " + type + " wasn't loaded.");
+                logger.error("Section Type: {} wasn't loaded.", type);
 				notloaded = true;
 			} else {
 				try {

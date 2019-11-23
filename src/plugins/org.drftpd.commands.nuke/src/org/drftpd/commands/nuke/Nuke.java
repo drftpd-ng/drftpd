@@ -142,7 +142,7 @@ public class Nuke extends CommandInterface {
 								env.add("size", Bytes.formatBytes(nukeDir.getSize()));
 								response.addComment(session.jprintf(_bundle,_keyPrefix+"nuke.search.item", env, requestUser));
 							} catch (FileNotFoundException e) {
-								logger.warn("Dir deleted after index search?, skip and continue: " + nukeDir.getPath());
+                                logger.warn("Dir deleted after index search?, skip and continue: {}", nukeDir.getPath());
 							}
 						}
 
@@ -346,7 +346,7 @@ public class Nuke extends CommandInterface {
 								env.add("size", Bytes.formatBytes(nukeDir.getSize()));
 								response.addComment(session.jprintf(_bundle,_keyPrefix+"unnuke.search.item", env, user));
 							} catch (FileNotFoundException e) {
-								logger.warn("Dir deleted after index search?, skip and continue: " + nukeDir.getPath());
+                                logger.warn("Dir deleted after index search?, skip and continue: {}", nukeDir.getPath());
 							}
 						}
 

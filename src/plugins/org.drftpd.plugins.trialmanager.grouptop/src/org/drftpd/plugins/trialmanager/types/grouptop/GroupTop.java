@@ -98,17 +98,17 @@ public class GroupTop extends TrialType {
 			if (commands[0].equalsIgnoreCase("chgrp")) {
 				for (int i=1;i<commands.length;i++) {
 					user.toggleGroup(commands[i]);
-					logger.info(user.getName() + " Toggled Group ('" + commands[i] + "')");
+                    logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
 				}
 				return;
 			}
 			if (commands[0].equalsIgnoreCase("setgrp")) {
 				user.setGroup(commands[1]);
-				logger.info(user.getName() + " Primary Group Set To ('" + commands[1] + "')");
+                logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
 				return;
 			}			
 		}
-		logger.info("No Mode found for " + getEventType() + " - Passed - " + getPass());
+        logger.info("No Mode found for {} - Passed - {}", getEventType(), getPass());
 	}
 
 	private void handleFailed(User user) {
@@ -119,30 +119,30 @@ public class GroupTop extends TrialType {
 				if (commands[0].equalsIgnoreCase("chgrp")) {
 					for (int i=1;i<commands.length;i++) {
 						user.toggleGroup(commands[i]);
-						logger.info(user.getName() + " Toggled Group ('" + commands[i] + "')");
+                        logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
 					}
 					return;
 				}
 				if (commands[0].equalsIgnoreCase("setgrp")) {
 					user.setGroup(commands[1]);
-					logger.info(user.getName() + " Primary Group Set To ('" + commands[1] + "')");
+                    logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
 					return;
 				}
 			} else {
 				if (commands[0].equalsIgnoreCase("delete")) {
 					user.setDeleted(true);
-					logger.info(user.getName() + " Deleted");
+                    logger.info("{} Deleted", user.getName());
 					return;
 				}
 				if (commands[0].equalsIgnoreCase("purge")) {
 					user.setDeleted(true);
-					logger.info(user.getName() + " Purged");
+                    logger.info("{} Purged", user.getName());
 					user.purge();
 					return;
 				}
 			}
 		}
-		logger.info("No Mode found for " + getEventType() + " - Failed - " + getFail());
+        logger.info("No Mode found for {} - Failed - {}", getEventType(), getFail());
 	}	
 
 	@Override

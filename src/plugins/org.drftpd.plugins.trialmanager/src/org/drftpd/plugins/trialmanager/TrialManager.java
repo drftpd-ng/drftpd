@@ -83,14 +83,14 @@ public class TrialManager implements PluginInterface {
 		
 		if (!_typesMap.containsKey(type)) {
 			// if we can't find one filter that will be enough to brake the whole chain.
-			logger.error("Trial Type: " + type + " wasn't loaded.");
+            logger.error("Trial Type: {} wasn't loaded.", type);
 			
 		} else {
 			try {
 				Class<TrialType> clazz = _typesMap.get(type);
 				trialType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
-				logger.error("Unable to load TrialType for section " + count + ".type=" + type, e);
+                logger.error("Unable to load TrialType for section {}.type={}", count, type, e);
 			}		
 		}
 		return trialType;	

@@ -72,14 +72,12 @@ public class NukeTask extends TimerTask {
 				if (updatedNI != null && !isApproved) {
 					// Dir still not ok and not approved, nuke it!
 					if (AutoNukeSettings.getSettings().debug() || updatedNI.debug()) {
-						logger.debug("NukeTask: NUKE " + updatedNI.getMultiplier() + "X " + dir.getPath() +
-								" with reason: " + updatedNI.getReason());
+                        logger.debug("NukeTask: NUKE {}X {} with reason: {}", updatedNI.getMultiplier(), dir.getPath(), updatedNI.getReason());
 					} else {
 						doNuke(dir, updatedNI.getMultiplier(), updatedNI.getReason());
 					}
 				} else {
-					logger.debug(dir.getPath() +
-							" was flagged to be nuked but is now ok or set approved, skipping nuke!");
+                    logger.debug("{} was flagged to be nuked but is now ok or set approved, skipping nuke!", dir.getPath());
 				}
 				iter.remove();
 			}

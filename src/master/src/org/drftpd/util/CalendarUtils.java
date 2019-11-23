@@ -57,7 +57,7 @@ public class CalendarUtils {
 		cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
 
 		if (cal.get(Calendar.DAY_OF_WEEK) != cal.getFirstDayOfWeek()) {
-			logger.error("cal.set(DAY_OF_WEEK) didn't work! " + cal.getTime());
+            logger.error("cal.set(DAY_OF_WEEK) didn't work! {}", cal.getTime());
 		}
 	}
 

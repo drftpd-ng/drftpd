@@ -43,7 +43,7 @@ public class TvMazeThread extends Thread {
 				// Process one item in queue
 				DirectoryHandle dir = TvMazeConfig.getInstance().getDirToProcess();
 				if (dir != null) {
-					logger.debug("Fetching TvMaze data for " + dir.getPath());
+                    logger.debug("Fetching TvMaze data for {}", dir.getPath());
 					TvMazeUtils.getTvMazeInfo(dir);
 				}
 				Thread.sleep(TvMazeUtils.randomNumber());

@@ -96,7 +96,7 @@ public class ConstantMirroring extends ArchiveType {
 				return false;
 			}
 
-			logger.debug("Constant Mirroring DEBUG - FILE: '" + lrf.getName() + "' - NumOfSlaves: '" + _numOfSlaves + "' - Slave Size: '" + slaves.size() + "'");
+            logger.debug("Constant Mirroring DEBUG - FILE: '{}' - NumOfSlaves: '{}' - Slave Size: '{}'", lrf.getName(), _numOfSlaves, slaves.size());
 
 			if (slaves.size() != _numOfSlaves) {
 				return false;

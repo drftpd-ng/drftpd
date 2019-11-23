@@ -58,12 +58,12 @@ public class PluginsConfig {
 	public void dumpHashMap() {
 		logger.debug("Dumping Map Information.");
 		for (Entry<String, Properties> entry : getPropertiesMap().entrySet()) {
-			logger.debug("--> Configuration File: "+ entry.getKey());
+            logger.debug("--> Configuration File: {}", entry.getKey());
 			logger.debug("Listing properties.");
 			for (Entry<Object,Object> e : entry.getValue().entrySet()) {
 				String key = (String) e.getKey();
 				String value = (String) e.getValue();
-				logger.debug(key+"="+value);
+                logger.debug("{}={}", key, value);
 			}
 		}
 	}
@@ -145,8 +145,7 @@ public class PluginsConfig {
 		
 		if (cfg == null) {
 			cfg = new Properties();
-			logger.error("'"+pluginName + "' configuration file was not found. " +
-					"Returning an empty Properties object.");
+            logger.error("'{}' configuration file was not found. Returning an empty Properties object.", pluginName);
 		}
 		
 		return cfg;

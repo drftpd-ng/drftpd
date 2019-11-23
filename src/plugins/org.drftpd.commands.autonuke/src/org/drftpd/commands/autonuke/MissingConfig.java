@@ -39,7 +39,7 @@ public class MissingConfig extends Config {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			logger.warn("AutoNuke checkMissing: FileNotFoundException - " + dir.getName());
+            logger.warn("AutoNuke checkMissing: FileNotFoundException - {}", dir.getName());
 			return true;
 		}
 		return false;

@@ -123,7 +123,7 @@ public class IpSecurityManager implements PluginInterface {
 					   _numip.add(numip);
 					   _perms.add(perms);
 				   } catch (NumberFormatException e) {
-					   logger.debug("Error while parsing ipsecurity line " + inRead.getLineNumber());
+                       logger.debug("Error while parsing ipsecurity line {}", inRead.getLineNumber());
 				   }
 			   }
 		   }
@@ -163,7 +163,7 @@ public class IpSecurityManager implements PluginInterface {
 				 * the size of the conf
 				 */
 				if (split_octets.length > split_currentoctets.length) {
-					logger.debug("Invalid Input Host Mask: " + octets);
+                    logger.debug("Invalid Input Host Mask: {}", octets);
 					return false;
 				}
 				
@@ -201,7 +201,7 @@ public class IpSecurityManager implements PluginInterface {
 				 * Will have to make a set for IPv6
 				 */
 				if (split_octets.length > split_currentoctets.length) {
-					logger.debug("Invalid Input Host Mask: " + octets);
+                    logger.debug("Invalid Input Host Mask: {}", octets);
 					return false;
 				}
 				
@@ -224,7 +224,7 @@ public class IpSecurityManager implements PluginInterface {
 				}
 				return true;
 			}
-			logger.debug("Invalid Octet in conf file: " + currentoctet);
+            logger.debug("Invalid Octet in conf file: {}", currentoctet);
 		}
 		return false;
 	}

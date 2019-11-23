@@ -73,7 +73,7 @@ public class StatsHandler extends ConfigHandler {
 			
 			list.add(perm);
 		} catch (NumberFormatException|PatternSyntaxException e) {
-			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+ratio+" "+(coll!=null? coll.toString():""), e);
+            logger.error("Unable to handle '{} {} {} {}", key.getKey(), path, ratio, coll != null ? coll.toString() : "", e);
 		}
 	}
 
@@ -139,8 +139,7 @@ public class StatsHandler extends ConfigHandler {
 
 			list.add(perm);
 		} catch (NumberFormatException|PatternSyntaxException e) {
-			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+dString+" "+pString+" "+bString+" "+
-					(coll!=null? coll.toString():""), e);
+            logger.error("Unable to handle '{} {} {} {} {} {}", key.getKey(), path, dString, pString, bString, coll != null ? coll.toString() : "", e);
 		}
 	}
 	

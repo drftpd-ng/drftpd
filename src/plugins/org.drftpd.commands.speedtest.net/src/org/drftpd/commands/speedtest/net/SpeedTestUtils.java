@@ -65,11 +65,11 @@ public class SpeedTestUtils {
 				String data = HttpUtils.retrieveHttpAsString(url);
 				serverList.addAll(parseXML(data));
 			} catch (UnsupportedEncodingException e) {
-				logger.warn("UnsupportedEncodingException parsing " + url + " :: " + e.getMessage());
+                logger.warn("UnsupportedEncodingException parsing {} :: {}", url, e.getMessage());
 			} catch (XMLStreamException e) {
-				logger.warn("XMLStreamException parsing " + url + " :: " + e.getMessage());
+                logger.warn("XMLStreamException parsing {} :: {}", url, e.getMessage());
 			} catch (Exception e) {
-				logger.warn("Failed to get data from " + url + " :: " + e.getMessage());
+                logger.warn("Failed to get data from {} :: {}", url, e.getMessage());
 			}
 		}
 		return serverList;
@@ -147,7 +147,7 @@ public class SpeedTestUtils {
 			slaveLocation.setLatitude(Double.parseDouble(loc[0]));
 			slaveLocation.setLongitude(Double.parseDouble(loc[1]));
 		} catch (Exception e) {
-			logger.error("Something went wrong getting slave location: " + e.getMessage());
+            logger.error("Something went wrong getting slave location: {}", e.getMessage());
 		}
 		return slaveLocation;
 	}

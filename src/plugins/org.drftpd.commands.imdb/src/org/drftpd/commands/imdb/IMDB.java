@@ -213,7 +213,7 @@ public class IMDB extends CommandInterface {
 				}
 				if (request.getSession().isAborted()) { break; }
 			} catch (FileNotFoundException e) {
-				logger.warn("Index contained an unexistent inode: " + item.getKey());
+                logger.warn("Index contained an unexistent inode: {}", item.getKey());
 			}
 		}
 
@@ -280,7 +280,7 @@ public class IMDB extends CommandInterface {
 				}
 				if (request.getSession().isAborted()) { break; }
 			} catch (FileNotFoundException e) {
-				logger.warn("Index contained an unexistent inode: " + item.getKey());
+                logger.warn("Index contained an unexistent inode: {}", item.getKey());
 			}
 		}
 

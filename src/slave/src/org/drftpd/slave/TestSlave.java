@@ -46,7 +46,7 @@ public class TestSlave extends Slave {
         InetSocketAddress addr = new InetSocketAddress(PropertyHelper
 				.getProperty(p, "master.host"), Integer.parseInt(PropertyHelper
 				.getProperty(p, "master.bindport")));
-		logger.info("Connecting to master at " + addr);
+        logger.info("Connecting to master at {}", addr);
 
 		String slavename = PropertyHelper.getProperty(p, "slave.name");
 
@@ -72,7 +72,7 @@ public class TestSlave extends Slave {
             _sout.writeObject(response);
             _sout.flush();
             if(!(response instanceof AsyncResponseTransferStatus)) {
-            	logger.debug("Slave wrote response - " + response);
+                logger.debug("Slave wrote response - {}", response);
             }
 
             if (response instanceof AsyncResponseException) {
@@ -114,7 +114,7 @@ public class TestSlave extends Slave {
             	return;
             }
 
-            logger.debug("Slave fetched " + ac);
+            logger.debug("Slave fetched {}", ac);
             class AsyncCommandHandler implements Runnable {
                 private AsyncCommandArgument _command = null;
 

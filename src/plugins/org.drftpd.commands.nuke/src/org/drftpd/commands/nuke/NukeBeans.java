@@ -97,8 +97,7 @@ public class NukeBeans {
 		try {
 			commit();
 		} catch (IOException e) {
-			logger.error("Couldn't save the nukelog due to: " + e.getMessage(),
-					e);
+            logger.error("Couldn't save the nukelog due to: {}", e.getMessage(), e);
 		}
 	}
 
@@ -116,8 +115,7 @@ public class NukeBeans {
 		try {
 			commit();
 		} catch (IOException e) {
-			logger.error("Couldn't save the nukelog deu to: " + e.getMessage(),
-					e);
+            logger.error("Couldn't save the nukelog deu to: {}", e.getMessage(), e);
 		}
 	}
 
@@ -233,7 +231,7 @@ public class NukeBeans {
 		try (InputStream in = new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
 			 JsonReader reader = new JsonReader(in)) {
 			nukees.putAll((Map<String, NukeData>)reader.readObject());
-			logger.debug("Loaded log from .json, size: " + nukees.size());
+            logger.debug("Loaded log from .json, size: {}", nukees.size());
 		} catch (FileNotFoundException e) {
 			// Lets see if there is a legacy xml nuke log to load
 			loadXMLLRUMap(nukees);
@@ -255,7 +253,7 @@ public class NukeBeans {
 				_nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"))) {
 			switchClassLoaders();
 			nukees.putAll((Map<String, NukeData>)xd.readObject());
-			logger.debug("Loaded log from .xml, size: " + nukees.size());
+            logger.debug("Loaded log from .xml, size: {}", nukees.size());
 		} catch (FileNotFoundException e) {
 			// nukelog does not exists yet.
 		}

@@ -105,7 +105,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			String transferFileName = transferFile.getName();
 			try {
 				if (transferFile.getSize() > 0 && transferFileName.toLowerCase().endsWith(".zip")) {
-					logger.debug("Running zipscript integrity check on stored file " + transferFileName);
+                    logger.debug("Running zipscript integrity check on stored file {}", transferFileName);
 					try {
 						RemoteSlave rslave = transferFile.getASlaveForFunction();
 						String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());

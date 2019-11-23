@@ -69,9 +69,7 @@ public class SafeFileWriter extends Writer {
 		_out.close();
 
 		if (!failed) {
-			LogManager.getLogger(SafeFileWriter.class).debug(
-					"Renaming " + _tempFile + " (" + _tempFile.length()
-							+ ") to " + _actualFile);
+            LogManager.getLogger(SafeFileWriter.class).debug("Renaming {} ({}) to {}", _tempFile, _tempFile.length(), _actualFile);
 
 			if (_actualFile.exists() && !_actualFile.delete()) {
 				throw new IOException("delete() failed");

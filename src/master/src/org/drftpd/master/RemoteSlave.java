@@ -179,7 +179,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 		if (_errors > maxerrors) {
 			setOffline("Too many network errors - " + e.getMessage());
-			logger.error("Too many network errors - " + e);
+            logger.error("Too many network errors - {}", e);
 		}
 	}
 
@@ -392,7 +392,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			} else if (remergeMode.equalsIgnoreCase("instant")) {
 				instantOnline = true;
 				setAvailable(true);
-				logger.info("Slave added: '" + getName() + "' status: " + _status);
+                logger.info("Slave added: '{}' status: {}", getName(), _status);
 				GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
 			}
 		}
@@ -526,7 +526,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
         } else {
             setAvailable(true);
             setRemerging(false);
-            logger.info("Slave added: '" + getName() + "' status: " + _status);
+            logger.info("Slave added: '{}' status: {}", getName(), _status);
             GlobalContext.getEventService().publishAsync(new SlaveEvent("ADDSLAVE", this));
         }
     }
@@ -803,7 +803,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void run() {
-		logger.debug("Starting RemoteSlave for " + getName());
+        logger.debug("Starting RemoteSlave for {}", getName());
 
 		try {
 			String pingIndex = null;
@@ -844,7 +844,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 							_socket.setSoTimeout(_prevSocketTimeout); // Restore old time out
 							SlaveManager.getBasicIssuer().issueRemergeResumeToSlave(this);
 							_remergePaused.set(false);
-							logger.debug("Issued remerge resume to slave, current remerge queue is " + _remergeQueue.size());
+                            logger.debug("Issued remerge resume to slave, current remerge queue is {}", _remergeQueue.size());
                         }
 					} else {
 						// Do we need to pause?
@@ -854,7 +854,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 							// Set lower timeout so it reacts faster when queueSize goes back down
 							_socket.setSoTimeout(100);
 							_remergePaused.set(true);
-							logger.debug("Issued remerge pause to slave, current remerge queue is " + _remergeQueue.size());
+                            logger.debug("Issued remerge pause to slave, current remerge queue is {}", _remergeQueue.size());
 						}
 					}
 				}
@@ -865,7 +865,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 
 				if (!(ar instanceof AsyncResponseRemerge)
 						&& !(ar instanceof AsyncResponseTransferStatus)) {
-					logger.debug("Received: " + ar);
+                    logger.debug("Received: {}", ar);
 				}
 
 				if (ar instanceof AsyncResponseTransfer) {
@@ -948,7 +948,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void setOffline(String reason) {
-		logger.debug("setOffline() " + reason);
+        logger.debug("setOffline() {}", reason);
 		setOfflineReal(reason);
 	}
 
@@ -1055,7 +1055,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				if (obj instanceof AsyncResponse) {
 					return (AsyncResponse) obj;
 				}
-				logger.error("Throwing away an unexpected class - " + obj.getClass().getName() + " - " + obj);
+                logger.error("Throwing away an unexpected class - {} - {}", obj.getClass().getName(), obj);
 			}
 		}
 	}
@@ -1214,7 +1214,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				getGlobalContext().getSlaveManager().getSlaveFile(this.getName()));
 			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(this);
-			logger.debug("Wrote slavefile for " + this.getName());
+            logger.debug("Wrote slavefile for {}", this.getName());
 		} catch (IOException | JsonIoException e) {
 			throw new RuntimeException("Error writing slavefile for "
 					+ this.getName() + ": " + e.getMessage(), e);
@@ -1243,7 +1243,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 	}
 
 	public void putCRCQueue(FileHandle file) {
-		logger.debug("CRC: putting file into queue " + file.getPath());
+        logger.debug("CRC: putting file into queue {}", file.getPath());
 		try {
 			_crcQueue.put(file);
 		} catch (InterruptedException e) {
@@ -1265,10 +1265,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			while (true) {
 				RemergeMessage msg;
 				try {
-					logger.info("REMERGE SIZE: " + _remergeQueue.size());
+                    logger.info("REMERGE SIZE: {}", _remergeQueue.size());
 					msg = _remergeQueue.take();
 				} catch (InterruptedException e) {
-					logger.debug("REMERGE QUE: fault in node from queue with exception " + e.getMessage());
+                    logger.debug("REMERGE QUE: fault in node from queue with exception {}", e.getMessage());
 					continue;
 				}
 
@@ -1279,8 +1279,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 						try {
 							Thread.sleep(500);
 						} catch (InterruptedException e) {
-							logger.debug("REMERGE QUE: thread interrupted waiting for crc queue to drain"
-									+ " with exception " + e.getMessage());
+                            logger.debug("REMERGE QUE: thread interrupted waiting for crc queue to drain with exception {}", e.getMessage());
 						}
 					}
 					if (!_initRemergeCompleted) {
@@ -1315,10 +1314,10 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 			while (true) {
 				FileHandle file;
 				try {
-					logger.info("REMERGE CRC SIZE: " + _crcQueue.size());
+                    logger.info("REMERGE CRC SIZE: {}", _crcQueue.size());
 					file = _crcQueue.poll(1000, TimeUnit.MILLISECONDS);
 				} catch (InterruptedException e) {
-					logger.debug("REMERGE CRC QUE: fault in node from queue with exception " + e.getMessage());
+                    logger.debug("REMERGE CRC QUE: fault in node from queue with exception {}", e.getMessage());
 					continue;
 				}
 				if (_finished && _crcQueue.isEmpty() && file == null) {
@@ -1332,7 +1331,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				try {
 					checksum = getCheckSumForPath(file.getPath());
 				} catch (IOException e) {
-					logger.error("IOException on remerge getting CRC from slave [" + getName() + ", " + file.getPath() + "]");
+                    logger.error("IOException on remerge getting CRC from slave [{}, {}]", getName(), file.getPath());
 					continue;
 				} catch (SlaveUnavailableException e) {
 					logger.warn("Slave went offline while processing remerge crc queue.");
@@ -1341,7 +1340,7 @@ public class RemoteSlave extends ExtendedTimedStats implements Runnable, Compara
 				try {
 					file.setCheckSum(checksum);
 				} catch (FileNotFoundException e) {
-					logger.debug("File deleted while getting crc from slave " + file.getPath());
+                    logger.debug("File deleted while getting crc from slave {}", file.getPath());
 				}
 			}
 		}

@@ -43,7 +43,7 @@ public class IMDBThread extends Thread {
 				// Process one item in queue
 				DirectoryHandle dir = IMDBConfig.getInstance().getDirToProcess();
 				if (dir != null) {
-					logger.debug("Fetching IMDB data for " + dir.getPath());
+                    logger.debug("Fetching IMDB data for {}", dir.getPath());
 					IMDBUtils.getIMDBInfo(dir, true);
 				}
 				Thread.sleep(IMDBUtils.randomNumber());

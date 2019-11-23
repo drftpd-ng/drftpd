@@ -99,17 +99,13 @@ public class TimeManager {
 						classArg);
 				m.invoke(event, d);
 			} catch (IllegalAccessException e) {
-				logger.error(event.getClass().getName()
-						+ " does not properly implement TimeEventInterface", e);
+                logger.error("{} does not properly implement TimeEventInterface", event.getClass().getName(), e);
 			} catch (InvocationTargetException e) {
-				logger.error(event.getClass().getName()
-						+ " does not properly implement TimeEventInterface", e);
+                logger.error("{} does not properly implement TimeEventInterface", event.getClass().getName(), e);
 			} catch (NoSuchMethodException e) {
-				logger.error(event.getClass().getName()
-						+ " does not properly implement TimeEventInterface", e);
+                logger.error("{} does not properly implement TimeEventInterface", event.getClass().getName(), e);
 			} catch (RuntimeException e) {
-				logger.error(event.getClass().getName()
-						+ " had an error processing " + methodName, e);
+                logger.error("{} had an error processing {}", event.getClass().getName(), methodName, e);
 			}
 		}
 	}
@@ -135,7 +131,7 @@ public class TimeManager {
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		timer.scheduleAtFixedRate(_processHour, cal.getTime(), HOUR);
-		logger.info("TimeManager scheduled the next reset to be at " + cal.getTime());
+        logger.info("TimeManager scheduled the next reset to be at {}", cal.getTime());
 	}
 	
 	public void processTimeEventsSinceDate(Date date) {

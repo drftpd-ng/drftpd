@@ -182,7 +182,7 @@ public class IMDBConfig {
 
 		if (parentDir.getName().matches(getExclude())) return;
 
-		logger.debug("Dir added to process queue for IMDB data: " + parentDir.getPath());
+        logger.debug("Dir added to process queue for IMDB data: {}", parentDir.getPath());
 
 		// Add dir to process queue
 		addDirToProcessQueue(parentDir);

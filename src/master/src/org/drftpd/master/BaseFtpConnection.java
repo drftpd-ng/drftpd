@@ -260,8 +260,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		
 		_lastActive = System.currentTimeMillis();
 		if (!GlobalContext.getConfig().getHideIps()) {
-			logger.info("Handling new request from "
-					+ getClientAddress().getHostAddress());
+            logger.info("Handling new request from {}", getClientAddress().getHostAddress());
 			_thread.setName("FtpConn thread " + _thread.getId() + " from "
 					+ getClientAddress().getHostAddress());
 		} else {
@@ -337,7 +336,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 				_request = new FtpRequest(commandLine);
 
 				if (!_request.getCommand().equals("PASS")) {
-					logger.debug("<< " + _request.getCommandLine());
+                    logger.debug("<< {}", _request.getCommandLine());
 				}
 
 				// execute command

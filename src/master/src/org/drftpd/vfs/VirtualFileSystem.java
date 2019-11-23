@@ -211,7 +211,7 @@ public class VirtualFileSystem {
 	protected VirtualFileSystemInode loadInode(String path)
 			throws FileNotFoundException {
 		String fullPath = fileSystemPath + path;
-		logger.debug("Loading inode - " + fullPath);
+        logger.debug("Loading inode - {}", fullPath);
 		File jsonFile = new File(fullPath);
 		File realDirectory = null;
 		if (jsonFile.isDirectory()) {
@@ -261,7 +261,7 @@ public class VirtualFileSystem {
 			if (corruptedJsonFile) {
 				// we already deleted the file, but we need to tell the parent
 				// directory that it doesn't exist anymore
-				logger.debug("Error loading " + fullPath + ", deleting file", e);
+                logger.debug("Error loading {}, deleting file", fullPath, e);
 				parentInode.removeMissingChild(getLast(path));
 			}
 			throw new FileNotFoundException();
@@ -283,8 +283,7 @@ public class VirtualFileSystem {
             }
 		}
 		if (file.exists() && !file.delete()) {
-			logger.error("Could not delete local entry "
-					+ file.getAbsolutePath() + ", check permissions");
+            logger.error("Could not delete local entry {}, check permissions", file.getAbsolutePath());
 		}
 	}
 
@@ -332,9 +331,9 @@ public class VirtualFileSystem {
 		try (OutputStream out = new SafeFileOutputStream(fullPath);
 			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(inode);
-			logger.debug("Wrote fullPath " + fullPath);
+            logger.debug("Wrote fullPath {}", fullPath);
 		} catch (IOException | JsonIoException e) {
-			logger.error("Unable to write " + fullPath + " to disk", e);
+            logger.error("Unable to write {} to disk", fullPath, e);
 		}
 	}
 
@@ -356,49 +355,49 @@ public class VirtualFileSystem {
 	}
 
 	protected void notifyOwnershipChanged(VirtualFileSystemInode inode, String owner, String group) {
-		logger.debug("Notifying that ownership of " + inode.getPath() + " has changed to: " + owner + "/" + group);
+        logger.debug("Notifying that ownership of {} has changed to: {}/{}", inode.getPath(), owner, group);
 
 		publishAsyncEvent(new VirtualFileSystemOwnershipEvent(inode, inode.getPath(), owner, group));
 	}
 	
 	protected void notifySlavesChanged(VirtualFileSystemFile inode, Set<String> slaves) {
-		logger.debug("Notifying the list of slaves of " + inode.getPath() + " has changed to: " + slaves);
+        logger.debug("Notifying the list of slaves of {} has changed to: {}", inode.getPath(), slaves);
 		
 		publishAsyncEvent(new VirtualFileSystemSlaveEvent(inode, inode.getPath(), slaves));
 	}
 	
 	protected void notifyInodeRenamed(String sourcePath, VirtualFileSystemInode destination) {
-		logger.debug("Notifying that " + sourcePath + " has been renamed to " + destination.getPath());
+        logger.debug("Notifying that {} has been renamed to {}", sourcePath, destination.getPath());
 
 		publishAsyncEvent(new VirtualFileSystemRenameEvent(sourcePath, destination, destination.getPath()));
 	}
 	
 	protected void notifyInodeCreated(VirtualFileSystemInode inode) {
-		logger.debug("Notifying that " + inode.getPath() + " has been created");
+        logger.debug("Notifying that {} has been created", inode.getPath());
 
 		publishAsyncEvent(new VirtualFileSystemInodeCreatedEvent(inode, inode.getPath()));
 	}
 	
 	protected void notifyInodeDeleted(VirtualFileSystemInode inode, String path) {
-		logger.debug("Notifying that " + path + " has been deleted");
+        logger.debug("Notifying that {} has been deleted", path);
 
 		publishAsyncEvent(new VirtualFileSystemInodeDeletedEvent(inode, path));
 	}
 
 	protected void notifySizeChanged(VirtualFileSystemInode inode, long size) {
-		logger.debug("Notifying that the size of " + inode.getPath() + " has changed to: " + size);
+        logger.debug("Notifying that the size of {} has changed to: {}", inode.getPath(), size);
 
 		publishAsyncEvent(new VirtualFileSystemSizeEvent(inode, inode.getPath(), size));
 	}
 
 	protected void notifyLastModifiedChanged(VirtualFileSystemInode inode, long lastmodified) {
-		logger.debug("Notifying that the last modified timestamp of " + inode.getPath() + " has changed to: " + lastmodified);
+        logger.debug("Notifying that the last modified timestamp of {} has changed to: {}", inode.getPath(), lastmodified);
 
 		publishAsyncEvent(new VirtualFileSystemLastModifiedEvent(inode, inode.getPath(), lastmodified));
 	}
 	
 	protected void notifyInodeRefresh(VirtualFileSystemInode inode, boolean sync) {
-		logger.debug("Notifying that a refresh has been requested for " + inode.getPath());
+        logger.debug("Notifying that a refresh has been requested for {}", inode.getPath());
 
 		if (sync) {
 			publishSyncEvent(new VirtualFileSystemInodeRefreshEvent(inode, inode.getPath()));

@@ -50,10 +50,10 @@ public class TvMazePostHook implements PostHookInterface {
 		try {
 			workingDir = request.getCurrentDirectory().getDirectoryUnchecked(request.getArgument());
 		} catch (FileNotFoundException e) {
-			logger.error("Failed getting DirectoryHandle for " + request.getArgument());
+            logger.error("Failed getting DirectoryHandle for {}", request.getArgument());
 			return;
 		} catch (ObjectNotValidException e) {
-			logger.error("Failed getting DirectoryHandle for " + request.getArgument());
+            logger.error("Failed getting DirectoryHandle for {}", request.getArgument());
 			return;
 		}
 

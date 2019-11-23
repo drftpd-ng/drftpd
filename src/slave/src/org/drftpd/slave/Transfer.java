@@ -275,7 +275,7 @@ public class Transfer {
 				_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
 			}
 
-			logger.info("UL: " + dirname + "/" + filename + getNegotiatedSSLString());
+            logger.info("UL: {}/{}{}", dirname, filename, getNegotiatedSSLString());
 			transfer(null);
 			_slave.sendResponse(new AsyncResponseDiskStatus(_slave
 					.getDiskStatus()));
@@ -326,7 +326,7 @@ public class Transfer {
 				_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
 			}
 
-			logger.info("DL: " + path + getNegotiatedSSLString());
+            logger.info("DL: {}{}", path, getNegotiatedSSLString());
 			try {
 				transfer(getUploadForPath(path));
 			} catch (ObjectNotFoundException e) {

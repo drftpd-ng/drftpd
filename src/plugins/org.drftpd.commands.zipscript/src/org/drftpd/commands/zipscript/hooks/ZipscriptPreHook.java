@@ -196,7 +196,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 					return false;
 				}
 			} catch (PatternSyntaxException e) {
-				logger.debug("Bad Regex Patter for 'sfvdeny.subdir.exclude' '" + _sfvDenySubDirExclude + "'");				
+                logger.debug("Bad Regex Patter for 'sfvdeny.subdir.exclude' '{}'", _sfvDenySubDirExclude);
 			}
 			
 			try {
@@ -206,7 +206,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 					}
 				}
 			} catch (PatternSyntaxException e) {
-				logger.debug("Bad Regex Patter for 'sfvdeny.subdir.include' '" + _sfvDenySubDirInclude + "'");
+                logger.debug("Bad Regex Patter for 'sfvdeny.subdir.include' '{}'", _sfvDenySubDirInclude);
 			} catch (FileNotFoundException e) {
 				// parent no longer exists....ignore
 			}

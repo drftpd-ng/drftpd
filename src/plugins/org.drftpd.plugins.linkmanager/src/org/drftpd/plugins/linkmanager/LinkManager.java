@@ -88,14 +88,14 @@ public class LinkManager implements PluginInterface {
 		
 		if (!_typesMap.containsKey(type)) {
 			// if we can't find one filter that will be enough to brake the whole chain.
-			logger.error("Link Type: " + type + " wasn't loaded.");
+            logger.error("Link Type: {} wasn't loaded.", type);
 			
 		} else {
 			try {
 				Class<LinkType> clazz = _typesMap.get(type);
 				linkType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
-				logger.error("Unable to load LinkType for section " + count + ".type=" + type, e);
+                logger.error("Unable to load LinkType for section {}.type={}", count, type, e);
 			}		
 		}
 		return linkType;	

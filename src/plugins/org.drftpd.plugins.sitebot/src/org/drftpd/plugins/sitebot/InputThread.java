@@ -115,7 +115,7 @@ public class InputThread extends Thread {
 							logger.warn("### normally. Here is the stack trace that was produced: -");
 							logger.warn("### ");
 							while (tokenizer.hasMoreTokens()) {
-								logger.warn("### " + tokenizer.nextToken());
+                                logger.warn("### {}", tokenizer.nextToken());
 							}
 
 						}

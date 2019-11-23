@@ -83,14 +83,14 @@ public class TrafficManager implements PluginInterface {
 		
 		if (!_typesMap.containsKey(type)) {
 			// if we can't find one filter that will be enough to brake the whole chain.
-			logger.error("Traffic Type: " + type + " wasn't loaded.");
+            logger.error("Traffic Type: {} wasn't loaded.", type);
 			
 		} else {
 			try {
 				Class<TrafficType> clazz = _typesMap.get(type);
 				trafficType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
-				logger.error("Unable to load TrafficType for section " + count + ".type=" + type, e);
+                logger.error("Unable to load TrafficType for section {}.type={}", count, type, e);
 			}		
 		}
 		return trafficType;	

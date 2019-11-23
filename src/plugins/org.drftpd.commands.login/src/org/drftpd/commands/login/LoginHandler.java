@@ -265,7 +265,7 @@ public class LoginHandler extends CommandInterface {
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER IP-Failed");
         //fail
-        logger.warn(newUser.getName() + " failed hostmask check");
+        logger.warn("{} failed hostmask check", newUser.getName());
         return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     }
 }

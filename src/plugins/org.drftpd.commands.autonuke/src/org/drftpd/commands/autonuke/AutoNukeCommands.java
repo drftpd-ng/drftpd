@@ -202,8 +202,7 @@ public class AutoNukeCommands extends CommandInterface {
 							}
 						} catch (FileNotFoundException e) {
 							// Strange, dir was just here
-							logger.warn("AutoNuke doSITE_AUTONUKESCAN: FileNotFoundException - " +
-									releaseDir.getName());
+                            logger.warn("AutoNuke doSITE_AUTONUKESCAN: FileNotFoundException - {}", releaseDir.getName());
 							continue;
 						}
 						if (foundExcludedSubDir) continue;

@@ -59,7 +59,7 @@ public class DefaultConfigHandler extends ConfigHandler {
 		try {
 			perm = new MessagePathPermission(pattern, messageFile, Permission.makeUsers(st));
 		} catch (IOException e) {
-			logger.error("Unable to read "+messageFile+" directive ignored");
+            logger.error("Unable to read {} directive ignored", messageFile);
 		}
 		
 		KeyedMap<Key<?>, Object> map = GlobalContext.getConfig().getKeyedMap();		

@@ -118,7 +118,7 @@ public class XferLog extends FtpListener {
 			    " 0 * " // authentication-method   authenticated-user-id
 			     +completed);
 		} catch (FileNotFoundException e) {
-			logger.error("File " + event.getTransferFile().getPath() + " is unable to be found immediately after transfer");
+            logger.error("File {} is unable to be found immediately after transfer", event.getTransferFile().getPath());
 		}
     }
 }

@@ -72,16 +72,16 @@ public class MirrorPostHook implements PostHookInterface {
 			try {
 				setting.setNbrOfMirrors(Integer.parseInt(nbrOfMirrors));
 				if (setting.getNbrOfMirrors() < 2) {
-					logger.error("Invalid setting for " + i + ".nbrOfMirrors, must be greater than 2");
+                    logger.error("Invalid setting for {}.nbrOfMirrors, must be greater than 2", i);
 					continue;
 				}
 				setting.setPriority(Integer.parseInt(cfg.getProperty(i + ".priority", "3")));
 				if (setting.getPriority() < 1) {
-					logger.error("Invalid setting for " + i + ".priority, must be greater than 0");
+                    logger.error("Invalid setting for {}.priority, must be greater than 0", i);
 					continue;
 				}
 			} catch (NumberFormatException e) {
-				logger.error("Invalid setting for " + i + ".nbrOfMirrors, not a number");
+                logger.error("Invalid setting for {}.nbrOfMirrors, not a number", i);
 				continue;
 			}
 			ArrayList<String> paths = new ArrayList<>();
@@ -105,7 +105,7 @@ public class MirrorPostHook implements PostHookInterface {
 					try {
 						slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
 					} catch (ObjectNotFoundException e) {
-						logger.error("Slave name invalid in mirror config ("+i+"): " + slaveName);
+                        logger.error("Slave name invalid in mirror config ({}): {}", i, slaveName);
 					}
 				}
 				setting.setSlaves(slaveList);
@@ -117,7 +117,7 @@ public class MirrorPostHook implements PostHookInterface {
 					try {
 						slaveList.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
 					} catch (ObjectNotFoundException e) {
-						logger.error("Slave name invalid in mirror config ("+i+"): " + slaveName);
+                        logger.error("Slave name invalid in mirror config ({}): {}", i, slaveName);
 					}
 				}
 				setting.setExcludedSlaves(slaveList);
@@ -203,7 +203,7 @@ public class MirrorPostHook implements PostHookInterface {
 			getJobManager().addJobToQueue(new Job(file, mirrorSlaves, activeSetting.getPriority(),
 					activeSetting.getNbrOfMirrors()));
 		} else {
-			logger.debug("Not adding " + file.getPath() + " to job queue, not enough slaves available.");
+            logger.debug("Not adding {} to job queue, not enough slaves available.", file.getPath());
 		}
 	}
 

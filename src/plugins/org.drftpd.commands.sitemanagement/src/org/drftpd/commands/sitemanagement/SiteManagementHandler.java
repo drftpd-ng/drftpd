@@ -168,7 +168,7 @@ public class SiteManagementHandler extends CommandInterface {
 			} catch (PluginLifecycleException e) {
 				session.printOutput(200, session.jprintf(_bundle,
 						_keyPrefix+"plugin.load.failure", env, request.getUser()));
-				logger.warn("Error starting plugin " + loadPlugin.getId(),e);
+                logger.warn("Error starting plugin {}", loadPlugin.getId(), e);
 				return new CommandResponse(500, "Plugin instantiation failed");
 			}
 			GlobalContext.getEventService().publish(new LoadPluginEvent(loadPlugin.getId()));
@@ -353,7 +353,7 @@ public class SiteManagementHandler extends CommandInterface {
 			urlCache.setAccessible(false);
 
 		} catch (Exception e) {
-			logger.error("Exception while clearing jar URL cache: " + e.getMessage (), e);
+            logger.error("Exception while clearing jar URL cache: {}", e.getMessage(), e);
 		}
 
 		return new CommandResponse(200, "Successfully unloaded your plugin");

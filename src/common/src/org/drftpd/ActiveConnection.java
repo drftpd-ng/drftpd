@@ -55,8 +55,7 @@ public class ActiveConnection extends Connection {
 	}
 
 	public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
-		logger.debug("Connecting to " + _addr.getAddress().getHostAddress() + ":" +
-				+ _addr.getPort());
+        logger.debug("Connecting to {}:{}", _addr.getAddress().getHostAddress(), +_addr.getPort());
 
 		if (_ctx != null) {
 			SSLSocket sslsock;

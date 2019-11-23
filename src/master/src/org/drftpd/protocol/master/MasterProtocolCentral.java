@@ -92,12 +92,12 @@ public class MasterProtocolCentral {
 		for (Entry<Class<?>, AbstractIssuer> e : _issuersMap.entrySet()) {
 			Class<?> clazz = e.getKey();
 			AbstractIssuer issuer = e.getValue();
-			logger.debug("Class -> " + clazz.toString());
-			logger.debug("Issuer -> " + issuer.toString());
+            logger.debug("Class -> {}", clazz.toString());
+            logger.debug("Issuer -> {}", issuer.toString());
 		}
 		
 		for (String protocol : _protocols) {
-			logger.debug("Protocol extension loaded: "+ protocol);
+            logger.debug("Protocol extension loaded: {}", protocol);
 		}
 	}
 	

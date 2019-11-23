@@ -261,53 +261,42 @@ public class CommonPluginUtils {
 				}
 			} catch (ClassNotFoundException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" not found",e);
+                    logger.warn("Error loading plugin {}, requested class {} not found", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (IllegalAccessException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" has no default constructor",e);
+                    logger.warn("Error loading plugin {}, requested class {} has no default constructor", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (InstantiationException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" is not a concrete class",e);
+                    logger.warn("Error loading plugin {}, requested class {} is not a concrete class", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (InvocationTargetException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
-							+" threw an exception",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} threw an exception", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (NoSuchMethodException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
-							+" not found",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} not found", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (PluginLifecycleException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", plugin not found or can't be activated",e);
+                    logger.warn("Error loading plugin {}, plugin not found or can't be activated", plugin.getDeclaringPluginDescriptor().getId(), e);
 				}
 				if (failOnError) {
 					throw e;
@@ -516,43 +505,32 @@ public class CommonPluginUtils {
 				}
 			} catch (ClassNotFoundException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" not found",e);
+                    logger.warn("Error loading plugin {}, requested class {} not found", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				throw e;
 			}catch (IllegalAccessException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" has no default constructor",e);
+                    logger.warn("Error loading plugin {}, requested class {} has no default constructor", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				throw e;
 			} catch (InstantiationException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" is not a concrete class",e);
+                    logger.warn("Error loading plugin {}, requested class {} is not a concrete class", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				throw e;
 			} catch (InvocationTargetException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
-							+" threw an exception",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} threw an exception", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				throw e;
 			} catch (NoSuchMethodException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
-							+" not found",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} not found", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				throw e;
 			}  catch (PluginLifecycleException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", plugin not found or can't be activated",e);
+                    logger.warn("Error loading plugin {}, plugin not found or can't be activated", plugin.getDeclaringPluginDescriptor().getId(), e);
 				}
 				throw e;
 			}
@@ -1090,10 +1068,7 @@ public class CommonPluginUtils {
 							container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin, pluginMethod);
 						} catch (NoSuchMethodException e) {
 							if (logError) {
-								logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-										+", requested method "+plugin.getParameter(methodParamName).valueAsString()
-										+" in class "+plugin.getParameter(classParamName).valueAsString()
-										+" not found",e);
+                                logger.warn("Error loading plugin {}, requested method {} in class {} not found", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(methodParamName).valueAsString(), plugin.getParameter(classParamName).valueAsString(), e);
 							}
 							if (failOnError) {
 								throw e;
@@ -1107,53 +1082,42 @@ public class CommonPluginUtils {
 				pluginContainers.add(container);
 			} catch (ClassNotFoundException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" not found",e);
+                    logger.warn("Error loading plugin {}, requested class {} not found", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (IllegalAccessException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" has no default constructor",e);
+                    logger.warn("Error loading plugin {}, requested class {} has no default constructor", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (InstantiationException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+plugin.getParameter(classParamName).valueAsString()
-							+" is not a concrete class",e);
+                    logger.warn("Error loading plugin {}, requested class {} is not a concrete class", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (InvocationTargetException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
-							+" threw an exception",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} threw an exception", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (NoSuchMethodException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+plugin.getParameter(classParamName).valueAsString()
-							+" not found",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} not found", plugin.getDeclaringPluginDescriptor().getId(), plugin.getParameter(classParamName).valueAsString(), e);
 				}
 				if (failOnError) {
 					throw e;
 				}
 			} catch (PluginLifecycleException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", plugin not found or can't be activated",e);
+                    logger.warn("Error loading plugin {}, plugin not found or can't be activated", plugin.getDeclaringPluginDescriptor().getId(), e);
 				}
 				if (failOnError) {
 					throw e;
@@ -1328,9 +1292,7 @@ public class CommonPluginUtils {
 								container = new PluginObjectContainer<>(pluginCls, pluginInstance, plugin, pluginMethod);
 							} catch (NoSuchMethodException e) {
 								if (logError) {
-									logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-											+", requested method "+methodName+" in class "+className
-											+" not found",e);
+                                    logger.warn("Error loading plugin {}, requested method {} in class {} not found", plugin.getDeclaringPluginDescriptor().getId(), methodName, className, e);
 								}
 								throw e;
 							}
@@ -1342,38 +1304,32 @@ public class CommonPluginUtils {
 				}
 			} catch (ClassNotFoundException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+className+" not found",e);
+                    logger.warn("Error loading plugin {}, requested class {} not found", plugin.getDeclaringPluginDescriptor().getId(), className, e);
 				}
 				throw e;
 			}catch (IllegalAccessException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+className+" has no default constructor",e);
+                    logger.warn("Error loading plugin {}, requested class {} has no default constructor", plugin.getDeclaringPluginDescriptor().getId(), className, e);
 				}
 				throw e;
 			} catch (InstantiationException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested class "+className+" is not a concrete class",e);
+                    logger.warn("Error loading plugin {}, requested class {} is not a concrete class", plugin.getDeclaringPluginDescriptor().getId(), className, e);
 				}
 				throw e;
 			} catch (InvocationTargetException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+className+" threw an exception",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} threw an exception", plugin.getDeclaringPluginDescriptor().getId(), className, e);
 				}
 				throw e;
 			} catch (NoSuchMethodException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", requested constructor in class "+className+" not found",e);
+                    logger.warn("Error loading plugin {}, requested constructor in class {} not found", plugin.getDeclaringPluginDescriptor().getId(), className, e);
 				}
 				throw e;
 			}  catch (PluginLifecycleException e) {
 				if (logError) {
-					logger.warn("Error loading plugin "+plugin.getDeclaringPluginDescriptor().getId()
-							+", plugin not found or can't be activated",e);
+                    logger.warn("Error loading plugin {}, plugin not found or can't be activated", plugin.getDeclaringPluginDescriptor().getId(), e);
 				}
 				throw e;
 			}

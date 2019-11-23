@@ -60,7 +60,7 @@ public class ConnectionStressTest extends TestCase {
 			
 			t.start();
 			t.setName("DummyClient-"+i);
-			logger.debug("Launching DummyClient #"+i);
+            logger.debug("Launching DummyClient #{}", i);
 			
 			try {
 				Thread.sleep(100); //give the daemon some time.	

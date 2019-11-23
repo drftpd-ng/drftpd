@@ -70,11 +70,11 @@ public class PluginParser {
             try {
                 URL manifestUrl = getManifestURL(manifestFile);
                 if (manifestUrl == null) {
-                    logger.debug("Skipped file: " + manifestFile);
+                    logger.debug("Skipped file: {}", manifestFile);
                     continue;
                 }
                 manifestUrls.add(manifestUrl);
-                logger.debug("Added URL: " + manifestUrl);
+                logger.debug("Added URL: {}", manifestUrl);
                 if (usePathResolver) {
                     if ("jar".equals(manifestUrl.getProtocol())) {
                         foldersMap.put(manifestUrl.toExternalForm(),
@@ -96,8 +96,7 @@ public class PluginParser {
 		} catch (Exception e) {
 			throw new PluginParseException("can't register URLs");
 		}
-		logger.debug("Registry initialized, registered manifests: "
-				+ processedPlugins.size() + " of " + manifestUrls.size());
+        logger.debug("Registry initialized, registered manifests: {} of {}", processedPlugins.size(), manifestUrls.size());
 		if (usePathResolver) {
 			_pathResolver = objectFactory.createPathResolver();
 			for (Entry<String, Identity> entry : processedPlugins.entrySet()) {

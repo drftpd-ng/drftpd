@@ -128,7 +128,7 @@ public class SecurePassManager implements PluginInterface {
 						_perms.add(perms);
 						
 					} catch (NumberFormatException e) {
-						logger.warn("NumberFormatException when reading securepass line " + inRead.getLineNumber(), e);		   
+                        logger.warn("NumberFormatException when reading securepass line {}", inRead.getLineNumber(), e);
 					}
 				}
 		   }

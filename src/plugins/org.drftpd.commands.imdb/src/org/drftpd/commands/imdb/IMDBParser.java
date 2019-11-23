@@ -109,7 +109,7 @@ public class IMDBParser {
 			String data = HttpUtils.retrieveHttpAsString(url);
 
 			if (!data.contains("<meta property='og:type' content=\"video.movie\" />")) {
-				logger.warn("Request for IMDB info for a Tv Show, this is not handled by this plugin. URL:"+url);
+                logger.warn("Request for IMDB info for a Tv Show, this is not handled by this plugin. URL:{}", url);
 				return false;
 			}
 

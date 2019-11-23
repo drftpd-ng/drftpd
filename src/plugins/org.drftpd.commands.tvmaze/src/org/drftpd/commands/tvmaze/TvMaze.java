@@ -305,7 +305,7 @@ public class TvMaze extends CommandInterface {
 				try {
 					dirsToCheck.add(dir.getDirectory(section.getBaseDirectory().getPath(), request.getUserObject()));
 				} catch (Exception e) {
-					logger.warn("Failed getting DirectoryHandle for section " + section);
+                    logger.warn("Failed getting DirectoryHandle for section {}", section);
 				}
 			}
 		} else {

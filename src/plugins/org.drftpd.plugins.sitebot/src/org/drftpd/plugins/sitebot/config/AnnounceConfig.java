@@ -95,7 +95,7 @@ public class AnnounceConfig {
 				try {
 					matcher = new PathMatcher(pathPattern, useRegex);
 				} catch (PatternSyntaxException e) {
-					logger.warn("Bad entry "+type+"."+i+".path in sitebot announce conf");
+                    logger.warn("Bad entry {}.{}.path in sitebot announce conf", type, i);
 					continue;
 				}
 				pWriters.add(new AnnounceWriter(matcher,writers,displayName));

@@ -202,7 +202,7 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 						} catch (NoSuchUserException e2) {
 							continue;
 						} catch (UserFileException e2) {
-							logger.warn("Error reading userfile for: "+stat.getUsername(),e2);
+                            logger.warn("Error reading userfile for: {}", stat.getUsername(), e2);
 							continue;
 						}
 
@@ -299,9 +299,9 @@ public class ZipAnnouncer extends AbstractAnnouncer {
 						leaduser = GlobalContext.getGlobalContext().getUserManager()
 						.getUserByName(stat.getUsername());
 					} catch (NoSuchUserException e3) {
-						logger.warn("User not found in user database: "+stat.getUsername(),e3);
+                        logger.warn("User not found in user database: {}", stat.getUsername(), e3);
 					} catch (UserFileException e3) {
-						logger.warn("Error reading userfile for: "+stat.getUsername(),e3);
+                        logger.warn("Error reading userfile for: {}", stat.getUsername(), e3);
 					}
 					env.add("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
 					env.add("leadgroup", leaduser != null ? leaduser.getGroup() : "");

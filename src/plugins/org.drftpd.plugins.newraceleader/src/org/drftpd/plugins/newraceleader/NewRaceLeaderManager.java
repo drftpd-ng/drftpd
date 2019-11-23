@@ -78,7 +78,7 @@ public class NewRaceLeaderManager implements PluginInterface {
 			for (Iterator<NewRaceLeader> iter = _newraceleader.iterator(); iter.hasNext();) {
 				NewRaceLeader nrl = iter.next();
 				if ((nrl.getTime() + _delay + 5000) < System.currentTimeMillis()) {
-					logger.debug("Successfully age-deleted NewRaceLeader for: " + nrl.getDir().getPath());
+                    logger.debug("Successfully age-deleted NewRaceLeader for: {}", nrl.getDir().getPath());
 					iter.remove();
 				}
 			}
@@ -114,7 +114,7 @@ public class NewRaceLeaderManager implements PluginInterface {
 	    	for (Iterator<NewRaceLeader> iter = _newraceleader.iterator(); iter.hasNext();) {
 				NewRaceLeader nrl = iter.next();
 				if (nrl.getDir().getPath().equals(dir.getPath())) {
-					logger.debug("Successfully deleted NewRaceLeader for: " + nrl.getDir().getPath());
+                    logger.debug("Successfully deleted NewRaceLeader for: {}", nrl.getDir().getPath());
 					iter.remove();
 					break;
 				}

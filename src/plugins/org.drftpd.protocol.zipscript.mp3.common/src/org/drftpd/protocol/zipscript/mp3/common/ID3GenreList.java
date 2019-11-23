@@ -83,7 +83,7 @@ public class ID3GenreList {
 		try {
 			return genres[index];
 		} catch(ArrayIndexOutOfBoundsException e) {
-			logger.warn("Unknown genre number: "+index);
+            logger.warn("Unknown genre number: {}", index);
 			return "";
 		}
 	}

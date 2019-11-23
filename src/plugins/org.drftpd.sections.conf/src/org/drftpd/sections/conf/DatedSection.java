@@ -68,7 +68,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		rc.setType(type);
 
 		// end rollingcalendar...
-		logger.debug("Configured to roll at " + rc.getNextCheckDate(new Date()));
+        logger.debug("Configured to roll at {}", rc.getNextCheckDate(new Date()));
 		getGlobalContext().addTimeEvent(this);
 	}
 
@@ -117,49 +117,48 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 	private void printPeriodicity(int type) {
 		switch (type) {
 		case TOP_OF_MINUTE:
-			logger.debug("DatedSection [" + getName() + "] to be rolled every minute.");
+            logger.debug("DatedSection [{}] to be rolled every minute.", getName());
 			break;
 
 		case TOP_OF_HOUR:
-			logger.debug("DatedSection [" + getName() + "] to be rolled on top of every hour.");
+            logger.debug("DatedSection [{}] to be rolled on top of every hour.", getName());
 			break;
 
 		case HALF_DAY:
-			logger.debug("DatedSection [" + getName() + "] to be rolled at midday and midnight.");
+            logger.debug("DatedSection [{}] to be rolled at midday and midnight.", getName());
 			break;
 
 		case TOP_OF_DAY:
-			logger.debug("DatedSection [" + getName() + "] to be rolled at midnight.");
+            logger.debug("DatedSection [{}] to be rolled at midnight.", getName());
 			break;
 
 		case TOP_OF_WEEK:
-			logger.debug("DatedSection [" + getName() + "] to be rolled at start of week.");
+            logger.debug("DatedSection [{}] to be rolled at start of week.", getName());
 			break;
 
 		case TOP_OF_MONTH:
-			logger.debug("DatedSection [" + getName() + "] to be rolled at start of every month.");
+            logger.debug("DatedSection [{}] to be rolled at start of every month.", getName());
 			break;
 
 		case TOP_OF_YEAR:
-			logger.debug("DatedSection [" + getName() + "] to be rolled at start of new year.");
+            logger.debug("DatedSection [{}] to be rolled at start of new year.", getName());
 			break;			
 
 		default:
-			logger.warn("Unknown periodicity for DatedSection [" + getName() + "].");
+            logger.warn("Unknown periodicity for DatedSection [{}].", getName());
 		}
 	}
 	
 	public void processNewDate(Date d) {
 		String dateDirName = _dateFormat.format(new Date());
 		if (!getBaseDirectory().exists()) {
-			logger.debug("Section directory was not found while creating" +
-					"dated directory: " + dateDirName + ", creating it.");
+            logger.debug("Section directory was not found while creatingdated directory: {}, creating it.", dateDirName);
 			try {
 				getBaseDirectory().getParent().createDirectoryRecursive(getBaseDirectory().getName(), true);
 			} catch (FileExistsException e) {
 				// this is good, continue
 			} catch (FileNotFoundException e) {
-				logger.error("Unable to create base directory for section " + getName(), e);
+                logger.error("Unable to create base directory for section {}", getName(), e);
 				return;
 			}
 		}
@@ -188,14 +187,14 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 				}
 				newDir = getBaseDirectory().createDirectoryUnchecked(checkDir.getName(), "drftpd", "drftpd");
 			} catch (FileExistsException e) {
-				logger.error(dateDirName + " already exists in section " + getName() + ", this should not happen, we just checked it", e);
+                logger.error("{} already exists in section {}, this should not happen, we just checked it", dateDirName, getName(), e);
 				return;
 			} catch (FileNotFoundException e) {
-				logger.error(dateDirName + " base directory does not exist for section " + getName() + ", this should not happen, we just verified it existed", e);
+                logger.error("{} base directory does not exist for section {}, this should not happen, we just verified it existed", dateDirName, getName(), e);
 				return;
 			}
 		} else {
-			logger.warn("DatedDirectory " + dateDirName + " already exists in section " + getName());
+            logger.warn("DatedDirectory {} already exists in section {}", dateDirName, getName());
 			return;
 		}
 		createLink(newDir);
@@ -231,7 +230,7 @@ public class DatedSection extends PlainSection implements TimeEventInterface {
 		try {
 			root.createLinkUnchecked(linkName, targetDir.getPath(), "drftpd", "drftpd");
 		} catch (FileExistsException e) {
-			logger.error(linkName + " already exists in / for section " + getName() + ", this should not happen, we just deleted it", e);
+            logger.error("{} already exists in / for section {}, this should not happen, we just deleted it", linkName, getName(), e);
 		} catch (FileNotFoundException e) {
 			logger.error("Unable to find the Root DirectoryHandle, this should not happen, it's the root!", e);
 		}

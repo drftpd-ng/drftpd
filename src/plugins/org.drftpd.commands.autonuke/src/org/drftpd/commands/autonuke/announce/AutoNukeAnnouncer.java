@@ -87,7 +87,7 @@ public class AutoNukeAnnouncer extends AbstractAnnouncer {
 				env.add("dirsize", Bytes.formatBytes(dir.getSize()));
 				env.add("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
 			} catch (FileNotFoundException e) {
-				logger.warn("AutoNukeAnnouncer: Dir gone :( - " + dir.getPath());
+                logger.warn("AutoNukeAnnouncer: Dir gone :( - {}", dir.getPath());
 			}
 			int i = 1;
 			for (String var : event.getData()) {
@@ -97,7 +97,7 @@ public class AutoNukeAnnouncer extends AbstractAnnouncer {
 			try {
 				sayOutput(SimplePrintf.jprintf(event.getIRCString(), env), writer);
 			} catch (FormatterException e) {
-				logger.warn("Error in irc format: " + event.getIRCString(), e);
+                logger.warn("Error in irc format: {}", event.getIRCString(), e);
 			}
 		}
 	}

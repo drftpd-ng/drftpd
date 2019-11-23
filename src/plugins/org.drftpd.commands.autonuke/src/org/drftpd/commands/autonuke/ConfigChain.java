@@ -98,7 +98,7 @@ public class ConfigChain {
 			}
 			
 			if (!_configsMap.containsKey(configName)) {
-				logger.error("Can not find config '" + configName + "', check that config is added in plugin.xml");
+                logger.error("Can not find config '{}', check that config is added in plugin.xml", configName);
 			}
 
 			try {

@@ -193,7 +193,7 @@ public class ZipscriptCommands extends CommandInterface {
 					} catch (ObjectNotValidException e3) {
 						session.printOutput(200,"SFV: " + Checksum.formatChecksum(sfvChecksum) + 
 								" SLAVE: " + sfvEntryName + " INVALID VFS ENTRY");
-						logger.error("Type error found in VFS, expected file " + sfvEntryName + " and found something else",e3);
+                        logger.error("Type error found in VFS, expected file {} and found something else", sfvEntryName, e3);
 						continue;
 					}
 					if (fileChecksum == 0L) {
@@ -256,8 +256,7 @@ public class ZipscriptCommands extends CommandInterface {
 			for (Iterator<RescanPostProcessDirInterface> iter = clonedRescanAddons.iterator(); iter.hasNext();) {
 				RescanPostProcessDirInterface rescanAddon = iter.next();
 				if (unloadedRescanAddons.contains(rescanAddon)) {
-					logger.debug("Unloading rescan post process addon provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(rescanAddon));
+                    logger.debug("Unloading rescan post process addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(rescanAddon));
 					iter.remove();
 					addonRemoved = true;
 				}

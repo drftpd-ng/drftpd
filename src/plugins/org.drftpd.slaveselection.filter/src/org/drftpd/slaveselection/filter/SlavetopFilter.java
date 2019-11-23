@@ -109,7 +109,7 @@ public class SlavetopFilter extends Filter {
             try {
                 scorechart.getScoreForSlave(score.getRSlave()).addScore(_assign);
             } catch (ObjectNotFoundException e1) {
-                logger.error("Unable to assign points to slave " + score.getRSlave().getName());
+                logger.error("Unable to assign points to slave {}", score.getRSlave().getName());
             }
         }
     }

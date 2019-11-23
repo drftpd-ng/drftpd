@@ -113,7 +113,7 @@ public class ArchiveHandler extends Thread {
 					try {
 						_archiveType._parent.addArchiveHandler(this);
 					} catch (DuplicateArchiveException e) {
-						logger.warn("Directory -- " + _archiveType.getDirectory() + " -- is already being archived ");
+                        logger.warn("Directory -- {} -- is already being archived ", _archiveType.getDirectory());
 						return;
 					}
 				}
@@ -137,10 +137,10 @@ public class ArchiveHandler extends Thread {
 				if (!_archiveType.moveRelease(getArchiveType().getDirectory())) {
 					_archiveType.addFailedDir(getArchiveType().getDirectory().getPath());
 					GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType,starttime,"Failed To Move Directory"));
-					logger.error("Failed to Archiving " + getArchiveType().getDirectory().getPath() + " (Failed To Move Directory)");
+                    logger.error("Failed to Archiving {} (Failed To Move Directory)", getArchiveType().getDirectory().getPath());
 				} else {
 					GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType,starttime));
-					logger.info("Done archiving " + getArchiveType().getDirectory().getPath());
+                    logger.info("Done archiving {}", getArchiveType().getDirectory().getPath());
 				}
 			} catch (Exception e) {
 				logger.warn("", e);

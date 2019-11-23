@@ -114,7 +114,7 @@ public class BeanUserManager extends AbstractUserManager {
 	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
 		try (InputStream in = new FileInputStream(getUserFile(userName));
 			 JsonReader reader = new JsonReader(in)) {
-			logger.debug("Loading '"+userName+"' Json data from disk.");
+            logger.debug("Loading '{}' Json data from disk.", userName);
 			BeanUser user = (BeanUser) reader.readObject();
 			user.setUserManager(this);
 			return user;
@@ -137,7 +137,7 @@ public class BeanUserManager extends AbstractUserManager {
 		File xmlUserFile = getXMLUserFile(userName);
 		try (XMLDecoder xd = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlUserFile)))) {
 			BeanUser user;
-			logger.debug("Loading '"+userName+"' XML data from disk.");
+            logger.debug("Loading '{}' XML data from disk.", userName);
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			user = (BeanUser) xd.readObject();
@@ -146,7 +146,7 @@ public class BeanUserManager extends AbstractUserManager {
 			// Commit new json userfile and delete old xml
 			user.commit();
 			if (!xmlUserFile.delete()) {
-				logger.error("Failed to delete old xml userfile: " + xmlUserFile.getName());
+                logger.error("Failed to delete old xml userfile: {}", xmlUserFile.getName());
 			}
 			return user;
 		} catch (FileNotFoundException e) {
@@ -200,12 +200,11 @@ public class BeanUserManager extends AbstractUserManager {
 				users.add(u);
 				_users.put(name, new SoftReference<>(u));
 			} catch (NoSuchUserException e) {
-				logger.error(name+" data wasnt found in the disk! " +
-						"How come the user is in the Map and does not have a userfile?! Deleting it.");
+                logger.error("{} data wasnt found in the disk! How come the user is in the Map and does not have a userfile?! Deleting it.", name);
 				iter.remove();
 				// nothing else to do, user wasnt loaded properly.
 			} catch (UserFileException e) {
-				logger.error("Error loading " + name, e);
+                logger.error("Error loading {}", name, e);
 				// nothing else to do, an error ocurred while loading data.
 			}
 		}

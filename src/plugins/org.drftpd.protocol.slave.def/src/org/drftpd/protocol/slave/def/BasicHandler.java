@@ -223,7 +223,7 @@ public class BasicHandler extends AbstractHandler {
 					skipAgeCutoff += System.currentTimeMillis() - masterTime;
 				}
 				Date cutoffDate = new Date(skipAgeCutoff);
-				logger.info("Partial remerge enabled, skipping all files last modified before " + cutoffDate.toString());
+                logger.info("Partial remerge enabled, skipping all files last modified before {}", cutoffDate.toString());
 				sendResponse(new AsyncResponseSiteBotMessage("Partial remerge enabled, skipping all files last modified before " + cutoffDate.toString()));
 			} else if (instantOnline) {
 				logger.info("Instant online enabled, performing full remerge in background");
@@ -360,24 +360,20 @@ public class BasicHandler extends AbstractHandler {
 					} catch (FileNotFoundException e) {
 						// something is screwy, we just found the file, it has to exist
 						// race condition i guess, stop deleting files outside drftpd!
-						logger.error("Error getting file " + fullPath
-								+ " even though we just listed it, check permissions",
-								e);
+                        logger.error("Error getting file {} even though we just listed it, check permissions", fullPath, e);
 						sendResponse(new AsyncResponseSiteBotMessage("Error getting file " + fullPath + " check permissions"));
 						continue;
 					}
 					try {
 					if (file.isSymbolicLink()) {
 							// ignore it, but log an error
-							logger.warn("You have a symbolic link " + fullPath
-									+ " -- these are ignored by drftpd");
+                        logger.warn("You have a symbolic link {} -- these are ignored by drftpd", fullPath);
 							sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link " + fullPath + " -- these are ignored by drftpd"));
 							continue;
 						}
 					} catch (IOException e) {
-						logger
-								.warn("You have a symbolic link that couldn't be read at "
-										+ fullPath + " -- these are ignored by drftpd");
+                        logger
+                                .warn("You have a symbolic link that couldn't be read at {} -- these are ignored by drftpd", fullPath);
 							sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drftpd"));
 						continue;
 					}
@@ -453,9 +449,9 @@ public class BasicHandler extends AbstractHandler {
 						waitForDepth(dir);
 					}
 					sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
-					logger.debug("Sending " + path + " to the master");
+                    logger.debug("Sending {} to the master", path);
 				} else {
-					logger.debug("Skipping send of " + path + " as no files changed since last merge");
+                    logger.debug("Skipping send of {} as no files changed since last merge", path);
 				}
 				updateDepth(path + "/");
 
@@ -602,21 +598,19 @@ public class BasicHandler extends AbstractHandler {
 			} catch (FileNotFoundException e) {
 				// something is screwy, we just found the file, it has to exist
 				// race condition i guess, stop deleting files outside drftpd!
-				logger.error("Error getting file " + fullPath
-						+ " even though we just listed it, check permissions",
-						e);
+                logger.error("Error getting file {} even though we just listed it, check permissions", fullPath, e);
 				sendResponse(new AsyncResponseSiteBotMessage("Error getting file " + fullPath + " check permissions"));
 				continue;
 			}
 			try {
 				if (file.isSymbolicLink()) {
 					// ignore it, but log an error
-					logger.warn("You have a symbolic link " + fullPath + " -- these are ignored by drftpd");
+                    logger.warn("You have a symbolic link {} -- these are ignored by drftpd", fullPath);
 					sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link " + fullPath + " -- these are ignored by drftpd"));
 					continue;
 				}
 			} catch (IOException e) {
-				logger.warn("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drftpd");
+                logger.warn("You have a symbolic link that couldn't be read at {} -- these are ignored by drftpd", fullPath);
 				sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link thacouldn't be read at " + fullPath + " -- these are ignored by drftpd"));
 				continue;
 			}
@@ -630,9 +624,9 @@ public class BasicHandler extends AbstractHandler {
 		}
 		if (!partialRemerge || inodesModified) {
 			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
-			logger.debug("Sending " + path + " to the master");
+            logger.debug("Sending {} to the master", path);
 		} else {
-			logger.debug("Skipping send of " + path + " as no files changed since last merge");
+            logger.debug("Skipping send of {} as no files changed since last merge", path);
 		}
 
 		if(--remergeDepth==0) {
@@ -674,12 +668,12 @@ public class BasicHandler extends AbstractHandler {
 			try {
 				if (file.isSymbolicLink()) {
 					// ignore it, but log an error
-					logger.warn("You have a symbolic link " + fullPath + " -- these are ignored by drftpd");
+                    logger.warn("You have a symbolic link {} -- these are ignored by drftpd", fullPath);
 					sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link " + fullPath + " -- these are ignored by drftpd"));
 					continue;
 				}
 			} catch (IOException e) {
-				logger.warn("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drftpd");
+                logger.warn("You have a symbolic link that couldn't be read at {} -- these are ignored by drftpd", fullPath);
 				sendResponse(new AsyncResponseSiteBotMessage("You have a symbolic link that couldn't be read at " + fullPath + " -- these are ignored by drfptd"));
 				continue;
 			}
@@ -693,9 +687,9 @@ public class BasicHandler extends AbstractHandler {
 		}
 		if (!partialRemerge || inodesModified) {
 			sendResponse(new AsyncResponseRemerge(path, fileList, pathLastModified));
-			logger.debug("Sending " + path + " to the master");
+            logger.debug("Sending {} to the master", path);
 		} else {
-			logger.debug("Skipping send of " + path + " as no files changed since last merge");
+            logger.debug("Skipping send of {} as no files changed since last merge", path);
 		}
 
 		if(--remergeConcurrentDepth==0) {

@@ -120,13 +120,13 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 					}
 				}
 			} catch (NoAvailableSlaveException e) {
-				logger.warn("No available slaves for SFV file in" + dir.getPath());
+                logger.warn("No available slaves for SFV file in{}", dir.getPath());
 			} catch (FileNotFoundException e) {
 				// no sfv file in directory - just skip it
 			} catch (IOException e) {
 				// unable to read sfv - just skip it
 			} catch (SlaveUnavailableException e) {
-				logger.warn("No available slaves for SFV file in" + dir.getPath());
+                logger.warn("No available slaves for SFV file in{}", dir.getPath());
 			}
 			if (statusBarEnabled) {
 				for (ZipscriptListStatusBarInterface zle : _statusBarProviders) {
@@ -183,8 +183,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 			for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
 				ZipscriptListStatusBarInterface sbAddon = iter.next();
 				if (unloadedStatusBarAddons.contains(sbAddon)) {
-					logger.debug("Unloading status bar provider addon provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(sbAddon));
+                    logger.debug("Unloading status bar provider addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(sbAddon));
 					iter.remove();
 					providerRemoved = true;
 				}

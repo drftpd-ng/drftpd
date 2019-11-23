@@ -100,7 +100,7 @@ public abstract class VirtualFileSystemInode implements Commitable {
 	 * slaves being offline and queued deletes
 	 */
 	public void delete() {
-		logger.info("delete(" + this + ")");
+        logger.info("delete({})", this);
 
 		String path = getPath();
 		VirtualFileSystem.getVirtualFileSystem().deleteInode(getPath());

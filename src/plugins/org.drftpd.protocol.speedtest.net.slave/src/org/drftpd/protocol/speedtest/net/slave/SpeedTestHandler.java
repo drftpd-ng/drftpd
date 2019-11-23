@@ -79,7 +79,7 @@ public class SpeedTestHandler extends AbstractHandler {
 		try {
 			readConf();
 		} catch (Exception e) {
-			logger.error("Error loading conf/plugins/speedtest.net.slave.conf :: " + e.getMessage());
+            logger.error("Error loading conf/plugins/speedtest.net.slave.conf :: {}", e.getMessage());
 		}
 	}
 
@@ -202,7 +202,7 @@ public class SpeedTestHandler extends AbstractHandler {
             try {
                 httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
             } catch (UnsupportedEncodingException e) {
-                logger.error("Unsupported encoding of payload for speedtest upload: " + e.getMessage());
+                logger.error("Unsupported encoding of payload for speedtest upload: {}", e.getMessage());
                 close(executor, callables);
                 return 0;
             }
@@ -302,7 +302,7 @@ public class SpeedTestHandler extends AbstractHandler {
 			try {
 				httpGet.setURI(new URI(tmpURL));
 			} catch (URISyntaxException e) {
-				logger.error("URI syntax error for " + tmpURL + " :: " + e.getMessage());
+                logger.error("URI syntax error for {} :: {}", tmpURL, e.getMessage());
 				close(executor, callables);
 				return 0;
 			}
@@ -384,19 +384,18 @@ public class SpeedTestHandler extends AbstractHandler {
 				response = httpClient.execute(httpGet);
 				final int statusCode = response.getStatusLine().getStatusCode();
 				if (statusCode != HttpStatus.SC_OK) {
-					logger.error("Error " + statusCode + " for URL " + url);
+                    logger.error("Error {} for URL {}", statusCode, url);
 					break;
 				}
 				HttpEntity entity = response.getEntity();
 				String data = EntityUtils.toString(entity);
 				EntityUtils.consume(entity);
 				if (!data.startsWith("test=test")) {
-					logger.error("Wrong return result from latency messurement from test server, " + url +
-							"\nReceived: " + data);
+                    logger.error("Wrong return result from latency messurement from test server, {}\nReceived: {}", url, data);
 					break;
 				}
 			} catch (Exception e) {
-				logger.error("Error for URL " + url, e);
+                logger.error("Error for URL {}", url, e);
 				break;
 			} finally {
 				watch.stop();

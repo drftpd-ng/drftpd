@@ -101,12 +101,12 @@ public class StandardCommandManager implements CommandManagerInterface {
 				CommandInterface cmdInstance = container.getPluginObject();
 				cmdInstance.initialize(methodString, pluginString, this);
 				commands.put(requiredCmd.getKey(),new CommandInstanceContainer(container.getPluginMethod(),cmdInstance));
-				logger.debug("Adding CommandInstance " + requiredCmd.getKey());
+                logger.debug("Adding CommandInstance {}", requiredCmd.getKey());
 			} catch(Exception e) {
 				/* Should be safe to continue, just means this command class won't be
 				 * available
 				 */
-				logger.info("Failed to add command handler: "+requiredCmd, e);
+                logger.info("Failed to add command handler: {}", requiredCmd, e);
 			}
 		}
 		_commands = commands;
@@ -119,9 +119,9 @@ public class StandardCommandManager implements CommandManagerInterface {
 			defaultIs = new FileInputStream(new File(themeDir+File.separator+"core.theme.default"));
 			_defaultTheme = new ExtendedPropertyResourceBundle(defaultIs);
 		} catch (FileNotFoundException e) {
-			logger.error("No default theme file core.theme.default found in: "+themeDir,e);
+            logger.error("No default theme file core.theme.default found in: {}", themeDir, e);
 		} catch (IOException e) {
-			logger.error("Error loading core.theme.default from: "+themeDir,e);
+            logger.error("Error loading core.theme.default from: {}", themeDir, e);
 		} finally {
 			try {
 				if (defaultIs != null) {
@@ -144,7 +144,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			// to the default to keep things functional but log a warning to make
 			// the user aware of the problem
 			_theme = _defaultTheme;
-			logger.warn("Error loading core.theme from: "+themeDir,e);
+            logger.warn("Error loading core.theme from: {}", themeDir, e);
 		} finally {
 			try {
 				if (userIs != null) {
@@ -167,9 +167,9 @@ public class StandardCommandManager implements CommandManagerInterface {
 				fallbackIs = new FileInputStream(new File(_defaultThemeDir+File.separator+"core.theme.default"));
 				_fallbackTheme = new ExtendedPropertyResourceBundle(fallbackIs);
 			} catch (FileNotFoundException e) {
-				logger.error("Base ftp default theme not found: "+_defaultThemeDir+File.separator+"core.theme.default",e);
+                logger.error("Base ftp default theme not found: " + _defaultThemeDir + "{}core.theme.default", File.separator, e);
 			} catch (IOException e) {
-				logger.error("Error loading base ftp default theme: "+_defaultThemeDir+File.separator+"core.theme.default",e);
+                logger.error("Error loading base ftp default theme: " + _defaultThemeDir + "{}core.theme.default", File.separator, e);
 			} finally {
 				if (fallbackIs != null) {
 					try {
@@ -227,7 +227,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 		} catch (Throwable t) {
 			if (!(t instanceof Error)) {
 				CommandResponseInterface cmdFailed = new CommandResponse(540, "Command execution failed");
-				logger.error("Command "+request.getCommand()+" failed: '" + request.getArgument() + "'", t);
+                logger.error("Command {} failed: '{}'", request.getCommand(), request.getArgument(), t);
 				return cmdFailed;
 			}
 			throw (Error) t;
@@ -242,8 +242,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			return (CommandResponse) _genericResponses.get(type).clone();
 		}
 		catch (NullPointerException e) {
-			logger.error("An unknown generic FTP response was used: "+type+
-			" this is almost certainly a bug");
+            logger.error("An unknown generic FTP response was used: {} this is almost certainly a bug", type);
 			return new CommandResponse(540, "No response message defined");
 		}
 	}
@@ -403,7 +402,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 				for (Iterator<Entry<String,CommandInstanceContainer>> iter = clonedCommands.entrySet().iterator(); iter.hasNext();) {
 					Entry<String, CommandInstanceContainer> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getCommandInterfaceInstance()).equals(event.getPlugin())) {
-						logger.debug("Removing command "+ entry.getKey());
+                        logger.debug("Removing command {}", entry.getKey());
 						iter.remove();
 						entry.getValue().getCommandInterfaceInstance().unload();
 						removedCmd = true;

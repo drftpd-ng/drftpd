@@ -200,7 +200,7 @@ public class MediaInfo implements Serializable {
 		try {
 			exitValue = pDD.waitFor();
 			if (exitValue != 0) {
-				logger.error("ERROR: mediainfo process failed with exit code " + exitValue);
+                logger.error("ERROR: mediainfo process failed with exit code {}", exitValue);
 				return null;
 			}
 		} catch (InterruptedException e) {

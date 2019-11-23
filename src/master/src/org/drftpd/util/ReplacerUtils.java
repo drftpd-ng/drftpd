@@ -50,7 +50,7 @@ public class ReplacerUtils {
 		try {
 			return SimplePrintf.jprintf(finalFormat(bundle, key), env);
 		} catch (Exception e) {
-			logger.info("Error formatting message for key - " + key, e);
+            logger.info("Error formatting message for key - {}", key, e);
 			return key;
 		}
 	}

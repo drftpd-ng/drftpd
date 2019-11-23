@@ -196,7 +196,7 @@ public class TvMazeConfig {
 
 		if (dir.getName().matches(getExclude())) return;
 
-		logger.debug("Dir added to process queue for TvMaze data: " + dir.getPath());
+        logger.debug("Dir added to process queue for TvMaze data: {}", dir.getPath());
 
 		// Add dir to process queue
 		addDirToProcessQueue(dir);

@@ -62,7 +62,7 @@ public class NukeList implements AddListElementsInterface {
         } catch (KeyNotFoundException ex) {
             // Dir not nuked, just continue
         } catch (FileNotFoundException ex) {
-            logger.error("Could not find directory: " + dir.getPath(), ex);
+            logger.error("Could not find directory: {}", dir.getPath(), ex);
         }
 		return container;
 	}

@@ -59,7 +59,7 @@ public class PrintfAction implements ActionInterface {
 		HashMap<String, String> formats = new HashMap<>();
 
 		try {
-			logger.debug("printf name: " + inode.getName());
+            logger.debug("printf name: {}", inode.getName());
 			formats.put("#f", inode.getName());
 			formats.put("#p", inode.getPath());
 			formats.put("#s", Bytes.formatBytes(inode.getSize()));

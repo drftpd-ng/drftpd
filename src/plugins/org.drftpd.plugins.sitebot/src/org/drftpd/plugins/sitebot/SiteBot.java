@@ -261,7 +261,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		}
 		catch (IOException e) {
 			// Something failed during connecting, call reconnect() to try another server
-			logger.warn("Connection to "+_server+":"+_port+" failed, retrying or trying next server if one is available");
+            logger.warn("Connection to {}:{} failed, retrying or trying next server if one is available", _server, _port);
 			reconnect();
 			return;
 		}
@@ -362,7 +362,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			}
 			else if (code.startsWith("4") || code.startsWith("5")) {
 				// Error returned from command
-				logger.error("Error returned from whois command: " + line);
+                logger.error("Error returned from whois command: {}", line);
 				break;
 			}
 		}
@@ -1025,12 +1025,12 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private void slowDown() {
 		if (_config.getDelayAfterNickserv() > 0) {
 			try {
-				logger.debug("Delaying for '" + _config.getDelayAfterNickserv() + "' milliseconds, Started");
+                logger.debug("Delaying for '{}' milliseconds, Started", _config.getDelayAfterNickserv());
 				Thread.sleep(_config.getDelayAfterNickserv());
 
 			} catch (InterruptedException e) {
 			}
-			logger.debug("Delaying for '" + _config.getDelayAfterNickserv() + "' milliseconds, Completed");
+            logger.debug("Delaying for '{}' milliseconds, Completed", _config.getDelayAfterNickserv());
 		}
 	}
 
@@ -1040,8 +1040,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			if (_config.getBlowfishEnabled()) {
 				String chanKey = chan.getBlowKey();
 				if (chanKey == null || chanKey.equals("")) {
-					logger.error("BlowfishManager is enabled but no BlowfishManager key is set for channel "+chan.getName()+
-					" ,the bot will not join this channel");
+                    logger.error("BlowfishManager is enabled but no BlowfishManager key is set for channel {} ,the bot will not join this channel", chan.getName());
 					break;
 				}
 				cipher = new BlowfishManager(chan.getBlowKey(), chan.getBlowMode());
@@ -1293,12 +1292,11 @@ public class SiteBot implements ReplyConstants, Runnable {
 			if (message.startsWith("+OK ") || message.startsWith("mcps ")) {
 				BlowfishManager chanCipher = _ciphers.get(channel);
 				if (chanCipher == null) {
-					logger.error("Received encrypted message in channel " + channel +
-							" but no Blowfish key is set for the channel!");
+                    logger.error("Received encrypted message in channel {} but no Blowfish key is set for the channel!", channel);
 					return;
 				}
 				message = _ciphers.get(channel).decrypt(message);
-				logger.debug("Decrypted message: " + message);
+                logger.debug("Decrypted message: {}", message);
 			} else {
 				// means we got an unencrypted line from a chan that should be encrypted
 				if (_config.getBlowfishPunish()) {
@@ -2948,7 +2946,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			List<ListenerInterface> loadedListeners = CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Listener", "Class");
 			for (ListenerInterface listener : loadedListeners) {
 				_listeners.add(listener);
-				logger.debug("Loading sitebot listener from plugin "+CommonPluginUtils.getPluginIdForObject(listener));
+                logger.debug("Loading sitebot listener from plugin {}", CommonPluginUtils.getPluginIdForObject(listener));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for org.drftpd.plugins.sitebot extension point 'Listener', possibly the " + "org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
@@ -2962,8 +2960,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			for (AbstractAnnouncer announcer : loadedAnnouncers) {
 				announcer.setConfDir(_confDir);
 				_announcers.add(announcer);
-				logger.debug("Loading sitebot announcer from plugin "
-						+CommonPluginUtils.getPluginIdForObject(announcer));
+                logger.debug("Loading sitebot announcer from plugin {}", CommonPluginUtils.getPluginIdForObject(announcer));
 				for (String type : announcer.getEventTypes()) {
 					_eventTypes.add(type);
 				}
@@ -2989,7 +2986,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
 	@EventSubscriber
 	public void onReloadEvent(ReloadEvent event) {
-		logger.info("Reloading conf/plugins/"+_confDir+"/irccommands.conf, origin "+event.getOrigin());
+        logger.info("Reloading conf/plugins/{}/irccommands.conf, origin {}", _confDir, event.getOrigin());
 		loadCommands();
 		_commandManager.initialize(getCommands(), themeDir);
 		_config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
@@ -3040,8 +3037,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 						}
 					}
 					announcer.stop();
-					logger.debug("Unloading sitebot announcer provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(announcer));
+                    logger.debug("Unloading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(announcer));
 					iter.remove();
 				}
 			}
@@ -3064,8 +3060,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			List<AbstractAnnouncer> loadedAnnouncers =
 				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.plugins.sitebot", "Announce", "Class", event);
 			for (AbstractAnnouncer announcer : loadedAnnouncers) {
-				logger.debug("Loading sitebot announcer provided by plugin "
-						+CommonPluginUtils.getPluginIdForObject(announcer));
+                logger.debug("Loading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(announcer));
 				announcer.setConfDir(_confDir);
 				announcer.initialise(_announceConfig,_commandManager.getResourceBundle());
 				_announcers.add(announcer);
@@ -3086,7 +3081,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		try {
 			List<ListenerInterface> loadedListeners = MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.plugins.sitebot", "Listener", "Class", event);
 			for (ListenerInterface listener : loadedListeners) {
-				logger.debug("Loading sitebot announcer provided by plugin "+CommonPluginUtils.getPluginIdForObject(listener));
+                logger.debug("Loading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(listener));
 				_listeners.add(listener);
 			}
 		} catch (IllegalArgumentException e) {

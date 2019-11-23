@@ -346,7 +346,7 @@ public class ListHandler extends CommandInterface {
 							line.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
 						}
 					} catch (NoAvailableSlaveException e) {
-						logger.debug("Unable to fetch checksum for: "+inode.getPath());
+                        logger.debug("Unable to fetch checksum for: {}", inode.getPath());
 					}
 	
 					line.append("size=" + inode.getSize() + ";");
@@ -519,8 +519,7 @@ public class ListHandler extends CommandInterface {
 				AddListElementsInterface listAddon = iter.next();
 				if (unloadedListAddons.contains(listAddon)) {
 					listAddon.unload();
-					logger.debug("Unloading list element addon provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(listAddon));
+                    logger.debug("Unloading list element addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(listAddon));
 					iter.remove();
 					addonRemoved = true;
 				}

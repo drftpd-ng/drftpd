@@ -53,10 +53,10 @@ public class AutoNukeHook implements PostHookInterface {
         try {
             newDir = request.getCurrentDirectory().getDirectoryUnchecked(request.getArgument());
         } catch (FileNotFoundException e) {
-            logger.error("Failed getting DirectoryHandle for " + request.getArgument(), e);
+            logger.error("Failed getting DirectoryHandle for {}", request.getArgument(), e);
             return;
         } catch (ObjectNotValidException e) {
-            logger.error("Failed getting DirectoryHandle for " + request.getArgument(), e);
+            logger.error("Failed getting DirectoryHandle for {}", request.getArgument(), e);
             return;
         }
         // Get section for this mkd
@@ -91,7 +91,7 @@ public class AutoNukeHook implements PostHookInterface {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			logger.warn("AutoNuke doMKDPostHook: FileNotFoundException - " + newDir.getName());
+            logger.warn("AutoNuke doMKDPostHook: FileNotFoundException - {}", newDir.getName());
 			return;
 		}
         // Dir valid, add it to queue

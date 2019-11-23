@@ -51,7 +51,7 @@ public class SectionManager implements SectionManagerInterface {
 				return new Section(getGlobalContext().getRoot()
 						.getDirectoryUnchecked(name));
 			} catch (ObjectNotValidException e) {
-				logger.error("Section defined " + name + " is not a file");
+                logger.error("Section defined {} is not a file", name);
 				return new Section(getGlobalContext().getRoot());
 			}
 		} catch (FileNotFoundException e) {

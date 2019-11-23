@@ -286,7 +286,7 @@ public class RootCollection {
 			for (File mount : mounts) {
 
 				if (fullpath.startsWith(mount.getPath())) {
-					logger.info(fullpath + " in mount " + mount.getPath());
+                    logger.info("{} in mount {}", fullpath, mount.getPath());
 
 					if (usedMounts.get(mount.getPath()) != null) {
 						throw new IOException("Multiple roots in mount "

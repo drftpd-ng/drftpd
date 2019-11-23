@@ -148,7 +148,7 @@ public class DupeCheckHooks implements PreHookInterface {
 						isDupe = true;
 					} catch (FileNotFoundException e) {
 						// File not found, not good, index refers to file that does not exist
-						logger.warn("Index Contained an unexistent inode: " + item.getKey());
+                        logger.warn("Index Contained an unexistent inode: {}", item.getKey());
 					}
 					
 					if (isDupe) {

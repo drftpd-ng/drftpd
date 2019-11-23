@@ -50,7 +50,7 @@ public class PermissionWrapper {
 		try {
 			_method.invoke(_permHandler, directive, st);
 		} catch (Exception e) {
-			logger.error("Unable to handle '"+directive+"'", e);
+            logger.error("Unable to handle '{}'", directive, e);
 		}
 	}
 }

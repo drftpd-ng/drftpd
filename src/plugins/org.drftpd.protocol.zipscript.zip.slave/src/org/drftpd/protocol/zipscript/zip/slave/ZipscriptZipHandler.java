@@ -110,7 +110,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 			}
 		} catch (Throwable t) {
 			integrityOk = false;
-			logger.debug("Error validating integrity of " + path + " : " + t.getMessage());
+            logger.debug("Error validating integrity of {} : {}", path, t.getMessage());
 		}
 
 		return integrityOk;
@@ -162,7 +162,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 				});
 			}
 		} catch (Throwable t) {
-			logger.debug("Error getting diz info from " + path + " : " + t.getMessage());
+            logger.debug("Error getting diz info from {} : {}", path, t.getMessage());
 		}
 
 		return dizInfo;

@@ -130,7 +130,7 @@ public class ConfigManager implements ConfigInterface {
             for (PluginObjectContainer<ConfigHandler> container : loadedDirectives) {
                 String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
                 if (_directivesMap.containsKey(directive)) {
-                    logger.debug("A handler for "+ directive +" already loaded, check your plugin.xml's");
+                    logger.debug("A handler for {} already loaded, check your plugin.xml's", directive);
                     continue;
                 }
                 ConfigContainer cc = new ConfigContainer(container.getPluginObject(), container.getPluginMethod());
@@ -153,7 +153,7 @@ public class ConfigManager implements ConfigInterface {
             is = new FileInputStream(mainFile);
             _mainCfg.load(is);
         } catch (IOException e) {
-            logger.error("Unable to read "+mainFile.getPath(), e);
+            logger.error("Unable to read {}", mainFile.getPath(), e);
         } finally {
             if (is != null) {
                 try { is.close(); }
@@ -328,7 +328,7 @@ public class ConfigManager implements ConfigInterface {
                 }
             }
         } catch (IOException e) {
-            logger.info("Unable to parse "+permsFile.getName(), e);
+            logger.info("Unable to parse {}", permsFile.getName(), e);
         } finally {
             if (in != null) {
                 try { in.close(); }
@@ -348,14 +348,14 @@ public class ConfigManager implements ConfigInterface {
         ConfigContainer cc = _directivesMap.get(directive);
 
         if (cc == null) {
-            logger.debug("No handler found for '"+ directive+"' ignoring line");
+            logger.debug("No handler found for '{}' ignoring line", directive);
             return;
         }
 
         try {
             cc.getMethod().invoke(cc.getInstance(), directive, st);
         } catch (Exception e) {
-            logger.debug("Error while handling directive: "+directive, e);
+            logger.debug("Error while handling directive: {}", directive, e);
         }
     }
 
@@ -397,7 +397,7 @@ public class ConfigManager implements ConfigInterface {
 
         if (alreadyExists) {
             // TODO what's best replace the existing one or keep it?
-            logger.info("The directive '"+directive+"' is already on the permission map, check out your "+permsFile.getName());
+            logger.info("The directive '{}' is already on the permission map, check out your {}", directive, permsFile.getName());
             return;
         }
 

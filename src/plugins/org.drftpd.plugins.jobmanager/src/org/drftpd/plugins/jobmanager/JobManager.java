@@ -251,7 +251,7 @@ public class JobManager implements PluginInterface {
 			return;
 		}
 		if (job.isDone()) {
-			logger.debug("Job is finished, removing job " + job.getFile());
+            logger.debug("Job is finished, removing job {}", job.getFile());
 			removeJobFromQueue(job);
 		}
 	}

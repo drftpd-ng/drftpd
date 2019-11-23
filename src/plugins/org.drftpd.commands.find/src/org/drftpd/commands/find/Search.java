@@ -118,7 +118,7 @@ public class Search extends CommandInterface {
 				env.add("size", Bytes.formatBytes(inode.getSize()));
 				responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
 			} catch (FileNotFoundException e) {
-				logger.warn("Index contained an unexistent inode: " + item.getKey());
+                logger.warn("Index contained an unexistent inode: {}", item.getKey());
 			}
 		}
 

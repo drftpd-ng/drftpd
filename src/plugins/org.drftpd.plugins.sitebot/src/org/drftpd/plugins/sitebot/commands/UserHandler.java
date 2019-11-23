@@ -58,10 +58,10 @@ public class UserHandler extends CommandInterface {
 		try {
 			user = GlobalContext.getGlobalContext().getUserManager().getUserByName(username);
 		} catch (NoSuchUserException e) {
-			logger.warn(username + " " + e.getMessage(), e);
+            logger.warn("{} {}", username, e.getMessage(), e);
 			return null;
 		} catch (UserFileException e) {
-			logger.warn("Error loading userfile for "+username, e);
+            logger.warn("Error loading userfile for {}", username, e);
 			return null;
 		}
 
@@ -101,7 +101,7 @@ public class UserHandler extends CommandInterface {
 			}
 			user.getKeyedMap().setObject(UserManagement.IRCIDENT,newIdents.toString());
 			user.commit();
-			logger.info("Set IRC ident to '"+ident+"' for "+user.getName()+" on bot "+sourceBot);
+            logger.info("Set IRC ident to '{}' for {} on bot {}", ident, user.getName(), sourceBot);
 			request.getSession().printOutput("Set IRC ident to '"+ident+"' for "+user.getName()+" on bot "+sourceBot);
 		}
 		return null;
@@ -119,16 +119,16 @@ public class UserHandler extends CommandInterface {
                 try {
                         user = GlobalContext.getGlobalContext().getUserManager().getUserByName(username);
                 } catch (NoSuchUserException e) {
-                        logger.warn(username + " " + e.getMessage(), e);
+                    logger.warn("{} {}", username, e.getMessage(), e);
                         return null;
                 } catch (UserFileException e) {
-                        logger.warn("Error loading userfile for "+username, e);
+                    logger.warn("Error loading userfile for {}", username, e);
                         return null;
                 }
 
 				user.getKeyedMap().setObject(UserManagement.IRCIDENT, "");
 				user.commit();
-				logger.info("Unset IRC ident for "+user.getName()+"");
+            logger.info("Unset IRC ident for {}", user.getName());
 				request.getSession().printOutput("Unset IRC ident for "+user.getName()+"");
                 return null;
         }
@@ -147,10 +147,10 @@ public class UserHandler extends CommandInterface {
 		try {
 			user = GlobalContext.getGlobalContext().getUserManager().getUserByName(username);
 		} catch (NoSuchUserException e) {
-			logger.warn(username + " " + e.getMessage(), e);
+            logger.warn("{} {}", username, e.getMessage(), e);
 			return null;
 		} catch (UserFileException e) {
-			logger.warn("Error loading userfile for "+username, e);
+            logger.warn("Error loading userfile for {}", username, e);
 			return null;
 		}
 		ServiceCommand session = (ServiceCommand) request.getSession();
@@ -192,13 +192,11 @@ public class UserHandler extends CommandInterface {
 				newIdents.append("|");
 				newIdents.append(ident);
 			}
-			logger.info("Invited \"" + session.getIdent() + "\" as user " + user.getName());
+            logger.info("Invited \"{}\" as user {}", session.getIdent(), user.getName());
 			user.getKeyedMap().setObject(UserManagement.IRCIDENT,newIdents.toString());
 			user.commit();
 		} else {
-			logger.warn(session.getIrcUser().getNick() +
-					" attempted invite with bad password: " + request.getCommand() +
-					" " + request.getArgument());
+            logger.warn("{} attempted invite with bad password: {} {}", session.getIrcUser().getNick(), request.getCommand(), request.getArgument());
 		}
 		return null;
 	}
@@ -228,12 +226,12 @@ public class UserHandler extends CommandInterface {
 		}
 		String nickname = st.nextToken();
 		if (multipleBots) {
-			logger.info("Inviting "+request.getUser()+ " with nickname "+nickname+ " using bot "+botname);
+            logger.info("Inviting {} with nickname {} using bot {}", request.getUser(), nickname, botname);
 			GlobalContext.getEventService().publish(
 					new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
 			return new CommandResponse(200, "Inviting "+nickname+" with bot "+botname);
 		}
-		logger.info("Inviting "+request.getUser()+ " with nickname "+nickname);
+        logger.info("Inviting {} with nickname {}", request.getUser(), nickname);
 		GlobalContext.getEventService().publish(
 				new InviteEvent("INVITE",nickname,request.getSession().getUserNull(request.getUser()),botname));
 		return new CommandResponse(200, "Inviting "+nickname);
