@@ -11,7 +11,7 @@
 		<library id="org.drftpd.protocol.mediainfo.common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="mediainfo-aspectjrt" path="../../../lib/aspectjrt-1.9.4.jar" type="code">
+		<library id="mediainfo-aspectjrt" path="../../../lib/aspectjrt-1.9.5.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="mediainfo-isoparser" path="../../../lib/isoparser-1.9.41.jar" type="code">
