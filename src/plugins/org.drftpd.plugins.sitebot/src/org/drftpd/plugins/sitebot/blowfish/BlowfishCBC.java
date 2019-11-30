@@ -53,7 +53,7 @@ public class BlowfishCBC extends Blowfish {
     /**
      * CBC irc prefix
      */
-    private final static String CBC_PREFIX = "+OK *";
+    private static final String CBC_PREFIX = "+OK *";
 
     public BlowfishCBC(String key) {
         super(key, "Blowfish/CBC/NoPadding");

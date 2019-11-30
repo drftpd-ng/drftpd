@@ -45,7 +45,7 @@ import java.util.StringTokenizer;
  * @version $Id$
  */
 public class Dir extends CommandInterface {
-	private final static SimpleDateFormat DATE_FMT = new SimpleDateFormat(
+	private static final SimpleDateFormat DATE_FMT = new SimpleDateFormat(
 	"yyyyMMddHHmmss.SSS");
 	private static final Logger logger = LogManager.getLogger(Dir.class);
 

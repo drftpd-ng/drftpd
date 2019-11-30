@@ -39,7 +39,7 @@ import java.util.Set;
  * @version $Id$
  */
 public class ArchiveHandler extends Thread {
-	protected final static Logger logger = LogManager.getLogger(ArchiveHandler.class);
+	protected static final Logger logger = LogManager.getLogger(ArchiveHandler.class);
 
 	private ArchiveType _archiveType;
 

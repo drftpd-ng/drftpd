@@ -39,8 +39,8 @@ import java.util.Properties;
  * @version $Id$
  */
 public class PluginsConfig {
-	private final static String pluginsConfPath = "conf/plugins/";
-	private final static File pluginsConfFile = new File(pluginsConfPath);
+	private static final String pluginsConfPath = "conf/plugins/";
+	private static final File pluginsConfFile = new File(pluginsConfPath);
 
 	private static final Logger logger = LogManager.getLogger(PluginsConfig.class);
 			

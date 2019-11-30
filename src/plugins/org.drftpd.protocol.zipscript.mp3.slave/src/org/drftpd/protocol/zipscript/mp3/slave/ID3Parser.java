@@ -31,7 +31,7 @@ import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
  */
 public class ID3Parser extends RandomAccessFile {
 
-	private final static long TAGLENGTH = 128;
+	private static final long TAGLENGTH = 128;
 
 	private ID3Tag _id3tag;
 

@@ -36,7 +36,7 @@ import java.util.Map.Entry;
  * @version $Id$
  */
 public class VFSPermissions {
-	private final static Logger logger = LogManager.getLogger(VFSPermissions.class);
+	private static final Logger logger = LogManager.getLogger(VFSPermissions.class);
 
 	private HashMap<String, PermissionWrapper> _handlersMap;	
 	
