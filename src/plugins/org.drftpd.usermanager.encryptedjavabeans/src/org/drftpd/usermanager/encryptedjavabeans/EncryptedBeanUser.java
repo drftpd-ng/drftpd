@@ -228,8 +228,6 @@ public class EncryptedBeanUser extends BeanUser {
 	    	return convertToHex(hash);
     	} catch (NoSuchAlgorithmException e) {
     		logger.debug("Encrypt - NoSuchAlgorithm",e);
-    	} catch (UnsupportedEncodingException e) {
-    		logger.debug("Encrypt - UnsupportedEncoding",e);
     	}
     	return null;
     } 
