@@ -25,6 +25,7 @@ import org.drftpd.usermanager.javabeans.BeanUserManager;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -222,7 +223,7 @@ public class EncryptedBeanUser extends BeanUser {
     	try {
 	    	MessageDigest md;
 	    	md = MessageDigest.getInstance(type);
-	    	md.update(text.getBytes("iso-8859-1"), 0, text.length());
+	    	md.update(text.getBytes(StandardCharsets.ISO_8859_1), 0, text.length());
 			byte[] hash = md.digest();
 	    	return convertToHex(hash);
     	} catch (NoSuchAlgorithmException e) {
