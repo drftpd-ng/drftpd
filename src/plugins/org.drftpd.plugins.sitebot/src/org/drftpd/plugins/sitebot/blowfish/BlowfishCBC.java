@@ -13,7 +13,6 @@ package org.drftpd.plugins.sitebot.blowfish;
 import javax.crypto.*;
 import javax.crypto.spec.*;
 
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -43,7 +42,7 @@ public class BlowfishCBC extends Blowfish {
     /**
      * Default charset for encoding
      */
-    private static final String ENCODED_CHARSET = "StandardCharsets.ISO_8859_1";
+    private static final String ENCODED_CHARSET = "ISO_8859_1";
 
     /**
      * Initial Vector
