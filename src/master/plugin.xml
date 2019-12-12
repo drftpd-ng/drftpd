@@ -34,7 +34,7 @@
 		<library id="wrapper" path="../../lib/wrapper.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="json-io" path="../../lib/json-io-4.11.1.jar" type="code">
+		<library id="json-io" path="../../lib/json-io-4.12.0.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
