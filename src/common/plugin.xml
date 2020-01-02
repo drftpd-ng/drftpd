@@ -75,7 +75,7 @@
 		<library id="commons-logging" path="../../lib/commons-logging-1.2.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="junit" path="../../lib/junit-4.12.jar" type="code">
+		<library id="junit" path="../../lib/junit-4.13.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="log4j-api" path="../../lib/log4j-api-2.13.0.jar" type="code">
