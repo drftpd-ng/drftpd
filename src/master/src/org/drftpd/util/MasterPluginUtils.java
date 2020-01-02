@@ -301,7 +301,7 @@ public class MasterPluginUtils extends CommonPluginUtils {
 							Class<T> pluginCls = loadPluginClass(pluginLoader,
 									plugin.getParameter(classParamName).valueAsString());
 							if (constructorSig == null) {
-								loadedExtensions.add(pluginCls.newInstance());
+								loadedExtensions.add(pluginCls.getDeclaredConstructor().newInstance());
 							} else {
 								loadedExtensions.add(pluginCls.getConstructor(constructorSig).newInstance(constructorArgs));
 							}
@@ -872,7 +872,7 @@ public class MasterPluginUtils extends CommonPluginUtils {
 							if (createInstance) {
 								T pluginInstance = null;
 								if (constructorSig == null) {
-									pluginInstance = pluginCls.newInstance();
+									pluginInstance = pluginCls.getDeclaredConstructor().newInstance();
 								} else {
 									pluginInstance = pluginCls.getConstructor(constructorSig).newInstance(constructorArgs);
 								}
