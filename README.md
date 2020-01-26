@@ -170,6 +170,7 @@ Verify that the slave is coming online with SITE SLAVES.
    also set your JAVA_HOME to this path, but without the bin appeneded to the end (i.e. c:\program files\java\jre\)
 5. Open a command prompt (start->run->cmd) and type cd c:\drftpd\, then type c:\ant\bin\ant and it should compile DrFTPD. If any errors are generated, something went wrong, and DrFTPD most likely will not function.
 
+The windows x64 wrapper is no longer included, if you want to integrate it, you must recover the sources from https://wrapper.tanukisoftware.com/doc/english/download.jsp
 
 # FAQ 
 

@@ -16,3 +16,17 @@ installed. The build process will then copy and convert all files into the 3.4.2
 environment. Next start the master and readd slaves. Themes and all .conf files
 have to be rebuild in 3.4.2. Copying over the files will give you alot of problems.
 The virtual file system will be built when slaves are merged for the first time.
+
+To upgrade from 3.x to the latest:
+
+Before performing a upgrade of drftpd, make sure to delete the following folders:
+- .jpf_shadow
+- bin
+- build
+- core
+- extsources
+- lib
+- plugins
+- src
+
+Regarding the configuration files, check that you are using the new ones once the build is done.
