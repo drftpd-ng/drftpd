@@ -397,7 +397,7 @@ public class DirectoryHandle extends InodeHandle implements
 		if (name.equals(VirtualFileSystem.separator)) {
 			return new DirectoryHandle("/");
 		}
-		logger.debug("getDirectory(" + name + ")");
+        logger.debug("getDirectory({})", name);
 		if (name.equals("..")) {
 			return getParent();
 		} else if (name.startsWith("../")) {
@@ -643,11 +643,7 @@ public class DirectoryHandle extends InodeHandle implements
 					// this is bad, links don't exist on slaves
 					// name collision
 					if (source.isFile()) {
-						logger.warn("In remerging " + rslave.getName()
-								+ ", a file on the slave (" + getPath()
-								+ VirtualFileSystem.separator
-								+ source.getName()
-								+ ") collided with a link on the master");
+                        logger.warn("In remerging {}, a file on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a link on the master", rslave.getName(), getPath(), source.getName());
                         // set crc now?
 						if (collisionhandle()) {
 							collisionHandler(source, rslave);
@@ -657,11 +653,7 @@ public class DirectoryHandle extends InodeHandle implements
 					} else { // source.isDirectory()
 						// Nothing to worry about
 						// Just log it for your info and move on
-						logger.warn("In remerging " + rslave.getName()
-								+ ", a directory on the slave (" + getPath()
-								+ VirtualFileSystem.separator
-								+ source.getName()
-								+ ") collided with a link on the master");
+                        logger.warn("In remerging {}, a directory on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a link on the master", rslave.getName(), getPath(), source.getName());
 					}
 				} else if (source.isFile() && destination.isFile()) {
 					// both files
@@ -690,11 +682,7 @@ public class DirectoryHandle extends InodeHandle implements
 								// the master thought the slave had the file, it's not the same size anymore, remove it
 								destinationFile.removeSlave(rslave);
 							}
-							logger.warn("In remerging " + rslave.getName()
-									+ ", a file on the slave (" + getPath()
-									+ VirtualFileSystem.separator
-									+ source.getName()
-									+ ") collided with a file on the master");
+                            logger.warn("In remerging {}, a file on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a file on the master", rslave.getName(), getPath(), source.getName());
 							if (collisionhandle()) {
                                 collisionHandler(source, rslave);
                             } else {
@@ -712,11 +700,7 @@ public class DirectoryHandle extends InodeHandle implements
 					if (source.isDirectory()) { // & destination.isFile()
 						// we don't care about directories on the slaves, let's
 						// just skip it
-						logger.warn("In remerging " + rslave.getName()
-								+ ", a directory on the slave (" + getPath()
-								+ VirtualFileSystem.separator
-								+ source.getName()
-								+ ") collided with a file on the master");
+                        logger.warn("In remerging {}, a directory on the slave ({}" + VirtualFileSystem.separator + "{}) collided with a file on the master", rslave.getName(), getPath(), source.getName());
 					} else {
 						// source.isFile() && destination.isDirectory()
 						// handle collision
@@ -794,12 +778,12 @@ public class DirectoryHandle extends InodeHandle implements
 			getParent().createDirectoryRecursive(getName(), placeHolderLastModified);
 		} catch (FileExistsException e) {
 			throw new FileExistsException("Object already exists -- "
-					+ getPath() + VirtualFileSystem.separator + name);
+					+ getPath() + name);
 		}
 		if (dir == null) {
 			dir = createDirectorySystem(name, placeHolderLastModified);
 		}
-		logger.debug("Created directory " + dir);
+        logger.debug("Created directory {}", dir);
 	}
 
 	/**

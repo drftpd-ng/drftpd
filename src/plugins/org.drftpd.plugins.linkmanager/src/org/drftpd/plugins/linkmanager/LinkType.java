@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.linkmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.sections.SectionInterface;
@@ -35,7 +37,7 @@ import java.util.regex.Pattern;
  */
 
 public abstract class LinkType {
-	protected static final Logger logger = Logger.getLogger(LinkType.class);
+	protected static final Logger logger = LogManager.getLogger(LinkType.class);
 	
 	private String _dirname;
 	private String _eventtype;
@@ -224,10 +226,10 @@ public abstract class LinkType {
 		
 		DirectoryHandle linkDir = new DirectoryHandle(getDirName(targetDir));
 		if (!linkDir.exists()) {
-			logger.debug("LinkDir does not exist, so we are going to create it (" + getDirName(targetDir) + ")");
+            logger.debug("LinkDir does not exist, so we are going to create it ({})", getDirName(targetDir));
 			
 			if (!createDirectories(linkDir)) {
-				logger.debug("Unable to create LinkDir - Aborting (" + getDirName(targetDir) + ")");
+                logger.debug("Unable to create LinkDir - Aborting ({})", getDirName(targetDir));
 				return;
 			}
 			
@@ -243,7 +245,7 @@ public abstract class LinkType {
 		} catch (FileNotFoundException e) {
 			// this is okay, the link does not exist
 		} catch (ObjectNotValidException e) {
-			logger.error("There is already a non-Link inode in the place where this link should go. (" + linkNameFinal + ")", e);
+            logger.error("There is already a non-Link inode in the place where this link should go. ({})", linkNameFinal, e);
 			return;
 		}
 
@@ -260,7 +262,7 @@ public abstract class LinkType {
 		try {
 			linkDir.createLinkUnchecked(linkNameFinal, targetDir.getPath(), "drftpd", "drftpd");
 		} catch (FileExistsException e) {
-			logger.error(linkNameFinal + " already exists in " + linkDir + ", this should not happen, we just deleted it", e);
+            logger.error("{} already exists in {}, this should not happen, we just deleted it", linkNameFinal, linkDir, e);
 		} catch (FileNotFoundException e) {
 			// linkDir has been deleted, ignore
 		}

@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.linkmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -42,7 +44,7 @@ import java.util.Properties;
  */
 
 public class LinkManager implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(LinkManager.class);
+	private static final Logger logger = LogManager.getLogger(LinkManager.class);
 	
 	private CaseInsensitiveHashMap<String, Class<LinkType>> _typesMap;
 	
@@ -86,14 +88,14 @@ public class LinkManager implements PluginInterface {
 		
 		if (!_typesMap.containsKey(type)) {
 			// if we can't find one filter that will be enough to brake the whole chain.
-			logger.error("Link Type: " + type + " wasn't loaded.");
+            logger.error("Link Type: {} wasn't loaded.", type);
 			
 		} else {
 			try {
 				Class<LinkType> clazz = _typesMap.get(type);
 				linkType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
-				logger.error("Unable to load LinkType for section " + count + ".type=" + type, e);
+                logger.error("Unable to load LinkType for section {}.type={}", count, type, e);
 			}		
 		}
 		return linkType;	

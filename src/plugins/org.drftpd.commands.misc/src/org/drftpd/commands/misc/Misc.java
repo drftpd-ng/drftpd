@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.misc;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
 import org.drftpd.master.BaseFtpConnection;
@@ -34,8 +36,7 @@ import java.util.Map.Entry;
  */
 public class Misc extends CommandInterface {
 
-	private static final Logger logger = Logger
-		.getLogger(Misc.class);
+	private static final Logger logger = LogManager.getLogger(Misc.class);
 
 	private StandardCommandManager _cManager;
 

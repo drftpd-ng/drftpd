@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.autonuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandInterface;
@@ -43,7 +45,7 @@ import java.util.ResourceBundle;
  * @author scitz0
  */
 public class AutoNukeCommands extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(AutoNukeCommands.class);
+	private static final Logger logger = LogManager.getLogger(AutoNukeCommands.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
@@ -200,8 +202,7 @@ public class AutoNukeCommands extends CommandInterface {
 							}
 						} catch (FileNotFoundException e) {
 							// Strange, dir was just here
-							logger.warn("AutoNuke doSITE_AUTONUKESCAN: FileNotFoundException - " +
-									releaseDir.getName());
+                            logger.warn("AutoNuke doSITE_AUTONUKESCAN: FileNotFoundException - {}", releaseDir.getName());
 							continue;
 						}
 						if (foundExcludedSubDir) continue;

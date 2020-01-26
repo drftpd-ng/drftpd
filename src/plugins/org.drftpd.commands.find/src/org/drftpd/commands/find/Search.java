@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.find;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
@@ -40,7 +42,7 @@ import java.util.ResourceBundle;
  * @version $Id$
  */
 public class Search extends CommandInterface {
-	public static final Logger logger = Logger.getLogger(Find.class);
+	public static final Logger logger = LogManager.getLogger(Find.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
@@ -116,7 +118,7 @@ public class Search extends CommandInterface {
 				env.add("size", Bytes.formatBytes(inode.getSize()));
 				responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
 			} catch (FileNotFoundException e) {
-				logger.warn("Index contained an unexistent inode: " + item.getKey());
+                logger.warn("Index contained an unexistent inode: {}", item.getKey());
 			}
 		}
 

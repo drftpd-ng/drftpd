@@ -17,7 +17,9 @@
  */
 package org.drftpd.vfs.perms;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.permissions.GlobPathPermission;
 import org.drftpd.permissions.PathPermission;
 import org.drftpd.usermanager.User;
@@ -34,7 +36,7 @@ import java.util.Map.Entry;
  * @version $Id$
  */
 public class VFSPermissions {
-	private final static Logger logger = Logger.getLogger(VFSPermissions.class);
+	private static final Logger logger = LogManager.getLogger(VFSPermissions.class);
 
 	private HashMap<String, PermissionWrapper> _handlersMap;	
 	
@@ -72,14 +74,14 @@ public class VFSPermissions {
 				String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
 
 				if (_handlersMap.containsKey(directive)) {
-					logger.debug("A handler for '"+ directive +"' already loaded, check your plugin.xml's");
+                    logger.debug("A handler for '{}' already loaded, check your plugin.xml's", directive);
 					continue;
 				}
 
 				String type = container.getPluginExtension().getParameter("Type").valueAsString().toLowerCase();
 
 				if (!verifyType(type)) {
-					logger.debug("Invalid VFS permission type ("+type+") for directive '"+directive+"'.");
+                    logger.debug("Invalid VFS permission type ({}) for directive '{}'.", type, directive);
 					continue;
 				}
 				PermissionWrapper pw = new PermissionWrapper(container.getPluginObject(), container.getPluginMethod());				
@@ -91,8 +93,7 @@ public class VFSPermissions {
                 TreeMap<Integer, String> order = _priorities.computeIfAbsent(type, k -> new TreeMap<>());
                 while (true) {
 					if (order.containsKey(priority)) {
-						logger.debug("The slot that " + directive + " is trying to use is already allocated, " +
-								"check the xmls, allocating the next available slot");
+                        logger.debug("The slot that {} is trying to use is already allocated, check the xmls, allocating the next available slot", directive);
 						priority++;
 					} else {
 						order.put(priority, directive);
@@ -235,12 +236,12 @@ public class VFSPermissions {
 		for (Entry<String, HashMap<String, LinkedList<PathPermission>>> e1 : _pathPerms.entrySet()) {
 			String type = e1.getKey();
 			HashMap<String, LinkedList<PathPermission>> map = e1.getValue();
-			
-			logger.debug(type + " is handling:");
+
+            logger.debug("{} is handling:", type);
 			TreeMap<Integer, String> order = _priorities.get(type);
             for (Entry<Integer, String> e2 : order.entrySet()) {
                 String directive = e2.getValue();
-                logger.debug(e2.getKey() + ". " + directive);
+                logger.debug("{}. {}", e2.getKey(), directive);
                 if (map.get(directive) == null) {
                     // 'directive' was not found in perms.conf
                     continue;

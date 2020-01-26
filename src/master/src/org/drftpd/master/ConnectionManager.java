@@ -17,7 +17,9 @@
  */
 package org.drftpd.master;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -41,7 +43,7 @@ import java.util.concurrent.*;
  * @version $Id$
  */
 public class ConnectionManager {
-	private static final Logger logger = Logger.getLogger(ConnectionManager.class.getName());
+	private static final Logger logger = LogManager.getLogger(ConnectionManager.class.getName());
 
 	private static final String cmdConf = "conf/ftpcommands.conf";
 
@@ -117,12 +119,11 @@ public class ConnectionManager {
 						.parseInt(PropertyHelper
 								.getProperty(cfg, "master.port"))));
 				_bindIP = bindip;
-				logger.info("Listening on " + server.getInetAddress() + ":"
-						+ server.getLocalPort());
+                logger.info("Listening on {}:{}", server.getInetAddress(), server.getLocalPort());
 			} else {
 				server = new ServerSocket(Integer.parseInt(PropertyHelper
 						.getProperty(cfg, "master.port")));
-				logger.info("Listening on port " + server.getLocalPort());
+                logger.info("Listening on port {}", server.getLocalPort());
 			}
 
 			getConnectionManager().createThreadPool();
@@ -152,9 +153,9 @@ public class ConnectionManager {
 	}
 
 	public void dumpThreadPool() {
-		logger.debug("Active threads: "+_pool.getActiveCount()+" / Completed Tasks: "+ _pool.getCompletedTaskCount());
-		logger.debug("Pool information - Min # of threads: "+_pool.getCorePoolSize()+" / Max: "+ _pool.getMaximumPoolSize());
-		logger.debug("Current # of threads: " + _pool.getPoolSize());
+        logger.debug("Active threads: {} / Completed Tasks: {}", _pool.getActiveCount(), _pool.getCompletedTaskCount());
+        logger.debug("Pool information - Min # of threads: {} / Max: {}", _pool.getCorePoolSize(), _pool.getMaximumPoolSize());
+        logger.debug("Current # of threads: {}", _pool.getPoolSize());
 	}
 
 	public FtpReply canLogin(BaseFtpConnection baseconn, User user) {
@@ -309,7 +310,7 @@ public class ConnectionManager {
 
 	@EventSubscriber
 	public void onReloadEvent(ReloadEvent event) {
-		logger.info("Reloading "+ cmdConf +", origin "+event.getOrigin());
+        logger.info("Reloading " + cmdConf + ", origin {}", event.getOrigin());
 		loadCommands();
 		_commandManager.initialize(getCommands(), themeDir);
 		for (BaseFtpConnection conn : getConnections()) {

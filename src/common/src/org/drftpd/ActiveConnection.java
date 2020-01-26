@@ -17,7 +17,9 @@
  */
 package org.drftpd;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.slave.Connection;
 
 import javax.net.SocketFactory;
@@ -32,8 +34,7 @@ import java.net.Socket;
  * @version $Id$
  */
 public class ActiveConnection extends Connection {
-	private static final Logger logger = Logger
-			.getLogger(ActiveConnection.class);
+	private static final Logger logger = LogManager.getLogger(ActiveConnection.class);
 
 	private SSLContext _ctx;
 
@@ -54,8 +55,7 @@ public class ActiveConnection extends Connection {
 	}
 
 	public Socket connect(String[] cipherSuites, String[] sslProtocols, int bufferSize) throws IOException {
-		logger.debug("Connecting to " + _addr.getAddress().getHostAddress() + ":" +
-				+ _addr.getPort());
+        logger.debug("Connecting to {}:{}", _addr.getAddress().getHostAddress(), _addr.getPort());
 
 		if (_ctx != null) {
 			SSLSocket sslsock;

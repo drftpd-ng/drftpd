@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.nuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.commands.nuke.metadata.NukeData;
@@ -50,7 +52,7 @@ import java.util.Map;
  * @version $Id$
  */
 public class NukeUtils {
-	private static final Logger logger = Logger.getLogger(NukeUtils.class);
+	private static final Logger logger = LogManager.getLogger(NukeUtils.class);
 
 	private static final Object _lock = new Object();
 
@@ -216,8 +218,7 @@ public class NukeUtils {
 				try {
 					nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(username);
 				} catch (NoSuchUserException e) {
-					logger.warn("Cannot remove credits from " + username +
-							": " + e.getMessage(), e);
+                    logger.warn("Cannot remove credits from {}: {}", username, e.getMessage(), e);
 					nukee = null;
 				} catch (UserFileException e) {
 					throw new NukeException("Cannot read user data for " + username +
@@ -306,7 +307,7 @@ public class NukeUtils {
 			try {
 				nukeDir.addPluginMetaData(NukeData.NUKEDATA, nd);
 			} catch (FileNotFoundException e) {
-				logger.warn("Failed to add nuke metadata, dir gone: " + nukeDir.getPath(), e);
+                logger.warn("Failed to add nuke metadata, dir gone: {}", nukeDir.getPath(), e);
 			}
 
 			return nd;
@@ -390,7 +391,7 @@ public class NukeUtils {
 			try {
 				nukeDir.removePluginMetaData(NukeData.NUKEDATA);
 			} catch (FileNotFoundException e) {
-				logger.error("Failed to remove nuke metadata from '" + nukeDir.getPath() + "', dir does not exist anymore", e);
+                logger.error("Failed to remove nuke metadata from '{}', dir does not exist anymore", nukeDir.getPath(), e);
 			}
 
 			nd.setReason(reason);

@@ -16,7 +16,9 @@
  */
 package org.drftpd.protocol.master;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.protocol.HandshakeWrapper;
 import org.drftpd.protocol.ProtocolException;
@@ -36,7 +38,7 @@ import java.util.Map.Entry;
  * @version $Id$
  */
 public class MasterProtocolCentral {
-	private static final Logger logger = Logger.getLogger(MasterProtocolCentral.class);	
+	private static final Logger logger = LogManager.getLogger(MasterProtocolCentral.class);	
 	
 	private Map<Class<?>, AbstractIssuer> _issuersMap;
 	private List<String> _protocols;
@@ -90,12 +92,12 @@ public class MasterProtocolCentral {
 		for (Entry<Class<?>, AbstractIssuer> e : _issuersMap.entrySet()) {
 			Class<?> clazz = e.getKey();
 			AbstractIssuer issuer = e.getValue();
-			logger.debug("Class -> " + clazz.toString());
-			logger.debug("Issuer -> " + issuer.toString());
+            logger.debug("Class -> {}", clazz.toString());
+            logger.debug("Issuer -> {}", issuer.toString());
 		}
 		
 		for (String protocol : _protocols) {
-			logger.debug("Protocol extension loaded: "+ protocol);
+            logger.debug("Protocol extension loaded: {}", protocol);
 		}
 	}
 	

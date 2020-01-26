@@ -1,6 +1,8 @@
 package org.drftpd.plugins.autofreespace;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -31,7 +33,7 @@ import java.util.*;
  */
 
 public class AutoFreeSpace implements PluginInterface {
-	private static Logger logger = Logger.getLogger(AutoFreeSpace.class);
+	private static Logger logger = LogManager.getLogger(AutoFreeSpace.class);
 	private HashMap<String,Section> sections;
 	private ArrayList<String> _excludeFiles;
 	private ArrayList<String> _excludeSlaves;
@@ -62,7 +64,7 @@ public class AutoFreeSpace implements PluginInterface {
 	}
 
 	private void reload() {
-		logger.info("AUTODELETE: Reloading " + AutoFreeSpace.class.getName());
+        logger.info("AUTODELETE: Reloading {}", AutoFreeSpace.class.getName());
 
 		Properties p = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("autofreespace.conf");
 
@@ -150,7 +152,7 @@ public class AutoFreeSpace implements PluginInterface {
 			Collection<InodeHandle> collection = dir.getInodeHandlesUnchecked();
 
 			if (collection.isEmpty()) {
-				logger.debug("AUTODELETE: Empty section: " + dir.getName() + ", skipping");
+                logger.debug("AUTODELETE: Empty section: {}, skipping", dir.getName());
 				return null; //empty section, just ignore
 			}
 
@@ -169,7 +171,7 @@ public class AutoFreeSpace implements PluginInterface {
 					logger.warn("AUTODELETE: No slave available", e.getCause());
 				}
 			}
-			logger.debug("AUTODELETE: Could not find a valid release to delete in section " + dir.getName());
+            logger.debug("AUTODELETE: Could not find a valid release to delete in section {}", dir.getName());
 			return null;
 		}
 
@@ -200,14 +202,14 @@ public class AutoFreeSpace implements PluginInterface {
 					continue;
 				}
 
-				logger.debug("AUTODELETE: Getting oldest release in section " + si.getName());
+                logger.debug("AUTODELETE: Getting oldest release in section {}", si.getName());
 				try {
 					InodeHandle file = getOldestFile(si.getBaseDirectory(), slave);
 
 					if (file == null)
 						continue;
 
-					logger.debug("AUTODELETE: Oldest file in section " + si.getName() + ": " + file.getName());
+                    logger.debug("AUTODELETE: Oldest file in section {}: {}", si.getName(), file.getName());
 
 					long age = System.currentTimeMillis() - file.creationTime();
 					Section section = _sections.get(si.getName());
@@ -216,10 +218,10 @@ public class AutoFreeSpace implements PluginInterface {
 					if (oldest == null || file.creationTime() < oldest.creationTime()) {
 						if (age > _archiveAfter && !checkedReleases.contains(file.getName())) {
 							oldest = file;
-							logger.debug("AUTODELETE: New oldest file: " + oldest.getName() + ", oldest in section " + si.getName());
+                            logger.debug("AUTODELETE: New oldest file: {}, oldest in section {}", oldest.getName(), si.getName());
 						} else if (deleteOnSpace) {
 							oldest = file;
-							logger.debug("AUTODELETE: Deleting due to low space on slave: " + file.getName() + " in section " + si.getName());
+                            logger.debug("AUTODELETE: Deleting due to low space on slave: {} in section {}", file.getName(), si.getName());
 						}
 					}
 				} catch (FileNotFoundException e) {
@@ -252,11 +254,10 @@ public class AutoFreeSpace implements PluginInterface {
 									continue;
 								}
 								oldestRelease.deleteUnchecked();
-								logger.info("AUTODELETE: Removing " + oldestRelease.getName());
+                                logger.info("AUTODELETE: Removing {}", oldestRelease.getName());
 							}
 						} catch (FileNotFoundException e) {
-							logger.warn("AUTODELETE: Oldest release not found for slave " +
-								remoteSlave.getName() + ": " + e);
+                            logger.warn("AUTODELETE: Oldest release not found for slave {}: {}", remoteSlave.getName(), e);
 						}
 					} else {
 						
@@ -265,15 +266,13 @@ public class AutoFreeSpace implements PluginInterface {
 							long freespaceBak = freespace;
 	
 							if (freespace < _minFreeSpace) {
-								logger.debug("AUTODELETE: Space under limit for " + remoteSlave.getName() + ", will clean: " +
-										Bytes.formatBytes(freespace) + "<" + Bytes.formatBytes(_minFreeSpace));
+                                logger.debug("AUTODELETE: Space under limit for {}, will clean: {}<{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(_minFreeSpace));
 								GlobalContext.getEventService().publishAsync(new AFSEvent(null, remoteSlave));
 								if (_onlyAnnounce) {
 									return;
 								}
 							} else {
-								logger.debug("AUTODELETE: Space over limit for " + remoteSlave.getName() + " will not clean: " +
-										Bytes.formatBytes(freespace) + ">" + Bytes.formatBytes(_minFreeSpace));
+                                logger.debug("AUTODELETE: Space over limit for {} will not clean: {}>{}", remoteSlave.getName(), Bytes.formatBytes(freespace), Bytes.formatBytes(_minFreeSpace));
 							}
 
 							while (freespace < _minFreeSpace) {
@@ -289,14 +288,11 @@ public class AutoFreeSpace implements PluginInterface {
 									oldestRelease.deleteUnchecked();
 	
 									freespace = remoteSlave.getSlaveStatus().getDiskSpaceAvailable();
-	
-									logger.info("AUTODELETE: Removing " + oldestRelease.getName() + ", cleared " +
-											Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable()-freespace)
-											+ " on " + remoteSlave.getName());
+
+                                    logger.info("AUTODELETE: Removing {}, cleared {} on {}", oldestRelease.getName(), Bytes.formatBytes(remoteSlave.getSlaveStatus().getDiskSpaceAvailable() - freespace), remoteSlave.getName());
 	
 								} catch (FileNotFoundException e) {
-									logger.warn("AUTODELETE: Oldest release not found for slave " +
-											remoteSlave.getName() + ": " + e);
+                                    logger.warn("AUTODELETE: Oldest release not found for slave {}: {}", remoteSlave.getName(), e);
 								}
 	
 								if(freespaceBak==freespace) {

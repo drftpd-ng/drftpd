@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.vfs.DirectoryHandle;
 
 /**
@@ -25,7 +27,7 @@ import org.drftpd.vfs.DirectoryHandle;
  */
 public class IMDBThread extends Thread {
 
-	private static final Logger logger = Logger.getLogger(IMDB.class);
+	private static final Logger logger = LogManager.getLogger(IMDB.class);
 
 	public IMDBThread() {
 		setPriority(Thread.MIN_PRIORITY);
@@ -41,7 +43,7 @@ public class IMDBThread extends Thread {
 				// Process one item in queue
 				DirectoryHandle dir = IMDBConfig.getInstance().getDirToProcess();
 				if (dir != null) {
-					logger.debug("Fetching IMDB data for " + dir.getPath());
+                    logger.debug("Fetching IMDB data for {}", dir.getPath());
 					IMDBUtils.getIMDBInfo(dir, true);
 				}
 				Thread.sleep(IMDBUtils.randomNumber());

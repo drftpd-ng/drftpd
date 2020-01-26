@@ -17,7 +17,9 @@
  */
 package org.drftpd.tools.installer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.util.FileUtils;
@@ -41,7 +43,7 @@ import java.util.Map.Entry;
 public class PluginParser {
 
 	private static final FileUtils fileUtils = FileUtils.getFileUtils();
-	private static final Logger logger = Logger.getLogger(PluginParser.class);
+	private static final Logger logger = LogManager.getLogger(PluginParser.class);
 
 	private FileSet _fileSet = new FileSet();
 	private File _baseDir;
@@ -68,11 +70,11 @@ public class PluginParser {
             try {
                 URL manifestUrl = getManifestURL(manifestFile);
                 if (manifestUrl == null) {
-                    logger.debug("Skipped file: " + manifestFile);
+                    logger.debug("Skipped file: {}", manifestFile);
                     continue;
                 }
                 manifestUrls.add(manifestUrl);
-                logger.debug("Added URL: " + manifestUrl);
+                logger.debug("Added URL: {}", manifestUrl);
                 if (usePathResolver) {
                     if ("jar".equals(manifestUrl.getProtocol())) {
                         foldersMap.put(manifestUrl.toExternalForm(),
@@ -94,8 +96,7 @@ public class PluginParser {
 		} catch (Exception e) {
 			throw new PluginParseException("can't register URLs");
 		}
-		logger.debug("Registry initialized, registered manifests: "
-				+ processedPlugins.size() + " of " + manifestUrls.size());
+        logger.debug("Registry initialized, registered manifests: {} of {}", processedPlugins.size(), manifestUrls.size());
 		if (usePathResolver) {
 			_pathResolver = objectFactory.createPathResolver();
 			for (Entry<String, Identity> entry : processedPlugins.entrySet()) {

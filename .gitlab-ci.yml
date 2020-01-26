@@ -1,0 +1,23 @@
+default:
+  image: registry.gitlab.com/drftpd/ci-image:openjdk-8
+ 
+full-compile_openjdk-8:
+  stage: build
+  script:
+  - export PATH="/usr/local/ant/bin:${PATH}"
+  - java -version ; ant -version
+  - cp .gitlab-ci/build.conf-full ./build.conf
+  - ./build.sh -a
+  except:
+    - java-11
+
+full-compile_openjdk-11:
+  image: registry.gitlab.com/drftpd/ci-image:openjdk-11
+  stage: build
+  script:
+  - export PATH="/usr/local/ant/bin:${PATH}"
+  - java -version ; ant -version
+  - cp .gitlab-ci/build.conf-full ./build.conf
+  - ./build.sh -a
+  only:
+    - java-11

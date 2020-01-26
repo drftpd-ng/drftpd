@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="common" version="3.4.1">
+<plugin id="common" version="3.4.2">
 	<doc>
 		<doc-text>(Required) - These are the common resources between the master and slave.</doc-text>
 	</doc>	
@@ -36,9 +36,6 @@
 			<attribute id="Native9" value="lib/wrapper-windows-x86-32.dll">
 				<attribute id="Executable" value="false" />
 			</attribute>
-			<attribute id="Native10" value="lib/wrapper-windows-x86-64.dll">
-				<attribute id="Executable" value="false" />
-			</attribute>
 			<attribute id="Native11" value="lib/wrapper.jar">
 				<attribute id="Executable" value="false" />
 			</attribute>
@@ -69,22 +66,25 @@
 			<attribute id="Native20" value="bin/wrapper-windows-x86-32.exe">
 				<attribute id="Executable" value="true" />
 			</attribute>
-			<attribute id="Native21" value="bin/wrapper-windows-x86-64.exe">
-				<attribute id="Executable" value="true" />
-			</attribute>
 		</attribute>
 	</attributes>
 	<runtime>
 		<library id="common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="junit" path="../../lib/junit-4.12.jar" type="code">
-			<export prefix="*" />
-		</library>
-		<library id="log4j" path="../../lib/log4j-1.2.17.jar" type="code">
-			<export prefix="*" />
-		</library>
 		<library id="commons-logging" path="../../lib/commons-logging-1.2.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="junit" path="../../lib/junit-4.13.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="log4j-api" path="../../lib/log4j-api-2.13.0.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="log4j-core" path="../../lib/log4j-core-2.13.0.jar" type="code">
+			<export prefix="*" />
+		</library>
+		<library id="log4j-jcl" path="../../lib/log4j-jcl-2.13.0.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="jpf" path="../../lib/jpf-1.5.1.jar" type="code">
@@ -93,7 +93,7 @@
 		<library id="jpf-boot" path="../../lib/jpf-boot-1.5.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.4.1.jar" type="code">
+		<library id="drftpd-jpf" path="../../lib/drftpd-jpf-3.4.2.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="commons-lang3" path="../../lib/commons-lang3-3.9.jar" type="code">

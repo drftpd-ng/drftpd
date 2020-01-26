@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <RollingFile name="archive" fileName="logs/archive.log" filePattern="logs/archive-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="jpf" fileName="logs/jpf-master.log" filePattern="logs/jpf-master-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="debug" fileName="logs/debug.log" filePattern="logs/debug-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="jobmanager" fileName="logs/jobmanager.log" filePattern="logs/jobmanager-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="imdb" fileName="logs/imdb.log" filePattern="logs/imdb-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="index" fileName="logs/index.log" filePattern="logs/index-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="root" fileName="logs/master.log" filePattern="logs/master-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="sitebot" fileName="logs/sitebot.log" filePattern="logs/sitebot-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="slave" fileName="logs/remoteslave.log" filePattern="logs/remoteslave-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="sysop" fileName="logs/sysop.log" filePattern="logs/sysop-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="tvmaze" fileName="logs/tvmaze.log" filePattern="logs/tvmaze-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+	<Logger name="org.drftpd.commands.imdb" level="warn" additivity="false">
+      <AppenderRef ref="imdb"/>
+    </Logger>
+	<Logger name="org.drftpd.commands.indexmanager" level="debug" additivity="false">
+      <AppenderRef ref="index"/>
+    </Logger>
+    <Logger name="org.drftpd.commands.usermanagement" level="debug" additivity="false">
+      <AppenderRef ref="sysop"/>
+    </Logger>
+	<Logger name="org.drftpd.commands.tvmaze" level="warn" additivity="false">
+      <AppenderRef ref="tvmaze"/>
+    </Logger>
+	<Logger name="org.drftpd.master.BaseFtpConnection.service" level="debug" additivity="false">
+      <AppenderRef ref="debug"/>
+    </Logger>
+    <Logger name="org.drftpd.master.RemoteSlave" level="debug" additivity="false">
+      <AppenderRef ref="slave"/>
+    </Logger>
+    <Logger name="org.drftpd.master.SlaveManager" level="debug" additivity="false">
+      <AppenderRef ref="slave"/>
+    </Logger>
+	<Logger name="org.drftpd.plugins.archive" level="error" additivity="false">
+      <AppenderRef ref="archive"/>
+    </Logger>
+	<Logger name="org.drftpd.plugins.jobmanager" level="debug" additivity="false">
+      <AppenderRef ref="jobmanager"/>
+    </Logger>
+	<Logger name="org.drftpd.plugins.sitebot" level="debug" additivity="false">
+      <AppenderRef ref="sitebot"/>
+    </Logger>
+    <Logger name="org.drftpd.vfs.index" level="debug" additivity="false">
+      <AppenderRef ref="index"/>
+    </Logger>
+    <Logger name="org.drftpd.vfs.index.lucene" level="debug" additivity="false">
+      <AppenderRef ref="index"/>
+    </Logger>
+	<Logger name="org.apache.http.impl.conn" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+	<Logger name="org.apache.http.impl.client" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+    <Logger name="org.apache.http.client" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+    <Logger name="org.apache.http.wire" level="error" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+	<Logger name="org.java.plugin" level="debug" additivity="false">
+      <AppenderRef ref="jpf"/>
+    </Logger>
+	<Root level="debug">
+      <AppenderRef ref="root"/>
+    </Root>
+  </Loggers>
+</Configuration>

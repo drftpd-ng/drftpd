@@ -12,6 +12,7 @@ package org.drftpd.plugins.sitebot.blowfish;
 
 import javax.crypto.*;
 import javax.crypto.spec.*;
+
 import java.security.SecureRandom;
 import java.util.Base64;
 
@@ -41,7 +42,7 @@ public class BlowfishCBC extends Blowfish {
     /**
      * Default charset for encoding
      */
-    private static final String ENCODED_CHARSET = "8859_1";
+    private static final String ENCODED_CHARSET = "ISO_8859_1";
 
     /**
      * Initial Vector
@@ -51,7 +52,7 @@ public class BlowfishCBC extends Blowfish {
     /**
      * CBC irc prefix
      */
-    private final static String CBC_PREFIX = "+OK *";
+    private static final String CBC_PREFIX = "+OK *";
 
     public BlowfishCBC(String key) {
         super(key, "Blowfish/CBC/NoPadding");

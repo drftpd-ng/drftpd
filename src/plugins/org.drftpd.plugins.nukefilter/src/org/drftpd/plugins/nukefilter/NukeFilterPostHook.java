@@ -1,6 +1,8 @@
 package org.drftpd.plugins.nukefilter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -22,7 +24,7 @@ import java.util.regex.Pattern;
  * @author phew
  */
 public class NukeFilterPostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(NukeFilterPostHook.class);
+	private static final Logger logger = LogManager.getLogger(NukeFilterPostHook.class);
 	
 	private NukeFilterSettings _nfs;
 
@@ -41,10 +43,10 @@ public class NukeFilterPostHook implements PostHookInterface {
 		try {
 			newDir = request.getCurrentDirectory().getDirectoryUnchecked(request.getArgument());
 		} catch (FileNotFoundException e) {
-			logger.error("Failed getting directory handle for "+request.getArgument(), e);
+            logger.error("Failed getting directory handle for {}", request.getArgument(), e);
 			return;
 		} catch (ObjectNotValidException e) {
-			logger.error("Failed getting directory handle for "+request.getArgument(), e);
+            logger.error("Failed getting directory handle for {}", request.getArgument(), e);
 			return;
 		}
 		//is directory name exempt?
@@ -295,8 +297,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 					if (e.getElement().contains("-")) {
 						String[] range = e.getElement().split("-");
 						if (range.length != 2) {
-							logger.warn("improper formatted global.filter.year range element given, " +
-									"skipping '" + e.getElement() + "'");
+                            logger.warn("improper formatted global.filter.year range element given, skipping '{}'", e.getElement());
 							continue;
 						}
 						int start;
@@ -305,8 +306,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 							start = Integer.parseInt(range[0]);
 							stop = Integer.parseInt(range[1]);
 						} catch (NumberFormatException er) {
-							logger.warn("improper formatted global.filter.year element given, " +
-									"skipping '" + e.getElement() + "'");
+                            logger.warn("improper formatted global.filter.year element given, skipping '{}'", e.getElement());
 							continue;
 						}
 						if (stop < start) {
@@ -349,14 +349,12 @@ public class NukeFilterPostHook implements PostHookInterface {
 								return true;
 							}
 						} catch (NumberFormatException er) {
-							logger.warn("improper formatted global.filter.year element given, " +
-									"skipping '" + e.getElement() + "'");
+                            logger.warn("improper formatted global.filter.year element given, skipping '{}'", e.getElement());
 						}
 					}
 				}
 			} catch(NumberFormatException e) {
-				logger.warn("could not format the year string extracted from '"+dir.getName()+"', " +
-						"skipping global.filter.year (\\d\\d\\d\\d) on given release");
+                logger.warn("could not format the year string extracted from '{}', skipping global.filter.year (\\d\\d\\d\\d) on given release", dir.getName());
 			}
 		}
 		Pattern patternYearx = Pattern.compile("^.+[-.]([0-9]{3}x)[-.].+$");
@@ -366,16 +364,14 @@ public class NukeFilterPostHook implements PostHookInterface {
 			try {
 				Integer.parseInt(rlsYear);
 			} catch(NumberFormatException e) {
-				logger.warn("could not format the year string extracted from '"+dir.getName()+"', " +
-						"skipping global.filter.year (\\d\\d\\dx) on given release");
+                logger.warn("could not format the year string extracted from '{}', skipping global.filter.year (\\d\\d\\dx) on given release", dir.getName());
 				return false;
 			}
 			for (NukeFilterConfigElement e : filterYearList) {
 				if (e.getElement().contains("-")) {
 					String[] range = e.getElement().split("-");
 					if (range.length != 2) {
-						logger.warn("improper formatted global.filter.year element given, " +
-								"skipping '" + e.getElement() + "'");
+                        logger.warn("improper formatted global.filter.year element given, skipping '{}'", e.getElement());
 						continue;
 					}
 					int start;
@@ -384,8 +380,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 						start = Integer.parseInt(range[0]);
 						stop = Integer.parseInt(range[1]);
 					} catch (NumberFormatException er) {
-						logger.warn("improper formatted global.filter.year element given, " +
-								"skipping '" + e.getElement() + "'");
+                        logger.warn("improper formatted global.filter.year element given, skipping '{}'", e.getElement());
 						continue;
 					}
 					if (stop < start) {
@@ -432,8 +427,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 							}
 						}
 					} catch (NumberFormatException er) {
-						logger.warn("improper formatted global.filter.year element given, " +
-								"skipping '" + e.getElement() + "'");
+                        logger.warn("improper formatted global.filter.year element given, skipping '{}'", e.getElement());
 					}
 				}
 			}
@@ -464,8 +458,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 					if(e.getElement().contains("-")) {
 						String[] range = e.getElement().split("-");
 						if(range.length != 2) {
-							logger.warn("improper formatted global.enforce.year/section.enforce.year " +
-									"range element given, skipping '"+e.getElement()+"'");
+                            logger.warn("improper formatted global.enforce.year/section.enforce.year range element given, skipping '{}'", e.getElement());
 							continue;
 						}
 						int start;
@@ -474,8 +467,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 							start = Integer.parseInt(range[0]);
 							stop = Integer.parseInt(range[1]);
 						} catch(NumberFormatException er) {
-							logger.warn("improper formatted global.enforce.year/section.enforce.year " +
-									"element given, skipping '"+e.getElement()+"'");
+                            logger.warn("improper formatted global.enforce.year/section.enforce.year element given, skipping '{}'", e.getElement());
 							continue;
 						}
 						if(stop < start) {
@@ -494,8 +486,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 								break;
 							}
 						} catch(NumberFormatException er) {
-							logger.warn("improper formatted global.enforce.year/section.enforce.year " +
-									"element given, skipping '"+e.getElement()+"'");
+                            logger.warn("improper formatted global.enforce.year/section.enforce.year element given, skipping '{}'", e.getElement());
 						}
 					}
 				}
@@ -514,8 +505,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 					}
 				}
 			} catch(NumberFormatException e) {
-				logger.warn("could not format the year string extracted from '"+dir.getName()+"', " +
-						"skipping global.enforce.year/section.enforce.year (\\d\\d\\d\\d) on given release");
+                logger.warn("could not format the year string extracted from '{}', skipping global.enforce.year/section.enforce.year (\\d\\d\\d\\d) on given release", dir.getName());
 				return false;
 			}
 		}
@@ -526,8 +516,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 			try {
 				Integer.parseInt(rlsYear);
 			} catch(NumberFormatException e) {
-				logger.warn("could not format the year string extracted from '"+dir.getName()+"', " +
-						"skipping global.enforce.year/section.enforce.year (\\d\\d\\dx) on given release");
+                logger.warn("could not format the year string extracted from '{}', skipping global.enforce.year/section.enforce.year (\\d\\d\\dx) on given release", dir.getName());
 				return false;
 			}
 			Iterator<NukeFilterConfigElement> fyIter = enforceYearList.iterator();
@@ -536,8 +525,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 				if(e.getElement().contains("-")) {
 					String[] range = e.getElement().split("-");
 					if(range.length != 2) {
-						logger.warn("improper formatted global.enforce.year/section.enforce.year " +
-								"element given, skipping '"+e.getElement()+"'");
+                        logger.warn("improper formatted global.enforce.year/section.enforce.year element given, skipping '{}'", e.getElement());
 						continue;
 					}
 					int start;
@@ -546,8 +534,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 						start = Integer.parseInt(range[0]);
 						stop = Integer.parseInt(range[1]);
 					} catch(NumberFormatException er) {
-						logger.warn("improper formatted global.enforce.year/section.enforce.year " +
-								"element given, skipping '"+e.getElement()+"'");
+                        logger.warn("improper formatted global.enforce.year/section.enforce.year element given, skipping '{}'", e.getElement());
 						continue;
 					}
 					if(stop < start) {
@@ -572,8 +559,7 @@ public class NukeFilterPostHook implements PostHookInterface {
 							}
 						}
 					} catch(NumberFormatException er) {
-						logger.warn("improper formatted global.enforce.year/section.enforce.year " +
-								"element given, skipping '"+e.getElement()+"'");
+                        logger.warn("improper formatted global.enforce.year/section.enforce.year element given, skipping '{}'", e.getElement());
 					}
 				}
 			}

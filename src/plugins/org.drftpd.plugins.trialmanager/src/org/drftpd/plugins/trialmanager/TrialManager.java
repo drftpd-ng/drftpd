@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.trialmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -37,7 +39,7 @@ import java.util.Properties;
  */
 
 public class TrialManager implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(TrialManager.class);
+	private static final Logger logger = LogManager.getLogger(TrialManager.class);
 	
 	private CaseInsensitiveHashMap<String, Class<TrialType>> _typesMap;
 	
@@ -81,14 +83,14 @@ public class TrialManager implements PluginInterface {
 		
 		if (!_typesMap.containsKey(type)) {
 			// if we can't find one filter that will be enough to brake the whole chain.
-			logger.error("Trial Type: " + type + " wasn't loaded.");
+            logger.error("Trial Type: {} wasn't loaded.", type);
 			
 		} else {
 			try {
 				Class<TrialType> clazz = _typesMap.get(type);
 				trialType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
-				logger.error("Unable to load TrialType for section " + count + ".type=" + type, e);
+                logger.error("Unable to load TrialType for section {}.type={}", count, type, e);
 			}		
 		}
 		return trialType;	

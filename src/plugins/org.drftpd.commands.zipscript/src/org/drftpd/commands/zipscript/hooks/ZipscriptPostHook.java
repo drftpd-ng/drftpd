@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.zipscript.hooks;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
@@ -63,7 +65,7 @@ import java.util.ResourceBundle;
  */
 public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptPostHook.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptPostHook.class);
 
 	private ResourceBundle _bundle;
 
@@ -90,8 +92,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 		
 		String transferFileName = transferFile.getName();
 		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
-		logger.debug("Running zipscript on retrieved file " + transferFileName +
-				" with CRC of " + checksum);
+        logger.debug("Running zipscript on retrieved file {} with CRC of {}", transferFileName, checksum);
 
 		if (checksum != 0) {
 			response.addComment("Checksum from transfer: " +
@@ -149,8 +150,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 
 		String transferFileName = transferFile.getName();
 		long checksum = response.getObjectLong(DataConnectionHandler.CHECKSUM);
-		logger.debug("Running zipscript on stored file " + transferFileName +
-				" with CRC of " + Checksum.formatChecksum(checksum));
+        logger.debug("Running zipscript on stored file {} with CRC of {}", transferFileName, Checksum.formatChecksum(checksum));
 		if (!transferFileName.toLowerCase().endsWith(".sfv")) {
 			try {
 				ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(transferFile.getParent());
@@ -198,9 +198,7 @@ public class ZipscriptPostHook extends SFVTools implements PostHookInterface {
 						// meaning that we are not using checked transfers.
 						response.addComment("checksum match: SLAVE/SFV: DISABLED");
 				} else {
-					logger.debug("checksum mismatch: SLAVE: " +
-							Checksum.formatChecksum(checksum) + " SFV: " +
-							Checksum.formatChecksum(sfvChecksum) + " - deleting file");
+                    logger.debug("checksum mismatch: SLAVE: {} SFV: {} - deleting file", Checksum.formatChecksum(checksum), Checksum.formatChecksum(sfvChecksum));
 					response.addComment("checksum mismatch: SLAVE: " +
 							Checksum.formatChecksum(checksum) + " SFV: " +
 							Checksum.formatChecksum(sfvChecksum));

@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
@@ -35,7 +37,7 @@ import java.util.List;
  */
 public class UserDetails {
 
-	private static final Logger logger = Logger.getLogger(UserDetails.class);
+	private static final Logger logger = LogManager.getLogger(UserDetails.class);
 
 	public static final Key<String> BLOWKEY = new Key<>(UserDetails.class, "blowfishkey");
 
@@ -103,7 +105,7 @@ public class UserDetails {
 			} catch (NoSuchUserException e) {
 				// do nothing
 			} catch (UserFileException e) {
-				logger.warn("Error loading userfile for "+_ftpUser,e);
+                logger.warn("Error loading userfile for {}", _ftpUser, e);
 			}
 		}
 		// Update cipher in the users OutputWriter
@@ -158,7 +160,7 @@ public class UserDetails {
 		} catch (NoSuchUserException e) {
 			//do nothing
 		} catch (UserFileException e) {
-			logger.warn("Error loading userfile for "+_ftpUser,e);
+            logger.warn("Error loading userfile for {}", _ftpUser, e);
 		}
 	}
 
@@ -220,7 +222,7 @@ public class UserDetails {
 			// can't set ident, just return
 			return;
 		} catch (UserFileException e) {
-			logger.warn("Error loading userfile for "+_ftpUser,e);
+            logger.warn("Error loading userfile for {}", _ftpUser, e);
 			// can't set ident, just return
 			return;
 		}
@@ -256,7 +258,7 @@ public class UserDetails {
 		}
 		user.getKeyedMap().setObject(UserManagement.IRCIDENT,newIdents.toString());
 		user.commit();
-		logger.info("Set IRC ident to '"+ident+"' for "+user.getName()+" on bot "+sourceBot);
+        logger.info("Set IRC ident to '{}' for {} on bot {}", ident, user.getName(), sourceBot);
 	}
 
 	protected OutputWriter getOutputWriter() {

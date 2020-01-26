@@ -26,7 +26,9 @@ import charva.awt.event.ActionListener;
 import charva.awt.event.KeyEvent;
 import charva.awt.event.KeyListener;
 import charvax.swing.*;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginData;
@@ -43,7 +45,7 @@ import java.util.HashMap;
  */
 public class ConsoleInstaller extends JFrame implements ActionListener, KeyListener {
 
-	private static final Logger logger = Logger.getLogger(ConsoleInstaller.class);
+	private static final Logger logger = LogManager.getLogger(ConsoleInstaller.class);
 	private static final Toolkit toolkit = Toolkit.getDefaultToolkit();
 
 	private JButton _buildButton;

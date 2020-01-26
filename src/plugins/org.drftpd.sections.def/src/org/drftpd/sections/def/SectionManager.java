@@ -17,7 +17,9 @@
  */
 package org.drftpd.sections.def;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.sections.SectionInterface;
@@ -34,7 +36,7 @@ import java.util.*;
  */
 public class SectionManager implements SectionManagerInterface {
 	
-	private static final Logger logger = Logger.getLogger(SectionManager.class);
+	private static final Logger logger = LogManager.getLogger(SectionManager.class);
 
 	public SectionManager() {
 	}
@@ -49,7 +51,7 @@ public class SectionManager implements SectionManagerInterface {
 				return new Section(getGlobalContext().getRoot()
 						.getDirectoryUnchecked(name));
 			} catch (ObjectNotValidException e) {
-				logger.error("Section defined " + name + " is not a file");
+                logger.error("Section defined {} is not a file", name);
 				return new Section(getGlobalContext().getRoot());
 			}
 		} catch (FileNotFoundException e) {

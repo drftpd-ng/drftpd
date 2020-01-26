@@ -17,7 +17,9 @@
  */
 package org.drftpd.commandmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -31,6 +33,7 @@ import org.drftpd.util.PluginObjectContainer;
 
 import java.io.*;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +46,7 @@ import java.util.TreeMap;
  */
 public abstract class CommandInterface {
 
-	private static final Logger logger = Logger.getLogger(CommandInterface.class);
+	private static final Logger logger = LogManager.getLogger(CommandInterface.class);
 
 	protected String[] _featReplies;
 
@@ -68,8 +71,7 @@ public abstract class CommandInterface {
 			for (PluginObjectContainer<PreHookInterface> container : loadedPreHooks) {
 				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
 				if (preHooks.containsKey(priority)) {
-					logger.warn(pluginName + " already has a pre hook with priority " +
-							priority + " adding " + container.getPluginExtension().getId() + " with next available priority");
+                    logger.warn("{} already has a pre hook with priority {} adding {} with next available priority", pluginName, priority, container.getPluginExtension().getId());
 					while (preHooks.containsKey(priority)) {
 						priority++;
 					}
@@ -80,8 +82,7 @@ public abstract class CommandInterface {
                         new HookContainer<>(container.getPluginMethod(), preHookInstance));
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for "+pluginName+" extension point 'PreHook', possibly the "+pluginName
-					+" extension point definition has changed in the plugin.xml",e);
+            logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
 		}
 
 		// Populate all available post hooks
@@ -92,8 +93,7 @@ public abstract class CommandInterface {
 			for (PluginObjectContainer<PostHookInterface> container : loadedPostHooks) {
 				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
 				if (postHooks.containsKey(priority)) {
-					logger.warn(pluginName + " already has a post hook with priority " +
-							priority + " adding " + container.getPluginExtension().getId() + " with next available priority");
+                    logger.warn("{} already has a post hook with priority {} adding {} with next available priority", pluginName, priority, container.getPluginExtension().getId());
 					while (postHooks.containsKey(priority)) {
 						priority++;
 					}
@@ -104,8 +104,7 @@ public abstract class CommandInterface {
                         new HookContainer<>(container.getPluginMethod(), postHookInstance));
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for "+pluginName+" extension point 'PostHook', possibly the "+pluginName
-					+" extension point definition has changed in the plugin.xml",e);
+            logger.error("Failed to load plugins for {} extension point 'PostHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
 		}
 		_preHooks = preHooks;
 		_postHooks = postHooks;
@@ -118,7 +117,7 @@ public abstract class CommandInterface {
 				m.invoke(hook.getHookInterfaceInstance(), request, response);
 			}
 			catch (Exception e) {
-				logger.error("Error while loading/invoking posthook " + m.toString(), e.getCause());
+                logger.error("Error while loading/invoking posthook {}", m.toString(), e.getCause());
 				/* Not that important, this just means that this post hook
 				 * failed and we'll just move onto the next one
 				 */
@@ -134,7 +133,7 @@ public abstract class CommandInterface {
 				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[] {request});
 			}
 			catch (Exception e) {
-				logger.error("Error while loading/invoking prehook " + m.toString(), e.getCause());
+                logger.error("Error while loading/invoking prehook {}", m.toString(), e.getCause());
 				/* Not that important, this just means that this pre hook
 				 * failed and we'll just move onto the next one
 				 */
@@ -155,7 +154,7 @@ public abstract class CommandInterface {
 	throws FileNotFoundException, IOException {
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "ISO-8859-1"));
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.ISO_8859_1));
 			response.addComment(reader);
 			reader.close();
 		} finally {
@@ -181,7 +180,7 @@ public abstract class CommandInterface {
 				for (Iterator<Entry<Integer, HookContainer<PostHookInterface>>> iter = clonedPostHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PostHookInterface>> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
-						logger.debug("Removing post hook provided by " + event.getPlugin() + " from " + currentPlugin);
+                        logger.debug("Removing post hook provided by {} from {}", event.getPlugin(), currentPlugin);
 						iter.remove();
 						hookRemoved = true;
 					}
@@ -198,7 +197,7 @@ public abstract class CommandInterface {
 				for (Iterator<Entry<Integer, HookContainer<PreHookInterface>>> iter = clonedPreHooks.entrySet().iterator(); iter.hasNext();) {
 					Entry<Integer, HookContainer<PreHookInterface>> entry = iter.next();
 					if (CommonPluginUtils.getPluginIdForObject(entry.getValue().getHookInterfaceInstance()).equals(event.getPlugin())) {
-						logger.debug("Removing pre hook provided by " + event.getPlugin() + " from " + currentPlugin);
+                        logger.debug("Removing pre hook provided by {} from {}", event.getPlugin(), currentPlugin);
 						iter.remove();
 						hookRemoved = true;
 					}

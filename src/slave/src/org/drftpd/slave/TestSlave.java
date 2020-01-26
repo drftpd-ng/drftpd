@@ -17,8 +17,9 @@
  */
 package org.drftpd.slave;
 
-import org.apache.log4j.BasicConfigurator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.PropertyHelper;
 import org.drftpd.slave.async.*;
 
@@ -40,12 +41,12 @@ public class TestSlave extends Slave {
     private Socket _s;
     private ObjectInputStream _sin;
     private ObjectOutputStream _sout;
-    private static final Logger logger = Logger.getLogger(TestSlave.class);
+    private static final Logger logger = LogManager.getLogger(TestSlave.class);
 	public TestSlave(Properties p) throws IOException {
         InetSocketAddress addr = new InetSocketAddress(PropertyHelper
 				.getProperty(p, "master.host"), Integer.parseInt(PropertyHelper
 				.getProperty(p, "master.bindport")));
-		logger.info("Connecting to master at " + addr);
+        logger.info("Connecting to master at {}", addr);
 
 		String slavename = PropertyHelper.getProperty(p, "slave.name");
 
@@ -71,7 +72,7 @@ public class TestSlave extends Slave {
             _sout.writeObject(response);
             _sout.flush();
             if(!(response instanceof AsyncResponseTransferStatus)) {
-            	logger.debug("Slave wrote response - " + response);
+                logger.debug("Slave wrote response - {}", response);
             }
 
             if (response instanceof AsyncResponseException) {
@@ -83,7 +84,7 @@ public class TestSlave extends Slave {
         }
     }
     public static void main(String[] args) throws Exception {
-        BasicConfigurator.configure();
+        //BasicConfigurator.configure();
         System.out.println(
             "DrFTPD Slave starting, further logging will be done through log4j");
 
@@ -113,7 +114,7 @@ public class TestSlave extends Slave {
             	return;
             }
 
-            logger.debug("Slave fetched " + ac);
+            logger.debug("Slave fetched {}", ac);
             class AsyncCommandHandler implements Runnable {
                 private AsyncCommandArgument _command = null;
 

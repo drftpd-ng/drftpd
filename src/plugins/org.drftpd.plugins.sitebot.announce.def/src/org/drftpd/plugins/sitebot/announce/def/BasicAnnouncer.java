@@ -19,7 +19,9 @@ package org.drftpd.plugins.sitebot.announce.def;
 
 import java.util.ResourceBundle;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.slavemanagement.SlaveManagement;
@@ -45,7 +47,7 @@ import org.drftpd.GlobalContext;
  */
 public class BasicAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = Logger.getLogger(BasicAnnouncer.class);
+	private static final Logger logger = LogManager.getLogger(BasicAnnouncer.class);
 
 	private AnnounceConfig _config;
 

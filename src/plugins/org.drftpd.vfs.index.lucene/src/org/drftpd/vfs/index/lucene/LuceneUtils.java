@@ -17,7 +17,9 @@
  */
 package org.drftpd.vfs.index.lucene;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.index.Term;
@@ -36,7 +38,7 @@ import java.util.Set;
  * @version $Id$
  */
 public class LuceneUtils {
-	private static final Logger logger = Logger.getLogger(LuceneEngine.class);
+	private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
 
 	/**
 	 * Parses the name removing unwanted chars from it.

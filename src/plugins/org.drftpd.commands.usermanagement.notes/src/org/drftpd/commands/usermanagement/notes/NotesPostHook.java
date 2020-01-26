@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.usermanagement.notes;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -36,7 +38,7 @@ import java.util.ResourceBundle;
  * @author Scitz0
  */
 public class NotesPostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(NotesPostHook.class);
+	private static final Logger logger = LogManager.getLogger(NotesPostHook.class);
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 

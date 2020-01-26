@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -42,7 +44,7 @@ import org.tanesha.replacer.ReplacerEnvironment;
 
 public class StoreAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = Logger.getLogger(StoreAnnouncer.class);
+	private static final Logger logger = LogManager.getLogger(StoreAnnouncer.class);
 
 	private AnnounceConfig _config;
 

@@ -16,7 +16,9 @@
  */
 package org.drftpd.protocol.slave;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.protocol.HandshakeWrapper;
 import org.drftpd.protocol.ProtocolException;
 import org.drftpd.slave.Slave;
@@ -42,7 +44,7 @@ public class SlaveProtocolCentral {
 	public Map<String, HandlerWrapper> _handlersMap;
 	public List<String> _protocols; 
 	
-	private static final Logger logger = Logger.getLogger(SlaveProtocolCentral.class);
+	private static final Logger logger = LogManager.getLogger(SlaveProtocolCentral.class);
 	
 	private static final Class<?>[] CONSTRUCTORPARMS = { SlaveProtocolCentral.class };
 	private static final Class<?>[] METHODPARMS = { AsyncCommandArgument.class };
@@ -81,16 +83,16 @@ public class SlaveProtocolCentral {
 			
 			List<String> protocols = (List<String>) o;
 			for (String protocol : protocols) {
-				logger.debug("Checking availability for: " + protocol);
+                logger.debug("Checking availability for: {}", protocol);
 				
 				if (!_protocols.contains(protocol)) {
-					logger.error(protocol + " not found, error!");
+                    logger.error("{} not found, error!", protocol);
 					hw.setPluginStatus(false);
 					hw.setException(new ProtocolException(protocol + " was not found."));
 					break;
 				}
-				
-				logger.debug(protocol + " is available.");
+
+                logger.debug("{} is available.", protocol);
 			}			
 		} catch (Exception e) {
 			logger.error("Exception during protocol handshake", e);
@@ -134,7 +136,7 @@ public class SlaveProtocolCentral {
 		_protocols = Collections.unmodifiableList(protocols);
 		
 		for (String s : _protocols) {
-			logger.debug("Loaded protocol extension: " + s);
+            logger.debug("Loaded protocol extension: {}", s);
 		}
 		
 		dumpHandlers();
@@ -143,8 +145,7 @@ public class SlaveProtocolCentral {
 	private void dumpHandlers() {
 		for (Entry<String, HandlerWrapper> entry : _handlersMap.entrySet()) {
 			HandlerWrapper hw = entry.getValue();
-			logger.debug("Handler for: " + entry.getKey()+ " -> " 
-					+ hw.getAsyncHandler().getClass().getCanonicalName()+"."+hw.getMethod().getName());
+            logger.debug("Handler for: {} -> {}.{}", entry.getKey(), hw.getAsyncHandler().getClass().getCanonicalName(), hw.getMethod().getName());
 		}
 	}
 	
@@ -166,8 +167,8 @@ public class SlaveProtocolCentral {
 		try {
 			ar = (AsyncResponse) m.invoke(ah, new Object[]{ ac });
 		} catch (Exception e) {
-			logger.error("Unable to invoke: " + m.toGenericString(), e);
-			logger.error("Invokation failed due to: " + m.toGenericString(), e.getCause());
+            logger.error("Unable to invoke: {}", m.toGenericString(), e);
+            logger.error("Invokation failed due to: {}", m.toGenericString(), e.getCause());
 			return new AsyncResponseException(ac.getIndex(), new Exception("Unable to invoke the proper handler", e));
 		}
 		

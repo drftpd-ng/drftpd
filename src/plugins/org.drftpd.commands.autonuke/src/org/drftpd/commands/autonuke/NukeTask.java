@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.autonuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.commands.nuke.NukeException;
@@ -39,7 +41,7 @@ import java.util.TimerTask;
  * @author scitz0
  */
 public class NukeTask extends TimerTask {
-	private static final Logger logger = Logger.getLogger(NukeTask.class);
+	private static final Logger logger = LogManager.getLogger(NukeTask.class);
 
 	public NukeTask() {
 	}
@@ -70,14 +72,12 @@ public class NukeTask extends TimerTask {
 				if (updatedNI != null && !isApproved) {
 					// Dir still not ok and not approved, nuke it!
 					if (AutoNukeSettings.getSettings().debug() || updatedNI.debug()) {
-						logger.debug("NukeTask: NUKE " + updatedNI.getMultiplier() + "X " + dir.getPath() +
-								" with reason: " + updatedNI.getReason());
+                        logger.debug("NukeTask: NUKE {}X {} with reason: {}", updatedNI.getMultiplier(), dir.getPath(), updatedNI.getReason());
 					} else {
 						doNuke(dir, updatedNI.getMultiplier(), updatedNI.getReason());
 					}
 				} else {
-					logger.debug(dir.getPath() +
-							" was flagged to be nuked but is now ok or set approved, skipping nuke!");
+                    logger.debug("{} was flagged to be nuked but is now ok or set approved, skipping nuke!", dir.getPath());
 				}
 				iter.remove();
 			}

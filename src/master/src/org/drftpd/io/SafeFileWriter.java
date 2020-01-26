@@ -17,9 +17,12 @@
  */
 package org.drftpd.io;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author mog
@@ -51,7 +54,7 @@ public class SafeFileWriter extends Writer {
 		}
 
 		_tempFile = File.createTempFile(_actualFile.getName(), null, dir);
-		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), "UTF-8");
+		_out = new OutputStreamWriter(new FileOutputStream(_tempFile), StandardCharsets.UTF_8);
 	}
 
 	/**
@@ -66,9 +69,7 @@ public class SafeFileWriter extends Writer {
 		_out.close();
 
 		if (!failed) {
-			Logger.getLogger(SafeFileWriter.class).debug(
-					"Renaming " + _tempFile + " (" + _tempFile.length()
-							+ ") to " + _actualFile);
+            LogManager.getLogger(SafeFileWriter.class).debug("Renaming {} ({}) to {}", _tempFile, _tempFile.length(), _actualFile);
 
 			if (_actualFile.exists() && !_actualFile.delete()) {
 				throw new IOException("delete() failed");

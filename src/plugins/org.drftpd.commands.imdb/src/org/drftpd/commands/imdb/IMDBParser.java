@@ -18,7 +18,9 @@
 package org.drftpd.commands.imdb;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.util.HttpUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -30,7 +32,7 @@ import java.util.regex.Pattern;
  * @author lh
  */
 public class IMDBParser {
-	private static final Logger logger = Logger.getLogger(IMDBParser.class); 
+	private static final Logger logger = LogManager.getLogger(IMDBParser.class); 
   
 	private static final String _baseUrl = "http://akas.imdb.com";
 	private static final String _searchUrl = "http://akas.imdb.com/find?s=all&q=";
@@ -107,7 +109,7 @@ public class IMDBParser {
 			String data = HttpUtils.retrieveHttpAsString(url);
 
 			if (!data.contains("<meta property='og:type' content=\"video.movie\" />")) {
-				logger.warn("Request for IMDB info for a Tv Show, this is not handled by this plugin. URL:"+url);
+                logger.warn("Request for IMDB info for a Tv Show, this is not handled by this plugin. URL:{}", url);
 				return false;
 			}
 

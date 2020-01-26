@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.find.action;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.ImproperUsageException;
@@ -35,7 +37,7 @@ import java.util.Map;
  * @version $Id$
  */
 public class PrintfAction implements ActionInterface {
-	public static final Logger logger = Logger.getLogger(PrintfAction.class);
+	public static final Logger logger = LogManager.getLogger(PrintfAction.class);
 
 	private String _format;
 
@@ -57,7 +59,7 @@ public class PrintfAction implements ActionInterface {
 		HashMap<String, String> formats = new HashMap<>();
 
 		try {
-			logger.debug("printf name: " + inode.getName());
+            logger.debug("printf name: {}", inode.getName());
 			formats.put("#f", inode.getName());
 			formats.put("#p", inode.getPath());
 			formats.put("#s", Bytes.formatBytes(inode.getSize()));

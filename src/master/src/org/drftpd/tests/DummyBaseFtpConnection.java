@@ -17,7 +17,9 @@
  */
 package org.drftpd.tests;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.commandmanager.CommandManagerInterface;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.master.BaseFtpConnection;
@@ -45,7 +47,7 @@ public class DummyBaseFtpConnection extends BaseFtpConnection {
     private StringWriter _out2;
     private DummyServerSocketFactory _serverSocketFactory;
     private DummySocketFactory _socketFactory;
-	private static final Logger logger = Logger.getLogger(DummyBaseFtpConnection.class);
+	private static final Logger logger = LogManager.getLogger(DummyBaseFtpConnection.class);
 
     public DummyBaseFtpConnection() {
         _socketFactory = new DummySocketFactory();

@@ -27,7 +27,7 @@ public class BlowfishECB extends Blowfish {
     /**
      * Default charset for encoding
      */
-    private static final String ENCODED_CHARSET = "8859_1";
+    private static final String ENCODED_CHARSET = "ISO_8859_1";
 
     /**
      * Custom Base64 string

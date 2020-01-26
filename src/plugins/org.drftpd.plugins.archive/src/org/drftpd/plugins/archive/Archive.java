@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.archive;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -37,7 +39,7 @@ import java.util.*;
  * @version $Id$
  */
 public class Archive implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(Archive.class);
+	private static final Logger logger = LogManager.getLogger(Archive.class);
 
 	private Properties _props;
 
@@ -67,7 +69,7 @@ public class Archive implements PluginInterface {
 		
 		if (!_typesMap.containsKey(type)) {
 			// if we can't find one filter that will be enought to brake the whole chain.
-			logger.error("Archive Type: " + type + " wasn't loaded.");
+            logger.error("Archive Type: {} wasn't loaded.", type);
 			
 		} else {
 	        if (!sec.getName().isEmpty()) {
@@ -76,10 +78,10 @@ public class Archive implements PluginInterface {
 					archiveType = clazz.getConstructor(SIG).newInstance(this, sec, props, count);
 	
 				} catch (Exception e) {
-					logger.error("Unable to load ArchiveType for section " + count + "." + type, e);
+                    logger.error("Unable to load ArchiveType for section {}.{}", count, type, e);
 				}		
 	        } else {
-	        	logger.error("Unable to load Section for Archive " + count + "." + type);
+                logger.error("Unable to load Section for Archive {}.{}", count, type);
 	        }
 		}
 		return archiveType;	

@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.dupecheck;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
@@ -45,7 +47,7 @@ import java.util.regex.Pattern;
  */
 
 public class DupeCheckHooks implements PreHookInterface {
-	private static final Logger logger = Logger.getLogger(DupeCheckHooks.class);
+	private static final Logger logger = LogManager.getLogger(DupeCheckHooks.class);
 
 	private Pattern _exempt = null;
 	private int _type = 0;
@@ -146,7 +148,7 @@ public class DupeCheckHooks implements PreHookInterface {
 						isDupe = true;
 					} catch (FileNotFoundException e) {
 						// File not found, not good, index refers to file that does not exist
-						logger.warn("Index Contained an unexistent inode: " + item.getKey());
+                        logger.warn("Index Contained an unexistent inode: {}", item.getKey());
 					}
 					
 					if (isDupe) {

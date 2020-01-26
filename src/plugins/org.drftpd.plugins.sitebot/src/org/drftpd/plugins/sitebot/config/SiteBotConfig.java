@@ -120,13 +120,13 @@ public class SiteBotConfig {
 			if (hostName == null) {
 				break;
 			}
-			int port = new Integer(cfg.getProperty("server."+i+".port"));
+			int port = Integer.valueOf(cfg.getProperty("server." + i + ".port"));
 			String password = cfg.getProperty("server."+i+".password");
 			boolean ssl = cfg.getProperty("server."+i+".use_ssl").equalsIgnoreCase("true");
 			_servers.add(new ServerConfig(hostName,port,password,ssl,_trustManager));
 		}
-		_connectDelay = new Long(cfg.getProperty("connect.delay")) * 1000;
-		_messageDelay = new Long(cfg.getProperty("message.sendDelay"));
+		_connectDelay = Long.valueOf(cfg.getProperty("connect.delay")) * 1000;
+		_messageDelay = Long.valueOf(cfg.getProperty("message.sendDelay"));
 		_autoNick = cfg.getProperty("nick.auto").equalsIgnoreCase("true");
 		_name = cfg.getProperty("name");
 		_nick = cfg.getProperty("nick");
@@ -146,7 +146,7 @@ public class SiteBotConfig {
 		_nickservRegNick = cfg.getProperty("services.nickserv.register.nick");
 		_nickservRegPassword = cfg.getProperty("services.nickserv.register.password");
 		
-		_delayAfterNickserv = new Long(cfg.getProperty("services.nickserv.delayafter","0"));
+		_delayAfterNickserv = Long.valueOf(cfg.getProperty("services.nickserv.delayafter", "0"));
 		
 		_chanservEnabled = cfg.getProperty("services.chanserv.enable").equalsIgnoreCase("true");
 		for (int i = 1;; i++) {

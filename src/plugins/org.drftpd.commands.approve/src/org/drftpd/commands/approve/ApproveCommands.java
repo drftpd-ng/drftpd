@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.approve;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
@@ -41,7 +43,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 
 public class ApproveCommands extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(ApproveCommands.class);
+	private static final Logger logger = LogManager.getLogger(ApproveCommands.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
@@ -87,7 +89,7 @@ public class ApproveCommands extends CommandInterface {
 				try {
 					inodes = ie.advancedFind(dir, params);
 				} catch (IndexException e) {
-					logger.error("Index Exception: " + e.getMessage());
+                    logger.error("Index Exception: {}", e.getMessage());
 					return new CommandResponse(500, "Index Exception: " + e.getMessage());
 				}
 
@@ -100,7 +102,7 @@ public class ApproveCommands extends CommandInterface {
 							dirsToApprove.add(inode);
 						}
 					} catch (FileNotFoundException e) {
-						logger.warn("Index contained an unexistent inode: " + item.getKey());
+                        logger.warn("Index contained an unexistent inode: {}", item.getKey());
 					}
 				}
 
@@ -125,7 +127,7 @@ public class ApproveCommands extends CommandInterface {
 							env.add("size", Bytes.formatBytes(foundDir.getSize()));
 							response.addComment(session.jprintf(_bundle,_keyPrefix+"approve.search.item", env, user));
 						} catch (FileNotFoundException e) {
-							logger.warn("Dir deleted after index search?, skip and continue: " + foundDir.getPath());
+                            logger.warn("Dir deleted after index search?, skip and continue: {}", foundDir.getPath());
 						}
 					}
 
@@ -165,7 +167,7 @@ public class ApproveCommands extends CommandInterface {
 				}
 				
 			} catch (FileNotFoundException e) {
-				logger.error("Dir was just here but now its gone, " + dir.getPath());
+                logger.error("Dir was just here but now its gone, {}", dir.getPath());
 				return new CommandResponse(500, "Dir was just here but now its gone, " + dir.getPath());
 			}			
 		}

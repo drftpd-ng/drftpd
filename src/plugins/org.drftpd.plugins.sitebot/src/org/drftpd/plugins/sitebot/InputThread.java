@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import java.io.*;
 import java.net.Socket;
@@ -30,7 +32,7 @@ import java.util.StringTokenizer;
  */
 public class InputThread extends Thread {
 
-	private static final Logger logger = Logger.getLogger(InputThread.class);
+	private static final Logger logger = LogManager.getLogger(InputThread.class);
 
 	private SiteBot _bot = null;
 	private Socket _socket = null;
@@ -113,7 +115,7 @@ public class InputThread extends Thread {
 							logger.warn("### normally. Here is the stack trace that was produced: -");
 							logger.warn("### ");
 							while (tokenizer.hasMoreTokens()) {
-								logger.warn("### " + tokenizer.nextToken());
+                                logger.warn("### {}", tokenizer.nextToken());
 							}
 
 						}

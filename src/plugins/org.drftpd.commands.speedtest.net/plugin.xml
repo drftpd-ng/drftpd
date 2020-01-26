@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.speedtest.net" version="3.4.1">
+<plugin id="org.drftpd.commands.speedtest.net" version="3.4.2">
 	<doc>
 		<doc-text>Provides FTP/IRC command to speedtest slaves against speedtest.net.
 		</doc-text>
@@ -21,7 +21,7 @@
 		<library id="org.drftpd.commands.speedtest.net" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="gson" path="../../../lib/gson-2.8.5.jar" type="code">
+		<library id="gson" path="../../../lib/gson-2.8.6.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

@@ -1,6 +1,8 @@
 package org.drftpd.plugins.nukefilter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -11,7 +13,7 @@ import org.drftpd.event.ReloadEvent;
  * @author phew
  */
 public class NukeFilterManager implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(NukeFilterManager.class);
+	private static final Logger logger = LogManager.getLogger(NukeFilterManager.class);
 	
 	private NukeFilterSettings _nfs;
 	

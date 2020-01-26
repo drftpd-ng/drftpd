@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.mediainfo.list;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.list.AddListElementsInterface;
@@ -40,7 +42,7 @@ import java.util.*;
  * @author scitz0
  */
 public class MediaInfoList implements AddListElementsInterface {
-	private static final Logger logger = Logger.getLogger(MediaInfoList.class);
+	private static final Logger logger = LogManager.getLogger(MediaInfoList.class);
 
 	private ArrayList<String> _exclSections = new ArrayList<>();
 	private ArrayList<String> _extensions = new ArrayList<>();

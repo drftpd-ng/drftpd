@@ -20,12 +20,15 @@ package org.drftpd.commands.zipscript.zip.hooks;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
@@ -67,7 +70,7 @@ import org.tanesha.replacer.SimplePrintf;
 
 public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptZipPostHook.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptZipPostHook.class);
 
 	private ResourceBundle _bundle;
 
@@ -102,7 +105,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			String transferFileName = transferFile.getName();
 			try {
 				if (transferFile.getSize() > 0 && transferFileName.toLowerCase().endsWith(".zip")) {
-					logger.debug("Running zipscript integrity check on stored file " + transferFileName);
+                    logger.debug("Running zipscript integrity check on stored file {}", transferFileName);
 					try {
 						RemoteSlave rslave = transferFile.getASlaveForFunction();
 						String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
@@ -162,7 +165,7 @@ public class ZipscriptZipPostHook extends ZipTools implements PostHookInterface 
 			try {
 				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
 				DizInfo dizInfo = zipData.getDizInfo();
-				response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()),"8859_1")); 
+				response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()), StandardCharsets.ISO_8859_1)); 
 			} catch (FileNotFoundException e) {
 				//Error fetching .diz, ignore
 			} catch (IOException e) {

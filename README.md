@@ -32,7 +32,7 @@ This is an advantage as it simplifies administration of the slaves.
 
 # Installation steps
 
-DrFTPD 3.4.1 installation requires a number of steps before you can utilize the software to its full extend.
+DrFTPD 3.4.2 installation requires a number of steps before you can utilize the software to its full extend.
 To give an overview of the installation process the different steps are listed below in this section.
 
 On the master you will need to:
@@ -85,7 +85,10 @@ Download DrFTPD from https://github.com/drftpd-ng/drftpd3
 
 Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
-git clone -b master --single-branch https://github.com/drftpd-ng/drftpd3.git
+For Master Branch:
+git clone -b master --single-branch https://github.com/drftpd-ng/drftpd3.git 
+For Develop Branch:
+git clone -b develop --single-branch https://github.com/drftpd-ng/drftpd3.git 
 cd drftpd3
 ```
 
@@ -125,13 +128,13 @@ Copy the slave.zip file from your master to the server that you plan to run the 
 chmod 744 slave.sh
 chmod 744 bin/wrapper
 ```
-
 - Copy conf/diskselection.conf.dist to conf/diskselection.conf
-- Copy conf/log4j-debug.properties.dist to conf/log4j-debug.properties
-- Copy conf/log4j-slave.properties.dist to conf/log4j-slave.properties
+- Copy conf/log4j-debug.xml.dist to conf/log4j-debug.xml
+- Copy conf/log4j-eclipse.xml.dist to conf/log4j-eclipse.xml
+- Copy conf/log4j-slave.xml.dist to conf/log4j-slave.xml
 - Copy conf/slave.conf.dist to conf/slave.conf
 - Copy conf/wrapper-slave.conf.dist to conf/wrapper-slave.conf
-- Copy conf/speedtest.net.slave.conf.dist to speedtest.net.slave.conf
+- Copy conf/plugins/speedtest.net.slave.conf.dist to conf/plugins/speedtest.net.slave.conf
 - Edit slave.conf
 
   - The minimum changes that you must complete in slave.conf is to change slave.name, master.host and master.port.
@@ -167,6 +170,7 @@ Verify that the slave is coming online with SITE SLAVES.
    also set your JAVA_HOME to this path, but without the bin appeneded to the end (i.e. c:\program files\java\jre\)
 5. Open a command prompt (start->run->cmd) and type cd c:\drftpd\, then type c:\ant\bin\ant and it should compile DrFTPD. If any errors are generated, something went wrong, and DrFTPD most likely will not function.
 
+The windows x64 wrapper is no longer included, if you want to integrate it, you must recover the sources from https://wrapper.tanukisoftware.com/doc/english/download.jsp
 
 # FAQ 
 

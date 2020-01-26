@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.zipscript.list;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -49,7 +51,7 @@ import java.util.*;
  */
 public class ZipscriptList extends SFVTools implements AddListElementsInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptList.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptList.class);
 
 	private ArrayList<ZipscriptListStatusBarInterface> _statusBarProviders = new ArrayList<>();
 
@@ -118,13 +120,13 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 					}
 				}
 			} catch (NoAvailableSlaveException e) {
-				logger.warn("No available slaves for SFV file in" + dir.getPath());
+                logger.warn("No available slaves for SFV file in{}", dir.getPath());
 			} catch (FileNotFoundException e) {
 				// no sfv file in directory - just skip it
 			} catch (IOException e) {
 				// unable to read sfv - just skip it
 			} catch (SlaveUnavailableException e) {
-				logger.warn("No available slaves for SFV file in" + dir.getPath());
+                logger.warn("No available slaves for SFV file in{}", dir.getPath());
 			}
 			if (statusBarEnabled) {
 				for (ZipscriptListStatusBarInterface zle : _statusBarProviders) {
@@ -181,8 +183,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 			for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
 				ZipscriptListStatusBarInterface sbAddon = iter.next();
 				if (unloadedStatusBarAddons.contains(sbAddon)) {
-					logger.debug("Unloading status bar provider addon provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(sbAddon));
+                    logger.debug("Unloading status bar provider addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(sbAddon));
 					iter.remove();
 					providerRemoved = true;
 				}

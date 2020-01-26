@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 
@@ -31,7 +33,7 @@ import java.util.StringTokenizer;
  */
 public class SiteBotWrapper implements PluginInterface {
 
-	private static final Logger logger = Logger.getLogger(SiteBotWrapper.class);
+	private static final Logger logger = LogManager.getLogger(SiteBotWrapper.class);
 	
 	private ArrayList<SiteBot> _bots = new ArrayList<>();
 

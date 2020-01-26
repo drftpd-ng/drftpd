@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.login;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandInterface;
 import org.drftpd.commandmanager.CommandRequest;
@@ -44,7 +46,7 @@ import java.util.regex.PatternSyntaxException;
  * @version $Id$
  */
 public class LoginHandler extends CommandInterface {
-    private static final Logger logger = Logger.getLogger(LoginHandler.class);
+    private static final Logger logger = LogManager.getLogger(LoginHandler.class);
     
     private ResourceBundle _bundle;
     private String _keyPrefix;
@@ -263,7 +265,7 @@ public class LoginHandler extends CommandInterface {
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "USER IP-Failed");
         //fail
-        logger.warn(newUser.getName() + " failed hostmask check");
+        logger.warn("{} failed hostmask check", newUser.getName());
         return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
     }
 }

@@ -17,12 +17,15 @@
  */
 package org.drftpd.usermanager.encryptedjavabeans;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.usermanager.javabeans.BeanUser;
 import org.drftpd.usermanager.javabeans.BeanUserManager;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -31,7 +34,7 @@ import java.security.NoSuchAlgorithmException;
  * @version $Id: EncryptedBeanUser.java
  */
 public class EncryptedBeanUser extends BeanUser {
-	private static final Logger logger = Logger.getLogger(EncryptedBeanUser.class);
+	private static final Logger logger = LogManager.getLogger(EncryptedBeanUser.class);
 
 	private transient EncryptedBeanUserManager _um;
 	
@@ -220,13 +223,11 @@ public class EncryptedBeanUser extends BeanUser {
     	try {
 	    	MessageDigest md;
 	    	md = MessageDigest.getInstance(type);
-	    	md.update(text.getBytes("iso-8859-1"), 0, text.length());
+	    	md.update(text.getBytes(StandardCharsets.ISO_8859_1), 0, text.length());
 			byte[] hash = md.digest();
 	    	return convertToHex(hash);
     	} catch (NoSuchAlgorithmException e) {
     		logger.debug("Encrypt - NoSuchAlgorithm",e);
-    	} catch (UnsupportedEncodingException e) {
-    		logger.debug("Encrypt - UnsupportedEncoding",e);
     	}
     	return null;
     } 

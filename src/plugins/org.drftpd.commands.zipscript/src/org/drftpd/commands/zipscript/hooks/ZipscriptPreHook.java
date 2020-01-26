@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.zipscript.hooks;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
@@ -44,7 +46,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class ZipscriptPreHook implements PreHookInterface {
 
-	private static final Logger logger = Logger.getLogger(ZipscriptPreHook.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptPreHook.class);
 
 	private boolean _sfvFirstRequired;
 
@@ -194,7 +196,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 					return false;
 				}
 			} catch (PatternSyntaxException e) {
-				logger.debug("Bad Regex Patter for 'sfvdeny.subdir.exclude' '" + _sfvDenySubDirExclude + "'");				
+                logger.debug("Bad Regex Patter for 'sfvdeny.subdir.exclude' '{}'", _sfvDenySubDirExclude);
 			}
 			
 			try {
@@ -204,7 +206,7 @@ public class ZipscriptPreHook implements PreHookInterface {
 					}
 				}
 			} catch (PatternSyntaxException e) {
-				logger.debug("Bad Regex Patter for 'sfvdeny.subdir.include' '" + _sfvDenySubDirInclude + "'");
+                logger.debug("Bad Regex Patter for 'sfvdeny.subdir.include' '{}'", _sfvDenySubDirInclude);
 			} catch (FileNotFoundException e) {
 				// parent no longer exists....ignore
 			}

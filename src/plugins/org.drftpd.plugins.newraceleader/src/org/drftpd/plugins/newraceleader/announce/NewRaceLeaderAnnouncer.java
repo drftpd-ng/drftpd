@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.newraceleader.announce;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -38,7 +40,7 @@ import java.util.ResourceBundle;
  */
 public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = Logger.getLogger(NewRaceLeaderAnnouncer.class);
+	private static final Logger logger = LogManager.getLogger(NewRaceLeaderAnnouncer.class);
 
 	private AnnounceConfig _config;
 

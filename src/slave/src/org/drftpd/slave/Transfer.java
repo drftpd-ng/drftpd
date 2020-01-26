@@ -17,7 +17,9 @@
  */
 package org.drftpd.slave;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.PassiveConnection;
 import org.drftpd.exceptions.FileExistsException;
 import org.drftpd.exceptions.ObjectNotFoundException;
@@ -42,7 +44,7 @@ import java.util.zip.CheckedOutputStream;
  * @version $Id$
  */
 public class Transfer {
-	private static final Logger logger = Logger.getLogger(Transfer.class);
+	private static final Logger logger = LogManager.getLogger(Transfer.class);
 
 	private String _abortReason = null;
 
@@ -273,7 +275,7 @@ public class Transfer {
 				_direction = Transfer.TRANSFER_RECEIVING_UPLOAD;
 			}
 
-			logger.info("UL: " + dirname + "/" + filename + getNegotiatedSSLString());
+            logger.info("UL: {}/{}{}", dirname, filename, getNegotiatedSSLString());
 			transfer(null);
 			_slave.sendResponse(new AsyncResponseDiskStatus(_slave
 					.getDiskStatus()));
@@ -324,7 +326,7 @@ public class Transfer {
 				_direction = Transfer.TRANSFER_SENDING_DOWNLOAD;
 			}
 
-			logger.info("DL: " + path + getNegotiatedSSLString());
+            logger.info("DL: {}{}", path, getNegotiatedSSLString());
 			try {
 				transfer(getUploadForPath(path));
 			} catch (ObjectNotFoundException e) {

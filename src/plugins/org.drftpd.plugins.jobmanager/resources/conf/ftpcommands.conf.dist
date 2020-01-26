@@ -55,7 +55,7 @@ class JobManagerCommandHandler
 method doSTARTJOBS
 perms =siteop
 help Starts running the jobs in the JobManager queue.
-help.specific SITE STARTJOBS\n\ Starts running the jobs in the JobManager queue.
+help.specific Starts running the jobs in the JobManager queue.
 }
 
 SITE STOPJOBS {
@@ -64,5 +64,5 @@ class JobManagerCommandHandler
 method doSTOPJOBS
 perms =siteop
 help Stops running the jobs in the JobManager queue.
-help.specific SITE STOPJOBS\n\ Stops running the jobs in the JobManager queue.
+help.specific Stops running the jobs in the JobManager queue.
 }

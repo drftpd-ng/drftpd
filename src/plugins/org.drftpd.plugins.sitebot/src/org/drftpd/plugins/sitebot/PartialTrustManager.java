@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
@@ -39,7 +41,7 @@ import java.util.Map.Entry;
  */
 public class PartialTrustManager implements X509TrustManager {
 
-	private static final Logger logger = Logger.getLogger(PartialTrustManager.class);
+	private static final Logger logger = LogManager.getLogger(PartialTrustManager.class);
 
 	private HashMap<String,X509Certificate> _certs = new HashMap<>();
 

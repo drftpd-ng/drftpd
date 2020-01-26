@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.autonuke.announce;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -41,7 +43,7 @@ import java.util.ResourceBundle;
  * @author scitz0
  */
 public class AutoNukeAnnouncer extends AbstractAnnouncer {
-	private static final Logger logger = Logger.getLogger(AutoNukeAnnouncer.class);
+	private static final Logger logger = LogManager.getLogger(AutoNukeAnnouncer.class);
 
 	private AnnounceConfig _config;
 
@@ -85,7 +87,7 @@ public class AutoNukeAnnouncer extends AbstractAnnouncer {
 				env.add("dirsize", Bytes.formatBytes(dir.getSize()));
 				env.add("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
 			} catch (FileNotFoundException e) {
-				logger.warn("AutoNukeAnnouncer: Dir gone :( - " + dir.getPath());
+                logger.warn("AutoNukeAnnouncer: Dir gone :( - {}", dir.getPath());
 			}
 			int i = 1;
 			for (String var : event.getData()) {
@@ -95,7 +97,7 @@ public class AutoNukeAnnouncer extends AbstractAnnouncer {
 			try {
 				sayOutput(SimplePrintf.jprintf(event.getIRCString(), env), writer);
 			} catch (FormatterException e) {
-				logger.warn("Error in irc format: " + event.getIRCString(), e);
+                logger.warn("Error in irc format: {}", event.getIRCString(), e);
 			}
 		}
 	}

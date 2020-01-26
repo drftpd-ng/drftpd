@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.archive.commands;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.commandmanager.*;
@@ -42,7 +44,7 @@ import java.util.*;
  * @version $Id$
  */
 public class ArchiveCommandHandler extends CommandInterface {
-    private static final Logger logger = Logger.getLogger(ArchiveCommandHandler.class);
+    private static final Logger logger = LogManager.getLogger(ArchiveCommandHandler.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
@@ -119,7 +121,7 @@ public class ArchiveCommandHandler extends CommandInterface {
             
             archiveType = archive.getArchiveType(0,archiveTypeName,section,props);
             if (archiveType == null) {
-				logger.error("Serious error, ArchiveType: " + archiveTypeName + " does not exists");
+                logger.error("Serious error, ArchiveType: {} does not exists", archiveTypeName);
 				env.add("archivetypename", archiveTypeName);
 				response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "incompatible"));
 				return response;

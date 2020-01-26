@@ -16,7 +16,9 @@
  */
 package org.drftpd.usermanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -43,7 +45,7 @@ import java.util.*;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
-	private static final Logger logger = Logger.getLogger(AbstractUserManager.class);
+	private static final Logger logger = LogManager.getLogger(AbstractUserManager.class);
 
 	protected HashMap<String, SoftReference<User>> _users;
 
@@ -336,8 +338,7 @@ public abstract class AbstractUserManager implements UserManager {
 			for (UserResetHookInterface preResetHook : preResetHooks) {
 				preResetHook.init();
 				_preResetHooks.add(preResetHook);
-				logger.debug("Loading PreUserResetHook into UserManager from plugin "
-						+ CommonPluginUtils.getPluginIdForObject(preResetHook));
+                logger.debug("Loading PreUserResetHook into UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(preResetHook));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error(
@@ -353,8 +354,7 @@ public abstract class AbstractUserManager implements UserManager {
 			for (UserResetHookInterface postResetHook : postResetHooks) {
 				postResetHook.init();
 				_postResetHooks.add(postResetHook);
-				logger.debug("Loading PostUserResetHook into UserManager from plugin "
-						+ CommonPluginUtils.getPluginIdForObject(postResetHook));
+                logger.debug("Loading PostUserResetHook into UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(postResetHook));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error(
@@ -375,8 +375,7 @@ public abstract class AbstractUserManager implements UserManager {
 			for (Iterator<UserResetHookInterface> iter = clonedPreResetHooks.iterator(); iter.hasNext();) {
 				UserResetHookInterface preResetHook = iter.next();
 				if (unloadedPreResetHooks.contains(preResetHook)) {
-					logger.debug("Unloading PreUserResetHook from UserManager from plugin "
-							+ CommonPluginUtils.getPluginIdForObject(preResetHook));
+                    logger.debug("Unloading PreUserResetHook from UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(preResetHook));
 					iter.remove();
 					hookRemoved = true;
 				}
@@ -395,8 +394,7 @@ public abstract class AbstractUserManager implements UserManager {
 			for (Iterator<UserResetHookInterface> iter = clonedPostResetHooks.iterator(); iter.hasNext();) {
 				UserResetHookInterface postResetHook = iter.next();
 				if (unloadedPostResetHooks.contains(postResetHook)) {
-					logger.debug("Unloading PostUserResetHook from UserManager from plugin "
-							+ CommonPluginUtils.getPluginIdForObject(postResetHook));
+                    logger.debug("Unloading PostUserResetHook from UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(postResetHook));
 					iter.remove();
 					hookRemoved = true;
 				}
@@ -418,8 +416,7 @@ public abstract class AbstractUserManager implements UserManager {
 				for (UserResetHookInterface preResetHook : loadedPreResetHooks) {
 					preResetHook.init();
 					clonedPreResetHooks.add(preResetHook);
-					logger.debug("Loading PreUserResetHook into UserManager from plugin "
-							+ CommonPluginUtils.getPluginIdForObject(preResetHook));
+                    logger.debug("Loading PreUserResetHook into UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(preResetHook));
 				}
 				_preResetHooks = clonedPreResetHooks;
 			}
@@ -439,8 +436,7 @@ public abstract class AbstractUserManager implements UserManager {
 				for (UserResetHookInterface postResetHook : loadedPostResetHooks) {
 					postResetHook.init();
 					clonedPostResetHooks.add(postResetHook);
-					logger.debug("Loading PostUserResetHook into UserManager from plugin "
-							+ CommonPluginUtils.getPluginIdForObject(postResetHook));
+                    logger.debug("Loading PostUserResetHook into UserManager from plugin {}", CommonPluginUtils.getPluginIdForObject(postResetHook));
 				}
 				_postResetHooks = clonedPostResetHooks;
 			}

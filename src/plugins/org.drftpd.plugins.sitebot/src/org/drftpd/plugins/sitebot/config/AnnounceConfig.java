@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot.config;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.NullOutputWriter;
@@ -38,7 +40,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class AnnounceConfig {
 
-	private static final Logger logger = Logger.getLogger(AnnounceConfig.class);
+	private static final Logger logger = LogManager.getLogger(AnnounceConfig.class);
 
 	private HashMap<String,ArrayList<AnnounceWriter>> _pathWriters =
             new HashMap<>();
@@ -93,7 +95,7 @@ public class AnnounceConfig {
 				try {
 					matcher = new PathMatcher(pathPattern, useRegex);
 				} catch (PatternSyntaxException e) {
-					logger.warn("Bad entry "+type+"."+i+".path in sitebot announce conf");
+                    logger.warn("Bad entry {}.{}.path in sitebot announce conf", type, i);
 					continue;
 				}
 				pWriters.add(new AnnounceWriter(matcher,writers,displayName));

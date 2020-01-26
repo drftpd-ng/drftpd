@@ -17,7 +17,9 @@
  */
 package org.drftpd.tools.installer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.tools.installer.auto.AutoInstaller;
 import org.drftpd.tools.installer.console.ConsoleInstaller;
 import org.drftpd.tools.installer.swing.SwingInstaller;
@@ -33,7 +35,7 @@ import java.util.ArrayList;
  */
 public class Wrapper {
 
-	private static final Logger logger = Logger.getLogger(Wrapper.class);
+	private static final Logger logger = LogManager.getLogger(Wrapper.class);
 
 	public static void main(String[] args) {
 		PluginParser parser = null;

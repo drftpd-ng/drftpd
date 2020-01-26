@@ -1,6 +1,8 @@
 package org.drftpd.plugins.nukefilter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 
@@ -11,7 +13,7 @@ import java.util.Properties;
  * @author phew
  */
 public class NukeFilterSettings {
-	private static final Logger logger = Logger.getLogger(NukeFilterSettings.class);
+	private static final Logger logger = LogManager.getLogger(NukeFilterSettings.class);
 	
 	private NukeFilterGlobalConfig nfgc;
 	private HashMap<String, NukeFilterSectionConfig> nfscMap;
@@ -102,16 +104,14 @@ public class NukeFilterSettings {
 						element.setNukex(Integer.parseInt(elements[1]));
 						nfgc.addFilterStringElement(element);
 					} catch(NumberFormatException e) {
-						logger.warn("improper formatted global.filter.string nukex given," +
-								" skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted global.filter.string nukex given, skipping one element: '{}'", strings);
 					}
 				} else if(elements.length == 1) {
 					element.setElement(elements[0]);
 					element.setNukex(3);
 					nfgc.addFilterStringElement(element);
 				} else {
-					logger.warn("improper formatted global.filter.string given, " +
-							"skipping one element: '"+strings+"'");
+                    logger.warn("improper formatted global.filter.string given, skipping one element: '{}'", strings);
 				}
 			}
 		}
@@ -127,16 +127,14 @@ public class NukeFilterSettings {
 						element.setNukex(Integer.parseInt(elements[1]));
 						nfgc.addEnforceStringElement(element);
 					} catch(NumberFormatException e) {
-						logger.warn("improper formatted global.enforce.string nukex given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted global.enforce.string nukex given, skipping one element: '{}'", strings);
 					}
 				} else if(elements.length == 1) {
 					element.setElement(elements[0]);
 					element.setNukex(3);
 					nfgc.addEnforceStringElement(element);
 				} else {
-					logger.warn("improper formatted global.enforce.string given, " +
-							"skipping one element: '"+strings+"'");
+                    logger.warn("improper formatted global.enforce.string given, skipping one element: '{}'", strings);
 				}
 			}
 		}
@@ -152,16 +150,14 @@ public class NukeFilterSettings {
 						element.setNukex(Integer.parseInt(elements[1]));
 						nfgc.addFilterRegexElement(element);	
 					} catch(NumberFormatException e) {
-						logger.warn("improper formatted global.filter.regex nukex given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted global.filter.regex nukex given, skipping one element: '{}'", strings);
 					}
 				} else if(elements.length == 1) {
 					element.setElement(elements[0]);
 					element.setNukex(3);
 					nfgc.addFilterRegexElement(element);
 				} else {
-					logger.warn("improper formatted global.filter.regex given, " +
-							"skipping one element: '"+strings+"'");	
+                    logger.warn("improper formatted global.filter.regex given, skipping one element: '{}'", strings);
 				}
 			}
 		}
@@ -177,16 +173,14 @@ public class NukeFilterSettings {
 						element.setNukex(Integer.parseInt(elements[1]));
 						nfgc.addEnforceRegexElement(element);
 					} catch(NumberFormatException e) {
-						logger.warn("improper formatted global.enforce.regex nukex given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted global.enforce.regex nukex given, skipping one element: '{}'", strings);
 					}
 				} else if(elements.length == 1) {
 					element.setElement(elements[0]);
 					element.setNukex(3);
 					nfgc.addEnforceRegexElement(element);
 				} else {
-					logger.warn("improper formatted global.enforce.regex given, " +
-							"skipping one element: '"+strings+"'");
+                    logger.warn("improper formatted global.enforce.regex given, skipping one element: '{}'", strings);
 				}
 			}
 		}
@@ -202,16 +196,14 @@ public class NukeFilterSettings {
 						element.setNukex(Integer.parseInt(elements[1]));
 						nfgc.addFilterYearElement(element);
 					} catch(NumberFormatException e) {
-						logger.warn("improper formatted global.filter.year nukex given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted global.filter.year nukex given, skipping one element: '{}'", strings);
 					}
 				} else if(elements.length == 1) {
 					element.setElement(elements[0]);
 					element.setNukex(3);
 					nfgc.addFilterYearElement(element);
 				} else {
-					logger.warn("improper formatted global.filter.year given, " +
-							"skipping one element: '"+strings+"'");
+                    logger.warn("improper formatted global.filter.year given, skipping one element: '{}'", strings);
 				}
 			}
 		}
@@ -236,16 +228,14 @@ public class NukeFilterSettings {
 						element.setNukex(Integer.parseInt(elements[1]));
 						nfgc.addFilterGroupElement(element);
 					} catch(NumberFormatException e) {
-						logger.warn("improper formatted global.filter.group nukex given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted global.filter.group nukex given, skipping one element: '{}'", strings);
 					}
 				} else if(elements.length == 1) {
 					element.setElement(elements[0]);
 					element.setNukex(3);
 					nfgc.addFilterGroupElement(element);
 				} else {
-					logger.warn("improper formatted global.filter.group given, " +
-							"skipping one element: '"+strings+"'");
+                    logger.warn("improper formatted global.filter.group given, skipping one element: '{}'", strings);
 				}
 			}
 		}
@@ -291,8 +281,7 @@ public class NukeFilterSettings {
 			try {
 				nfsc.setNukeDelay(Integer.parseInt(sectionNukeDelay));
 			} catch(NumberFormatException e) {
-				logger.warn("invalid "+String.valueOf(i)+".nuke.delay value specified, " +
-						"defaulting to '120s'");
+                logger.warn("invalid {}.nuke.delay value specified, defaulting to '120s'", String.valueOf(i));
 				nfsc.setNukeDelay(120);
 			}
 			//set filter string
@@ -306,16 +295,14 @@ public class NukeFilterSettings {
 							element.setNukex(Integer.parseInt(elements[1]));
 							nfsc.addFilterStringElement(element);
 						} catch(NumberFormatException e) {
-							logger.warn("improper formatted "+String.valueOf(i)+".filter.string nukex given, " +
-									"skipping one element: '"+strings+"'");
+                            logger.warn("improper formatted {}.filter.string nukex given, skipping one element: '{}'", String.valueOf(i), strings);
 						}
 					} else if(elements.length == 1) {
 						element.setElement(elements[0]);
 						element.setNukex(3);
 						nfsc.addFilterStringElement(element);
 					} else {
-						logger.warn("improper formatted "+String.valueOf(i)+".filter.string given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted {}.filter.string given, skipping one element: '{}'", String.valueOf(i), strings);
 					}
 				}
 			}
@@ -330,16 +317,14 @@ public class NukeFilterSettings {
 							element.setNukex(Integer.parseInt(elements[1]));
 							nfsc.addEnforceStringElement(element);
 						} catch(NumberFormatException e) {
-							logger.warn("improper formatted "+String.valueOf(i)+".enforce.string nukex given, " +
-									"skipping one element: '"+strings+"'");
+                            logger.warn("improper formatted {}.enforce.string nukex given, skipping one element: '{}'", String.valueOf(i), strings);
 						}
 					} else if(elements.length == 1) {
 						element.setElement(elements[0]);
 						element.setNukex(3);
 						nfsc.addEnforceStringElement(element);
 					} else {
-						logger.warn("improper formatted "+String.valueOf(i)+".enforce.string given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted {}.enforce.string given, skipping one element: '{}'", String.valueOf(i), strings);
 					}
 				}
 			}
@@ -354,16 +339,14 @@ public class NukeFilterSettings {
 							element.setNukex(Integer.parseInt(elements[1]));
 							nfsc.addFilterRegexElement(element);	
 						} catch(NumberFormatException e) {
-							logger.warn("improper formatted "+String.valueOf(i)+".filter.regex nukex given, " +
-									"skipping one element: '"+strings+"'");
+                            logger.warn("improper formatted {}.filter.regex nukex given, skipping one element: '{}'", String.valueOf(i), strings);
 						}
 					} else if(elements.length == 1) {
 						element.setElement(elements[0]);
 						element.setNukex(3);
 						nfsc.addFilterRegexElement(element);
 					} else {
-						logger.warn("improper formatted "+String.valueOf(i)+".filter.regex given, " +
-								"skipping one element: '"+strings+"'");	
+                        logger.warn("improper formatted {}.filter.regex given, skipping one element: '{}'", String.valueOf(i), strings);
 					}
 				}
 			}
@@ -378,16 +361,14 @@ public class NukeFilterSettings {
 							element.setNukex(Integer.parseInt(elements[1]));
 							nfsc.addEnforceRegexElement(element);
 						} catch(NumberFormatException e) {
-							logger.warn("improper formatted "+String.valueOf(i)+".enforce.regex nukex given, " +
-									"skipping one element: '"+strings+"'");
+                            logger.warn("improper formatted {}.enforce.regex nukex given, skipping one element: '{}'", String.valueOf(i), strings);
 						}
 					} else if(elements.length == 1) {
 						element.setElement(elements[0]);
 						element.setNukex(3);
 						nfsc.addEnforceRegexElement(element);
 					} else {
-						logger.warn("improper formatted "+String.valueOf(i)+".enforce.regex given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted {}.enforce.regex given, skipping one element: '{}'", String.valueOf(i), strings);
 					}
 				}
 			}
@@ -402,16 +383,14 @@ public class NukeFilterSettings {
 							element.setNukex(Integer.parseInt(elements[1]));
 							nfsc.addFilterYearElement(element);
 						} catch(NumberFormatException e) {
-							logger.warn("improper formatted "+String.valueOf(i)+".filter.year nukex given, " +
-									"skipping one element: '"+strings+"'");
+                            logger.warn("improper formatted {}.filter.year nukex given, skipping one element: '{}'", String.valueOf(i), strings);
 						}
 					} else if(elements.length == 1) {
 						element.setElement(elements[0]);
 						element.setNukex(3);
 						nfsc.addFilterYearElement(element);
 					} else {
-						logger.warn("improper formatted "+String.valueOf(i)+".filter.year given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted {}.filter.year given, skipping one element: '{}'", String.valueOf(i), strings);
 					}
 				}
 			}
@@ -420,8 +399,7 @@ public class NukeFilterSettings {
 				nfsc.setEnforceYearNukex(Integer.parseInt(sectionEnforceYearNukex));
 			} catch(NumberFormatException e) {
 				nfsc.setEnforceYearNukex(3);
-				logger.warn("improper formatted "+String.valueOf(i)+".enforce.year.nukex given, " +
-						"defaulting nukex to 3");
+                logger.warn("improper formatted {}.enforce.year.nukex given, defaulting nukex to 3", String.valueOf(i));
 			}
 			//set enforce year
 			if(!sectionEnforceYear.equals("")) {
@@ -442,16 +420,14 @@ public class NukeFilterSettings {
 							element.setNukex(Integer.parseInt(elements[1]));
 							nfsc.addFilterGroupElement(element);
 						} catch(NumberFormatException e) {
-							logger.warn("improper formatted global.filter.group nukex given, " +
-									"skipping one element: '"+strings+"'");
+                            logger.warn("improper formatted global.filter.group nukex given, skipping one element: '{}'", strings);
 						}
 					} else if(elements.length == 1) {
 						element.setElement(elements[0]);
 						element.setNukex(3);
 						nfsc.addFilterGroupElement(element);
 					} else {
-						logger.warn("improper formatted global.filter.group given, " +
-								"skipping one element: '"+strings+"'");
+                        logger.warn("improper formatted global.filter.group given, skipping one element: '{}'", strings);
 					}
 				}
 			}
@@ -460,8 +436,7 @@ public class NukeFilterSettings {
 				nfsc.setEnforceGroupNukex(Integer.parseInt(sectionEnforceGroupNukex));
 			} catch(NumberFormatException e) {
 				nfsc.setEnforceGroupNukex(3);
-				logger.warn("improper formatted "+String.valueOf(i)+".enforce.group.nukex given, " +
-						"defaulting nukex to 3");
+                logger.warn("improper formatted {}.enforce.group.nukex given, defaulting nukex to 3", String.valueOf(i));
 			}
 			//set enforce group
 			if(!sectionEnforceGroup.equals("")) {

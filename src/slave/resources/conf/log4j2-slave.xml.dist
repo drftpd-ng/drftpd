@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <RollingFile name="root" fileName="logs/slave.log" filePattern="logs/slave-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="jpf" fileName="logs/jpf-slave.log" filePattern="logs/jpf-slave-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+   </Appenders>
+  <Loggers>
+	<Logger name="org.apache.http.impl.conn" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+	<Logger name="org.apache.http.impl.client" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+    <Logger name="org.apache.http.client" level="warn" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+    <Logger name="org.apache.http.wire" level="error" additivity="false">
+      <AppenderRef ref="root"/>
+    </Logger>
+	<Logger name="org.java.plugin" level="debug" additivity="false">
+      <AppenderRef ref="jpf"/>
+    </Logger>
+	<Root level="debug">
+      <AppenderRef ref="root"/>
+    </Root>
+  </Loggers>
+</Configuration>

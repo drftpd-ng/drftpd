@@ -38,7 +38,7 @@ public class BitstreamException extends JavaLayerException implements BitstreamE
 		return errorcode;	
 	}
 
-	static public String getErrorString(int errorcode) {
+	public static String getErrorString(int errorcode) {
 		return "Bitstream errorcode "+Integer.toHexString(errorcode);
 	}
 

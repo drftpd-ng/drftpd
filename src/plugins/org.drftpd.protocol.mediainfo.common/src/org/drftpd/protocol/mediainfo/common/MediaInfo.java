@@ -17,7 +17,9 @@
  */
 package org.drftpd.protocol.mediainfo.common;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.dynamicdata.Key;
 import org.mp4parser.IsoFile;
@@ -33,7 +35,7 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("serial")
 public class MediaInfo implements Serializable {
-	private static final Logger logger = Logger.getLogger(MediaInfo.class);
+	private static final Logger logger = LogManager.getLogger(MediaInfo.class);
 
     public static final Key<MediaInfo> MEDIAINFO = new Key<>(MediaInfo.class, "mediainfo");
 
@@ -198,7 +200,7 @@ public class MediaInfo implements Serializable {
 		try {
 			exitValue = pDD.waitFor();
 			if (exitValue != 0) {
-				logger.error("ERROR: mediainfo process failed with exit code " + exitValue);
+                logger.error("ERROR: mediainfo process failed with exit code {}", exitValue);
 				return null;
 			}
 		} catch (InterruptedException e) {

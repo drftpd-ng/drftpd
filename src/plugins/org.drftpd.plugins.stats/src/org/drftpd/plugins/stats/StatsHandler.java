@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.stats;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.config.ConfigHandler;
@@ -38,7 +40,7 @@ import java.util.regex.PatternSyntaxException;
  * @version $Id$
  */
 public class StatsHandler extends ConfigHandler {
-	private static final Logger logger = Logger.getLogger(StatsHandler.class);
+	private static final Logger logger = LogManager.getLogger(StatsHandler.class);
 
 	protected static final int DIRECTION_UP = 0;
 	protected static final int DIRECTION_DN = 1;
@@ -71,7 +73,7 @@ public class StatsHandler extends ConfigHandler {
 			
 			list.add(perm);
 		} catch (NumberFormatException|PatternSyntaxException e) {
-			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+ratio+" "+(coll!=null? coll.toString():""), e);
+            logger.error("Unable to handle '{} {} {} {}", key.getKey(), path, ratio, coll != null ? coll.toString() : "", e);
 		}
 	}
 
@@ -137,8 +139,7 @@ public class StatsHandler extends ConfigHandler {
 
 			list.add(perm);
 		} catch (NumberFormatException|PatternSyntaxException e) {
-			logger.error("Unable to handle '"+key.getKey()+" "+path+" "+dString+" "+pString+" "+bString+" "+
-					(coll!=null? coll.toString():""), e);
+            logger.error("Unable to handle '{} {} {} {} {} {}", key.getKey(), path, dString, pString, bString, coll != null ? coll.toString() : "", e);
 		}
 	}
 	

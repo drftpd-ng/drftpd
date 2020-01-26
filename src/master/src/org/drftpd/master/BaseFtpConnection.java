@@ -17,8 +17,10 @@
  */
 package org.drftpd.master;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
 import org.drftpd.commandmanager.CommandManagerInterface;
@@ -39,6 +41,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,9 +55,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings("serial")
 public class BaseFtpConnection extends Session implements Runnable {
-	private static final Logger debuglogger = Logger.getLogger(BaseFtpConnection.class.getName() + ".service");
-
-	private static final Logger logger = Logger.getLogger(BaseFtpConnection.class);
+	private static final Logger debuglogger = LogManager.getLogger(BaseFtpConnection.class.getName() + ".service");
+	
+	private static final Logger logger = LogManager.getLogger(BaseFtpConnection.class);
 
 	public static final Key<InetAddress> ADDRESS = new Key<>(BaseFtpConnection.class, "address");
 	public static final Key<String> IDENT = new Key<>(BaseFtpConnection.class, "ident");
@@ -257,8 +260,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 		
 		_lastActive = System.currentTimeMillis();
 		if (!GlobalContext.getConfig().getHideIps()) {
-			logger.info("Handling new request from "
-					+ getClientAddress().getHostAddress());
+            logger.info("Handling new request from {}", getClientAddress().getHostAddress());
 			_thread.setName("FtpConn thread " + _thread.getId() + " from "
 					+ getClientAddress().getHostAddress());
 		} else {
@@ -334,7 +336,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 				_request = new FtpRequest(commandLine);
 
 				if (!_request.getCommand().equals("PASS")) {
-					debuglogger.debug("<< " + _request.getCommandLine());
+                    logger.debug("<< {}", _request.getCommandLine());
 				}
 
 				// execute command
@@ -415,11 +417,11 @@ public class BaseFtpConnection extends Session implements Runnable {
 		try {
 			_controlSocket = socket;
 			_in = new BufferedReader(new InputStreamReader(_controlSocket
-					.getInputStream(), "ISO-8859-1"));
+					.getInputStream(), StandardCharsets.ISO_8859_1));
 
 			_out = new PrintWriter(new OutputStreamWriter(
 					new AddAsciiOutputStream(new BufferedOutputStream(
-							_controlSocket.getOutputStream())), "ISO-8859-1"));
+							_controlSocket.getOutputStream())), StandardCharsets.ISO_8859_1));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

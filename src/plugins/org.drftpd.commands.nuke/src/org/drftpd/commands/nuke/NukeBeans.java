@@ -21,7 +21,9 @@ import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.commons.collections4.map.LRUMap;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.exceptions.ObjectNotFoundException;
@@ -49,7 +51,7 @@ public class NukeBeans {
 	private NukeBeans() {
 	}
 
-	protected static final Logger logger = Logger.getLogger(NukeBeans.class);
+	protected static final Logger logger = LogManager.getLogger(NukeBeans.class);
 
 	private static final String _nukebeansPath = "userdata";
 
@@ -95,8 +97,7 @@ public class NukeBeans {
 		try {
 			commit();
 		} catch (IOException e) {
-			logger.error("Couldn't save the nukelog due to: " + e.getMessage(),
-					e);
+            logger.error("Couldn't save the nukelog due to: {}", e.getMessage(), e);
 		}
 	}
 
@@ -114,8 +115,7 @@ public class NukeBeans {
 		try {
 			commit();
 		} catch (IOException e) {
-			logger.error("Couldn't save the nukelog deu to: " + e.getMessage(),
-					e);
+            logger.error("Couldn't save the nukelog deu to: {}", e.getMessage(), e);
 		}
 	}
 
@@ -231,7 +231,7 @@ public class NukeBeans {
 		try (InputStream in = new FileInputStream(_nukebeansPath + VirtualFileSystem.separator + "nukebeans.json");
 			 JsonReader reader = new JsonReader(in)) {
 			nukees.putAll((Map<String, NukeData>)reader.readObject());
-			logger.debug("Loaded log from .json, size: " + nukees.size());
+            logger.debug("Loaded log from .json, size: {}", nukees.size());
 		} catch (FileNotFoundException e) {
 			// Lets see if there is a legacy xml nuke log to load
 			loadXMLLRUMap(nukees);
@@ -253,7 +253,7 @@ public class NukeBeans {
 				_nukebeansPath + VirtualFileSystem.separator + "nukebeans.xml"))) {
 			switchClassLoaders();
 			nukees.putAll((Map<String, NukeData>)xd.readObject());
-			logger.debug("Loaded log from .xml, size: " + nukees.size());
+            logger.debug("Loaded log from .xml, size: {}", nukees.size());
 		} catch (FileNotFoundException e) {
 			// nukelog does not exists yet.
 		}

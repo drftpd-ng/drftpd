@@ -17,7 +17,9 @@
  */
 package org.drftpd.vfs.perms;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import java.lang.reflect.Method;
 import java.util.StringTokenizer;
@@ -29,7 +31,7 @@ import java.util.StringTokenizer;
  */
 public class PermissionWrapper {
 
-	private static final Logger logger = Logger.getLogger(PermissionWrapper.class);
+	private static final Logger logger = LogManager.getLogger(PermissionWrapper.class);
 	
 	private VFSPermHandler _permHandler;
 	private Method _method;
@@ -48,7 +50,7 @@ public class PermissionWrapper {
 		try {
 			_method.invoke(_permHandler, directive, st);
 		} catch (Exception e) {
-			logger.error("Unable to handle '"+directive+"'", e);
+            logger.error("Unable to handle '{}'", directive, e);
 		}
 	}
 }

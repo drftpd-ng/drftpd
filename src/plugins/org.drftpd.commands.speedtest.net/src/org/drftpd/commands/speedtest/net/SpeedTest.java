@@ -18,7 +18,9 @@
 package org.drftpd.commands.speedtest.net;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -38,7 +40,7 @@ import java.util.concurrent.*;
  * @author scitz0
  */
 public class SpeedTest extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(SpeedTest.class);
+	private static final Logger logger = LogManager.getLogger(SpeedTest.class);
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
 	private HashSet<SpeedTestServer> _servers;

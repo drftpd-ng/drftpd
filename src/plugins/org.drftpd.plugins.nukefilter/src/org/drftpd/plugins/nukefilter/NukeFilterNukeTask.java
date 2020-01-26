@@ -1,6 +1,8 @@
 package org.drftpd.plugins.nukefilter;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.commands.nuke.NukeException;
@@ -18,7 +20,7 @@ import java.util.TimerTask;
  * @author phew
  */
 public class NukeFilterNukeTask extends TimerTask {
-	private static final Logger logger = Logger.getLogger(NukeFilterNukeTask.class);
+	private static final Logger logger = LogManager.getLogger(NukeFilterNukeTask.class);
 	
 	private DirectoryHandle dir;
 	private String reason;
@@ -45,10 +47,10 @@ public class NukeFilterNukeTask extends TimerTask {
 			nuker = GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(
 					NukeFilterManager.getNukeFilterManager().getNukeFilterSettings().getNuker());
 		} catch(NoSuchUserException e) {
-			logger.error("error loading nuker: "+e.getMessage());
+            logger.error("error loading nuker: {}", e.getMessage());
 			return;
 		} catch (UserFileException e) {
-			logger.error("error loading nuker: "+e.getMessage());
+            logger.error("error loading nuker: {}", e.getMessage());
 			return;
 		}
 		
@@ -56,7 +58,7 @@ public class NukeFilterNukeTask extends TimerTask {
 		try {
 			nd = NukeUtils.nuke(dir, nukex, reason, nuker);
 		} catch (NukeException e) {
-			logger.error("error nuking: "+e.getMessage());
+            logger.error("error nuking: {}", e.getMessage());
 			return;
 		}
 		NukeEvent nuke = new NukeEvent(nuker, "NUKE", nd);

@@ -38,7 +38,9 @@ import java.util.regex.Pattern;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import org.drftpd.protocol.slave.AbstractHandler;
 import org.drftpd.protocol.slave.SlaveProtocolCentral;
@@ -56,7 +58,7 @@ import org.drftpd.slave.async.AsyncResponse;
  * @version $Id$
  */
 public class ZipscriptZipHandler extends AbstractHandler {
-	private static final Logger logger = Logger.getLogger(ZipscriptZipHandler.class);
+	private static final Logger logger = LogManager.getLogger(ZipscriptZipHandler.class);
 
 	public ZipscriptZipHandler(SlaveProtocolCentral central) {
 		super(central);
@@ -108,7 +110,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 			}
 		} catch (Throwable t) {
 			integrityOk = false;
-			logger.debug("Error validating integrity of " + path + " : " + t.getMessage());
+            logger.debug("Error validating integrity of {} : {}", path, t.getMessage());
 		}
 
 		return integrityOk;
@@ -150,7 +152,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 							if (total > 0) {
 								dizInfo.setValid(true);
 								dizInfo.setTotal(total);
-								dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes("8859_1"));
+								dizString = Base64.getMimeEncoder().encodeToString(dizString.getBytes(StandardCharsets.ISO_8859_1));
 								dizInfo.setString(dizString);
 								return FileVisitResult.TERMINATE;
 							}
@@ -160,7 +162,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 				});
 			}
 		} catch (Throwable t) {
-			logger.debug("Error getting diz info from " + path + " : " + t.getMessage());
+            logger.debug("Error getting diz info from {} : {}", path, t.getMessage());
 		}
 
 		return dizInfo;
@@ -175,7 +177,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 		Matcher m = p.matcher(dizString);
 		
 		if (m.find()) {
-			total = new Integer(m.group(1).replaceAll("[oOxX]", "0"));
+			total = Integer.valueOf(m.group(1).replaceAll("[oOxX]", "0"));
 		}
 		
 		return total;

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.sitebot.announce.store" version="3.4.1">
+<plugin id="org.drftpd.plugins.sitebot.announce.store" version="3.4.2">
 	<doc>
 		<doc-text>(Sitebot) - This plugin provides announcement for configured files on STOR</doc-text>
 	</doc>

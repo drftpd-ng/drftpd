@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.plugins.archive.Archive;
 import org.drftpd.sections.SectionInterface;
@@ -33,7 +35,7 @@ import java.util.*;
 public class ConstantMirroring extends ArchiveType {
 	private long _slaveDeadAfter;
 
-	private static final Logger logger = Logger.getLogger(ConstantMirroring.class);
+	private static final Logger logger = LogManager.getLogger(ConstantMirroring.class);
 
 	/*
 	 * Consturctor:
@@ -94,7 +96,7 @@ public class ConstantMirroring extends ArchiveType {
 				return false;
 			}
 
-			logger.debug("Constant Mirroring DEBUG - FILE: '" + lrf.getName() + "' - NumOfSlaves: '" + _numOfSlaves + "' - Slave Size: '" + slaves.size() + "'");
+            logger.debug("Constant Mirroring DEBUG - FILE: '{}' - NumOfSlaves: '{}' - Slave Size: '{}'", lrf.getName(), _numOfSlaves, slaves.size());
 
 			if (slaves.size() != _numOfSlaves) {
 				return false;

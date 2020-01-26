@@ -25,7 +25,9 @@
 
 package org.drftpd.plugins.newraceleader;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
@@ -44,7 +46,7 @@ import java.util.TimerTask;
  * @version $Id: NewRaceLeaderManager.java 2393 2011-04-11 20:47:51Z cyber1331 $
  */
 public class NewRaceLeaderManager implements PluginInterface {
-	private static final Logger logger = Logger.getLogger(NewRaceLeaderManager.class);
+	private static final Logger logger = LogManager.getLogger(NewRaceLeaderManager.class);
 
 	private static final long _delay = 1800000; // = 30 minutes
 
@@ -76,7 +78,7 @@ public class NewRaceLeaderManager implements PluginInterface {
 			for (Iterator<NewRaceLeader> iter = _newraceleader.iterator(); iter.hasNext();) {
 				NewRaceLeader nrl = iter.next();
 				if ((nrl.getTime() + _delay + 5000) < System.currentTimeMillis()) {
-					logger.debug("Successfully age-deleted NewRaceLeader for: " + nrl.getDir().getPath());
+                    logger.debug("Successfully age-deleted NewRaceLeader for: {}", nrl.getDir().getPath());
 					iter.remove();
 				}
 			}
@@ -112,7 +114,7 @@ public class NewRaceLeaderManager implements PluginInterface {
 	    	for (Iterator<NewRaceLeader> iter = _newraceleader.iterator(); iter.hasNext();) {
 				NewRaceLeader nrl = iter.next();
 				if (nrl.getDir().getPath().equals(dir.getPath())) {
-					logger.debug("Successfully deleted NewRaceLeader for: " + nrl.getDir().getPath());
+                    logger.debug("Successfully deleted NewRaceLeader for: {}", nrl.getDir().getPath());
 					iter.remove();
 					break;
 				}

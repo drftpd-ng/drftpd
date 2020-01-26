@@ -17,8 +17,9 @@
  */
 package org.java.plugin.drftpd;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.standard.StandardPluginLifecycleHandler;
 import org.java.plugin.util.ExtendedProperties;
@@ -38,7 +39,7 @@ import java.security.PrivilegedAction;
  */
 public class SynchronizedPluginLifecycleHandler extends StandardPluginLifecycleHandler {
 
-	private final Log log = LogFactory.getLog(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
 	private boolean probeParentLoaderLast;
 	private boolean stickySynchronizing;
 	private boolean localClassLoadingOptimization;
@@ -79,21 +80,17 @@ public class SynchronizedPluginLifecycleHandler extends StandardPluginLifecycleH
 	public void configure(ExtendedProperties config) {
 		probeParentLoaderLast = "true".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("probeParentLoaderLast", "false")); //$NON-NLS-1$ //$NON-NLS-2$
-		log.debug("probeParentLoaderLast parameter value is " //$NON-NLS-1$
-				+ probeParentLoaderLast);
+        logger.debug("probeParentLoaderLast parameter value is {}", probeParentLoaderLast);
 		stickySynchronizing = "true".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("stickySynchronizing", "false")); //$NON-NLS-1$ //$NON-NLS-2$
-		log.debug("stickySynchronizing parameter value is " //$NON-NLS-1$
-				+ stickySynchronizing);
+        logger.debug("stickySynchronizing parameter value is {}", stickySynchronizing);
 		localClassLoadingOptimization = !"false".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("localClassLoadingOptimization", //$NON-NLS-1$
 				"true")); //$NON-NLS-1$
-		log.debug("localLoadingClassOptimization parameter value is " //$NON-NLS-1$
-				+ localClassLoadingOptimization);
+        logger.debug("localLoadingClassOptimization parameter value is {}", localClassLoadingOptimization);
 		foreignClassLoadingOptimization = !"false".equalsIgnoreCase( //$NON-NLS-1$
 				config.getProperty("foreignClassLoadingOptimization", //$NON-NLS-1$
 				"true")); //$NON-NLS-1$
-		log.debug("foreignClassLoadingOptimization parameter value is " //$NON-NLS-1$
-				+ foreignClassLoadingOptimization);
+        logger.debug("foreignClassLoadingOptimization parameter value is {}", foreignClassLoadingOptimization);
 	}
 }

@@ -17,7 +17,9 @@
  */
 package org.drftpd;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -63,7 +65,7 @@ import java.util.*;
 
 public class GlobalContext {
 
-	private static final Logger logger = Logger.getLogger(GlobalContext.class);
+	private static final Logger logger = LogManager.getLogger(GlobalContext.class);
 
 	private static GlobalContext _gctx;
 
@@ -270,16 +272,14 @@ public class GlobalContext {
 				}
 			}
 			while (GlobalContext.getEventService().getQueueSize() > 0) {
-				logger.info("Waiting for queued events to be processed - " + 
-						GlobalContext.getEventService().getQueueSize() + " remaining");
+                logger.info("Waiting for queued events to be processed - {} remaining", GlobalContext.getEventService().getQueueSize());
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 				}
 			}
 			while (CommitManager.getCommitManager().getQueueSize() > 0) {
-				logger.info("Waiting for queued commits to be drained - " + 
-						CommitManager.getCommitManager().getQueueSize() + " remaining");
+                logger.info("Waiting for queued commits to be drained - {} remaining", CommitManager.getCommitManager().getQueueSize());
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -339,7 +339,7 @@ public class GlobalContext {
 		try {
 			_sslContext = SSLGetContext.getSSLContext();
 		} catch (IOException e) {
-			logger.warn("Couldn't load SSLContext, SSL/TLS disabled - " + e.getMessage());
+            logger.warn("Couldn't load SSLContext, SSL/TLS disabled - {}", e.getMessage());
 		} catch (Exception e) {
 			logger.warn("Couldn't load SSLContext, SSL/TLS disabled", e);
 		}
@@ -388,7 +388,7 @@ public class GlobalContext {
 							throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
 						}
 						Properties p = getPropertiesUntilClosed(reader);
-						logger.debug("Adding command " + cmdName);
+                        logger.debug("Adding command {}", cmdName);
 
 						commandsConfig.put(cmdName,p);
 					} else {
@@ -402,7 +402,7 @@ public class GlobalContext {
 			throw new FatalException("Error loading "+cmdConf, e);
 		} catch (Exception e) {
 			if (reader != null) {
-				logger.error("Error reading line " + reader.getLineNumber() + " in " + cmdConf);
+                logger.error("Error reading line {} in {}", reader.getLineNumber(), cmdConf);
 			}
 			throw new FatalException(e);
 		} finally {
@@ -462,7 +462,7 @@ public class GlobalContext {
 				PluginInterface plugin = iter.next();
 				if (unloadedExtensions.contains(plugin)) {
 					plugin.stopPlugin("Plugin being unloaded");
-					logger.debug("Unloading plugin "+CommonPluginUtils.getPluginIdForObject(plugin));
+                    logger.debug("Unloading plugin {}", CommonPluginUtils.getPluginIdForObject(plugin));
 					iter.remove();
 					pluginRemoved = true;
 				}
@@ -481,7 +481,7 @@ public class GlobalContext {
 				ArrayList<PluginInterface> clonedPlugins = new ArrayList<>(_plugins);
 				for (PluginInterface newExtension : loadedExtensions) {
 					newExtension.startPlugin();
-					logger.debug("Loading plugin "+CommonPluginUtils.getPluginIdForObject(newExtension));
+                    logger.debug("Loading plugin {}", CommonPluginUtils.getPluginIdForObject(newExtension));
 					clonedPlugins.add(newExtension);
 				}
 				_plugins = clonedPlugins;

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.tvmaze" version="3.4.1">
+<plugin id="org.drftpd.commands.tvmaze" version="3.4.2">
     <doc>
 		<doc-text>This plugin provides IRC/FTP commands for listing information from tvmaze.com about tv shows.
 IRC announce on MKD/PRE event and tvmaze info dir in release dir is also available.</doc-text>
@@ -21,10 +21,10 @@ IRC announce on MKD/PRE event and tvmaze info dir in release dir is also availab
 		<library id="org.drftpd.commands.tvmaze" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="gson" path="../../../lib/gson-2.8.5.jar" type="code">
+		<library id="gson" path="../../../lib/gson-2.8.6.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="joda-time" path="../../../lib/joda-time-2.10.4.jar" type="code">
+		<library id="joda-time" path="../../../lib/joda-time-2.10.5.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

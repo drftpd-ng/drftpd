@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.speedtest;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.CommandRequest;
 import org.drftpd.commandmanager.CommandResponse;
@@ -42,7 +44,7 @@ import java.util.Properties;
  * @author scitz0
  */
 public class SpeedTestPostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(SpeedTestPostHook.class);
+	private static final Logger logger = LogManager.getLogger(SpeedTestPostHook.class);
 
 	private ArrayList<String> _speedTestPaths = new ArrayList<>();
 

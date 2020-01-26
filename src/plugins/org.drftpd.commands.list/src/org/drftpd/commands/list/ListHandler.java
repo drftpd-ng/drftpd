@@ -18,7 +18,9 @@
 package org.drftpd.commands.list;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
@@ -46,7 +48,7 @@ import java.util.*;
  */
 public class ListHandler extends CommandInterface {
 
-	private static final Logger logger = Logger.getLogger(ListHandler.class);
+	private static final Logger logger = LogManager.getLogger(ListHandler.class);
 
 	private static final DateFormat AFTER_SIX = new SimpleDateFormat(" yyyy");
 
@@ -344,7 +346,7 @@ public class ListHandler extends CommandInterface {
 							line.append("x.crc32=" + Checksum.formatChecksum(file.getCheckSum())+ ";");
 						}
 					} catch (NoAvailableSlaveException e) {
-						logger.debug("Unable to fetch checksum for: "+inode.getPath());
+                        logger.debug("Unable to fetch checksum for: {}", inode.getPath());
 					}
 	
 					line.append("size=" + inode.getSize() + ";");
@@ -517,8 +519,7 @@ public class ListHandler extends CommandInterface {
 				AddListElementsInterface listAddon = iter.next();
 				if (unloadedListAddons.contains(listAddon)) {
 					listAddon.unload();
-					logger.debug("Unloading list element addon provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(listAddon));
+                    logger.debug("Unloading list element addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(listAddon));
 					iter.remove();
 					addonRemoved = true;
 				}

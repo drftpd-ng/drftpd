@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.nuke;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.commandmanager.*;
@@ -51,7 +53,7 @@ public class Nuke extends CommandInterface {
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
     
-    private static final Logger logger = Logger.getLogger(Nuke.class);
+    private static final Logger logger = LogManager.getLogger(Nuke.class);
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
@@ -140,7 +142,7 @@ public class Nuke extends CommandInterface {
 								env.add("size", Bytes.formatBytes(nukeDir.getSize()));
 								response.addComment(session.jprintf(_bundle,_keyPrefix+"nuke.search.item", env, requestUser));
 							} catch (FileNotFoundException e) {
-								logger.warn("Dir deleted after index search?, skip and continue: " + nukeDir.getPath());
+                                logger.warn("Dir deleted after index search?, skip and continue: {}", nukeDir.getPath());
 							}
 						}
 
@@ -344,7 +346,7 @@ public class Nuke extends CommandInterface {
 								env.add("size", Bytes.formatBytes(nukeDir.getSize()));
 								response.addComment(session.jprintf(_bundle,_keyPrefix+"unnuke.search.item", env, user));
 							} catch (FileNotFoundException e) {
-								logger.warn("Dir deleted after index search?, skip and continue: " + nukeDir.getPath());
+                                logger.warn("Dir deleted after index search?, skip and continue: {}", nukeDir.getPath());
 							}
 						}
 

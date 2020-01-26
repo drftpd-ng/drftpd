@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.tvmaze.vfs;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.commands.tvmaze.TvMazeParser;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.dynamicdata.KeyNotFoundException;
@@ -32,7 +34,7 @@ import java.io.IOException;
  * @author lh
  */
 public class TvMazeVFSData {
-	private static final Logger logger = Logger.getLogger(TvMazeVFSData.class);
+	private static final Logger logger = LogManager.getLogger(TvMazeVFSData.class);
 
 	private DirectoryHandle _dir;
 

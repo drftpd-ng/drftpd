@@ -17,8 +17,9 @@
  */
 package org.drftpd.tools.installer.swing;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.tools.installer.InstallerConfig;
 import org.drftpd.tools.installer.PluginBuilder;
 import org.drftpd.tools.installer.PluginBuilderThread;
@@ -42,7 +43,7 @@ import java.util.HashMap;
 @SuppressWarnings("serial")
 public class SwingInstaller extends JFrame implements ActionListener {
 
-	private static final Logger logger = Logger.getLogger(SwingInstaller.class);
+	private static final Logger logger = LogManager.getLogger(SwingInstaller.class);
 
 	private JButton _buildButton;
 	private JButton _cleanButton;
@@ -150,7 +151,7 @@ public class SwingInstaller extends JFrame implements ActionListener {
 				}
 			}
 			_config.setPluginSelections(selPlugins);
-			Logger.getRootLogger().setLevel(Level.toLevel(_configPanel.getLogLevel().getSelectedItem().toString()));
+			//Logger.getRootLogger().setLevel(Level.toLevel(_configPanel.getLogLevel().getSelectedItem().toString()));
 			// only save current config when building, not when just cleaning
 			if (actionSource.equals(_buildButton)) {
 				try {

@@ -16,7 +16,9 @@
  */
 package org.drftpd.usermanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.dynamicdata.Key;
@@ -39,7 +41,7 @@ import java.util.List;
  * @version $Id$
  */
 public abstract class AbstractUser extends User implements Commitable {
-	private static final Logger logger = Logger.getLogger(AbstractUser.class);
+	private static final Logger logger = LogManager.getLogger(AbstractUser.class);
 
 	public static void checkValidGroupName(String group) {
 		if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
@@ -257,7 +259,7 @@ public abstract class AbstractUser extends User implements Commitable {
 				.getTime()));
 		super.resetDay(resetDate);
 		super.resetHour(resetDate);
-		logger.info("Reset daily stats for " + getName());
+        logger.info("Reset daily stats for {}", getName());
 	}
 
 	public void resetMonth(Date resetDate) {
@@ -266,7 +268,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		super.resetMonth(resetDate);
 		super.resetDay(resetDate);
 		super.resetHour(resetDate);
-		logger.info("Reset monthly stats for " + getName());
+        logger.info("Reset monthly stats for {}", getName());
 	}
 
 	public void resetWeek(Date resetDate) {
@@ -276,7 +278,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		if (getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT) > 0) {
 			setCredits(getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT));
 		}
-		logger.info("Reset weekly stats for " + getName());
+        logger.info("Reset weekly stats for {}", getName());
 	}	
 
 	public void resetHour(Date resetDate) {
@@ -291,7 +293,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		super.resetMonth(resetDate);
 		super.resetDay(resetDate);	
 		super.resetHour(resetDate);
-		logger.info("Reset Yearly stats for " + getName());
+        logger.info("Reset Yearly stats for {}", getName());
 	}
 
 	public void setCredits(long credits) {

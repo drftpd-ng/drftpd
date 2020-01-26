@@ -17,7 +17,9 @@
  */
 package org.drftpd.commands.tvmaze;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
@@ -37,7 +39,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class TvMazeConfig {
 	private static TvMazeConfig ourInstance;
 
-	private static final Logger logger = Logger.getLogger(TvMaze.class);
+	private static final Logger logger = LogManager.getLogger(TvMaze.class);
 
 	private ArrayList<SectionInterface> _rSections = new ArrayList<>();
 	private ArrayList<SectionInterface> _sHDSections = new ArrayList<>();
@@ -194,7 +196,7 @@ public class TvMazeConfig {
 
 		if (dir.getName().matches(getExclude())) return;
 
-		logger.debug("Dir added to process queue for TvMaze data: " + dir.getPath());
+        logger.debug("Dir added to process queue for TvMaze data: {}", dir.getPath());
 
 		// Add dir to process queue
 		addDirToProcessQueue(dir);

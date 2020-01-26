@@ -16,7 +16,9 @@
  */
 package org.drftpd.commands.find;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -52,7 +54,7 @@ import java.util.*;
  * @version $Id$
  */
 public class Find extends CommandInterface {
-	public static final Logger logger = Logger.getLogger(Find.class);
+	public static final Logger logger = LogManager.getLogger(Find.class);
 
 	private ResourceBundle _bundle;
 	private String _keyPrefix;
@@ -152,7 +154,7 @@ public class Find extends CommandInterface {
 					OptionInterface option = _optionsMap.get(arg);
 					option.exec(arg, getArgs(args), params);
 				} catch (Exception e) {
-					logger.debug("Option = " + arg, e);
+                    logger.debug("Option = {}", arg, e);
 					return new CommandResponse(500, e.getMessage());
 				}
 			} else if (_actionsMap.containsKey(arg)) {
@@ -165,7 +167,7 @@ public class Find extends CommandInterface {
 					action.initialize(arg, getArgs(args));
 					actions.add(action);
 				} catch (Exception e) {
-					logger.debug("Action = " + arg, e);
+                    logger.debug("Action = {}", arg, e);
 					return new CommandResponse(500, e.getMessage());
 				}
 			} else {
@@ -227,7 +229,7 @@ public class Find extends CommandInterface {
 				for (ActionInterface action : actions) {
 					if ((inode.isFile() && action.execInFiles()) ||
 							(inode.isDirectory() && action.execInDirs())) {
-						logger.debug("Action "+ action.getClass() + " executing on " + inode.getPath());
+                        logger.debug("Action {} executing on {}", action.getClass(), inode.getPath());
 						String text = action.exec(request, inode);
 						if (!quiet || action.failed())
 							responses.add(text);
@@ -235,7 +237,7 @@ public class Find extends CommandInterface {
 				}
 				results++;
 			} catch (FileNotFoundException e) {
-				logger.warn("Index contained an unexistent inode: " + item.getKey());
+                logger.warn("Index contained an unexistent inode: {}", item.getKey());
 			}
 		}
 
@@ -301,8 +303,7 @@ public class Find extends CommandInterface {
 			for (Iterator<Map.Entry<String, OptionInterface>> iter = clonedOptionAddons.entrySet().iterator(); iter.hasNext();) {
 				OptionInterface optionAddon = iter.next().getValue();
 				if (unloadedOptions.contains(optionAddon)) {
-					logger.debug("Unloading FIND option addon provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(optionAddon));
+                    logger.debug("Unloading FIND option addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(optionAddon));
 					iter.remove();
 					addonRemoved = true;
 				}
@@ -319,8 +320,7 @@ public class Find extends CommandInterface {
 			for (Iterator<Map.Entry<String, ActionInterface>> iter = clonedActionAddons.entrySet().iterator(); iter.hasNext();) {
 				ActionInterface actionAddon = iter.next().getValue();
 				if (unloadedActions.contains(actionAddon)) {
-					logger.debug("Unloading FIND action addon provided by plugin "
-							+CommonPluginUtils.getPluginIdForObject(actionAddon));
+                    logger.debug("Unloading FIND action addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(actionAddon));
 					iter.remove();
 					addonRemoved = true;
 				}

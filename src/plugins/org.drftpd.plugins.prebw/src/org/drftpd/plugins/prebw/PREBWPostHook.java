@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.prebw;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
@@ -45,7 +47,7 @@ import java.util.*;
  * @author lh
  */
 public class PREBWPostHook implements PostHookInterface {
-	private static final Logger logger = Logger.getLogger(PREBWPostHook.class);
+	private static final Logger logger = LogManager.getLogger(PREBWPostHook.class);
     private ArrayList<TimeSetting> _timeSettings = new ArrayList<>();
     private String _exclude;
     private String[] _sections;
@@ -126,13 +128,13 @@ public class PREBWPostHook implements PostHookInterface {
                 preInfos.addLast(new PreInfo(dir, section, timeSetting));
                 getInfoThread thread = new getInfoThread(preInfos.getLast());
                 thread.start();
-                logger.info("New PreInfo added: startinterval = * [" + dir.getName() + "]");
+                logger.info("New PreInfo added: startinterval = * [{}]", dir.getName());
                 continue;
             } else {
                 try {
                     parsedStartInterval = Long.parseLong(startInterval)*1048576L;
                 } catch (NumberFormatException e) {
-                    logger.warn("start interval in wrong format: " + startInterval, e);
+                    logger.warn("start interval in wrong format: {}", startInterval, e);
                     continue;
                 }
             }
@@ -141,23 +143,20 @@ public class PREBWPostHook implements PostHookInterface {
                     preInfos.addLast(new PreInfo(dir, section, timeSetting));
                     getInfoThread thread = new getInfoThread(preInfos.getLast());
                     thread.start();
-                    logger.info("New PreInfo added: dirSize(" + dirSize + ") > startinterval(" +
-                            parsedStartInterval + ") && endinterval = * [" + dir.getName() + "]");
+                    logger.info("New PreInfo added: dirSize({}) > startinterval({}) && endinterval = * [{}]", dirSize, parsedStartInterval, dir.getName());
                 }
             } else {
                 try {
                     parsedEndInterval = Long.parseLong(endInterval)*1048576L;
                 } catch (NumberFormatException e) {
-                    logger.warn("end interval in wrong format: " + endInterval, e);
+                    logger.warn("end interval in wrong format: {}", endInterval, e);
                     continue;
                 }
                 if (dirSize > parsedStartInterval && dirSize <= parsedEndInterval) {
                     preInfos.addLast(new PreInfo(dir, section, timeSetting));
                     getInfoThread thread = new getInfoThread(preInfos.getLast());
                     thread.start();
-                    logger.info("New PreInfo added: dirSize(" + dirSize + ") > startinterval(" +
-                            parsedStartInterval + ") && dirSize(" + dirSize + ") > endinterval(" +
-                            parsedEndInterval + ") [" + dir.getName() + "]");
+                    logger.info("New PreInfo added: dirSize({}) > startinterval({}) && dirSize({}) > endinterval({}) [{}]", dirSize, parsedStartInterval, dirSize, parsedEndInterval, dir.getName());
                 }
             }
         }
@@ -234,14 +233,14 @@ public class PREBWPostHook implements PostHookInterface {
 			List<BaseFtpConnection> conns = ConnectionManager.getConnectionManager().getConnections();
 			long speed = 0L;
 			for (BaseFtpConnection conn : conns) {
-				logger.info("conn.getCurrentDirectory(): " + conn.getCurrentDirectory());
-				logger.info("_preInfo.getDir(): " + _preInfo.getDir());
+                logger.info("conn.getCurrentDirectory(): {}", conn.getCurrentDirectory());
+                logger.info("_preInfo.getDir(): {}", _preInfo.getDir());
 				if (conn.isAuthenticated() && conn.isExecuting() &&
 						conn.getCurrentDirectory().getPath().startsWith(_preInfo.getDir().getPath())) {
 					logger.info("Valid");
 					TransferState ts = conn.getTransferState();
 					if (ts.isTransfering() && ts.getDirection() == Transfer.TRANSFER_SENDING_DOWNLOAD) {
-						logger.info("Transfering & TRANSFER_SENDING_DOWNLOAD, speed: " + ts.getXferSpeed());
+                        logger.info("Transfering & TRANSFER_SENDING_DOWNLOAD, speed: {}", ts.getXferSpeed());
 						speed += ts.getXferSpeed();
 					}
 				}

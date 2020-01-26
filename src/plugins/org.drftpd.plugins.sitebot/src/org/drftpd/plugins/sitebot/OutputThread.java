@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import java.io.BufferedWriter;
 
@@ -28,7 +30,7 @@ import java.io.BufferedWriter;
  */
 public class OutputThread extends Thread {
 
-	private static final Logger logger = Logger.getLogger(OutputThread.class);
+	private static final Logger logger = LogManager.getLogger(OutputThread.class);
 	private SiteBot _bot = null;
 	private Queue _outQueue = null;
 
@@ -66,7 +68,7 @@ public class OutputThread extends Thread {
 			try {
 				bwriter.write(line + "\r\n");
 				bwriter.flush();
-				logger.debug(">>>" + line);
+                logger.debug(">>>{}", line);
 			}
 			catch (Exception e) {
 				// Silent response - just lose the line.

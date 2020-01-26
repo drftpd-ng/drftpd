@@ -18,7 +18,9 @@
 
 package org.drftpd.master.config;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -37,10 +39,10 @@ import java.util.Properties;
  * @version $Id$
  */
 public class PluginsConfig {
-	private final static String pluginsConfPath = "conf/plugins/";
-	private final static File pluginsConfFile = new File(pluginsConfPath);
+	private static final String pluginsConfPath = "conf/plugins/";
+	private static final File pluginsConfFile = new File(pluginsConfPath);
 
-	private static final Logger logger = Logger.getLogger(PluginsConfig.class);
+	private static final Logger logger = LogManager.getLogger(PluginsConfig.class);
 			
 	private HashMap<String, Properties> _propertiesMap = new HashMap<>();
 
@@ -56,12 +58,12 @@ public class PluginsConfig {
 	public void dumpHashMap() {
 		logger.debug("Dumping Map Information.");
 		for (Entry<String, Properties> entry : getPropertiesMap().entrySet()) {
-			logger.debug("--> Configuration File: "+ entry.getKey());
+            logger.debug("--> Configuration File: {}", entry.getKey());
 			logger.debug("Listing properties.");
 			for (Entry<Object,Object> e : entry.getValue().entrySet()) {
 				String key = (String) e.getKey();
 				String value = (String) e.getValue();
-				logger.debug(key+"="+value);
+                logger.debug("{}={}", key, value);
 			}
 		}
 	}
@@ -143,8 +145,7 @@ public class PluginsConfig {
 		
 		if (cfg == null) {
 			cfg = new Properties();
-			logger.error("'"+pluginName + "' configuration file was not found. " +
-					"Returning an empty Properties object.");
+            logger.error("'{}' configuration file was not found. Returning an empty Properties object.", pluginName);
 		}
 		
 		return cfg;

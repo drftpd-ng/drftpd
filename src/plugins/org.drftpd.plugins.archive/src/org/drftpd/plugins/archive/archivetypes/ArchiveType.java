@@ -17,7 +17,9 @@
  */
 package org.drftpd.plugins.archive.archivetypes;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
@@ -46,7 +48,7 @@ import java.util.regex.PatternSyntaxException;
  * @version $Id$
  */
 public abstract class ArchiveType {
-	private static final Logger logger = Logger.getLogger(ArchiveType.class);
+	private static final Logger logger = LogManager.getLogger(ArchiveType.class);
 
 	// Used for: Archive dirs After This amount of time
 	private long _archiveAfter;
@@ -210,7 +212,7 @@ public abstract class ArchiveType {
                      *	we are already archiving something for this path..
                      *  ..lets wait until thats done before we continue
                      */
-                    logger.debug(getClass().toString() + " - Already archiving something from this path. Skip it.");
+                    logger.debug("{} - Already archiving something from this path. Skip it.", getClass().toString());
                     continue;
                 }
 
@@ -263,10 +265,10 @@ public abstract class ArchiveType {
 			}
 		}
 		if (oldestDir != null) {
-			logger.debug(getClass().toString() + " - Returning the oldest directory " + oldestDir);
+            logger.debug("{} - Returning the oldest directory {}", getClass().toString(), oldestDir);
 			return oldestDir;
 		}
-		logger.debug(getClass().toString() + " - All directories are archived");
+        logger.debug("{} - All directories are archived", getClass().toString());
 		return null;
 	}
 
@@ -305,7 +307,7 @@ public abstract class ArchiveType {
             jobQueue.addAll(recursiveSend(directoryHandle));
         }
         for (FileHandle file : lrf.getFilesUnchecked()) {
-            logger.info("Adding " + file.getPath() + " to the job queue");
+            logger.info("Adding {} to the job queue", file.getPath());
             Job job = new Job(file, _priority, _numOfSlaves, findDestinationSlaves());
             jobQueue.add(job);
         }
@@ -481,7 +483,7 @@ public abstract class ArchiveType {
 		try {
 			Pattern.compile(_archiveRegex);
 		} catch (PatternSyntaxException e) {
-			logger.error("Regex Entry for " + _confnum + " is invalid");
+            logger.error("Regex Entry for {} is invalid", _confnum);
 			_archiveRegex = ".*";
 		}
 
@@ -503,7 +505,7 @@ public abstract class ArchiveType {
 						// dir doesn't exist.  Lets check if Parent does
 						if (!moveInode.getParent().exists()) {
 							// parent dir doesn't exist either, really don't wanna make 3 sets of dirs.
-							logger.error("Directory and ParentDirectory for conf number '" + _confnum + "' Not Found: " + _moveToDirProp);
+                            logger.error("Directory and ParentDirectory for conf number '{}' Not Found: {}", _confnum, _moveToDirProp);
 						} else {
 							// Parent Exists = Good we can do this
 							_archiveToFolder = moveInode;
@@ -547,7 +549,7 @@ public abstract class ArchiveType {
 				RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 				destSlaves.add(rslave);
 			} catch (ObjectNotFoundException e) {
-				logger.error("Unable to get slave " + slavename + " from the SlaveManager");
+                logger.error("Unable to get slave {} from the SlaveManager", slavename);
 			}
 		}
 		_slaveList = destSlaves;
@@ -585,7 +587,7 @@ public abstract class ArchiveType {
                 Job job = iter.next();
 
                 if (job.isDone()) {
-                    logger.debug(job + " - is done being sent");
+                    logger.debug("{} - is done being sent", job);
                     iter.remove();
                 }
             }
@@ -650,7 +652,7 @@ public abstract class ArchiveType {
 			if (!_archiveToFolder.exists()) {
 				// dir doesn't exist.  Lets check if Parent does
 				if (!createDirectories(_archiveToFolder.getParent())) {
-					logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " : Failed to create Parent Directories");
+                    logger.warn("Cannot Archive '{}' to '{} : Failed to create Parent Directories", getDirectory().getPath(), _archiveToFolder.getPath());
 					return false;
 				}
 
@@ -660,7 +662,7 @@ public abstract class ArchiveType {
 				} catch (FileExistsException e) {
 					// ignore...directory now exists
 				} catch (FileNotFoundException e) {
-					logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " unable to create '" + _archiveToFolder.getPath() + "'" );
+                    logger.warn("Cannot Archive '{}' to '{} unable to create '{}'", getDirectory().getPath(), _archiveToFolder.getPath(), _archiveToFolder.getPath());
 					return false;
 				}
 			}
@@ -674,7 +676,7 @@ public abstract class ArchiveType {
 
 						// dir doesn't exist.  Lets check if Parent does
 						if (!createDirectories(typeInode.getParent())) {
-							logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " : Failed to create Parent Directories");
+                            logger.warn("Cannot Archive '{}' to '{} : Failed to create Parent Directories", getDirectory().getPath(), _archiveToFolder.getPath());
 							return false;
 						}
 
@@ -684,7 +686,7 @@ public abstract class ArchiveType {
 						} catch (FileExistsException e) {
 							// ignore...directory now exists
 						} catch (FileNotFoundException e) {
-							logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " unable to create dir type '" + typeInode.getPath() + "'" );
+                            logger.warn("Cannot Archive '{}' to '{} unable to create dir type '{}'", getDirectory().getPath(), _archiveToFolder.getPath(), typeInode.getPath());
 							return false;
 						}
 					}
@@ -746,9 +748,9 @@ public abstract class ArchiveType {
 				return true;
 
 			} catch (FileExistsException e) {
-				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because it already exists at destination");
+                logger.warn("Cannot Archive '{}' to '{} because it already exists at destination", getDirectory().getPath(), _archiveToFolder.getPath());
 			} catch (FileNotFoundException e) {
-				logger.warn("Cannot Archive '" + getDirectory().getPath() + "' to '" + _archiveToFolder.getPath() + " because '" + getDirectory().getPath() + "' no longer exists");
+                logger.warn("Cannot Archive '{}' to '{} because '{}' no longer exists", getDirectory().getPath(), _archiveToFolder.getPath(), getDirectory().getPath());
 			}
 		} else {
 			// No need to move directory, so lets return true
@@ -833,7 +835,7 @@ public abstract class ArchiveType {
 							retstr = retstr.replace(fullstr, matcher.group(1));
 						}
 					} catch (PatternSyntaxException e) {
-						logger.error("Regex Syntax Error in '" + regexstr + "' for '" + fullstr + "'",e);
+                        logger.error("Regex Syntax Error in '{}' for '{}'", regexstr, fullstr, e);
 					}
 
 					if (retstr.contains(fullstr)) {
@@ -858,7 +860,7 @@ public abstract class ArchiveType {
 
 		if (type != "")
 		{
-			logger.warn("No valid type found for: " + type);
+            logger.warn("No valid type found for: {}", type);
 		}
 
 		return null;

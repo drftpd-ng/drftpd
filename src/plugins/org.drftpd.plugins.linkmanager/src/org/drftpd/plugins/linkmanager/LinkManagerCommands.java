@@ -16,7 +16,9 @@
  */
 package org.drftpd.plugins.linkmanager;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.commandmanager.*;
 import org.drftpd.vfs.DirectoryHandle;
 
@@ -29,7 +31,7 @@ import java.util.LinkedList;
  */
 
 public class LinkManagerCommands extends CommandInterface {
-	private static final Logger logger = Logger.getLogger(LinkManagerCommands.class);
+	private static final Logger logger = LogManager.getLogger(LinkManagerCommands.class);
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);

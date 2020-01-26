@@ -17,7 +17,9 @@
  */
 package org.drftpd.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.ReplacerFormat;
@@ -31,7 +33,7 @@ import java.util.ResourceBundle;
  */
 public class ReplacerUtils {
 	
-	private static final Logger logger = Logger.getLogger(ReplacerUtils.class);
+	private static final Logger logger = LogManager.getLogger(ReplacerUtils.class);
 	
 	private ReplacerUtils() {
 		super();
@@ -48,7 +50,7 @@ public class ReplacerUtils {
 		try {
 			return SimplePrintf.jprintf(finalFormat(bundle, key), env);
 		} catch (Exception e) {
-			logger.info("Error formatting message for key - " + key, e);
+            logger.info("Error formatting message for key - {}", key, e);
 			return key;
 		}
 	}

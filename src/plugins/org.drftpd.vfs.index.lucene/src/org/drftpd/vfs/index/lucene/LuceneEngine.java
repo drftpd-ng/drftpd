@@ -18,7 +18,9 @@
 
 package org.drftpd.vfs.index.lucene;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -70,7 +72,7 @@ import java.util.*;
  * @version $Id$
  */
 public class LuceneEngine implements IndexEngineInterface {
-	private static final Logger logger = Logger.getLogger(LuceneEngine.class);
+	private static final Logger logger = LogManager.getLogger(LuceneEngine.class);
 
 	private static final String EXCEPTION_OCCURED_WHILE_SEARCHING = "An exception occured while indexing, check stack trace";
 
@@ -164,8 +166,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
 				dataExtension.initializeFields(INDEX_DOCUMENT);
 				_dataExtensions.add(dataExtension);
-				logger.debug("Loading lucene index data extension from plugin "
-						+CommonPluginUtils.getPluginIdForObject(dataExtension));
+                logger.debug("Loading lucene index data extension from plugin {}", CommonPluginUtils.getPluginIdForObject(dataExtension));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for org.drftpd.vfs.index.lucene extension point 'IndexData', possibly the "+
@@ -178,8 +179,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				CommonPluginUtils.getPluginObjects(this, "org.drftpd.vfs.index.lucene", "QueryTerm", "Class");
 			for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
 				_queryExtensions.add(queryExtension);
-				logger.debug("Loading lucene query term extension from plugin "
-						+CommonPluginUtils.getPluginIdForObject(queryExtension));
+                logger.debug("Loading lucene query term extension from plugin {}", CommonPluginUtils.getPluginIdForObject(queryExtension));
 			}
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for org.drftpd.vfs.index.lucene extension point 'QueryTerm', possibly the "+
@@ -405,7 +405,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				_iWriter.addDocument(doc);
 			}
 		} catch (FileNotFoundException e) {
-			logger.error("Unable to add " + inode.getPath() + " to the index", e);
+            logger.error("Unable to add {} to the index", inode.getPath(), e);
 		} catch (CorruptIndexException e) {
 			throw new IndexException("Unable to add " + inode.getPath() + " to the index", e);
 		} catch (IOException e) {
@@ -733,7 +733,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				queryExtension.addQueryTerms(query, params);
 			}
 
-			logger.debug("Query: " + query);
+            logger.debug("Query: {}", query);
 
 			iReader = IndexReader.open(_iWriter, true);
 			iSearcher = new IndexSearcher(iReader);
@@ -744,7 +744,7 @@ public class LuceneEngine implements IndexEngineInterface {
 				if (limit == 0) {
 					return inodes;
 				}
-				logger.debug("Found " + limit + " inode match(es) in the index, using this as limit.");
+                logger.debug("Found {} inode match(es) in the index, using this as limit.", limit);
 			}
 			TopFieldCollector topFieldCollector = TopFieldCollector.create(SORT, limit, true, false, false, false);
 			iSearcher.search(query, topFieldCollector);
@@ -824,7 +824,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			iSearcher = new IndexSearcher(iReader);
 			TopScoreDocCollector topScoreDocsCollector = TopScoreDocCollector.create(_maxHitsNumber, false);
 			iSearcher.search(query, topScoreDocsCollector);
-			logger.debug("Query: " + query);
+            logger.debug("Query: {}", query);
 
 			for (ScoreDoc scoreDoc : topScoreDocsCollector.topDocs().scoreDocs) {
 				Document doc = iSearcher.doc(scoreDoc.doc, SIMPLE_FIELD_SELECTOR);
@@ -944,8 +944,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			if (!loadedDataExtensions.isEmpty()) {
 				List<IndexDataExtensionInterface> clonedDataExtensions = new ArrayList<>(_dataExtensions);
 				for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
-					logger.debug("Loading lucene index data extension from plugin "
-							+ CommonPluginUtils.getPluginIdForObject(dataExtension));
+                    logger.debug("Loading lucene index data extension from plugin {}", CommonPluginUtils.getPluginIdForObject(dataExtension));
 					synchronized (INDEX_DOCUMENT) {
 						dataExtension.initializeFields(INDEX_DOCUMENT);
 					}
@@ -964,8 +963,7 @@ public class LuceneEngine implements IndexEngineInterface {
 			if (!loadedQueryExtensions.isEmpty()) {
 				List<QueryTermExtensionInterface> clonedQueryExtensions = new ArrayList<>(_queryExtensions);
 				for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
-					logger.debug("Loading lucene query term extension from plugin "
-							+ CommonPluginUtils.getPluginIdForObject(queryExtension));
+                    logger.debug("Loading lucene query term extension from plugin {}", CommonPluginUtils.getPluginIdForObject(queryExtension));
 					clonedQueryExtensions.add(queryExtension);
 				}
 				_queryExtensions = clonedQueryExtensions;

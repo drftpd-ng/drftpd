@@ -20,7 +20,9 @@ package org.drftpd.commands.speedtest.net;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.util.HttpUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
@@ -34,6 +36,7 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -41,7 +44,7 @@ import java.util.Iterator;
  * @author scitz0
  */
 public class SpeedTestUtils {
-	private static final Logger logger = Logger.getLogger(SpeedTestUtils.class);
+	private static final Logger logger = LogManager.getLogger(SpeedTestUtils.class);
 
 	private static final String[] _speedTestURLS = {
 			"http://www.speedtest.net/speedtest-servers-static.php",
@@ -62,14 +65,13 @@ public class SpeedTestUtils {
 				String data = HttpUtils.retrieveHttpAsString(url);
 				serverList.addAll(parseXML(data));
 			} catch (UnsupportedEncodingException e) {
-				logger.warn("UnsupportedEncodingException parsing " + url + " :: " + e.getMessage());
+                logger.warn("UnsupportedEncodingException parsing {} :: {}", url, e.getMessage());
 			} catch (XMLStreamException e) {
-				logger.warn("XMLStreamException parsing " + url + " :: " + e.getMessage());
+                logger.warn("XMLStreamException parsing {} :: {}", url, e.getMessage());
 			} catch (Exception e) {
-				logger.warn("Failed to get data from " + url + " :: " + e.getMessage());
+                logger.warn("Failed to get data from {} :: {}", url, e.getMessage());
 			}
 		}
-
 		return serverList;
 	}
 
@@ -78,7 +80,7 @@ public class SpeedTestUtils {
 		HashSet<SpeedTestServer> serverList = new HashSet<>();
 		XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
 		XMLEventReader xmlEventReader = xmlInputFactory.createXMLEventReader(
-				new ByteArrayInputStream(xmlString.getBytes("UTF-8")));
+				new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8)));
 		while(xmlEventReader.hasNext()) {
 			//Get next event.
 			XMLEvent xmlEvent = xmlEventReader.nextEvent();
@@ -139,14 +141,13 @@ public class SpeedTestUtils {
 		try {
 			String ip = InetAddress.getByName(rslave.getPASVIP()).getHostAddress();
 			String data = HttpUtils.retrieveHttpAsString("http://ipinfo.io/" + ip + "/json");
-			JsonParser jp = new JsonParser();
-			JsonElement root = jp.parse(data);
+			JsonElement root = JsonParser.parseString(data);
 			JsonObject rootobj = root.getAsJsonObject();
 			String[] loc = rootobj.get("loc").getAsString().split(",");
 			slaveLocation.setLatitude(Double.parseDouble(loc[0]));
 			slaveLocation.setLongitude(Double.parseDouble(loc[1]));
 		} catch (Exception e) {
-			logger.error("Something went wrong getting slave location: " + e.getMessage());
+            logger.error("Something went wrong getting slave location: {}", e.getMessage());
 		}
 		return slaveLocation;
 	}

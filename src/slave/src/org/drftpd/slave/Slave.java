@@ -17,7 +17,9 @@
  */
 package org.drftpd.slave;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
 import org.drftpd.exceptions.FileExistsException;
@@ -53,7 +55,7 @@ import java.util.zip.CheckedInputStream;
 public class Slave {
 	public static final boolean isWin32 = System.getProperty("os.name").startsWith("Windows");
 
-	private static final Logger logger = Logger.getLogger(Slave.class);
+	private static final Logger logger = LogManager.getLogger(Slave.class);
 
 	private static final int socketTimeout = 10000; // 10 seconds, for Socket
 
@@ -114,7 +116,7 @@ public class Slave {
 		// interface that the master will report to clients requesting PASV
 		// transfers from this slave, unless pasv_addr is set on the master for this
 		// slave
-		logger.info("Connecting to master at " + addr);
+        logger.info("Connecting to master at {}", addr);
 
 		String slavename = PropertyHelper.getProperty(p, "slave.name");
 
@@ -301,7 +303,7 @@ public class Slave {
 				break;
 			}
 
-			logger.info("slave.root." + i + ": " + rootString);
+            logger.info("slave.root.{}: {}", i, rootString);
 			roots.add(new Root(rootString));
 		}
 
@@ -431,7 +433,7 @@ public class Slave {
 	}
 
 	public long checkSum(PhysicalFile file) throws IOException {
-		logger.debug("Checksumming: " + file.getPath());
+        logger.debug("Checksumming: {}", file.getPath());
 
 		CRC32 crc32 = new CRC32();
 		try (CheckedInputStream in = new CheckedInputStream(new BufferedInputStream(new FileInputStream(file)),
@@ -467,11 +469,11 @@ public class Slave {
 				if (!file.deleteRecursive()) {
 					throw new PermissionDeniedException("delete failed on " + path);
 				}
-				logger.info("DELETEDIR: " + path);
+                logger.info("DELETEDIR: {}", path);
 			} else if (file.isFile()) {
 				File dir = new PhysicalFile(file.getParentFile());
-				logger.info("DELETE: " + path);
-				logger.info("rmfile: " + file.getPath());
+                logger.info("DELETE: {}", path);
+                logger.info("rmfile: {}", file.getPath());
 				if (!file.delete()) {
 					throw new PermissionDeniedException("delete failed on " + path);
 				}
@@ -491,12 +493,12 @@ public class Slave {
 
 					try {
 						if (Files.deleteIfExists(dir.toPath())) {
-							logger.info("Dir empty, rmdir: " + dir.getPath());
+                            logger.info("Dir empty, rmdir: {}", dir.getPath());
 						} else {
-							logger.info("dir was empty, but doesn't exist anymore, that is fine " + dir.getPath());
+                            logger.info("dir was empty, but doesn't exist anymore, that is fine {}", dir.getPath());
 						}
 					} catch (DirectoryNotEmptyException dnee) {
-						logger.info("dir was not empty, that is fine, we keep " + dir.getPath());
+                        logger.info("dir was not empty, that is fine, we keep {}", dir.getPath());
 						break;
 					}
 
@@ -563,14 +565,13 @@ public class Slave {
 				// connection to the master is dead or there is a configuration
 				// error
 				if (_timeout < (System.currentTimeMillis() - lastCommandReceived)) {
-					logger.error("Slave is going offline as it hasn't received any communication from the master in "
-							+ (System.currentTimeMillis() - lastCommandReceived) + " milliseconds");
+                    logger.error("Slave is going offline as it hasn't received any communication from the master in {} milliseconds", System.currentTimeMillis() - lastCommandReceived);
 					throw new RuntimeException(e);
 				}
 				continue;
 			}
 
-			logger.debug("Slave fetched " + ac);
+            logger.debug("Slave fetched {}", ac);
 			class AsyncCommandHandler implements Runnable {
 				private AsyncCommandArgument _command = null;
 
@@ -666,7 +667,7 @@ public class Slave {
 			_sout.flush();
 			_sout.reset();
 			if (!(response instanceof AsyncResponseTransferStatus)) {
-				logger.debug("Slave wrote response - " + response);
+                logger.debug("Slave wrote response - {}", response);
 			}
 
 			if (response instanceof AsyncResponseException) {

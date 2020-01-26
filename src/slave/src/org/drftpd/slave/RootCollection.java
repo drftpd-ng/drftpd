@@ -17,7 +17,9 @@
  */
 package org.drftpd.slave;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.io.PhysicalFile;
 
 import java.io.File;
@@ -31,7 +33,7 @@ import java.util.concurrent.*;
  * @version $Id$
  */
 public class RootCollection {
-	private static final Logger logger = Logger.getLogger(RootCollection.class);
+	private static final Logger logger = LogManager.getLogger(RootCollection.class);
 
 	private ArrayList<Root> _roots = null;
 	private Slave _slave = null;
@@ -284,7 +286,7 @@ public class RootCollection {
 			for (File mount : mounts) {
 
 				if (fullpath.startsWith(mount.getPath())) {
-					logger.info(fullpath + " in mount " + mount.getPath());
+                    logger.info("{} in mount {}", fullpath, mount.getPath());
 
 					if (usedMounts.get(mount.getPath()) != null) {
 						throw new IOException("Multiple roots in mount "

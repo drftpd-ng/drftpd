@@ -18,7 +18,9 @@
 package org.drftpd.master;
 
 import com.cedarsoftware.util.io.JsonReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
 import org.drftpd.SSLGetContext;
@@ -47,7 +49,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @version $Id$
  */
 public class SlaveManager implements Runnable, TimeEventInterface {
-	private static final Logger logger = Logger.getLogger(SlaveManager.class
+	private static final Logger logger = LogManager.getLogger(SlaveManager.class
 			.getName());
 
 	private static final String slavePath = "userdata/slaves/";
@@ -131,7 +133,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		}
 		try (InputStream in = new FileInputStream(getSlaveFile(slavename));
 			 JsonReader reader = new JsonReader(in)) {
-			logger.debug("Loading slave '"+slavename+"' Json data from disk.");
+            logger.debug("Loading slave '{}' Json data from disk.", slavename);
 			RemoteSlave rslave = (RemoteSlave) reader.readObject();
 			if (rslave.getName().equals(slavename)) {
 				_rslaves.put(slavename,rslave);
@@ -152,7 +154,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 		RemoteSlave rslave;
 		File xmlSlaveFile = getXMLSlaveFile(slavename);
 		try (XMLDecoder in = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlSlaveFile)))) {
-			logger.debug("Loading slave '"+slavename+"' XML data from disk.");
+            logger.debug("Loading slave '{}' XML data from disk.", slavename);
 			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(CommonPluginUtils.getClassLoaderForObject(this));
 			rslave = (RemoteSlave) in.readObject();
@@ -163,7 +165,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 				// Commit new json slave file and delete old xml
 				rslave.commit();
 				if (!xmlSlaveFile.delete()) {
-					logger.error("Failed to delete old xml slave file: " + xmlSlaveFile.getName());
+                    logger.error("Failed to delete old xml slave file: {}", xmlSlaveFile.getName());
 				}
 				return rslave;
 			}
@@ -379,7 +381,7 @@ logger.info("Running shutdown hook");
 				_serverSocket = new ServerSocket(_port);
 			}
 			// _serverSocket.setReuseAddress(true);
-			logger.info("Listening for slaves on port " + _port);
+            logger.info("Listening for slaves on port {}", _port);
 		} catch (Exception e) {
 			throw new FatalException(e);
 		}
@@ -404,8 +406,7 @@ logger.info("Running shutdown hook");
 					((SSLSocket) socket).setUseClientMode(false);
 					((SSLSocket) socket).startHandshake();
 				}
-				logger.debug("Slave connected from "
-						+ socket.getRemoteSocketAddress());
+                logger.debug("Slave connected from {}", socket.getRemoteSocketAddress());
 
 				out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 				out.flush();
@@ -422,8 +423,7 @@ logger.info("Running shutdown hook");
 									"error",
 									slavename
 											+ " does not exist, use \"site addslave\""));
-					logger.info("Slave " + slavename
-							+ " does not exist, use \"site addslave\"");
+                    logger.info("Slave {} does not exist, use \"site addslave\"", slavename);
 					socket.close();
 					continue;
 				}
@@ -454,8 +454,7 @@ logger.info("Running shutdown hook");
 							socket.getInetAddress()
 									+ " is not a valid mask for "
 									+ rslave.getName()));
-					logger.error(socket.getInetAddress()
-							+ " is not a valid ip for " + rslave.getName());
+                    logger.error("{} is not a valid ip for {}", socket.getInetAddress(), rslave.getName());
 					socket.close();					
 					
 					continue;
