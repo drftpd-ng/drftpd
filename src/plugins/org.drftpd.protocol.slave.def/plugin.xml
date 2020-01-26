@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.protocol.slave.def" version="3.4.1">
+<plugin id="org.drftpd.protocol.slave.def" version="3.4.2">
 	<doc>
 		<doc-text>(Required) - This provides the slave protocol definitions.</doc-text>
 	</doc>

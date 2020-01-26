@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.vfs.index.lucene" version="3.4.1">
+<plugin id="org.drftpd.vfs.index.lucene" version="3.4.2">
 	<attributes>
 		<attribute id="DenyUnload" value="true" />
 		<attribute id="DefaultBuild" value="true" />
@@ -13,10 +13,10 @@
 		<library id="org.drftpd.vfs.index.lucene" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="lucene" path="../../../lib/lucene-core-3.6.2.jar" type="code">
+		<library id="lucene" path="../../../lib/lucene-core-4.10.4.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="lucene-queries" path="../../../lib/lucene-queries-3.6.2.jar" type="code">
+		<library id="lucene-queries" path="../../../lib/lucene-queries-4.10.4.jar" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
