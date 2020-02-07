@@ -97,7 +97,7 @@ public class GlobalContext {
 
 	private static AsyncThreadSafeEventService eventService = new AsyncThreadSafeEventService();
 
-	public static final String VERSION = "DrFTPD " + CommonPluginUtils.getPluginVersionForObject(GlobalContext.class);
+	public static final String VERSION = "DrFTPD 3.4.3-dev";
 
 	public void reloadFtpConfig() {
 		_config.reload();
