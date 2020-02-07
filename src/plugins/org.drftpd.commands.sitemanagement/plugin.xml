@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.sitemanagement" version="3.4.2">
+<plugin id="org.drftpd.commands.sitemanagement" version="3.4.3">
 	<doc>
 		<doc-text>This plugin provides Site Management commands.  
 (SITE RELOAD/SHUTDOWN/LIST/LOADPLUGIN/UNLOADPLUGIN/RELOADPLUGIN/PLUGINS)</doc-text>

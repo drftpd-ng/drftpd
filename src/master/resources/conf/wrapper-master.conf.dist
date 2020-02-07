@@ -66,7 +66,7 @@ wrapper.java.classpath.4=lib/commons-logging-1.2.jar
 wrapper.java.classpath.5=lib/log4j-api-2.13.0.jar
 wrapper.java.classpath.6=lib/log4j-core-2.13.0.jar
 wrapper.java.classpath.7=lib/log4j-jcl-2.13.0.jar
-wrapper.java.classpath.8=lib/drftpd-jpf-3.4.2.jar
+wrapper.java.classpath.8=lib/drftpd-jpf-3.4.3.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=lib
@@ -137,7 +137,7 @@ wrapper.ignore_sequence_gaps=TRUE
 wrapper.pidfile.strict=TRUE
 
 # Title to use when running as a console
-wrapper.console.title=Distributed Daemon FTP Server 3.4.2 Master
+wrapper.console.title=Distributed Daemon FTP Server 3.4.3 Master
 
 #********************************************************************
 # Wrapper JVM Checks
@@ -211,7 +211,7 @@ wrapper.name=drftpd-master
 wrapper.displayname=DrFTPD Master
 
 # Description of the service
-wrapper.description=Distributed Daemon FTP Server 3.4.2 Master https://github.com/drftpd-ng/drftpd3
+wrapper.description=Distributed Daemon FTP Server 3.4.3 Master https://github.com/drftpd-ng/drftpd3
 
 # Service dependencies.  Add dependencies as needed starting from 1
 wrapper.ntservice.dependency.1=
