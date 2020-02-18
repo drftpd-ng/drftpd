@@ -239,3 +239,8 @@ wrapper.ntservice.starttype=AUTO_START
 
 # Allow the service to interact with the desktop (Windows NT/2000/XP only).
 wrapper.ntservice.interactive=FALSE
+
+# Allow the current user to perform certain actions without being prompted for
+#  administrator credentials. (Requires Professional Edition)
+#wrapper.ntservice.permissions.1.account=CURRENT_USER
+#wrapper.ntservice.permissions.1.allow=START, STOP, PAUSE_RESUME
