@@ -78,13 +78,13 @@
 		<library id="junit" path="../../lib/junit-4.13.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="log4j-api" path="../../lib/log4j-api-2.13.0.jar" type="code">
+		<library id="log4j-api" path="../../lib/log4j-api-2.13.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="log4j-core" path="../../lib/log4j-core-2.13.0.jar" type="code">
+		<library id="log4j-core" path="../../lib/log4j-core-2.13.1.jar" type="code">
 			<export prefix="*" />
 		</library>
-		<library id="log4j-jcl" path="../../lib/log4j-jcl-2.13.0.jar" type="code">
+		<library id="log4j-jcl" path="../../lib/log4j-jcl-2.13.1.jar" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="jpf" path="../../lib/jpf-1.5.1.jar" type="code">
