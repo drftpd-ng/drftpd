@@ -5,6 +5,11 @@
     <formats>
         <format>jar</format>
     </formats>
+    <repositories>
+        <repository>
+            <includeMetadata>true</includeMetadata>
+        </repository>
+    </repositories>
     <includeBaseDirectory>false</includeBaseDirectory>
     <dependencySets>
         <dependencySet>

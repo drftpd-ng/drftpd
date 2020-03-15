@@ -16,9 +16,6 @@
  */
 package org.drftpd.master.usermanager;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
@@ -31,7 +28,10 @@ import org.drftpd.slave.exceptions.FileExistsException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 
 /**
  * This is the base class of all the user manager classes. If we want to add a
