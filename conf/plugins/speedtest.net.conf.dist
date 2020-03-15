@@ -1,0 +1,6 @@
+# speedtest.net #
+#################
+
+# Valid options: K(km, default), N(nautical mile), M(mile)
+distance.unit=K
+

@@ -4,7 +4,10 @@
 *.class
 .idea
 target
-userdata
+userdata/drftpd.key
+userdata/slaves
+userdata/vfs
+userdata/users
 
 # Log file
 *.log

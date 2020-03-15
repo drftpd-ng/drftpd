@@ -379,3 +379,34 @@ org.drftpd.commands.zipscript.flac.hooks.ZipscriptFlacPostHook.stor.flacinfo.tex
 ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\³                                                                              ³\n\³                               f l a c   i n f o                              ³\n\³                                                                              ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Artist  : ${artist,-22.22}  ³ Genre : ${genre,-28.28}   ³\n\³   Album   : ${album,-22.22}  ³ Year  : ${year,-28.28}   ³\n\³   Track   : ${track,-22.22}  ³ Title : ${title,-28.28}   ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Freq    : ${samplerate,-62.62}   ³\n\³   Channels: ${channels,-62.62}   ³\n\³   Runtime : ${runtime,-62.62}   ³\n\ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
 
 org.drftpd.commands.zipscript.flac.list.ZipscriptFlacStatusBar.statusbar.vorbistag=${genre} ${year}
+
+org.drftpd.commands.autonuke.AutoNukeCommands.approve.error.path=Specified path does not exist, ${path}
+org.drftpd.commands.autonuke.AutoNukeCommands.approve.remove=${path} is no longer marked as approved.
+org.drftpd.commands.autonuke.AutoNukeCommands.approve.search.empty=No directory found with that name.
+org.drftpd.commands.autonuke.AutoNukeCommands.approve.search.end=End of matching directories. Use !approve on full path.
+org.drftpd.commands.autonuke.AutoNukeCommands.approve.search.item=${path}
+org.drftpd.commands.autonuke.AutoNukeCommands.approve.success=${path} marked as approved overriding autonuke.
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.del.clear=AutoNuke queue cleared, ${items} items removed.
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.del.error=Error getting ${path}, invalid dir/path specified.
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.del.notfound=Unable to find ${path} in AutoNuke queue.
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.del.success=Successfully removed ${dir} from AutoNuke queue.
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.empty=Queue empty
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.header=# AutoNukes #
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.item=${path} [ AutoNuke: ${timeleft} ] [ ${multiplier}X with reason: ${reason} ]
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukes.section.empty=Queue empty for section ${section}. ${nbrtotal} directories in queue for all sections.
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukescan.aborted=AutoNuke scan aborted before it could complete
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukescan.complete=Finished scanning section(s) for nukes
+org.drftpd.commands.autonuke.AutoNukeCommands.autonukescan.start=\
+AutoNuke scan started on ${section}
+
+org.drftpd.commands.serverstatus.ServerStatus.master.uptime=Master has been online for ${uptime}
+org.drftpd.commands.serverstatus.ServerStatus.slave.notfound=${slave}: NOTFOUND
+org.drftpd.commands.serverstatus.ServerStatus.slave.offline=${slave}: OFFLINE
+org.drftpd.commands.serverstatus.ServerStatus.slave.uptime=${slave} has been online for ${uptime}
+org.drftpd.commands.serverstatus.ServerStatus.status.classes=Classes: ${loaded.classes} currently loaded / ${unloaded.classes} unloaded / ${total.classes} total loaded since startup.
+org.drftpd.commands.serverstatus.ServerStatus.status.gcinfo=Garbage Collector was executed ${collection.count}x, spent ${collection.time} during those operations.
+org.drftpd.commands.serverstatus.ServerStatus.status.heap=Heap Memory: ${heap.used} used / ${heap.available} available / ${heap.max} maximum
+org.drftpd.commands.serverstatus.ServerStatus.status.nonheap=Non-Heap Memory: ${nonheap.used} used / ${nonheap.available} available / ${nonheap.max} maximum
+org.drftpd.commands.serverstatus.ServerStatus.status.osinfo=Operational System: ${os.name} vers. ${os.version} (${os.arch})
+org.drftpd.commands.serverstatus.ServerStatus.status.threads=Threads running: ${current.threads} / Peak thread count: ${max.threads} / Amount of created threads since startup: ${total.threads}
+org.drftpd.commands.serverstatus.ServerStatus.status.vminfo=JVM: ${vm.name} vers. ${vm.version} by ${vm.vendor}
