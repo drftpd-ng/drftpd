@@ -445,6 +445,7 @@ public class GlobalContext {
 		return eventService;
 	}
 
+
 	@EventSubscriber
 	public synchronized void onUnloadPluginEvent(Object event) {
 

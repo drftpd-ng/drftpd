@@ -22,14 +22,27 @@
                     <release>11</release>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/assembly/src.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
-        <dependency>
-            <groupId>org.reflections</groupId>
-            <artifactId>reflections</artifactId>
-            <version>0.9.12</version>
-        </dependency>
         <dependency>
             <groupId>org.mindrot.bcrypt</groupId>
             <artifactId>bcrypt</artifactId>
@@ -43,6 +56,11 @@
             <version>1.0</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/replacer.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.9.12</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -63,11 +81,6 @@
             <groupId>com.cedarsoftware</groupId>
             <artifactId>json-io</artifactId>
             <version>4.12.0</version>
-        </dependency>
-        <dependency>
-            <groupId>tanukisoft</groupId>
-            <artifactId>wrapper</artifactId>
-            <version>3.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
