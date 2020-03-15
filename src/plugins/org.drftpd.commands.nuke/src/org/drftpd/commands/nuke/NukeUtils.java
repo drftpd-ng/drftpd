@@ -15,28 +15,28 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.nuke;
+package org.drftpd.master.commands.nuke;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.commands.nuke.metadata.NukeData;
-import org.drftpd.commands.nuke.metadata.NukeUserData;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.IndexEngineInterface;
-import org.drftpd.vfs.index.IndexException;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
+import org.drftpd.master.commands.nuke.metadata.NukeUserData;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.FileExistsException;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.master.vfs.VirtualFileSystem;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.vfs.index.IndexException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

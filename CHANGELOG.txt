@@ -38,8 +38,8 @@
 2007/04/06 fr0w <fr0w@users.sourceforge.net>
 * Making Slaveselection a JPF-plugin
 * Huge clean up in the slaveselection code, wiped some useless/non-working filters too.
-* Removed org.drftpd.slaveselection.def which was way out dated.
-* org.drftpd.tests is now compilable.
+* Removed org.drftpd.master.slaveselection.def which was way out dated.
+* org.drftpd.master.tests is now compilable.
 * All TestCases from SlaveSelectionFilter are working.
 
 2007/03/29 fr0w <fr0w@users.sourceforge.net>

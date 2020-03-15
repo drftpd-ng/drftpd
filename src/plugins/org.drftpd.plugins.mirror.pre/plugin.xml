@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.mirror.pre" version="3.4.2">
+<plugin id="org.drftpd.master.plugins.mirror.pre" version="3.4.2">
 	<doc>
 		<doc-text>Unmirror files after configured amount of time after PRE</doc-text>
 	</doc>
@@ -9,18 +9,18 @@
 		<attribute id="MustBuild" value="false" />
 	</attributes>
 	<requires>
-		<import plugin-id="org.drftpd.commands.pre" exported="true" />
-		<import plugin-id="org.drftpd.plugins.mirror" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.pre" exported="true" />
+		<import plugin-id="org.drftpd.master.plugins.mirror" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.mirror.pre" path="classes/" type="code">
+		<library id="org.drftpd.master.plugins.mirror.pre" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
 
-	<extension plugin-id="org.drftpd.commands.pre" point-id="PostHook" id="PREMirrorPostHook">
+	<extension plugin-id="org.drftpd.master.commands.pre" point-id="PostHook" id="PREMirrorPostHook">
 		<parameter id="ParentMethod" value="doSITE_PRE" />
-		<parameter id="HookClass" value="org.drftpd.plugins.mirror.pre.PREMirrorPostHook" />
+		<parameter id="HookClass" value="org.drftpd.master.plugins.mirror.pre.PREMirrorPostHook" />
 		<parameter id="HookMethod" value="doPREPostHook" />
 		<parameter id="Priority" value="1" />
 	</extension>

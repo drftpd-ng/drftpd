@@ -14,9 +14,9 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.prebw.event;
+package org.drftpd.master.plugins.prebw.event;
 
-import org.drftpd.plugins.prebw.PreInfo;
+import org.drftpd.master.plugins.prebw.PreInfo;
 
 /**
  * @author lh

@@ -23,7 +23,7 @@
  *   Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.commands.usermanagement.ipsecurity.hooks;
+package org.drftpd.master.commands.usermanagement.ipsecurity.hooks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -32,20 +32,20 @@ import org.apache.logging.log4j.LogManager;
 import java.util.StringTokenizer;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.usermanagement.ipsecurity.IpSecurityManager;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandRequestInterface;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PreHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.ipsecurity.IpSecurityManager;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
 
-import org.drftpd.util.HostMask;
+import org.drftpd.master.util.HostMask;
 
 /**
  * @author : CyBeR

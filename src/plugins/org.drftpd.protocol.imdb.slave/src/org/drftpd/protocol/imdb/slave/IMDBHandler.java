@@ -14,12 +14,12 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.imdb.slave;
+package org.drftpd.master.protocol.imdb.slave;
 
-import org.drftpd.protocol.imdb.common.IMDBInfo;
-import org.drftpd.protocol.imdb.common.async.AsyncResponseIMDBInfo;
-import org.drftpd.protocol.slave.AbstractHandler;
-import org.drftpd.protocol.slave.SlaveProtocolCentral;
+import org.drftpd.master.protocol.imdb.common.IMDBInfo;
+import org.drftpd.master.protocol.imdb.common.async.AsyncResponseIMDBInfo;
+import org.drftpd.master.protocol.slave.AbstractHandler;
+import org.drftpd.master.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;

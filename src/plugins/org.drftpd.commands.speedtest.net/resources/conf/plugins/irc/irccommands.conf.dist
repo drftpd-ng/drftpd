@@ -1,5 +1,5 @@
 speedtest {
-plugin org.drftpd.commands.speedtest.net
+plugin org.drftpd.master.commands.speedtest.net
 class SpeedTest
 method doSITE_SPEEDTEST
 perms =siteop

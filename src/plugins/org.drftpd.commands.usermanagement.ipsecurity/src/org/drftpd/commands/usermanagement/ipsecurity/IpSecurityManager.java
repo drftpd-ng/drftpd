@@ -23,7 +23,7 @@
  *   Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.commands.usermanagement.ipsecurity;
+package org.drftpd.master.commands.usermanagement.ipsecurity;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -38,9 +38,9 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.permissions.Permission;
-import org.drftpd.usermanager.User;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.usermanager.User;
 
 /**
  * @author : CyBeR

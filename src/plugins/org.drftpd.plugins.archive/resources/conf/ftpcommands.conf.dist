@@ -1,5 +1,5 @@
 SITE ARCHIVE {
-plugin org.drftpd.plugins.archive
+plugin org.drftpd.master.plugins.archive
 class commands.ArchiveCommandHandler
 method doARCHIVE
 perms =siteop
@@ -15,7 +15,7 @@ fail ${exception}
 }
 
 SITE LISTARCHIVETYPES {
-plugin org.drftpd.plugins.archive
+plugin org.drftpd.master.plugins.archive
 class commands.ArchiveCommandHandler
 method doLISTARCHIVETYPES
 perms =siteop

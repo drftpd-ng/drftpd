@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.zipscript.zip.list;
+package org.drftpd.master.commands.zipscript.zip.list;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,15 +23,15 @@ import java.util.ResourceBundle;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.zipscript.list.NoEntryAvailableException;
-import org.drftpd.commands.zipscript.list.ZipscriptListStatusBarInterface;
-import org.drftpd.commands.zipscript.zip.ZipTools;
-import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.protocol.zipscript.zip.common.DizInfo;
-import org.drftpd.protocol.zipscript.zip.common.DizStatus;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.commands.zipscript.list.NoEntryAvailableException;
+import org.drftpd.master.commands.zipscript.list.ZipscriptListStatusBarInterface;
+import org.drftpd.master.commands.zipscript.zip.ZipTools;
+import org.drftpd.master.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.master.protocol.zipscript.zip.common.DizStatus;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

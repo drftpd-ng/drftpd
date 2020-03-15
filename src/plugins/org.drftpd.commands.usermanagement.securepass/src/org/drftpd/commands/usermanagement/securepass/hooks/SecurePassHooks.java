@@ -23,23 +23,23 @@
  *   Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.commands.usermanagement.securepass.hooks;
+package org.drftpd.master.commands.usermanagement.securepass.hooks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.usermanagement.securepass.SecurePassManager;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandRequestInterface;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PreHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.securepass.SecurePassManager;
 
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
 
 /**
  * @author : CyBeR

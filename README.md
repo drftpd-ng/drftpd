@@ -177,7 +177,7 @@ The windows x64 wrapper is no longer included, if you want to integrate it, you 
 - java.lang.Error: failed instanciating SAX parser
 You did not setup JAVA and ANT correctly. Check if ANT and JAVA commands execute the right Java version
 
-- org.drftpd.exceptions.SSLUnavailableException: Secure connections to slave required but SSL isn't available
+- org.drftpd.master.exceptions.SSLUnavailableException: Secure connections to slave required but SSL isn't available
 You did not setup JAVA correctly. Check if the KEYTOOL is the one from your used Java version and if you generated and copyed the drftpd.key
 
 - Exception in thread "main" java.lang.UnsatisfiedLinkError: /..../libTerminal.so

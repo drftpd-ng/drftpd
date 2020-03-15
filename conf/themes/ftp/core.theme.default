@@ -1,0 +1,381 @@
+# This file contains all configurable formatting strings for this frontend.
+# It is automatically generated during compilation with the strings from
+# all plugins that are built.
+# If you wish to change any formatting please copy the keys you wish to alter
+# to a file named "core.theme" in this directory and make your changes there,
+# this will prevent alterations being overwritten on a rebuild. It is not
+# necessary to copy any keys for which you do not wish to change the formatting.
+
+
+org.drftpd.commands.dataconnection.DataConnectionHandler.transfer.complete=Transfer complete, ${bytes} in ${seconds} seconds (${speed})
+org.drftpd.commands.dataconnection.DataConnectionHandler.transfer.err.maxsim=Your have reached your maximum of ${maxsim} simultaneous ${direction}s. Transfer denied.
+
+org.drftpd.commands.list.ListHandler.daemon.stat=\
+FTP server status:\n\ Logged in as ${user}\n\ Connected from ${user.ip}\n\ Session timeout in seconds is ${user.timeout}\n\ Is this a secure connection? ${ssl.enabled}\n\ Client count is: ${conns}\n\ ${version} - The Distributed FTPD
+org.drftpd.commands.list.ListHandler.files.offline.filename=${ofilename}-OFFLINE
+
+org.drftpd.commands.nuke.list.NukeList.nuke.reason=REASON-${reason}
+
+org.drftpd.commands.nuke.Nuke.nuke=\
+NUKE ${multiplier}X in ${section}: -> ${relpath} [ NUKER : ${user} - REASON : ${reason} ]
+org.drftpd.commands.nuke.Nuke.nuke.nukees=\
+NUKEES: ${user}/${group} with ${nukedamount}.
+org.drftpd.commands.nuke.Nuke.nuke.search.empty=No directory found with that name.
+org.drftpd.commands.nuke.Nuke.nuke.search.end=End of matching directories. Use SITE NUKE on full path to nuke.
+org.drftpd.commands.nuke.Nuke.nuke.search.item=${path}
+org.drftpd.commands.nuke.Nuke.nukes=[NUKE] - Path: ${path} - Multiplier: ${multiplier} - UsersNuked: ${usersnuked} - Size: ${size} - Reason: ${reason}
+org.drftpd.commands.nuke.Nuke.nukes.empty=Nukelog empty.
+org.drftpd.commands.nuke.Nuke.nukes.empty.section=Nukelog empty for section ${section}.
+org.drftpd.commands.nuke.Nuke.unnuke=\
+UNNUKE in ${section}: -> ${relpath} [ UNNUKER : ${user} - REASON : ${reason} ]
+org.drftpd.commands.nuke.Nuke.unnuke.nukees=\
+UNUKEES: ${user}/${group} : restored ${nukedamount}.
+org.drftpd.commands.nuke.Nuke.unnuke.search.empty=No directory found with that name.
+org.drftpd.commands.nuke.Nuke.unnuke.search.end=End of matching directories. Use SITE UNNUKE on full path to nuke.
+org.drftpd.commands.nuke.Nuke.unnuke.search.item=${path}
+
+org.drftpd.plugins.jobmanager.JobManagerCommandHandler.addjob.success=Job ${job} was added to the list
+org.drftpd.plugins.jobmanager.JobManagerCommandHandler.listjobrunning=${count,7}. ${job} speed=${speed} progress=${progress}/${total} ${srcslave} --> ${destslave}
+org.drftpd.plugins.jobmanager.JobManagerCommandHandler.listjobwaiting=${count,7}. ${job}
+org.drftpd.plugins.jobmanager.JobManagerCommandHandler.removejob.fail=Unable to remove a job with filename ${filename}
+org.drftpd.plugins.jobmanager.JobManagerCommandHandler.removejob.success=Removed job ${job}
+org.drftpd.plugins.jobmanager.JobManagerCommandHandler.sizeofjobs=Total # of jobs is ${total}
+
+org.drftpd.commands.usermanagement.UserManagementHandler.addip.dupe=IP ${mask} already added to ${targetuser}
+org.drftpd.commands.usermanagement.UserManagementHandler.addip.specify=You need to specify a Ident@IP to add
+org.drftpd.commands.usermanagement.UserManagementHandler.addip.success=IP ${mask} added to ${targetuser}
+org.drftpd.commands.usermanagement.UserManagementHandler.adduser.missingpass=You forgot a password
+org.drftpd.commands.usermanagement.UserManagementHandler.adduser.noslots=Sorry, no more open slots available
+org.drftpd.commands.usermanagement.UserManagementHandler.adduser.primgroup=Primary group set to ${primgroup}
+org.drftpd.commands.usermanagement.UserManagementHandler.adduser.success=User ${targetuser} created
+org.drftpd.commands.usermanagement.UserManagementHandler.bans=${username} banned for another ${timeleft}m until ${org.drftpd.commands.UserManagement@ban_time} (${org.drftpd.commands.UserManagement@ban_reason})
+org.drftpd.commands.usermanagement.UserManagementHandler.bw.statusspeed=Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}
+org.drftpd.commands.usermanagement.UserManagementHandler.change.specify=You need to specify a value to change
+org.drftpd.commands.usermanagement.UserManagementHandler.changecomment.success=${targetuser} comment is: ${comment}
+org.drftpd.commands.usermanagement.UserManagementHandler.changecreated.success=Reset creation time for ${targetuser}
+org.drftpd.commands.usermanagement.UserManagementHandler.changecredits.success=Changed credits to ${newcredits}
+org.drftpd.commands.usermanagement.UserManagementHandler.changegadminratio.success=Changed gadmin min/max ratio to ${minratio}/${maxratio}
+org.drftpd.commands.usermanagement.UserManagementHandler.changegroupslots.success=Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
+org.drftpd.commands.usermanagement.UserManagementHandler.changeidletime.success=Changed idle time to ${newidletime}s
+org.drftpd.commands.usermanagement.UserManagementHandler.changemaxsim.success=Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
+org.drftpd.commands.usermanagement.UserManagementHandler.changenumlogins.success=Changed max logins to ${numlogins} and from same IP to ${numloginsip}
+org.drftpd.commands.usermanagement.UserManagementHandler.changeprimgroup.success=Changed primary group to ${primgroup}
+org.drftpd.commands.usermanagement.UserManagementHandler.changeratio.invalidratio=Ratio must be 0 or between ${minratio} and ${maxratio}
+org.drftpd.commands.usermanagement.UserManagementHandler.changeratio.nomoreslots=You have used all your leech slots
+org.drftpd.commands.usermanagement.UserManagementHandler.changeratio.success=Changed ratio to 1:${newratio}
+org.drftpd.commands.usermanagement.UserManagementHandler.credits.error=${credituser} is not a valid username
+org.drftpd.commands.usermanagement.UserManagementHandler.credits.total=Total credits for ${usercount} users is ${totalcredits}
+org.drftpd.commands.usermanagement.UserManagementHandler.credits.user=${credituser} has ${creditscount} credits
+org.drftpd.commands.usermanagement.UserManagementHandler.debug=Debug now set to ${org.drftpd.commands.UserManagement@debug}
+org.drftpd.commands.usermanagement.UserManagementHandler.ginfo.head=\
+_____________.______________________________\\     _/___________\n\\\      _     |     _      /    _       /    \\     \\      _   \ GINFO\n\${sp,1}\\     \\    |     /_____/     \\      /    |\\     \\     \\   /\n\${sp,2}\\______    |______|    \\___________/|_____________\\    ____/ ${group}\n\.----- /______| -------------------------------------- |_____| ---------.\n\|  Username |     Up |      Megs |     Dn |      Megs | Ratio |    Wkly |\n\|-----------+--------+-----------+--------+-----------+-------+---------|
+org.drftpd.commands.usermanagement.UserManagementHandler.ginfo.tail=\
+|-----------+--------+-----------+--------+-----------+-------+---------|\n\|        * = siteop           + = gadmin            ! = deleted         |\n\|-----------+--------+-----------+--------+-----------+-------+---------|\n\|   Tot Megs Up:${allmbup,10}   Tot Files Up:${allfup,7}   Users in group:${numusers,2}   |\n\|   Tot Megs Dn:${allmbdn,10}   Tot Files Dn:${allfdn,7}       With leech:${numleech,2}   |\n\`-----------------------------------------------------------------------'
+org.drftpd.commands.usermanagement.UserManagementHandler.ginfo.user=|${user,-11}|${fup,8}|${mbup,10} |${fdn,8}|${mbdn,10} | ${ratio} |${wkly,8} |
+org.drftpd.commands.usermanagement.UserManagementHandler.speed.down=${targetuser,-11} -> DN ${speed,9} from ${slave} - ${file}
+org.drftpd.commands.usermanagement.UserManagementHandler.speed.idle=${targetuser,-11} -> Idle for ${idle}
+org.drftpd.commands.usermanagement.UserManagementHandler.speed.up=${targetuser,-11} -> UP ${speed,9} to   ${slave} - ${file}
+org.drftpd.commands.usermanagement.UserManagementHandler.swho.command=${targetuser,-11}[${thread}]   -> ${command} -> [${ip}]
+org.drftpd.commands.usermanagement.UserManagementHandler.swho.down=${targetuser,-11}[${thread}]   -> DN ${speed,9} from ${slave} - ${file} -> [${ip}]
+org.drftpd.commands.usermanagement.UserManagementHandler.swho.idle=${targetuser,-11}[${thread}]   -> Idle for ${idle} -> [${ip}]
+org.drftpd.commands.usermanagement.UserManagementHandler.swho.new=${targetuser,-11}[${thread}]   -> Idle for ${idle} -> [${ip}]
+org.drftpd.commands.usermanagement.UserManagementHandler.swho.statusspeed=Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}
+org.drftpd.commands.usermanagement.UserManagementHandler.swho.statususers=${currentusers} of ${maxusers} User(s) Currently Online
+org.drftpd.commands.usermanagement.UserManagementHandler.swho.up=${targetuser,-11}[${thread}]   -> UP ${speed,9} to   ${slave} - ${file} -> [${ip}]
+org.drftpd.commands.usermanagement.UserManagementHandler.user=\
+Username: ${username,-20} Created: ${org.drftpd.commands.UserManagement@created}\n\Comment: ${org.drftpd.commands.UserManagement@comment,-21} Last seen: ${org.drftpd.commands.UserManagement@lastseen}\n\Total logins: ${org.drftpd.plugins.stats.metadata.StatsUserData@logins,-16}\n\Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.commands.UserManagement@wkly_allotment}\n\Ratio: ${org.drftpd.commands.UserManagement@ratio,-23} Credits: ${credits}\n\Max logins: ${org.drftpd.commands.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.commands.UserManagement@maxloginsip}\n\Max sim uploads: ${org.drftpd.commands.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.commands.UserManagement@maxsimdn}\n\Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\Total uploaded: ${uploaded,-14} Total downloaded: ${downloaded}\n\Times nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nuked,-17} Bytes nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nukedBytes}\n\Requests: ${org.drftpd.commands.request.metadata.RequestUserData@requests,-20} Filled requests: ${org.drftpd.commands.request.metadata.RequestUserData@requestsFilled}\n\Requests this week: ${org.drftpd.commands.request.metadata.RequestUserData@weekReqs}\n\Primary group: ${group,-15} Banned: ${isbanned}\n\Extra groups: ${groups,-16} Banned Until: ${org.drftpd.commands.UserManagement@ban_time}\n\IP masks: ${ipmasks}\n\IRC Ident: ${org.drftpd.commands.UserManagement@ircident,-23}\n\Tagline: ${org.drftpd.commands.UserManagement@tagline}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.comment=Comment: ${comment,-21} Last seen: ${lastseen}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.extragroups=Extra groups: ${extragroups}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.groupslots=Group / Leech slots: ${groupslots} ${groupleechslots}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.idle=Total logins: ${totallogins,-16} Idle time: ${idletime}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.ipmasks=IP masks: ${ipmasks}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.logins=Max logins: ${maxlogins,-18} From same IP: ${maxloginsip}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.maxsim=Max sim uploads: ${maxsimup,-13} Max sim downloads: ${maxsimdn}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.nuke=Times nuked: ${timesnuked,-17} Bytes nuked: ${nukedbytes}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.primarygroup=Primary group: ${primarygroup}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.ratio=Ratio: ${userratio,-23} Credits: ${usercredits}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.username=Username: ${username,-20} Created: ${created}
+org.drftpd.commands.usermanagement.UserManagementHandler.user.xfer=Total uploaded: ${useruploaded,-14} Total downloaded: ${userdownloaded}
+org.drftpd.commands.usermanagement.UserManagementHandler.who.command=${targetuser,-11} -> ${command}
+org.drftpd.commands.usermanagement.UserManagementHandler.who.down=${targetuser,-11} -> DN ${speed,9} from ${slave} - ${file}
+org.drftpd.commands.usermanagement.UserManagementHandler.who.idle=${targetuser,-11} -> Idle for ${idle}
+org.drftpd.commands.usermanagement.UserManagementHandler.who.new=${targetuser,-11} -> Idle for ${idle}
+org.drftpd.commands.usermanagement.UserManagementHandler.who.statusspeed=Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}
+org.drftpd.commands.usermanagement.UserManagementHandler.who.statususers=${currentusers} of ${maxusers} User(s) Currently Online
+org.drftpd.commands.usermanagement.UserManagementHandler.who.up=${targetuser,-11} -> UP ${speed,9} to   ${slave} - ${file}
+
+org.drftpd.commands.indexmanager.IndexManager.indexstatus=${key,-18}: ${value}
+
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.groups.body=³  #${position,3.3} ${group,-27} ³ ${files,7}F ³ ${bytes,7} ³ ${speed,10} ³ ${percent,6} ³
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.groups.footer=ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄ´
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.groups.header=³   --- Groups ---                  ³          ³         ³            ³        ³
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.racers.body=³  #${position,3.3} ${user,-13} @ ${group,-11} ³ ${files,7}F ³ ${bytes,7} ³ ${speed,10} ³ ${percent,6} ³
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.racers.footer=ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄ´
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.racers.header=³    --- Users ---                  ³          ³         ³            ³        ³
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.racestats.footer=ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.racestats.header=\
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\³                                                                              ³\n\³                             r a c e   s t a t s                              ³\n\³                                                                              ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ´
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.totals.body=³                            TOTALS ³ ${completefiles,7}F ³ ${totalbytes,7} ³ ${totalspeed,10} ³ ${totalpercent,6} ³
+org.drftpd.commands.zipscript.hooks.ZipscriptPostHook.cwd.uploaders=${targetuser}/${targetgroup} [${files}/${bytes}]
+
+org.drftpd.commands.zipscript.list.ZipscriptList.files.missing.filename=${mfilename}-MISSING
+org.drftpd.commands.zipscript.list.ZipscriptList.statusbar.complete=${complete.number} of ${complete.total} files = ${complete.percent}% complete at ${complete.totalbytes}
+org.drftpd.commands.zipscript.list.ZipscriptList.statusbar.format=[${statusbar}] 
+org.drftpd.commands.zipscript.list.ZipscriptList.statusbar.offline=${offline.number} files offline = ${online.percent}% online
+org.drftpd.commands.zipscript.list.ZipscriptList.statusbar.separator=|
+
+org.drftpd.commands.login.LoginHandler.pass.fail=Incorrect password for ${user}.
+org.drftpd.commands.login.LoginHandler.pass.success=${user} logged in successfully.
+org.drftpd.commands.login.LoginHandler.quit.success=Goodbye!
+org.drftpd.commands.login.LoginHandler.user.success=Password required for ${user}.
+
+org.drftpd.commands.misc.Misc.help.footer=-------------------
+org.drftpd.commands.misc.Misc.help.header=-----SITE HELP-----
+
+org.drftpd.commands.newhandler.New.footer=-------------------------------------------------------------------------------
+org.drftpd.commands.newhandler.New.header=\
+----+-------+-----------+-------------+----------------------------------------\n\ ## |  Age  | Owner     | Files  Size | Directory Name\n\----+-------+-----------+-------------+----------------------------------------
+org.drftpd.commands.newhandler.New.new=[${pos,2}] ${age,7} ${diruser,-12} ${files,3}F ${size,7} ${name,-40}
+org.drftpd.commands.newhandler.New.new.empty=No directories found in current section directory for any section!
+
+org.drftpd.commands.find.Find.find.empty=No results found!
+org.drftpd.commands.find.Find.find.header=Found ${results} entries in index (limit ${limit}):
+
+org.drftpd.commands.find.Search.search.empty=No results found!
+org.drftpd.commands.find.Search.search.header=Found ${results} entries in index (limit ${limit}):
+org.drftpd.commands.find.Search.search.item=${path}
+
+org.drftpd.commands.request.Request.reqdel.error=Error while deleting request inside ${request.root}
+org.drftpd.commands.request.Request.reqdel.notfound=${request.name} was not found.
+org.drftpd.commands.request.Request.reqdel.notowner=You are not owner of ${request.name}
+org.drftpd.commands.request.Request.reqdel.root.notfound=${request.root} doesn't exist, unable to delete request
+org.drftpd.commands.request.Request.reqdel.success=${request.name} was deleted
+org.drftpd.commands.request.Request.reqfilled.error=An error occurred while filling ${request.name}, check your logs
+org.drftpd.commands.request.Request.reqfilled.exists=${request.name} is already filled for ${user}, duplicate request detected
+org.drftpd.commands.request.Request.reqfilled.notfound=Can't fill an unexisting request - ${request.name}
+org.drftpd.commands.request.Request.reqfilled.root.notfound=${request.root} doesn't exist, unable to fill request
+org.drftpd.commands.request.Request.reqfilled.success=${request.name} filled
+org.drftpd.commands.request.Request.request.error=Error while creating request directory inside ${request.root}, check your logs
+org.drftpd.commands.request.Request.request.exists=${request.name} has already been requested
+org.drftpd.commands.request.Request.request.success=${request.name} added to requests
+org.drftpd.commands.request.Request.requests.footer=Use SITE REQFILLED <name> after you fill a request.
+org.drftpd.commands.request.Request.requests.header=REQUESTS:
+org.drftpd.commands.request.Request.requests.list=[${num}] ${request.name} by ${request.user}
+
+org.drftpd.commands.sections.Sections.section=${section,-15}${path}
+
+org.drftpd.commands.sitemanagement.SiteManagementHandler.plugin.load.failure=Failed to load plugin - ${plugin.name}
+org.drftpd.commands.sitemanagement.SiteManagementHandler.plugin.load.success=Loaded plugin - ${plugin.name}
+org.drftpd.commands.sitemanagement.SiteManagementHandler.plugin.unloaded=Unloaded plugin - ${plugin.name}
+org.drftpd.commands.sitemanagement.SiteManagementHandler.plugins.header=\
+Plugin Name                                                  Status\n\ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ ÄÄÄÄÄÄÄÄ
+org.drftpd.commands.sitemanagement.SiteManagementHandler.plugins.info=${id,-60.60} ${status,-8.8}
+org.drftpd.commands.sitemanagement.SiteManagementHandler.plugins.total=\
+\n\${total} plugins currently loaded
+
+org.drftpd.commands.slavemanagement.SlaveManagement.addslave.exists=${slavename} already exists as a valid slave, could not add it
+org.drftpd.commands.slavemanagement.SlaveManagement.addslave.success=Successfully added ${slavename}
+org.drftpd.commands.slavemanagement.SlaveManagement.delslave.notfound=${slavename} is not a valid slave, cannot delete it
+org.drftpd.commands.slavemanagement.SlaveManagement.delslave.success=Successfully removed ${slavename}
+org.drftpd.commands.slavemanagement.SlaveManagement.diskfree=DISKFREE: ${diskfree}/${disktotal} 
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.addmask.dupe=${mask} failed to be added to ${slavename}, ${mask} already exists
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.addmask.success=${mask} has successfully been added to ${slavename}
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.data=${key,15} ${value,15}
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.data.header=Key            Value
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.delmask.failed=${mask} failed to be removed from ${slavename}, check that the mask is in ${slavename}
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.delmask.success=${mask} has successfully been removed from ${slavename}
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.masks=Valid masks: ${masks}
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.none=No slaves are currently loaded
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.notfound=${slavename} is not a valid slave
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.offline=${slavename}: OFFLINE
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.online=${slavename}: ${status} ( UP: ${xfersup} @ ${throughputup} )-( DN: ${xfersdown} @ ${throughputdown} )-( DF: ${diskfree}/${disktotal} )
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.queues=\
+${slavename} queue sizes\n\Rename queue: ${renamesize,14}\n\Remerge queue: ${remergesize,13}\n\Remerge(CRC) queue: ${remergecrcsize,8}
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.remerging=${slavename}: REMERGING
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.set.success=${key} was set to ${value}
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.unset.failure=Cannot remove ${key} from slave, key does not exist
+org.drftpd.commands.slavemanagement.SlaveManagement.slave.unset.success=Removed ${key} with value ${value}
+
+org.drftpd.commands.transferstatistics.MoreStats.morestats.grpstats=${none}[${pos,2}] ${grp,-11} ${files,9} ${megs,10} ${average,11}/s ${members,3} |
+org.drftpd.commands.transferstatistics.MoreStats.morestats.trafficstats=| ${stat,-15} |${files,7} |${megs,8} | ${average,9}/s |
+
+org.drftpd.commands.transferstatistics.TransferStatistics.aldn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfiles,5} ${dnbytes,11} ${dnrate,8}
+org.drftpd.commands.transferstatistics.TransferStatistics.alup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfiles,5} ${upbytes,11} ${uprate,8}
+org.drftpd.commands.transferstatistics.TransferStatistics.daydn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesday,5} ${dnbytesday,11} ${dnrateday,8}
+org.drftpd.commands.transferstatistics.TransferStatistics.dayup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesday,5} ${upbytesday,11} ${uprateday,8}
+org.drftpd.commands.transferstatistics.TransferStatistics.monthdn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesmonth,5} ${dnbytesmonth,11} ${dnratemonth,8}
+org.drftpd.commands.transferstatistics.TransferStatistics.monthup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesmonth,5} ${upbytesmonth,11} ${upratemonth,8}
+org.drftpd.commands.transferstatistics.TransferStatistics.stats=\
+Created: ${created}\n\------------FILES-------SIZE--RANK\n\ALUP ${alupfiles,12} ${alupbytes,10} ${aluprank,5}\n\ALDN ${aldnfiles,12} ${aldnbytes,10} ${aldnrank,5}\n\MNUP ${mnupfiles,12} ${mnupbytes,10} ${mnuprank,5}\n\MNDN ${mndnfiles,12} ${mndnbytes,10} ${mndnrank,5}\n\WKUP ${wkupfiles,12} ${wkupbytes,10} ${wkuprank,5}\n\WKDN ${wkdnfiles,12} ${wkdnbytes,10} ${wkdnrank,5}\n\DAYUP ${dayupfiles,11} ${dayupbytes,10} ${dayuprank,5}\n\DAYDN ${daydnfiles,11} ${daydnbytes,10} ${daydnrank,5}
+org.drftpd.commands.transferstatistics.TransferStatistics.wkdn=[${pos,2}] ${user,-12} ${tagline,-24} ${dnfilesweek,5} ${dnbytesweek,11} ${dnrateweek,8}
+org.drftpd.commands.transferstatistics.TransferStatistics.wkup=[${pos,2}] ${user,-12} ${tagline,-24} ${upfilesweek,5} ${upbytesweek,11} ${uprateweek,8}
+
+org.drftpd.commands.usermanagement.expireduser.ExpiredUserPostHook.expireduser=Expires: ${expiredate}
+
+org.drftpd.commands.usermanagement.notes.NotesPostHook.note=Note #${number} - ${note}
+
+org.drftpd.plugins.archive.commands.ArchiveCommandHandler.badarchivetype=ArchiveType ${archivetypename} was unable to be initialized - ${exception}
+org.drftpd.plugins.archive.commands.ArchiveCommandHandler.baddir=Directory ${baddir} was unable to be found
+org.drftpd.plugins.archive.commands.ArchiveCommandHandler.badslave=Unable to add ${slavename} to the slaveList
+org.drftpd.plugins.archive.commands.ArchiveCommandHandler.fail=${exception}
+org.drftpd.plugins.archive.commands.ArchiveCommandHandler.incompatible=ArchiveType ${archivetypename} is incompatible with this version of DrFTPD
+org.drftpd.plugins.archive.commands.ArchiveCommandHandler.loadarchive=The Archive plugin must be loaded, use SITE LOADPLUGIN Archive
+org.drftpd.plugins.archive.commands.ArchiveCommandHandler.success=Started ArchiveHandler for ${archivetypename} on ${dirname}
+
+org.drftpd.plugins.sitebot.commands.SiteBotManagement.blowfish.reject=Will not transfer a key used for encryption over an unencrypted connection
+
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.groups.body=³  #${position,3.3} ${group,-27} ³ ${files,7}F ³ ${bytes,7} ³ ${speed,10} ³ ${percent,6} ³
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.groups.footer=ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄ´
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.groups.header=³   --- Groups ---                  ³          ³         ³            ³        ³
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.racers.body=³  #${position,3.3} ${user,-13} @ ${group,-11} ³ ${files,7}F ³ ${bytes,7} ³ ${speed,10} ³ ${percent,6} ³
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.racers.footer=ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄ´
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.racers.header=³    --- Users ---                  ³          ³         ³            ³        ³
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.racestats.footer=ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.racestats.header=\
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\³                                                                              ³\n\³                             r a c e   s t a t s                              ³\n\³                                                                              ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ´
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.totals.body=³                            TOTALS ³ ${completefiles,7}F ³ ${totalbytes,7} ³ ${totalspeed,10} ³ ${totalpercent,6} ³
+org.drftpd.commands.zipscript.zip.hooks.ZipscriptZipPostHook.cwd.uploaders=${targetuser}/${targetgroup} [${files}/${bytes}]
+
+org.drftpd.commands.zipscript.zip.list.ZipscriptDizStatusBar.statusbar.complete=${complete.number} of ${complete.total} zip files = ${complete.percent}% complete at ${complete.totalbytes}
+org.drftpd.commands.zipscript.zip.list.ZipscriptDizStatusBar.statusbar.offline=${offline.number} zip files offline = ${online.percent}% online
+
+org.drftpd.commands.approve.ApproveCommands.approve.approved=${path} Has Already Been Approved
+org.drftpd.commands.approve.ApproveCommands.approve.error.path=Specified Path Does Not Exist, ${path}
+org.drftpd.commands.approve.ApproveCommands.approve.remove=${path} Un-Approved By ${user}
+org.drftpd.commands.approve.ApproveCommands.approve.search.empty=No Directory Found For: ${searchstr}
+org.drftpd.commands.approve.ApproveCommands.approve.search.end=End Of Search. Use 'approve' On Full Path.
+org.drftpd.commands.approve.ApproveCommands.approve.search.item=${num} -> ${path}
+org.drftpd.commands.approve.ApproveCommands.approve.search.start=Multiple Directories Found For: ${searchstr}
+org.drftpd.commands.approve.ApproveCommands.approve.success=${path} Approved By ${user}
+
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.cut.empty=Nobody Will Be Cut From Here This List
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.cut.failed=[ ${rank} ] ${usernick}/${usergroup} ( ${upbytes} Up ) is currently FAILING.
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.cut.header=[ ${name} - ${racers} Racers, These People Will Not Make It (${time} Remaining) ]
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.cut.header.min=[ ${name} - ${racers} Racers, These People Will Not Make It (${time} Remaining) (Min ${min} and ${percent}% of #1 monthup) ]
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.place.failed=[ ${name} ] ${usernick}/${usergroup} Is Currently Failing - Rank : ${rank} ( ${up} Up ) ${place}
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.place.losing=Needs To Upload ${diff} Within ${time} To Beat ${userlead}.
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.place.notfound=User: ${name} Not Found
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.place.passed=[ ${name} ] ${usernick}/${usergroup} Is Currently Passing - Rank : ${rank} ( ${up} Up ) ${place}
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.place.winning=Currently Winning With ${time} To Go
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.top.failed=[ ${rank} ] ${usernick}/${usergroup} ( ${upbytes} Up ) is currently FAILING.
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.top.header=[ ${name} - ${racers} Racers - Top ${keep} Will Stay - (${time} Remaining) ]
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.top.header.min=[ ${name} - ${racers} Racers - Top ${keep} Will Stay - (${time} Remaining) (Min ${min} and ${percent}% of #1 monthup) ]
+org.drftpd.plugins.trialmanager.types.toptrial.TopTrial.top.passed=[ ${rank} ] ${usernick}/${usergroup} ( ${upbytes} Up ) is currently PASSING.
+
+org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook.cwd.mp3info.text=\
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\³                                                                              ³\n\³                               m p 3   i n f o                                ³\n\³                                                                              ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Artist  : ${artist,-22.22}  ³ Genre : ${genre,-28.28}   ³\n\³   Album   : ${album,-22.22}  ³ Year  : ${year,-28.28}   ³\n\ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook.stor.mp3info.text=\
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\³                                                                              ³\n\³                               m p 3   i n f o                                ³\n\³                                                                              ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Artist  : ${artist,-22.22}  ³ Genre : ${genre,-28.28}   ³\n\³   Album   : ${album,-22.22}  ³ Year  : ${year,-28.28}   ³\n\³   Track   : ${track,-22.22}  ³ Title : ${title,-28.28}   ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Bitrate : ${bitrate,-62.62}   ³\n\³   Freq    : ${samplerate,-62.62}   ³\n\³   Mode    : ${stereomode,-62.62}   ³\n\³   Runtime : ${runtime,-62.62}   ³\n\ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+org.drftpd.commands.zipscript.mp3.list.ZipscriptMP3StatusBar.statusbar.id3tag=${genre} ${year}
+
+org.drftpd.commands.tvmaze.list.TvMazeList.tvmaze.dir=[TvMaze]-${name}_${epseason}x${epnumber}_${epairdate}_${country}_${network}_${type}_${runtime}m-[TvMaze]
+
+org.drftpd.commands.tvmaze.TvMaze.createtvmaze.aborted=Creation of TvMaze metadata was aborted before it could complete
+org.drftpd.commands.tvmaze.TvMaze.createtvmaze.add=\
+Added TvMaze metadata to ${dirpath}
+org.drftpd.commands.tvmaze.TvMaze.createtvmaze.cache=\
+TvMAze metadata already added to ${dirpath}
+org.drftpd.commands.tvmaze.TvMaze.createtvmaze.complete=Finished creating TvMaze metadata on ${dirpath}
+org.drftpd.commands.tvmaze.TvMaze.createtvmaze.start=\
+TvMaze metadata creation started on ${dirpath}
+org.drftpd.commands.tvmaze.TvMaze.removetvmaze.aborted=TvMaze metadata deletion was aborted before it could complete
+org.drftpd.commands.tvmaze.TvMaze.removetvmaze.complete=Finished removing TvMaze metadata on ${dirpath}
+org.drftpd.commands.tvmaze.TvMaze.removetvmaze.remove=\
+Removed TvMaze metadata for ${dirpath}
+org.drftpd.commands.tvmaze.TvMaze.removetvmaze.start=\
+TvMaze metadata deletion started on ${dirpath}
+org.drftpd.commands.tvmaze.TvMaze.tv.ep=\
+${name}\n\${epseason}x${epnumber} - ${epname} - ${epurl}\n\Airing: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n\${release}
+org.drftpd.commands.tvmaze.TvMaze.tv.ep.release=Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
+org.drftpd.commands.tvmaze.TvMaze.tv.ep.release.verbose=Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
+org.drftpd.commands.tvmaze.TvMaze.tv.ep.season=${epseason}x${epnumber} - ${epname} - Aired ${epage} ago (${epairdate}) - ${epurl}
+org.drftpd.commands.tvmaze.TvMaze.tv.ep.season.header=${name} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
+org.drftpd.commands.tvmaze.TvMaze.tv.ep.season.header.verbose=${name} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
+org.drftpd.commands.tvmaze.TvMaze.tv.ep.season.verbose=${epseason}x${epnumber} - ${epname} - Aired ${epage} ago (${epairdate}) - ${epurl}
+org.drftpd.commands.tvmaze.TvMaze.tv.ep.verbose=\
+${name}\n\${epseason}x${epnumber} - ${epname} - ${epurl}\n\Airing: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n\${release}
+org.drftpd.commands.tvmaze.TvMaze.tv.nextep=Next episode: ${nextepseason}x${nextepnumber} - ${nextepname} - Airs in ${nextepage} (${nextepairdate}) - ${nextepurl}
+org.drftpd.commands.tvmaze.TvMaze.tv.nextep.verbose=Next episode: ${nextepseason}x${nextepnumber} - ${nextepname} - Airs in ${nextepage} (${nextepairdate}) - ${nextepurl}
+org.drftpd.commands.tvmaze.TvMaze.tv.none=No info found for ${searchstr} :: ${error}
+org.drftpd.commands.tvmaze.TvMaze.tv.prevep=Previous episode: ${prevepseason}x${prevepnumber} - ${prevepname} - Aired ${prevepage} ago (${prevepairdate}) - ${prevepurl}
+org.drftpd.commands.tvmaze.TvMaze.tv.prevep.verbose=Previous episode: ${prevepseason}x${prevepnumber} - ${prevepname} - Aired ${prevepage} ago (${prevepairdate}) - ${prevepurl}
+org.drftpd.commands.tvmaze.TvMaze.tv.queue=Items in queue: ${size}
+org.drftpd.commands.tvmaze.TvMaze.tv.show=\
+${name} - ${url}\n\Premiered: ${premiered} - Runtime: ${runtime}m - Country: ${country} - Language: ${language}\n\Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}\n\${summary}\n\${prevep}\n\${nextep}
+org.drftpd.commands.tvmaze.TvMaze.tv.show.verbose=\
+${name} - ${url}\n\Premiered: ${premiered} - Runtime: ${runtime}m - Country: ${country} - Language: ${language}\n\Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}\n\${summary}\n\${prevep}\n\${nextep}
+
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.cut.empty=Nobody Will Be Cut From Here This List
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.cut.failed=[ ${rank} ] ${usernick}/${usergroup} ( ${upbytes} Up ) is currently FAILING.
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.cut.header=[ ${bold}${name}${bold} - ${groups} Groups, These Groups Will NOT Make It - (${time} Remaining) ]
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.cut.header.min=[ ${bold}${name}${bold} - ${groups} Groups, These Groups Will NOT Make It - (${time} Remaining) (Min ${min}) and ${percent}% of #1 monthup) ]
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.passed.failed=|+| ${rank}. ${usernick} upped ${up}
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.passed.failed.header=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota (${size} user upped ${upBytes} [min. ${min}])
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.passed.nosuchgroup=Group: ${grpname} Not Found
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.passed.passed=|+| ${rank}. ${usernick} upped ${up}
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.passed.passed.header=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota (${size} user upped ${upBytes})
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.place.failed=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota ( ${size} user upped ${upBytes} [min. ${min}])
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.place.losing=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> failed groupquota ( ${size} user upped ${upBytes} [min. ${min}])
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.place.notfound==Group: ${name} Not Found
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.place.passed=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota ( ${size} user upped ${upBytes})
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.place.winning=[ ${rank} ] ${grpname} uppded ${upBytesPU}/User -> passed groupquota ( ${size} user upped ${upBytes})
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.top.failed=[ ${rank} ] ${grpname} upped ${avgbytes}/User => failed (${grpsize} users upped ${grpbytes} [min. ${min}])
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.top.header=[ ${bold}${name}${bold} - ${groups} Groups, Top ${keep} Will Stay - (${time} Remaining) ]
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.top.header.min=[ ${bold}${name}${bold} - ${grps} Groups, Top ${keep} Will Stay - (${time} Remaining) (Min ${min}) and ${percent}% of #1 monthup) ]
+org.drftpd.plugins.trialmanager.types.grouptop.GroupTop.top.passed=[ ${rank} ] ${grpname} upped ${avgbytes}/User => passed (${grpsize} users upped ${grpbytes})
+
+org.drftpd.commands.imdb.IMDB.announce=\
+${title} (${year})\n\Director: ${director}\n\Rating: ${rating} (${votes} votes)\n\Runtime: ${runtime} min\n\Genres: ${genres}\n\Plot: ${plot}\n\URL: ${url}\n\${release}
+org.drftpd.commands.imdb.IMDB.announce.release=Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
+org.drftpd.commands.imdb.IMDB.announce.release.verbose=Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
+org.drftpd.commands.imdb.IMDB.announce.verbose=\
+${title} (${year})\n\Language: ${language}\n\Country: ${country}\n\Director: ${director}\n\Rating: ${rating} (${votes} votes)\n\Runtime: ${runtime} min\n\Genres: ${genres}\n\Plot: ${plot}\n\URL: ${url}\n\${release}
+org.drftpd.commands.imdb.IMDB.createimdb.aborted=Creation of IMDB metadata was aborted before it could complete
+org.drftpd.commands.imdb.IMDB.createimdb.add=\
+Added IMDB metadata to ${dirpath}
+org.drftpd.commands.imdb.IMDB.createimdb.cache=\
+IMDB metadata already added to ${dirpath}
+org.drftpd.commands.imdb.IMDB.createimdb.complete=Finished creating IMDB metadata on ${dirpath}
+org.drftpd.commands.imdb.IMDB.createimdb.fail=\
+Failed to get IMDB metadata for ${dirpath}
+org.drftpd.commands.imdb.IMDB.createimdb.start=\
+IMDB metadata creation started on ${dirpath}
+org.drftpd.commands.imdb.IMDB.imdb.queue=Items in queue: ${size}
+org.drftpd.commands.imdb.IMDB.notfound=No IMDB info found for ${searchstr}
+org.drftpd.commands.imdb.IMDB.removeimdb.aborted=IMDB metadata deletion was aborted before it could complete
+org.drftpd.commands.imdb.IMDB.removeimdb.complete=Finished removing IMDB metadata on ${dirpath}
+org.drftpd.commands.imdb.IMDB.removeimdb.remove=\
+Removed IMDB metadata for ${dirpath}
+org.drftpd.commands.imdb.IMDB.removeimdb.start=\
+IMDB metadata deletion started on ${dirpath}
+
+org.drftpd.commands.imdb.list.IMDBList.imdb.dir=[IMDB] ${genres} - ${rating}/10 - ${votes} Votes - ${runtime} min [IMDB]
+
+org.drftpd.plugins.mediainfo.list.MediaInfoList.avibar.audio=[AUDIO]-${a_Codec ID/Hint}@${a_Bit rate}_${a_Bit rate mode}_${a_Sampling rate}_${a_Channel(s)}-[AUDIO]
+org.drftpd.plugins.mediainfo.list.MediaInfoList.avibar.video=[VIDEO]-${v_Codec ID/Hint}_${v_Width}x${v_Height}@${v_Bit rate}_${v_Frame rate}_${v_Display aspect ratio}_${v_Duration}-[VIDEO]
+org.drftpd.plugins.mediainfo.list.MediaInfoList.mkvbar.audio=[AUDIO]-${a_Language}_${a_Format}@${a_Bit rate}_${a_Bit rate mode}_${a_Sampling rate}_${a_Channel(s)}-[AUDIO]
+org.drftpd.plugins.mediainfo.list.MediaInfoList.mkvbar.sub=[SUB]-${s_Languages}-[SUB]
+org.drftpd.plugins.mediainfo.list.MediaInfoList.mkvbar.video=[VIDEO]-${v_Format}_${v_Width}x${v_Height}@${v_Bit rate}_${v_Frame rate}_${v_Display aspect ratio}_${v_Format profile}_${v_Duration}-[VIDEO]
+org.drftpd.plugins.mediainfo.list.MediaInfoList.mp4bar.audio=[AUDIO]-${a_Language}_${a_Format}@${a_Bit rate}_${a_Bit rate mode}_${a_Sampling rate}_${a_Channel(s)}-[AUDIO]
+org.drftpd.plugins.mediainfo.list.MediaInfoList.mp4bar.sub=[SUB]-${s_Languages}-[SUB]
+org.drftpd.plugins.mediainfo.list.MediaInfoList.mp4bar.video=[VIDEO]-${v_Format}_${v_Width}x${v_Height}@${v_Bit rate}_${v_Frame rate}_${v_Display aspect ratio}_${v_Format profile}_${v_Duration}-[VIDEO]
+
+org.drftpd.commands.speedtest.net.SpeedTest.server.id.error=${slave.name}: Server id ${server.id} not valid!
+org.drftpd.commands.speedtest.net.SpeedTest.servers.empty=Could not find any speedtest.net servers, refresh list with -refresh
+org.drftpd.commands.speedtest.net.SpeedTest.servers.null=No test servers cached, check log for warn message!
+org.drftpd.commands.speedtest.net.SpeedTest.servers.refresh=speedtest.net server list updated!
+org.drftpd.commands.speedtest.net.SpeedTest.slave.geoip.error=Failed getting ${slave.name} location from ipinfo.io, using default 0/0 (lat/lon)
+org.drftpd.commands.speedtest.net.SpeedTest.slave.offline=${slave.name} is offline, unable to run speed test
+org.drftpd.commands.speedtest.net.SpeedTest.slave.result=\
+${slave.name} :: Server -> ${server.sponsor} (${server.country}) [${distance} ${unit}] (${server.id}) : ${server.latency} ms\n\${slave.name} :: Up -> ${speed.up} Mbit/s  <>  Down -> ${speed.down} Mbit/s
+org.drftpd.commands.speedtest.net.SpeedTest.slave.server.list=${slave.name} :: Server -> ${server.sponsor} (${server.country}) [${distance} ${unit}] (${server.id})
+org.drftpd.commands.speedtest.net.SpeedTest.slavename.error=${slave.name} not found, check spelling!
+org.drftpd.commands.speedtest.net.SpeedTest.start.test=Starting test on ${slave.name}
+
+org.drftpd.commands.zipscript.flac.hooks.ZipscriptFlacPostHook.cwd.flacinfo.text=\
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\³                                                                              ³\n\³                               f l a c   i n f o                              ³\n\³                                                                              ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Artist  : ${artist,-22.22}  ³ Genre : ${genre,-28.28}   ³\n\³   Album   : ${album,-22.22}  ³ Year  : ${year,-28.28}   ³\n\ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+org.drftpd.commands.zipscript.flac.hooks.ZipscriptFlacPostHook.stor.flacinfo.text=\
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\³                                                                              ³\n\³                               f l a c   i n f o                              ³\n\³                                                                              ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Artist  : ${artist,-22.22}  ³ Genre : ${genre,-28.28}   ³\n\³   Album   : ${album,-22.22}  ³ Year  : ${year,-28.28}   ³\n\³   Track   : ${track,-22.22}  ³ Title : ${title,-28.28}   ³\n\ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ´\n\³   Freq    : ${samplerate,-62.62}   ³\n\³   Channels: ${channels,-62.62}   ³\n\³   Runtime : ${runtime,-62.62}   ³\n\ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+org.drftpd.commands.zipscript.flac.list.ZipscriptFlacStatusBar.statusbar.vorbistag=${genre} ${year}

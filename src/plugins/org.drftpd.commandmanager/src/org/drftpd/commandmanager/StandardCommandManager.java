@@ -15,20 +15,20 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commandmanager;
+package org.drftpd.master.commandmanager;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.exceptions.FatalException;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.Session;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.ExtendedPropertyResourceBundle;
-import org.drftpd.util.PluginObjectContainer;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.ExtendedPropertyResourceBundle;
+import org.drftpd.master.util.PluginObjectContainer;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;
@@ -96,7 +96,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 
 			try {
 				PluginObjectContainer<CommandInterface> container =
-					CommonPluginUtils.getSinglePluginObjectInContainer(this, "org.drftpd.commandmanager", "Command",
+					CommonPluginUtils.getSinglePluginObjectInContainer(this, "org.drftpd.master.commandmanager", "Command",
 							pluginString+"."+classString, methodString, pluginString, new Class[] { CommandRequest.class });
 				CommandInterface cmdInstance = container.getPluginObject();
 				cmdInstance.initialize(methodString, pluginString, this);

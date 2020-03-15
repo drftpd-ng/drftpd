@@ -1,5 +1,5 @@
 SITE ADDJOB {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doADDJOB
 perms =siteop
@@ -12,7 +12,7 @@ help.specific <destslave> : The name of the slave to transfer the files to.
 }
 
 SITE LISTJOBS {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doLISTJOBS
 perms =siteop
@@ -21,7 +21,7 @@ help.specific List the current jobs queued by the JobManager by index #
 }
 
 SITE LISTRUNNINGJOBS {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doLISTRUNNINGJOBS
 perms =siteop
@@ -30,7 +30,7 @@ help.specific List the current jobs queued by the JobManager by index #
 }
 
 SITE REMOVEJOB {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doREMOVEJOB
 perms =siteop
@@ -41,7 +41,7 @@ help.specific You can use as many ranges as your heart desires.
 }
 
 SITE REMOVEJOBS {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doREMOVEJOBS
 perms =siteop
@@ -50,7 +50,7 @@ help.specific Removes all jobs that are not currently transferring.
 }
 
 SITE STARTJOBS {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doSTARTJOBS
 perms =siteop
@@ -59,7 +59,7 @@ help.specific Starts running the jobs in the JobManager queue.
 }
 
 SITE STOPJOBS {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doSTOPJOBS
 perms =siteop

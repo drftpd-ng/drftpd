@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.usermanager.encryptedjavabeans"
+<project name="org.drftpd.master.usermanager.encryptedjavabeans"
          default="build">
 	<property name="plugin.base" value="${basedir}/src/plugins/org.drftpd.usermanager.encryptedjavabeans" />
 	<property name="plugin.family" value="plugins/master" />

@@ -1,18 +1,18 @@
 ABOR {
-plugin org.drftpd.commands.misc
+plugin org.drftpd.master.commands.misc
 class Misc
 method doABOR
 perms *
 }
 
 FEAT {
-plugin org.drftpd.commands.misc
+plugin org.drftpd.master.commands.misc
 class Misc
 method doFEAT
 }
 
 SITE STAT {
-plugin org.drftpd.commands.misc
+plugin org.drftpd.master.commands.misc
 class Misc
 method doSITE_STAT
 perms *
@@ -22,7 +22,7 @@ help.specific Show simple user stats
 }
 
 SITE TIME {
-plugin org.drftpd.commands.misc
+plugin org.drftpd.master.commands.misc
 class Misc
 method doSITE_TIME
 perms *
@@ -32,7 +32,7 @@ help.specific Show current server time
 }
 
 SITE VERS {
-plugin org.drftpd.commands.misc
+plugin org.drftpd.master.commands.misc
 class Misc
 method doSITE_VERS
 perms *
@@ -42,7 +42,7 @@ help.specific Show drftpd version
 }
 
 SITE HELP {
-plugin org.drftpd.commands.misc
+plugin org.drftpd.master.commands.misc
 class Misc
 method doSITE_HELP
 perms *

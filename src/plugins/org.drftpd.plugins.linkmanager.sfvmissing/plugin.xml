@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.linkmanager.sfvmissing" version="3.4.2">
+<plugin id="org.drftpd.master.plugins.linkmanager.sfvmissing" version="3.4.2">
 	<doc>
 		<doc-text> This plugin provides SFVMissing to the Link Manager</doc-text>
 	</doc>
@@ -9,23 +9,23 @@
 		<attribute id="MustBuild" value="false" />
 	</attributes>
 	<requires>
-		<import plugin-id="org.drftpd.plugins.linkmanager" exported="true" />
+		<import plugin-id="org.drftpd.master.plugins.linkmanager" exported="true" />
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 	</requires>
 
 	<runtime>
-		<library id="org.drftpd.plugins.linkmanager.types.sfvmissing" path="classes/" type="code">
+		<library id="org.drftpd.master.plugins.linkmanager.types.sfvmissing" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
 	
-	<extension plugin-id="org.drftpd.plugins.linkmanager" point-id="LinkType" id="SFVMissing">
-		<parameter id="ClassName" value="org.drftpd.plugins.linkmanager.types.sfvmissing.SFVMissing"/>
+	<extension plugin-id="org.drftpd.master.plugins.linkmanager" point-id="LinkType" id="SFVMissing">
+		<parameter id="ClassName" value="org.drftpd.master.plugins.linkmanager.types.sfvmissing.SFVMissing"/>
 		<parameter id="TypeName" value="SFVMissing"/>
 	</extension>	
 	
 	<extension plugin-id="master" point-id="Plugin" id="SFVMissingManager">
-		<parameter id="Class" value="org.drftpd.plugins.linkmanager.types.sfvmissing.SFVMissingManager"/>
+		<parameter id="Class" value="org.drftpd.master.plugins.linkmanager.types.sfvmissing.SFVMissingManager"/>
 	</extension>
 	
 </plugin>

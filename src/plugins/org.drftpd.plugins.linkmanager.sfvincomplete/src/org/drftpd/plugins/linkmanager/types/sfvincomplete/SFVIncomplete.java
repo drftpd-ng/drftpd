@@ -14,17 +14,17 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.linkmanager.types.sfvincomplete;
+package org.drftpd.master.plugins.linkmanager.types.sfvincomplete;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.linkmanager.LinkType;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.linkmanager.LinkType;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * @author CyBeR

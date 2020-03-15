@@ -14,15 +14,15 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.trafficmanager;
+package org.drftpd.master.plugins.trafficmanager;
 
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandRequestInterface;
+import org.drftpd.master.commandmanager.PreHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.UserFileException;
 
 /**
  * @author CyBeR

@@ -15,14 +15,14 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.find.zipscript;
+package org.drftpd.master.commands.find.zipscript;
 
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commands.find.FindUtils;
-import org.drftpd.commands.find.option.OptionInterface;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.lucene.extensions.zipscript.ZipscriptQueryParams;
+import org.drftpd.master.commandmanager.ImproperUsageException;
+import org.drftpd.master.commands.find.FindUtils;
+import org.drftpd.master.commands.find.option.OptionInterface;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.lucene.extensions.zipscript.ZipscriptQueryParams;
 
 /**
  * @author scitz0

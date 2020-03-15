@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.zipscript.flac.list;
+package org.drftpd.master.commands.zipscript.flac.list;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,14 +22,14 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.zipscript.list.NoEntryAvailableException;
-import org.drftpd.commands.zipscript.list.ZipscriptListStatusBarInterface;
-import org.drftpd.commands.zipscript.flac.vfs.ZipscriptVFSDataFlac;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
-import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.commands.zipscript.list.NoEntryAvailableException;
+import org.drftpd.master.commands.zipscript.list.ZipscriptListStatusBarInterface;
+import org.drftpd.master.commands.zipscript.flac.vfs.ZipscriptVFSDataFlac;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.protocol.zipscript.flac.common.VorbisTag;
+import org.drftpd.master.protocol.zipscript.flac.common.FlacInfo;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

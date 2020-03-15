@@ -23,7 +23,7 @@
  *   Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.plugins.newraceleader;
+package org.drftpd.master.plugins.newraceleader;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -31,9 +31,9 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.util.UploaderPosition;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.util.UploaderPosition;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

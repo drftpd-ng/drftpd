@@ -15,17 +15,17 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.find.tvmaze;
+package org.drftpd.master.commands.find.tvmaze;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.WordUtils;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commands.find.action.ActionInterface;
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
-import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.ImproperUsageException;
+import org.drftpd.master.commands.find.action.ActionInterface;
+import org.drftpd.master.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.master.commands.tvmaze.vfs.TvMazeVFSData;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 /**
  * @author scitz0

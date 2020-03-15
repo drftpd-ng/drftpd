@@ -1,5 +1,5 @@
 top {
-plugin org.drftpd.plugins.trialmanager
+plugin org.drftpd.master.plugins.trialmanager
 class TrialManagerCommands
 method doTOP
 perms *
@@ -10,7 +10,7 @@ output source
 }
 
 cut {
-plugin org.drftpd.plugins.trialmanager
+plugin org.drftpd.master.plugins.trialmanager
 class TrialManagerCommands
 method doCUT
 perms *
@@ -21,7 +21,7 @@ output source
 }
 
 passed {
-plugin org.drftpd.plugins.trialmanager
+plugin org.drftpd.master.plugins.trialmanager
 class TrialManagerCommands
 method doPASSED
 perms *

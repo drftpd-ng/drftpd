@@ -1,5 +1,5 @@
 setexpire {
-plugin org.drftpd.commands.usermanagement.expireduser
+plugin org.drftpd.master.commands.usermanagement.expireduser
 class ExpiredUser
 method doSITE_SETEXPIRE
 perms =siteop
@@ -10,7 +10,7 @@ output source
 }
 
 removeexpire {
-plugin org.drftpd.commands.usermanagement.expireduser
+plugin org.drftpd.master.commands.usermanagement.expireduser
 class ExpiredUser
 method doSITE_REMOVEEXPIRE
 perms =siteop

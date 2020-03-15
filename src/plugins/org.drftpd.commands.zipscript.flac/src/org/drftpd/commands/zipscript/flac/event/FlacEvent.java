@@ -14,10 +14,10 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.zipscript.flac.event;
+package org.drftpd.master.commands.zipscript.flac.event;
 
-import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.protocol.zipscript.flac.common.FlacInfo;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * @author norox

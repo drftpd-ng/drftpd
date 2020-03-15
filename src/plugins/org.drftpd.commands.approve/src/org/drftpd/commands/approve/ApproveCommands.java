@@ -15,26 +15,26 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.approve;
+package org.drftpd.master.commands.approve;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.approve.metadata.Approve;
-import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.commandmanager.CommandInterface;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.approve.metadata.Approve;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.Session;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.IndexEngineInterface;
-import org.drftpd.vfs.index.IndexException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

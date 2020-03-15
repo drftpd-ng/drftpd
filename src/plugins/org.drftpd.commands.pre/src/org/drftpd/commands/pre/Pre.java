@@ -15,27 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.pre;
+package org.drftpd.master.commands.pre;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.event.PreEvent;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.event.PreEvent;
 import org.drftpd.master.config.ConfigInterface;
-import org.drftpd.plugins.stats.StatsManager;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.plugins.stats.StatsManager;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.master.vfs.VirtualFileSystem;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

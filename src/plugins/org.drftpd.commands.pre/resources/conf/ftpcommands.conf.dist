@@ -1,5 +1,5 @@
 SITE PRE {
-plugin org.drftpd.commands.pre
+plugin org.drftpd.master.commands.pre
 class Pre
 method doSITE_PRE
 perms *

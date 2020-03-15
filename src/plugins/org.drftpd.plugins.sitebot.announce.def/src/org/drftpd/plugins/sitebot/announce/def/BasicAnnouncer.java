@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.announce.def;
+package org.drftpd.master.plugins.sitebot.announce.def;
 
 import java.util.ResourceBundle;
 
@@ -24,20 +24,20 @@ import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.commands.slavemanagement.SlaveManagement;
-import org.drftpd.event.DirectoryFtpEvent;
-import org.drftpd.event.SlaveEvent;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.plugins.sitebot.config.ChannelConfig;
-import org.drftpd.plugins.sitebot.event.InviteEvent;
-import org.drftpd.event.MasterEvent;
+import org.drftpd.master.commands.slavemanagement.SlaveManagement;
+import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.event.SlaveEvent;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.plugins.sitebot.config.ChannelConfig;
+import org.drftpd.master.plugins.sitebot.event.InviteEvent;
+import org.drftpd.master.event.MasterEvent;
 import org.drftpd.slave.SlaveStatus;
-import org.drftpd.util.ReplacerUtils;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.drftpd.GlobalContext;
 

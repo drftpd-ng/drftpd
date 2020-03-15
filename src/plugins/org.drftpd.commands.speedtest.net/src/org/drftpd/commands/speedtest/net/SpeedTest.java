@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.speedtest.net;
+package org.drftpd.master.commands.speedtest.net;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Logger;
@@ -24,12 +24,12 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.protocol.speedtest.net.common.SpeedTestInfo;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.text.DecimalFormat;

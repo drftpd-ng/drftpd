@@ -1,43 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.zipscript.mp3" version="3.4.2">
+<plugin id="org.drftpd.master.commands.zipscript.mp3" version="3.4.2">
 	<doc>
 		<doc-text>(Zipscript) - This plugin provides mp3 id3 information for new uploads</doc-text>
 	</doc>
 
 	<requires>
-		<import plugin-id="org.drftpd.protocol.zipscript.mp3.master" exported="true" />
-		<import plugin-id="org.drftpd.commandmanager" exported="true" />
-		<import plugin-id="org.drftpd.commands.dataconnection" exported="true" />
-		<import plugin-id="org.drftpd.commands.dir" exported="true" />
-		<import plugin-id="org.drftpd.commands.list" exported="true" />
-		<import plugin-id="org.drftpd.commands.zipscript" exported="true" />
+		<import plugin-id="org.drftpd.master.protocol.zipscript.mp3.master" exported="true" />
+		<import plugin-id="org.drftpd.master.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.dataconnection" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.list" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.zipscript" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.zipscript.mp3" path="classes/" type="code">
+		<library id="org.drftpd.master.commands.zipscript.mp3" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptCWDMP3Stats">
+	<extension plugin-id="org.drftpd.master.commands.dir" point-id="PostHook" id="ZipscriptCWDMP3Stats">
 		<parameter id="ParentMethod" value="doCWD" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
 		<parameter id="HookMethod" value="doZipscriptCWDMP3Hook" />
 		<parameter id="Priority" value="12" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="ZipscriptDELEMP3Hook">
+	<extension plugin-id="org.drftpd.master.commands.dir" point-id="PostHook" id="ZipscriptDELEMP3Hook">
 		<parameter id="ParentMethod" value="doDELE" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
 		<parameter id="HookMethod" value="doZipscriptDELEMP3Hook" />
 		<parameter id="Priority" value="12" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORMP3Stats">
+	<extension plugin-id="org.drftpd.master.commands.dataconnection" point-id="PostHook" id="ZipscriptSTORMP3Stats">
 		<parameter id="ParentMethod" value="doSTOR" />
-		<parameter id="HookClass" value="org.drftpd.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.zipscript.mp3.hooks.ZipscriptMP3PostHook" />
 		<parameter id="HookMethod" value="doZipscriptSTORMP3Hook" />
 		<parameter id="Priority" value="12" />
 	</extension>
 
-	<extension plugin-id="org.drftpd.commands.zipscript" point-id="ListStatusBarProvider" id="ListMP3StatusBarProvider">
-		<parameter id="Class" value="org.drftpd.commands.zipscript.mp3.list.ZipscriptMP3StatusBar" />
+	<extension plugin-id="org.drftpd.master.commands.zipscript" point-id="ListStatusBarProvider" id="ListMP3StatusBarProvider">
+		<parameter id="Class" value="org.drftpd.master.commands.zipscript.mp3.list.ZipscriptMP3StatusBar" />
 	</extension>
 </plugin>

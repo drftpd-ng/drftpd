@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.dataconnection;
+package org.drftpd.master.commands.dataconnection;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,21 +23,21 @@ import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
 import org.drftpd.PassiveConnection;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.dataconnection.event.SlowTransferEvent;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.exceptions.*;
-import org.drftpd.io.PermissionDeniedException;
+import org.drftpd.master.commandmanager.CommandInterface;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.dataconnection.event.SlowTransferEvent;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.exceptions.*;
+import org.drftpd.master.io.PermissionDeniedException;
 import org.drftpd.master.*;
 import org.drftpd.slave.*;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.FtpRequest;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.ListUtils;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.FtpRequest;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.ListUtils;
+import org.drftpd.master.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import javax.net.ssl.SSLContext;

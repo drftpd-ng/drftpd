@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot;
+package org.drftpd.master.plugins.sitebot;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,23 +23,23 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandManagerInterface;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.CommandResponseInterface;
-import org.drftpd.event.LoadPluginEvent;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.exceptions.FatalException;
+import org.drftpd.master.commandmanager.CommandManagerInterface;
+import org.drftpd.master.commandmanager.CommandRequestInterface;
+import org.drftpd.master.commandmanager.CommandResponseInterface;
+import org.drftpd.master.event.LoadPluginEvent;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.misc.CaseInsensitiveConcurrentHashMap;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.plugins.sitebot.config.ChannelConfig;
-import org.drftpd.plugins.sitebot.config.ServerConfig;
-import org.drftpd.plugins.sitebot.config.SiteBotConfig;
-import org.drftpd.plugins.sitebot.event.InviteEvent;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.plugins.sitebot.config.ChannelConfig;
+import org.drftpd.master.plugins.sitebot.config.ServerConfig;
+import org.drftpd.master.plugins.sitebot.config.SiteBotConfig;
+import org.drftpd.master.plugins.sitebot.event.InviteEvent;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.MasterPluginUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import javax.net.SocketFactory;
@@ -2950,20 +2950,20 @@ public class SiteBot implements ReplyConstants, Runnable {
 	private void loadListeners() {
 		_listeners = new ArrayList<>();
 		try {
-			List<ListenerInterface> loadedListeners = CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Listener", "Class");
+			List<ListenerInterface> loadedListeners = CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.plugins.sitebot", "Listener", "Class");
 			for (ListenerInterface listener : loadedListeners) {
 				_listeners.add(listener);
                 logger.debug("Loading sitebot listener from plugin {}", CommonPluginUtils.getPluginIdForObject(listener));
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.plugins.sitebot extension point 'Listener', possibly the " + "org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.plugins.sitebot extension point 'Listener', possibly the " + "org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
 	}
 
 	private void loadAnnouncers(String confDir) {
 		try {
 			List<AbstractAnnouncer> loadedAnnouncers =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.plugins.sitebot", "Announce", "Class");
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.plugins.sitebot", "Announce", "Class");
 			for (AbstractAnnouncer announcer : loadedAnnouncers) {
 				announcer.setConfDir(_confDir);
 				_announcers.add(announcer);
@@ -2973,8 +2973,8 @@ public class SiteBot implements ReplyConstants, Runnable {
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.plugins.sitebot extension point 'Announce', possibly the "+
-					"org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.plugins.sitebot extension point 'Announce', possibly the "+
+					"org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
 
 		// Add the fallback default type to the eventTypes list
@@ -3065,7 +3065,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		try {
 			boolean typeAdded = false;
 			List<AbstractAnnouncer> loadedAnnouncers =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.plugins.sitebot", "Announce", "Class", event);
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.plugins.sitebot", "Announce", "Class", event);
 			for (AbstractAnnouncer announcer : loadedAnnouncers) {
                 logger.debug("Loading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(announcer));
 				announcer.setConfDir(_confDir);
@@ -3080,19 +3080,19 @@ public class SiteBot implements ReplyConstants, Runnable {
 				_announceConfig.reload();
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.plugins.sitebot extension point 'Announce'"+
-					", possibly the org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.plugins.sitebot extension point 'Announce'"+
+					", possibly the org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
 
 		// Activate new Loaded Listeners
 		try {
-			List<ListenerInterface> loadedListeners = MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.plugins.sitebot", "Listener", "Class", event);
+			List<ListenerInterface> loadedListeners = MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.plugins.sitebot", "Listener", "Class", event);
 			for (ListenerInterface listener : loadedListeners) {
                 logger.debug("Loading sitebot announcer provided by plugin {}", CommonPluginUtils.getPluginIdForObject(listener));
 				_listeners.add(listener);
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.plugins.sitebot extension point 'Listener', possibly the org.drftpd.plugins.sitebot extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.plugins.sitebot extension point 'Listener', possibly the org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
 	}
 

@@ -15,13 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.misc;
+package org.drftpd.master.commands.misc;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
+import org.drftpd.master.commandmanager.*;
 import org.drftpd.master.BaseFtpConnection;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;

@@ -14,11 +14,11 @@
 * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
 * Suite 330, Boston, MA 02111-1307 USA
 */
-package org.drftpd.plugins.trafficmanager.types.ban;
+package org.drftpd.master.plugins.trafficmanager.types.ban;
 
-import org.drftpd.plugins.trafficmanager.TrafficTypeEvent;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.plugins.trafficmanager.TrafficTypeEvent;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.FileHandle;
 
 /**
 * @author CyBeR

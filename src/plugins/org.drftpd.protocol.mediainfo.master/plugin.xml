@@ -1,25 +1,25 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.protocol.mediainfo.master" version="3.4.2">
+<plugin id="org.drftpd.master.protocol.mediainfo.master" version="3.4.2">
 	<attributes>
 		<attribute id="ProtocolName" value="MediaInfoProtocol"/>
 		<attribute id="ImplicitDependencies">
-			<attribute id="Dependency1" value="org.drftpd.protocol.mediainfo.slave" />
+			<attribute id="Dependency1" value="org.drftpd.master.protocol.mediainfo.slave" />
 		</attribute>
 		<attribute id="DenyUnload" value="true" />
 	</attributes>
 	
 	<requires>
-		<import plugin-id="org.drftpd.protocol.mediainfo.common" exported="true" />
+		<import plugin-id="org.drftpd.master.protocol.mediainfo.common" exported="true" />
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.mediainfo.master" path="classes/" type="code">
+		<library id="org.drftpd.master.protocol.mediainfo.master" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
 
 	<extension plugin-id="master" point-id="ProtocolExtension" id="MediaInfoProtocol">
-		<parameter id="IssuerClass" value="org.drftpd.protocol.mediainfo.master.MediaInfoIssuer" />
+		<parameter id="IssuerClass" value="org.drftpd.master.protocol.mediainfo.master.MediaInfoIssuer" />
 	</extension>
 </plugin>

@@ -1,5 +1,5 @@
 approve {
-plugin org.drftpd.commands.approve
+plugin org.drftpd.master.commands.approve
 class ApproveCommands
 method doSITE_APPROVE
 perms =siteop
@@ -10,7 +10,7 @@ output source
 }
 
 remapprove {
-plugin org.drftpd.commands.approve
+plugin org.drftpd.master.commands.approve
 class ApproveCommands
 method doSITE_REMAPPROVE
 perms =siteop

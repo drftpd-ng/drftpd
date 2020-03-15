@@ -15,17 +15,17 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.zipscript.zip.event;
+package org.drftpd.master.commands.zipscript.zip.event;
 
 import java.net.InetAddress;
 
-import org.drftpd.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
-import org.drftpd.event.TransferEvent;
+import org.drftpd.master.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
+import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.protocol.zipscript.zip.common.DizInfo;
-import org.drftpd.protocol.zipscript.zip.common.DizStatus;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.master.protocol.zipscript.zip.common.DizStatus;
+import org.drftpd.master.vfs.FileHandle;
 
 /**
  * @author djb61

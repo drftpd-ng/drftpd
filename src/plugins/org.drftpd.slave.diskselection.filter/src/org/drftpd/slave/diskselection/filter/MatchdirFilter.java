@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import java.util.regex.Pattern;
 import org.drftpd.PropertyHelper;
-import org.drftpd.util.GlobPattern;
+import org.drftpd.master.util.GlobPattern;
 
 /**
  * Sample configuration.

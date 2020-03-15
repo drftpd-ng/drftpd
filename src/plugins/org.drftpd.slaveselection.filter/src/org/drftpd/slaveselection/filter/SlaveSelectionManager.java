@@ -15,23 +15,23 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection.filter;
+package org.drftpd.master.slaveselection.filter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.misc.CaseInsensitiveHashMap;
 import org.drftpd.slave.Transfer;
-import org.drftpd.slaveselection.SlaveSelectionManagerInterface;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.slaveselection.SlaveSelectionManagerInterface;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -75,14 +75,14 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 
 		try {
 			List<PluginObjectContainer<Filter>> loadedFilters =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.slaveselection.filter", "Filter", "ClassName", false);
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.slaveselection.filter", "Filter", "ClassName", false);
 			for (PluginObjectContainer<Filter> container : loadedFilters) {
 				String filterName = container.getPluginExtension().getParameter("FilterName").valueAsString();
 				filtersMap.put(filterName, container.getPluginClass());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.slaveselection.filter extension point 'Filter'"
-					+", possibly the org.drftpd.slaveselection.filter"
+			logger.error("Failed to load plugins for org.drftpd.master.slaveselection.filter extension point 'Filter'"
+					+", possibly the org.drftpd.master.slaveselection.filter"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
 		

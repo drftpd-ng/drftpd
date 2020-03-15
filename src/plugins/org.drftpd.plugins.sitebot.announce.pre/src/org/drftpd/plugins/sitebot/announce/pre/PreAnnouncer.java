@@ -14,18 +14,18 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.sitebot.announce.pre;
+package org.drftpd.master.plugins.sitebot.announce.pre;
 
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.event.PreEvent;
-import org.drftpd.util.ReplacerUtils;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.event.PreEvent;
+import org.drftpd.master.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

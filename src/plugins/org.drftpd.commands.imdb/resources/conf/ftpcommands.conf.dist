@@ -1,5 +1,5 @@
 SITE IMDB {
-plugin org.drftpd.commands.imdb
+plugin org.drftpd.master.commands.imdb
 class IMDB
 method doSITE_IMDB
 perms *
@@ -8,7 +8,7 @@ help.specific ${command} <nameofmovie>
 }
 
 SITE CREATEIMDB {
-plugin org.drftpd.commands.imdb
+plugin org.drftpd.master.commands.imdb
 class IMDB
 method doSITE_CREATEIMDB
 perms =siteop
@@ -17,7 +17,7 @@ help.specific ${command} [path]
 }
 
 SITE REMOVEIMDB {
-plugin org.drftpd.commands.imdb
+plugin org.drftpd.master.commands.imdb
 class IMDB
 method doSITE_REMOVEIMDB
 perms =siteop
@@ -26,7 +26,7 @@ help.specific ${command} [path]
 }
 
 SITE IMDBQUEUE {
-plugin org.drftpd.commands.imdb
+plugin org.drftpd.master.commands.imdb
 class IMDB
 method doSITE_IMDBQUEUE
 perms =siteop

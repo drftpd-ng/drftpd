@@ -14,23 +14,23 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.newraceleader;
+package org.drftpd.master.plugins.newraceleader;
 
 import org.drftpd.RankUtils;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PostHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.commands.zipscript.SFVTools;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
-import org.drftpd.protocol.zipscript.common.SFVStatus;
-import org.drftpd.util.UploaderPosition;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PostHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.zipscript.SFVTools;
+import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.protocol.zipscript.common.SFVStatus;
+import org.drftpd.master.util.UploaderPosition;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

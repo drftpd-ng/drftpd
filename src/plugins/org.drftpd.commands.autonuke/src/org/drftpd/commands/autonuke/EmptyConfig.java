@@ -1,6 +1,6 @@
-package org.drftpd.commands.autonuke;
+package org.drftpd.master.commands.autonuke;
 
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.util.Properties;
 

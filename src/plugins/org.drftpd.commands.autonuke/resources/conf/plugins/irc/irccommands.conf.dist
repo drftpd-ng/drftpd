@@ -1,5 +1,5 @@
 autonukes {
-plugin org.drftpd.commands.autonuke
+plugin org.drftpd.master.commands.autonuke
 class AutoNukeCommands
 method doSITE_AUTONUKES
 perms =siteop
@@ -10,7 +10,7 @@ output source
 }
 
 delqueue {
-plugin org.drftpd.commands.autonuke
+plugin org.drftpd.master.commands.autonuke
 class AutoNukeCommands
 method doSITE_DELQUEUE
 perms =siteop
@@ -21,7 +21,7 @@ output source
 }
 
 autonukescan {
-plugin org.drftpd.commands.autonuke
+plugin org.drftpd.master.commands.autonuke
 class AutoNukeCommands
 method doSITE_AUTONUKESCAN
 perms =siteop

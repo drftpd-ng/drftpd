@@ -1,5 +1,5 @@
 addjob {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doADDJOB
 perms =siteop
@@ -14,7 +14,7 @@ output source
 }
 
 listjobs {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doLISTJOBS
 perms =siteop
@@ -25,7 +25,7 @@ output source
 }
 
 listrunningjobs {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doLISTRUNNINGJOBS
 perms =siteop
@@ -36,7 +36,7 @@ output source
 }
 
 removejob {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doREMOVEJOB
 perms =siteop
@@ -49,7 +49,7 @@ output source
 }
 
 removejobs {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doREMOVEJOBS
 perms =siteop
@@ -60,7 +60,7 @@ output source
 }
 
 startjobs {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doSTARTJOBS
 perms =siteop
@@ -71,7 +71,7 @@ output source
 }
 
 stopjobs {
-plugin org.drftpd.plugins.jobmanager
+plugin org.drftpd.master.plugins.jobmanager
 class JobManagerCommandHandler
 method doSTOPJOBS
 perms =siteop

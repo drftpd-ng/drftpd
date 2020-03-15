@@ -15,21 +15,21 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.config.hooks;
+package org.drftpd.master.commands.config.hooks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.usermanagement.UserManagementHandler;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandRequestInterface;
+import org.drftpd.master.commandmanager.PreHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.usermanagement.UserManagementHandler;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.config.ConfigInterface;
-import org.drftpd.vfs.perms.VFSPermissions;
+import org.drftpd.master.vfs.perms.VFSPermissions;
 
 import java.util.List;
 

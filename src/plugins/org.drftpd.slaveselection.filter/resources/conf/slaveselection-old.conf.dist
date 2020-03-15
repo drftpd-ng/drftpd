@@ -1,4 +1,4 @@
-#Used by org.drftpd.slaveselection.def.SlaveSelection slaveselection plugin.
+#Used by org.drftpd.master.slaveselection.def.SlaveSelection slaveselection plugin.
 
 # Minimum amount of available diskspace in bytes to have on a slave when
 # sending to it. If all available slaves have less than this amount the

@@ -15,10 +15,10 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.config;
+package org.drftpd.master.plugins.sitebot.config;
 
 import org.drftpd.BlindTrustManager;
-import org.drftpd.plugins.sitebot.PartialTrustManager;
+import org.drftpd.master.plugins.sitebot.PartialTrustManager;
 
 import javax.net.ssl.X509TrustManager;
 import java.util.ArrayList;

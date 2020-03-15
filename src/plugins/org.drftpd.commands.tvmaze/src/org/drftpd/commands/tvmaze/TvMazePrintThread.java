@@ -15,12 +15,12 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.tvmaze;
+package org.drftpd.master.commands.tvmaze;
 
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
-import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.master.commands.tvmaze.vfs.TvMazeVFSData;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * @author scitz0

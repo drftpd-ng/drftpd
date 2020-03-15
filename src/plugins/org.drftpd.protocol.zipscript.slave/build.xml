@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.protocol.zipscript.slave"
+<project name="org.drftpd.master.protocol.zipscript.slave"
          default="build">
 	<property name="plugin.family" value="plugins/slave" />
 	<target name="build">

@@ -1,6 +1,6 @@
 # $Id$
 rebuildindex {
-plugin org.drftpd.commands.indexmanager
+plugin org.drftpd.master.commands.indexmanager
 class IndexManager
 method doRebuildIndex
 perms =siteop
@@ -9,7 +9,7 @@ output source
 }
 
 indexstatus {
-plugin org.drftpd.commands.indexmanager
+plugin org.drftpd.master.commands.indexmanager
 class IndexManager
 method doIndexStatus
 perms =siteop

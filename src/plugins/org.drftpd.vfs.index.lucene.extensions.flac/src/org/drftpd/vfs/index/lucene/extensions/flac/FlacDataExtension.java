@@ -15,17 +15,17 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.vfs.index.lucene.extensions.flac;
+package org.drftpd.master.vfs.index.lucene.extensions.flac;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
-import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
-import org.drftpd.vfs.event.ImmutableInodeHandle;
-import org.drftpd.vfs.index.lucene.extensions.IndexDataExtensionInterface;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.protocol.zipscript.flac.common.VorbisTag;
+import org.drftpd.master.protocol.zipscript.flac.common.FlacInfo;
+import org.drftpd.master.vfs.event.ImmutableInodeHandle;
+import org.drftpd.master.vfs.index.lucene.extensions.IndexDataExtensionInterface;
 
 /**
  * @author norox

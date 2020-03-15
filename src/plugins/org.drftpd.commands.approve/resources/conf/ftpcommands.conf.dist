@@ -1,5 +1,5 @@
 SITE APPROVE {
-plugin org.drftpd.commands.approve
+plugin org.drftpd.master.commands.approve
 class ApproveCommands
 method doSITE_APPROVE
 perms =siteop
@@ -8,7 +8,7 @@ help.specific ${command} [path]
 }
 
 SITE REMAPPROVE {
-plugin org.drftpd.commands.approve
+plugin org.drftpd.master.commands.approve
 class ApproveCommands
 method doSITE_REMAPPROVE
 perms =siteop

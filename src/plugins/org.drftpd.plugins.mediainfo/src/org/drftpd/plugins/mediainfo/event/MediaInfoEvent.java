@@ -14,10 +14,10 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.mediainfo.event;
+package org.drftpd.master.plugins.mediainfo.event;
 
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * @author scitz0

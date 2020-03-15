@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.mediainfo;
+package org.drftpd.master.plugins.mediainfo;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,21 +23,21 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PostHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.mediainfo.event.MediaInfoEvent;
-import org.drftpd.plugins.mediainfo.vfs.MediaInfoVFSData;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PostHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.mediainfo.event.MediaInfoEvent;
+import org.drftpd.master.plugins.mediainfo.vfs.MediaInfoVFSData;
+import org.drftpd.master.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package org.drftpd.commands.autonuke;
+package org.drftpd.master.commands.autonuke;
 
 import java.util.LinkedList;
 

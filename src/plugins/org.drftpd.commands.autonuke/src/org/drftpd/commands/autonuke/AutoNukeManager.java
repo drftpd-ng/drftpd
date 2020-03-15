@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.autonuke;
+package org.drftpd.master.commands.autonuke;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,11 +24,11 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.event.ReloadEvent;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.util.List;
 import java.util.Properties;
@@ -120,14 +120,14 @@ public class AutoNukeManager implements PluginInterface {
 
 		try {
 			List<PluginObjectContainer<Config>> loadedConfigs =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.commands.autonuke", "Config", "ClassName", false);
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.commands.autonuke", "Config", "ClassName", false);
 			for (PluginObjectContainer<Config> container : loadedConfigs) {
 				String configName = container.getPluginExtension().getParameter("ConfigName").valueAsString();
 				configsMap.put(configName, container.getPluginClass());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.commands.autonuke extension point 'Config'"
-					+", possibly the org.drftpd.commands.autonuke"
+			logger.error("Failed to load plugins for org.drftpd.master.commands.autonuke extension point 'Config'"
+					+", possibly the org.drftpd.master.commands.autonuke"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
 

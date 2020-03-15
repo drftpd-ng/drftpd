@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.sections.conf" version="3.4.2">
+<plugin id="org.drftpd.master.sections.conf" version="3.4.2">
 	<doc>
 		<doc-text>This plugin provides Configurable Sections. (Sections.conf)</doc-text>
 	</doc>
@@ -11,7 +11,7 @@
 		<import plugin-id="master"/>
 	</requires>
 	<runtime>
-		<library id="org.drftpd.sections.conf" path="classes/" type="code" >
+		<library id="org.drftpd.master.sections.conf" path="classes/" type="code" >
 			<export prefix="*" />
 		</library>
 	</runtime>
@@ -22,17 +22,17 @@
 	</extension-point>
 	
 	<!-- Start Of SectionsTypes -->
-	<extension plugin-id="org.drftpd.sections.conf" point-id="SectionType" id="PlainSectionType">
-		<parameter id="ClassName" value="org.drftpd.sections.conf.PlainSection"/>
+	<extension plugin-id="org.drftpd.master.sections.conf" point-id="SectionType" id="PlainSectionType">
+		<parameter id="ClassName" value="org.drftpd.master.sections.conf.PlainSection"/>
 		<parameter id="TypeName" value="Plain"/>
 	</extension>	
-	<extension plugin-id="org.drftpd.sections.conf" point-id="SectionType" id="DatedSectionType">
-		<parameter id="ClassName" value="org.drftpd.sections.conf.DatedSection"/>
+	<extension plugin-id="org.drftpd.master.sections.conf" point-id="SectionType" id="DatedSectionType">
+		<parameter id="ClassName" value="org.drftpd.master.sections.conf.DatedSection"/>
 		<parameter id="TypeName" value="Dated"/>
 	</extension>	
 	<!-- End Of SectionsTypes -->
 	
 	<extension plugin-id="master" point-id="SectionManager" id="ConfigurableSectionManager">
-		<parameter id="Class" value="org.drftpd.sections.conf.SectionManager"/>
+		<parameter id="Class" value="org.drftpd.master.sections.conf.SectionManager"/>
 	</extension>
 </plugin>

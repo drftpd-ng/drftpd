@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.tvmaze" version="3.4.2">
+<plugin id="org.drftpd.master.commands.tvmaze" version="3.4.2">
     <doc>
 		<doc-text>This plugin provides IRC/FTP commands for listing information from tvmaze.com about tv shows.
 IRC announce on MKD/PRE event and tvmaze info dir in release dir is also available.</doc-text>
@@ -10,15 +10,15 @@ IRC announce on MKD/PRE event and tvmaze info dir in release dir is also availab
 		<attribute id="MustBuild" value="false" />
 	</attributes>
 	<requires>
-        <import plugin-id="org.drftpd.commands.dir" exported="true" />
-		<import plugin-id="org.drftpd.commandmanager" exported="true" />
-		<import plugin-id="org.drftpd.plugins.sitebot" exported="true" />
-        <import plugin-id="org.drftpd.commands.list" exported="true" />
-        <import plugin-id="org.drftpd.commands.tvmaze.metadata" exported="true" />
-		<import plugin-id="org.drftpd.vfs.index.lucene.extensions.tvmaze" exported="true" />
+        <import plugin-id="org.drftpd.master.commands.dir" exported="true" />
+		<import plugin-id="org.drftpd.master.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.master.plugins.sitebot" exported="true" />
+        <import plugin-id="org.drftpd.master.commands.list" exported="true" />
+        <import plugin-id="org.drftpd.master.commands.tvmaze.metadata" exported="true" />
+		<import plugin-id="org.drftpd.master.vfs.index.lucene.extensions.tvmaze" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.tvmaze" path="classes/" type="code">
+		<library id="org.drftpd.master.commands.tvmaze" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 		<library id="gson" path="../../../lib/gson-2.8.6.jar" type="code">
@@ -29,46 +29,46 @@ IRC announce on MKD/PRE event and tvmaze info dir in release dir is also availab
 		</library>
 	</runtime>
 
-    <extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
-	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+    <extension-point id="PreHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPostHook" />
 
-    <extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="TvMazeHandler" />
+    <extension plugin-id="org.drftpd.master.commandmanager" point-id="Command" id="TvMazeHandler" />
 
-    <extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="TvMazeAnnounce">
-		<parameter id="Class" value="org.drftpd.commands.tvmaze.announce.TvMazeAnnouncer" />
+    <extension plugin-id="org.drftpd.master.plugins.sitebot" point-id="Announce" id="TvMazeAnnounce">
+		<parameter id="Class" value="org.drftpd.master.commands.tvmaze.announce.TvMazeAnnouncer" />
 	</extension>
 
-    <extension plugin-id="org.drftpd.commands.list" point-id="AddElements" id="TvMazeListElements">
-		<parameter id="Class" value="org.drftpd.commands.tvmaze.list.TvMazeList" />
+    <extension plugin-id="org.drftpd.master.commands.list" point-id="AddElements" id="TvMazeListElements">
+		<parameter id="Class" value="org.drftpd.master.commands.tvmaze.list.TvMazeList" />
 	</extension>
 
-	<extension plugin-id="org.drftpd.commands.tvmaze" point-id="PreHook" id="doSITE_TVPerm">
+	<extension plugin-id="org.drftpd.master.commands.tvmaze" point-id="PreHook" id="doSITE_TVPerm">
 		<parameter id="ParentMethod" value="doSITE_TV" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-    <extension plugin-id="org.drftpd.commands.tvmaze" point-id="PreHook" id="doSITE_CREATETVPerm">
+    <extension plugin-id="org.drftpd.master.commands.tvmaze" point-id="PreHook" id="doSITE_CREATETVPerm">
 		<parameter id="ParentMethod" value="doSITE_CREATETV" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-    <extension plugin-id="org.drftpd.commands.tvmaze" point-id="PreHook" id="doSITE_REMOVETVPerm">
+    <extension plugin-id="org.drftpd.master.commands.tvmaze" point-id="PreHook" id="doSITE_REMOVETVPerm">
 		<parameter id="ParentMethod" value="doSITE_REMOVETV" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.tvmaze" point-id="PreHook" id="doSITE_TVQUEUEPerm">
+	<extension plugin-id="org.drftpd.master.commands.tvmaze" point-id="PreHook" id="doSITE_TVQUEUEPerm">
 		<parameter id="ParentMethod" value="doSITE_TVQUEUE" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.dir" point-id="PostHook" id="TvMazeMKDPostHook">
+	<extension plugin-id="org.drftpd.master.commands.dir" point-id="PostHook" id="TvMazeMKDPostHook">
 		<parameter id="ParentMethod" value="doMKD" />
-		<parameter id="HookClass" value="org.drftpd.commands.tvmaze.TvMazePostHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.tvmaze.TvMazePostHook" />
 		<parameter id="HookMethod" value="doMKDPostHook" />
 		<parameter id="Priority" value="1000" />
 	</extension>

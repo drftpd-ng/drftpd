@@ -14,20 +14,20 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.dupecheck;
+package org.drftpd.master.plugins.dupecheck;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.plugins.dupecheck.metadata.DupeCheckFileData;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.IndexEngineInterface;
-import org.drftpd.vfs.index.IndexException;
+import org.drftpd.master.commandmanager.CommandInterface;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.ImproperUsageException;
+import org.drftpd.master.plugins.dupecheck.metadata.DupeCheckFileData;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.vfs.index.IndexException;
 
 import java.io.FileNotFoundException;
 import java.util.Map;

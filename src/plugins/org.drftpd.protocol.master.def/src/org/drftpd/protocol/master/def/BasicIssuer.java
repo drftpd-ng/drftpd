@@ -14,12 +14,12 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.master.def;
+package org.drftpd.master.protocol.master.def;
 
-import org.drftpd.exceptions.SSLUnavailableException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.exceptions.SSLUnavailableException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.protocol.master.AbstractBasicIssuer;
+import org.drftpd.master.protocol.master.AbstractBasicIssuer;
 import org.drftpd.slave.TransferIndex;
 import org.drftpd.slave.async.AsyncCommand;
 import org.drftpd.slave.async.AsyncCommandArgument;

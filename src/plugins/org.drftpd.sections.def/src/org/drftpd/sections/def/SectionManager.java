@@ -15,17 +15,17 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections.def;
+package org.drftpd.master.sections.def;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.master.ConnectionManager;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.SectionManagerInterface;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sections.SectionManagerInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
 import java.io.FileNotFoundException;
 import java.util.*;

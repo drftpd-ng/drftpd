@@ -15,27 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.nuke;
+package org.drftpd.master.commands.nuke;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.commands.nuke.metadata.NukeData;
-import org.drftpd.event.NukeEvent;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
+import org.drftpd.master.event.NukeEvent;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.Session;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

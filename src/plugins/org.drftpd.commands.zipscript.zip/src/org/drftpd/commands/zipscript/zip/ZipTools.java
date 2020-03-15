@@ -14,16 +14,16 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.zipscript.zip;
+package org.drftpd.master.commands.zipscript.zip;
 
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.protocol.zipscript.zip.common.DizInfo;
-import org.drftpd.protocol.zipscript.zip.common.DizStatus;
-import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
+import org.drftpd.master.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.master.protocol.zipscript.zip.common.DizStatus;
+import org.drftpd.master.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

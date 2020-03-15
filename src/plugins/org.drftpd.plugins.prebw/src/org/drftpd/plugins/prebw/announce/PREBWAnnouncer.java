@@ -14,21 +14,21 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.prebw.announce;
+package org.drftpd.master.plugins.prebw.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
-import org.drftpd.plugins.prebw.PreInfo;
-import org.drftpd.plugins.prebw.UserInfo;
-import org.drftpd.plugins.prebw.event.PREBWEvent;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.util.ReplacerUtils;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.plugins.prebw.PreInfo;
+import org.drftpd.master.plugins.prebw.UserInfo;
+import org.drftpd.master.plugins.prebw.event.PREBWEvent;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.Comparator;

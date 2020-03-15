@@ -1,5 +1,5 @@
 SITE TOP {
-plugin org.drftpd.plugins.trialmanager
+plugin org.drftpd.master.plugins.trialmanager
 class TrialManagerCommands
 method doTOP
 perms *
@@ -8,7 +8,7 @@ help.specific ${command}
 }
 
 SITE CUT {
-plugin org.drftpd.plugins.trialmanager
+plugin org.drftpd.master.plugins.trialmanager
 class TrialManagerCommands
 method doCUT
 perms *
@@ -17,7 +17,7 @@ help.specific ${command}
 }
 
 SITE PASSED {
-plugin org.drftpd.plugins.trialmanager
+plugin org.drftpd.master.plugins.trialmanager
 class TrialManagerCommands
 method doPASSED
 perms *

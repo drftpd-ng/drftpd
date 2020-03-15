@@ -14,19 +14,19 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.nuke.list;
+package org.drftpd.master.commands.nuke.list;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.Bytes;
-import org.drftpd.commands.list.AddListElementsInterface;
-import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.nuke.metadata.NukeData;
-import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.commands.list.AddListElementsInterface;
+import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

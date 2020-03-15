@@ -14,24 +14,24 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.mediainfo.list;
+package org.drftpd.master.plugins.mediainfo.list;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.list.AddListElementsInterface;
-import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.mediainfo.MediaInfoUtils;
-import org.drftpd.plugins.mediainfo.vfs.MediaInfoVFSData;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
-import org.drftpd.sections.SectionInterface;
+import org.drftpd.master.commands.list.AddListElementsInterface;
+import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.mediainfo.MediaInfoUtils;
+import org.drftpd.master.plugins.mediainfo.vfs.MediaInfoVFSData;
+import org.drftpd.master.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

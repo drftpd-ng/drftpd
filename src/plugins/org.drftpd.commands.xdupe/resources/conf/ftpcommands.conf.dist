@@ -1,5 +1,5 @@
 SITE XDUPE {
-plugin org.drftpd.commands.xdupe
+plugin org.drftpd.master.commands.xdupe
 class XDupe
 method doSITE_XDUPE
 perms *

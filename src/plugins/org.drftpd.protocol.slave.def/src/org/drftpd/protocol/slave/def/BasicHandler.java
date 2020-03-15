@@ -14,19 +14,19 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.slave.def;
+package org.drftpd.master.protocol.slave.def;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.ActiveConnection;
 import org.drftpd.PassiveConnection;
-import org.drftpd.exceptions.TransferDeniedException;
-import org.drftpd.io.PermissionDeniedException;
-import org.drftpd.io.PhysicalFile;
+import org.drftpd.master.exceptions.TransferDeniedException;
+import org.drftpd.master.io.PermissionDeniedException;
+import org.drftpd.master.io.PhysicalFile;
 import org.drftpd.master.QueuedOperation;
-import org.drftpd.protocol.slave.AbstractHandler;
-import org.drftpd.protocol.slave.SlaveProtocolCentral;
+import org.drftpd.master.protocol.slave.AbstractHandler;
+import org.drftpd.master.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.*;
 import org.drftpd.slave.async.*;
 import org.tanukisoftware.wrapper.WrapperManager;

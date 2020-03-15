@@ -1,10 +1,10 @@
-package org.drftpd.plugins.trialmanager;
+package org.drftpd.master.plugins.trialmanager;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.drftpd.usermanager.UserResetHookInterface;
+import org.drftpd.master.usermanager.UserResetHookInterface;
 
 import java.util.Date;
 

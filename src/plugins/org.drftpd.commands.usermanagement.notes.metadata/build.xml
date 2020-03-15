@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.commands.usermanagement.notes.metadata"
+<project name="org.drftpd.master.commands.usermanagement.notes.metadata"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">

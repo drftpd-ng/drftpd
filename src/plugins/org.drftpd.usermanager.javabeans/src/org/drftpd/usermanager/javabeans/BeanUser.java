@@ -15,19 +15,19 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.usermanager.javabeans;
+package org.drftpd.master.usermanager.javabeans;
 
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.commands.UserManagement;
-import org.drftpd.io.SafeFileOutputStream;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.CommitManager;
-import org.drftpd.usermanager.AbstractUser;
-import org.drftpd.usermanager.AbstractUserManager;
-import org.drftpd.usermanager.UserManager;
+import org.drftpd.master.usermanager.AbstractUser;
+import org.drftpd.master.usermanager.AbstractUserManager;
+import org.drftpd.master.usermanager.UserManager;
 
 import java.io.IOException;
 import java.io.OutputStream;

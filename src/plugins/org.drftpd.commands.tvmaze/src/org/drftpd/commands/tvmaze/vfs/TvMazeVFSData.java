@@ -15,17 +15,17 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.tvmaze.vfs;
+package org.drftpd.master.commands.tvmaze.vfs;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.commands.tvmaze.TvMazeParser;
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.tvmaze.TvMazeParser;
+import org.drftpd.master.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

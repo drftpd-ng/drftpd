@@ -1,5 +1,5 @@
 SITE RULES {
-plugin org.drftpd.commands.textoutput
+plugin org.drftpd.master.commands.textoutput
 class Textoutput
 method doTEXT_OUTPUT
 perms *
@@ -8,7 +8,7 @@ file userdata/text/rules.txt
 }
 
 SITE WELCOME {
-plugin org.drftpd.commands.textoutput
+plugin org.drftpd.master.commands.textoutput
 class Textoutput
 method doTEXT_OUTPUT
 perms *

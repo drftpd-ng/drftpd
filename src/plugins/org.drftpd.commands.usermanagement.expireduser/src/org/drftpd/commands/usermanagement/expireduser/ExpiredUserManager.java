@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.usermanagement.expireduser;
+package org.drftpd.master.commands.usermanagement.expireduser;
 
 import java.util.Date;
 import java.util.Properties;
@@ -25,10 +25,10 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.commands.usermanagement.expireduser.metadata.ExpiredUserData;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserResetHookInterface;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.commands.usermanagement.expireduser.metadata.ExpiredUserData;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserResetHookInterface;
 
 /**
  * @author cyber

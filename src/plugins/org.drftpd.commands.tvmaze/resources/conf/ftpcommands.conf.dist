@@ -1,5 +1,5 @@
 SITE TV {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_TV
 perms *
@@ -8,7 +8,7 @@ help.specific ${command} [-v] <nameofshow> [episodenumber]
 }
 
 SITE CREATETV {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_CREATETV
 perms =siteop
@@ -17,7 +17,7 @@ help.specific ${command} [path]
 }
 
 SITE REMOVETV {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_REMOVETV
 perms =siteop
@@ -26,7 +26,7 @@ help.specific ${command} [path]
 }
 
 SITE TVQUEUE {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_TVQUEUE
 perms =siteop

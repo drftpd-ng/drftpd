@@ -15,9 +15,9 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot;
+package org.drftpd.master.plugins.sitebot;
 
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
 
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;

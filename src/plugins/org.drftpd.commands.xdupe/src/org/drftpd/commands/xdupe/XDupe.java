@@ -1,10 +1,10 @@
-package org.drftpd.commands.xdupe;
+package org.drftpd.master.commands.xdupe;
 
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.dynamicdata.Key;
+import org.drftpd.master.commandmanager.CommandInterface;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.common.dynamicdata.Key;
 
 public class XDupe extends CommandInterface {
 	

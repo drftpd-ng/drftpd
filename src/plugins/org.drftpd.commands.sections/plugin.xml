@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.sections" version="3.4.2">
+<plugin id="org.drftpd.master.commands.sections" version="3.4.2">
 		<doc>
 		<doc-text>This plugin provides the listing of sections.  
 (SITE SECTIONS)</doc-text>
@@ -9,21 +9,21 @@
 		<attribute id="DefaultBuild" value="true" />
 	</attributes>
 	<requires>
-		<import plugin-id="org.drftpd.commandmanager" exported="true" />
-		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+		<import plugin-id="org.drftpd.master.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.sections" path="classes/" type="code">
+		<library id="org.drftpd.master.commands.sections" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
-	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPostHook" />
 
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="SectionsHandler" />
-	<extension plugin-id="org.drftpd.commands.sections" point-id="PreHook" id="doSITE_SECTIONSPerm">
+	<extension plugin-id="org.drftpd.master.commandmanager" point-id="Command" id="SectionsHandler" />
+	<extension plugin-id="org.drftpd.master.commands.sections" point-id="PreHook" id="doSITE_SECTIONSPerm">
 		<parameter id="ParentMethod" value="doSITE_SECTIONS" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>

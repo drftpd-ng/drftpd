@@ -1,9 +1,9 @@
-package org.drftpd.slaveselection.filter;
+package org.drftpd.master.slaveselection.filter;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
+import org.drftpd.master.slaveselection.filter.ScoreChart.SlaveScore;
 
 import java.util.ArrayList;
 import java.util.StringTokenizer;

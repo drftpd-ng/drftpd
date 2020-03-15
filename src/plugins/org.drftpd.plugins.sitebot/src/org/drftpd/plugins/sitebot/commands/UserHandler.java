@@ -15,25 +15,25 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.commands;
+package org.drftpd.master.plugins.sitebot.commands;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.plugins.sitebot.ServiceCommand;
-import org.drftpd.plugins.sitebot.SiteBotWrapper;
-import org.drftpd.plugins.sitebot.event.InviteEvent;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
+import org.drftpd.master.commandmanager.CommandInterface;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.ImproperUsageException;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.plugins.sitebot.ServiceCommand;
+import org.drftpd.master.plugins.sitebot.SiteBotWrapper;
+import org.drftpd.master.plugins.sitebot.event.InviteEvent;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
 
 import java.util.StringTokenizer;
 

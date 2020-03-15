@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.zipscript.flac.hooks;
+package org.drftpd.master.commands.zipscript.flac.hooks;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,20 +22,20 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PostHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.commands.dir.Dir;
-import org.drftpd.commands.zipscript.flac.event.FlacEvent;
-import org.drftpd.commands.zipscript.flac.vfs.ZipscriptVFSDataFlac;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
-import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PostHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.dir.Dir;
+import org.drftpd.master.commands.zipscript.flac.event.FlacEvent;
+import org.drftpd.master.commands.zipscript.flac.vfs.ZipscriptVFSDataFlac;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.protocol.zipscript.flac.common.VorbisTag;
+import org.drftpd.master.protocol.zipscript.flac.common.FlacInfo;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

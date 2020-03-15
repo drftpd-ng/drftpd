@@ -1,4 +1,4 @@
-package org.drftpd.plugins.prebw;
+package org.drftpd.master.plugins.prebw;
 
 import java.util.LinkedList;
 

@@ -15,19 +15,19 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.stats;
+package org.drftpd.master.plugins.stats;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.config.ConfigHandler;
-import org.drftpd.dynamicdata.Key;
+import org.drftpd.master.config.ConfigHandler;
+import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.config.ConfigInterface;
-import org.drftpd.permissions.CreditLimitPathPermission;
-import org.drftpd.permissions.Permission;
-import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.master.permissions.CreditLimitPathPermission;
+import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.permissions.RatioPathPermission;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -15,15 +15,15 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.vfs.index.lucene.extensions.zipscript;
+package org.drftpd.master.vfs.index.lucene.extensions.zipscript;
 
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.lucene.extensions.QueryTermExtensionInterface;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.lucene.extensions.QueryTermExtensionInterface;
 
 /**
  * @author scitz0

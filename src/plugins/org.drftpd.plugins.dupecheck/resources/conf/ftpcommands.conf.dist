@@ -1,5 +1,5 @@
 SITE UNDUPE {
-plugin org.drftpd.plugins.dupecheck
+plugin org.drftpd.master.plugins.dupecheck
 class DupeCheckCommands
 method doSITE_UNDUPE
 perms =siteop

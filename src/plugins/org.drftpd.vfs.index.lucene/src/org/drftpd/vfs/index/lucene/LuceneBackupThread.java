@@ -15,14 +15,14 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.vfs.index.lucene;
+package org.drftpd.master.vfs.index.lucene;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.apache.lucene.store.FSDirectory;
 import org.drftpd.GlobalContext;
-import org.drftpd.io.PhysicalFile;
+import org.drftpd.master.io.PhysicalFile;
 
 import java.io.File;
 import java.io.IOException;

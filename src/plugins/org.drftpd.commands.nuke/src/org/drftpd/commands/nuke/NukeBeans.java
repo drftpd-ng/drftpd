@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.nuke;
+package org.drftpd.master.commands.nuke;
 
 import com.cedarsoftware.util.io.JsonIoException;
 import com.cedarsoftware.util.io.JsonReader;
@@ -25,11 +25,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.Bytes;
-import org.drftpd.commands.nuke.metadata.NukeData;
-import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.io.SafeFileOutputStream;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
+import org.drftpd.master.io.SafeFileOutputStream;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.vfs.VirtualFileSystem;
 
 import java.beans.XMLDecoder;
 import java.io.*;

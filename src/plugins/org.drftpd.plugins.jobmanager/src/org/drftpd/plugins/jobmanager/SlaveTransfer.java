@@ -14,18 +14,18 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.jobmanager;
+package org.drftpd.master.plugins.jobmanager;
 
-import org.drftpd.exceptions.SSLUnavailableException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.exceptions.SSLUnavailableException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.RemoteTransfer;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.protocol.master.AbstractBasicIssuer;
+import org.drftpd.master.protocol.master.AbstractBasicIssuer;
 import org.drftpd.slave.ConnectInfo;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.TransferFailedException;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

@@ -15,27 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.imdb;
+package org.drftpd.master.commands.imdb;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.imdb.event.IMDBEvent;
-import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.IndexEngineInterface;
-import org.drftpd.vfs.index.IndexException;
-import org.drftpd.vfs.index.lucene.extensions.imdb.IMDBQueryParams;
+import org.drftpd.master.commands.imdb.event.IMDBEvent;
+import org.drftpd.master.commands.imdb.vfs.IMDBVFSDataNFO;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.protocol.imdb.common.IMDBInfo;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.vfs.index.IndexException;
+import org.drftpd.master.vfs.index.lucene.extensions.imdb.IMDBQueryParams;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

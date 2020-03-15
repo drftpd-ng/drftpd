@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.linkmanager.types.sfvincomplete;
+package org.drftpd.master.plugins.linkmanager.types.sfvincomplete;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,14 +22,14 @@ import java.io.IOException;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.PluginInterface;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.TransferEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.linkmanager.LinkManager;
-import org.drftpd.plugins.linkmanager.LinkType;
-import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
+import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.TransferEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.linkmanager.LinkManager;
+import org.drftpd.master.plugins.linkmanager.LinkType;
+import org.drftpd.master.vfs.event.VirtualFileSystemInodeDeletedEvent;
 
 /**
  * @author CyBeR

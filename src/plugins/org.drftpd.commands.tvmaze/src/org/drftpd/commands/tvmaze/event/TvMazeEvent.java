@@ -14,9 +14,9 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.tvmaze.event;
+package org.drftpd.master.commands.tvmaze.event;
 
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

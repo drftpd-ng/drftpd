@@ -15,12 +15,12 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.request;
+package org.drftpd.master.commands.request;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.request.metadata.RequestUserData;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserResetHookInterface;
+import org.drftpd.master.commands.request.metadata.RequestUserData;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserResetHookInterface;
 
 import java.util.Date;
 

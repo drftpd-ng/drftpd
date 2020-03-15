@@ -15,16 +15,16 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections.conf;
+package org.drftpd.master.sections.conf;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.exceptions.FileExistsException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
 
 import java.io.FileNotFoundException;
 import java.util.Collections;

@@ -14,11 +14,11 @@
 * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
 * Suite 330, Boston, MA 02111-1307 USA
 */
-package org.drftpd.commands.dataconnection.event;
+package org.drftpd.master.commands.dataconnection.event;
 
 import org.drftpd.master.BaseFtpConnection;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.FileHandle;
 
 /**
 * @author CyBeR

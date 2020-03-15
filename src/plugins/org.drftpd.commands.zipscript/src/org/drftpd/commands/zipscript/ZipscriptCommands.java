@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.zipscript;
+package org.drftpd.master.commands.zipscript;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,21 +23,21 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.event.LoadPluginEvent;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.master.event.LoadPluginEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.Session;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.master.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.MasterPluginUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -68,14 +68,14 @@ public class ZipscriptCommands extends CommandInterface {
 		// Load any rescan post process providers from plugins
 		try {
 			List<RescanPostProcessDirInterface> loadedRescanAddons =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.commands.zipscript", "RescanPostProcessDir", "Class");
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.commands.zipscript", "RescanPostProcessDir", "Class");
 			for (RescanPostProcessDirInterface rescanAddon : loadedRescanAddons) {
 				rescanAddon.initialize(_commandManager);
 				_rescanAddons.add(rescanAddon);
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.commands.zipscript extension point 'RescanPostProcessDir'"+
-					", possibly the org.drftpd.commands.zipscript extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.commands.zipscript extension point 'RescanPostProcessDir'"+
+					", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml",e);
 		}
 	}
 
@@ -271,7 +271,7 @@ public class ZipscriptCommands extends CommandInterface {
 	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<RescanPostProcessDirInterface> loadedRescanAddons =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "RescanPostProcessDir", "Class", event);
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.commands.zipscript", "RescanPostProcessDir", "Class", event);
 			if (!loadedRescanAddons.isEmpty()) {
 				ArrayList<RescanPostProcessDirInterface> clonedRescanAddons = new ArrayList<>(_rescanAddons);
 				for (RescanPostProcessDirInterface rescanAddon : loadedRescanAddons) {
@@ -281,8 +281,8 @@ public class ZipscriptCommands extends CommandInterface {
 				_rescanAddons = clonedRescanAddons;
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.commands.zipscript extension point 'RescanPostProcessDir'"+
-					", possibly the org.drftpd.commands.zipscript extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.commands.zipscript extension point 'RescanPostProcessDir'"+
+					", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml",e);
 		}
 	}
 }

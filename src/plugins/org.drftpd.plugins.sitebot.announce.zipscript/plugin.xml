@@ -1,18 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.sitebot.announce.zipscript" version="3.4.2">
+<plugin id="org.drftpd.master.plugins.sitebot.announce.zipscript" version="3.4.2">
 	<doc>
 		<doc-text>(Sitebot) - This plugin provides Zipscript (.sfv) announcements for Sitebot</doc-text>
 	</doc>
 
 	<requires>
-		<import plugin-id="org.drftpd.commands.zipscript" />
-		<import plugin-id="org.drftpd.plugins.sitebot" />
+		<import plugin-id="org.drftpd.master.commands.zipscript" />
+		<import plugin-id="org.drftpd.master.plugins.sitebot" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot.announce.zipscript" path="classes/" type="code" />
+		<library id="org.drftpd.master.plugins.sitebot.announce.zipscript" path="classes/" type="code" />
 	</runtime>
-	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="SFVAnnounce">
-		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.zipscript.SFVAnnouncer" />
+	<extension plugin-id="org.drftpd.master.plugins.sitebot" point-id="Announce" id="SFVAnnounce">
+		<parameter id="Class" value="org.drftpd.master.plugins.sitebot.announce.zipscript.SFVAnnouncer" />
 	</extension>
 </plugin>

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.vfs.index.lucene;
+package org.drftpd.master.vfs.index.lucene;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -37,22 +37,22 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.event.LoadPluginEvent;
-import org.drftpd.io.PhysicalFile;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.event.ImmutableInodeHandle;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.AdvancedSearchParams.InodeType;
-import org.drftpd.vfs.index.IndexEngineInterface;
-import org.drftpd.vfs.index.IndexException;
-import org.drftpd.vfs.index.IndexingVirtualFileSystemListener;
-import org.drftpd.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
-import org.drftpd.vfs.index.lucene.extensions.IndexDataExtensionInterface;
-import org.drftpd.vfs.index.lucene.extensions.QueryTermExtensionInterface;
+import org.drftpd.master.event.LoadPluginEvent;
+import org.drftpd.master.io.PhysicalFile;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.MasterPluginUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
+import org.drftpd.master.vfs.event.ImmutableInodeHandle;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.AdvancedSearchParams.InodeType;
+import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.vfs.index.IndexException;
+import org.drftpd.master.vfs.index.IndexingVirtualFileSystemListener;
+import org.drftpd.master.vfs.index.lucene.analysis.AlphanumericalAnalyzer;
+import org.drftpd.master.vfs.index.lucene.extensions.IndexDataExtensionInterface;
+import org.drftpd.master.vfs.index.lucene.extensions.QueryTermExtensionInterface;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -162,28 +162,28 @@ public class LuceneEngine implements IndexEngineInterface {
 		// Load index data extensions
 		try {
 			List<IndexDataExtensionInterface> loadedDataExtensions =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.vfs.index.lucene", "IndexData", "Class");
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.vfs.index.lucene", "IndexData", "Class");
 			for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
 				dataExtension.initializeFields(INDEX_DOCUMENT);
 				_dataExtensions.add(dataExtension);
                 logger.debug("Loading lucene index data extension from plugin {}", CommonPluginUtils.getPluginIdForObject(dataExtension));
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.vfs.index.lucene extension point 'IndexData', possibly the "+
-					"org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.vfs.index.lucene extension point 'IndexData', possibly the "+
+					"org.drftpd.master.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
 		}
 		
 		// Load query term extensions
 		try {
 			List<QueryTermExtensionInterface> loadedQueryExtensions =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.vfs.index.lucene", "QueryTerm", "Class");
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.vfs.index.lucene", "QueryTerm", "Class");
 			for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
 				_queryExtensions.add(queryExtension);
                 logger.debug("Loading lucene query term extension from plugin {}", CommonPluginUtils.getPluginIdForObject(queryExtension));
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.vfs.index.lucene extension point 'QueryTerm', possibly the "+
-					"org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.vfs.index.lucene extension point 'QueryTerm', possibly the "+
+					"org.drftpd.master.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
 		}
 		
 		AnnotationProcessor.process(this);
@@ -940,7 +940,7 @@ public class LuceneEngine implements IndexEngineInterface {
 	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<IndexDataExtensionInterface> loadedDataExtensions =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "IndexData", "Class", event);
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.vfs.index.lucene", "IndexData", "Class", event);
 			if (!loadedDataExtensions.isEmpty()) {
 				List<IndexDataExtensionInterface> clonedDataExtensions = new ArrayList<>(_dataExtensions);
 				for (IndexDataExtensionInterface dataExtension : loadedDataExtensions) {
@@ -953,13 +953,13 @@ public class LuceneEngine implements IndexEngineInterface {
 				_dataExtensions = clonedDataExtensions;
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.vfs.index.lucene extension point 'IndexData'"
-					+ ", possibly the org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.vfs.index.lucene extension point 'IndexData'"
+					+ ", possibly the org.drftpd.master.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
 		}
 		
 		try {
 			List<QueryTermExtensionInterface> loadedQueryExtensions =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.vfs.index.lucene", "QueryTerm", "Class", event);
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.vfs.index.lucene", "QueryTerm", "Class", event);
 			if (!loadedQueryExtensions.isEmpty()) {
 				List<QueryTermExtensionInterface> clonedQueryExtensions = new ArrayList<>(_queryExtensions);
 				for (QueryTermExtensionInterface queryExtension : loadedQueryExtensions) {
@@ -969,8 +969,8 @@ public class LuceneEngine implements IndexEngineInterface {
 				_queryExtensions = clonedQueryExtensions;
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.vfs.index.lucene extension point 'QueryTerm'"
-					+ ", possibly the org.drftpd.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.vfs.index.lucene extension point 'QueryTerm'"
+					+ ", possibly the org.drftpd.master.vfs.index.lucene extension point definition has changed in the plugin.xml",e);
 		}
 	}
 

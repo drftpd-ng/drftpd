@@ -14,11 +14,11 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.trialmanager.types.grouptop;
+package org.drftpd.master.plugins.trialmanager.types.grouptop;
 
 import java.util.ArrayList;
 
-import org.drftpd.usermanager.User;
+import org.drftpd.master.usermanager.User;
 
 /**
  * @author CyBeR

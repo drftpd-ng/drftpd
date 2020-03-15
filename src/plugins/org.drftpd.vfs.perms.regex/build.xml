@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.vfs.perms.regex"
+<project name="org.drftpd.master.vfs.perms.regex"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.protocol.zipscript.common" version="3.4.2">
+<plugin id="org.drftpd.master.protocol.zipscript.common" version="3.4.2">
 	<doc>
 		<doc-text>(Zipscript) - This plugin provides Protocol Extensions for Zipscript on both the Master and Slave Side</doc-text>
 	</doc>
@@ -12,7 +12,7 @@
 		<import plugin-id="common" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.protocol.zipscript.common" path="classes/" type="code">
+		<library id="org.drftpd.master.protocol.zipscript.common" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>

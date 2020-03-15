@@ -1,5 +1,5 @@
 SITE MASTERUPTIME {
-plugin org.drftpd.commands.serverstatus
+plugin org.drftpd.master.commands.serverstatus
 class ServerStatus
 method doMasterUptime
 perms =siteop
@@ -7,7 +7,7 @@ help Will show current master uptime
 }
 
 SITE SLAVEUPTIME {
-plugin org.drftpd.commands.serverstatus
+plugin org.drftpd.master.commands.serverstatus
 class ServerStatus
 method doSlaveUptime
 perms =siteop
@@ -16,7 +16,7 @@ help.specific ${command} <slave>
 }
 
 SITE SLAVESUPTIME {
-plugin org.drftpd.commands.serverstatus
+plugin org.drftpd.master.commands.serverstatus
 class ServerStatus
 method doSlavesUptime
 perms =siteop
@@ -24,7 +24,7 @@ help Will show current slaves uptime
 }
 
 SITE STATUS {
-plugin org.drftpd.commands.serverstatus
+plugin org.drftpd.master.commands.serverstatus
 class ServerStatus
 method doStatus
 perms =siteop

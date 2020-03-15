@@ -15,22 +15,22 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.autonuke;
+package org.drftpd.master.commands.autonuke;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.approve.metadata.Approve;
-import org.drftpd.commands.nuke.NukeException;
-import org.drftpd.commands.nuke.NukeUtils;
-import org.drftpd.commands.nuke.metadata.NukeData;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.event.NukeEvent;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.approve.metadata.Approve;
+import org.drftpd.master.commands.nuke.NukeException;
+import org.drftpd.master.commands.nuke.NukeUtils;
+import org.drftpd.master.commands.nuke.metadata.NukeData;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.event.NukeEvent;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.util.Iterator;

@@ -15,15 +15,15 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.autonuke;
+package org.drftpd.master.commands.autonuke;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.exceptions.FatalException;
+import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.util.ArrayList;
 import java.util.Collection;

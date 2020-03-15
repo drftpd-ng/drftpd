@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commandmanager;
+package org.drftpd.master.commandmanager;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,13 +23,13 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.permissions.Permission;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
 
 import java.io.*;
 import java.lang.reflect.Method;

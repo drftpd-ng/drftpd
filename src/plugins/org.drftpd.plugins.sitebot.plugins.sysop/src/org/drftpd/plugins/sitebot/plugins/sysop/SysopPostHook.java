@@ -1,11 +1,11 @@
-package org.drftpd.plugins.sitebot.plugins.sysop;
+package org.drftpd.master.plugins.sitebot.plugins.sysop;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PostHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.plugins.sitebot.plugins.sysop.event.SysopEvent;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PostHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.plugins.sitebot.plugins.sysop.event.SysopEvent;
 
 public class SysopPostHook implements PostHookInterface {
 

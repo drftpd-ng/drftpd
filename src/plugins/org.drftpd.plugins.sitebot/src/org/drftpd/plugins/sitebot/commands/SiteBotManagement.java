@@ -15,22 +15,22 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.commands;
+package org.drftpd.master.plugins.sitebot.commands;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.commandmanager.*;
-import org.drftpd.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.Session;
-import org.drftpd.plugins.sitebot.OutputWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.SiteBotWrapper;
-import org.drftpd.plugins.sitebot.UserDetails;
-import org.drftpd.plugins.sitebot.config.ChannelConfig;
-import org.drftpd.usermanager.User;
+import org.drftpd.master.plugins.sitebot.OutputWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.SiteBotWrapper;
+import org.drftpd.master.plugins.sitebot.UserDetails;
+import org.drftpd.master.plugins.sitebot.config.ChannelConfig;
+import org.drftpd.master.usermanager.User;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -15,23 +15,23 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection.filter;
+package org.drftpd.master.slaveselection.filter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.InodeHandleInterface;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.slaveselection.filter.ScoreChart.SlaveScore;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.InodeHandleInterface;
 
 import java.io.FileNotFoundException;
 import java.net.InetAddress;

@@ -1,18 +1,18 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.sitebot.announce.zipscript.flac" version="3.4.2">
+<plugin id="org.drftpd.master.plugins.sitebot.announce.zipscript.flac" version="3.4.2">
 	<doc>
 		<doc-text>(Sitebot) - This plugin provides Zipscript(.flac/voribs metadata) announcements for Sitebot</doc-text>
 	</doc>
 	
 	<requires>
-		<import plugin-id="org.drftpd.commands.zipscript.flac" />
-		<import plugin-id="org.drftpd.plugins.sitebot" />
+		<import plugin-id="org.drftpd.master.commands.zipscript.flac" />
+		<import plugin-id="org.drftpd.master.plugins.sitebot" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.plugins.sitebot.announce.zipscript.flac" path="classes/" type="code" />
+		<library id="org.drftpd.master.plugins.sitebot.announce.zipscript.flac" path="classes/" type="code" />
 	</runtime>
-	<extension plugin-id="org.drftpd.plugins.sitebot" point-id="Announce" id="FlacAnnounce">
-		<parameter id="Class" value="org.drftpd.plugins.sitebot.announce.zipscript.flac.FlacAnnouncer" />
+	<extension plugin-id="org.drftpd.master.plugins.sitebot" point-id="Announce" id="FlacAnnounce">
+		<parameter id="Class" value="org.drftpd.master.plugins.sitebot.announce.zipscript.flac.FlacAnnouncer" />
 	</extension>
 </plugin>

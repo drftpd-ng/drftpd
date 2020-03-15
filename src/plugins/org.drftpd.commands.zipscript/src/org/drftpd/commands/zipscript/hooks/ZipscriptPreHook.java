@@ -15,24 +15,24 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.zipscript.hooks;
+package org.drftpd.master.commands.zipscript.hooks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.exceptions.FatalException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.permissions.GlobPathPermission;
-import org.drftpd.permissions.Permission;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.GlobPattern;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.master.exceptions.FatalException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.permissions.GlobPathPermission;
+import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.GlobPattern;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

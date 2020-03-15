@@ -1,15 +1,15 @@
-package org.drftpd.plugins.sitebot.plugins.sysop.announce;
+package org.drftpd.master.plugins.sitebot.plugins.sysop.announce;
 
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.plugins.sitebot.plugins.sysop.event.SysopEvent;
-import org.drftpd.util.ReplacerUtils;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.plugins.sitebot.plugins.sysop.event.SysopEvent;
+import org.drftpd.master.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 public class SysopAnnouncer extends AbstractAnnouncer {

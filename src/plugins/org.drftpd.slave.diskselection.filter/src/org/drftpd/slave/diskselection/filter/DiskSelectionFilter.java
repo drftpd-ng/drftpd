@@ -33,8 +33,8 @@ import org.drftpd.slave.RootCollection;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.diskselection.DiskSelectionInterface;
 import org.drftpd.slave.diskselection.filter.ScoreChart.RootScore;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
 
 /**
  * DiskSelection core.<br>

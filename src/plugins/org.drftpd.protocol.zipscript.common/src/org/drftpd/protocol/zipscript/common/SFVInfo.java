@@ -15,10 +15,10 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.protocol.zipscript.common;
+package org.drftpd.master.protocol.zipscript.common;
 
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.vfs.CaseInsensitiveTreeMap;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.vfs.CaseInsensitiveTreeMap;
 
 import java.io.BufferedReader;
 import java.io.IOException;

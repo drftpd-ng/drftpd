@@ -1,4 +1,4 @@
-package org.drftpd.plugins.autofreespace;
+package org.drftpd.master.plugins.autofreespace;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -9,15 +9,15 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.autofreespace.event.AFSEvent;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.plugins.autofreespace.event.AFSEvent;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 import java.io.FileNotFoundException;
 import java.util.*;

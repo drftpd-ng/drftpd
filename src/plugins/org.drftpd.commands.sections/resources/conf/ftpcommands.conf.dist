@@ -1,5 +1,5 @@
 SITE SECTIONS {
-plugin org.drftpd.commands.sections
+plugin org.drftpd.master.commands.sections
 class Sections
 method doSITE_SECTIONS
 perms *

@@ -15,19 +15,19 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.sections.conf;
+package org.drftpd.master.sections.conf;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.exceptions.FatalException;
+import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.SectionManagerInterface;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sections.SectionManagerInterface;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -93,13 +93,13 @@ public class SectionManager implements SectionManagerInterface {
 
 		try {
 			List<PluginObjectContainer<ConfigurableSectionInterface>> loadedTypes =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.sections.conf", "SectionType", "ClassName", false);
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.sections.conf", "SectionType", "ClassName", false);
 			for (PluginObjectContainer<ConfigurableSectionInterface> container : loadedTypes) {
 				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
 				typesMap.put(filterName, container.getPluginClass());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.sections.conf extension point 'SectionType'",e);
+			logger.error("Failed to load plugins for org.drftpd.master.sections.conf extension point 'SectionType'",e);
 		}
 		_typesMap = typesMap;
 	}

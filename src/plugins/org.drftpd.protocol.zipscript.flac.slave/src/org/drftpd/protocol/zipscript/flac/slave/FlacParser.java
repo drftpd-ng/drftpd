@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.protocol.zipscript.flac.slave;
+package org.drftpd.master.protocol.zipscript.flac.slave;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,8 +26,8 @@ import org.jflac.metadata.Metadata;
 import org.jflac.metadata.StreamInfo;
 import org.jflac.metadata.VorbisComment;
 
-import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
-import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
+import org.drftpd.master.protocol.zipscript.flac.common.FlacInfo;
+import org.drftpd.master.protocol.zipscript.flac.common.VorbisTag;
 
 /**
  * @author norox

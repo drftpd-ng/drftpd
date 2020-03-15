@@ -14,10 +14,10 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.newraceleader.event;
+package org.drftpd.master.plugins.newraceleader.event;
 
-import org.drftpd.util.UploaderPosition;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.util.UploaderPosition;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 /**
  * @author CyBeR

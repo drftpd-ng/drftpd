@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.jobmanager;
+package org.drftpd.master.plugins.jobmanager;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,9 +24,9 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 
 import java.io.FileNotFoundException;

@@ -1,4 +1,4 @@
-package org.drftpd.plugins.nukefilter;
+package org.drftpd.master.plugins.nukefilter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

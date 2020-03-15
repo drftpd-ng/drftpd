@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.archive;
+package org.drftpd.master.plugins.archive;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,13 +24,13 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
-import org.drftpd.event.ReloadEvent;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
-import org.drftpd.plugins.archive.archivetypes.ArchiveType;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
+import org.drftpd.master.plugins.archive.archivetypes.ArchiveHandler;
+import org.drftpd.master.plugins.archive.archivetypes.ArchiveType;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
 
 import java.util.*;
 
@@ -103,13 +103,13 @@ public class Archive implements PluginInterface {
 
 		try {
 			List<PluginObjectContainer<ArchiveType>> loadedTypes =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.archive", "ArchiveType", "ClassName", false);
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.plugins.archive", "ArchiveType", "ClassName", false);
 			for (PluginObjectContainer<ArchiveType> container : loadedTypes) {
 				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
 				typesMap.put(filterName, container.getPluginClass());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.plugins.archive.archivetypes extension point 'ArchiveType'",e);
+			logger.error("Failed to load plugins for org.drftpd.master.plugins.archive.archivetypes extension point 'ArchiveType'",e);
 		}
 		
 		_typesMap = typesMap;

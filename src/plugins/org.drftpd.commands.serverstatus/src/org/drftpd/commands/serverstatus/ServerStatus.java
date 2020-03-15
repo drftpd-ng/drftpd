@@ -15,17 +15,17 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.serverstatus;
+package org.drftpd.master.commands.serverstatus;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.commandmanager.*;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.Session;
-import org.drftpd.util.ExtendedPropertyResourceBundle;
+import org.drftpd.master.util.ExtendedPropertyResourceBundle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.lang.management.*;

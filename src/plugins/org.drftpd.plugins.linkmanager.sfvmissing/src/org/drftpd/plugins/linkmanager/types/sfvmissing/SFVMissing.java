@@ -14,15 +14,15 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.linkmanager.types.sfvmissing;
+package org.drftpd.master.plugins.linkmanager.types.sfvmissing;
 
 import java.io.FileNotFoundException;
 import java.util.Properties;
 import java.util.Set;
 
-import org.drftpd.plugins.linkmanager.LinkType;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.plugins.linkmanager.LinkType;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 /**
  * @author CyBeR

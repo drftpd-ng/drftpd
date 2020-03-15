@@ -15,21 +15,21 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.vfs.index.lucene.extensions.zipscript;
+package org.drftpd.master.vfs.index.lucene.extensions.zipscript;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
-import org.drftpd.protocol.zipscript.common.SFVStatus;
-import org.drftpd.protocol.zipscript.zip.common.DizInfo;
-import org.drftpd.protocol.zipscript.zip.common.DizStatus;
-import org.drftpd.vfs.CaseInsensitiveTreeMap;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.event.ImmutableInodeHandle;
-import org.drftpd.vfs.index.lucene.extensions.IndexDataExtensionInterface;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.protocol.zipscript.common.SFVStatus;
+import org.drftpd.master.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.master.protocol.zipscript.zip.common.DizStatus;
+import org.drftpd.master.vfs.CaseInsensitiveTreeMap;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.event.ImmutableInodeHandle;
+import org.drftpd.master.vfs.index.lucene.extensions.IndexDataExtensionInterface;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

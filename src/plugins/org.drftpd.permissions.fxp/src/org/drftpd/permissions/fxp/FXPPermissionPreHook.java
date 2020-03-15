@@ -14,18 +14,18 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.permissions.fxp;
+package org.drftpd.master.permissions.fxp;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandRequestInterface;
-import org.drftpd.commandmanager.PreHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandRequestInterface;
+import org.drftpd.master.commandmanager.PreHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.config.ConfigInterface;
 import org.drftpd.slave.Transfer;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.net.InetAddress;
 

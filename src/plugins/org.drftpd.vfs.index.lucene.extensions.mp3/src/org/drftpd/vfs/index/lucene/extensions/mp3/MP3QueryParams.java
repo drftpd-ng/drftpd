@@ -15,9 +15,9 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.vfs.index.lucene.extensions.mp3;
+package org.drftpd.master.vfs.index.lucene.extensions.mp3;
 
-import org.drftpd.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.Key;
 
 /**
  * @author scitz0

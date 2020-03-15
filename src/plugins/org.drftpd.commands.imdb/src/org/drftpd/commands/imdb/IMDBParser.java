@@ -15,14 +15,14 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.imdb;
+package org.drftpd.master.commands.imdb;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.util.HttpUtils;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.util.HttpUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.regex.Matcher;

@@ -15,16 +15,16 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.archive.archivetypes;
+package org.drftpd.master.plugins.archive.archivetypes;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.archive.Archive;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.plugins.archive.Archive;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.util.*;

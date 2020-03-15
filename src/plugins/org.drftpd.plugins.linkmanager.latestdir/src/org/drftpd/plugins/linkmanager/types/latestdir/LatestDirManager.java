@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.linkmanager.types.latestdir;
+package org.drftpd.master.plugins.linkmanager.types.latestdir;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,12 +26,12 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
 import org.drftpd.GlobalContext;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.DirectoryFtpEvent;
-import org.drftpd.plugins.linkmanager.LinkManager;
-import org.drftpd.plugins.linkmanager.LinkType;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.LinkHandle;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.plugins.linkmanager.LinkManager;
+import org.drftpd.master.plugins.linkmanager.LinkType;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.LinkHandle;
 /**
  * @author freasy
  * @version $Id: LatestDirManager.java freasy $

@@ -1,5 +1,5 @@
 SITE ALUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_ALUP
 perms *
@@ -7,7 +7,7 @@ help Lists the top uploaders of all time
 }
 
 SITE ALDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_ALDN
 perms *
@@ -15,7 +15,7 @@ help Lists the top downloaders of all time
 }
 
 SITE MONTHUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_MONTHUP
 perms *
@@ -23,7 +23,7 @@ help Lists the top uploaders for the month
 }
 
 SITE MONTHDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_MONTHDN
 perms *
@@ -31,7 +31,7 @@ help Lists the top downloaders for the month
 }
 
 SITE WKUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_WKUP
 perms *
@@ -39,7 +39,7 @@ help Lists the top uploaders for the week
 }
 
 SITE WKDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_WKDN
 perms *
@@ -47,7 +47,7 @@ help Lists the top downloaders for the week
 }
 
 SITE DAYUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_DAYUP
 perms *
@@ -55,7 +55,7 @@ help Lists the top uploaders for the day
 }
 
 SITE DAYDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_DAYDN
 perms *
@@ -63,7 +63,7 @@ help Lists the top downloaders for the day
 }
 
 SITE STATS {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class TransferStatistics
 method doSITE_STATS
 perms *
@@ -71,7 +71,7 @@ help Show user stats
 }
 
 SITE GALUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GALUP
 perms *
@@ -79,7 +79,7 @@ help Lists the top uploading of all time
 }
 
 SITE GALDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GALDN
 perms *
@@ -87,7 +87,7 @@ help Lists the top downloading groups of all time
 }
 
 SITE GMONTHUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GMONTHUP
 perms *
@@ -95,7 +95,7 @@ help Lists the top uploading groups of all time
 }
 
 SITE GMONTHDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GMONTHDN
 perms *
@@ -103,7 +103,7 @@ help Lists the top downloading group for the month
 }
 
 SITE GWKUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GWKUP
 perms *
@@ -111,7 +111,7 @@ help Lists the top uploading for the week
 }
 
 SITE GWKDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GWKDN
 perms *
@@ -119,7 +119,7 @@ help Lists the top downloading group for the week
 }
 
 SITE GDAYUP {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GDAYUP
 perms *
@@ -127,7 +127,7 @@ help Lists the top uploading for the day
 }
 
 SITE GDAYDN {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_GDAYDN
 perms *
@@ -135,7 +135,7 @@ help Lists the top downloading group for the day
 }
 
 SITE TRAFFIC {
-plugin org.drftpd.commands.transferstatistics
+plugin org.drftpd.master.commands.transferstatistics
 class MoreStats
 method doSITE_TRAFFIC
 perms *

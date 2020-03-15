@@ -1,9 +1,9 @@
-package org.drftpd.commands.xdupe;
+package org.drftpd.master.commands.xdupe;
 
-import org.drftpd.commandmanager.*;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.util.Set;

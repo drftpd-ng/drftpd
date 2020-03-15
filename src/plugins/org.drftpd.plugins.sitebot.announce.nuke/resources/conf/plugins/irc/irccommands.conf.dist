@@ -1,5 +1,5 @@
 nuke {
-plugin org.drftpd.commands.nuke
+plugin org.drftpd.master.commands.nuke
 class Nuke
 method doSITE_NUKE
 perms =nuke =siteop
@@ -11,7 +11,7 @@ output source
 }
 
 unnuke {
-plugin org.drftpd.commands.nuke
+plugin org.drftpd.master.commands.nuke
 class Nuke
 method doSITE_UNNUKE
 perms =nuke =siteop
@@ -23,7 +23,7 @@ output source
 }
 
 nukes {
-plugin org.drftpd.commands.nuke
+plugin org.drftpd.master.commands.nuke
 class Nuke
 method doSITE_NUKES
 perms *
@@ -34,7 +34,7 @@ output source
 }
 
 nukesclean {
-plugin org.drftpd.commands.nuke
+plugin org.drftpd.master.commands.nuke
 class Nuke
 method doSITE_NUKESCLEAN
 perms =nuke =siteop

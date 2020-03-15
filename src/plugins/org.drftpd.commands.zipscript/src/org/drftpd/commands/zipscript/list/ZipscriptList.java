@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.zipscript.list;
+package org.drftpd.master.commands.zipscript.list;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,22 +23,22 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.list.AddListElementsInterface;
-import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.commands.zipscript.SFVTools;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.event.LoadPluginEvent;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
-import org.drftpd.protocol.zipscript.common.SFVStatus;
+import org.drftpd.master.commands.list.AddListElementsInterface;
+import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.commands.zipscript.SFVTools;
+import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.master.event.LoadPluginEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.protocol.zipscript.common.SFVStatus;
 import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.MasterPluginUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
@@ -62,13 +62,13 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 		// Load any additional status bar element providers from plugins
 		try {
 			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.commands.zipscript", "ListStatusBarProvider", "Class");
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.commands.zipscript", "ListStatusBarProvider", "Class");
 			for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
 				_statusBarProviders.add(sbAddon);
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.commands.zipscript extension point 'ListStatusBarProvider'"+
-					", possibly the org.drftpd.commands.zipscript extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.commands.zipscript extension point 'ListStatusBarProvider'"+
+					", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml",e);
 		}
 	}
 
@@ -198,7 +198,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.zipscript", "ListStatusBarProvider", "Class", event);
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.commands.zipscript", "ListStatusBarProvider", "Class", event);
 			if (!loadedStatusBarAddons.isEmpty()) {
 				ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<>(_statusBarProviders);
 				for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
@@ -207,8 +207,8 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 				_statusBarProviders = clonedProviders;
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.commands.zipscript extension point 'ListStatusBarProvider'"+
-					", possibly the org.drftpd.commands.zipscript extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.commands.zipscript extension point 'ListStatusBarProvider'"+
+					", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml",e);
 		}
 	}
 

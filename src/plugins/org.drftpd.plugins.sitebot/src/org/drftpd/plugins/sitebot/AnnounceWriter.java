@@ -15,13 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot;
+package org.drftpd.master.plugins.sitebot;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.plugins.sitebot.config.PathMatcher;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.plugins.sitebot.config.PathMatcher;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 import java.util.ArrayList;
 

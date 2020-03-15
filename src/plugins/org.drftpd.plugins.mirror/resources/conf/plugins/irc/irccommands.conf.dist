@@ -1,5 +1,5 @@
 unmirror {
-plugin org.drftpd.plugins.mirror
+plugin org.drftpd.master.plugins.mirror
 class Mirror
 method doSITE_UNMIRROR
 perms =siteop

@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.zipscript.zip.slave;
+package org.drftpd.master.protocol.zipscript.zip.slave;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
@@ -42,11 +42,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 
-import org.drftpd.protocol.slave.AbstractHandler;
-import org.drftpd.protocol.slave.SlaveProtocolCentral;
-import org.drftpd.protocol.zipscript.zip.common.DizInfo;
-import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseDizInfo;
-import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
+import org.drftpd.master.protocol.slave.AbstractHandler;
+import org.drftpd.master.protocol.slave.SlaveProtocolCentral;
+import org.drftpd.master.protocol.zipscript.zip.common.DizInfo;
+import org.drftpd.master.protocol.zipscript.zip.common.async.AsyncResponseDizInfo;
+import org.drftpd.master.protocol.zipscript.zip.common.async.AsyncResponseZipCRCInfo;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;

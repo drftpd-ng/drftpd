@@ -15,11 +15,11 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.protocol.zipscript.flac.master;
+package org.drftpd.master.protocol.zipscript.flac.master;
 
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.protocol.master.AbstractIssuer;
+import org.drftpd.master.protocol.master.AbstractIssuer;
 import org.drftpd.slave.async.AsyncCommandArgument;
 
 /**

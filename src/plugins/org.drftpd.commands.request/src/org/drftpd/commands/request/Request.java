@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.request;
+package org.drftpd.master.commands.request;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,16 +23,16 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.RequestEvent;
-import org.drftpd.exceptions.FileExistsException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.RequestEvent;
+import org.drftpd.master.exceptions.FileExistsException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.Session;
-import org.drftpd.permissions.Permission;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ListUtils;
+import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ListUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

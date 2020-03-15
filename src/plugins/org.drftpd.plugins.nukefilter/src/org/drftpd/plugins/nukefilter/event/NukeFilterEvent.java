@@ -1,6 +1,6 @@
-package org.drftpd.plugins.nukefilter.event;
+package org.drftpd.master.plugins.nukefilter.event;
 
-import org.drftpd.plugins.nukefilter.NukeFilterNukeItem;
+import org.drftpd.master.plugins.nukefilter.NukeFilterNukeItem;
 
 /**
  * @author phew

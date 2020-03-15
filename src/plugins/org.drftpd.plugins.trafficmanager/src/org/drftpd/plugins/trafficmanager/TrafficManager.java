@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.trafficmanager;
+package org.drftpd.master.plugins.trafficmanager;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,11 +24,11 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
-import org.drftpd.commands.dataconnection.event.SlowTransferEvent;
-import org.drftpd.event.ReloadEvent;
+import org.drftpd.master.commands.dataconnection.event.SlowTransferEvent;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,13 +100,13 @@ public class TrafficManager implements PluginInterface {
 		CaseInsensitiveHashMap<String, Class<TrafficType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
-			List<PluginObjectContainer<TrafficType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.trafficmanager", "TrafficType", "ClassName", false);
+			List<PluginObjectContainer<TrafficType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.plugins.trafficmanager", "TrafficType", "ClassName", false);
 			for (PluginObjectContainer<TrafficType> container : loadedTypes) {
 				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
 				typesMap.put(filterName, container.getPluginClass());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.plugins.trafficmanager extension point 'TrafficType'",e);
+			logger.error("Failed to load plugins for org.drftpd.master.plugins.trafficmanager extension point 'TrafficType'",e);
 		}
 		_typesMap = typesMap;		
     }

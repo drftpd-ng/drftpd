@@ -1,12 +1,12 @@
 NOOP {
-plugin org.drftpd.commands.dummy
+plugin org.drftpd.master.commands.dummy
 class Dummy
 method doDUMMY
 perms %
 }
 
 CLNT {
-plugin org.drftpd.commands.dummy
+plugin org.drftpd.master.commands.dummy
 class Dummy
 method doDUMMY
 perms %

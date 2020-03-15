@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.sitebot.plugins.dailystats;
+package org.drftpd.master.plugins.sitebot.plugins.dailystats;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,11 +29,11 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.plugins.sitebot.plugins.dailystats.event.StatsEvent;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserResetHookInterface;
-import org.drftpd.usermanager.util.UserComparator;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.plugins.sitebot.plugins.dailystats.event.StatsEvent;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserResetHookInterface;
+import org.drftpd.master.usermanager.util.UserComparator;
 
 /**
  * @author djb61

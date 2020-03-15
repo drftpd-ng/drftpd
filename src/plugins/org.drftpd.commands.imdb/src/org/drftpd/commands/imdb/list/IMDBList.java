@@ -14,15 +14,15 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.imdb.list;
+package org.drftpd.master.commands.imdb.list;
 
-import org.drftpd.commands.imdb.IMDBConfig;
-import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
-import org.drftpd.commands.list.AddListElementsInterface;
-import org.drftpd.commands.list.ListElementsContainer;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.master.commands.imdb.IMDBConfig;
+import org.drftpd.master.commands.imdb.vfs.IMDBVFSDataNFO;
+import org.drftpd.master.commands.list.AddListElementsInterface;
+import org.drftpd.master.commands.list.ListElementsContainer;
+import org.drftpd.master.protocol.imdb.common.IMDBInfo;
 import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

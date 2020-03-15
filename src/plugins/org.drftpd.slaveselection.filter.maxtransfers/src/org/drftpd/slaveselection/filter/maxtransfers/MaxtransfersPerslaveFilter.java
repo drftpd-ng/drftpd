@@ -14,20 +14,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.slaveselection.filter.maxtransfers;
+package org.drftpd.master.slaveselection.filter.maxtransfers;
 
-import org.drftpd.slaveselection.filter.Filter;
-import org.drftpd.slaveselection.filter.ScoreChart;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.exceptions.FatalException;
+import org.drftpd.master.slaveselection.filter.Filter;
+import org.drftpd.master.slaveselection.filter.ScoreChart;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
+import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.PropertyHelper;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.master.SlaveManager;
-import org.drftpd.vfs.InodeHandleInterface;
+import org.drftpd.master.vfs.InodeHandleInterface;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.GlobalContext;
-import org.drftpd.usermanager.User;
+import org.drftpd.master.usermanager.User;
 
 import java.net.InetAddress;
 import java.util.ArrayList;

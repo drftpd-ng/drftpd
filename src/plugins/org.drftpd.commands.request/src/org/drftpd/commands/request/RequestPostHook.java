@@ -15,18 +15,18 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.request;
+package org.drftpd.master.commands.request;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PostHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.request.metadata.RequestUserData;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.usermanager.User;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PostHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.request.metadata.RequestUserData;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.usermanager.User;
 
 import java.util.Properties;
 

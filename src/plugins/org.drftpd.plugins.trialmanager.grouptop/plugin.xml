@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.plugins.trialmanager.grouptop" version="3.4.2">
+<plugin id="org.drftpd.master.plugins.trialmanager.grouptop" version="3.4.2">
 	<doc>
 		<doc-text> This plugin provides grouptop to the Trial Manager</doc-text>
 	</doc>
@@ -9,18 +9,18 @@
 		<attribute id="MustBuild" value="false" />
 	</attributes>
 	<requires>
-		<import plugin-id="org.drftpd.plugins.trialmanager" exported="true" />
+		<import plugin-id="org.drftpd.master.plugins.trialmanager" exported="true" />
 		<import plugin-id="master" exported="true" reverse-lookup="true" />
 	</requires>
 
 	<runtime>
-		<library id="org.drftpd.plugins.trialmanager.types.grouptop" path="classes/" type="code">
+		<library id="org.drftpd.master.plugins.trialmanager.types.grouptop" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
 	
-	<extension plugin-id="org.drftpd.plugins.trialmanager" point-id="TrialType" id="GroupTop">
-		<parameter id="ClassName" value="org.drftpd.plugins.trialmanager.types.grouptop.GroupTop"/>
+	<extension plugin-id="org.drftpd.master.plugins.trialmanager" point-id="TrialType" id="GroupTop">
+		<parameter id="ClassName" value="org.drftpd.master.plugins.trialmanager.types.grouptop.GroupTop"/>
 		<parameter id="TypeName" value="GroupTop"/>
 	</extension>	
 	

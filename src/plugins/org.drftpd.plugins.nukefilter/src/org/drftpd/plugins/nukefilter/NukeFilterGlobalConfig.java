@@ -1,7 +1,7 @@
-package org.drftpd.plugins.nukefilter;
+package org.drftpd.master.plugins.nukefilter;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.sections.SectionInterface;
+import org.drftpd.master.sections.SectionInterface;
 
 import java.util.ArrayList;
 

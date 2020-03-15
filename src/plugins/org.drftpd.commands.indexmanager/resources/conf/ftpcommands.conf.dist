@@ -1,20 +1,20 @@
 # $Id$
 SITE REBUILDINDEX {
-plugin org.drftpd.commands.indexmanager
+plugin org.drftpd.master.commands.indexmanager
 class IndexManager
 method doRebuildIndex
 perms =siteop
 }
 
 SITE INDEXSTATUS {
-plugin org.drftpd.commands.indexmanager
+plugin org.drftpd.master.commands.indexmanager
 class IndexManager
 method doIndexStatus
 perms =siteop
 }
 
 SITE REFRESHINDEX {
-plugin org.drftpd.commands.indexmanager
+plugin org.drftpd.master.commands.indexmanager
 class IndexManager
 method doRefreshIndex
 perms =siteop

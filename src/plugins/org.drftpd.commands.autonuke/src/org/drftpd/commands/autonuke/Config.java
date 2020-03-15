@@ -1,14 +1,14 @@
-package org.drftpd.commands.autonuke;
+package org.drftpd.master.commands.autonuke;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.commands.autonuke.event.AutoNukeEvent;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.sections.conf.DatedSection;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.autonuke.event.AutoNukeEvent;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sections.conf.DatedSection;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;

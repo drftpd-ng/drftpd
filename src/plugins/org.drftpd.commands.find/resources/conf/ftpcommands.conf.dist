@@ -1,6 +1,6 @@
 # $Id$
 SITE FIND {
-plugin org.drftpd.commands.find
+plugin org.drftpd.master.commands.find
 class Find
 method doFIND
 perms *
@@ -43,7 +43,7 @@ help.specific Multiple options/actions are allowed. If multiple options are give
 }
 
 SITE SEARCH {
-plugin org.drftpd.commands.find
+plugin org.drftpd.master.commands.find
 class Search
 method doSEARCH
 perms *
@@ -57,7 +57,7 @@ help.specific ${command} <word> [word ..]
 }
 
 SITE DUPE {
-plugin org.drftpd.commands.find
+plugin org.drftpd.master.commands.find
 class Search
 method doSEARCH
 perms *

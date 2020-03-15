@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.find;
+package org.drftpd.master.commands.find;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,23 +23,23 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.find.action.ActionInterface;
-import org.drftpd.commands.find.option.OptionInterface;
-import org.drftpd.event.LoadPluginEvent;
-import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.find.action.ActionInterface;
+import org.drftpd.master.commands.find.option.OptionInterface;
+import org.drftpd.master.event.LoadPluginEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
 import org.drftpd.master.Session;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.IndexEngineInterface;
-import org.drftpd.vfs.index.IndexException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.MasterPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.vfs.index.IndexException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
@@ -73,28 +73,28 @@ public class Find extends CommandInterface {
 		// Load all options
 		try {
 			List<PluginObjectContainer<OptionInterface>> loadedOptions =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.commands.find", "Option", "ClassName", true);
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.commands.find", "Option", "ClassName", true);
 			for (PluginObjectContainer<OptionInterface> container : loadedOptions) {
 				String optionName = container.getPluginExtension().getParameter("OptionName").valueAsString();
 				_optionsMap.put("-" + optionName, container.getPluginObject());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load options for org.drftpd.commands.find extension point 'Option'"
-					+", possibly the org.drftpd.commands.find"
+			logger.error("Failed to load options for org.drftpd.master.commands.find extension point 'Option'"
+					+", possibly the org.drftpd.master.commands.find"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
 
 		// Load all actions
 		try {
 			List<PluginObjectContainer<ActionInterface>> loadedActions =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.commands.find", "Action", "ClassName", true);
+				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.commands.find", "Action", "ClassName", true);
 			for (PluginObjectContainer<ActionInterface> container : loadedActions) {
 				String actionName = container.getPluginExtension().getParameter("ActionName").valueAsString();
 				_actionsMap.put("-" + actionName, container.getPluginObject());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load options for org.drftpd.commands.find extension point 'Action'"
-					+", possibly the org.drftpd.commands.find"
+			logger.error("Failed to load options for org.drftpd.master.commands.find extension point 'Action'"
+					+", possibly the org.drftpd.master.commands.find"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
 	}
@@ -336,7 +336,7 @@ public class Find extends CommandInterface {
 		// Load all options
 		try {
 			List<PluginObjectContainer<OptionInterface>> loadedOptions =
-				MasterPluginUtils.getLoadedExtensionObjectsInContainer(this, "org.drftpd.commands.find", "Option", event, "ClassName");
+				MasterPluginUtils.getLoadedExtensionObjectsInContainer(this, "org.drftpd.master.commands.find", "Option", event, "ClassName");
 			if (!loadedOptions.isEmpty()) {
 				CaseInsensitiveHashMap<String, OptionInterface> clonedOptionAddons = new CaseInsensitiveHashMap<>(_optionsMap);
 				for (PluginObjectContainer<OptionInterface> container : loadedOptions) {
@@ -346,15 +346,15 @@ public class Find extends CommandInterface {
 				_optionsMap = clonedOptionAddons;
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load options for org.drftpd.commands.find extension point 'Option'"
-					+", possibly the org.drftpd.commands.find"
+			logger.error("Failed to load options for org.drftpd.master.commands.find extension point 'Option'"
+					+", possibly the org.drftpd.master.commands.find"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
 
 		// Load all actions
 		try {
 			List<PluginObjectContainer<ActionInterface>> loadedActions =
-				MasterPluginUtils.getLoadedExtensionObjectsInContainer(this, "org.drftpd.commands.find", "Action", event, "ClassName");
+				MasterPluginUtils.getLoadedExtensionObjectsInContainer(this, "org.drftpd.master.commands.find", "Action", event, "ClassName");
 			if (!loadedActions.isEmpty()) {
 				CaseInsensitiveHashMap<String, ActionInterface> clonedActionAddons = new CaseInsensitiveHashMap<>(_actionsMap);
 				for (PluginObjectContainer<ActionInterface> container : loadedActions) {
@@ -364,8 +364,8 @@ public class Find extends CommandInterface {
 				_actionsMap = clonedActionAddons;
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load options for org.drftpd.commands.find extension point 'Action'"
-					+", possibly the org.drftpd.commands.find"
+			logger.error("Failed to load options for org.drftpd.master.commands.find extension point 'Action'"
+					+", possibly the org.drftpd.master.commands.find"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
 	}

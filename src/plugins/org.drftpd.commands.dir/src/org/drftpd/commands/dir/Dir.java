@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.dir;
+package org.drftpd.master.commands.dir;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,15 +23,15 @@ import org.apache.logging.log4j.LogManager;
 import org.drftpd.Bytes;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.event.DirectoryFtpEvent;
-import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.io.PermissionDeniedException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.exceptions.FileExistsException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.io.PermissionDeniedException;
 import org.drftpd.master.Session;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.*;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.*;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;

@@ -14,18 +14,18 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.trialmanager;
+package org.drftpd.master.plugins.trialmanager;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
 import org.drftpd.master.cron.TimeManager;
-import org.drftpd.permissions.Permission;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.util.UserComparator;
+import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.util.UserComparator;
 
 import java.util.*;
 

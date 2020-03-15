@@ -1,5 +1,5 @@
 # Only used if you are using 
-# org.drftpd.slaveselection.filter.SlaveSelectionManager in drftpd.conf
+# org.drftpd.master.slaveselection.filter.SlaveSelectionManager in drftpd.conf
 
 # the slave that is selected will be an available slave and will have more 
 # points(given from the filters) than the other available slaves

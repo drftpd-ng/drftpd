@@ -15,27 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.slavemanagement;
+package org.drftpd.master.commands.slavemanagement;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.event.SlaveEvent;
-import org.drftpd.exceptions.DuplicateElementException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.ObjectNotFoundException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.event.SlaveEvent;
+import org.drftpd.master.exceptions.DuplicateElementException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.*;
 import org.drftpd.slave.RemoteIOException;
 import org.drftpd.slave.SlaveStatus;
 import org.drftpd.slave.Transfer;
-import org.drftpd.slaveselection.filter.Filter;
-import org.drftpd.slaveselection.filter.ScoreChart;
-import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
-import org.drftpd.slaveselection.filter.SlaveSelectionManager;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.slaveselection.filter.Filter;
+import org.drftpd.master.slaveselection.filter.ScoreChart;
+import org.drftpd.master.slaveselection.filter.ScoreChart.SlaveScore;
+import org.drftpd.master.slaveselection.filter.SlaveSelectionManager;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.*;

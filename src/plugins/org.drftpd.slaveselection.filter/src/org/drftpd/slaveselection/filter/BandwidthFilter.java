@@ -15,15 +15,15 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.slaveselection.filter;
+package org.drftpd.master.slaveselection.filter;
 
 import org.drftpd.PropertyHelper;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
 import org.drftpd.slave.SlaveStatus;
-import org.drftpd.slaveselection.filter.ScoreChart.SlaveScore;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.InodeHandleInterface;
+import org.drftpd.master.slaveselection.filter.ScoreChart.SlaveScore;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.InodeHandleInterface;
 
 import java.net.InetAddress;
 import java.util.Iterator;

@@ -1,0 +1,74 @@
+# Displayed as the site tagline on first connection.
+# Leave it alone and you will see the version following by link
+#login_prompt DrFTPD 3.4.2 https://github.com/drftpd-ng/drftpd3
+
+# Max number of connections
+# Example:
+#  max_users	<max_logins> <max_exempted>
+#  max_users	100	10
+#  exempt	=siteop
+# Above would allow normal users to connect until there are 100 concurrent users.
+# siteop's would be able to connect until there are 110 concurrent users.
+
+max_users	100	10
+exempt		=siteop
+
+# FUNCTION       | PATH     | GROUP
+# * = only wildcard recognized
+# = denotes group, - denotes user
+
+# EXAMPLES
+# upload 		* 	=siteop
+# download 		* 	-user1
+# makedir 		/usercanmakedir/* -user1 -user2 =group1
+upload			*	*
+download		*	*
+
+makedir			*	*
+
+deleteown		*	*
+delete			*	=siteop
+
+renameown		*	*
+rename			*	=siteop
+
+privpath 		/hidden_path/*	=siteop
+
+# Hide the user that's is inside the given dir.
+hideinwho 		/hidden_path/*	*
+
+# Appends the message contained in the file to the
+# text that is outputed during CWD.
+#msgpath <path> <filename> <flag/=group/-user>
+#msgpath /incoming/ ftp-data/incoming.txt
+
+# Choose who can connect and who can't.
+# Example:
+# allow_connections * => everyone can connect.
+# allow_connections =siteop => only users from the siteop group can connect.
+allow_connections *
+#allow_connections_deny_reason Access Denied
+
+# Accepts only one range of ports
+#pasv_ports 50000-60000
+
+# To be used if your master does not report the correct outside ip for
+# PASV commands
+#pasv_addr xxx.xxx.xxx.xxx
+
+# If you have (an) ftp bouncer(s), you have to put their IP(s) here so that drftpd
+# knows if the connection is from a bouncer or a regular user.
+# Either in IPv4 address or hostname format.
+#bouncer_ips 1.2.3.4 another.bouncer.dynamicip.net static.bouncer.com
+
+# SSL/TLS enforcements.
+userrejectsecure        !*
+userrejectinsecure      *
+denydiruncrypted        *
+denydatauncrypted       *
+
+# Hide IP's in logs?
+hide_ips false
+
+# Hide users or group from shown in stats outputs
+hideinstats     =deleted =exempt

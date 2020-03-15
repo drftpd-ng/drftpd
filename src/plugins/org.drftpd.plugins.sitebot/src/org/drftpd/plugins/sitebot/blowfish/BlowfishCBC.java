@@ -8,7 +8,7 @@
 * the Free Software Foundation; either version 2 of the License, or
 * (at your option) any later version.
 */
-package org.drftpd.plugins.sitebot.blowfish;
+package org.drftpd.master.plugins.sitebot.blowfish;
 
 import javax.crypto.*;
 import javax.crypto.spec.*;

@@ -15,18 +15,18 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.mediainfo.vfs;
+package org.drftpd.master.plugins.mediainfo.vfs;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
-import org.drftpd.protocol.mediainfo.common.async.AsyncResponseMediaInfo;
-import org.drftpd.protocol.mediainfo.master.MediaInfoIssuer;
+import org.drftpd.master.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.master.protocol.mediainfo.common.async.AsyncResponseMediaInfo;
+import org.drftpd.master.protocol.mediainfo.master.MediaInfoIssuer;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

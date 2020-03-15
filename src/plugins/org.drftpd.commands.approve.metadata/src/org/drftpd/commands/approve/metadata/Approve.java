@@ -15,11 +15,11 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.approve.metadata;
+package org.drftpd.master.commands.approve.metadata;
 
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.io.Serializable;

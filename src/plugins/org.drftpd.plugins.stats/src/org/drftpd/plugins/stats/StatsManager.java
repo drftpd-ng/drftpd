@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.stats;
+package org.drftpd.master.plugins.stats;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,14 +24,14 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.event.UserEvent;
-import org.drftpd.permissions.CreditLimitPathPermission;
-import org.drftpd.permissions.RatioPathPermission;
-import org.drftpd.plugins.stats.metadata.StatsUserData;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.event.UserEvent;
+import org.drftpd.master.permissions.CreditLimitPathPermission;
+import org.drftpd.master.permissions.RatioPathPermission;
+import org.drftpd.master.plugins.stats.metadata.StatsUserData;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.util.ArrayList;
 import java.util.Date;

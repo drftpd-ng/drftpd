@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.usermanagement" version="3.4.2">
+<plugin id="org.drftpd.master.commands.usermanagement" version="3.4.2">
 	<doc>
 		<doc-text>This plugin provides User Management commands, including a default user profile.  
 (SITE ADDIP/ADDUSER/CHANGE/CHGRP/CHPASS/DEBUG/DELIP/DELUSER/GADDUSER/GINFO/GIVE/GROUP/GROUPS/GRPREN/KICK/KICKALL/PASSWD/PURGE/READD/RENUSER/SEEN/TAGLINE/TAKE/USER/USERS/WHO/SWHO/BAN/BANALL/UNBAN/UNBANALL/BANS)</doc-text>
@@ -9,207 +9,207 @@
 		<attribute id="DefaultBuild" value="true" />
 	</attributes>
 	<requires>
-		<import plugin-id="org.drftpd.commandmanager" exported="true" />
-		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+		<import plugin-id="org.drftpd.master.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.usermanagement" path="classes/" type="code">
+		<library id="org.drftpd.master.commands.usermanagement" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
-	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPostHook" />
 
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="UserManagementHandler" />
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_GIVEPerm">
+	<extension plugin-id="org.drftpd.master.commandmanager" point-id="Command" id="UserManagementHandler" />
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_GIVEPerm">
 		<parameter id="ParentMethod" value="doSITE_GIVE" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_SEENPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_SEENPerm">
 		<parameter id="ParentMethod" value="doSITE_SEEN" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_READDPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_READDPerm">
 		<parameter id="ParentMethod" value="doSITE_READD" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_GROUPSPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_GROUPSPerm">
 		<parameter id="ParentMethod" value="doSITE_GROUPS" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_WHOPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_WHOPerm">
 		<parameter id="ParentMethod" value="doSITE_WHO" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_CHANGEPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_CHANGEPerm">
 		<parameter id="ParentMethod" value="doSITE_CHANGE" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_DELIPPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_DELIPPerm">
 		<parameter id="ParentMethod" value="doSITE_DELIP" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_PURGEPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_PURGEPerm">
 		<parameter id="ParentMethod" value="doSITE_PURGE" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_KICKPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_KICKPerm">
 		<parameter id="ParentMethod" value="doSITE_KICK" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_KICKALLPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_KICKALLPerm">
 		<parameter id="ParentMethod" value="doSITE_KICKALL" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_USERSPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_USERSPerm">
 		<parameter id="ParentMethod" value="doSITE_USERS" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_CHPASSPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_CHPASSPerm">
 		<parameter id="ParentMethod" value="doSITE_CHPASS" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_TAGLINEPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_TAGLINEPerm">
 		<parameter id="ParentMethod" value="doSITE_TAGLINE" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_GINFOPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_GINFOPerm">
 		<parameter id="ParentMethod" value="doSITE_GINFO" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_ADDUSERPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_ADDUSERPerm">
 		<parameter id="ParentMethod" value="doSITE_ADDUSER" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_DELUSERPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_DELUSERPerm">
 		<parameter id="ParentMethod" value="doSITE_DELUSER" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_UNBANPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_UNBANPerm">
 		<parameter id="ParentMethod" value="doSITE_UNBAN" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_UNBANALLPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_UNBANALLPerm">
 		<parameter id="ParentMethod" value="doSITE_UNBANALL" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_DEBUGPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_DEBUGPerm">
 		<parameter id="ParentMethod" value="doSITE_DEBUG" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_GROUPPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_GROUPPerm">
 		<parameter id="ParentMethod" value="doSITE_GROUP" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_RENUSERPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_RENUSERPerm">
 		<parameter id="ParentMethod" value="doSITE_RENUSER" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_BANSPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_BANSPerm">
 		<parameter id="ParentMethod" value="doSITE_BANS" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_SWAPPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_SWAPPerm">
 		<parameter id="ParentMethod" value="doSITE_SWAP" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_TAKEPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_TAKEPerm">
 		<parameter id="ParentMethod" value="doSITE_TAKE" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_ADDIPPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_ADDIPPerm">
 		<parameter id="ParentMethod" value="doSITE_ADDIP" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_USERPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_USERPerm">
 		<parameter id="ParentMethod" value="doSITE_USER" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_BANPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_BANPerm">
 		<parameter id="ParentMethod" value="doSITE_BAN" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_BANALLPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_BANALLPerm">
 		<parameter id="ParentMethod" value="doSITE_BANALL" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_CHGRPPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_CHGRPPerm">
 		<parameter id="ParentMethod" value="doSITE_CHGRP" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_GRPRENPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_GRPRENPerm">
 		<parameter id="ParentMethod" value="doSITE_GRPREN" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_PASSWDPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_PASSWDPerm">
 		<parameter id="ParentMethod" value="doSITE_PASSWD" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.usermanagement" point-id="PreHook" id="doSITE_SWHOPerm">
+	<extension plugin-id="org.drftpd.master.commands.usermanagement" point-id="PreHook" id="doSITE_SWHOPerm">
 		<parameter id="ParentMethod" value="doSITE_SWHO" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>	

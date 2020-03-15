@@ -1,5 +1,5 @@
 SITE SLAVES {
-plugin org.drftpd.commands.slavemanagement
+plugin org.drftpd.master.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVES
 perms =siteop
@@ -9,7 +9,7 @@ help.specific List the slave added to the site and the status of each.
 }
 
 SITE REMERGE {
-plugin org.drftpd.commands.slavemanagement
+plugin org.drftpd.master.commands.slavemanagement
 class SlaveManagement
 method doSITE_REMERGE
 perms =siteop
@@ -19,7 +19,7 @@ help.specific Rebuilds the file database of the specified slave.
 }
 
 SITE KICKSLAVE {
-plugin org.drftpd.commands.slavemanagement
+plugin org.drftpd.master.commands.slavemanagement
 class SlaveManagement
 method doSITE_KICKSLAVE
 perms =siteop
@@ -29,7 +29,7 @@ help.specific Kicks the specified slave offline.
 }
 
 SITE SLAVE {
-plugin org.drftpd.commands.slavemanagement
+plugin org.drftpd.master.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVE
 perms =siteop
@@ -51,7 +51,7 @@ help.specific Show status of rename & remerge queues
 }
 
 SITE ADDSLAVE {
-plugin org.drftpd.commands.slavemanagement
+plugin org.drftpd.master.commands.slavemanagement
 class SlaveManagement
 method doSITE_ADDSLAVE
 perms =siteop
@@ -63,7 +63,7 @@ help.specific to allow the slave to connect
 }
 
 SITE DELSLAVE {
-plugin org.drftpd.commands.slavemanagement
+plugin org.drftpd.master.commands.slavemanagement
 class SlaveManagement
 method doSITE_DELSLAVE
 perms =siteop
@@ -73,7 +73,7 @@ help.specific Remove the specified slave from the site.
 }
 
 SITE SLAVESELECT {
-plugin org.drftpd.commands.slavemanagement
+plugin org.drftpd.master.commands.slavemanagement
 class SlaveManagement
 method doSITE_SLAVESELECT
 perms =siteop

@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.archive.archivetypes;
+package org.drftpd.master.plugins.archive.archivetypes;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,12 +23,12 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.GlobalContext;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.archive.DuplicateArchiveException;
-import org.drftpd.plugins.archive.event.ArchiveFailedEvent;
-import org.drftpd.plugins.archive.event.ArchiveFinishEvent;
-import org.drftpd.plugins.archive.event.ArchiveStartEvent;
-import org.drftpd.plugins.jobmanager.Job;
-import org.drftpd.sections.SectionInterface;
+import org.drftpd.master.plugins.archive.DuplicateArchiveException;
+import org.drftpd.master.plugins.archive.event.ArchiveFailedEvent;
+import org.drftpd.master.plugins.archive.event.ArchiveFinishEvent;
+import org.drftpd.master.plugins.archive.event.ArchiveStartEvent;
+import org.drftpd.master.plugins.jobmanager.Job;
+import org.drftpd.master.sections.SectionInterface;
 
 import java.util.ArrayList;
 import java.util.Collections;

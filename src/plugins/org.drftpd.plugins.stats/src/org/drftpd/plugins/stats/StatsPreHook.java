@@ -15,14 +15,14 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.stats;
+package org.drftpd.master.plugins.stats;
 
 import org.drftpd.Bytes;
-import org.drftpd.commandmanager.*;
-import org.drftpd.permissions.CreditLimitPathPermission;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.permissions.CreditLimitPathPermission;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
 import java.io.FileNotFoundException;
 

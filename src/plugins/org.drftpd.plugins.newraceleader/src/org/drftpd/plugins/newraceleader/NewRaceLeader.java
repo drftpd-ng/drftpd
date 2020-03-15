@@ -23,13 +23,13 @@
  *   Boston, MA  02111-1307  USA
  */
 
-package org.drftpd.plugins.newraceleader;
+package org.drftpd.master.plugins.newraceleader;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.plugins.newraceleader.event.NewRaceLeaderEvent;
-import org.drftpd.util.UploaderPosition;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.plugins.newraceleader.event.NewRaceLeaderEvent;
+import org.drftpd.master.util.UploaderPosition;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 
 import java.util.Collection;
 

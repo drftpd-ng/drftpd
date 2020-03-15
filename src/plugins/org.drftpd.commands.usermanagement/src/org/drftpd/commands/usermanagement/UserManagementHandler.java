@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.commands.usermanagement;
+package org.drftpd.master.commands.usermanagement;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -23,20 +23,20 @@ import org.apache.logging.log4j.LogManager;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.Time;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.exceptions.DuplicateElementException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.exceptions.DuplicateElementException;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.Session;
 import org.drftpd.master.TransferState;
-import org.drftpd.permissions.Permission;
+import org.drftpd.master.permissions.Permission;
 import org.drftpd.slave.Transfer;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserExistsException;
-import org.drftpd.usermanager.UserFileException;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserExistsException;
+import org.drftpd.master.usermanager.UserFileException;
 import org.tanesha.replacer.FormatterException;
 import org.tanesha.replacer.ReplacerEnvironment;
 import org.tanesha.replacer.SimplePrintf;

@@ -1,11 +1,11 @@
-package org.drftpd.plugins.sitebot;
+package org.drftpd.master.plugins.sitebot;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.plugins.sitebot.blowfish.Blowfish;
-import org.drftpd.plugins.sitebot.blowfish.BlowfishCBC;
-import org.drftpd.plugins.sitebot.blowfish.BlowfishECB;
+import org.drftpd.master.plugins.sitebot.blowfish.Blowfish;
+import org.drftpd.master.plugins.sitebot.blowfish.BlowfishCBC;
+import org.drftpd.master.plugins.sitebot.blowfish.BlowfishECB;
 
 class BlowfishManager {
 

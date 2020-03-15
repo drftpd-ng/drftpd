@@ -14,20 +14,20 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.linkmanager.types.nfomissing;
+package org.drftpd.master.plugins.linkmanager.types.nfomissing;
 
 import java.io.FileNotFoundException;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.PluginInterface;
-import org.drftpd.event.DirectoryFtpEvent;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.TransferEvent;
-import org.drftpd.plugins.linkmanager.LinkManager;
-import org.drftpd.plugins.linkmanager.LinkType;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.event.VirtualFileSystemInodeDeletedEvent;
+import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.TransferEvent;
+import org.drftpd.master.plugins.linkmanager.LinkManager;
+import org.drftpd.master.plugins.linkmanager.LinkType;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.event.VirtualFileSystemInodeDeletedEvent;
 
 /**
  * @author CyBeR

@@ -15,22 +15,22 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.zipscript.vfs;
+package org.drftpd.master.commands.zipscript.vfs;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.zipscript.SFVTools;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.commands.zipscript.SFVTools;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
-import org.drftpd.protocol.zipscript.common.SFVStatus;
-import org.drftpd.protocol.zipscript.common.async.AsyncResponseSFVInfo;
-import org.drftpd.protocol.zipscript.master.ZipscriptIssuer;
+import org.drftpd.master.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.protocol.zipscript.common.SFVStatus;
+import org.drftpd.master.protocol.zipscript.common.async.AsyncResponseSFVInfo;
+import org.drftpd.master.protocol.zipscript.master.ZipscriptIssuer;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

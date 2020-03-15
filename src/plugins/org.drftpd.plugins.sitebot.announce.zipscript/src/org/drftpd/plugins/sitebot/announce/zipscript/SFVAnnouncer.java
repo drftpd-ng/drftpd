@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.announce.zipscript;
+package org.drftpd.master.plugins.sitebot.announce.zipscript;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,32 +35,32 @@ import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
 import org.drftpd.RankUtils;
 import org.drftpd.Time;
-import org.drftpd.commands.zipscript.SFVTools;
-import org.drftpd.commands.zipscript.event.SFVMemberTransferEvent;
-import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.event.DirectoryFtpEvent;
-import org.drftpd.event.TransferEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.protocol.zipscript.common.SFVInfo;
-import org.drftpd.protocol.zipscript.common.SFVStatus;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.util.UserTransferStats;
-import org.drftpd.util.FileUtils;
-import org.drftpd.util.GroupPosition;
-import org.drftpd.util.ReplacerUtils;
-import org.drftpd.util.UploaderPosition;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.commands.zipscript.SFVTools;
+import org.drftpd.master.commands.zipscript.event.SFVMemberTransferEvent;
+import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.event.TransferEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.protocol.zipscript.common.SFVInfo;
+import org.drftpd.master.protocol.zipscript.common.SFVStatus;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.usermanager.util.UserTransferStats;
+import org.drftpd.master.util.FileUtils;
+import org.drftpd.master.util.GroupPosition;
+import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.util.UploaderPosition;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

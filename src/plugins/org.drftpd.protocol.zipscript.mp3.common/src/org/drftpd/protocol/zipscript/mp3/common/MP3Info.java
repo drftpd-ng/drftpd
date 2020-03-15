@@ -15,11 +15,11 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.protocol.zipscript.mp3.common;
+package org.drftpd.master.protocol.zipscript.mp3.common;
 
 import java.io.Serializable;
 
-import org.drftpd.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.Key;
 
 /**
  * @author djb61

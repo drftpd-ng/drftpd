@@ -1,4 +1,4 @@
-package org.drftpd.plugins.sitebot.plugins.sysop.event;
+package org.drftpd.master.plugins.sitebot.plugins.sysop.event;
 
 public class SysopEvent {
 	

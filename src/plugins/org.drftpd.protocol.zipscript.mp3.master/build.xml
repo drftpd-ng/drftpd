@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.protocol.zipscript.mp3.master"
+<project name="org.drftpd.master.protocol.zipscript.mp3.master"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">

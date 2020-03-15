@@ -1,5 +1,5 @@
 SITE REQUEST {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQUEST
 perms =request
@@ -8,7 +8,7 @@ help.specific ${command} <nameofrequest>
 }
 
 SITE REQFILLED {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQFILLED
 perms *
@@ -17,7 +17,7 @@ help.specific ${command} <nameofrequest>
 }
 
 SITE REQUESTS {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQUESTS
 perms *
@@ -26,7 +26,7 @@ help.specific ${command}
 }
 
 SITE REQDEL {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQDELETE
 perms =request

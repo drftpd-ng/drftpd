@@ -1,5 +1,5 @@
 SITE NEW {
-plugin org.drftpd.commands.newhandler
+plugin org.drftpd.master.commands.newhandler
 class New
 method doNEW
 perms *

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.slaveselection.filter.stripefiles"
+<project name="org.drftpd.master.slaveselection.filter.stripefiles"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">

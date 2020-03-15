@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.usermanagement.expireduser;
+package org.drftpd.master.commands.usermanagement.expireduser;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,13 +23,13 @@ import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.drftpd.master.Session;
-import org.drftpd.commands.usermanagement.expireduser.metadata.ExpiredUserData;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.ImproperUsageException;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.usermanager.User;
+import org.drftpd.master.commands.usermanagement.expireduser.metadata.ExpiredUserData;
+import org.drftpd.master.commandmanager.CommandInterface;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.ImproperUsageException;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.usermanager.User;
 
 /**
  * @author CyBeR

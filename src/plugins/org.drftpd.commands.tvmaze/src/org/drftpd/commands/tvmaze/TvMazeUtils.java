@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.tvmaze;
+package org.drftpd.master.commands.tvmaze;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -24,23 +24,23 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.tvmaze.event.TvMazeEvent;
-import org.drftpd.commands.tvmaze.metadata.TvEpisode;
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
-import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.HttpUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
-import org.drftpd.vfs.index.AdvancedSearchParams;
-import org.drftpd.vfs.index.IndexEngineInterface;
-import org.drftpd.vfs.index.IndexException;
-import org.drftpd.vfs.index.lucene.extensions.tvmaze.TvMazeQueryParams;
+import org.drftpd.master.commands.tvmaze.event.TvMazeEvent;
+import org.drftpd.master.commands.tvmaze.metadata.TvEpisode;
+import org.drftpd.master.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.master.commands.tvmaze.vfs.TvMazeVFSData;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.HttpUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
+import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.vfs.index.IndexException;
+import org.drftpd.master.vfs.index.lucene.extensions.tvmaze.TvMazeQueryParams;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;

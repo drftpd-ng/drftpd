@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.slaveselection.filter" version="3.4.2">
+<plugin id="org.drftpd.master.slaveselection.filter" version="3.4.2">
 	<doc>
 		<doc-text>(Required) - This plugin provides Slave Selection Filters. </doc-text>
 	</doc>
@@ -13,7 +13,7 @@
 		<import plugin-id="master" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.slaveselection.filter" path="classes/" type="code">
+		<library id="org.drftpd.master.slaveselection.filter" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
@@ -23,44 +23,44 @@
 	</extension-point>
 	
 	<extension plugin-id="master" point-id="SlaveSelection" id="SlaveSelectionFilter">
-		<parameter id="Class" value="org.drftpd.slaveselection.filter.SlaveSelectionManager"/>
+		<parameter id="Class" value="org.drftpd.master.slaveselection.filter.SlaveSelectionManager"/>
 	</extension>
 	
 	<!-- Filters -->
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="BandwidthFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.BandwidthFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="BandwidthFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.BandwidthFilter"/>
 		<parameter id="FilterName" value="Bandwidth"/>
 	</extension>	
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="CycleFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.CycleFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="CycleFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.CycleFilter"/>
 		<parameter id="FilterName" value="Cycle"/>
 	</extension>	
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MatchdirFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MatchdirFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="MatchdirFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.MatchdirFilter"/>
 		<parameter id="FilterName" value="Matchdir"/>
 	</extension>
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MatchdirExFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MatchdirExFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="MatchdirExFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.MatchdirExFilter"/>
 		<parameter id="FilterName" value="MatchdirEx"/>
 	</extension>
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MaxbandwidthFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MaxbandwidthFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="MaxbandwidthFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.MaxbandwidthFilter"/>
 		<parameter id="FilterName" value="Maxbandwidth"/>
 	</extension>
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MaxtransfersFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MaxtransfersFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="MaxtransfersFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.MaxtransfersFilter"/>
 		<parameter id="FilterName" value="Maxtransfers"/>
 	</extension>
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MinfreespaceFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MinfreespaceFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="MinfreespaceFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.MinfreespaceFilter"/>
 		<parameter id="FilterName" value="Minfreespace"/>
 	</extension>
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="MintimeonlineFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.MintimeonlineFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="MintimeonlineFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.MintimeonlineFilter"/>
 		<parameter id="FilterName" value="Mintimeonline"/>
 	</extension>
-	<extension plugin-id="org.drftpd.slaveselection.filter" point-id="Filter" id="SlavetopFilter">
-		<parameter id="ClassName" value="org.drftpd.slaveselection.filter.SlavetopFilter"/>
+	<extension plugin-id="org.drftpd.master.slaveselection.filter" point-id="Filter" id="SlavetopFilter">
+		<parameter id="ClassName" value="org.drftpd.master.slaveselection.filter.SlavetopFilter"/>
 		<parameter id="FilterName" value="Slavetop"/>
 	</extension>
 </plugin>

@@ -15,10 +15,10 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.config;
+package org.drftpd.master.plugins.sitebot.config;
 
-import org.drftpd.util.GlobPattern;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.util.GlobPattern;
+import org.drftpd.master.vfs.InodeHandle;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

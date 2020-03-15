@@ -14,23 +14,23 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.sitebot.announce.mediainfo;
+package org.drftpd.master.plugins.sitebot.announce.mediainfo;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.plugins.mediainfo.MediaInfoUtils;
-import org.drftpd.plugins.mediainfo.event.MediaInfoEvent;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.util.ReplacerUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.plugins.mediainfo.MediaInfoUtils;
+import org.drftpd.master.plugins.mediainfo.event.MediaInfoEvent;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.HashMap;

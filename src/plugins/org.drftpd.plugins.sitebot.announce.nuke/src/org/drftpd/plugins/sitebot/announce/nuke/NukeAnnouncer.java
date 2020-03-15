@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.sitebot.announce.nuke;
+package org.drftpd.master.plugins.sitebot.announce.nuke;
 
 import java.util.ResourceBundle;
 
@@ -22,21 +22,21 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.Bytes;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.commands.nuke.NukeBeans;
-import org.drftpd.commands.nuke.NukeUtils;
-import org.drftpd.commands.nuke.NukedUser;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.event.NukeEvent;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.util.ReplacerUtils;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.commands.nuke.NukeBeans;
+import org.drftpd.master.commands.nuke.NukeUtils;
+import org.drftpd.master.commands.nuke.NukedUser;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.event.NukeEvent;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 /**

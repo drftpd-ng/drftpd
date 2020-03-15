@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.protocol.speedtest.net.slave;
+package org.drftpd.master.protocol.speedtest.net.slave;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;

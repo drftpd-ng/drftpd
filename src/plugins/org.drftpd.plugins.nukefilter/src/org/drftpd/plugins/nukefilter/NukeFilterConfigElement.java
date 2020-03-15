@@ -1,4 +1,4 @@
-package org.drftpd.plugins.nukefilter;
+package org.drftpd.master.plugins.nukefilter;
 
 /**
  * @author phew

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<plugin id="org.drftpd.commands.list" version="3.4.2">
+<plugin id="org.drftpd.master.commands.list" version="3.4.2">
 	<doc>
 		<doc-text>(Required) - This plugin provides List commands.   
 (LIST/STAT/MLST/MLSD)</doc-text>
@@ -10,36 +10,36 @@
 		<attribute id="MustBuild" value="true" />
 	</attributes>
 	<requires>
-		<import plugin-id="org.drftpd.commandmanager" exported="true" />
-		<import plugin-id="org.drftpd.commands.prehook.permissions" exported="true" />
+		<import plugin-id="org.drftpd.master.commandmanager" exported="true" />
+		<import plugin-id="org.drftpd.master.commands.prehook.permissions" exported="true" />
 	</requires>
 	<runtime>
-		<library id="org.drftpd.commands.list" path="classes/" type="code">
+		<library id="org.drftpd.master.commands.list" path="classes/" type="code">
 			<export prefix="*" />
 		</library>
 	</runtime>
-	<extension-point id="PreHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPreHook" />
-	<extension-point id="PostHook" parent-plugin-id="org.drftpd.commandmanager" parent-point-id="CommandPostHook" />
+	<extension-point id="PreHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPreHook" />
+	<extension-point id="PostHook" parent-plugin-id="org.drftpd.master.commandmanager" parent-point-id="CommandPostHook" />
 	<extension-point id="AddElements">
 		<parameter-def id="Class" type="string" />
 	</extension-point>
 
-	<extension plugin-id="org.drftpd.commandmanager" point-id="Command" id="ListHandler" />
-	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="doMLSTandMLSDPerm">
+	<extension plugin-id="org.drftpd.master.commandmanager" point-id="Command" id="ListHandler" />
+	<extension plugin-id="org.drftpd.master.commands.list" point-id="PreHook" id="doMLSTandMLSDPerm">
 		<parameter id="ParentMethod" value="doMLSTandMLSD" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="doLISTPerm">
+	<extension plugin-id="org.drftpd.master.commands.list" point-id="PreHook" id="doLISTPerm">
 		<parameter id="ParentMethod" value="doLIST" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>
-	<extension plugin-id="org.drftpd.commands.list" point-id="PreHook" id="doSTATPerm">
+	<extension plugin-id="org.drftpd.master.commands.list" point-id="PreHook" id="doSTATPerm">
 		<parameter id="ParentMethod" value="doSTAT" />
-		<parameter id="HookClass" value="org.drftpd.commands.prehook.permissions.PermissionPreHook" />
+		<parameter id="HookClass" value="org.drftpd.master.commands.prehook.permissions.PermissionPreHook" />
 		<parameter id="HookMethod" value="doPermissionCheck" />
 		<parameter id="Priority" value="1" />
 	</extension>

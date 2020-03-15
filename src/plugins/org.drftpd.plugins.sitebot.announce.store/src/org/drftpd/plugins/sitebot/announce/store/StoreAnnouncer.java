@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot.announce.store;
+package org.drftpd.master.plugins.sitebot.announce.store;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -30,16 +30,16 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.event.DirectoryFtpEvent;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.TransferEvent;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.util.ReplacerUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
+import org.drftpd.master.event.DirectoryFtpEvent;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.TransferEvent;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 public class StoreAnnouncer extends AbstractAnnouncer {

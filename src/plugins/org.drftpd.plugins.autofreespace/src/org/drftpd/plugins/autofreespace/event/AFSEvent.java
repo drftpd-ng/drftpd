@@ -14,10 +14,10 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.autofreespace.event;
+package org.drftpd.master.plugins.autofreespace.event;
 
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 /**
  * @author scitz0

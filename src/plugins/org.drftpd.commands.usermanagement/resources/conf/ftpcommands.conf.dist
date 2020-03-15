@@ -1,5 +1,5 @@
 SITE ADDIP {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_ADDIP
 perms =gadmin =siteop
@@ -8,7 +8,7 @@ help.specific ${command} <username> <ident@ip>
 }
 
 SITE ADDUSER {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_ADDUSER
 perms =gadmin =siteop
@@ -17,7 +17,7 @@ help.specific ${command} <user> <password> [<ident@ip#1> ...]
 }
 
 SITE CHANGE {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_CHANGE
 perms =gadmin =siteop
@@ -29,7 +29,7 @@ help.specific group_slots # [opt leech slots], wkly_allotment, max_sim #dn #up
 }
 
 SITE CHGRP {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_CHGRP
 perms =siteop
@@ -38,7 +38,7 @@ help.specific ${command} <user> <group> [<group> ...]
 }
 
 SITE CHPASS {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_CHPASS
 perms =gadmin =siteop
@@ -47,7 +47,7 @@ help.specific ${command} <user> <password>
 }
 
 SITE DEBUG {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_DEBUG
 perms *
@@ -55,7 +55,7 @@ help Allows you to see stacktraces on command errors
 }
 
 SITE DELIP {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_DELIP
 perms =gadmin =siteop
@@ -64,7 +64,7 @@ help.specific ${command} <user> <ident@ip> ...
 }
 
 SITE DELUSER {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_DELUSER
 perms =gadmin =siteop
@@ -73,7 +73,7 @@ help.specific ${command} <user> [reason]
 }
 
 SITE GADDUSER {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_GADDUSER
 perms =siteop
@@ -82,7 +82,7 @@ help.specific ${command} <group> <user> <password> [<ident@ip#1 ..]
 }
 
 SITE GINFO {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_GINFO
 perms =gadmin =siteop
@@ -91,7 +91,7 @@ help.specific ${command} <group>
 }
 
 SITE GIVE {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_GIVE
 perms =siteop
@@ -100,7 +100,7 @@ help.specific ${command} <user> <bytes>
 }
 
 SITE GROUP {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_GROUP
 perms =siteop
@@ -110,7 +110,7 @@ help.specific Valid fields: ratio, num_logins # [opt perIP], max_sim #dn #up
 }
 
 SITE GROUPS {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_GROUPS
 perms =siteop
@@ -118,7 +118,7 @@ help Lists the groups on the site
 }
 
 SITE GRPREN {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_GRPREN
 perms =siteop
@@ -127,7 +127,7 @@ help.specific ${command} <oldgroup> <newgroup>
 }
 
 SITE KICK {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_KICK
 perms =siteop
@@ -136,7 +136,7 @@ help.specific ${command} <user> [message]
 }
 
 SITE KICKALL {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_KICKALL
 perms =siteop
@@ -145,7 +145,7 @@ help.specific ${command} [message]
 }
 
 SITE KILL {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_KILL
 perms =siteop
@@ -154,7 +154,7 @@ help.specific ${command} <threadID> [message]
 }
 
 SITE PASSWD {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_PASSWD
 perms *
@@ -163,7 +163,7 @@ help.specific ${command} <password>
 }
 
 SITE PURGE {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_PURGE
 perms =gadmin =siteop
@@ -172,7 +172,7 @@ help.specific ${command} <username>
 }
 
 SITE DELPURGE {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_DELPURGE
 perms =gadmin =siteop
@@ -181,7 +181,7 @@ help.specific ${command} <username>
 }
 
 SITE READD {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_READD
 perms =gadmin =siteop
@@ -190,7 +190,7 @@ help.specific ${command} <user>
 }
 
 SITE RENUSER {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_RENUSER
 perms =siteop
@@ -199,7 +199,7 @@ help.specific ${command} <old_username> <new_username>
 }
 
 SITE SEEN {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_SEEN
 perms *
@@ -208,7 +208,7 @@ help.specific ${command} <user>
 }
 
 SITE TAGLINE {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_TAGLINE
 perms *
@@ -217,7 +217,7 @@ help.specific ${command} <tagline>
 }
 
 SITE SWAP {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_SWAP
 perms =siteop
@@ -226,7 +226,7 @@ help.specific ${command} <srcuser> <destuser> <bytes>
 }
 
 SITE TAKE {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_TAKE
 perms =siteop
@@ -235,7 +235,7 @@ help.specific ${command} <user> <bytes>
 }
 
 SITE USER {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_USER
 perms =gadmin =siteop
@@ -244,7 +244,7 @@ help.specific ${command} <user>
 }
 
 SITE USERS {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_USERS
 perms =siteop
@@ -252,7 +252,7 @@ help List all usernames added to the site
 }
 
 SITE WHO {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_WHO
 perms =siteop
@@ -260,7 +260,7 @@ help Show who's online
 }
 
 SITE SWHO {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_SWHO
 perms =siteop
@@ -268,7 +268,7 @@ help Show who's online
 }
 
 SITE BAN {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_BAN
 perms =ban =siteop
@@ -277,7 +277,7 @@ help.specific ${command} <user> <minutes> [reason]
 }
 
 SITE BANALL {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_BANALL
 perms =ban =siteop
@@ -286,7 +286,7 @@ help.specific ${command} <minutes> [reason]
 }
 
 SITE UNBAN {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_UNBAN
 perms =ban =siteop
@@ -295,7 +295,7 @@ help.specific ${command} <user>
 }
 
 SITE UNBANALL {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_UNBANALL
 perms =ban =siteop
@@ -304,7 +304,7 @@ help.specific ${command}
 }
 
 SITE BANS {
-plugin org.drftpd.commands.usermanagement
+plugin org.drftpd.master.commands.usermanagement
 class UserManagementHandler
 method doSITE_BANS
 perms =ban =siteop

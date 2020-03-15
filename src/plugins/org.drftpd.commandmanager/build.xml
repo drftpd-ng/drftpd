@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.commandmanager"
+<project name="org.drftpd.master.commandmanager"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">

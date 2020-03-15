@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.list;
+package org.drftpd.master.commands.list;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -25,16 +25,16 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Checksum;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.event.LoadPluginEvent;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.event.LoadPluginEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.*;
 import org.drftpd.slave.LightRemoteInode;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.MasterPluginUtils;
-import org.drftpd.vfs.*;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.MasterPluginUtils;
+import org.drftpd.master.vfs.*;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.*;
@@ -95,14 +95,14 @@ public class ListHandler extends CommandInterface {
 		// Load any additional element providers from plugins
 		try {
 			List<AddListElementsInterface> loadedListAddons =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.commands.list", "AddElements", "Class");
+				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.commands.list", "AddElements", "Class");
 			for (AddListElementsInterface listAddon : loadedListAddons) {
 				listAddon.initialize();
 				_listAddons.add(listAddon);
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.commands.list extension point 'AddElements', possibly the "+
-					"org.drftpd.commands.list extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for org.drftpd.master.commands.list extension point 'AddElements', possibly the "+
+					"org.drftpd.master.commands.list extension point definition has changed in the plugin.xml",e);
 		}
 	}
 
@@ -534,7 +534,7 @@ public class ListHandler extends CommandInterface {
 	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
 		try {
 			List<AddListElementsInterface> loadedListAddons =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.commands.list", "AddElements", "Class", event);
+				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.commands.list", "AddElements", "Class", event);
 			if (!loadedListAddons.isEmpty()) {
 				ArrayList<AddListElementsInterface> clonedListAddons = new ArrayList<>(_listAddons);
 				for (AddListElementsInterface listAddon : loadedListAddons) {
@@ -544,8 +544,8 @@ public class ListHandler extends CommandInterface {
 				_listAddons = clonedListAddons;
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.commands.list extension point 'AddElements'"+
-					", possibly the org.drftpd.commands.list extension point definition has changed in the plugin.xml",e);
+			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.commands.list extension point 'AddElements'"+
+					", possibly the org.drftpd.master.commands.list extension point definition has changed in the plugin.xml",e);
 		}
 	}
 	

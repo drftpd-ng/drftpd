@@ -14,20 +14,20 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.speedtest.announce;
+package org.drftpd.master.plugins.speedtest.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.Time;
-import org.drftpd.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.plugins.sitebot.AnnounceWriter;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.plugins.speedtest.event.SpeedTestEvent;
+import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
+import org.drftpd.master.plugins.sitebot.AnnounceWriter;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
+import org.drftpd.master.plugins.speedtest.event.SpeedTestEvent;
 import org.drftpd.slave.TransferStatus;
-import org.drftpd.util.ReplacerUtils;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.util.ReplacerUtils;
+import org.drftpd.master.vfs.VirtualFileSystem;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.ResourceBundle;

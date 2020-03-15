@@ -1,5 +1,5 @@
 request {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQUEST
 perms *
@@ -10,7 +10,7 @@ output source
 }
 
 requests {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQUESTS
 perms *
@@ -20,7 +20,7 @@ output source
 }
 
 reqfilled {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQFILLED
 perms *
@@ -31,7 +31,7 @@ output source
 }
 
 reqdel {
-plugin org.drftpd.commands.request
+plugin org.drftpd.master.commands.request
 class Request
 method doSITE_REQDELETE
 perms =request

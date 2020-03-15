@@ -1,61 +1,61 @@
 CDUP {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doCDUP
 perms *
 }
 
 CWD {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doCWD
 perms *
 }
 
 MKD {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doMKD
 perms *
 }
 
 PWD {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doPWD
 perms *
 }
 
 RMD {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doRMD
 perms *
 }
 
 RNFR {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doRNFR
 perms *
 }
 
 RNTO {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doRNTO
 perms *
 }
 
 DELE {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doDELE
 perms *
 }
 
 SITE WIPE {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doSITE_WIPE
 perms =wipe =siteop
@@ -65,7 +65,7 @@ help.specific Deletes files without removing credits. -r means delete recursivel
 }
 
 SITE CHOWN {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doSITE_CHOWN
 perms =siteop
@@ -75,10 +75,10 @@ help.specific Changes ownership of a file/directory.
 }
 
 #collides with SITE CHGRP defined by UserManagement
-#SITE\ CHGRP=org.drftpd.commands.Dir
+#SITE\ CHGRP=org.drftpd.master.commands.Dir
 
 SITE LINK {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doSITE_LINK
 perms =siteop
@@ -88,7 +88,7 @@ help.specific Creates a symbolic link.
 }
 
 SITE FIXSIZE {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doSITE_FIXSIZE
 perms =siteop
@@ -97,28 +97,28 @@ help.specific ${command}
 }
 
 XCRC {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doXCRC
 perms *
 }
 
 MDTM {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doMDTM
 perms *
 }
 
 SIZE {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doSIZE
 perms *
 }
 
 SITE FIXSLAVECOUNT {
-plugin org.drftpd.commands.dir
+plugin org.drftpd.master.commands.dir
 class Dir
 method doSITE_FIXSLAVECOUNT
 perms =siteop

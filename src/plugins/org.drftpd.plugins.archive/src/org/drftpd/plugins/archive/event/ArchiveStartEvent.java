@@ -14,10 +14,10 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.archive.event;
+package org.drftpd.master.plugins.archive.event;
 
-import org.drftpd.plugins.archive.archivetypes.ArchiveType;
-import org.drftpd.plugins.jobmanager.Job;
+import org.drftpd.master.plugins.archive.archivetypes.ArchiveType;
+import org.drftpd.master.plugins.jobmanager.Job;
 
 import java.util.ArrayList;
 

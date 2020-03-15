@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.sitemanagement;
+package org.drftpd.master.commands.sitemanagement;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -23,15 +23,15 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PropertyHelper;
-import org.drftpd.commandmanager.*;
-import org.drftpd.event.LoadPluginEvent;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.UnloadPluginEvent;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.event.LoadPluginEvent;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
 import org.drftpd.master.Session;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.InodeHandle;
 import org.java.plugin.JpfException;
 import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.PluginManager;

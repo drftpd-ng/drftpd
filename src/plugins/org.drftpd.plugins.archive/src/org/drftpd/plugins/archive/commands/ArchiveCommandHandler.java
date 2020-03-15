@@ -15,24 +15,24 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.archive.commands;
+package org.drftpd.master.plugins.archive.commands;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.commandmanager.*;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.archive.Archive;
-import org.drftpd.plugins.archive.DuplicateArchiveException;
-import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
-import org.drftpd.plugins.archive.archivetypes.ArchiveType;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.master.plugins.archive.Archive;
+import org.drftpd.master.plugins.archive.DuplicateArchiveException;
+import org.drftpd.master.plugins.archive.archivetypes.ArchiveHandler;
+import org.drftpd.master.plugins.archive.archivetypes.ArchiveType;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

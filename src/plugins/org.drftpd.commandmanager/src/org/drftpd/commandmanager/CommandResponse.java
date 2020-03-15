@@ -15,11 +15,11 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commandmanager;
+package org.drftpd.master.commandmanager;
 
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.KeyedMap;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.BufferedReader;
 import java.io.IOException;

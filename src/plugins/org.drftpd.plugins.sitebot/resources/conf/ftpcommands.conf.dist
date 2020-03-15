@@ -1,5 +1,5 @@
 SITE INVITE {
-plugin org.drftpd.plugins.sitebot
+plugin org.drftpd.master.plugins.sitebot
 class commands.UserHandler
 method doSITE_INVITE
 perms *
@@ -10,7 +10,7 @@ help.specific <botname> is required to use a secondary sitebot
 }
 
 SITE BLOWFISH {
-plugin org.drftpd.plugins.sitebot
+plugin org.drftpd.master.plugins.sitebot
 class commands.SiteBotManagement
 method doSITE_BLOWFISH
 perms *
@@ -21,7 +21,7 @@ help.specific <botname> is required to use a secondary sitebot
 }
 
 SITE GETKEY {
-plugin org.drftpd.plugins.sitebot
+plugin org.drftpd.master.plugins.sitebot
 class commands.SiteBotManagement
 method doSITE_BLOWFISH
 perms *
@@ -32,7 +32,7 @@ help.specific <botname> is required to use a secondary sitebot
 }
 
 SITE SETBLOWFISH {
-plugin org.drftpd.plugins.sitebot
+plugin org.drftpd.master.plugins.sitebot
 class commands.SiteBotManagement
 method doSITE_SETBLOWFISH
 perms *
@@ -43,7 +43,7 @@ help.specific <botname> is required to use a secondary sitebot
 }
 
 SITE SETKEY {
-plugin org.drftpd.plugins.sitebot
+plugin org.drftpd.master.plugins.sitebot
 class commands.SiteBotManagement
 method doSITE_SETBLOWFISH
 perms *
@@ -54,7 +54,7 @@ help.specific <botname> is required to use a secondary sitebot
 }
 
 SITE IRC {
-plugin org.drftpd.plugins.sitebot
+plugin org.drftpd.master.plugins.sitebot
 class commands.SiteBotManagement
 method doSITE_IRC
 perms =siteop

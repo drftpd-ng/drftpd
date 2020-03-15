@@ -14,16 +14,16 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.permissions.denydownload;
+package org.drftpd.master.permissions.denydownload;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
+import org.drftpd.master.commandmanager.*;
 import org.drftpd.master.config.ConfigInterface;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
-import org.drftpd.vfs.LinkHandle;
-import org.drftpd.vfs.ObjectNotValidException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
+import org.drftpd.master.vfs.LinkHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
 
 import java.io.FileNotFoundException;
 

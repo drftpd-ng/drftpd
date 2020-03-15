@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.speedtest.net.slave;
+package org.drftpd.master.protocol.speedtest.net.slave;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -33,10 +33,10 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.protocol.slave.AbstractHandler;
-import org.drftpd.protocol.slave.SlaveProtocolCentral;
-import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
-import org.drftpd.protocol.speedtest.net.common.async.AsyncResponseSpeedTestInfo;
+import org.drftpd.master.protocol.slave.AbstractHandler;
+import org.drftpd.master.protocol.slave.SlaveProtocolCentral;
+import org.drftpd.master.protocol.speedtest.net.common.SpeedTestInfo;
+import org.drftpd.master.protocol.speedtest.net.common.async.AsyncResponseSpeedTestInfo;
 import org.drftpd.slave.Slave;
 import org.drftpd.slave.async.AsyncCommandArgument;
 import org.drftpd.slave.async.AsyncResponse;

@@ -15,20 +15,20 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.transferstatistics;
+package org.drftpd.master.commands.transferstatistics;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandInterface;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.usermanager.User;
-import org.drftpd.util.GroupPosition;
-import org.drftpd.util.ReplacerUtils;
+import org.drftpd.master.commandmanager.CommandInterface;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.util.GroupPosition;
+import org.drftpd.master.util.ReplacerUtils;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.IOException;

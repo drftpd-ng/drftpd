@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.prebw;
+package org.drftpd.master.plugins.prebw;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,21 +24,21 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.Bytes;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.dataconnection.DataConnectionHandler;
-import org.drftpd.commands.pre.Pre;
-import org.drftpd.event.ReloadEvent;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.master.commands.pre.Pre;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.BaseFtpConnection;
 import org.drftpd.master.ConnectionManager;
 import org.drftpd.master.TransferState;
-import org.drftpd.plugins.prebw.event.PREBWEvent;
-import org.drftpd.sections.SectionInterface;
+import org.drftpd.master.plugins.prebw.event.PREBWEvent;
+import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.slave.Transfer;
 import org.drftpd.slave.TransferStatus;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.util.*;

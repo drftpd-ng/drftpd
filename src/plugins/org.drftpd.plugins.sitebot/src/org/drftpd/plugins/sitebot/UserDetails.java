@@ -15,18 +15,18 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.sitebot;
+package org.drftpd.master.plugins.sitebot;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.commands.UserManagement;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
+import org.drftpd.master.commands.UserManagement;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
 
 import java.util.ArrayList;
 import java.util.List;

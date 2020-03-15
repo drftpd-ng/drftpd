@@ -1,5 +1,5 @@
 rescan {
-plugin org.drftpd.commands.zipscript
+plugin org.drftpd.master.commands.zipscript
 class ZipscriptCommands
 method doSITE_RESCAN
 perms *

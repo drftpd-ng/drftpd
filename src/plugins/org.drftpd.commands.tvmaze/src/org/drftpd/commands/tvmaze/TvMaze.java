@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.tvmaze;
+package org.drftpd.master.commands.tvmaze;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,15 +23,15 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.*;
-import org.drftpd.commands.tvmaze.metadata.TvEpisode;
-import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commandmanager.*;
+import org.drftpd.master.commands.tvmaze.metadata.TvEpisode;
+import org.drftpd.master.commands.tvmaze.metadata.TvMazeInfo;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.plugins.sitebot.SiteBot;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.vfs.DirectoryHandle;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

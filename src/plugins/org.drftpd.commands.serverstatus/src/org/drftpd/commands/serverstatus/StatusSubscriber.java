@@ -1,12 +1,12 @@
-package org.drftpd.commands.serverstatus;
+package org.drftpd.master.commands.serverstatus;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.event.SlaveEvent;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.util.CommonPluginUtils;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.KeyedMap;
+import org.drftpd.master.event.SlaveEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.util.CommonPluginUtils;
 
 public class StatusSubscriber {
 	private static StatusSubscriber _subscriber = null;

@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.trialmanager;
+package org.drftpd.master.plugins.trialmanager;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -24,10 +24,10 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
-import org.drftpd.event.ReloadEvent;
+import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.misc.CaseInsensitiveHashMap;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.util.PluginObjectContainer;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.util.PluginObjectContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,13 +100,13 @@ public class TrialManager implements PluginInterface {
 		CaseInsensitiveHashMap<String, Class<TrialType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		try {
-			List<PluginObjectContainer<TrialType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.plugins.trialmanager", "TrialType", "ClassName", false);
+			List<PluginObjectContainer<TrialType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.plugins.trialmanager", "TrialType", "ClassName", false);
 			for (PluginObjectContainer<TrialType> container : loadedTypes) {
 				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
 				typesMap.put(filterName, container.getPluginClass());
 			}
 		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.plugins.trialmanager extension point 'TrialType'",e);
+			logger.error("Failed to load plugins for org.drftpd.master.plugins.trialmanager extension point 'TrialType'",e);
 		}
 		_typesMap = typesMap;		
     }

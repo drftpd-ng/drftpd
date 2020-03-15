@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.archive.archivetypes;
+package org.drftpd.master.plugins.archive.archivetypes;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,18 +23,18 @@ import org.apache.logging.log4j.LogManager;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
 import org.drftpd.PropertyHelper;
-import org.drftpd.exceptions.FileExistsException;
-import org.drftpd.exceptions.ObjectNotFoundException;
+import org.drftpd.master.exceptions.FileExistsException;
+import org.drftpd.master.exceptions.ObjectNotFoundException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.plugins.archive.Archive;
-import org.drftpd.plugins.archive.DuplicateArchiveException;
-import org.drftpd.plugins.jobmanager.Job;
-import org.drftpd.plugins.jobmanager.JobManager;
-import org.drftpd.sections.SectionInterface;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.ObjectNotValidException;
-import org.drftpd.vfs.VirtualFileSystem;
+import org.drftpd.master.plugins.archive.Archive;
+import org.drftpd.master.plugins.archive.DuplicateArchiveException;
+import org.drftpd.master.plugins.jobmanager.Job;
+import org.drftpd.master.plugins.jobmanager.JobManager;
+import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.master.vfs.VirtualFileSystem;
 
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;

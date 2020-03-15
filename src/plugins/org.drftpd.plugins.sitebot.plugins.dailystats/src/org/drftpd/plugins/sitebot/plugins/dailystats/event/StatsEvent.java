@@ -14,11 +14,11 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.sitebot.plugins.dailystats.event;
+package org.drftpd.master.plugins.sitebot.plugins.dailystats.event;
 
 import java.util.Collection;
 
-import org.drftpd.plugins.sitebot.plugins.dailystats.UserStats;
+import org.drftpd.master.plugins.sitebot.plugins.dailystats.UserStats;
 
 /**
  * @author djb61

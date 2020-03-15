@@ -1,4 +1,4 @@
-package org.drftpd.plugins.nukefilter;
+package org.drftpd.master.plugins.nukefilter;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -7,7 +7,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
 import org.drftpd.PluginInterface;
-import org.drftpd.event.ReloadEvent;
+import org.drftpd.master.event.ReloadEvent;
 
 /**
  * @author phew

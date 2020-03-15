@@ -1,4 +1,4 @@
-package org.drftpd.slaveselection.filter.stripefiles;
+package org.drftpd.master.slaveselection.filter.stripefiles;
 
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
@@ -6,14 +6,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.drftpd.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.slaveselection.filter.Filter;
-import org.drftpd.slaveselection.filter.ScoreChart;
-import org.drftpd.usermanager.User;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandleInterface;
+import org.drftpd.master.slaveselection.filter.Filter;
+import org.drftpd.master.slaveselection.filter.ScoreChart;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandleInterface;
 
 /**
  * @author scitz0

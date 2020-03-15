@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="org.drftpd.vfs.index.lucene.extensions.flac"
+<project name="org.drftpd.master.vfs.index.lucene.extensions.flac"
          default="build">
 	<property name="plugin.family" value="plugins/master" />
 	<target name="build">

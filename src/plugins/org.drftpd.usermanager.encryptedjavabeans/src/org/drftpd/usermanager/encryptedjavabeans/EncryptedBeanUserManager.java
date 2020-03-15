@@ -1,4 +1,4 @@
-package org.drftpd.usermanager.encryptedjavabeans;
+package org.drftpd.master.usermanager.encryptedjavabeans;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -6,12 +6,12 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.usermanager.NoSuchUserException;
-import org.drftpd.usermanager.User;
-import org.drftpd.usermanager.UserFileException;
-import org.drftpd.usermanager.javabeans.BeanUser;
-import org.drftpd.usermanager.javabeans.BeanUserManager;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.User;
+import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.usermanager.javabeans.BeanUser;
+import org.drftpd.master.usermanager.javabeans.BeanUserManager;
 
 import java.lang.ref.SoftReference;
 import java.util.Properties;

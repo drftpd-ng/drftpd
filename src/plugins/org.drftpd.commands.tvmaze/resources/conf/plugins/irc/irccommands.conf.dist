@@ -1,5 +1,5 @@
 tv {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_TV
 perms *
@@ -10,7 +10,7 @@ output source
 }
 
 createtv {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_CREATETV
 perms =siteop
@@ -21,7 +21,7 @@ output source
 }
 
 removetv {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_REMOVETV
 perms =siteop
@@ -32,7 +32,7 @@ output source
 }
 
 tvqueue {
-plugin org.drftpd.commands.tvmaze
+plugin org.drftpd.master.commands.tvmaze
 class TvMaze
 method doSITE_TVQUEUE
 perms =siteop

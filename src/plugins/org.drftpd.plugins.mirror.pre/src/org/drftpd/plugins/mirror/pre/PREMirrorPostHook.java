@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.mirror.pre;
+package org.drftpd.master.plugins.mirror.pre;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -23,17 +23,17 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.GlobalContext;
-import org.drftpd.commandmanager.CommandRequest;
-import org.drftpd.commandmanager.CommandResponse;
-import org.drftpd.commandmanager.PostHookInterface;
-import org.drftpd.commandmanager.StandardCommandManager;
-import org.drftpd.commands.pre.Pre;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.event.ReloadEvent;
-import org.drftpd.event.UnloadPluginEvent;
-import org.drftpd.plugins.mirror.MirrorUtils;
-import org.drftpd.util.CommonPluginUtils;
-import org.drftpd.vfs.DirectoryHandle;
+import org.drftpd.master.commandmanager.CommandRequest;
+import org.drftpd.master.commandmanager.CommandResponse;
+import org.drftpd.master.commandmanager.PostHookInterface;
+import org.drftpd.master.commandmanager.StandardCommandManager;
+import org.drftpd.master.commands.pre.Pre;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.event.UnloadPluginEvent;
+import org.drftpd.master.plugins.mirror.MirrorUtils;
+import org.drftpd.master.util.CommonPluginUtils;
+import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

@@ -15,18 +15,18 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.config.hooks;
+package org.drftpd.master.commands.config.hooks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.config.ConfigHandler;
-import org.drftpd.dynamicdata.Key;
-import org.drftpd.dynamicdata.KeyedMap;
-import org.drftpd.permissions.GlobPathPermission;
-import org.drftpd.permissions.MessagePathPermission;
-import org.drftpd.permissions.Permission;
+import org.drftpd.master.config.ConfigHandler;
+import org.drftpd.master.common.dynamicdata.Key;
+import org.drftpd.master.common.dynamicdata.KeyedMap;
+import org.drftpd.master.permissions.GlobPathPermission;
+import org.drftpd.master.permissions.MessagePathPermission;
+import org.drftpd.master.permissions.Permission;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -15,24 +15,24 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.zipscript.flac.vfs;
+package org.drftpd.master.commands.zipscript.flac.vfs;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.drftpd.GlobalContext;
-import org.drftpd.dynamicdata.KeyNotFoundException;
-import org.drftpd.exceptions.NoAvailableSlaveException;
-import org.drftpd.exceptions.SlaveUnavailableException;
+import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.exceptions.NoAvailableSlaveException;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.RemoteSlave;
-import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
-import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
-import org.drftpd.protocol.zipscript.flac.common.async.AsyncResponseFlacInfo;
-import org.drftpd.protocol.zipscript.flac.master.ZipscriptFlacIssuer;
+import org.drftpd.master.protocol.zipscript.flac.common.FlacInfo;
+import org.drftpd.master.protocol.zipscript.flac.common.VorbisTag;
+import org.drftpd.master.protocol.zipscript.flac.common.async.AsyncResponseFlacInfo;
+import org.drftpd.master.protocol.zipscript.flac.master.ZipscriptFlacIssuer;
 import org.drftpd.slave.RemoteIOException;
-import org.drftpd.vfs.DirectoryHandle;
-import org.drftpd.vfs.FileHandle;
-import org.drftpd.vfs.InodeHandle;
+import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.FileHandle;
+import org.drftpd.master.vfs.InodeHandle;
 
 /**
  * @author norox
