@@ -86,9 +86,6 @@ public class SSLGetContext {
 		for (String protocol : protocols) {
 			logger.info(protocol);
 		}
-/*		for (String cipher : ciphers) {
-			logger.info(cipher);
-		}
-*/		return ctx;
+		return ctx;
 	}
 }
