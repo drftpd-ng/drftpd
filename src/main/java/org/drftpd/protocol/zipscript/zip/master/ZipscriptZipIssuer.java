@@ -35,7 +35,7 @@ public class ZipscriptZipIssuer extends AbstractIssuer {
 
 	public String issueZipCRCToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipcrc", path);
+		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipCRC", path);
 		rslave.sendCommand(ac);
 
 		return index;
@@ -43,7 +43,7 @@ public class ZipscriptZipIssuer extends AbstractIssuer {
 
 	public String issueZipDizInfoToSlave(RemoteSlave rslave, String path)throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipdiz", path);
+		AsyncCommandArgument ac = new AsyncCommandArgument(index, "zipDiz", path);
 		rslave.sendCommand(ac);
 
 		return index;

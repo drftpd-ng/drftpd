@@ -72,7 +72,7 @@ public class ZipscriptZipHandler extends AbstractHandler {
 				checkZipFile(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
 	}
 	
-	public AsyncResponse handleZipDizInfo(AsyncCommandArgument ac) {
+	public AsyncResponse handleZipDiz(AsyncCommandArgument ac) {
 		return new AsyncResponseDizInfo(ac.getIndex(),
 				getDizInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));
 	}

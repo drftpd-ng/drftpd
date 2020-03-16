@@ -17,9 +17,8 @@
  */
 package org.drftpd.commands.zipscript.zip.vfs;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.commands.zipscript.zip.ZipTools;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
@@ -35,19 +34,23 @@ import org.drftpd.protocol.zipscript.zip.common.async.AsyncResponseDizInfo;
 import org.drftpd.protocol.zipscript.zip.master.ZipscriptZipIssuer;
 import org.drftpd.slave.slave.RemoteIOException;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 /**
  * @author djb61
  * @version $Id$
  */
 public class ZipscriptVFSDataZip {
 
+	private static final Logger logger = LogManager.getLogger(ZipscriptVFSDataZip.class);
 	private DirectoryHandle _dir;
 
 	public ZipscriptVFSDataZip(DirectoryHandle dir) {
 		_dir = dir;
 	}
 
-	public DizInfo getDizInfo() throws IOException, FileNotFoundException, NoAvailableSlaveException {
+	public DizInfo getDizInfo() throws IOException, NoAvailableSlaveException {
 		try {
 			return getDizInfoFromInode(_dir);
 		} catch (KeyNotFoundException e1) {

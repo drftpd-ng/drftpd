@@ -82,7 +82,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 		_keyPrefix = this.getClass().getName()+".";
 	}
 
-	@CommandHook(commands = "doSTOR", priority = 13, type = HookType.PRE)
+	@CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
 	public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
 		// removing this in-case of a bad transfer
 		/*if (response.getCode() != 226) {
@@ -156,7 +156,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 		}
 	}
 
-	@CommandHook(commands = "doSTOR", priority = 14, type = HookType.PRE)
+	@CommandHook(commands = "doSTOR", priority = 14, type = HookType.POST)
 	public void doZipscriptSTORDizStatsHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 226) {
 			// STOR failed, abort stats
@@ -169,7 +169,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 		}
 	}
 
-	@CommandHook(commands = "doCWD", priority = 13, type = HookType.PRE)
+	@CommandHook(commands = "doCWD", priority = 13, type = HookType.POST)
 	public void doZipscriptCWDDizInfoHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
 			// CWD failed, abort diz info
@@ -182,17 +182,14 @@ public class ZipscriptZipPostHook extends ZipTools {
 				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
 				DizInfo dizInfo = zipData.getDizInfo();
 				response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()), StandardCharsets.ISO_8859_1)); 
-			} catch (FileNotFoundException e) {
+			} catch (IOException | NoAvailableSlaveException e) {
 				//Error fetching .diz, ignore
-			} catch (IOException e) {
-				//Error fetching .diz, ignore
-			} catch (NoAvailableSlaveException e) {
-				//Error fetching .diz, ignore
+				logger.error(e);
 			}
 		}
 	}
 
-	@CommandHook(commands = "doCWD", priority = 14, type = HookType.PRE)
+	@CommandHook(commands = "doCWD", priority = 14, type = HookType.POST)
 	public void doZipscriptCWDDizStatsHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
 			// CWD failed, abort stats
@@ -205,7 +202,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 		}
 	}
 
-	@CommandHook(commands = "doDELE", priority = 13, type = HookType.PRE)
+	@CommandHook(commands = "doDELE", priority = 13, type = HookType.POST)
 	public void doZipscriptDELEDizCleanupHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
 			// DELE failed, abort info
@@ -237,7 +234,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 		}
 	}
 
-	@CommandHook(commands = "doSITE_WIPE", priority = 13, type = HookType.PRE)
+	@CommandHook(commands = "doSITE_WIPE", priority = 13, type = HookType.POST)
 	public void doZipscriptWIPEDizCleanupHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 200) {
 			// WIPE failed, abort cleanup
