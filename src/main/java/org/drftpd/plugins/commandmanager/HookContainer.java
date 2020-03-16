@@ -23,8 +23,8 @@ import java.lang.reflect.Method;
  * @version $Id$
  */
 public class HookContainer<T> {
-	private Method _method = null;
-	private T _interfaceInstance = null;
+	private Method _method;
+	private T _interfaceInstance;
 	
 	public HookContainer(Method m, T interfaceInstance) {
 		_method = m;

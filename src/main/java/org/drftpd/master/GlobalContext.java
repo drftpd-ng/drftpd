@@ -24,6 +24,7 @@ import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.CommandHook;
 import org.drftpd.master.commandmanager.CommandManagerInterface;
 import org.drftpd.master.common.PropertyHelper;
 import org.drftpd.master.config.ConfigManager;
@@ -47,12 +48,17 @@ import org.drftpd.master.common.util.PortRange;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import javax.net.ssl.SSLContext;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -95,6 +101,8 @@ public class GlobalContext {
 
 	private static AsyncThreadSafeEventService eventService = new AsyncThreadSafeEventService();
 
+	private static Set<Method> hooksMethods;
+
 	public static final String VERSION = "DrFTPD @JRI";
 
 	public void reloadFtpConfig() {
@@ -107,6 +115,15 @@ public class GlobalContext {
 	 *
 	 */
 	protected GlobalContext() {
+		Reflections reflections = new Reflections(new ConfigurationBuilder()
+				.setUrls(ClasspathHelper.forPackage("org.drftpd"))
+				.setScanners(new MethodAnnotationsScanner()));
+
+		hooksMethods = reflections.getMethodsAnnotatedWith(CommandHook.class);
+	}
+
+	public static Set<Method> getHooksMethods() {
+		return hooksMethods;
 	}
 
 	private void loadSlaveSelectionManager(Properties cfg) {
@@ -176,7 +193,7 @@ public class GlobalContext {
 		return _shutdownMessage != null;
 	}
 
-	public CommandManagerInterface getCommandManager() {
+	public CommandManagerInterface createCommandManager() {
 		Properties cfg = GlobalContext.getConfig().getMainProperties();
 		String desiredCm = PropertyHelper.getProperty(cfg, "commandmanager");
 		try {
@@ -197,8 +214,9 @@ public class GlobalContext {
 	private void loadSectionManager(Properties cfg) {
 		String desiredSm = PropertyHelper.getProperty(cfg, "sectionmanager");
 		try {
-			_sectionManager = null;
-			// TODO @JRI PLUG
+			Class<?> aClass = Class.forName(desiredSm);
+			_sectionManager = (SectionManagerInterface) aClass.getConstructor().newInstance();
+			// TODO [DONE] @JRI Section Manager
 		} catch (Exception e) {
 			throw new FatalException("Cannot create instance of SectionManager, check 'sectionmanager' in config file", e);
 		}
@@ -445,7 +463,7 @@ public class GlobalContext {
 		return eventService;
 	}
 
-
+	/*
 	@EventSubscriber
 	public synchronized void onUnloadPluginEvent(Object event) {
 
@@ -455,4 +473,5 @@ public class GlobalContext {
 	public synchronized void onLoadPluginEvent(Object event) {
 
 	}
+	*/
 }

@@ -17,9 +17,8 @@
  */
 package org.drftpd.plugins.commandmanager;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.commandmanager.CommandManagerInterface;
@@ -40,7 +39,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -188,8 +186,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 	public CommandResponseInterface execute(CommandRequestInterface request) {
 		CommandInstanceContainer commandContainer = _commands.get(request.getCommand());
 		if (commandContainer == null) {
-			CommandResponseInterface cmdFailed = genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
-			return cmdFailed;
+			return genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
 		}
 		request.setProperties(request.getSession().getCommands().get(request.getCommand()));
 		CommandResponseInterface response = null;
@@ -214,8 +211,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			if (helpString == null) {
 				response.addComment("Bug your siteop to add help for the \""
 						+ request.getCommand() + "\" command");
-			}
-			else {
+			} else {
 				ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("command", request.getCommand().toUpperCase());
 				try {

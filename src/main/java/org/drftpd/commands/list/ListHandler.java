@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.commands.zipscript.list.ZipscriptListStatusBarInterface;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.*;
 import org.drftpd.master.master.*;
@@ -94,6 +95,18 @@ public class ListHandler extends CommandInterface {
 
 		// Load any additional element providers from plugins
 		// @TODO JRI
+		try {
+			Set<Class<? extends AddListElementsInterface>> addListElements = new Reflections("org.drftpd")
+					.getSubTypesOf(AddListElementsInterface.class);
+			for (Class<? extends AddListElementsInterface> addListElement : addListElements) {
+				AddListElementsInterface listAddon = addListElement.getConstructor().newInstance();
+				listAddon.initialize();
+				_listAddons.add(listAddon);
+			}
+		} catch (Exception e) {
+			logger.error("Failed to load plugins for org.drftpd.master.commands.list extension point 'AddElements', possibly the "+
+					"org.drftpd.master.commands.list extension point definition has changed in the plugin.xml",e);
+		}
 
 		/*
 		try {

@@ -229,7 +229,7 @@ public class ConnectionManager {
 
 	private void initCommandManager() {
 		if (_commandManager == null) {
-			_commandManager = getGlobalContext().getCommandManager();
+			_commandManager = getGlobalContext().createCommandManager();
 			if (_commandManager != null) {
 				_commandManager.initialize(getCommands(), themeDir);
 			}

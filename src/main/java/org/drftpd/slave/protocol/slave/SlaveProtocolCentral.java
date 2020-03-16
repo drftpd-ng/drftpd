@@ -149,25 +149,6 @@ public class SlaveProtocolCentral {
 					+" extension point definition has changed in the plugin.xml",e);
 		}
 
-		/*
-		try {
-			List<PluginObjectContainer<AbstractHandler>> loadedHandlers =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "slave", "Handler", "Class", "Method",
-						CONSTRUCTORPARMS, new Object[] { this }, METHODPARMS);
-			for (PluginObjectContainer<AbstractHandler> container : loadedHandlers) {
-				String protocolName = 
-					container.getPluginExtension().getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
-				String name = container.getPluginExtension().getParameter("Name").valueAsString();
-				if (!protocols.contains(protocolName)) {
-					protocols.add(protocolName);
-				}
-				handlers.put(name, new HandlerWrapper(container.getPluginObject(), container.getPluginMethod()));
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for slave extension point 'Handler', possibly the slave"
-					+" extension point definition has changed in the plugin.xml",e);
-		}*/
-
 		_handlersMap = Collections.unmodifiableMap(handlers);
 		_protocols = Collections.unmodifiableList(protocols);
 		

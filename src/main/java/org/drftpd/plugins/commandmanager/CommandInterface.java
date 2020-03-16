@@ -21,6 +21,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
 import org.drftpd.master.commandmanager.CommandResponseInterface;
@@ -28,12 +30,16 @@ import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author djb61
@@ -57,6 +63,27 @@ public abstract class CommandInterface {
 	public synchronized void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		TreeMap<Integer,HookContainer<PreHookInterface>> preHooks = new TreeMap<>();
 		TreeMap<Integer,HookContainer<PostHookInterface>> postHooks = new TreeMap<>();
+		Set<Method> hooksMethods = GlobalContext.getHooksMethods();
+		try {
+			for (Method annotatedMethod : hooksMethods) {
+				Class<?> declaringClass = annotatedMethod.getDeclaringClass();
+				CommandHook annotation = annotatedMethod.getAnnotation(CommandHook.class);
+				int priority = annotation.priority();
+				String[] commands = annotation.commands();
+				boolean handleClass = Arrays.stream(commands).anyMatch(method::equals);
+				if (!handleClass) continue;
+
+				Object hookClass = declaringClass.getConstructor().newInstance();
+				HookType type = annotation.type();
+				if (type.equals(HookType.PRE)) {
+					preHooks.put(priority, new HookContainer(annotatedMethod, hookClass));
+				} else {
+					postHooks.put(priority, new HookContainer(annotatedMethod, hookClass));
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
+		}
 
 		// TODO @JRI Plug hooks
 		// Populate all available pre hooks
@@ -107,6 +134,7 @@ public abstract class CommandInterface {
 	}
 
 	protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
+		String requestCommand = request.getCommand();
 		for (HookContainer<PostHookInterface> hook : _postHooks.values()) {
 			Method m = hook.getMethod();
 			try {
@@ -146,8 +174,7 @@ public abstract class CommandInterface {
 		return _featReplies;
 	}
 
-	public void addTextToResponse(CommandResponse response, String file)
-	throws FileNotFoundException, IOException {
+	public void addTextToResponse(CommandResponse response, String file) throws IOException {
 		BufferedReader reader = null;
 		try {
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.ISO_8859_1));
@@ -159,24 +186,16 @@ public abstract class CommandInterface {
 		}
 	}
 
-	@EventSubscriber
-	public synchronized void onUnloadPluginEvent(Object event) {
-
-	}
-
 	protected boolean checkCustomPermissionWithPrimaryGroup(User targetUser, CommandRequest request, String permissionName, String defaultPermission) {
 		if (checkCustomPermission(request, permissionName, defaultPermission)) {
 			return false;
 		}
 		try {
 			return targetUser.getGroup().equals(request.getUserObject().getGroup());
-		} catch (NoSuchUserException e) {
+		} catch (NoSuchUserException | UserFileException e) {
 			logger.warn("",e);
 			return false;
-		} catch (UserFileException e) {
-			logger.warn("",e);
-			return false;
-		}		
+		}
 	}
 
 	protected boolean checkCustomPermission(CommandRequest request, String permissionName,

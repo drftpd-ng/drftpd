@@ -28,7 +28,7 @@ import org.drftpd.slave.async.AsyncCommandArgument;
 public class IMDBIssuer extends AbstractIssuer {
 	public String issueNFOFileToSlave(RemoteSlave rslave, String path) throws SlaveUnavailableException {
 		String index = rslave.fetchIndex();
-		AsyncCommandArgument ac = new AsyncCommandArgument(index, "imdbfile", path);
+		AsyncCommandArgument ac = new AsyncCommandArgument(index, "iMDBFile", path);
 		rslave.sendCommand(ac);
 
 		return index;

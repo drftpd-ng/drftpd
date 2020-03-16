@@ -174,7 +174,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
 		// Load commands config and get/initialise a command manager with them
 		loadCommands();
-		_commandManager = GlobalContext.getGlobalContext().getCommandManager();
+		_commandManager = GlobalContext.getGlobalContext().createCommandManager();
 		_commandManager.initialize(_cmds, themeDir);
 
 		// Initialise the thread pool for executing commands
