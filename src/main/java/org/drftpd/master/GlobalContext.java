@@ -59,6 +59,7 @@ import java.io.IOException;
 import java.io.LineNumberReader;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author mog
@@ -216,7 +217,9 @@ public class GlobalContext {
                     PluginDependencies annotation = plugin.getAnnotation(PluginDependencies.class);
                     List<Class<? extends PluginInterface>> dependencies = annotation != null ?
                             Arrays.asList(annotation.refs()) : new ArrayList<>();
-                    if (_plugins.containsAll(dependencies) && !alreadyResolved.contains(plugin.getName())) {
+                    List<String> depNames = dependencies.stream().map(Class::getName).collect(Collectors.toList());
+                    boolean alreadyInstantiate = alreadyResolved.contains(plugin.getName());
+                    if (alreadyResolved.containsAll(depNames) && !alreadyInstantiate) {
                         PluginInterface pluginInterface = plugin.getConstructor().newInstance();
                         pluginInterface.startPlugin();
                         _plugins.add(pluginInterface);

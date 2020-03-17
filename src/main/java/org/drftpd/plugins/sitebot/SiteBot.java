@@ -192,13 +192,6 @@ public class SiteBot implements ReplyConstants, Runnable {
             throw new FatalException("commands.full has an invalid value in irc.conf");
         }
 
-
-        // Find and start announcers
-        loadAnnouncers(_confDir);
-
-        // Find all Bot Listeners
-        loadListeners();
-
         try {
             setEncoding(_config.getCharset());
             connect();
