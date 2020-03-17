@@ -44,7 +44,10 @@ public class SiteBotWrapper implements PluginInterface {
 			logger.debug("No configuration found for the SiteBot, skipping initialization");
 			return;
 		}
-		
+
+		boolean isActivated = cfg.getProperty("activated").equalsIgnoreCase("true");
+		if (!isActivated) return;
+
 		SiteBot bot = new SiteBot("irc");
 		new Thread(bot).start();
 		_bots.add(bot);

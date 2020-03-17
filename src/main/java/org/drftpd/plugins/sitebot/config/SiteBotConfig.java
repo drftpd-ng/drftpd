@@ -31,6 +31,8 @@ import java.util.Properties;
  */
 public class SiteBotConfig {
 
+	private boolean _activated;
+
 	private boolean _autoNick;
 
 	private boolean _blowfishEnabled;
@@ -127,6 +129,7 @@ public class SiteBotConfig {
 		}
 		_connectDelay = Long.valueOf(cfg.getProperty("connect.delay")) * 1000;
 		_messageDelay = Long.valueOf(cfg.getProperty("message.sendDelay"));
+		_activated = cfg.getProperty("activated").equalsIgnoreCase("true");
 		_autoNick = cfg.getProperty("nick.auto").equalsIgnoreCase("true");
 		_name = cfg.getProperty("name");
 		_nick = cfg.getProperty("nick");
@@ -186,6 +189,10 @@ public class SiteBotConfig {
 			_commandsQueue = true;
 		}
 		_maxLineLength = Integer.parseInt(cfg.getProperty("line.length.max", "512"));
+	}
+
+	public boolean isActivated() {
+		return _activated;
 	}
 
 	public boolean getAutoNick() {
