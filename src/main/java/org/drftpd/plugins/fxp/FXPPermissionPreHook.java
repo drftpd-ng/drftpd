@@ -14,7 +14,8 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.permissions.fxp;
+package org.drftpd.plugins.fxp;
+
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.common.CommandHook;
 import org.drftpd.common.HookType;
@@ -32,7 +33,7 @@ import java.net.InetAddress;
  * @author fr0w
  * @version $Id$
  */
-public class FXPPermissionPreHook  {
+public class FXPPermissionPreHook {
 
 	@CommandHook(commands = "doRETR", priority = 3, type = HookType.PRE)
 	public CommandRequestInterface checkDownloadFXPPerm(CommandRequest request) {
@@ -61,5 +62,4 @@ public class FXPPermissionPreHook  {
 		
 		return request;
 	}
-
 }

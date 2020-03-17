@@ -24,7 +24,7 @@ import org.drftpd.master.common.Bytes;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
-import org.drftpd.permissions.CreditLimitPathPermission;
+import org.drftpd.permissions.stats.CreditLimitPathPermission;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;

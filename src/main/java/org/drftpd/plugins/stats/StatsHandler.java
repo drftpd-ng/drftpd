@@ -25,8 +25,8 @@ import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.config.ConfigHandler;
 import org.drftpd.master.master.config.ConfigInterface;
 import org.drftpd.master.permissions.Permission;
-import org.drftpd.permissions.CreditLimitPathPermission;
-import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.permissions.stats.CreditLimitPathPermission;
+import org.drftpd.permissions.stats.RatioPathPermission;
 
 
 import java.util.ArrayList;
@@ -94,7 +94,7 @@ public class StatsHandler extends ConfigHandler {
 		String pString = "";
 		String bString = "";
 		int direction;
-		String period = null;
+		String period;
 		long bytes;
 		Collection<String> coll = null;
 

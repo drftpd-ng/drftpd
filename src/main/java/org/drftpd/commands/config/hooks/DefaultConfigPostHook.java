@@ -28,26 +28,28 @@ import java.util.Collection;
 
 /**
  * PostHooks that implements some of the functionalities "required" by the directives in perms.conf
+ *
  * @author fr0w
  * @version $Id$
  */
-public class DefaultConfigPostHook  {
+public class DefaultConfigPostHook {
 
-	@CommandHook(commands = "doCWD", priority = 2, type = HookType.POST)
-	public void showMessageForPath(CommandRequest request, CommandResponse response) {
-		Collection<MessagePathPermission> msgPath = GlobalContext.getConfig().getKeyedMap().getObject(DefaultConfigHandler.MSGPATH, null);
-		if (msgPath == null || response.getCurrentDirectory() == null) {
-			return;
-		}
-		for (MessagePathPermission perm : msgPath) {
-			if (perm.checkPath(response.getCurrentDirectory())) {
-				if (perm.check(request.getSession().getUserNull(request.getUser()))) {
-					for (String line : perm.getMessage()) {
-						response.addComment(line);
-					}
-				}
-			}
-		}		
-	}
+    @CommandHook(commands = "doCWD", priority = 2, type = HookType.POST)
+    public void showMessageForPath(CommandRequest request, CommandResponse response) {
+        Collection<MessagePathPermission> msgPath = GlobalContext.getConfig().getKeyedMap()
+                .getObject(DefaultConfigHandler.MSGPATH, null);
+        if (msgPath == null || response.getCurrentDirectory() == null) {
+            return;
+        }
+        for (MessagePathPermission perm : msgPath) {
+            if (perm.checkPath(response.getCurrentDirectory())) {
+                if (perm.check(request.getSession().getUserNull(request.getUser()))) {
+                    for (String line : perm.getMessage()) {
+                        response.addComment(line);
+                    }
+                }
+            }
+        }
+    }
 
 }

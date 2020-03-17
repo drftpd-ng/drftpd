@@ -29,8 +29,8 @@ import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.permissions.CreditLimitPathPermission;
-import org.drftpd.permissions.RatioPathPermission;
+import org.drftpd.permissions.stats.CreditLimitPathPermission;
+import org.drftpd.permissions.stats.RatioPathPermission;
 import org.drftpd.plugins.stats.metadata.StatsUserData;
 
 import java.util.ArrayList;

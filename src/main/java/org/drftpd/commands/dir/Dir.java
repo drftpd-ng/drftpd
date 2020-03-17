@@ -262,9 +262,7 @@ public class Dir extends CommandInterface {
 					.getTargetDirectory(session.getUserNull(request.getUser()))
 					.getNonExistentDirectoryHandle(dirName);
 				}
-			} catch (FileNotFoundException e1) {
-				return new CommandResponse(550, "Parent directory does not exist");
-			} catch (ObjectNotValidException e) {
+			} catch (FileNotFoundException | ObjectNotValidException e1) {
 				return new CommandResponse(550, "Parent directory does not exist");
 			}
 			DirectoryHandle newDir;
@@ -280,8 +278,9 @@ public class Dir extends CommandInterface {
 				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 			}
 
-			GlobalContext.getEventService().publishAsync(new DirectoryFtpEvent(
-					session.getUserNull(request.getUser()), "MKD", newDir));
+			DirectoryFtpEvent event = new DirectoryFtpEvent(
+					session.getUserNull(request.getUser()), "MKD", newDir);
+			GlobalContext.getEventService().publishAsync(event);
 
 			return new CommandResponse(257, "\"" + newDir.getPath() +
 			"\" created.");

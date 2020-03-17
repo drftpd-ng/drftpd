@@ -19,6 +19,7 @@ package org.drftpd.master.master.config;
 
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.dynamicdata.KeyedMap;
+import org.drftpd.master.config.ConfigHandler;
 import org.drftpd.master.permissions.PathPermission;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;

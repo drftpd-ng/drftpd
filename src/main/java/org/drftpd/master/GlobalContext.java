@@ -103,7 +103,7 @@ public class GlobalContext {
 
     private static Set<Method> hooksMethods;
 
-    public static final String VERSION = "DrFTPD @JRI";
+    public static final String VERSION = "DrFTPD v4";
 
     public void reloadFtpConfig() {
         _config.reload();
@@ -394,7 +394,6 @@ public class GlobalContext {
         // Subscribe to events
         AnnotationProcessor.process(this);
     }
-
 
     /**
      * Will return null if SSL/TLS is not configured

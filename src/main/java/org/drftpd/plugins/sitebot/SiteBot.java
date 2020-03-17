@@ -198,6 +198,13 @@ public class SiteBot implements ReplyConstants, Runnable {
         } catch (Exception e) {
             logger.warn("Error connecting to server", e);
         }
+
+        // Find and start announcers
+        loadAnnouncers(_confDir);
+
+        // Find all Bot Listeners
+        loadListeners();
+
         // Subscribe to events
         AnnotationProcessor.process(this);
     }
@@ -2892,9 +2899,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                 announcer.setConfDir(_confDir);
                 _announcers.add(announcer);
                 logger.debug("Loading sitebot announcer from plugin {}", abstractAnnouncer.getSimpleName());
-                for (String type : announcer.getEventTypes()) {
-                    _eventTypes.add(type);
-                }
+                _eventTypes.addAll(Arrays.asList(announcer.getEventTypes()));
             }
         } catch (Exception e) {
             logger.error("Failed to load plugins for org.drftpd.master.plugins.sitebot extension point 'Announce', possibly the " +

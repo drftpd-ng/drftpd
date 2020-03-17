@@ -20,6 +20,8 @@ package org.drftpd.master.config;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import org.drftpd.common.ExtendedPermissions;
+import org.drftpd.common.PermissionDefinition;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.dynamicdata.KeyedMap;
@@ -30,9 +32,11 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.common.util.PortRange;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.perms.VFSPermissions;
+import org.reflections.Reflections;
 
 import javax.net.ssl.SSLContext;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.*;
 
@@ -41,6 +45,7 @@ import java.util.*;
  * The directives that are going to be handled by this class are loaded during
  * the startup process and *MUST* be an extension of the master extension-point "ConfigHandler".<br>
  * No hard coding is needed to handle new directives, simply create a new extension.
+ *
  * @author fr0w
  * @version $Id$
  */
@@ -54,7 +59,7 @@ public class ConfigManager implements ConfigInterface {
     private static final Key<Hashtable<String, Permission>> PERMS
             = new Key<>(ConfigManager.class, "perms");
 
-    private String hideInStats="";
+    private String hideInStats = "";
 
     private HashMap<String, ConfigContainer> _directivesMap;
     private KeyedMap<Key<?>, Object> _keyedMap;
@@ -118,31 +123,35 @@ public class ConfigManager implements ConfigInterface {
      */
     private void loadConfigHandlers() {
         _directivesMap = new HashMap<>();
-        //ConfigContainer cc = new ConfigContainer(container.getPluginObject(), container.getPluginMethod());
-        //_directivesMap.put("upload", cc);
-        /*
+
+        Set<Class<? extends ExtendedPermissions>> extendedPermissions = new Reflections("org.drftpd")
+                .getSubTypesOf(ExtendedPermissions.class);
         try {
-            List<PluginObjectContainer<ConfigHandler>> loadedDirectives =
-                    CommonPluginUtils.getPluginObjectsInContainer(this, "master", "ConfigHandler", "Class", "Method",
-                            new Class[] { String.class, StringTokenizer.class });
-            for (PluginObjectContainer<ConfigHandler> container : loadedDirectives) {
-                String directive = container.getPluginExtension().getParameter("Directive").valueAsString();
-                if (_directivesMap.containsKey(directive)) {
-                    logger.debug("A handler for {} already loaded, check your plugin.xml's", directive);
-                    continue;
+            for (Class<? extends ExtendedPermissions> extendedPermission : extendedPermissions) {
+                ExtendedPermissions perms = extendedPermission.getConstructor().newInstance();
+                for (PermissionDefinition permission : perms.permissions()) {
+                    Class<? extends ConfigHandler> handler = permission.getHandler();
+                    String directive = permission.getDirective();
+                    if (_directivesMap.containsKey(directive)) {
+                        logger.debug("A handler for {} already loaded, check your plugin.xml's", directive);
+                        continue;
+                    }
+                    String method = permission.getMethod();
+                    ConfigHandler handlerInstance = handler.getConstructor().newInstance();
+                    Method methodInstance = handler.getMethod(method, String.class, StringTokenizer.class);
+                    ConfigContainer cc = new ConfigContainer(handlerInstance, methodInstance);
+                    _directivesMap.put(directive, cc);
                 }
-                ConfigContainer cc = new ConfigContainer(container.getPluginObject(), container.getPluginMethod());
-                _directivesMap.put(directive, cc);
             }
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             logger.error("Failed to load plugins for master extension point 'Directive', possibly the master"
-                    +" extension point definition has changed in the plugin.xml",e);
+                    + " extension point definition has changed in the plugin.xml", e);
         }
-        */
     }
 
     /**
      * Reads 'master.conf' and save it in a Properties object.
+     *
      * @see #getMainProperties()
      */
     private void loadMainProperties() {
@@ -155,8 +164,10 @@ public class ConfigManager implements ConfigInterface {
             logger.error("Unable to read {}", mainFile.getPath(), e);
         } finally {
             if (is != null) {
-                try { is.close(); }
-                catch (IOException e) { }
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
             }
         }
     }
@@ -165,13 +176,13 @@ public class ConfigManager implements ConfigInterface {
         List<String> cipherSuites = new ArrayList<>();
         List<String> supportedCipherSuites = new ArrayList<>();
         try {
-			supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
+            supportedCipherSuites.addAll(Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getCipherSuites()));
         } catch (Exception e) {
             logger.error("Unable to get supported cipher suites, using default.", e);
         }
         // Parse cipher suite whitelist rules
         boolean whitelist = false;
-        for (int x = 1;; x++) {
+        for (int x = 1; ; x++) {
             String whitelistPattern = _mainCfg.getProperty("cipher.whitelist." + x);
             if (whitelistPattern == null) {
                 break;
@@ -195,7 +206,7 @@ public class ConfigManager implements ConfigInterface {
             }
         }
         // Parse cipher suite blacklist rules and remove matching ciphers from set
-        for (int x = 1;; x++) {
+        for (int x = 1; ; x++) {
             String blacklistPattern = _mainCfg.getProperty("cipher.blacklist." + x);
             if (blacklistPattern == null) {
                 break;
@@ -216,7 +227,7 @@ public class ConfigManager implements ConfigInterface {
         List<String> supportedSSLProtocols;
         try {
             supportedSSLProtocols = Arrays.asList(SSLContext.getDefault().getSupportedSSLParameters().getProtocols());
-            for (int x = 1;; x++) {
+            for (int x = 1; ; x++) {
                 String sslProtocol = _mainCfg.getProperty("protocol." + x);
                 if (sslProtocol == null) {
                     break;
@@ -236,6 +247,7 @@ public class ConfigManager implements ConfigInterface {
 
     /**
      * Initializes the KeyedMap.
+     *
      * @see #getKeyedMap()
      */
     private void initializeKeyedMap() {
@@ -278,9 +290,9 @@ public class ConfigManager implements ConfigInterface {
 
                 String drct = st.nextToken().toLowerCase();
 
-				/*
-				 * Built-in directives.
-				 */
+                /*
+                 * Built-in directives.
+                 */
 
                 switch (drct) {
                     case "login_prompt":
@@ -305,7 +317,6 @@ public class ConfigManager implements ConfigInterface {
                         break;
                     case "allow_connections_deny_reason":
                         _allowConnectionsDenyReason = line.substring("allow_connections_deny_reason".length()).trim();
-
                         break;
                     case "exempt":
                         getPermissionsMap().put("exempt", new Permission(Permission.makeUsers(st)));
@@ -330,8 +341,10 @@ public class ConfigManager implements ConfigInterface {
             logger.info("Unable to parse {}", permsFile.getName(), e);
         } finally {
             if (in != null) {
-                try { in.close(); }
-                catch (IOException e) { }
+                try {
+                    in.close();
+                } catch (IOException e) {
+                }
             }
         }
     }
@@ -376,10 +389,8 @@ public class ConfigManager implements ConfigInterface {
     }
 
 
-    public boolean checkPathPermission(String directive, User user,
-                                       DirectoryHandle path, boolean defaults) {
+    public boolean checkPathPermission(String directive, User user, DirectoryHandle path, boolean defaults) {
         ArrayList<PathPermission> perms = getPathPermsMap().get(directive);
-
         if (perms != null && !perms.isEmpty()) {
             for (PathPermission perm : perms) {
                 if (perm.checkPath(path)) {

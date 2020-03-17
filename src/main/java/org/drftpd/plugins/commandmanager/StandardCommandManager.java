@@ -189,7 +189,7 @@ public class StandardCommandManager implements CommandManagerInterface {
 			return genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
 		}
 		request.setProperties(request.getSession().getCommands().get(request.getCommand()));
-		CommandResponseInterface response = null;
+		CommandResponseInterface response;
 		request = commandContainer.getCommandInterfaceInstance().doPreHooks(request);
 		if(!request.isAllowed()) {
 			response = request.getDeniedResponse();

@@ -77,7 +77,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 
 	private String _keyPrefix;
 
-	public void ZipscriptZipPostHook() {
+	public ZipscriptZipPostHook() {
 		_bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
 		_keyPrefix = this.getClass().getName()+".";
 	}

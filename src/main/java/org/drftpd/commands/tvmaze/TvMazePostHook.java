@@ -46,10 +46,7 @@ public class TvMazePostHook  {
 		DirectoryHandle workingDir;
 		try {
 			workingDir = request.getCurrentDirectory().getDirectoryUnchecked(request.getArgument());
-		} catch (FileNotFoundException e) {
-            logger.error("Failed getting DirectoryHandle for {}", request.getArgument());
-			return;
-		} catch (ObjectNotValidException e) {
+		} catch (FileNotFoundException | ObjectNotValidException e) {
             logger.error("Failed getting DirectoryHandle for {}", request.getArgument());
 			return;
 		}
