@@ -20,7 +20,6 @@ package org.drftpd.commands.imdb;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.commands.imdb.common.IMDBInfo;
 import org.drftpd.commands.imdb.event.IMDBEvent;
 import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.master.GlobalContext;
@@ -35,6 +34,8 @@ import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.sitebot.SiteBot;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.vfs.index.lucene.extensions.imdb.IMDBQueryParams;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
@@ -191,8 +192,6 @@ public class IMDBUtils {
 		Map<String,String> inodes;
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
-		// TODO @JRI PLUG SEACH ENGINE
-		/*
 		IMDBQueryParams queryParams;
 		try {
 			queryParams = params.getExtensionData(IMDBQueryParams.IMDBQUERYPARAMS);
@@ -203,7 +202,7 @@ public class IMDBUtils {
 		queryParams.setTitle(title);
 		queryParams.setMinYear(year);
 		queryParams.setMaxYear(year);
-		*/
+
 		params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
 		params.setSortField("lastmodified");
 		params.setSortOrder(true);

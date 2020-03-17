@@ -17,9 +17,6 @@
  */
 package org.drftpd.commands.imdb.vfs;
 
-import org.drftpd.commands.imdb.common.IMDBInfo;
-import org.drftpd.commands.imdb.common.async.AsyncResponseIMDBInfo;
-import org.drftpd.commands.imdb.master.IMDBIssuer;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -28,6 +25,9 @@ import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.protocol.imdb.common.async.AsyncResponseIMDBInfo;
+import org.drftpd.protocol.imdb.master.IMDBIssuer;
 import org.drftpd.slave.slave.RemoteIOException;
 
 import java.io.FileNotFoundException;

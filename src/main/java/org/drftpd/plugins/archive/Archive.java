@@ -27,8 +27,10 @@ import org.drftpd.master.common.PropertyHelper;
 import org.drftpd.master.common.misc.CaseInsensitiveHashMap;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.vfs.perms.VFSPermHandler;
 import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
 import org.drftpd.plugins.archive.archivetypes.ArchiveType;
+import org.reflections.Reflections;
 
 import java.util.*;
 
@@ -47,7 +49,7 @@ public class Archive implements PluginInterface {
 
 	private TimerTask _runHandler = null;
 	
-	private CaseInsensitiveHashMap<String, Class<ArchiveType>> _typesMap;
+	private CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> _typesMap;
 
 	public Properties getProperties() {
 		return _props;
@@ -72,7 +74,7 @@ public class Archive implements PluginInterface {
 		} else {
 	        if (!sec.getName().isEmpty()) {
 				try {
-					Class<ArchiveType> clazz = _typesMap.get(type);
+					Class<? extends ArchiveType> clazz = _typesMap.get(type);
 					archiveType = clazz.getConstructor(SIG).newInstance(this, sec, props, count);
 	
 				} catch (Exception e) {
@@ -89,7 +91,7 @@ public class Archive implements PluginInterface {
 	 * Returns a list of the current archive types, as a copy.
 	 * We don't want to allow modifications to this.
 	 */
-	public synchronized CaseInsensitiveHashMap<String, Class<ArchiveType>> getTypesMap() {
+	public synchronized CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> getTypesMap() {
 		return new CaseInsensitiveHashMap<>(_typesMap);
 	}		
 	
@@ -97,20 +99,13 @@ public class Archive implements PluginInterface {
 	 * Load the different Types of Archives specified in plugin.xml
 	 */
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
-		// TODO @JRI Archive init types
-		/*
-		try {
-			List<PluginObjectContainer<ArchiveType>> loadedTypes =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.plugins.archive", "ArchiveType", "ClassName", false);
-			for (PluginObjectContainer<ArchiveType> container : loadedTypes) {
-				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
-				typesMap.put(filterName, container.getPluginClass());
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.master.plugins.archive.archivetypes extension point 'ArchiveType'",e);
+		CaseInsensitiveHashMap<String, Class<? extends ArchiveType>> typesMap = new CaseInsensitiveHashMap<>();
+		// TODO [DONE] @JRI Archive init types
+		Set<Class<? extends ArchiveType>> archiveTypes = new Reflections("org.drftpd")
+				.getSubTypesOf(ArchiveType.class);
+		for (Class<? extends ArchiveType> archiveType : archiveTypes) {
+			typesMap.put(archiveType.getSimpleName(), archiveType);
 		}
-		*/
 		_typesMap = typesMap;
 	}
 	

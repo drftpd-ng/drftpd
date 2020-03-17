@@ -45,7 +45,7 @@ public class FilterChain {
 
 	private ArrayList<Filter> _filters;
 	
-	private CaseInsensitiveHashMap<String, Class<Filter>> _filtersMap;
+	private CaseInsensitiveHashMap<String, Class<? extends Filter>> _filtersMap;
 
 	protected FilterChain() {
 	}
@@ -54,7 +54,7 @@ public class FilterChain {
 		return new ArrayList<>(_filters);
 	}
 
-	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<Filter>> filtersMap) throws FileNotFoundException, IOException {
+	public FilterChain(String cfgFileName, CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap) throws FileNotFoundException, IOException {
 		_cfgfileName = cfgFileName;
 		_filtersMap = filtersMap;
 		reload();
@@ -117,7 +117,7 @@ public class FilterChain {
 			}
 
 			try {
-				Class<Filter> clazz = _filtersMap.get(filterName);
+				Class<? extends Filter> clazz = _filtersMap.get(filterName);
 				Filter filter = clazz.getConstructor(SIG).newInstance(i, p);
 				filters.add(filter);
 			} catch (Exception e) {

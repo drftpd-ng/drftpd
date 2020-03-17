@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.commands.autonuke.Config;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.master.Checksum;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -34,6 +35,7 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
+import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -61,20 +63,19 @@ public class ZipscriptCommands extends CommandInterface {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 
-		// TODO @JRI Rescan
-		// Load any rescan post process providers from plugins
-		/*
+		// TODO [DONE] @JRI Add Rescan
+		Set<Class<? extends RescanPostProcessDirInterface>> rescanProcesses = new Reflections("org.drftpd")
+				.getSubTypesOf(RescanPostProcessDirInterface.class);
 		try {
-			List<RescanPostProcessDirInterface> loadedRescanAddons =
-				CommonPluginUtils.getPluginObjects(this, "org.drftpd.master.commands.zipscript", "RescanPostProcessDir", "Class");
-			for (RescanPostProcessDirInterface rescanAddon : loadedRescanAddons) {
-				rescanAddon.initialize(_commandManager);
-				_rescanAddons.add(rescanAddon);
+			for (Class<? extends RescanPostProcessDirInterface> rescanProcess : rescanProcesses) {
+				RescanPostProcessDirInterface anInterface = rescanProcess.getConstructor().newInstance();
+				anInterface.initialize(_commandManager);
+				_rescanAddons.add(anInterface);
 			}
-		} catch (IllegalArgumentException e) {
+		} catch (Exception e) {
 			logger.error("Failed to load plugins for org.drftpd.master.commands.zipscript extension point 'RescanPostProcessDir'"+
 					", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml",e);
-		}*/
+		}
 	}
 
 	public CommandResponse doSITE_RESCAN(CommandRequest request) throws ImproperUsageException {
@@ -243,7 +244,7 @@ public class ZipscriptCommands extends CommandInterface {
 		return response;
 	}
 
-	// TODO @JRI Plugin?
+	// TODO @JRI onUnloadPluginEvent
 	/*
 	@EventSubscriber @Override
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {

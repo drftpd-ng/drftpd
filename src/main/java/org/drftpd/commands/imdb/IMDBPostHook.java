@@ -17,7 +17,6 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.drftpd.commands.imdb.common.IMDBInfo;
 import org.drftpd.common.CommandHook;
 import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
@@ -25,6 +24,7 @@ import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
 
 import java.io.FileNotFoundException;
 

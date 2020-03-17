@@ -17,16 +17,16 @@
  */
 package org.drftpd.master;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.EventServiceExistsException;
 import org.bushe.swing.event.EventServiceLocator;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.common.CommandHook;
+import org.drftpd.common.PluginDependencies;
 import org.drftpd.master.commandmanager.CommandManagerInterface;
 import org.drftpd.master.common.PropertyHelper;
+import org.drftpd.master.common.util.PortRange;
 import org.drftpd.master.config.ConfigManager;
 import org.drftpd.master.event.AsyncThreadSafeEventService;
 import org.drftpd.master.event.MessageEvent;
@@ -40,15 +40,13 @@ import org.drftpd.master.master.config.PluginsConfig;
 import org.drftpd.master.master.cron.TimeEventInterface;
 import org.drftpd.master.master.cron.TimeManager;
 import org.drftpd.master.sections.SectionManagerInterface;
-import org.drftpd.plugins.linkmanager.LinkType;
-import org.drftpd.slave.SSLGetContext;
 import org.drftpd.master.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.master.usermanager.AbstractUserManager;
 import org.drftpd.master.usermanager.UserManager;
-import org.drftpd.master.common.util.PortRange;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.slave.SSLGetContext;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -59,10 +57,8 @@ import javax.net.ssl.SSLContext;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author mog
@@ -80,7 +76,7 @@ public class GlobalContext {
 
     private ConfigInterface _config;
 
-    private ArrayList<PluginInterface> _plugins = new ArrayList<>();
+    private List<PluginInterface> _plugins = new ArrayList<>();
 
     protected SectionManagerInterface _sectionManager;
 
@@ -210,19 +206,21 @@ public class GlobalContext {
     }
 
     private void loadPlugins() {
-        // TODO @JRI
-        Set<Class<? extends PluginInterface>> plugins = new Reflections("org.drftpd")
-                .getSubTypesOf(PluginInterface.class);
-
+        // TODO [DONE] @JRI Load plugins
+        Set<Class<? extends PluginInterface>> plugins = new Reflections("org.drftpd").getSubTypesOf(PluginInterface.class);
+        List<String> alreadyResolved = new ArrayList<>();
         try {
             boolean allResolve = false;
             while(!allResolve) {
                 for (Class<? extends PluginInterface> plugin : plugins) {
-                    PluginInterface pluginInterface = plugin.getConstructor().newInstance();
-                    List<Class<? extends PluginInterface>> dependencies = pluginInterface.dependencies();
-                    if (_plugins.containsAll(dependencies)) {
+                    PluginDependencies annotation = plugin.getAnnotation(PluginDependencies.class);
+                    List<Class<? extends PluginInterface>> dependencies = annotation != null ?
+                            Arrays.asList(annotation.refs()) : new ArrayList<>();
+                    if (_plugins.containsAll(dependencies) && !alreadyResolved.contains(plugin.getName())) {
+                        PluginInterface pluginInterface = plugin.getConstructor().newInstance();
                         pluginInterface.startPlugin();
                         _plugins.add(pluginInterface);
+                        alreadyResolved.add(plugin.getName());
                     }
                     if (plugins.size() == _plugins.size()) {
                         allResolve = true;
@@ -249,9 +247,10 @@ public class GlobalContext {
     private void loadIndexingEngine(Properties cfg) {
         String desiredIe = PropertyHelper.getProperty(cfg, "indexingengine");
         try {
-            _indexEngine = null;
-            // _indexEngine.init();
-            // TODO @JRI PLUG
+            Class<?> aClass = Class.forName(desiredIe);
+            _indexEngine = (IndexEngineInterface) aClass.getConstructor().newInstance();
+            _indexEngine.init();
+            // TODO [DONE]  @JRI Plug index engine
         } catch (Exception e) {
             throw new FatalException("Cannot create instance of IndexingEngine, check 'indexingengine' in config file", e);
         }
@@ -423,7 +422,7 @@ public class GlobalContext {
                             throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
                         }
                         Properties p = getPropertiesUntilClosed(reader);
-                        logger.debug("Adding command {}", cmdName);
+                        logger.trace("Adding command {}", cmdName);
 
                         commandsConfig.put(cmdName, p);
                     } else {

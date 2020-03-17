@@ -37,6 +37,11 @@ public class WipeAction implements ActionInterface {
 	private boolean _failed;
 
 	@Override
+	public String name() {
+		return "Wipe";
+	}
+
+	@Override
 	public void initialize(String action, String[] args) throws ImproperUsageException {
 	}
 

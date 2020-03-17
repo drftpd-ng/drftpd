@@ -117,29 +117,13 @@ public class AutoNukeManager implements PluginInterface {
 	private void initConfigs() {
 		CaseInsensitiveHashMap<String, Class<? extends Config>> configsMap = new CaseInsensitiveHashMap<>();
 
-		// TODO @JRI Load config
+		// TODO @JRI [DONE] Load config
 		Set<Class<? extends Config>> configHandlers = new Reflections("org.drftpd")
 				.getSubTypesOf(Config.class);
 		for (Class<? extends Config> configHandler : configHandlers) {
 			String name = configHandler.getSimpleName().replace("Config", "");
 			configsMap.put(name, configHandler);
 		}
-
-		/*
-		try {
-			List<PluginObjectContainer<Config>> loadedConfigs =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.commands.autonuke", "Config", "ClassName", false);
-			for (PluginObjectContainer<Config> container : loadedConfigs) {
-				String configName = container.getPluginExtension().getParameter("ConfigName").valueAsString();
-				configsMap.put(configName, container.getPluginClass());
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.master.commands.autonuke extension point 'Config'"
-					+", possibly the org.drftpd.master.commands.autonuke"
-					+" extension point definition has changed in the plugin.xml",e);
-		}
-		 */
-
 		_configsMap = configsMap;
 	}
 

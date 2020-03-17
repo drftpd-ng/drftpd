@@ -33,6 +33,11 @@ public class UnnukeAction implements ActionInterface {
 	private String _reason = "";
 
 	@Override
+	public String name() {
+		return "Unnuke";
+	}
+
+	@Override
 	public void initialize(String action, String[] args) throws ImproperUsageException {
 		if (args != null) {
 			_reason = args[0];

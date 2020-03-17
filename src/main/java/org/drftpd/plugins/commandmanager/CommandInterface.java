@@ -64,6 +64,7 @@ public abstract class CommandInterface {
 		TreeMap<Integer,HookContainer<PreHookInterface>> preHooks = new TreeMap<>();
 		TreeMap<Integer,HookContainer<PostHookInterface>> postHooks = new TreeMap<>();
 		Set<Method> hooksMethods = GlobalContext.getHooksMethods();
+		// TODO [DONE] @JRI Plug hooks
 		try {
 			for (Method annotatedMethod : hooksMethods) {
 				Class<?> declaringClass = annotatedMethod.getDeclaringClass();
@@ -84,57 +85,11 @@ public abstract class CommandInterface {
 		} catch (Exception e) {
 			logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
 		}
-
-		// TODO @JRI Plug hooks
-		// Populate all available pre hooks
-		/*try {
-			List<PluginObjectContainer<PreHookInterface>> loadedPreHooks = 
-				CommonPluginUtils.getPluginObjectsInContainer(this, pluginName, "PreHook", "HookClass", "HookMethod",
-						"ParentMethod", method, new Class[] {CommandRequest.class});
-			for (PluginObjectContainer<PreHookInterface> container : loadedPreHooks) {
-				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
-				if (preHooks.containsKey(priority)) {
-                    logger.warn("{} already has a pre hook with priority {} adding {} with next available priority", pluginName, priority, container.getPluginExtension().getId());
-					while (preHooks.containsKey(priority)) {
-						priority++;
-					}
-				}
-				PreHookInterface preHookInstance = container.getPluginObject();
-				preHookInstance.initialize(cManager);
-				preHooks.put(priority,
-                        new HookContainer<>(container.getPluginMethod(), preHookInstance));
-			}
-		} catch (IllegalArgumentException e) {
-            logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
-		}*/
-
-		// Populate all available post hooks
-		/*try {
-			List<PluginObjectContainer<PostHookInterface>> loadedPostHooks = 
-				CommonPluginUtils.getPluginObjectsInContainer(this, pluginName, "PostHook", "HookClass", "HookMethod",
-						"ParentMethod", method, new Class[] {CommandRequest.class, CommandResponse.class});
-			for (PluginObjectContainer<PostHookInterface> container : loadedPostHooks) {
-				int priority = container.getPluginExtension().getParameter("Priority").valueAsNumber().intValue();
-				if (postHooks.containsKey(priority)) {
-                    logger.warn("{} already has a post hook with priority {} adding {} with next available priority", pluginName, priority, container.getPluginExtension().getId());
-					while (postHooks.containsKey(priority)) {
-						priority++;
-					}
-				}
-				PostHookInterface postHookInstance = container.getPluginObject();
-				postHookInstance.initialize(cManager);
-				postHooks.put(priority,
-                        new HookContainer<>(container.getPluginMethod(), postHookInstance));
-			}
-		} catch (IllegalArgumentException e) {
-            logger.error("Failed to load plugins for {} extension point 'PostHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
-		}*/
 		_preHooks = preHooks;
 		_postHooks = postHooks;
 	}
 
 	protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
-		String requestCommand = request.getCommand();
 		for (HookContainer<PostHookInterface> hook : _postHooks.values()) {
 			Method m = hook.getMethod();
 			try {

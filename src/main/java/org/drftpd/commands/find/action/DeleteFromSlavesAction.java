@@ -34,6 +34,11 @@ public class DeleteFromSlavesAction implements ActionInterface {
 	private HashSet<RemoteSlave> _deleteFromSlaves;
 
 	@Override
+	public String name() {
+		return "DeleteFromSlaves";
+	}
+
+	@Override
 	public void initialize(String action, String[] args) throws ImproperUsageException {
 		// -deletefromslaves <slave[ slave ..]>
 		_deleteFromSlaves = FindUtils.parseSlaves(args);

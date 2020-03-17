@@ -58,7 +58,7 @@ public class MasterProtocolCentral {
 	private void loadProtocolExtensions() {
 		HashMap<Class<?>, AbstractIssuer> issuersMap = new HashMap<>();
 		ArrayList<String> protocols = new ArrayList<>();
-		// TODO @JRI [DONE] ADD PROTOCOLS
+		// TODO [DONE] @JRI Add protocols
 		Set<Class<? extends AbstractIssuer>> issuers = new Reflections("org.drftpd")
 				.getSubTypesOf(AbstractIssuer.class);
 		List<Class<? extends AbstractIssuer>> issuerProtocols = issuers.stream()
@@ -112,12 +112,12 @@ public class MasterProtocolCentral {
 		_issuersMap = Collections.unmodifiableMap(issuersMap);
 		_protocols = Collections.unmodifiableList(protocols);
 
-		logger.debug("Dumping issuers map");
+		logger.trace("Dumping issuers map");
 		for (Entry<Class<?>, AbstractIssuer> e : _issuersMap.entrySet()) {
 			Class<?> clazz = e.getKey();
 			AbstractIssuer issuer = e.getValue();
-            logger.debug("Class -> {}", clazz.toString());
-            logger.debug("Issuer -> {}", issuer.toString());
+            logger.trace("Class -> {}", clazz.toString());
+            logger.trace("Issuer -> {}", issuer.toString());
 		}
 		
 		for (String protocol : _protocols) {

@@ -38,6 +38,11 @@ public class NukeAction implements ActionInterface {
 	private String _reason = "";
 
 	@Override
+	public String name() {
+		return "Nuke";
+	}
+
+	@Override
 	public void initialize(String action, String[] args) throws ImproperUsageException {
 		if (args == null) {
 			throw new ImproperUsageException("Missing argument for "+action+" action");

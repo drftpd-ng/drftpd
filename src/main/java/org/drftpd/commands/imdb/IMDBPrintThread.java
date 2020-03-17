@@ -17,10 +17,10 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.drftpd.commands.imdb.common.IMDBInfo;
 import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
 
 /**
  * @author scitz0

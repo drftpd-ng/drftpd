@@ -21,6 +21,7 @@ import java.util.*;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 
+import org.drftpd.common.PluginDependencies;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.PluginInterface;
 import org.drftpd.master.common.PropertyHelper;
@@ -36,6 +37,7 @@ import org.drftpd.plugins.linkmanager.LinkType;
  * @version $Id: LatestDirManager.java freasy $
  */
 
+@PluginDependencies(refs = { LinkManager.class })
 public class LatestDirManager implements PluginInterface {
 	private LinkManager _linkmanager;
 	
@@ -44,11 +46,6 @@ public class LatestDirManager implements PluginInterface {
 	private HashMap<String, DirectoryHandle> _map;
 	
 	private int _count;
-
-	@Override
-	public List<Class<? extends PluginInterface>> dependencies() {
-		return Collections.singletonList(LinkManager.class);
-	}
 
 	@Override
 	public void startPlugin() {

@@ -42,7 +42,7 @@ public class StatusSubscriber {
 
 	@EventSubscriber
 	public void onUnloadPluginEvent(Object event) {
-		// TODO @JRI
+		// TODO @JRI onUnloadPluginEvent
 		/*
 		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
 		for (String pluginExtension : event.getParentPlugins()) {

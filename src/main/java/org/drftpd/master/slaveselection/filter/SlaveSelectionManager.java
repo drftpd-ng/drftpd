@@ -26,15 +26,18 @@ import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.master.RemoteSlave;
+import org.drftpd.master.protocol.master.AbstractIssuer;
 import org.drftpd.master.slaveselection.SlaveSelectionManagerInterface;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.slave.slave.Transfer;
+import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * @author mog
@@ -48,7 +51,7 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	private FilterChain _jobDownChain;
 	private FilterChain _jobUpChain;
 	
-	private CaseInsensitiveHashMap<String, Class<Filter>> _filtersMap;
+	private CaseInsensitiveHashMap<String, Class<? extends Filter>> _filtersMap;
 
 	public SlaveSelectionManager() throws IOException {
 		initFilters();
@@ -68,26 +71,17 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
     }	
 	
 	private void initFilters() {
-		CaseInsensitiveHashMap<String, Class<Filter>> filtersMap = new CaseInsensitiveHashMap<>();
-		// TODO @JRI
-		/*
-		try {
-			List<PluginObjectContainer<Filter>> loadedFilters =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.slaveselection.filter", "Filter", "ClassName", false);
-			for (PluginObjectContainer<Filter> container : loadedFilters) {
-				String filterName = container.getPluginExtension().getParameter("FilterName").valueAsString();
-				filtersMap.put(filterName, container.getPluginClass());
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.master.slaveselection.filter extension point 'Filter'"
-					+", possibly the org.drftpd.master.slaveselection.filter"
-					+" extension point definition has changed in the plugin.xml",e);
-		}*/
-		
+		CaseInsensitiveHashMap<String, Class<? extends Filter>> filtersMap = new CaseInsensitiveHashMap<>();
+		// TODO [DONE] @JRI Add filters
+		Set<Class<? extends Filter>> filters = new Reflections("org.drftpd").getSubTypesOf(Filter.class);
+		for (Class<? extends Filter> filter : filters) {
+			String simpleName = filter.getSimpleName().replace("Filter", "");
+			filtersMap.put(simpleName, filter);
+		}
 		_filtersMap = filtersMap;
 	}
 	
-	public CaseInsensitiveHashMap<String, Class<Filter>> getFiltersMap() {
+	public CaseInsensitiveHashMap<String, Class<? extends Filter>> getFiltersMap() {
 		// we dont want to pass this object around allowing it to be modified, make a copy of it.
 		return new CaseInsensitiveHashMap<>(_filtersMap);
 	}

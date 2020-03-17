@@ -28,6 +28,11 @@ import org.drftpd.plugins.commandmanager.ImproperUsageException;
 public class PrintAction implements ActionInterface {
 
 	@Override
+	public String name() {
+		return "Print";
+	}
+
+	@Override
 	public void initialize(String action, String[] args) throws ImproperUsageException {
 	}
 

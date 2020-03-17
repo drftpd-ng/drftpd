@@ -59,16 +59,7 @@ public class VFSPermissions {
 		_directiveToType = new HashMap<>();
 		_priorities = new HashMap<>();
 
-		/*
-		<extension-point id="VFSPerm">
-	      	<parameter-def id="Class" />
-	    	<parameter-def id="Method" />
-	    	<parameter-def id="Type" />
-	     	<parameter-def id="Directive" />
-	     	<parameter-def id="Priority" />
-	   	</extension-point>
-		*/
-		//TODO @JRI EXTENSION
+		//TODO [DONE] @JRI Load extensions
 		Set<Class<? extends VFSPermHandler>> vfsHandlers = new Reflections("org.drftpd")
 				.getSubTypesOf(VFSPermHandler.class);
 		List<Class<? extends VFSPermHandler>> vfsProtocols = vfsHandlers.stream()

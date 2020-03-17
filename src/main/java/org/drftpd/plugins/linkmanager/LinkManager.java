@@ -107,23 +107,11 @@ public class LinkManager implements PluginInterface {
     private void initTypes() {
 		CaseInsensitiveHashMap<String, Class<? extends LinkType>> typesMap = new CaseInsensitiveHashMap<>();
 
-		// TODO @JRI INIT link manager Types
+		// TODO [DONE] @JRI INIT link manager Types
 		Set<Class<? extends LinkType>> LinkTypes = new Reflections("org.drftpd").getSubTypesOf(LinkType.class);
 		for (Class<? extends LinkType> linkType : LinkTypes) {
 			typesMap.put(linkType.getSimpleName(), linkType);
 		}
-
-		/*
-		try {
-			List<PluginObjectContainer<LinkType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.plugins.linkmanager", "LinkType", "ClassName", false);
-			for (PluginObjectContainer<LinkType> container : loadedTypes) {
-				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
-				typesMap.put(filterName, container.getPluginClass());
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.master.plugins.linkmanager extension point 'LinkType'",e);
-		} */
-
 		_typesMap = typesMap;		
     }
     

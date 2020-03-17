@@ -324,18 +324,16 @@ public abstract class AbstractUserManager implements UserManager {
 		}
 	}
 
+	//TODO @JRI Decide what to do with abstract user manager
 	private void loadResetHooks() {
 		// Load hooks to be run before the reset
-		//TODO @JRI PLUG
 	}
 
 	@EventSubscriber
 	public synchronized void onUnloadPluginEvent(Object event) {
-		//TODO @JRI PLUG
 	}
 
 	@EventSubscriber
 	public synchronized void onLoadPluginEvent(Object event) {
-		//TODO @JRI PLUG
 	}
 }

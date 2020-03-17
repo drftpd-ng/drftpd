@@ -94,14 +94,14 @@ public class StandardCommandManager implements CommandManagerInterface {
 			}
 
 			try {
-				// TODO @JRI
+				// TODO [DONE] @JRI Plug commands
 				Class<?> aClass = Class.forName(pluginString + "." + classString);
 				Method commandMethod = aClass.getMethod(methodString, CommandRequest.class);
 				CommandInterface cmdInstance = (CommandInterface) aClass.getConstructor().newInstance();
 
 				cmdInstance.initialize(methodString, pluginString, this);
 				commands.put(requiredCmd.getKey(),new CommandInstanceContainer(commandMethod, cmdInstance));
-                logger.debug("Adding CommandInstance {}", requiredCmd.getKey());
+                logger.debug("Adding command implementation {}", requiredCmd.getKey());
 			} catch(Exception e) {
 				/* Should be safe to continue, just means this command class won't be
 				 * available

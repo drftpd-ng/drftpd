@@ -39,6 +39,7 @@ public class SectionManager implements SectionManagerInterface {
 	private static final Logger logger = LogManager.getLogger(SectionManager.class);
 
 	public SectionManager() {
+		logger.debug("Loading def section manager");
 	}
 
 	public ConnectionManager getConnectionManager() {

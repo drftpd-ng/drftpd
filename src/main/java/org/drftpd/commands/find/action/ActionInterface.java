@@ -26,6 +26,8 @@ import org.drftpd.plugins.commandmanager.ImproperUsageException;
  */
 public interface ActionInterface {
 
+	String name();
+
 	void initialize(String action, String[] args) throws ImproperUsageException;
 
 	String exec(CommandRequest request, InodeHandle inode);

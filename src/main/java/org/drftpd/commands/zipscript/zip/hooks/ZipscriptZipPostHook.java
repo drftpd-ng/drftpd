@@ -184,7 +184,6 @@ public class ZipscriptZipPostHook extends ZipTools {
 				response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()), StandardCharsets.ISO_8859_1)); 
 			} catch (IOException | NoAvailableSlaveException e) {
 				//Error fetching .diz, ignore
-				logger.error(e);
 			}
 		}
 	}

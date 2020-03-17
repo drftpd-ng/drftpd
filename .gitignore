@@ -8,6 +8,8 @@ userdata/drftpd.key
 userdata/slaves
 userdata/vfs
 userdata/users
+userdata/index
+index.bkp
 
 # Log file
 *.log

@@ -25,6 +25,7 @@ import java.util.List;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
+import org.drftpd.common.PluginDependencies;
 import org.drftpd.master.PluginInterface;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.event.TransferEvent;
@@ -39,13 +40,9 @@ import org.drftpd.plugins.linkmanager.LinkType;
  * @version $Id: SFVIncompleteManager.java 1925 2009-06-15 21:46:05Z CyBeR $
  */
 
+@PluginDependencies(refs = { LinkManager.class })
 public class SFVIncompleteManager implements PluginInterface {
 	private LinkManager _linkmanager;
-
-	@Override
-	public List<Class<? extends PluginInterface>> dependencies() {
-		return Collections.singletonList(LinkManager.class);
-	}
 
 	@Override
 	public void startPlugin() {

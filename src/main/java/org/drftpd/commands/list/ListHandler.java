@@ -94,7 +94,7 @@ public class ListHandler extends CommandInterface {
 		AnnotationProcessor.process(this);
 
 		// Load any additional element providers from plugins
-		// @TODO JRI
+		// @TODO JRI [DONE] Add addons
 		try {
 			Set<Class<? extends AddListElementsInterface>> addListElements = new Reflections("org.drftpd")
 					.getSubTypesOf(AddListElementsInterface.class);
@@ -523,7 +523,7 @@ public class ListHandler extends CommandInterface {
 		return PADDING.substring(0, length - value.length()) + value;
 	}
 
-	// TODO @JRI
+	// TODO @JRI onUnloadPluginEvent
 	/*
 	@EventSubscriber @Override
 	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {

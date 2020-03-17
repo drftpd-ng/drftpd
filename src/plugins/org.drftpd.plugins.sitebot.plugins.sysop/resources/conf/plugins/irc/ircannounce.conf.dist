@@ -1,3 +1,0 @@
-# To specify where the login and site command action announces will appear rather than
-# just using your default channels, uncomment the next line and set them there.
-#sysop.destination=public

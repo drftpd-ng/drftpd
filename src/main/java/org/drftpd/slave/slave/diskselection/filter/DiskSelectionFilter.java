@@ -161,7 +161,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface {
 	
 	private void initFilters() {
 		CaseInsensitiveHashMap<String, Class<? extends DiskFilter>> filtersMap = new CaseInsensitiveHashMap<>();
-		// TODO @JRI [DONE] Load Filters
+		// TODO [DONE] @JRI Load Filters
 		Set<Class<? extends DiskFilter>> aFilters = new Reflections("org.drftpd")
 				.getSubTypesOf(DiskFilter.class);
 		List<Class<? extends DiskFilter>> filters = aFilters.stream()

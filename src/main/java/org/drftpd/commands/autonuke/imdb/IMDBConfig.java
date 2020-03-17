@@ -5,10 +5,10 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.commands.autonuke.Config;
 import org.drftpd.commands.autonuke.ConfigData;
-import org.drftpd.commands.imdb.common.IMDBInfo;
 import org.drftpd.master.common.PropertyHelper;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.protocol.imdb.common.IMDBInfo;
 
 import java.io.FileNotFoundException;
 import java.util.Properties;

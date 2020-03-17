@@ -42,6 +42,11 @@ public class PrintfAction implements ActionInterface {
 	private String _format;
 
 	@Override
+	public String name() {
+		return "Printf";
+	}
+
+	@Override
 	public void initialize(String action, String[] args) throws ImproperUsageException {
 		if (args == null) {
 			throw new ImproperUsageException("Missing argument for "+action+" action");

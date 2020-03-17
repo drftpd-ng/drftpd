@@ -17,9 +17,6 @@
  */
 package org.drftpd.master;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author djb61
  * @version $Id$
@@ -29,8 +26,4 @@ public interface PluginInterface {
     void startPlugin();
 
     void stopPlugin(String reason);
-
-    default List<Class<? extends PluginInterface>> dependencies() {
-        return new ArrayList<>();
-    }
 }

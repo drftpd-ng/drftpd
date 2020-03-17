@@ -77,14 +77,14 @@ public class SSLGetContext {
 
 		ctx.init(kmf.getKeyManagers(), trustAllCerts, null);
 		String[] ciphers = ctx.createSSLEngine().getSupportedCipherSuites();
-		logger.info("Supported ciphers are as follows:");
+		logger.trace("Supported ciphers are as follows:");
 		for (String cipher : ciphers) {
-			logger.info(cipher);
+			logger.trace(cipher);
 		}
 		String[] protocols = ctx.createSSLEngine().getSupportedProtocols();
-		logger.info("Supported protocols are as follows:");
+		logger.trace("Supported protocols are as follows:");
 		for (String protocol : protocols) {
-			logger.info(protocol);
+			logger.trace(protocol);
 		}
 		return ctx;
 	}

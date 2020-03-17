@@ -42,6 +42,11 @@ public class SendToSlavesAction implements ActionInterface {
 	private int _transferNum;
 
 	@Override
+	public String name() {
+		return "SendToSlaves";
+	}
+
+	@Override
 	public void initialize(String action, String[] args) throws ImproperUsageException {
 		if (args == null || args.length < 2) {
 			throw new ImproperUsageException("Missing argument for "+action+" action");

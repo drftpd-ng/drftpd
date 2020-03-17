@@ -25,6 +25,25 @@ import org.drftpd.master.permissions.Permission;
  * @author fr0w
  * @version $Id$
  */
+// TODO @JRI Find how to use that
+
+/*
+	https://github.com/drftpd-ng/drftpd3/search?q=org.drftpd.master.commands.config.hooks.DefaultConfigHandler&unscoped_q=org.drftpd.master.commands.config.hooks.DefaultConfigHandler
+	org.drftpd.permissions.fxp.plugin.xml
+
+	<extension plugin-id="master" point-id="ConfigHandler" id="DenyDownloadFXPDirective">
+	    <parameter id="Class" value="org.drftpd.master.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="deny_dnfxp" />
+	</extension>
+
+	<extension plugin-id="master" point-id="ConfigHandler" id="DenyUploadFXPDirective">
+	    <parameter id="Class" value="org.drftpd.master.commands.config.hooks.DefaultConfigHandler" />
+    	<parameter id="Method" value="handlePathPerm" />
+    	<parameter id="Directive" value="deny_upfxp" />
+	</extension>
+ */
+
 public abstract class ConfigHandler {
 	protected static GlobalContext getGlobalContext() {
 		return GlobalContext.getGlobalContext();

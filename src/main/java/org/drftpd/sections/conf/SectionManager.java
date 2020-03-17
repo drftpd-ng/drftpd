@@ -26,6 +26,8 @@ import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.sections.SectionManagerInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
+import org.drftpd.master.vfs.perms.VFSPermHandler;
+import org.reflections.Reflections;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -44,9 +46,10 @@ public class SectionManager implements SectionManagerInterface {
 
 	private boolean _mkdirs = false;
 	
-	private CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> _typesMap;
+	private CaseInsensitiveHashMap<String, Class<? extends ConfigurableSectionInterface>> _typesMap;
 	
 	public SectionManager() {
+		logger.debug("Loading conf section manager");
 		reload();
 	}
 
@@ -87,21 +90,15 @@ public class SectionManager implements SectionManagerInterface {
 	 * Load the different Section Types specified in plugin.xml
 	 */
 	private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<>();
+		CaseInsensitiveHashMap<String, Class<? extends ConfigurableSectionInterface>> typesMap = new CaseInsensitiveHashMap<>();
 
-		// TODO @JRI Init section types
-		/*
-		try {
-			List<PluginObjectContainer<ConfigurableSectionInterface>> loadedTypes =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.sections.conf", "SectionType", "ClassName", false);
-			for (PluginObjectContainer<ConfigurableSectionInterface> container : loadedTypes) {
-				String filterName = container.getPluginExtension().getParameter("TypeName").valueAsString();
-				typesMap.put(filterName, container.getPluginClass());
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for org.drftpd.master.sections.conf extension point 'SectionType'",e);
-		} */
-
+		// TODO [DONE] @JRI Load section types
+		Set<Class<? extends ConfigurableSectionInterface>> sectionsConf = new Reflections("org.drftpd")
+				.getSubTypesOf(ConfigurableSectionInterface.class);
+		for (Class<? extends ConfigurableSectionInterface> aClass : sectionsConf) {
+			String sectionName = aClass.getSimpleName().replace("Section", "");
+			typesMap.put(sectionName, aClass);
+		}
 		_typesMap = typesMap;
 	}
 	
@@ -141,7 +138,7 @@ public class SectionManager implements SectionManagerInterface {
 				notloaded = true;
 			} else {
 				try {
-					Class<ConfigurableSectionInterface> clazz = _typesMap.get(type);
+					Class<? extends ConfigurableSectionInterface> clazz = _typesMap.get(type);
 					ConfigurableSectionInterface section = clazz.getConstructor(SIG).newInstance(i, p);
 					sections.put(name, section);
 					if (_mkdirs) {

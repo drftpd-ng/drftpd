@@ -39,6 +39,7 @@ import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.sitebot.SiteBot;
+import org.drftpd.vfs.index.lucene.extensions.tvmaze.TvMazeQueryParams;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
@@ -335,8 +336,6 @@ public class TvMazeUtils {
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
 
-		// TODO @JRI Add search
-		/*
 		TvMazeQueryParams queryParams;
 		try {
 			queryParams = params.getExtensionData(TvMazeQueryParams.TvMazeQUERYPARAMS);
@@ -347,7 +346,7 @@ public class TvMazeUtils {
 		queryParams.setName(showName);
 		queryParams.setSeason(season);
 		queryParams.setNumber(number);
-		 */
+
 
 		params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
 		params.setSortField("lastmodified");
