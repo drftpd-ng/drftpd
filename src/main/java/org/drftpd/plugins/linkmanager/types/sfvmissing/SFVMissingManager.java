@@ -17,6 +17,8 @@
 package org.drftpd.plugins.linkmanager.types.sfvmissing;
 
 import java.io.FileNotFoundException;
+import java.util.Collections;
+import java.util.List;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -37,7 +39,12 @@ import org.drftpd.plugins.linkmanager.LinkType;
 
 public class SFVMissingManager implements PluginInterface {
 	private LinkManager _linkmanager;
-	
+
+	@Override
+	public List<Class<? extends PluginInterface>> dependencies() {
+		return Collections.singletonList(LinkManager.class);
+	}
+
 	@Override
 	public void startPlugin() {
 		AnnotationProcessor.process(this);

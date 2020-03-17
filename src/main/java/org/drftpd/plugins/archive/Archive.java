@@ -48,7 +48,7 @@ public class Archive implements PluginInterface {
 	private TimerTask _runHandler = null;
 	
 	private CaseInsensitiveHashMap<String, Class<ArchiveType>> _typesMap;
-	
+
 	public Properties getProperties() {
 		return _props;
 	}

@@ -18,6 +18,9 @@ package org.drftpd.plugins.linkmanager.types.sfvincomplete;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -38,7 +41,12 @@ import org.drftpd.plugins.linkmanager.LinkType;
 
 public class SFVIncompleteManager implements PluginInterface {
 	private LinkManager _linkmanager;
-	
+
+	@Override
+	public List<Class<? extends PluginInterface>> dependencies() {
+		return Collections.singletonList(LinkManager.class);
+	}
+
 	@Override
 	public void startPlugin() {
 		AnnotationProcessor.process(this);

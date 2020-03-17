@@ -1,2 +1,0 @@
-# Allows pre in /pre/* to group siteop
-pre	/pre/* =siteop

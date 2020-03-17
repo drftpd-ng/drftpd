@@ -55,14 +55,14 @@ public class PluginsConfig {
 	 * Prints the loaded configurations.
 	 */
 	public void dumpHashMap() {
-		logger.debug("Dumping Map Information.");
+		logger.trace("Dumping Map Information.");
 		for (Entry<String, Properties> entry : getPropertiesMap().entrySet()) {
-            logger.debug("--> Configuration File: {}", entry.getKey());
-			logger.debug("Listing properties.");
+            logger.trace("--> Configuration File: {}", entry.getKey());
+			logger.trace("Listing properties.");
 			for (Entry<Object,Object> e : entry.getValue().entrySet()) {
 				String key = (String) e.getKey();
 				String value = (String) e.getValue();
-                logger.debug("{}={}", key, value);
+                logger.trace("{}={}", key, value);
 			}
 		}
 	}

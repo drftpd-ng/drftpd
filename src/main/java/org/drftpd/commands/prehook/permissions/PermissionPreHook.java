@@ -16,6 +16,8 @@
  */
 package org.drftpd.commands.prehook.permissions;
 
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.NoSuchUserException;
@@ -30,7 +32,11 @@ import org.drftpd.plugins.commandmanager.CommandResponse;
  */
 public class PermissionPreHook  {
 
-
+	@CommandHook(commands = {"doSITE_REQUEST", "doSITE_REQFILLED", "doSITE_REQDELETE", "doSITE_REQUESTS",
+			"doSITE_SECTIONS", "doSITE_SPEEDTEST", "doTEXT_OUTPUT", "doSITE_TV", "doSITE_CREATETV", "doSITE_REMOVETV",
+	"doSITE_TVQUEUE", "doSITE_RESCAN", "doRETR", "doSITE_UNDUPE", "doSITE_FIXLINKS", "doSITE_UNMIRROR",
+	"doSITE_INVITE", "doSITE_BLOWFISH", "doSITE_SETBLOWFISH", "doSITE_IRC", "doTOP", "doCUT", "doPASSED"},
+			priority = 2, type = HookType.PRE)
 	public CommandRequestInterface doPermissionCheck(CommandRequest request) {
 		
 		try {
@@ -56,5 +62,4 @@ public class PermissionPreHook  {
 		request.setAllowed(false);
 		return request;
 	}
-	
 }

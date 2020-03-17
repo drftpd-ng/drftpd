@@ -18,6 +18,8 @@
 package org.drftpd.commands.nuke;
 
 import org.drftpd.commands.nuke.metadata.NukeData;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.commandmanager.*;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.plugins.commandmanager.CommandRequest;
@@ -30,10 +32,9 @@ import org.drftpd.plugins.commandmanager.StandardCommandManager;
  * @author fr0w
  * @version $Id$
  */
-public class NukePreHook implements PreHookInterface {
-	public void initialize(StandardCommandManager cManager) {
-	}
-	
+public class NukePreHook {
+
+	@CommandHook(commands = {"doMKD", "doRNTO"}, priority = 1000, type = HookType.PRE)
 	public CommandRequestInterface doNukeCheck(CommandRequest request) {
 		String path = VirtualFileSystem.fixPath(request.getArgument());
 

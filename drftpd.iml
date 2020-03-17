@@ -12,6 +12,9 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: org.tanesha:tanesha:1.0" level="project" />
     <orderEntry type="library" name="Maven: tanukisoft:wrapper:3.5.42" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.6" level="project" />
+    <orderEntry type="library" name="Maven: joda-time:joda-time:2.10.5" level="project" />
+    <orderEntry type="library" name="Maven: org.jflac:jflac-codec:1.5.2" level="project" />
     <orderEntry type="library" name="Maven: org.mindrot:jbcrypt:0.4" level="project" />
     <orderEntry type="library" name="Maven: org.reflections:reflections:0.9.12" level="project" />
     <orderEntry type="library" name="Maven: org.javassist:javassist:3.26.0-GA" level="project" />

@@ -18,6 +18,8 @@
 package org.drftpd.commands.dataconnection.hooks;
 
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.event.TransferEvent;
@@ -35,11 +37,9 @@ import java.net.InetAddress;
  * @author djb61
  * @version $Id$
  */
-public class DataConnectionPostHooks implements PostHookInterface {
+public class DataConnectionPostHooks {
 
-	public void initialize(StandardCommandManager cManager) {
-	}
-	
+	@CommandHook(commands = "doSTOR", priority = 9999999, type = HookType.POST)
 	public void doTransferEvent(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 226) {
 			// Transfer failed, skip event

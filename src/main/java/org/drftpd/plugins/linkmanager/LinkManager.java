@@ -31,10 +31,15 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
 import org.drftpd.master.vfs.event.VirtualFileSystemInodeDeletedEvent;
 import org.drftpd.master.vfs.event.VirtualFileSystemRenameEvent;
+import org.drftpd.slave.protocol.slave.AbstractHandler;
+import org.reflections.Reflections;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author CyBeR
@@ -44,10 +49,10 @@ import java.util.Properties;
 public class LinkManager implements PluginInterface {
 	private static final Logger logger = LogManager.getLogger(LinkManager.class);
 	
-	private CaseInsensitiveHashMap<String, Class<LinkType>> _typesMap;
+	private CaseInsensitiveHashMap<String, Class<? extends LinkType>> _typesMap;
 	
 	private ArrayList<LinkType> _links;
-	
+
 	@Override
 	public void startPlugin() {
 		AnnotationProcessor.process(this);
@@ -90,7 +95,7 @@ public class LinkManager implements PluginInterface {
 			
 		} else {
 			try {
-				Class<LinkType> clazz = _typesMap.get(type);
+				Class<? extends LinkType> clazz = _typesMap.get(type);
 				linkType = clazz.getConstructor(SIG).newInstance(props, count, type.toLowerCase());
 			} catch (Exception e) {
                 logger.error("Unable to load LinkType for section {}.type={}", count, type, e);
@@ -100,9 +105,14 @@ public class LinkManager implements PluginInterface {
 	}
     
     private void initTypes() {
-		CaseInsensitiveHashMap<String, Class<LinkType>> typesMap = new CaseInsensitiveHashMap<>();
+		CaseInsensitiveHashMap<String, Class<? extends LinkType>> typesMap = new CaseInsensitiveHashMap<>();
 
 		// TODO @JRI INIT link manager Types
+		Set<Class<? extends LinkType>> LinkTypes = new Reflections("org.drftpd").getSubTypesOf(LinkType.class);
+		for (Class<? extends LinkType> linkType : LinkTypes) {
+			typesMap.put(linkType.getSimpleName(), linkType);
+		}
+
 		/*
 		try {
 			List<PluginObjectContainer<LinkType>> loadedTypes = CommonPluginUtils.getPluginObjectsInContainer(this, "org.drftpd.master.plugins.linkmanager", "LinkType", "ClassName", false);
