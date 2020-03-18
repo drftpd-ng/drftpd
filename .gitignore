@@ -2,8 +2,13 @@
 ### Java template
 # Compiled class file
 *.class
+*.iml
 .idea
 target
+build
+development/target
+core/target
+imdb/target
 userdata/drftpd.key
 userdata/slaves
 userdata/vfs

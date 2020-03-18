@@ -11,16 +11,6 @@
       </Policies>
       <DefaultRolloverStrategy max="15"/>
     </RollingFile>
-    <RollingFile name="jpf" fileName="logs/jpf-master.log" filePattern="logs/jpf-master-%d{yyyy-MM-dd}-%i.log.gz">
-      <PatternLayout>
-        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
-      </PatternLayout>
-      <Policies>
-        <TimeBasedTriggeringPolicy />
-        <SizeBasedTriggeringPolicy />
-      </Policies>
-      <DefaultRolloverStrategy max="15"/>
-    </RollingFile>
     <RollingFile name="debug" fileName="logs/debug.log" filePattern="logs/debug-%d{yyyy-MM-dd}-%i.log.gz">
       <PatternLayout>
         <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
