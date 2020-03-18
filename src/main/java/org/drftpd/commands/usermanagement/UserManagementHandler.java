@@ -1062,16 +1062,16 @@ public class UserManagementHandler extends CommandInterface {
 		}
 
 		Session session = request.getSession();
-		if (session.getUserNull(request.getUser()).isGroupAdmin()
-				&& !myUser.isMemberOf(session.getUserNull(request.getUser()).getGroup())) {
+		String executionUser = request.getUser();
+		if (executionUser == null) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
-/*
-		if (session.getUserNull(request.getUser()).isGroupAdmin()
-				&& !session.getUserNull(request.getUser()).getGroup().equals(myUser.getGroup())) {
+
+		User ftpUser = session.getUserNull(executionUser);
+		if (ftpUser.isGroupAdmin() && !myUser.isMemberOf(ftpUser.getGroup())) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
 		}
-*/
+
 		myUser.setDeleted(true);
 		String reason = "";
 		if (st.hasMoreTokens()) {
@@ -1079,7 +1079,7 @@ public class UserManagementHandler extends CommandInterface {
 					reason = st.nextToken("").substring(1));
 		}
 		myUser.commit();
-        logger.info("'{}' deleted user '{}' with reason '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), reason);
+        logger.info("'{}' deleted user '{}' with reason '{}'", ftpUser.getName(), myUser.getName(), reason);
         logger.debug("reason {}", myUser.getKeyedMap().getObjectString(UserManagement.REASON));
 		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 	}
