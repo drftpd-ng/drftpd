@@ -1232,7 +1232,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                     logger.error("Received encrypted message in channel {} but no Blowfish key is set for the channel!", channel);
                     return;
                 }
-                message = _ciphers.get(channel).decrypt(message);
+                message = chanCipher.decrypt(message);
                 logger.debug("Decrypted message: {}", message);
             } else {
                 // means we got an unencrypted line from a chan that should be encrypted

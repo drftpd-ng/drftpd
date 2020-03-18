@@ -197,7 +197,7 @@ public abstract class AbstractUserManager implements UserManager {
 				String uidentList = user.getKeyedMap().getObject(UserManagement.IRCIDENT);
 				String[] identArray = uidentList.split(",");
 				for (String anIdentArray : identArray) {
-					if (anIdentArray.matches("^" + botName + "|" + ident + "$")) {
+					if (anIdentArray.matches("^" + botName + "\\|" + ident + "$")) {
 						return user;
 					}
 				}
