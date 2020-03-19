@@ -25,7 +25,7 @@ import org.drftpd.commands.nuke.NukeUtils;
 import org.drftpd.commands.nuke.NukedUser;
 import org.drftpd.event.NukeEvent;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;

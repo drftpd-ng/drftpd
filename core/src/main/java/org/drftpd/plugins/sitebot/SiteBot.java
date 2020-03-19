@@ -36,6 +36,7 @@ import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.config.ServerConfig;
 import org.drftpd.plugins.sitebot.config.SiteBotConfig;
+import org.drftpd.plugins.sitebot.event.InviteEvent;
 import org.reflections.Reflections;
 import org.tanesha.replacer.ReplacerEnvironment;
 
@@ -3025,7 +3026,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 		} catch (IllegalArgumentException e) {
 			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.plugins.sitebot extension point 'Listener', possibly the org.drftpd.master.plugins.sitebot extension point definition has changed in the plugin.xml",e);
 		}
-	}
+	}*/
 
 	@EventSubscriber
 	public void onInviteEvent(InviteEvent event) {
@@ -3035,7 +3036,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 			_users.put(event.getIrcNick(), userDetails);
 			sendRawLineViaQueue("WHOIS " + event.getIrcNick());
 		}
-	}*/
+	}
 
     protected void terminate(String reason) {
         for (UserDetails user : _users.values()) {

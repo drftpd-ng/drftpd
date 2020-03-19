@@ -22,7 +22,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.PluginInterface;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
@@ -218,7 +218,7 @@ public class UserHandler extends CommandInterface {
 		boolean multipleBots = wrapper.getBots().size() > 1;
 		StringTokenizer st = new StringTokenizer(request.getArgument());
 		
-		String botname = null;
+		String botname;
 		if (st.countTokens() >= 2) {
 			botname = st.nextToken();
 		} else {

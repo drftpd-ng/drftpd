@@ -22,7 +22,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.Time;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.exceptions.DuplicateElementException;
@@ -1831,19 +1831,19 @@ public class UserManagementHandler extends CommandInterface {
 		User myUser;
 
 		try {
-			myUser = GlobalContext.getGlobalContext().getUserManager()
-					.getUserByNameUnchecked(request.getArgument());
+			myUser = GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(request.getArgument());
 		} catch (NoSuchUserException ex) {
 			response.setMessage("User " + request.getArgument() + " not found");
-
 			return response;
-
-			// return FtpResponse.RESPONSE_200_COMMAND_OK);
 		} catch (UserFileException ex) {
 			return new CommandResponse(452, "Userfile error: " + ex.getMessage());
 		}
 
 		Session session = request.getSession();
+
+		if (request.getUser() == null) {
+			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+		}
 
 		if (session.getUserNull(request.getUser()).isGroupAdmin()
 				&& !myUser.isMemberOf(session.getUserNull(request.getUser()).getGroup())) {
@@ -1883,8 +1883,8 @@ public class UserManagementHandler extends CommandInterface {
 
 		// ReplacerEnvironment env =
 		// BaseFtpConnection.getReplacerEnvironment(null, myUser);
-		response.addComment(request.getSession().jprintf(_bundle,
-				_keyPrefix+"user", null, myUser.getName()));
+		String message = request.getSession().jprintf(_bundle, _keyPrefix + "user", myUser.getName());
+		response.addComment(message);
 		return response;
 	}
 

@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.master.FtpReply;
 import org.drftpd.master.usermanager.User;

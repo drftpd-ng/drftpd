@@ -25,7 +25,7 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.PropertyHelper;
 import org.drftpd.master.commandmanager.CommandManagerInterface;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;

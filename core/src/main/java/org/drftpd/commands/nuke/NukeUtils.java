@@ -23,7 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.commands.nuke.metadata.NukeUserData;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;

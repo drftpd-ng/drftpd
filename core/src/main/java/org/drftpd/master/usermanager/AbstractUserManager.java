@@ -19,7 +19,7 @@ package org.drftpd.master.usermanager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.common.exceptions.DuplicateElementException;
 import org.drftpd.master.common.io.PermissionDeniedException;

@@ -22,7 +22,7 @@ import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.master.CommitManager;
 import org.drftpd.master.usermanager.AbstractUser;

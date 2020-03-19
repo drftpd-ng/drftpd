@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.drftpd.master.GlobalContext;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.master.FtpReply;

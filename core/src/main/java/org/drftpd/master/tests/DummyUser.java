@@ -1,6 +1,6 @@
 package org.drftpd.master.tests;
 
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.usermanager.AbstractUser;
 import org.drftpd.master.usermanager.AbstractUserManager;
 import org.drftpd.master.usermanager.UserManager;

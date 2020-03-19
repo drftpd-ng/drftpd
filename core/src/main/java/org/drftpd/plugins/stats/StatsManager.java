@@ -24,7 +24,7 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.PluginInterface;
-import org.drftpd.master.commands.UserManagement;
+import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.usermanager.User;
