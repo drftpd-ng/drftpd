@@ -151,9 +151,6 @@
     <Logger name="org.apache.http.wire" level="error" additivity="false">
       <AppenderRef ref="root"/>
     </Logger>
-	<Logger name="org.java.plugin" level="debug" additivity="false">
-      <AppenderRef ref="jpf"/>
-    </Logger>
 	<Root level="debug">
       <AppenderRef ref="root"/>
     </Root>

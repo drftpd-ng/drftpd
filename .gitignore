@@ -6,6 +6,7 @@
 .idea
 target
 build
+logs
 development/target
 core/target
 imdb/target
@@ -26,7 +27,6 @@ index.bkp
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.nar
 *.ear
