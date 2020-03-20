@@ -18,8 +18,8 @@
 # The Wrapper will look for either of the following optional files for a
 #  valid License Key.  License Key properties can optionally be included
 #  directly in this configuration file.
-#include ../conf/wrapper-license.conf
-#include ../conf/wrapper-license-%WRAPPER_HOST_NAME%.conf
+#include ../config/wrapper-license.conf
+#include ../config/wrapper-license-%WRAPPER_HOST_NAME%.conf
 
 # The following property will output information about which License Key(s)
 #  are being found, and can aid in resolving any licensing problems.
@@ -71,8 +71,8 @@ wrapper.java.library.path.1=wrapper
 wrapper.java.additional.auto_bits=TRUE
 
 # Java Additional Parameters
-wrapper.java.additional.1=-Dlog4j.configurationFile=conf/log4j2-slave.xml
-wrapper.java.additional.2=-Djpf.boot.config=conf/boot-slave.properties
+wrapper.java.additional.1=-Dlog4j.configurationFile=config/log4j2-slave.xml
+wrapper.java.additional.2=-Djpf.boot.config=config/boot-slave.properties
 wrapper.java.additional.3=-XX:+UnlockDiagnosticVMOptions
 wrapper.java.additional.4=-XX:+UseG1GC
 
