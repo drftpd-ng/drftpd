@@ -994,49 +994,6 @@ help.specific ${command}
 help.specific This will raw list files in the current directory
 }
 
-SITE LOADPLUGIN {
-plugin org.drftpd.commands.sitemanagement
-class SiteManagementHandler
-method doSITE_LOADPLUGIN
-perms =siteop
-help Load a plugin
-help.specific ${command} <PLUGIN>
-help.specific Load a plugin
-help.specific <PLUGIN> - the full name of the plugin to be loaded
-}
-
-SITE UNLOADPLUGIN {
-plugin org.drftpd.commands.sitemanagement
-class SiteManagementHandler
-method doSITE_UNLOADPLUGIN
-perms =siteop
-help Unload a plugin
-help.specific ${command} <PLUGIN>
-help.specific Unload a plugin
-help.specific <PLUGIN> - the full name of the plugin to be unloaded
-}
-
-SITE RELOADPLUGIN {
-plugin org.drftpd.commands.sitemanagement
-class SiteManagementHandler
-method doSITE_RELOADPLUGIN
-perms =siteop
-help Reload a plugin
-help.specific ${command} <PLUGIN>
-help.specific Unload a plugin, load the plugin again and reload all configs
-help.specific <PLUGIN> - the full name of the plugin to be reloaded
-}
-
-SITE PLUGINS {
-plugin org.drftpd.commands.sitemanagement
-class SiteManagementHandler
-method doSITE_PLUGINS
-perms =siteop
-help List the currently active plugins
-help.specific ${command}
-help.specific List the currently active plugins
-}
-
 SITE SLAVES {
 plugin org.drftpd.commands.slavemanagement
 class SlaveManagement
