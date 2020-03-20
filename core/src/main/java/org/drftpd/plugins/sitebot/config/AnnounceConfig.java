@@ -62,7 +62,7 @@ public class AnnounceConfig {
         _eventTypes = eventTypes;
         _bot = bot;
         loadConfig(GlobalContext.getGlobalContext().getPluginsConfig()
-                .getPropertiesForPlugin(confDir + "/ircannounce.conf"));
+                .getPropertiesForPlugin(confDir + "irc.announce.conf"));
     }
 
     private synchronized void loadConfig(Properties cfg) {
@@ -215,7 +215,7 @@ public class AnnounceConfig {
 
     public void reload() {
         loadConfig(GlobalContext.getGlobalContext().getPluginsConfig()
-                .getPropertiesForPlugin(_confDir + "/ircannounce.conf"));
+                .getPropertiesForPlugin(_confDir + "irc.announce.conf"));
     }
 
     public SiteBot getBot() {

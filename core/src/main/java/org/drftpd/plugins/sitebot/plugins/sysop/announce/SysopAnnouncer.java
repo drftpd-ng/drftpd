@@ -51,18 +51,18 @@ public class SysopAnnouncer extends AbstractAnnouncer {
 			env.add("response", event.getResponse());
 			if (event.isLogin()) {
 				if (event.isSuccessful()) {
-					sayOutput(ReplacerUtils.jprintf( "login.success",
+					sayOutput(ReplacerUtils.jprintf( "sysop.login.success",
 							env, _bundle), writer);
 				} else {
-					sayOutput(ReplacerUtils.jprintf( "login.failed",
+					sayOutput(ReplacerUtils.jprintf( "sysop.login.failed",
 							env, _bundle), writer);
 				}
 			} else {
 				if (event.isSuccessful()) {
-					sayOutput(ReplacerUtils.jprintf( "success",
+					sayOutput(ReplacerUtils.jprintf( "sysop.success",
 							env, _bundle), writer);
 				} else {
-					sayOutput(ReplacerUtils.jprintf( "failed",
+					sayOutput(ReplacerUtils.jprintf( "sysop.failed",
 							env, _bundle), writer);
 				}
 			}

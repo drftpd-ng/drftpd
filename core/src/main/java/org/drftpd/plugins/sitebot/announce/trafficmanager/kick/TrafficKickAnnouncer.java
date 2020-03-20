@@ -79,9 +79,9 @@ public class TrafficKickAnnouncer extends AbstractAnnouncer {
                 env.add("speed", Bytes.formatBytes(event.getSpeed()) + "/s");
 
                 if (event.isStor()) {
-                    sayOutput(ReplacerUtils.jprintf( "up", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf( "traffic.kick.up", env, _bundle), writer);
                 } else {
-                    sayOutput(ReplacerUtils.jprintf( "dn", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf( "traffic.kick.dn", env, _bundle), writer);
                 }
             }
         }

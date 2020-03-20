@@ -75,7 +75,7 @@ public class StoreAnnouncer extends AbstractAnnouncer {
 
     private void loadConf() {
         Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()
-                .getPropertiesForPlugin(getConfDir() + "/ircannounce.conf");
+                .getPropertiesForPlugin(getConfDir() + "irc.announce.conf");
         _storeGroups.clear();
         for (int i = 1; ; i++) {
             String storeGroupPattern = cfg.getProperty("store.path." + i);

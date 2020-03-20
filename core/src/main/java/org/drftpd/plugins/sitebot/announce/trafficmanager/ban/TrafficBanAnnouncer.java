@@ -81,9 +81,9 @@ public class TrafficBanAnnouncer extends AbstractAnnouncer {
                 env.add("bantime", Time.formatTime(event.getBanTime()));
 
                 if (event.isStor()) {
-                    sayOutput(ReplacerUtils.jprintf( "up", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf( "traffic.ban.up", env, _bundle), writer);
                 } else {
-                    sayOutput(ReplacerUtils.jprintf( "dn", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf( "traffic.ban.dn", env, _bundle), writer);
                 }
             }
         }

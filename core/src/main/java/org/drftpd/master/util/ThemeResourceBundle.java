@@ -70,7 +70,7 @@ public class ThemeResourceBundle extends ResourceBundle {
         for (String key : keys) {
             ThemeBundle existBundle = combined.get(key);
             if (existBundle != null) {
-                logger.error("Theme key collision for key" + key
+                logger.error("Theme key collision for key " + key
                         + " [" + existBundle.getPath().toString() + " and " + themeFile.toString() + "]");
             }
             combined.put(key, new ThemeBundle(themeFile, bundle));

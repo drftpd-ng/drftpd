@@ -212,15 +212,15 @@ public class TopTrial extends TrialType {
 
         if (top) {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle,  "top.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle,  "top.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.header", env2, requestuser));
             }
         } else {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle,  "cut.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "toptrial.cut.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle,  "cut.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "toptrial.cut.header", env2, requestuser));
             }
         }
 
@@ -244,14 +244,14 @@ public class TopTrial extends TrialType {
             if ((i < getKeep()) && (uploaded >= getMin()) && (uploaded >= minPercentage)) {
                 //Passing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle,  "top.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.passed", env, requestuser));
                 }
             } else {
                 //Failing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle,  "top.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.top.failed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle,  "cut.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.cut.failed", env, requestuser));
                 }
             }
             i++;
@@ -322,15 +322,15 @@ public class TopTrial extends TrialType {
                 }
 
                 if (count == 1) {
-                    env.add("place", request.getSession().jprintf(bundle,  "place.winning", env2, requestuser));
+                    env.add("place", request.getSession().jprintf(bundle,  "toptrial.place.winning", env2, requestuser));
                 } else {
-                    env.add("place", request.getSession().jprintf(bundle,  "place.losing", env2, requestuser));
+                    env.add("place", request.getSession().jprintf(bundle,  "toptrial.place.losing", env2, requestuser));
                 }
 
                 if ((count < getKeep()) && (uploaded >= getMin())) {
-                    response.addComment(request.getSession().jprintf(bundle,  "place.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.passed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle,  "place.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.failed", env, requestuser));
                 }
 
                 break;
@@ -341,7 +341,7 @@ public class TopTrial extends TrialType {
         if (!found) {
             ReplacerEnvironment env = new ReplacerEnvironment();
             env.add("name", request.getArgument());
-            response.addComment(request.getSession().jprintf(bundle,  "place.notfound", env, requestuser));
+            response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.notfound", env, requestuser));
         }
 
         return response;

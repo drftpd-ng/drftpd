@@ -144,7 +144,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     public void run() {
         _config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
-                .getPropertiesForPlugin("config/base/irc/" + _confDir + "irc.conf"));
+                .getPropertiesForPlugin(_confDir + "irc.conf"));
 
         // set a default mode/prefix for the users in case the server doesn't have it defined properly
         // default to PREFIX=(ov)@+

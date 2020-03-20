@@ -38,7 +38,7 @@ public class SiteBotWrapper implements PluginInterface {
 
 	public void startPlugin() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()
-			.getPropertiesForPlugin("irc/irc.conf");
+			.getPropertiesForPlugin("irc.conf");
 		
 		if (cfg.isEmpty()) {
 			logger.debug("No configuration found for the SiteBot, skipping initialization");
