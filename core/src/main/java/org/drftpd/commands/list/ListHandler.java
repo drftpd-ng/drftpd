@@ -78,8 +78,6 @@ public class ListHandler extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-	protected String _keyPrefix;
-
 	@Override
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
@@ -88,7 +86,7 @@ public class ListHandler extends CommandInterface {
 				"MLST type*,x.crc32*,size*,modify*,unix.owner*,unix.group*,x.slaves*,x.xfertime*"
 		};
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 
 		// Subscribe to events
 		AnnotationProcessor.process(this);
@@ -140,7 +138,7 @@ public class ListHandler extends CommandInterface {
 			env.add("version", GlobalContext.VERSION);
 			
 			CommandResponse response = new CommandResponse(211, "End of status");
-			response.addComment(conn.jprintf(_bundle, env, _keyPrefix+ "daemon.stat"));
+			response.addComment(conn.jprintf(_bundle, env,  "daemon.stat"));
 			
 			return response;
 		}
@@ -296,7 +294,7 @@ public class ListHandler extends CommandInterface {
 					if (!((FileHandleInterface) element).isAvailable()) {
 						ReplacerEnvironment env = new ReplacerEnvironment();
 						env.add("ofilename", element.getName());
-						String oFileName = session.jprintf(_bundle, _keyPrefix+"files.offline.filename", env, user);
+						String oFileName = session.jprintf(_bundle, "files.offline.filename", env, user);
 	
 						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(),
 								slavenames ? getSlaveList((FileHandle)element) : element.getGroup(), element.lastModified(), element.getSize()));

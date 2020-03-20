@@ -38,12 +38,12 @@ import java.util.*;
 public class New extends CommandInterface {
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	public CommandResponse doNEW(CommandRequest request) throws ImproperUsageException {
@@ -115,11 +115,11 @@ public class New extends CommandInterface {
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		if (directories.size() == 0) {
-			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new.empty", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle,"new.empty", env, request.getUser()));
 		} else {
 			directories.sort(new DateComparator());
 
-			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"header", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle,"header", env, request.getUser()));
 
 			// Print the reply! 
 			int pos = 1;
@@ -141,14 +141,14 @@ public class New extends CommandInterface {
 					env.add("files", "" + dir.getInodeHandles(user).size());
 					env.add("size", Bytes.formatBytes(dir.getSize()));
 					env.add("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
-					response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"new", env, request.getUser()));
+					response.addComment(request.getSession().jprintf(_bundle,"new", env, request.getUser()));
 				} catch (FileNotFoundException e) {
 					// Directory was deleted whilst this was running, simply omit the dir
 					// Decrement pos to account for the directory we were forced to skip
 					pos--;
 				}
 			}
-			response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"footer", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle,"footer", env, request.getUser()));
 		}
 
 		return response;

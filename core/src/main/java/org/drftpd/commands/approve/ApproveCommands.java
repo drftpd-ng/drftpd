@@ -46,12 +46,12 @@ public class ApproveCommands extends CommandInterface {
 	private static final Logger logger = LogManager.getLogger(ApproveCommands.class);
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
     }
 
 	public CommandResponse doSITE_REMAPPROVE(CommandRequest request) {
@@ -110,12 +110,12 @@ public class ApproveCommands extends CommandInterface {
 				env.add("user", user.getName());
 				env.add("searchstr", path);
 				if (dirsToApprove.isEmpty()) {
-					return new CommandResponse(550, session.jprintf(_bundle,_keyPrefix+"approve.search.empty",env, user));
+					return new CommandResponse(550, session.jprintf(_bundle,"approve.search.empty",env, user));
 				} else if (dirsToApprove.size() == 1) {
 					path = dirsToApprove.get(0).getPath();
 				} else {
 					CommandResponse response = new CommandResponse(200);
-					response.addComment(session.jprintf(_bundle,_keyPrefix+"approve.search.start", env, user));
+					response.addComment(session.jprintf(_bundle,"approve.search.start", env, user));
 					int count = 1;
 					for (DirectoryHandle foundDir : dirsToApprove) {
 						try {
@@ -125,13 +125,13 @@ public class ApproveCommands extends CommandInterface {
 							env.add("group", foundDir.getGroup());
 							env.add("num", count++);
 							env.add("size", Bytes.formatBytes(foundDir.getSize()));
-							response.addComment(session.jprintf(_bundle,_keyPrefix+"approve.search.item", env, user));
+							response.addComment(session.jprintf(_bundle,"approve.search.item", env, user));
 						} catch (FileNotFoundException e) {
                             logger.warn("Dir deleted after index search?, skip and continue: {}", foundDir.getPath());
 						}
 					}
 
-					response.addComment(session.jprintf(_bundle,_keyPrefix+"approve.search.end", env, user));
+					response.addComment(session.jprintf(_bundle,"approve.search.end", env, user));
 
 					// Return matching dirs and let user decide what to approve
 					return response;
@@ -141,7 +141,7 @@ public class ApproveCommands extends CommandInterface {
 			if (!dir.exists()) {
 				ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("path", path);
-				return new CommandResponse(500, session.jprintf(_bundle,_keyPrefix+"approve.error.path", env, user));
+				return new CommandResponse(500, session.jprintf(_bundle,"approve.error.path", env, user));
 			}
 		} 
 		
@@ -153,17 +153,17 @@ public class ApproveCommands extends CommandInterface {
 			try {
 				if (remove) {
 					dir.removePluginMetaData(Approve.APPROVE);
-					return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"approve.remove", env, user));
+					return new CommandResponse(200, session.jprintf(_bundle,"approve.remove", env, user));
 				}
 				
 				try {
 					if (!dir.getPluginMetaData(Approve.APPROVE)) {
 						throw new KeyNotFoundException();
 					}
-					return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"approve.approved", env, user));
+					return new CommandResponse(200, session.jprintf(_bundle,"approve.approved", env, user));
 				} catch (KeyNotFoundException e) {
 					dir.addPluginMetaData(Approve.APPROVE, true);
-					return new CommandResponse(200, session.jprintf(_bundle,_keyPrefix+"approve.success", env, user));
+					return new CommandResponse(200, session.jprintf(_bundle,"approve.success", env, user));
 				}
 				
 			} catch (FileNotFoundException e) {

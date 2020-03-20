@@ -58,7 +58,7 @@ public class MediaInfoList implements AddListElementsInterface {
 	private void loadConf() {
         Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("mediainfo.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/mediainfo.conf not found");
+			logger.fatal("config/plugins/mediainfo.conf not found");
 			return;
 		}
 		_exclSections.clear();
@@ -128,8 +128,6 @@ public class MediaInfoList implements AddListElementsInterface {
 	private ArrayList<String> getMediaBarEntries(FileHandle file, ListElementsContainer container,
 												  String ext) throws NoMediaInfoAvailableException {
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-		String keyPrefix = this.getClass().getName()+".";
-
 		try {
 			MediaInfoVFSData mediaData = new MediaInfoVFSData(file);
 			MediaInfo mediaInfo = mediaData.getMediaInfo();
@@ -172,16 +170,13 @@ public class MediaInfoList implements AddListElementsInterface {
 			}
 
 			if (!mediaInfo.getVideoInfos().isEmpty()) {
-				mediaBarEntries.add(container.getSession().jprintf(bundle,
-						keyPrefix+ext+"bar.video",env,container.getUser()));
+				mediaBarEntries.add(container.getSession().jprintf(bundle, ext+"bar.video",env,container.getUser()));
 			}
 			if (!mediaInfo.getAudioInfos().isEmpty()) {
-				mediaBarEntries.add(container.getSession().jprintf(bundle,
-						keyPrefix+ext+"bar.audio",env,container.getUser()));
+				mediaBarEntries.add(container.getSession().jprintf(bundle, ext+"bar.audio",env,container.getUser()));
 			}
 			if (subs.length() != 0) {
-				mediaBarEntries.add(container.getSession().jprintf(bundle,
-						keyPrefix+ext+"bar.sub",env,container.getUser()));
+				mediaBarEntries.add(container.getSession().jprintf(bundle, ext+"bar.sub",env,container.getUser()));
 			}
 
 			return mediaBarEntries;

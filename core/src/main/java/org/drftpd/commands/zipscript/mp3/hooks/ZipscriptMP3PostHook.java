@@ -47,11 +47,11 @@ public class ZipscriptMP3PostHook {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public ZipscriptMP3PostHook() {
 		_bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	@CommandHook(commands = "doCWD", priority = 12, type = HookType.POST)
@@ -160,12 +160,12 @@ public class ZipscriptMP3PostHook {
 				Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 				getPropertiesForPlugin("zipscript.conf");
 				if (cfg.getProperty("stor.mp3info.enabled", "false").equalsIgnoreCase("true")) {
-					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix+"stor.mp3info.text"));
+					response.addComment(request.getSession().jprintf(_bundle, env, "stor.mp3info.text"));
 				}
 				FileHandle file = (FileHandle) inode;
 				GlobalContext.getEventService().publishAsync(new MP3Event(mp3Info,file.getParent(),mp3Data.isFirst()));
 			} else {
-				response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix+"cwd.mp3info.text"));
+				response.addComment(request.getSession().jprintf(_bundle, env, "cwd.mp3info.text"));
 			}
 		} catch (IOException | NoAvailableSlaveException e) {
 			// Error fetching mp3 info, ignore

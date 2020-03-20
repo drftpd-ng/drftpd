@@ -43,16 +43,13 @@ public class NukeList implements AddListElementsInterface {
 	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
         try {
             ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-            String keyPrefix = this.getClass().getName()+".";
-
 			NukeData nukeData = dir.getPluginMetaData(NukeData.NUKEDATA);
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			env.add("reason", nukeData.getReason());
 			env.add("amount", Bytes.formatBytes(nukeData.getAmount()));
 			env.add("multiplier", ""+nukeData.getMultiplier());
 			env.add("nuker", nukeData.getUser());
-			String reasonBarName = container.getSession().jprintf(bundle,
-					keyPrefix+"nuke.reason", env, container.getUser());
+			String reasonBarName = container.getSession().jprintf(bundle, "nuke.reason", env, container.getUser());
 			try {
 				container.getElements().add(
 						new LightRemoteInode(reasonBarName, "drftpd", "drftpd", true, dir.lastModified(), 0L));

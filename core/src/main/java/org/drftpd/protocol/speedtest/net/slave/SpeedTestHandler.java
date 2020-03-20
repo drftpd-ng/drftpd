@@ -96,7 +96,7 @@ public class SpeedTestHandler extends AbstractHandler {
 		Properties p = new Properties();
 		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream("conf/plugins/speedtest.net.slave.conf");
+			fis = new FileInputStream("config/plugins/speedtest.net.slave.conf");
 			p.load(fis);
 		} finally {
 			if (fis != null) {

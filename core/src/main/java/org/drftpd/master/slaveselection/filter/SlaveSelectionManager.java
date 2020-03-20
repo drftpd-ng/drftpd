@@ -146,10 +146,10 @@ public class SlaveSelectionManager extends SlaveSelectionManagerInterface {
 	}
 
 	public void reload() throws FileNotFoundException, IOException {
-		_downChain = new FilterChain("conf/slaveselection-down.conf", getFiltersMap());
-		_upChain = new FilterChain("conf/slaveselection-up.conf", getFiltersMap());
-		_jobUpChain = new FilterChain("conf/slaveselection-jobup.conf", getFiltersMap());
-		_jobDownChain = new FilterChain("conf/slaveselection-jobdown.conf", getFiltersMap());
+		_downChain = new FilterChain("config/slaveselection-down.conf", getFiltersMap());
+		_upChain = new FilterChain("config/slaveselection-up.conf", getFiltersMap());
+		_jobUpChain = new FilterChain("config/slaveselection-jobup.conf", getFiltersMap());
+		_jobDownChain = new FilterChain("config/slaveselection-jobdown.conf", getFiltersMap());
 	}
 	
 	public FilterChain getFilterChain(String type) {

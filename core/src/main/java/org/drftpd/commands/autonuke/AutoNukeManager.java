@@ -79,7 +79,7 @@ public class AutoNukeManager implements PluginInterface {
 
         Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("autonuke.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/autonuke.conf not found");
+			logger.fatal("config/plugins/autonuke.conf not found");
 			return;
 		}
         // excluded sections

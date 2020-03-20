@@ -16,7 +16,7 @@ public class SysopAnnouncer extends AbstractAnnouncer {
 
 	private AnnounceConfig _config;
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public String[] getEventTypes() {
 		return new String[] { "sysop" };
@@ -29,7 +29,7 @@ public class SysopAnnouncer extends AbstractAnnouncer {
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -51,18 +51,18 @@ public class SysopAnnouncer extends AbstractAnnouncer {
 			env.add("response", event.getResponse());
 			if (event.isLogin()) {
 				if (event.isSuccessful()) {
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix + ".login.success",
+					sayOutput(ReplacerUtils.jprintf( "login.success",
 							env, _bundle), writer);
 				} else {
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix + ".login.failed",
+					sayOutput(ReplacerUtils.jprintf( "login.failed",
 							env, _bundle), writer);
 				}
 			} else {
 				if (event.isSuccessful()) {
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix + ".success",
+					sayOutput(ReplacerUtils.jprintf( "success",
 							env, _bundle), writer);
 				} else {
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix + ".failed",
+					sayOutput(ReplacerUtils.jprintf( "failed",
 							env, _bundle), writer);
 				}
 			}

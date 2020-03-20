@@ -46,12 +46,12 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -89,7 +89,7 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 			env.add("speed", Bytes.formatBytes(event.getUploaderPosition().getXferspeed()));
 			env.add("percent", event.getFiles() / event.getUploaderPosition().getFiles());
 
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".store.newraceleader", env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("store.newraceleader", env, _bundle), writer);
 		}
 	}
 }

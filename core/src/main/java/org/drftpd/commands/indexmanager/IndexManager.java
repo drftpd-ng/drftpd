@@ -43,12 +43,12 @@ import java.util.ResourceBundle;
  */
 public class IndexManager extends CommandInterface {
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 	
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	public CommandResponse doRebuildIndex(CommandRequest request) {
@@ -86,7 +86,7 @@ public class IndexManager extends CommandInterface {
 			for (Entry<String,String> entry : ie.getStatus().entrySet()) {
 				env.add("key", entry.getKey());
 				env.add("value", entry.getValue());
-				response.addComment(request.getSession().jprintf(_bundle,_keyPrefix+"indexstatus", env, request.getUser()));
+				response.addComment(request.getSession().jprintf(_bundle,"indexstatus", env, request.getUser()));
 			}
 		} else {
 			response.addComment("Entries in the index: " + ie.getStatus().get("inodes"));

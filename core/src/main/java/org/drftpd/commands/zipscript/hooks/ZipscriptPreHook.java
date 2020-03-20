@@ -69,8 +69,8 @@ public class ZipscriptPreHook {
 		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 			getPropertiesForPlugin("zipscript.conf");
 		if (cfg == null) {
-			logger.fatal("conf/zipscript.conf not found");
-			throw new FatalException("conf/zipscript.conf not found");
+			logger.fatal("config/zipscript.conf not found");
+			throw new FatalException("config/zipscript.conf not found");
 		}
 		// SFV First PathPermissions
 		String sfvFirstUsers = cfg.getProperty("sfvfirst.users", "");

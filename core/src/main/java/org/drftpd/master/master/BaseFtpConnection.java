@@ -242,10 +242,6 @@ public class BaseFtpConnection extends Session implements Runnable {
 		return _controlSocket instanceof SSLSocket;
 	}
 
-	public String jprintf(Class<?> baseName, String key) {
-		return jprintf(baseName, key, null, getUserNull());
-	}
-
 	/**
 	 * Server one FTP connection.
 	 */
@@ -438,7 +434,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * returns a two-line status
 	 */
 	public String status() {
-		return jprintf(BaseFtpConnection.class, "statusline");
+		return jprintf(_commandManager.getResourceBundle(), "statusline", null);
 	}
 
 	/**

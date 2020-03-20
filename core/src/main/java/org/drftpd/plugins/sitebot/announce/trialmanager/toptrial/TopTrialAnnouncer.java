@@ -41,12 +41,12 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -72,7 +72,7 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 			env_header.add("min",event.getMin());
 			env_header.add("period",event.getPeriodStr());
 			
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".header", env_header, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("header", env_header, _bundle), writer);
 			int passed = 0;
 			ArrayList<User> users = event.getUsers();
 			for (User user : users) {
@@ -82,14 +82,14 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 				env.add("files",user.getUploadedFilesForPeriod(event.getPeriod()));
 				env.add("name", user.getName());
 				if ((user.getUploadedBytesForPeriod(event.getPeriod()) > event.getMin()) && (passed < event.getKeep())) {
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".passed", env, _bundle), writer);
+					sayOutput(ReplacerUtils.jprintf("passed", env, _bundle), writer);
 				} else {
-					sayOutput(ReplacerUtils.jprintf(_keyPrefix+".failed", env, _bundle), writer);
+					sayOutput(ReplacerUtils.jprintf("failed", env, _bundle), writer);
 				
 				}
 			}	
 			if (passed == 0) {
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".empty", env_header, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf("empty", env_header, _bundle), writer);
 			}
 		}
 	}

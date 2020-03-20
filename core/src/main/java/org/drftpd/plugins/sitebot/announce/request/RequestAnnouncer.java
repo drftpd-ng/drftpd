@@ -38,12 +38,12 @@ public class RequestAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName()+".";
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -73,7 +73,7 @@ public class RequestAnnouncer extends AbstractAnnouncer {
 			env.add("issuerGroup", event.getCommandIssuer().getGroup());
 			env.add("owner", event.getRequestOwner().getName());
 			env.add("ownerGroup", event.getRequestOwner().getGroup());
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+event.getCommand(), env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf(event.getCommand(), env, _bundle), writer);
 		}
 	}
 }

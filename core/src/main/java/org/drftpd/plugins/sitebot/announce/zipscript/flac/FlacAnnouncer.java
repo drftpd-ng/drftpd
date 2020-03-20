@@ -39,12 +39,12 @@ public class FlacAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -104,7 +104,7 @@ public class FlacAnnouncer extends AbstractAnnouncer {
 				runtime = runtime + runSeconds + "s";
 				env.add("runtime", runtime);
 				env.add("path", event.getDir().getName());
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".vorbistag", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf("vorbistag", env, _bundle), writer);
 			}
 		}
 	}

@@ -35,12 +35,12 @@ public class TvMazeAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -63,7 +63,7 @@ public class TvMazeAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("tvmaze", event.getDir());
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".tvmaze.announce", event.getEnv(), _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("tvmaze.announce", event.getEnv(), _bundle), writer);
 		}
 	}
 }

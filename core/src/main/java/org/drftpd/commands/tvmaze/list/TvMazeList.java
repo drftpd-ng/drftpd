@@ -44,8 +44,6 @@ public class TvMazeList implements AddListElementsInterface {
 	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
 		try {
 			ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-			String keyPrefix = this.getClass().getName()+".";
-
 			if (TvMazeConfig.getInstance().barEnabled()) {
 				TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
 				TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
@@ -56,8 +54,7 @@ public class TvMazeList implements AddListElementsInterface {
 					} else {
 						env = TvMazeUtils.getShowEnv(tvmazeInfo);
 					}
-					String tvmazeDirName = container.getSession().jprintf(bundle,
-							keyPrefix+"tvmaze.dir", env, container.getUser());
+					String tvmazeDirName = container.getSession().jprintf(bundle, "tvmaze.dir", env, container.getUser());
 					try {
 						container.getElements().add(new LightRemoteInode(tvmazeDirName, "drftpd", "drftpd",
 								TvMazeConfig.getInstance().barAsDirectory(), dir.lastModified(), 0L));

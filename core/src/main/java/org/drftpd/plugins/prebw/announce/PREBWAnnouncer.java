@@ -43,12 +43,12 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -79,7 +79,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 			env.add("section", section.getName());
 			env.add("sectioncolor", section.getColor());
 			StringBuilder bw = new StringBuilder();
-			String delim = ReplacerUtils.jprintf(_keyPrefix+".prebw.bw.separator", env, _bundle).trim();
+			String delim = ReplacerUtils.jprintf("prebw.bw.separator", env, _bundle).trim();
 			for (String messure : preInfo.getMessures().keySet()) {
 				ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 				tmpenv.add("time", messure);
@@ -89,7 +89,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 					bw.append(delim);
 					bw.append(" ");
 				}
-				bw.append(ReplacerUtils.jprintf(_keyPrefix+".prebw.bw.format", tmpenv, _bundle));
+				bw.append(ReplacerUtils.jprintf("prebw.bw.format", tmpenv, _bundle));
 			}
 			env.add("bw", bw);
 			StringBuilder leechers = new StringBuilder();
@@ -99,7 +99,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 					tmpenv.add("dir", dir.getName());
 					tmpenv.add("section", section.getName());
 					tmpenv.add("sectioncolor", section.getColor());
-					leechers.append(ReplacerUtils.jprintf(_keyPrefix + ".prebw.leechtop.empty",
+					leechers.append(ReplacerUtils.jprintf( "prebw.leechtop.empty",
 							tmpenv, _bundle));
 				} else {
 					preInfo.getUsers().sort(new UserComparator());
@@ -117,7 +117,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 						tmpenv.add("files", u.getFiles());
 						tmpenv.add("avgspeed", Bytes.formatBytes(u.getAvgSpeed()) + "/s");
 						tmpenv.add("topspeed", Bytes.formatBytes(u.getTopSpeed()) + "/s");
-						leechers.append(ReplacerUtils.jprintf(_keyPrefix + ".prebw.leechtop.format",
+						leechers.append(ReplacerUtils.jprintf( "prebw.leechtop.format",
 								tmpenv, _bundle));
 						i++;
 					}
@@ -130,7 +130,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 			env.add("messuretime", preInfo.getMtime());
 			env.add("bwavg", Bytes.formatBytes(preInfo.getBWAvg())+"/s");
 			env.add("bwtop", Bytes.formatBytes(preInfo.getBWTop())+"/s");
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".prebw.announce", env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("prebw.announce", env, _bundle), writer);
 		}
 	}
 

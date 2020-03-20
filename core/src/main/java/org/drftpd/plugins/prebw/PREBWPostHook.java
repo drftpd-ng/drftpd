@@ -69,7 +69,7 @@ public class PREBWPostHook {
     private void loadConf() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("prebw.conf");
 		if (cfg == null) {
-			logger.fatal("conf/prebw.conf not found");
+			logger.fatal("config/prebw.conf not found");
             return;
 		}
         PreInfos.getPreInfosSingleton().clearPreInfos();

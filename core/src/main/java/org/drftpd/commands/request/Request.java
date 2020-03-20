@@ -50,7 +50,7 @@ public class Request extends CommandInterface {
 	private static final Logger logger = LogManager.getLogger(Request.class);
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 	
 	private String _requestPath;
 	private boolean _createRequestPath;
@@ -67,7 +67,7 @@ public class Request extends CommandInterface {
 		AnnotationProcessor.process(this);
 		
     	_bundle = cManager.getResourceBundle();
-    	_keyPrefix = this.getClass().getName()+".";
+
 
 		_requestDenyRegex = new ArrayList<>();
     	
@@ -162,26 +162,26 @@ public class Request extends CommandInterface {
 					try {
 						dir.renameToUnchecked(requestDir.getNonExistentDirectoryHandle(filledname));
 					} catch (FileExistsException e) {
-						return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.exists", env, request.getUser()));
+						return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.exists", env, request.getUser()));
 					} catch (FileNotFoundException e) {
 						logger.error("File was just here but it vanished", e);
-						return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.error", env, request.getUser()));
+						return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.error", env, request.getUser()));
 					}
 
 					GlobalContext.getEventService().publishAsync(new RequestEvent("reqfilled", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 
 					if (session instanceof BaseFtpConnection) {
-						return new CommandResponse(200, session.jprintf(_bundle, _keyPrefix+"reqfilled.success", env, request.getUser()));
+						return new CommandResponse(200, session.jprintf(_bundle, "reqfilled.success", env, request.getUser()));
 					}
 					// Return ok status to IRC so we know the command was successful
 					return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 				}
 			}
 		} catch (FileNotFoundException e) {
-			return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.root.notfound", env, request.getUser()));
+			return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.root.notfound", env, request.getUser()));
 		}
 
-		return new CommandResponse(500, session.jprintf(_bundle, _keyPrefix+"reqfilled.notfound", env, request.getUser()));
+		return new CommandResponse(500, session.jprintf(_bundle, "reqfilled.notfound", env, request.getUser()));
 	}
 
 	public CommandResponse doSITE_REQUEST(CommandRequest request) throws ImproperUsageException {
@@ -213,16 +213,16 @@ public class Request extends CommandInterface {
 		try {
 			requestDir.createDirectoryUnchecked(createdDirName, user.getName(), user.getGroup());
 		} catch (FileExistsException e) {
-			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"request.exists", env, user.getName()));
+			return new CommandResponse(550, session.jprintf(_bundle, "request.exists", env, user.getName()));
 		} catch (FileNotFoundException e) {
 			logger.error("File was just here but it vanished", e);
-			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"request.error", env, user.getName()));
+			return new CommandResponse(550, session.jprintf(_bundle, "request.error", env, user.getName()));
 		}
 		
 		GlobalContext.getEventService().publishAsync(new RequestEvent("request", requestDir, user, requestName));
 
 		if (session instanceof BaseFtpConnection) {
-			return new CommandResponse(257, session.jprintf(_bundle, _keyPrefix+"request.success", env, user.getName()));
+			return new CommandResponse(257, session.jprintf(_bundle, "request.success", env, user.getName()));
 		}
 		
 		// Return ok status to IRC so we know the command was successful
@@ -236,7 +236,7 @@ public class Request extends CommandInterface {
 		
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.header", env, request.getUser()));
+		response.addComment(request.getSession().jprintf(_bundle, "requests.header", env, request.getUser()));
 		int i = 1;
 		
 		User user = request.getSession().getUserNull(request.getUser());
@@ -255,12 +255,12 @@ public class Request extends CommandInterface {
                 
                 i++;
                 
-                response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.list", env, request.getUser()));
+                response.addComment(request.getSession().jprintf(_bundle, "requests.list", env, request.getUser()));
 			}
 		} catch (FileNotFoundException e) {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"request.error", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, "request.error", env, request.getUser()));
 		}
-		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"requests.footer", env, request.getUser()));
+		response.addComment(request.getSession().jprintf(_bundle, "requests.footer", env, request.getUser()));
 		return response;
 	}
 
@@ -304,23 +304,23 @@ public class Request extends CommandInterface {
 						dir.deleteUnchecked();
 
 						if (session instanceof BaseFtpConnection) {
-							response.addComment(session.jprintf(_bundle, _keyPrefix+"reqdel.success", env, request.getUser()));
+							response.addComment(session.jprintf(_bundle, "reqdel.success", env, request.getUser()));
 						}
 						
 						GlobalContext.getEventService().publishAsync(new RequestEvent("reqdel", user, requestDir, session.getUserNull(parser.getUser()), requestName));
 						
 						break;
 					}
-					return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.notowner", env, request.getUser()));
+					return new CommandResponse(550, session.jprintf(_bundle, "reqdel.notowner", env, request.getUser()));
 				}
 			}
 			
 			if (requestNotFound) {
-				return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.notfound", env, request.getUser()));
+				return new CommandResponse(550, session.jprintf(_bundle, "reqdel.notfound", env, request.getUser()));
 			}
 			
 		} catch (FileNotFoundException e) {
-			return new CommandResponse(550, session.jprintf(_bundle, _keyPrefix+"reqdel.root.notfound", env, request.getUser()));
+			return new CommandResponse(550, session.jprintf(_bundle, "reqdel.root.notfound", env, request.getUser()));
 		}
 		
 		return response;

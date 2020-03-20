@@ -41,7 +41,6 @@ public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStat
 
 	public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-		String keyPrefix = this.getClass().getName()+".";
 		// Check config
 		boolean statusBarEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
@@ -59,16 +58,14 @@ public class ZipscriptDizStatusBar extends ZipTools implements ZipscriptListStat
 					env.add("complete.percent", "" + (dizStatus.getPresent() * 100)
 							/ dizInfo.getTotal());
 					env.add("complete.totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
-					statusBarEntries.add(container.getSession().jprintf(bundle,
-							keyPrefix+"statusbar.complete", env, container.getUser()));
+					statusBarEntries.add(container.getSession().jprintf(bundle, "diz.statusbar.complete", env, container.getUser()));
 
 					if (dizStatus.getOffline() != 0) {
 						env.add("offline.number","" + dizStatus.getOffline());
 						env.add("offline.percent",""+ (dizStatus.getOffline() * 100) / dizStatus.getPresent());
 						env.add("online.number","" + dizStatus.getPresent());
 						env.add("online.percent","" + (dizStatus.getAvailable() * 100) / dizStatus.getPresent());
-						statusBarEntries.add(container.getSession().jprintf(bundle,
-								keyPrefix+"statusbar.offline",env,container.getUser()));
+						statusBarEntries.add(container.getSession().jprintf(bundle, "diz.statusbar.offline",env,container.getUser()));
 					}
 					return statusBarEntries;
 				}

@@ -40,13 +40,13 @@ public class ServerStatus extends CommandInterface {
 	protected static final Key<Long> CONNECTTIME = new Key<>(ServerStatus.class, "connecttime");
 	
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 	
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		StatusSubscriber.checkSubscription();
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 	
 	public CommandResponse doMasterUptime(CommandRequest request) {
@@ -55,7 +55,7 @@ public class ServerStatus extends CommandInterface {
 		
 		long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
 		env.add("uptime", Time.formatTime(uptime));
-		response.setMessage(request.getSession().jprintf(_bundle, _keyPrefix+"master.uptime", env, request.getUser()));
+		response.setMessage(request.getSession().jprintf(_bundle, "master.uptime", env, request.getUser()));
 		
 		return response;		
 	}
@@ -76,7 +76,7 @@ public class ServerStatus extends CommandInterface {
             response.addComment(makeOutput(session, rslave));            
 	    } catch (ObjectNotFoundException e2) {
             env.add("slave", slaveName);
-            response.addComment(session.jprintf(_bundle, env, _keyPrefix+"slave.notfound"));
+            response.addComment(session.jprintf(_bundle, env, "slave.notfound"));
         }	    
 	    return response;
 	}
@@ -101,9 +101,9 @@ public class ServerStatus extends CommandInterface {
         	long connectTime = rslave.getTransientKeyedMap().getObjectLong(CONNECTTIME);
         	long uptime = System.currentTimeMillis() - connectTime;
         	env.add("uptime", Time.formatTime(uptime));	
-    		return session.jprintf(_bundle, env, _keyPrefix+"slave.uptime");
+    		return session.jprintf(_bundle, env, "slave.uptime");
         }
-		return session.jprintf(_bundle, env, _keyPrefix+"slave.offline");
+		return session.jprintf(_bundle, env, "slave.offline");
 	}
 	
 	public CommandResponse doStatus(CommandRequest request) throws ImproperUsageException {
@@ -137,7 +137,7 @@ public class ServerStatus extends CommandInterface {
 				env.add("os.name", omx.getName());
 				env.add("os.version", omx.getVersion());
 				env.add("os.arch", omx.getArch());
-				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.osinfo"));
+				response.addComment(session.jprintf(_bundle, env, "status.osinfo"));
 			}
 
 			if (arg.equals("vm") || isAll) {
@@ -145,7 +145,7 @@ public class ServerStatus extends CommandInterface {
 				env.add("vm.name", rmx.getVmName());
 				env.add("vm.version", System.getProperty("java.version"));
 				env.add("vm.vendor", rmx.getVmVendor());
-				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.vminfo"));
+				response.addComment(session.jprintf(_bundle, env, "status.vminfo"));
 			}
 
 			if (arg.equals("memory") || isAll) { 
@@ -153,13 +153,13 @@ public class ServerStatus extends CommandInterface {
 				env.add("heap.used", Bytes.formatBytes(heap.getUsed()));
 				env.add("heap.available", Bytes.formatBytes(heap.getCommitted()));
 				env.add("heap.max", Bytes.formatBytes(heap.getMax()));
-				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.heap"));
+				response.addComment(session.jprintf(_bundle, env, "status.heap"));
 
 				MemoryUsage nonheap = ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage();
 				env.add("nonheap.used", Bytes.formatBytes(nonheap.getUsed()));
 				env.add("nonheap.available", Bytes.formatBytes(nonheap.getCommitted()));
 				env.add("nonheap.max", Bytes.formatBytes(nonheap.getMax()));
-				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.nonheap"));
+				response.addComment(session.jprintf(_bundle, env, "status.nonheap"));
 			}
 			
 			if (arg.equals("classes") || isAll) {
@@ -167,7 +167,7 @@ public class ServerStatus extends CommandInterface {
 				env.add("loaded.classes", cmx.getLoadedClassCount());
 				env.add("unloaded.classes", cmx.getUnloadedClassCount());
 				env.add("total.classes", cmx.getTotalLoadedClassCount());
-				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.classes"));
+				response.addComment(session.jprintf(_bundle, env, "status.classes"));
 			}
 			
 			if (arg.equals("threads") || isAll) {
@@ -175,7 +175,7 @@ public class ServerStatus extends CommandInterface {
 				env.add("current.threads", tmx.getThreadCount());
 				env.add("max.threads", tmx.getPeakThreadCount());
 				env.add("total.threads", tmx.getTotalStartedThreadCount());
-				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.threads"));
+				response.addComment(session.jprintf(_bundle, env, "status.threads"));
 			}
 
 			if (arg.equals("gc") || isAll) {
@@ -192,7 +192,7 @@ public class ServerStatus extends CommandInterface {
 				else
 					env.add("collection.time", collectionTime+"ms");
 
-				response.addComment(session.jprintf(_bundle, env, _keyPrefix+"status.gcinfo"));
+				response.addComment(session.jprintf(_bundle, env, "status.gcinfo"));
 			}
 			
 			if (isAll) {

@@ -68,7 +68,7 @@ public class IMDBConfig {
 	private void loadConfig() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("imdb.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/imdb.conf not found");
+			logger.fatal("config/plugins/imdb.conf not found");
 			return;
 		}
 		addSectionsFromConf(cfg, "race.section.", _rSections);

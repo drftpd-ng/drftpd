@@ -58,7 +58,6 @@ import java.util.concurrent.*;
 public class SiteBot implements ReplyConstants, Runnable {
 
     private static final Logger logger = LogManager.getLogger(SiteBot.class);
-
     public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
 
     static {
@@ -114,7 +113,7 @@ public class SiteBot implements ReplyConstants, Runnable {
     // Command Manager to use for executing commands
     private HashMap<String, Properties> _cmds;
     private CommandManagerInterface _commandManager;
-    private static final String themeDir = "conf/themes/irc";
+    private static final String themeDir = "config/themes/irc";
 
     // An ArrayList to hold references to announce plugins we have connected
     private ArrayList<AbstractAnnouncer> _announcers = new ArrayList<>();
@@ -145,7 +144,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
     public void run() {
         _config = new SiteBotConfig(GlobalContext.getGlobalContext().getPluginsConfig()
-                .getPropertiesForPlugin(_confDir + "/irc.conf"));
+                .getPropertiesForPlugin("config/base/irc/" + _confDir + "irc.conf"));
 
         // set a default mode/prefix for the users in case the server doesn't have it defined properly
         // default to PREFIX=(ov)@+
@@ -2719,7 +2718,7 @@ public class SiteBot implements ReplyConstants, Runnable {
      * After that it read the file and create a list of the existing commands.
      */
     private void loadCommands() {
-        _cmds = GlobalContext.loadCommandConfig("conf/plugins/" + _confDir + "/irccommands.conf");
+        _cmds = GlobalContext.loadCommandConfig("config/commands/irc/" + _confDir);
     }
 
     /**
@@ -2792,7 +2791,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                 try {
                     _pool.execute(new CommandThread(request, service, sender, ident));
                 } catch (RejectedExecutionException e) {
-                    OutputWriter rejectWriter = null;
+                    OutputWriter rejectWriter;
                     if (isPublic) {
                         rejectWriter = _writers.get(channel);
                     } else {
@@ -3028,15 +3027,15 @@ public class SiteBot implements ReplyConstants, Runnable {
 		}
 	}*/
 
-	@EventSubscriber
-	public void onInviteEvent(InviteEvent event) {
-		if (event.getTargetBot().equalsIgnoreCase(_name)) {
-			UserDetails userDetails = new UserDetails(event.getIrcNick(), "", this);
-			userDetails.setFtpUser(event.getUser().getName());
-			_users.put(event.getIrcNick(), userDetails);
-			sendRawLineViaQueue("WHOIS " + event.getIrcNick());
-		}
-	}
+    @EventSubscriber
+    public void onInviteEvent(InviteEvent event) {
+        if (event.getTargetBot().equalsIgnoreCase(_name)) {
+            UserDetails userDetails = new UserDetails(event.getIrcNick(), "", this);
+            userDetails.setFtpUser(event.getUser().getName());
+            _users.put(event.getIrcNick(), userDetails);
+            sendRawLineViaQueue("WHOIS " + event.getIrcNick());
+        }
+    }
 
     protected void terminate(String reason) {
         for (UserDetails user : _users.values()) {

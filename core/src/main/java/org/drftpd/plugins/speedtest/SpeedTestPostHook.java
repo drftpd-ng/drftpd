@@ -56,7 +56,7 @@ public class SpeedTestPostHook {
 	private void loadConf() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("speedtest.conf");
 		if (cfg == null) {
-			logger.error("conf/plugins/speedtest.conf not found");
+			logger.error("config/plugins/speedtest.conf not found");
 			return;
 		}
 		_speedTestPaths.clear();

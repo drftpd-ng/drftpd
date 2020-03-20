@@ -39,7 +39,7 @@ import java.util.Properties;
  * @version $Id$
  */
 public class PluginsConfig {
-	private static final String pluginsConfPath = "conf/plugins/";
+	private static final String pluginsConfPath = "config/plugins/";
 	private static final File pluginsConfFile = new File(pluginsConfPath);
 
 	private static final Logger logger = LogManager.getLogger(PluginsConfig.class);
@@ -109,7 +109,7 @@ public class PluginsConfig {
 				return; // we were told to skip the file.				
 			}
 			
-			String key = file.getPath().substring("conf/plugins/".length()).replace("\\", "/");
+			String key = file.getPath().substring("config/plugins/".length()).replace("\\", "/");
 			getPropertiesMap().put(key, cfg);
 		} catch (FileNotFoundException e) {
 			logger.error("Weird the file was just there, how come it's gone?", e);

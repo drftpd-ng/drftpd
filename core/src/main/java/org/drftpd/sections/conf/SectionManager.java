@@ -109,7 +109,7 @@ public class SectionManager implements SectionManagerInterface {
 		HashMap<String, SectionInterface> sections = new HashMap<>();
 		FileInputStream stream = null;
         try {
-        	stream = new FileInputStream("conf/sections.conf");
+        	stream = new FileInputStream("config/sections.conf");
 			p.load(stream);
 		} catch (IOException e) {
 			throw new FatalException(e);

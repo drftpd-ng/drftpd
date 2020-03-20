@@ -20,7 +20,7 @@ public class NukeFilterAnnouncer extends AbstractAnnouncer {
 	
 	private AnnounceConfig _config;
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public String[] getEventTypes() {
 		return new String[] { "nukefilter" };
@@ -29,7 +29,7 @@ public class NukeFilterAnnouncer extends AbstractAnnouncer {
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		//subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -56,7 +56,7 @@ public class NukeFilterAnnouncer extends AbstractAnnouncer {
 			env.add("sectioncolor", nfni.getSectionColor());
 			env.add("element", nfni.getElement());
 			env.add("nukex", String.valueOf(nfni.getNukex()));
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+event.getIRCString(), env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf(event.getIRCString(), env, _bundle), writer);
 		}
 	}
 

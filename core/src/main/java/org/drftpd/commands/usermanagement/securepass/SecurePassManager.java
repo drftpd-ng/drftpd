@@ -100,7 +100,7 @@ public class SecurePassManager implements PluginInterface {
 		LineNumberReader inRead = null;
 		
 		try {
-			inRead = new LineNumberReader(new FileReader("conf/plugins/securepass.conf"));			   
+			inRead = new LineNumberReader(new FileReader("config/plugins/securepass.conf"));
 			String line;
 			while ((line = inRead.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line);

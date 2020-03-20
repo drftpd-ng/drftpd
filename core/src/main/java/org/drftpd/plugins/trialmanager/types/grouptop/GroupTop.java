@@ -41,7 +41,7 @@ public class GroupTop extends TrialType {
     private int _list;
     private int _keep;
     private long _min;
-    private String _keyPrefix;
+
     private int _minPercent;
 
     public GroupTop(Properties p, int confnum, String type) {
@@ -71,7 +71,7 @@ public class GroupTop extends TrialType {
             _keep = 10;
         }
 
-        _keyPrefix = this.getClass().getName() + ".";
+
     }
 
 
@@ -243,15 +243,15 @@ public class GroupTop extends TrialType {
 
         if (top) {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "top.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "top.header", env2, requestuser));
             }
         } else {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "cut.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "cut.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "cut.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "cut.header", env2, requestuser));
             }
         }
 
@@ -278,14 +278,14 @@ public class GroupTop extends TrialType {
             if ((i < getKeep()) && (uploaded >= (getMin() * grp.getMembers())) && (uploaded >= minPercentage)) {
                 //Passing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "top.passed", env, requestuser));
                 }
             } else {
                 //Failing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "top.failed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "cut.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "cut.failed", env, requestuser));
                 }
             }
             i++;
@@ -366,7 +366,7 @@ public class GroupTop extends TrialType {
         env2.add("grpname", group);
 
         if (grp == null) {
-            response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "passed.nosuchgroup", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle,  "passed.nosuchgroup", env2, requestuser));
             return response;
         }
 
@@ -382,9 +382,9 @@ public class GroupTop extends TrialType {
         long minPercentage = getTop() / 100 * getMinPercent();
 
         if ((i < getKeep()) && (uploaded >= (getMin() * grp.getMembers())) && (uploaded >= minPercentage)) {
-            response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "passed.passed.header", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle,  "passed.passed.header", env2, requestuser));
         } else {
-            response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "passed.failed.header", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle,  "passed.failed.header", env2, requestuser));
         }
 
         int count = 0;
@@ -401,9 +401,9 @@ public class GroupTop extends TrialType {
                 env.add("time", getRemainingTime());
 
                 if ((count < getKeep()) && (uploaded >= getMin())) {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "passed.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "passed.passed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "passed.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "passed.failed", env, requestuser));
                 }
 
             }

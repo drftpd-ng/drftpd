@@ -39,7 +39,7 @@ public class TopTrial extends TrialType {
     private int _list;
     private int _keep;
     private long _min;
-    private String _keyPrefix;
+
     private int _minPercent;
 
     public TopTrial(Properties p, int confnum, String type) {
@@ -68,7 +68,7 @@ public class TopTrial extends TrialType {
         } catch (NumberFormatException e) {
             _keep = 10;
         }
-        _keyPrefix = this.getClass().getName() + ".";
+
     }
 
 
@@ -212,15 +212,15 @@ public class TopTrial extends TrialType {
 
         if (top) {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "top.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "top.header", env2, requestuser));
             }
         } else {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "cut.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "cut.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "cut.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle,  "cut.header", env2, requestuser));
             }
         }
 
@@ -244,14 +244,14 @@ public class TopTrial extends TrialType {
             if ((i < getKeep()) && (uploaded >= getMin()) && (uploaded >= minPercentage)) {
                 //Passing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "top.passed", env, requestuser));
                 }
             } else {
                 //Failing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "top.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "top.failed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "cut.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "cut.failed", env, requestuser));
                 }
             }
             i++;
@@ -322,15 +322,15 @@ public class TopTrial extends TrialType {
                 }
 
                 if (count == 1) {
-                    env.add("place", request.getSession().jprintf(bundle, _keyPrefix + "place.winning", env2, requestuser));
+                    env.add("place", request.getSession().jprintf(bundle,  "place.winning", env2, requestuser));
                 } else {
-                    env.add("place", request.getSession().jprintf(bundle, _keyPrefix + "place.losing", env2, requestuser));
+                    env.add("place", request.getSession().jprintf(bundle,  "place.losing", env2, requestuser));
                 }
 
                 if ((count < getKeep()) && (uploaded >= getMin())) {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "place.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "place.passed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "place.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle,  "place.failed", env, requestuser));
                 }
 
                 break;
@@ -341,7 +341,7 @@ public class TopTrial extends TrialType {
         if (!found) {
             ReplacerEnvironment env = new ReplacerEnvironment();
             env.add("name", request.getArgument());
-            response.addComment(request.getSession().jprintf(bundle, _keyPrefix + "place.notfound", env, requestuser));
+            response.addComment(request.getSession().jprintf(bundle,  "place.notfound", env, requestuser));
         }
 
         return response;

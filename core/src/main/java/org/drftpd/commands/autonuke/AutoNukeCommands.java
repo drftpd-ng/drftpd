@@ -48,12 +48,12 @@ public class AutoNukeCommands extends CommandInterface {
 	private static final Logger logger = LogManager.getLogger(AutoNukeCommands.class);
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
     }
 
 	public CommandResponse doSITE_AUTONUKES(CommandRequest request) {
@@ -68,10 +68,10 @@ public class AutoNukeCommands extends CommandInterface {
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-		response.addComment(session.jprintf(_bundle, _keyPrefix+"autonukes.header", request.getUser()));
+		response.addComment(session.jprintf(_bundle, "autonukes.header", request.getUser()));
 
 		if (DirsToNuke.getDirsToNuke().empty()) {
-			response.addComment(session.jprintf(_bundle, _keyPrefix+"autonukes.empty", request.getUser()));
+			response.addComment(session.jprintf(_bundle, "autonukes.empty", request.getUser()));
 		}
 
 		ReplacerEnvironment env = new ReplacerEnvironment();
@@ -88,7 +88,7 @@ public class AutoNukeCommands extends CommandInterface {
 				env.add("multiplier", ""+ni.getMultiplier());
 				env.add("reason", ni.getReason());
 				response.addComment(session.jprintf(
-						_bundle, _keyPrefix+"autonukes.item", env, request.getUser()));
+						_bundle, "autonukes.item", env, request.getUser()));
 				if (!foundItem) foundItem = true;
 			}
 		}
@@ -98,7 +98,7 @@ public class AutoNukeCommands extends CommandInterface {
 			env.add("sectioncolor", section.getColor());
 			env.add("nbrtotal", ""+DirsToNuke.getDirsToNuke().size());
 			response.addComment(session.jprintf(
-					_bundle, _keyPrefix+"autonukes.section.empty", request.getUser()));
+					_bundle, "autonukes.section.empty", request.getUser()));
 		}
 
         return response;
@@ -111,7 +111,7 @@ public class AutoNukeCommands extends CommandInterface {
 		if (!request.hasArgument()) {
 			env.add("items", ""+DirsToNuke.getDirsToNuke().clear());
 			return new CommandResponse(200, session.jprintf(
-					_bundle, _keyPrefix+"autonukes.del.clear", env, request.getUser()));
+					_bundle, "autonukes.del.clear", env, request.getUser()));
 		}
 
 		DirectoryHandle dir;
@@ -129,19 +129,19 @@ public class AutoNukeCommands extends CommandInterface {
 			dir = request.getCurrentDirectory().getDirectoryUnchecked(path);
 		} catch (FileNotFoundException e) {
 			return new CommandResponse(501, session.jprintf(
-					_bundle, _keyPrefix+"autonukes.del.error", env, request.getUser()));
+					_bundle, "autonukes.del.error", env, request.getUser()));
 		} catch (ObjectNotValidException e) {
 			return new CommandResponse(501, session.jprintf(
-					_bundle, _keyPrefix+"autonukes.del.error", env, request.getUser()));
+					_bundle, "autonukes.del.error", env, request.getUser()));
 		}
 		env.add("dir", dir.getName());
 
 		if (DirsToNuke.getDirsToNuke().del(dir)) {
 			return new CommandResponse(200, session.jprintf(
-					_bundle, _keyPrefix+"autonukes.del.success", env, request.getUser()));
+					_bundle, "autonukes.del.success", env, request.getUser()));
 		}
 		return new CommandResponse(500, session.jprintf(
-				_bundle, _keyPrefix+"autonukes.del.notfound", env, request.getUser()));
+				_bundle, "autonukes.del.notfound", env, request.getUser()));
 	}
 
 	public CommandResponse doSITE_AUTONUKESCAN(CommandRequest request) {
@@ -177,7 +177,7 @@ public class AutoNukeCommands extends CommandInterface {
 			env.add("section", section.getName());
 			env.add("sectioncolor", section.getColor());
 			request.getSession().printOutput(200, request.getSession().jprintf(
-					_bundle, _keyPrefix+"autonukescan.start", env, request.getUser()));
+					_bundle, "autonukescan.start", env, request.getUser()));
 
 			if (request.getSession().isAborted()) { break; }
 			try {
@@ -220,10 +220,10 @@ public class AutoNukeCommands extends CommandInterface {
         }
         if (request.getSession().isAborted()) {
             return new CommandResponse(200, request.getSession().jprintf(
-					_bundle, _keyPrefix+"autonukescan.aborted", request.getUser()));
+					_bundle, "autonukescan.aborted", request.getUser()));
         } else {
             return new CommandResponse(200, request.getSession().jprintf(
-					_bundle, _keyPrefix+"autonukescan.complete", request.getUser()));
+					_bundle, "autonukescan.complete", request.getUser()));
         }
 	}
 

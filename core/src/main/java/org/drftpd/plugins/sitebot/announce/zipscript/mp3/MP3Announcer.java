@@ -41,12 +41,12 @@ public class MP3Announcer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -109,7 +109,7 @@ public class MP3Announcer extends AbstractAnnouncer {
 				runtime = runtime + runSeconds + "s";
 				env.add("runtime", runtime);
 				env.add("path", event.getDir().getName());
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".id3tag", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf("id3tag", env, _bundle), writer);
 			}
 		}
 	}

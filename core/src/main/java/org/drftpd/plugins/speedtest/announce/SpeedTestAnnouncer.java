@@ -41,12 +41,12 @@ public class SpeedTestAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -79,7 +79,7 @@ public class SpeedTestAnnouncer extends AbstractAnnouncer {
 			env.add("size", Bytes.formatBytes(status.getTransfered()));
 			env.add("time", Time.formatTime(status.getElapsed()));
 			env.add("speed", Bytes.formatBytes(status.getXferSpeed())+"/s");
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".speedtest", env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("speedtest", env, _bundle), writer);
 		}
 	}
 }

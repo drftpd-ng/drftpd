@@ -46,301 +46,300 @@ import java.util.*;
  * @version $Id$
  */
 public class TransferStatistics extends CommandInterface {
-	public static final int PERIOD_ALL = 0;
-	public static final int PERIOD_MONTHLY = 1;
-	public static final int PERIOD_WEEKLY = 2;
-	public static final int PERIOD_DAILY = 3;
-	
-	private static final Logger logger = LogManager.getLogger(TransferStatistics.class);
+    public static final int PERIOD_ALL = 0;
+    public static final int PERIOD_MONTHLY = 1;
+    public static final int PERIOD_WEEKLY = 2;
+    public static final int PERIOD_DAILY = 3;
 
-	private ResourceBundle _bundle;
+    private static final Logger logger = LogManager.getLogger(TransferStatistics.class);
 
-	private String _keyPrefix;
+    private ResourceBundle _bundle;
 
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		super.initialize(method, pluginName, cManager);
-		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
-	}
 
-	/* TODO: not sure this method is actually
-	 * use anywhere
-	 */
-	public static long getFiles(String command, User user) {
-		// AL MONTH WK DAY
-		String period = command.substring(0, command.length() - 2);
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+        _bundle = cManager.getResourceBundle();
 
-		// UP DN
-		String updn = command.substring(command.length() - 2);
+    }
 
-		if (updn.equals("UP")) {
-			if (period.equals("AL")) {
-				return user.getUploadedFiles();
-			}
+    /* TODO: not sure this method is actually
+     * use anywhere
+     */
+    public static long getFiles(String command, User user) {
+        // AL MONTH WK DAY
+        String period = command.substring(0, command.length() - 2);
 
-			if (period.equals("DAY")) {
-				return user.getUploadedFilesDay();
-			}
+        // UP DN
+        String updn = command.substring(command.length() - 2);
 
-			if (period.equals("WK")) {
-				return user.getUploadedFilesWeek();
-			}
+        if (updn.equals("UP")) {
+            if (period.equals("AL")) {
+                return user.getUploadedFiles();
+            }
 
-			if (period.equals("MONTH")) {
-				return user.getUploadedFilesMonth();
-			}
-		} else if (updn.equals("DN")) {
-			if (period.equals("AL")) {
-				return user.getDownloadedFiles();
-			}
+            if (period.equals("DAY")) {
+                return user.getUploadedFilesDay();
+            }
 
-			if (period.equals("DAY")) {
-				return user.getDownloadedFilesDay();
-			}
+            if (period.equals("WK")) {
+                return user.getUploadedFilesWeek();
+            }
 
-			if (period.equals("WK")) {
-				return user.getDownloadedFilesWeek();
-			}
+            if (period.equals("MONTH")) {
+                return user.getUploadedFilesMonth();
+            }
+        } else if (updn.equals("DN")) {
+            if (period.equals("AL")) {
+                return user.getDownloadedFiles();
+            }
 
-			if (period.equals("MONTH")) {
-				return user.getDownloadedFilesMonth();
-			}
-		}
+            if (period.equals("DAY")) {
+                return user.getDownloadedFilesDay();
+            }
 
-		throw new IllegalArgumentException("unhandled command = " + command);
-	}
+            if (period.equals("WK")) {
+                return user.getDownloadedFilesWeek();
+            }
 
-	/**
-	 * USAGE: site stats [<user>]
-	 *        Display a user's upload/download statistics.
-	 */
-	public CommandResponse doSITE_STATS(CommandRequest request) {
+            if (period.equals("MONTH")) {
+                return user.getDownloadedFilesMonth();
+            }
+        }
 
-		Session session = request.getSession();
-		if (!request.hasArgument()) {
-			return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-		}
+        throw new IllegalArgumentException("unhandled command = " + command);
+    }
 
-		User user;
+    /**
+     * USAGE: site stats [<user>]
+     * Display a user's upload/download statistics.
+     */
+    public CommandResponse doSITE_STATS(CommandRequest request) {
 
-		if (!request.hasArgument()) {
-			user = session.getUserNull(request.getUser());
-		} else {
-			try {
-				user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getArgument());
-			} catch (NoSuchUserException e) {
-				return new CommandResponse(200, "No such user: " + e.getMessage());
-			} catch (UserFileException e) {
-				logger.log(Level.WARN, "", e);
+        Session session = request.getSession();
+        if (!request.hasArgument()) {
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
 
-				return new CommandResponse(200, e.getMessage());
-			}
-		}
+        User user;
 
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		UserManager userman = GlobalContext.getGlobalContext().getUserManager();
+        if (!request.hasArgument()) {
+            user = session.getUserNull(request.getUser());
+        } else {
+            try {
+                user = GlobalContext.getGlobalContext().getUserManager().getUserByName(request.getArgument());
+            } catch (NoSuchUserException e) {
+                return new CommandResponse(200, "No such user: " + e.getMessage());
+            } catch (UserFileException e) {
+                logger.log(Level.WARN, "", e);
 
-		ReplacerEnvironment env = new ReplacerEnvironment();
+                return new CommandResponse(200, e.getMessage());
+            }
+        }
 
-		env.add("created", user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
-		
-		env.add("aluprank", UserTransferStats.getStatsPlace("ALUP", user, userman));
-		env.add("aldnrank", UserTransferStats.getStatsPlace("ALDN", user, userman));
-		env.add("mnuprank", UserTransferStats.getStatsPlace("MONTHUP", user, userman));
-		env.add("mndnrank", UserTransferStats.getStatsPlace("MONTHDN", user, userman));
-		env.add("wkuprank", UserTransferStats.getStatsPlace("WKUP", user, userman));
-		env.add("wkdnrank", UserTransferStats.getStatsPlace("WKDN", user, userman));
-		env.add("dayuprank", UserTransferStats.getStatsPlace("DAYUP", user, userman));
-		env.add("daydnrank", UserTransferStats.getStatsPlace("DAYDN", user, userman));
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        UserManager userman = GlobalContext.getGlobalContext().getUserManager();
 
-		env.add("alupfiles", user.getUploadedFiles());
-		env.add("alupbytes", Bytes.formatBytes(user.getUploadedBytes()));
-		env.add("aldnfiles", user.getDownloadedFiles());
-		env.add("aldnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
-		env.add("mnupfiles", user.getUploadedFilesMonth());
-		env.add("mnupbytes", Bytes.formatBytes(user.getUploadedBytesMonth()));
-		env.add("mndnfiles", user.getDownloadedFilesMonth());
-		env.add("mndnbytes", Bytes.formatBytes(user.getDownloadedBytesMonth()));
-		env.add("wkupfiles", user.getUploadedFilesWeek());
-		env.add("wkupbytes", Bytes.formatBytes(user.getUploadedBytesWeek()));
-		env.add("wkdnfiles", user.getDownloadedFilesWeek());
-		env.add("wkdnbytes", Bytes.formatBytes(user.getDownloadedBytesWeek()));
-		env.add("dayupfiles", user.getUploadedFilesDay());
-		env.add("dayupbytes", Bytes.formatBytes(user.getUploadedBytesDay()));
-		env.add("daydnfiles", user.getDownloadedFilesDay());
-		env.add("daydnbytes", Bytes.formatBytes(user.getDownloadedBytesDay()));
+        ReplacerEnvironment env = new ReplacerEnvironment();
 
-		response.addComment(session.jprintf(_bundle, _keyPrefix + "stats", env,	request.getUser()));
+        env.add("created", user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
 
-		return response;
-	}
+        env.add("aluprank", UserTransferStats.getStatsPlace("ALUP", user, userman));
+        env.add("aldnrank", UserTransferStats.getStatsPlace("ALDN", user, userman));
+        env.add("mnuprank", UserTransferStats.getStatsPlace("MONTHUP", user, userman));
+        env.add("mndnrank", UserTransferStats.getStatsPlace("MONTHDN", user, userman));
+        env.add("wkuprank", UserTransferStats.getStatsPlace("WKUP", user, userman));
+        env.add("wkdnrank", UserTransferStats.getStatsPlace("WKDN", user, userman));
+        env.add("dayuprank", UserTransferStats.getStatsPlace("DAYUP", user, userman));
+        env.add("daydnrank", UserTransferStats.getStatsPlace("DAYDN", user, userman));
 
-	public CommandResponse doSITE_ALUP(CommandRequest request) {
-		return execute(request, "alup");
-	}
+        env.add("alupfiles", user.getUploadedFiles());
+        env.add("alupbytes", Bytes.formatBytes(user.getUploadedBytes()));
+        env.add("aldnfiles", user.getDownloadedFiles());
+        env.add("aldnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
+        env.add("mnupfiles", user.getUploadedFilesMonth());
+        env.add("mnupbytes", Bytes.formatBytes(user.getUploadedBytesMonth()));
+        env.add("mndnfiles", user.getDownloadedFilesMonth());
+        env.add("mndnbytes", Bytes.formatBytes(user.getDownloadedBytesMonth()));
+        env.add("wkupfiles", user.getUploadedFilesWeek());
+        env.add("wkupbytes", Bytes.formatBytes(user.getUploadedBytesWeek()));
+        env.add("wkdnfiles", user.getDownloadedFilesWeek());
+        env.add("wkdnbytes", Bytes.formatBytes(user.getDownloadedBytesWeek()));
+        env.add("dayupfiles", user.getUploadedFilesDay());
+        env.add("dayupbytes", Bytes.formatBytes(user.getUploadedBytesDay()));
+        env.add("daydnfiles", user.getDownloadedFilesDay());
+        env.add("daydnbytes", Bytes.formatBytes(user.getDownloadedBytesDay()));
 
-	public CommandResponse doSITE_ALDN(CommandRequest request) {
-		return execute(request, "aldn");
-	}
+        response.addComment(session.jprintf(_bundle, "stats", env, request.getUser()));
 
-	public CommandResponse doSITE_MONTHUP(CommandRequest request) {
-		return execute(request, "monthup");
-	}
+        return response;
+    }
 
-	public CommandResponse doSITE_MONTHDN(CommandRequest request) {
-		return execute(request, "monthdn");
-	}
+    public CommandResponse doSITE_ALUP(CommandRequest request) {
+        return execute(request, "alup");
+    }
 
-	public CommandResponse doSITE_WKUP(CommandRequest request) {
-		return execute(request, "wkup");
-	}
+    public CommandResponse doSITE_ALDN(CommandRequest request) {
+        return execute(request, "aldn");
+    }
 
-	public CommandResponse doSITE_WKDN(CommandRequest request) {
-		return execute(request, "wkdn");
-	}
+    public CommandResponse doSITE_MONTHUP(CommandRequest request) {
+        return execute(request, "monthup");
+    }
 
-	public CommandResponse doSITE_DAYUP(CommandRequest request) {
-		return execute(request, "dayup");
-	}
+    public CommandResponse doSITE_MONTHDN(CommandRequest request) {
+        return execute(request, "monthdn");
+    }
 
-	public CommandResponse doSITE_DAYDN(CommandRequest request) {
-		return execute(request, "daydn");
-	}
+    public CommandResponse doSITE_WKUP(CommandRequest request) {
+        return execute(request, "wkup");
+    }
 
-	private CommandResponse execute(CommandRequest request, String type) {
+    public CommandResponse doSITE_WKDN(CommandRequest request) {
+        return execute(request, "wkdn");
+    }
 
-		Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
+    public CommandResponse doSITE_DAYUP(CommandRequest request) {
+        return execute(request, "dayup");
+    }
 
-		int count = 10; // default # of users to list
+    public CommandResponse doSITE_DAYDN(CommandRequest request) {
+        return execute(request, "daydn");
+    }
 
-		if (request.hasArgument()) {
-			StringTokenizer st = new StringTokenizer(request.getArgument());
+    private CommandResponse execute(CommandRequest request, String type) {
 
-			try {
-				count = Integer.parseInt(st.nextToken());
-			} catch (NumberFormatException ex) {
-				st = new StringTokenizer(request.getArgument());
-			}
+        Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
-			if (st.hasMoreTokens()) {
-				/* TODO Likely this will need revisiting
-				 * to move to prehooks
-				 */
-				Permission perm = new Permission(Permission.makeUsers(st));
+        int count = 10; // default # of users to list
 
-				users.removeIf(user -> !perm.check(user));
-			}
-		}
+        if (request.hasArgument()) {
+            StringTokenizer st = new StringTokenizer(request.getArgument());
 
-		Permission perm = new Permission(Permission.makeUsers(new StringTokenizer(GlobalContext.getConfig().getHideInStats())));
+            try {
+                count = Integer.parseInt(st.nextToken());
+            } catch (NumberFormatException ex) {
+                st = new StringTokenizer(request.getArgument());
+            }
 
-		users.removeIf(perm::check);
+            if (st.hasMoreTokens()) {
+                /* TODO Likely this will need revisiting
+                 * to move to prehooks
+                 */
+                Permission perm = new Permission(Permission.makeUsers(st));
 
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ArrayList<User> users2 = new ArrayList<>(users);
-		users2.sort(new UserComparator(type));
-		ReplacerEnvironment env = new ReplacerEnvironment();
+                users.removeIf(user -> !perm.check(user));
+            }
+        }
 
-		String headerBundleKey = _keyPrefix + type + ".header"; 
-		String headerText = request.getSession().jprintf(_bundle, headerBundleKey, env,
-				request.getUser());
-		if (headerText.equals(headerBundleKey)) {
-			try {
-				addTextToResponse(response, "userdata/text/" + type + "_header.txt");
-			} catch (IOException ioe) {
+        Permission perm = new Permission(Permission.makeUsers(new StringTokenizer(GlobalContext.getConfig().getHideInStats())));
+
+        users.removeIf(perm::check);
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        ArrayList<User> users2 = new ArrayList<>(users);
+        users2.sort(new UserComparator(type));
+        ReplacerEnvironment env = new ReplacerEnvironment();
+
+        String headerBundleKey = type + ".header";
+        String headerText = request.getSession().jprintf(_bundle, headerBundleKey, env,
+                request.getUser());
+        if (headerText.equals(headerBundleKey)) {
+            try {
+                addTextToResponse(response, "userdata/text/" + type + "_header.txt");
+            } catch (IOException ioe) {
                 logger.warn("Error reading userdata/text/{}_header.txt", type, ioe);
-			}
-		} else {
-			response.addComment(headerText);
-		}
+            }
+        } else {
+            response.addComment(headerText);
+        }
 
-		int i = 0;
+        int i = 0;
 
-		for (User user : users2) {
-			if (++i > count) {
-				break;
-			}
+        for (User user : users2) {
+            if (++i > count) {
+                break;
+            }
 
-			env.add("pos", "" + i);
+            env.add("pos", "" + i);
 
-			env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
-			env.add("upfilesday", "" + user.getUploadedFilesDay());
-			env.add("uprateday", getUpRate(user, PERIOD_DAILY));
-			env.add("upbytesweek",
-					Bytes.formatBytes(user.getUploadedBytesWeek()));
-			env.add("upfilesweek", "" + user.getUploadedFilesWeek());
-			env.add("uprateweek", getUpRate(user, PERIOD_WEEKLY));
-			env.add("upbytesmonth",
-					Bytes.formatBytes(user.getUploadedBytesMonth()));
-			env.add("upfilesmonth", "" + user.getUploadedFilesMonth());
-			env.add("upratemonth", getUpRate(user, PERIOD_MONTHLY));
-			env.add("upbytes", Bytes.formatBytes(user.getUploadedBytes()));
-			env.add("upfiles", "" + user.getUploadedFiles());
-			env.add("uprate", getUpRate(user, PERIOD_ALL));
+            env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
+            env.add("upfilesday", "" + user.getUploadedFilesDay());
+            env.add("uprateday", getUpRate(user, PERIOD_DAILY));
+            env.add("upbytesweek",
+                    Bytes.formatBytes(user.getUploadedBytesWeek()));
+            env.add("upfilesweek", "" + user.getUploadedFilesWeek());
+            env.add("uprateweek", getUpRate(user, PERIOD_WEEKLY));
+            env.add("upbytesmonth",
+                    Bytes.formatBytes(user.getUploadedBytesMonth()));
+            env.add("upfilesmonth", "" + user.getUploadedFilesMonth());
+            env.add("upratemonth", getUpRate(user, PERIOD_MONTHLY));
+            env.add("upbytes", Bytes.formatBytes(user.getUploadedBytes()));
+            env.add("upfiles", "" + user.getUploadedFiles());
+            env.add("uprate", getUpRate(user, PERIOD_ALL));
 
-			env.add("dnbytesday",
-					Bytes.formatBytes(user.getDownloadedBytesDay()));
-			env.add("dnfilesday", "" + user.getDownloadedFilesDay());
-			env.add("dnrateday", getDownRate(user, PERIOD_DAILY));
-			env.add("dnbytesweek",
-					Bytes.formatBytes(user.getDownloadedBytesWeek()));
-			env.add("dnfilesweek", "" + user.getDownloadedFilesWeek());
-			env.add("dnrateweek", getDownRate(user, PERIOD_WEEKLY));
-			env.add("dnbytesmonth",
-					Bytes.formatBytes(user.getDownloadedBytesMonth()));
-			env.add("dnfilesmonth", "" + user.getDownloadedFilesMonth());
-			env.add("dnratemonth", getDownRate(user, PERIOD_MONTHLY));
-			env.add("dnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.add("dnfiles", "" + user.getDownloadedFiles());
-			env.add("dnrate", getDownRate(user, PERIOD_ALL));
+            env.add("dnbytesday",
+                    Bytes.formatBytes(user.getDownloadedBytesDay()));
+            env.add("dnfilesday", "" + user.getDownloadedFilesDay());
+            env.add("dnrateday", getDownRate(user, PERIOD_DAILY));
+            env.add("dnbytesweek",
+                    Bytes.formatBytes(user.getDownloadedBytesWeek()));
+            env.add("dnfilesweek", "" + user.getDownloadedFilesWeek());
+            env.add("dnrateweek", getDownRate(user, PERIOD_WEEKLY));
+            env.add("dnbytesmonth",
+                    Bytes.formatBytes(user.getDownloadedBytesMonth()));
+            env.add("dnfilesmonth", "" + user.getDownloadedFilesMonth());
+            env.add("dnratemonth", getDownRate(user, PERIOD_MONTHLY));
+            env.add("dnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
+            env.add("dnfiles", "" + user.getDownloadedFiles());
+            env.add("dnrate", getDownRate(user, PERIOD_ALL));
 
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix + type, env,
-					user.getName()));
+            response.addComment(request.getSession().jprintf(_bundle, type, env,
+                    user.getName()));
 
-			//			response.addComment(
-			//	user.getUsername()
-			//		+ " "
-			//		+ Bytes.formatBytes(
-			//			getStats(command.substring("SITE ".length()), user)));
-		}
+            //			response.addComment(
+            //	user.getUsername()
+            //		+ " "
+            //		+ Bytes.formatBytes(
+            //			getStats(command.substring("SITE ".length()), user)));
+        }
 
-		String footerBundleKey = _keyPrefix + type + ".footer"; 
-		String footerText = request.getSession().jprintf(_bundle, footerBundleKey, env,
-				request.getUser());
-		if (footerText.equals(footerBundleKey)) {
-			try {
-				addTextToResponse(response, "userdata/text/" + type + "_footer.txt");
-			} catch (IOException ioe) {
+        String footerBundleKey = type + ".footer";
+        String footerText = request.getSession().jprintf(_bundle, footerBundleKey, env,
+                request.getUser());
+        if (footerText.equals(footerBundleKey)) {
+            try {
+                addTextToResponse(response, "userdata/text/" + type + "_footer.txt");
+            } catch (IOException ioe) {
                 logger.warn("Error reading userdata/text/{}_footer.txt", type, ioe);
-			}
-		} else {
-			response.addComment(footerText);
-		}
+            }
+        } else {
+            response.addComment(footerText);
+        }
 
-		return response;
-	}
+        return response;
+    }
 
-	public static String getUpRate(User user, int period) {
-		double s = user.getUploadedTimeForPeriod(period) / 1000.0;
+    public static String getUpRate(User user, int period) {
+        double s = user.getUploadedTimeForPeriod(period) / 1000.0;
 
-		if (s <= 0) {
-			return "- k/s";
-		}
+        if (s <= 0) {
+            return "- k/s";
+        }
 
-		double rate = user.getUploadedBytesForPeriod(period) / s;
+        double rate = user.getUploadedBytesForPeriod(period) / s;
 
-		return Bytes.formatBytes((long) rate) + "/s";
-	}
+        return Bytes.formatBytes((long) rate) + "/s";
+    }
 
-	public static String getDownRate(User user, int period) {
-		double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
+    public static String getDownRate(User user, int period) {
+        double s = user.getDownloadedTimeForPeriod(period) / 1000.0;
 
-		if (s <= 0) {
-			return "- k/s";
-		}
+        if (s <= 0) {
+            return "- k/s";
+        }
 
-		double rate = user.getDownloadedBytesForPeriod(period) / s;
+        double rate = user.getDownloadedBytesForPeriod(period) / s;
 
-		return Bytes.formatBytes((long) rate) + "/s";
-	}
+        return Bytes.formatBytes((long) rate) + "/s";
+    }
 }

@@ -47,19 +47,19 @@ public class SiteBotManagement extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-    	_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	public CommandResponse doSITE_BLOWFISH(CommandRequest request) {
 		Session session = request.getSession();
 		if (!session.isSecure()) {
 			return new CommandResponse(530,
-					session.jprintf(_bundle, _keyPrefix+"blowfish.reject", request.getUser()));
+					session.jprintf(_bundle, "blowfish.reject", request.getUser()));
 		}
 		SiteBotWrapper wrapper = null;
 		for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {
@@ -116,7 +116,7 @@ public class SiteBotManagement extends CommandInterface {
 		Session session = request.getSession();
 		if (!session.isSecure()) {
 			return new CommandResponse(530,
-					session.jprintf(_bundle, _keyPrefix+"blowfish.reject", request.getUser()));
+					session.jprintf(_bundle, "blowfish.reject", request.getUser()));
 		}
 		SiteBotWrapper wrapper = null;
 		for (PluginInterface plugin : GlobalContext.getGlobalContext().getPlugins()) {

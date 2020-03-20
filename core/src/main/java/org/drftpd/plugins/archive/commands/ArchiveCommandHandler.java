@@ -47,12 +47,12 @@ public class ArchiveCommandHandler extends CommandInterface {
     private static final Logger logger = LogManager.getLogger(ArchiveCommandHandler.class);
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_bundle = cManager.getResourceBundle();
-    	_keyPrefix = getClass().getName() + ".";
+
     }
     
     public ArchiveCommandHandler() {
@@ -88,7 +88,7 @@ public class ArchiveCommandHandler extends CommandInterface {
 			dir = request.getCurrentDirectory().getDirectory(dirname, user);
 		} catch (FileNotFoundException e1) {
 			env.add("dirname", dirname);
-			response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "baddir"));
+			response.addComment(request.getSession().jprintf(_bundle, env,  "baddir"));
 
 			return response;
 		} catch (ObjectNotValidException e) {
@@ -101,7 +101,7 @@ public class ArchiveCommandHandler extends CommandInterface {
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e3) {
-        	response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "loadarchive"));
+        	response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
             return response;
         }
 
@@ -123,7 +123,7 @@ public class ArchiveCommandHandler extends CommandInterface {
             if (archiveType == null) {
                 logger.error("Serious error, ArchiveType: {} does not exists", archiveTypeName);
 				env.add("archivetypename", archiveTypeName);
-				response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "incompatible"));
+				response.addComment(request.getSession().jprintf(_bundle, env, "incompatible"));
 				return response;
 			}
         }
@@ -138,7 +138,7 @@ public class ArchiveCommandHandler extends CommandInterface {
                 slaveSet.add(rslave);
             } catch (ObjectNotFoundException e2) {
                 env.add("slavename", slavename);
-                response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "badslave"));
+                response.addComment(request.getSession().jprintf(_bundle, env, "badslave"));
             }
         }
 
@@ -149,7 +149,7 @@ public class ArchiveCommandHandler extends CommandInterface {
             archive.checkPathForArchiveStatus(dir.getPath());
         } catch (DuplicateArchiveException e) {
             env.add("exception", e.getMessage());
-            response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "fail"));
+            response.addComment(request.getSession().jprintf(_bundle, env, "fail"));
         }
 
         if (!slaveSet.isEmpty()) {
@@ -161,7 +161,7 @@ public class ArchiveCommandHandler extends CommandInterface {
         archiveHandler.start();
         env.add("dirname", dir.getPath());
         env.add("archivetypename", archiveTypeName);
-        response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "success"));
+        response.addComment(request.getSession().jprintf(_bundle, env, "success"));
 
         return response;
     }
@@ -193,7 +193,7 @@ public class ArchiveCommandHandler extends CommandInterface {
         try {
             archive = getArchive();
         } catch (ObjectNotFoundException e) {
-        	response.addComment(request.getSession().jprintf(_bundle, env,_keyPrefix + "loadarchive"));
+        	response.addComment(request.getSession().jprintf(_bundle, env, "loadarchive"));
             return response;
         }
 

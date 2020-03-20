@@ -51,14 +51,14 @@ import java.util.*;
 public class Nuke extends CommandInterface {
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
     
     private static final Logger logger = LogManager.getLogger(Nuke.class);
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
     /**
@@ -126,7 +126,7 @@ public class Nuke extends CommandInterface {
 
 					if (dirsToNuke.isEmpty()) {
 						env.add("searchstr", nukeDirPath);
-						return new CommandResponse(550, session.jprintf(_bundle,_keyPrefix+"nuke.search.empty",
+						return new CommandResponse(550, session.jprintf(_bundle,"nuke.search.empty",
 								env, requestUser));
 					} else if (dirsToNuke.size() == 1) {
 						nukeDirPath = dirsToNuke.get(0).getPath();
@@ -140,13 +140,13 @@ public class Nuke extends CommandInterface {
 								env.add("owner", nukeDir.getUsername());
 								env.add("group", nukeDir.getGroup());
 								env.add("size", Bytes.formatBytes(nukeDir.getSize()));
-								response.addComment(session.jprintf(_bundle,_keyPrefix+"nuke.search.item", env, requestUser));
+								response.addComment(session.jprintf(_bundle,"nuke.search.item", env, requestUser));
 							} catch (FileNotFoundException e) {
                                 logger.warn("Dir deleted after index search?, skip and continue: {}", nukeDir.getPath());
 							}
 						}
 
-						response.addComment(session.jprintf(_bundle,_keyPrefix+"nuke.search.end", env, requestUser));
+						response.addComment(session.jprintf(_bundle,"nuke.search.end", env, requestUser));
 
 						// Return matching dirs and let user decide what to nuke
 						return response;
@@ -213,7 +213,7 @@ public class Nuke extends CommandInterface {
 		env.add("size", Bytes.formatBytes(nd.getSize()));
 
 		if (session instanceof BaseFtpConnection) {
-			response.addComment(session.jprintf(_bundle, _keyPrefix+"nuke", env, requestUser));
+			response.addComment(session.jprintf(_bundle, "nuke", env, requestUser));
 			for (NukedUser nukeeObj : NukeBeans.getNukeeList(nd)) {
 				ReplacerEnvironment nukeeenv = new ReplacerEnvironment();
 				User nukee;
@@ -230,7 +230,7 @@ public class Nuke extends CommandInterface {
 				long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
 						nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), multiplier);
 				nukeeenv.add("nukedamount", Bytes.formatBytes(debt));
-				response.addComment(session.jprintf(_bundle, _keyPrefix+"nuke.nukees", nukeeenv, nukee));
+				response.addComment(session.jprintf(_bundle, "nuke.nukees", nukeeenv, nukee));
 			}
 		}
 
@@ -249,7 +249,7 @@ public class Nuke extends CommandInterface {
 		}
 
 		if (NukeBeans.getNukeBeans().getAll().isEmpty()) {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nukes.empty", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, "nukes.empty", env, request.getUser()));
 		}
 
         for (NukeData nd : NukeBeans.getNukeBeans().getAll()) {
@@ -261,14 +261,14 @@ public class Nuke extends CommandInterface {
 				env.add("reason", nd.getReason());
 				env.add("amount", nd.getAmount());
 				env.add("nuker", nd.getUser());
-				response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nukes", env, request.getUser()));
+				response.addComment(request.getSession().jprintf(_bundle, "nukes", env, request.getUser()));
 			}
         }
 
 		if (response.getComment().isEmpty()) {
 			env.add("section", section.getName());
 			env.add("sectioncolor", section.getColor());
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"nukes.empty.section", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, "nukes.empty.section", env, request.getUser()));
 		}
 
         return response;
@@ -331,7 +331,7 @@ public class Nuke extends CommandInterface {
 
 					if (dirsToUnNuke.isEmpty()) {
 						env.add("searchstr", nukeName);
-						return new CommandResponse(550, session.jprintf(_bundle,_keyPrefix+"unnuke.search.empty", env, user));
+						return new CommandResponse(550, session.jprintf(_bundle,"unnuke.search.empty", env, user));
 					} else if (dirsToUnNuke.size() == 1) {
 						toDir = dirsToUnNuke.get(0).getParent().getPath() + VirtualFileSystem.separator;
 					} else {
@@ -344,13 +344,13 @@ public class Nuke extends CommandInterface {
 								env.add("owner", nukeDir.getUsername());
 								env.add("group", nukeDir.getGroup());
 								env.add("size", Bytes.formatBytes(nukeDir.getSize()));
-								response.addComment(session.jprintf(_bundle,_keyPrefix+"unnuke.search.item", env, user));
+								response.addComment(session.jprintf(_bundle,"unnuke.search.item", env, user));
 							} catch (FileNotFoundException e) {
                                 logger.warn("Dir deleted after index search?, skip and continue: {}", nukeDir.getPath());
 							}
 						}
 
-						response.addComment(session.jprintf(_bundle,_keyPrefix+"unnuke.search.end", env, user));
+						response.addComment(session.jprintf(_bundle,"unnuke.search.end", env, user));
 
 						// Return matching dirs and let user decide what to unnuke
 						return response;
@@ -423,7 +423,7 @@ public class Nuke extends CommandInterface {
 		env.add("size", Bytes.formatBytes(nd.getSize()));
 
 		if (session instanceof BaseFtpConnection) {
-			response.addComment(session.jprintf(_bundle, _keyPrefix+"unnuke", env, user));
+			response.addComment(session.jprintf(_bundle, "unnuke", env, user));
 			for (NukedUser nukeeObj : NukeBeans.getNukeeList(nd)) {
 				ReplacerEnvironment nukeeenv = new ReplacerEnvironment();
 				User nukee;
@@ -440,7 +440,7 @@ public class Nuke extends CommandInterface {
 				long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
 						nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), nd.getMultiplier());
 				nukeeenv.add("nukedamount", Bytes.formatBytes(debt));
-				response.addComment(session.jprintf(_bundle, _keyPrefix+"unnuke.nukees", nukeeenv, nukee));
+				response.addComment(session.jprintf(_bundle, "unnuke.nukees", nukeeenv, nukee));
 			}
 		}
 

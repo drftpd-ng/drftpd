@@ -45,12 +45,12 @@ public class Search extends CommandInterface {
 	public static final Logger logger = LogManager.getLogger(Find.class);
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	public CommandResponse doSEARCH(CommandRequest request) throws ImproperUsageException {
@@ -116,20 +116,20 @@ public class Search extends CommandInterface {
 				env.add("owner", inode.getUsername());
 				env.add("group", inode.getGroup());
 				env.add("size", Bytes.formatBytes(inode.getSize()));
-				responses.add(session.jprintf(_bundle,_keyPrefix+"search.item", env, user.getName()));
+				responses.add(session.jprintf(_bundle,"search.item", env, user.getName()));
 			} catch (FileNotFoundException e) {
                 logger.warn("Index contained an unexistent inode: {}", item.getKey());
 			}
 		}
 
 		if (responses.isEmpty()) {
-			response.addComment(session.jprintf(_bundle,_keyPrefix+"search.empty", env, user.getName()));
+			response.addComment(session.jprintf(_bundle,"search.empty", env, user.getName()));
 			return response;
 		}
 
 		env.add("limit", limit);
 		env.add("results", responses.size());
-		response.addComment(session.jprintf(_bundle,_keyPrefix+"search.header", env, user.getName()));
+		response.addComment(session.jprintf(_bundle,"search.header", env, user.getName()));
 
 		for (String line : responses) {
 			response.addComment(line);

@@ -40,12 +40,12 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -96,18 +96,18 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 		if (writer != null) {
 			Collection<UserStats> outputStats = event.getOutputStats();
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType, env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf(statsType, env, _bundle), writer);
 			int count = 1;
 			for (UserStats line : outputStats) {
 				env.add("num",count);
 				env.add("name",line.getName());
 				env.add("files",line.getFiles());
 				env.add("bytes",line.getBytes());
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".item", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf(statsType+".item", env, _bundle), writer);
 				count++;
 			}
 			if (count == 1) {
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+statsType+".none", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf(statsType+".none", env, _bundle), writer);
 			}
 		}
 	}

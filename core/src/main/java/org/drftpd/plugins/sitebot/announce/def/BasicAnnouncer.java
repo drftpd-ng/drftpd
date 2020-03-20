@@ -53,12 +53,12 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -109,13 +109,13 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 
                 SlaveManagement.fillEnvWithSlaveStatus(env, status);
 
-                outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix + ".addslave", env, _bundle), "addslave");
+                outputSimpleEvent(ReplacerUtils.jprintf( "addslave", env, _bundle), "addslave");
                 break;
             case "DELSLAVE":
-                outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix + ".delslave", env, _bundle), "delslave");
+                outputSimpleEvent(ReplacerUtils.jprintf( "delslave", env, _bundle), "delslave");
                 break;
             case "MSGSLAVE":
-                outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix + ".msgslave", env, _bundle), "msgslave");
+                outputSimpleEvent(ReplacerUtils.jprintf( "msgslave", env, _bundle), "msgslave");
                 break;
         }
 	}
@@ -125,7 +125,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 		env.add("message", event.getMessage());
 
-        outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".msgmaster", env, _bundle), "msgmaster");
+        outputSimpleEvent(ReplacerUtils.jprintf("msgmaster", env, _bundle), "msgmaster");
 	}
 
 	@EventSubscriber
@@ -136,14 +136,14 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 			env.add("nick", event.getIrcNick());
 			env.add("group", event.getUser().getGroup());
 			if (event.getCommand().equals("INVITE")) {
-				outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".invite.success", env, _bundle), "invite");
+				outputSimpleEvent(ReplacerUtils.jprintf("invite.success", env, _bundle), "invite");
 				for (ChannelConfig chan : _config.getBot().getConfig().getChannels()) {
 					if (chan.isPermitted(event.getUser())) {
 						_config.getBot().sendInvite(event.getIrcNick(), chan.getName());
 					}
 				}
 			} else if (event.getCommand().equals("BINVITE")) {
-				outputSimpleEvent(ReplacerUtils.jprintf(_keyPrefix+".invite.failed", env, _bundle), "invite");
+				outputSimpleEvent(ReplacerUtils.jprintf("invite.failed", env, _bundle), "invite");
 			}
 		}
 	}
@@ -154,7 +154,7 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 		if (writer != null) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			fillEnvSection(env, direvent, writer);
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+"."+type, env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf(type, env, _bundle), writer);
 		}
 	}
 

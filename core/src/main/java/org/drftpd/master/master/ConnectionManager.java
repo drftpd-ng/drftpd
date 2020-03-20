@@ -45,9 +45,9 @@ import java.util.concurrent.*;
 public class ConnectionManager {
 	private static final Logger logger = LogManager.getLogger(ConnectionManager.class.getName());
 
-	private static final String cmdConf = "conf/ftpcommands.conf";
+	private static final String cmdConf = "config/commands/ftp";
 
-	private static final String themeDir = "conf/themes/ftp";
+	private static final String themeDir = "config/themes/ftp";
 
 	private static ConnectionManager _connectionManager = null;
 

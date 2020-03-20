@@ -71,7 +71,7 @@ public class DiskSelectionFilter extends DiskSelectionInterface {
 		Properties p = new Properties();
 		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream("conf/diskselection.conf");
+			fis = new FileInputStream("config/diskselection.conf");
 			p.load(fis);
 		} finally {
 			if (fis != null) {

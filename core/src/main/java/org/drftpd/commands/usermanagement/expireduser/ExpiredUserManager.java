@@ -52,7 +52,7 @@ public class ExpiredUserManager implements UserResetHookInterface {
 	private void loadConf() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("expireduser.conf");
 		if (cfg == null) {
-			logger.fatal("conf/expireduser.conf not found");
+			logger.fatal("config/expireduser.conf not found");
 		}
 
 		_delete = cfg.getProperty("delete","false").equalsIgnoreCase("true");

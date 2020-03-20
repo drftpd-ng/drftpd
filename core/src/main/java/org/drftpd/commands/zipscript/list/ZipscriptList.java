@@ -72,7 +72,6 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 
     public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
         ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-        String keyPrefix = this.getClass().getName() + ".";
         // Check config
         boolean statusBarEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
                 getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
@@ -93,16 +92,14 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         env.add("complete.percent", "" + (sfvstatus.getPresent() * 100)
                                 / sfvfile.getSize());
                         env.add("complete.totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
-                        statusBarEntries.add(container.getSession().jprintf(bundle,
-                                keyPrefix + "statusbar.complete", env, container.getUser()));
+                        statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.complete", env, container.getUser()));
 
                         if (sfvstatus.getOffline() != 0) {
                             env.add("offline.number", "" + sfvstatus.getOffline());
                             env.add("offline.percent", "" + (sfvstatus.getOffline() * 100) / sfvstatus.getPresent());
                             env.add("online.number", "" + sfvstatus.getPresent());
                             env.add("online.percent", "" + (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent());
-                            statusBarEntries.add(container.getSession().jprintf(bundle,
-                                    keyPrefix + "statusbar.offline", env, container.getUser()));
+                            statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.offline", env, container.getUser()));
                         }
                     }
                 }
@@ -112,7 +109,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         if (!file.exists()) {
                             env.add("mfilename", fileName);
                             container.getElements().add(new LightRemoteInode(
-                                    container.getSession().jprintf(bundle, keyPrefix + "files.missing.filename", env, container.getUser()),
+                                    container.getSession().jprintf(bundle, "zip.files.missing.filename", env, container.getUser()),
                                     "drftpd", "drftpd", dir.lastModified(), 0L));
                         }
                     }
@@ -136,8 +133,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                         // Nothing to add at this time, carry on
                     }
                 }
-                String entrySeparator = container.getSession().jprintf(bundle,
-                        keyPrefix + "statusbar.separator", env, container.getUser());
+                String entrySeparator = container.getSession().jprintf(bundle, "zip.statusbar.separator", env, container.getUser());
                 StringBuilder statusBarBuilder = new StringBuilder();
                 for (Iterator<String> iter = statusBarEntries.iterator(); iter.hasNext(); ) {
                     String statusBarElement = iter.next();
@@ -150,8 +146,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                 }
                 if (statusBarBuilder.length() > 0) {
                     env.add("statusbar", statusBarBuilder.toString());
-                    String statusDirName = container.getSession().jprintf(bundle,
-                            keyPrefix + "statusbar.format", env, container.getUser());
+                    String statusDirName = container.getSession().jprintf(bundle, "zip.statusbar.format", env, container.getUser());
 
                     if (statusDirName == null) {
                         throw new RuntimeException();
@@ -170,47 +165,6 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
         }
         return container;
     }
-
-    // TODO @JRI onUnloadPluginEvent
-	/*
-	@EventSubscriber
-	public synchronized void onUnloadPluginEvent(UnloadPluginEvent event) {
-		Set<ZipscriptListStatusBarInterface> unloadedStatusBarAddons =
-			MasterPluginUtils.getUnloadedExtensionObjects(this, "ListStatusBarProviders", event, _statusBarProviders);
-		if (!unloadedStatusBarAddons.isEmpty()) {
-			ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<>(_statusBarProviders);
-			boolean providerRemoved = false;
-			for (Iterator<ZipscriptListStatusBarInterface> iter = _statusBarProviders.iterator(); iter.hasNext();) {
-				ZipscriptListStatusBarInterface sbAddon = iter.next();
-				if (unloadedStatusBarAddons.contains(sbAddon)) {
-                    logger.debug("Unloading status bar provider addon provided by plugin {}", CommonPluginUtils.getPluginIdForObject(sbAddon));
-					iter.remove();
-					providerRemoved = true;
-				}
-			}
-			if (providerRemoved) {
-				_statusBarProviders = clonedProviders;
-			}
-		}
-	}
-
-	@EventSubscriber
-	public synchronized void onLoadPluginEvent(LoadPluginEvent event) {
-		try {
-			List<ZipscriptListStatusBarInterface> loadedStatusBarAddons =
-				MasterPluginUtils.getLoadedExtensionObjects(this, "org.drftpd.master.commands.zipscript", "ListStatusBarProvider", "Class", event);
-			if (!loadedStatusBarAddons.isEmpty()) {
-				ArrayList<ZipscriptListStatusBarInterface> clonedProviders = new ArrayList<>(_statusBarProviders);
-				for (ZipscriptListStatusBarInterface sbAddon : loadedStatusBarAddons) {
-					clonedProviders.add(sbAddon);
-				}
-				_statusBarProviders = clonedProviders;
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for a loadplugin event for org.drftpd.master.commands.zipscript extension point 'ListStatusBarProvider'"+
-					", possibly the org.drftpd.master.commands.zipscript extension point definition has changed in the plugin.xml",e);
-		}
-	} */
 
     public void unload() {
         AnnotationProcessor.unprocess(this);

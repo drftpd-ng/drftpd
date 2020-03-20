@@ -49,12 +49,12 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName()+".";
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -91,7 +91,7 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 		env.add("reason", event.getReason());
 		env.add("size", Bytes.formatBytes(event.getSize()));
 
-		output.append(ReplacerUtils.jprintf(_keyPrefix+type, env, _bundle));
+		output.append(ReplacerUtils.jprintf(type, env, _bundle));
 
 		for (NukedUser nukeeObj : NukeBeans.getNukeeList(event.getNukeData())) {
 			ReplacerEnvironment nukeeenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
@@ -108,7 +108,7 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 			long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
                     nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), event.getMultiplier());
 			nukeeenv.add("nukedamount", Bytes.formatBytes(debt));
-			output.append(ReplacerUtils.jprintf(_keyPrefix+type+".nukees", nukeeenv, _bundle));
+			output.append(ReplacerUtils.jprintf(type+".nukees", nukeeenv, _bundle));
 		}
 
 		AnnounceWriter writer = _config.getPathWriter(type, nukeDir);

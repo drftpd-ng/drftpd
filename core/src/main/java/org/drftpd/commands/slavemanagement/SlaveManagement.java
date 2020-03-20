@@ -49,12 +49,12 @@ public class SlaveManagement extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	public CommandResponse doSITE_SLAVESELECT(CommandRequest request) throws ImproperUsageException {
@@ -170,7 +170,7 @@ public class SlaveManagement extends CommandInterface {
 		}
 
 		if (slavesFound == 0) {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"slave.none", null, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, "slave.none", null, request.getUser()));
 		}
 		return response;
 	}
@@ -189,7 +189,7 @@ public class SlaveManagement extends CommandInterface {
 		} catch (ObjectNotFoundException e) {
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			env.add("slavename", slaveName);
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"slave.notfound", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, "slave.notfound", env, request.getUser()));
 			return response;
 		}
 		if (arguments.hasMoreTokens()) {
@@ -203,7 +203,7 @@ public class SlaveManagement extends CommandInterface {
 				env.add("remergesize", rslave.getRemergeQueue().size());
 				env.add("remergecrcsize", rslave.getCRCQueue().size());
 				response.addComment(request.getSession().jprintf(_bundle,
-						_keyPrefix+"slave.queues", env, request.getUser()));
+						"slave.queues", env, request.getUser()));
 				return response;
 			} else {
 				throw new ImproperUsageException();
@@ -231,20 +231,20 @@ public class SlaveManagement extends CommandInterface {
 
 		if (rslave.isOnline()) {
 			if (!rslave.isAvailable()) {
-				response.addComment(session.jprintf(_bundle, _keyPrefix+"slave.remerging", env, request.getUser()));
+				response.addComment(session.jprintf(_bundle, "slave.remerging", env, request.getUser()));
 			} else {
 				try {
 					SlaveStatus status = rslave.getSlaveStatus();
 					fillEnvWithSlaveStatus(env, status);
 					env.add("status", rslave.isRemerging() ? "REMERGING" : "ONLINE");
-					response.addComment(session.jprintf(_bundle, _keyPrefix+"slave.online", env, request.getUser()));
+					response.addComment(session.jprintf(_bundle, "slave.online", env, request.getUser()));
 				} catch (SlaveUnavailableException e) {
 					// should never happen since we tested slave status w/ isOnline and isAvaiable.
 					throw new RuntimeException("There's a bug somewhere in the code, the slave was available now it isn't.", e);
 				}
 			}
 		} else {
-			response.addComment(session.jprintf(_bundle, _keyPrefix+"slave.offline", env, request.getUser()));
+			response.addComment(session.jprintf(_bundle, "slave.offline", env, request.getUser()));
 		}
 		return response;
 	}
@@ -346,7 +346,7 @@ public class SlaveManagement extends CommandInterface {
 			rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 		} catch (ObjectNotFoundException e) {
 			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"slave.notfound", env, request.getUser()));
+					"slave.notfound", env, request.getUser()));
 
 			return response;
 		}
@@ -355,11 +355,11 @@ public class SlaveManagement extends CommandInterface {
 			if (!rslave.getMasks().isEmpty()) {
 				env.add("masks", rslave.getMasks());
 				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"slave.masks", env, request.getUser()));
+						"slave.masks", env, request.getUser()));
 			}
 
 			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"slave.data.header", request.getUser()));
+					"slave.data.header", request.getUser()));
 
 			Map<Object,Object> props = rslave.getProperties();
 
@@ -367,7 +367,7 @@ public class SlaveManagement extends CommandInterface {
 				env.add("key", entry.getKey());
 				env.add("value", entry.getValue());
 				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"slave.data", env, request.getUser()));
+						"slave.data", env, request.getUser()));
 			}
 
 			return response;
@@ -386,7 +386,7 @@ public class SlaveManagement extends CommandInterface {
 			env.add("key", key);
 			env.add("value", value);
 			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"slave.set.success", env, request.getUser()));
+					"slave.set.success", env, request.getUser()));
 
 			return response;
 		} else if (command.equalsIgnoreCase("unset")) {
@@ -401,12 +401,12 @@ public class SlaveManagement extends CommandInterface {
 				value = rslave.removeProperty(key);
 			} catch (KeyNotFoundException e) {
 				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"slave.unset.failure", env, request.getUser()));
+						"slave.unset.failure", env, request.getUser()));
 				return response;
 			}
 			env.add("value", value);
 			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"slave.unset.success", env, request.getUser()));
+					"slave.unset.success", env, request.getUser()));
 			return response;
 		} else if (command.equalsIgnoreCase("addmask")) {
 			if (arguments.countTokens() != 1) {
@@ -418,11 +418,11 @@ public class SlaveManagement extends CommandInterface {
 			try {
 				rslave.addMask(mask);
 				response.addComment(session.jprintf(_bundle,
-						_keyPrefix+"slave.addmask.success", env, request.getUser()));
+						"slave.addmask.success", env, request.getUser()));
 				return response;
 			} catch (DuplicateElementException e) {
 				response = new CommandResponse(501, session.jprintf(_bundle,
-						_keyPrefix+"slave.addmask.dupe", env, request.getUser()));
+						"slave.addmask.dupe", env, request.getUser()));
 				return response;
 			}
 		} else if (command.equalsIgnoreCase("delmask")) {
@@ -435,10 +435,10 @@ public class SlaveManagement extends CommandInterface {
 
 			if (rslave.removeMask(mask)) {
 				return new CommandResponse(200, session.jprintf(_bundle,
-						_keyPrefix+"slave.delmask.success", env, request.getUser()));
+						"slave.delmask.success", env, request.getUser()));
 			}
 			return new CommandResponse(501, session.jprintf(_bundle,
-					_keyPrefix+"slave.delmask.failed", env, request.getUser()));
+					"slave.delmask.failed", env, request.getUser()));
 		} else if (command.equalsIgnoreCase("shutdown")) {
 			rslave.shutdown();
 			return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
@@ -447,7 +447,7 @@ public class SlaveManagement extends CommandInterface {
 			env.add("remergesize", rslave.getRemergeQueue().size());
 			env.add("remergecrcsize", rslave.getCRCQueue().size());
 			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"slave.queues", env, request.getUser()));
+					"slave.queues", env, request.getUser()));
 			return response;
 		}
 		throw new ImproperUsageException();
@@ -477,14 +477,14 @@ public class SlaveManagement extends CommandInterface {
 			GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 		} catch (ObjectNotFoundException e) {
 			response.addComment(session.jprintf(_bundle,
-					_keyPrefix+"delslave.notfound", env, request.getUser()));
+					"delslave.notfound", env, request.getUser()));
 
 			return response;
 		}
 
 		GlobalContext.getGlobalContext().getSlaveManager().delSlave(slavename);
 		response.addComment(session.jprintf(_bundle,
-				_keyPrefix+"delslave.success", env, request.getUser()));
+				"delslave.success", env, request.getUser()));
 
 		return response;
 	}
@@ -517,13 +517,13 @@ public class SlaveManagement extends CommandInterface {
 			GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 
 			return new CommandResponse(501,
-					session.jprintf(_bundle, _keyPrefix+"addslave.exists", request.getUser()));
+					session.jprintf(_bundle, "addslave.exists", request.getUser()));
 		} catch (ObjectNotFoundException e) {
 		}
 
 		GlobalContext.getGlobalContext().getSlaveManager().newSlave(slavename);
 		response.addComment(session.jprintf(_bundle,
-				_keyPrefix+"addslave.success", env, request.getUser()));
+				"addslave.success", env, request.getUser()));
 
 		return response;
 	}
@@ -565,7 +565,7 @@ public class SlaveManagement extends CommandInterface {
 		SlaveStatus status = GlobalContext.getGlobalContext().getSlaveManager().getAllStatus();
 		fillEnvWithSlaveStatus(env, status);
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		response.addComment(request.getSession().jprintf(_bundle, _keyPrefix + "diskfree", env, request.getUser()));
+		response.addComment(request.getSession().jprintf(_bundle,  "diskfree", env, request.getUser()));
 		return response;
 	}
 
@@ -605,7 +605,7 @@ public class SlaveManagement extends CommandInterface {
 				env.add("remergesize", rslave.getRemergeQueue().size());
 				env.add("remergecrcsize", rslave.getCRCQueue().size());
 				arr.add((request.getSession().jprintf(_bundle,
-						_keyPrefix+"slave.queues", env, request.getUser())));
+						"slave.queues", env, request.getUser())));
 			}
 			else {
 				arr.add(rslave.getName() +" remergequeue size is 0 but remerge is ongoing");

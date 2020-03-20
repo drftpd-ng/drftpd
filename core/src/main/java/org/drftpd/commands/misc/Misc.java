@@ -42,13 +42,13 @@ public class Misc extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 	
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_cManager = cManager;
     	_bundle = cManager.getResourceBundle();
-    	_keyPrefix = this.getClass().getName()+".";
+
     }
 
     /**
@@ -241,7 +241,7 @@ public class Misc extends CommandInterface {
     	Collections.sort(sortedList);
     	CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     	try {
-    		response.addComment(_bundle.getString(_keyPrefix+"help.header"));
+    		response.addComment(_bundle.getString("help.header"));
     	} catch (MissingResourceException e) {
     		response.addComment("Help has no header");
     	}
@@ -249,7 +249,7 @@ public class Misc extends CommandInterface {
     		response.addComment(helpInfo.get(cmd));
     	}
     	try {
-    		response.addComment(_bundle.getString(_keyPrefix+"help.footer"));
+    		response.addComment(_bundle.getString("help.footer"));
     	} catch (MissingResourceException e) {
     		response.addComment("Help has no footer");
     	}

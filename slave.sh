@@ -58,7 +58,7 @@ APP_LONG_NAME="DrFTPD Slave"
 
 # Wrapper
 WRAPPER_CMD="bin/wrapper"
-WRAPPER_CONF="conf/wrapper-slave.conf"
+WRAPPER_CONF="config/wrapper-slave.conf"
 
 # Priority at which to run the wrapper.  See "man nice" for valid priorities.
 #  nice is only used if a priority is specified.

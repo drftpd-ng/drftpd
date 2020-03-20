@@ -60,7 +60,7 @@ public class MediaInfoPostHook {
     private void loadConf() {
         Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("mediainfo.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/mediainfo.conf not found");
+			logger.fatal("config/plugins/mediainfo.conf not found");
 			return;
 		}
 		_exclSections.clear();

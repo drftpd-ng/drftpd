@@ -40,12 +40,12 @@ public class TrafficKickAnnouncer extends AbstractAnnouncer {
 
     private ResourceBundle _bundle;
 
-    private String _keyPrefix;
+
 
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _config = config;
         _bundle = bundle;
-        _keyPrefix = this.getClass().getName();
+
         // Subscribe to events
         AnnotationProcessor.process(this);
     }
@@ -79,9 +79,9 @@ public class TrafficKickAnnouncer extends AbstractAnnouncer {
                 env.add("speed", Bytes.formatBytes(event.getSpeed()) + "/s");
 
                 if (event.isStor()) {
-                    sayOutput(ReplacerUtils.jprintf(_keyPrefix + ".up", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf( "up", env, _bundle), writer);
                 } else {
-                    sayOutput(ReplacerUtils.jprintf(_keyPrefix + ".dn", env, _bundle), writer);
+                    sayOutput(ReplacerUtils.jprintf( "dn", env, _bundle), writer);
                 }
             }
         }

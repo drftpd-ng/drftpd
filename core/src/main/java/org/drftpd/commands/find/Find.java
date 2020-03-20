@@ -55,7 +55,7 @@ public class Find extends CommandInterface {
     public static final Logger logger = LogManager.getLogger(Find.class);
 
     private ResourceBundle _bundle;
-    private String _keyPrefix;
+
 
     private CaseInsensitiveHashMap<String, OptionInterface> _optionsMap = new CaseInsensitiveHashMap<>();
     private CaseInsensitiveHashMap<String, ActionInterface> _actionsMap = new CaseInsensitiveHashMap<>();
@@ -63,7 +63,7 @@ public class Find extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-        _keyPrefix = this.getClass().getName() + ".";
+
 
         // Subscribe to events
         AnnotationProcessor.process(this);
@@ -200,7 +200,7 @@ public class Find extends CommandInterface {
         CommandResponse response = new CommandResponse(200, "Find complete!");
 
         if (inodes.isEmpty()) {
-            response.addComment(session.jprintf(_bundle, _keyPrefix + "find.empty", env, user.getName()));
+            response.addComment(session.jprintf(_bundle,  "find.empty", env, user.getName()));
             return response;
         }
 
@@ -240,13 +240,13 @@ public class Find extends CommandInterface {
         }
 
         if (results == 0) {
-            response.addComment(session.jprintf(_bundle, _keyPrefix + "find.empty", env, user.getName()));
+            response.addComment(session.jprintf(_bundle,  "find.empty", env, user.getName()));
             return response;
         }
 
         env.add("limit", limit);
         env.add("results", results);
-        response.addComment(session.jprintf(_bundle, _keyPrefix + "find.header", env, user.getName()));
+        response.addComment(session.jprintf(_bundle,  "find.header", env, user.getName()));
 
         for (String line : responses) {
             response.addComment(line);

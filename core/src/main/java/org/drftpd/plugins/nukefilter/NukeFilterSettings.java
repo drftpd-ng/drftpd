@@ -42,7 +42,7 @@ public class NukeFilterSettings {
 		//grab config file
 		Properties props = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("nukefilter.conf");
 		if(props == null) {
-			logger.fatal("conf/plugins/nukefilter.conf not found");
+			logger.fatal("config/plugins/nukefilter.conf not found");
 			return;
 		}
 		/*

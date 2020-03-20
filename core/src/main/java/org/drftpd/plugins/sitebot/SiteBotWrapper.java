@@ -48,14 +48,13 @@ public class SiteBotWrapper implements PluginInterface {
 		boolean isActivated = cfg.getProperty("activated").equalsIgnoreCase("true");
 		if (!isActivated) return;
 
-		SiteBot bot = new SiteBot("irc");
+		SiteBot bot = new SiteBot("");
 		new Thread(bot).start();
 		_bots.add(bot);
 		if (cfg.getProperty("bot.multiple.enable").equalsIgnoreCase("true")) {
-			StringTokenizer st = new StringTokenizer(cfg.getProperty(
-					"bot.multiple.directories"));
+			StringTokenizer st = new StringTokenizer(cfg.getProperty("bot.multiple.directories"));
 			while (st.hasMoreTokens()) {
-				bot = new SiteBot("irc/"+st.nextToken());
+				bot = new SiteBot(st.nextToken());
 				new Thread(bot).start();
 				_bots.add(bot);
 			}

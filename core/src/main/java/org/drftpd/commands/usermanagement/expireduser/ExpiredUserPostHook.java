@@ -41,11 +41,11 @@ import java.util.ResourceBundle;
 public class ExpiredUserPostHook implements PostHookInterface {
 	private static final Logger logger = LogManager.getLogger(ExpiredUserPostHook.class);
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public void initialize(StandardCommandManager manager) {
 		_bundle = manager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	public void doExpiredUserPostHook(CommandRequest request, CommandResponse response) {
@@ -64,7 +64,7 @@ public class ExpiredUserPostHook implements PostHookInterface {
 			ReplacerEnvironment env = new ReplacerEnvironment();
 			env.add("expiredate", expiredate);
 			response.addComment(request.getSession().jprintf(_bundle,
-					_keyPrefix+"expireduser", env, myUser.getName()));
+					"expireduser", env, myUser.getName()));
 		} catch (KeyNotFoundException e) {
 			// ignore
 		}

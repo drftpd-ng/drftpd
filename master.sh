@@ -58,7 +58,7 @@ APP_LONG_NAME="DrFTPD Master"
 
 # Wrapper
 WRAPPER_CMD="bin/wrapper"
-WRAPPER_CONF="conf/wrapper-master.conf"
+WRAPPER_CONF="config/wrapper-master.conf"
 
 # Priority at which to run the wrapper.  See "man nice" for valid priorities.
 #  nice is only used if a priority is specified.

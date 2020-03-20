@@ -39,12 +39,12 @@ import java.util.*;
 public class JobManagerCommandHandler extends CommandInterface {
 
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_bundle = cManager.getResourceBundle();
-    	_keyPrefix = getClass().getName() + ".";
+
     }
     
 	public JobManagerCommandHandler() {
@@ -126,7 +126,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("job", job);
 		response.addComment(request.getSession().jprintf(_bundle, env,
-				_keyPrefix + "addjob.success"));
+				 "addjob.success"));
 
 		return response;
 	}
@@ -161,15 +161,15 @@ public class JobManagerCommandHandler extends CommandInterface {
 					}
 					env.add("srcslave", job.getSourceSlave().getName());
 					env.add("destslave", job.getDestinationSlave().getName());
-					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "listjobrunning"));
+					response.addComment(request.getSession().jprintf(_bundle, env,  "listjobrunning"));
 				} else {
-					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "listjobwaiting"));
+					response.addComment(request.getSession().jprintf(_bundle, env,  "listjobwaiting"));
 				}
 			}
 		}
 		env = new ReplacerEnvironment();
 		env.add("total", treeSet.size());
-		response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "sizeofjobs"));
+		response.addComment(request.getSession().jprintf(_bundle, env,  "sizeofjobs"));
 		return response;
 	}
 	
@@ -194,13 +194,13 @@ public class JobManagerCommandHandler extends CommandInterface {
 					}
 					env.add("srcslave", job.getSourceSlave().getName());
 					env.add("destslave", job.getDestinationSlave().getName());
-					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "listjobrunning"));
+					response.addComment(request.getSession().jprintf(_bundle, env,  "listjobrunning"));
 				}
 			}
 		}
 		env = new ReplacerEnvironment();
 		env.add("total", treeSet.size());
-		response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "sizeofjobs"));
+		response.addComment(request.getSession().jprintf(_bundle, env,  "sizeofjobs"));
 		return response;
 	}
 
@@ -262,7 +262,7 @@ public class JobManagerCommandHandler extends CommandInterface {
 					env.add("job", job);
 					getJobManager().stopJob(job);
 					response.addComment(request.getSession().jprintf(_bundle, env,
-							_keyPrefix + "removejob.success"));
+							 "removejob.success"));
 				}
 			}
 		}

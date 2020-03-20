@@ -109,9 +109,9 @@ public class PartialTrustManager implements X509TrustManager {
 	}
 
 	private void loadCerts() {
-		File dir = new File("conf/plugins/irc/certs");
+		File dir = new File("config/plugins/irc/certs");
 		if (!dir.isDirectory())
-			throw new RuntimeException("conf/plugins/irc/certs" + " is not a directory");
+			throw new RuntimeException("config/plugins/irc/certs" + " is not a directory");
 
 		for (File file : dir.listFiles()) {
 			if (file.isFile()) {

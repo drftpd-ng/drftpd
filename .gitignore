@@ -7,6 +7,7 @@
 target
 build
 logs
+config
 development/target
 core/target
 imdb/target

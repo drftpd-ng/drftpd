@@ -54,12 +54,17 @@ import org.reflections.util.ConfigurationBuilder;
 import org.tanukisoftware.wrapper.WrapperManager;
 
 import javax.net.ssl.SSLContext;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author mog
@@ -402,43 +407,46 @@ public class GlobalContext {
         return _sslContext;
     }
 
-    public static HashMap<String, Properties> loadCommandConfig(String cmdConf) {
+    public static HashMap<String, Properties> loadCommandConfig(String confDirectory) {
         HashMap<String, Properties> commandsConfig = new HashMap<>();
         LineNumberReader reader = null;
         try {
-            reader = new LineNumberReader(new FileReader(cmdConf));
-            String curLine = null;
+            Stream<Path> pathStream = Files.walk(Paths.get(confDirectory));
+            List<Path> confFiles = pathStream.filter(f -> f.getFileName().toString().endsWith(".conf")).collect(Collectors.toList());
+            for (Path confFile : confFiles) {
+                reader = new LineNumberReader(new FileReader(confFile.toFile()));
+                String curLine;
 
-            while (reader.ready()) {
-                curLine = reader.readLine();
-                if (curLine != null) {
-                    curLine = curLine.trim();
-                    if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
-                        // comment or blank line, ignore
-                        continue;
-                    }
-                    if (curLine.endsWith("{")) {
-                        // internal loop
-                        String cmdName = curLine.substring(0, curLine.lastIndexOf("{") - 1).toLowerCase();
-                        if (commandsConfig.containsKey(cmdName)) {
-                            throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+                while (reader.ready()) {
+                    curLine = reader.readLine();
+                    if (curLine != null) {
+                        curLine = curLine.trim();
+                        if (curLine.startsWith("#") || curLine.equals("") || curLine.startsWith("skip")) {
+                            // comment or blank line, ignore
+                            continue;
                         }
-                        Properties p = getPropertiesUntilClosed(reader);
-                        logger.trace("Adding command {}", cmdName);
+                        if (curLine.endsWith("{")) {
+                            // internal loop
+                            String cmdName = curLine.substring(0, curLine.lastIndexOf("{") - 1).toLowerCase();
+                            if (commandsConfig.containsKey(cmdName)) {
+                                throw new FatalException(cmdName + " is already mapped on line " + reader.getLineNumber());
+                            }
+                            Properties p = getPropertiesUntilClosed(reader);
+                            logger.trace("Adding command {}", cmdName);
 
-                        commandsConfig.put(cmdName, p);
-                    } else {
-                        throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
+                            commandsConfig.put(cmdName, p);
+                        } else {
+                            throw new FatalException("Expected line to end with \"{\" at line " + reader.getLineNumber());
+                        }
                     }
                 }
             }
             // done reading for new commands, must be finished
-            return commandsConfig;
         } catch (IOException e) {
-            throw new FatalException("Error loading " + cmdConf, e);
+            throw new FatalException("Error loading " + confDirectory, e);
         } catch (Exception e) {
             if (reader != null) {
-                logger.error("Error reading line {} in {}", reader.getLineNumber(), cmdConf);
+                logger.error("Error reading line {} in {}", reader.getLineNumber(), confDirectory);
             }
             throw new FatalException(e);
         } finally {
@@ -449,6 +457,7 @@ public class GlobalContext {
                 }
             }
         }
+        return commandsConfig;
     }
 
     private static Properties getPropertiesUntilClosed(LineNumberReader reader) throws IOException {

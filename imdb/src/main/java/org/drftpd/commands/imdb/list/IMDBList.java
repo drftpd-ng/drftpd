@@ -37,8 +37,6 @@ public class IMDBList implements AddListElementsInterface {
 
 	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-		String keyPrefix = this.getClass().getName()+".";
-
 		if (IMDBConfig.getInstance().barEnabled()) {
 			IMDBVFSDataNFO imdbData = new IMDBVFSDataNFO(dir);
 			IMDBInfo imdbInfo = imdbData.getIMDBInfoFromCache();
@@ -56,8 +54,7 @@ public class IMDBList implements AddListElementsInterface {
 					env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "0");
 					env.add("url", imdbInfo.getURL());
 					env.add("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "0");
-					String imdbDirName = container.getSession().jprintf(bundle,
-							keyPrefix+"imdb.dir", env, container.getUser());
+					String imdbDirName = container.getSession().jprintf(bundle, "imdb.dir", env, container.getUser());
 					try {
 						container.getElements().add(new LightRemoteInode(imdbDirName, "drftpd", "drftpd",
 								IMDBConfig.getInstance().barAsDirectory(), dir.lastModified(), 0L));

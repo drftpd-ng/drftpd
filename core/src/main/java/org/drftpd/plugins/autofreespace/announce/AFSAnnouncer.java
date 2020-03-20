@@ -43,12 +43,12 @@ public class AFSAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName()+".";
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -91,9 +91,9 @@ public class AFSAnnouncer extends AbstractAnnouncer {
 				// Slave went offline, announce anyway.
 			}
 			if (inode != null) {
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"afs.delete", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf("afs.delete", env, _bundle), writer);
 			} else {
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+"afs.announce", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf("afs.announce", env, _bundle), writer);
 			}
 		}
 	}

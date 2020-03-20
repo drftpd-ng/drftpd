@@ -59,7 +59,7 @@ public class DailyStats implements UserResetHookInterface {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig()
 		.getPropertiesForPlugin("dailystats.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/dailystats.conf not found");
+			logger.fatal("config/plugins/dailystats.conf not found");
 			return;
 		}
 

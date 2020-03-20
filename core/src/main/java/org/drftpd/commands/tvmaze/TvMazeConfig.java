@@ -70,7 +70,7 @@ public class TvMazeConfig {
 	private void loadConfig() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("tvmaze.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/tvmaze.conf not found");
+			logger.fatal("config/plugins/tvmaze.conf not found");
 			return;
 		}
 		_filters.clear();

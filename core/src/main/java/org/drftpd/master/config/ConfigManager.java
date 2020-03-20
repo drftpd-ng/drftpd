@@ -51,8 +51,8 @@ import java.util.*;
  */
 public class ConfigManager implements ConfigInterface {
     private static final Logger logger = LogManager.getLogger(ConfigManager.class);
-    private static final File permsFile = new File("conf/perms.conf");
-    private static final File mainFile = new File("conf/master.conf");
+    private static final File permsFile = new File("config/perms.conf");
+    private static final File mainFile = new File("config/master.conf");
 
     private static final Key<Hashtable<String, ArrayList<PathPermission>>> PATHPERMS
             = new Key<>(ConfigManager.class, "pathPerms");

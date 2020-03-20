@@ -48,7 +48,7 @@ public class Mirror extends CommandInterface {
 	private void loadConf() {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("mirror.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/mirror.conf not found");
+			logger.fatal("config/plugins/mirror.conf not found");
 			return;
 		}
 		_excludePaths.clear();

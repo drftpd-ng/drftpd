@@ -40,12 +40,12 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -73,7 +73,7 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 			env.add("files", event.getJobs().size());
 			env.add("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
 
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".start", env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("start", env, _bundle), writer);
 		}
 	}
     
@@ -90,9 +90,9 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 			
 			if (event.getArchiveType().getDestinationDirectory() != null) {
 				env.add("destdir", event.getArchiveType().getDestinationDirectory().getParent().getPath());
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".finish.move", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf("finish.move", env, _bundle), writer);
 			} else {
-				sayOutput(ReplacerUtils.jprintf(_keyPrefix+".finish", env, _bundle), writer);
+				sayOutput(ReplacerUtils.jprintf("finish", env, _bundle), writer);
 			}
 		}
     }
@@ -109,7 +109,7 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 			env.add("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
 			env.add("reason", event.getFailReason());
 			
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".failed", env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("failed", env, _bundle), writer);
 		}
     }
 

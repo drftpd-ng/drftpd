@@ -31,39 +31,37 @@ import java.util.ResourceBundle;
  */
 public class IMDBAnnouncer extends AbstractAnnouncer {
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
+    private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	public void stop() {
-		// The plugin is unloading so stop asking for events
-		AnnotationProcessor.unprocess(this);
-	}
+    public void stop() {
+        // The plugin is unloading so stop asking for events
+        AnnotationProcessor.unprocess(this);
+    }
 
-	public String[] getEventTypes() {
-		return new String[] { "imdb" };
-	}
+    public String[] getEventTypes() {
+        return new String[]{"imdb"};
+    }
 
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
-	@EventSubscriber
-	public void onIMDBEvent(IMDBEvent event) {
-		AnnounceWriter writer = _config.getPathWriter("imdb", event.getDir());
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".imdb.announce", event.getEnv(), _bundle), writer);
-		}
-	}
+    @EventSubscriber
+    public void onIMDBEvent(IMDBEvent event) {
+        AnnounceWriter writer = _config.getPathWriter("imdb", event.getDir());
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            sayOutput(ReplacerUtils.jprintf("imdb.announce", event.getEnv(), _bundle), writer);
+        }
+    }
 }

@@ -85,12 +85,12 @@ public class DataConnectionHandler extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 		_featReplies = populateFeat(method);
 	}
 
@@ -795,7 +795,7 @@ public class DataConnectionHandler extends CommandInterface {
 
 			if (comparison != 0 && count >= comparison) {
 				return new CommandResponse(550,
-						conn.jprintf(_bundle, _keyPrefix+"transfer.err.maxsim", env, request.getUser()));
+						conn.jprintf(_bundle, "transfer.err.maxsim", env, request.getUser()));
 			}
 
 			// get filenames
@@ -1062,7 +1062,7 @@ public class DataConnectionHandler extends CommandInterface {
 				env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
 
 				response = new CommandResponse(226, conn.jprintf(_bundle,
-						_keyPrefix+"transfer.complete", env, request.getUser()));
+						"transfer.complete", env, request.getUser()));
 			}
 
 			response.setObject(CHECKSUM,status == null ? 0L : status.getChecksum());

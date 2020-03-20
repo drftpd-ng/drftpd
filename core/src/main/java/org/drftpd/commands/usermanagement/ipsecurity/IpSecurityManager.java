@@ -98,7 +98,7 @@ public class IpSecurityManager implements PluginInterface {
 		LineNumberReader inRead = null;
 	
 	   try{
-		   inRead = new LineNumberReader(new FileReader("conf/plugins/ipsecurity.conf"));
+		   inRead = new LineNumberReader(new FileReader("config/plugins/ipsecurity.conf"));
 		   
 		   String line;
 		   while ((line = inRead.readLine()) != null) {

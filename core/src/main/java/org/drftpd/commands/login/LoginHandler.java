@@ -49,12 +49,12 @@ public class LoginHandler extends CommandInterface {
     private static final Logger logger = LogManager.getLogger(LoginHandler.class);
     
     private ResourceBundle _bundle;
-    private String _keyPrefix;
+
 
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_bundle = cManager.getResourceBundle();
-    	_keyPrefix = this.getClass().getName()+".";
+
     }
 
     /**
@@ -132,7 +132,7 @@ public class LoginHandler extends CommandInterface {
             GlobalContext.getEventService().publishAsync(new UserEvent(
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
-            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, _keyPrefix+"pass.success", request.getUser()));
+            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", request.getUser()));
             
             try {
                 addTextToResponse(response, "userdata/text/welcome.txt");
@@ -145,7 +145,7 @@ public class LoginHandler extends CommandInterface {
         }
 
         request.getSession().setObject(BaseFtpConnection.FAILEDREASON, "PASS Failed");
-        return new CommandResponse(530, conn.jprintf(_bundle, _keyPrefix+"pass.fail", request.getUser() == null ? request.getSession().getObject(BaseFtpConnection.FAILEDUSERNAME,"") : request.getUser()));
+        return new CommandResponse(530, conn.jprintf(_bundle, "pass.fail", request.getUser() == null ? request.getSession().getObject(BaseFtpConnection.FAILEDUSERNAME,"") : request.getUser()));
     }
 
     /**
@@ -158,7 +158,7 @@ public class LoginHandler extends CommandInterface {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         conn.stop();
 
-        return new CommandResponse(221, conn.jprintf(_bundle, _keyPrefix+"quit.success", request.getUser()));
+        return new CommandResponse(221, conn.jprintf(_bundle, "quit.success", request.getUser()));
     }
 
     private void getIP(CommandRequest request) {
@@ -256,7 +256,7 @@ public class LoginHandler extends CommandInterface {
                 
                 request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
                 return new CommandResponse(331,
-                        conn.jprintf(_bundle, _keyPrefix+"user.success", env, request.getUser()),
+                        conn.jprintf(_bundle, "user.success", env, request.getUser()),
                 		request.getCurrentDirectory(), newUser.getName());
             }
         } catch (PatternSyntaxException e) {

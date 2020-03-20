@@ -38,12 +38,12 @@ public class PreAnnouncer extends AbstractAnnouncer {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
-		_keyPrefix = this.getClass().getName();
+
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
@@ -74,7 +74,7 @@ public class PreAnnouncer extends AbstractAnnouncer {
 			env.add("sectioncolor", event.getSection().getColor());
 			env.add("files", event.getFiles());
 			env.add("bytes", event.getBytes());
-			sayOutput(ReplacerUtils.jprintf(_keyPrefix+".pre", env, _bundle), writer);
+			sayOutput(ReplacerUtils.jprintf("pre", env, _bundle), writer);
 		}
 	}
 }

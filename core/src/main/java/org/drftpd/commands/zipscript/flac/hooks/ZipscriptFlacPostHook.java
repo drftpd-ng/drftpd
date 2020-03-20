@@ -47,11 +47,11 @@ public class ZipscriptFlacPostHook {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public ZipscriptFlacPostHook() {
 		_bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	@CommandHook(commands = "doCWD", priority = 12, type = HookType.POST)
@@ -159,12 +159,12 @@ public class ZipscriptFlacPostHook {
 				Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
 				getPropertiesForPlugin("zipscript.conf");
 				if (cfg.getProperty("stor.flacinfo.enabled", "false").equalsIgnoreCase("true")) {
-					response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "stor.flacinfo.text"));
+					response.addComment(request.getSession().jprintf(_bundle, env,  "stor.flacinfo.text"));
 				}
 				FileHandle file = (FileHandle) inode;
 				GlobalContext.getEventService().publishAsync(new FlacEvent(flacInfo, file.getParent(), flacData.isFirst()));
 			} else {
-				response.addComment(request.getSession().jprintf(_bundle, env, _keyPrefix + "cwd.flacinfo.text"));
+				response.addComment(request.getSession().jprintf(_bundle, env,  "cwd.flacinfo.text"));
 			}
 		} catch (FileNotFoundException e) {
 			// Error fetching flac info, ignore

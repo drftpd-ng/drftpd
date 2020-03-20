@@ -40,11 +40,11 @@ import java.util.ResourceBundle;
 public class NotesPostHook implements PostHookInterface {
 	private static final Logger logger = LogManager.getLogger(NotesPostHook.class);
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public void initialize(StandardCommandManager manager) {
 		_bundle = manager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	public void doNotesPostHook(CommandRequest request, CommandResponse response) {
@@ -66,7 +66,7 @@ public class NotesPostHook implements PostHookInterface {
 				env.add("number", cnt++);
 				env.add("note", note);
 				response.addComment(request.getSession().jprintf(_bundle,
-						_keyPrefix+"note", env, myUser));
+						"note", env, myUser));
 			}
 
 		} catch (KeyNotFoundException e) {

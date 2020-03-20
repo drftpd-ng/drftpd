@@ -19,6 +19,7 @@ package org.drftpd.master.commandmanager;
 
 import org.drftpd.master.master.Session;
 import org.drftpd.master.util.ExtendedPropertyResourceBundle;
+import org.drftpd.master.util.ThemeResourceBundle;
 import org.drftpd.master.vfs.DirectoryHandle;
 
 import java.util.HashMap;
@@ -56,5 +57,5 @@ public interface CommandManagerInterface {
     CommandRequestInterface newRequest(String originalCommand, String argument,
                                        DirectoryHandle directory, String user, Session session, Properties config);
 
-	ExtendedPropertyResourceBundle getResourceBundle();
+	ThemeResourceBundle getResourceBundle();
 }

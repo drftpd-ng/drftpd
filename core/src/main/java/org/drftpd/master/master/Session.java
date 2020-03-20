@@ -112,12 +112,6 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, user), bundle);
 	}
 
-	public String jprintf(Class<?> baseName, String key, ReplacerEnvironment env, User user) {
-		ResourceBundle bundle = ResourceBundle.getBundle(baseName.getName());
-
-		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, user), bundle);
-	}
-
 	public abstract boolean isSecure();
 
 	public abstract void printOutput(Object o);

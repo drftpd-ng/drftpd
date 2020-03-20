@@ -40,7 +40,6 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
 
 	public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-		String keyPrefix = this.getClass().getName()+".";
 		// Check config
 		boolean statusBarEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
@@ -59,8 +58,7 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
 				} else {
 					throw new NoEntryAvailableException();
 				}
-				statusBarEntries.add(container.getSession().jprintf(bundle,
-						keyPrefix+"statusbar.id3tag",env,container.getUser()));
+				statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.id3tag",env,container.getUser()));
 				return statusBarEntries;
 			} catch (FileNotFoundException e) {
 				// Error fetching mp3 info, ignore

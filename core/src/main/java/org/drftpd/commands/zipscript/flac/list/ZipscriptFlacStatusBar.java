@@ -39,7 +39,6 @@ public class ZipscriptFlacStatusBar implements ZipscriptListStatusBarInterface {
 
 	public ArrayList<String> getStatusBarEntry(DirectoryHandle dir, ListElementsContainer container) throws NoEntryAvailableException {
 		ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-		String keyPrefix = this.getClass().getName()+".";
 		// Check config
 		boolean statusBarEnabled = GlobalContext.getGlobalContext().getPluginsConfig().
 		getPropertiesForPlugin("zipscript.conf").getProperty("statusbar.enabled", "false").equalsIgnoreCase("true");
@@ -58,8 +57,7 @@ public class ZipscriptFlacStatusBar implements ZipscriptListStatusBarInterface {
 				} else {
 					throw new NoEntryAvailableException();
 				}
-				statusBarEntries.add(container.getSession().jprintf(bundle,
-						keyPrefix + "statusbar.vorbistag", env, container.getUser()));
+				statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.vorbistag", env, container.getUser()));
 				return statusBarEntries;
 			} catch (FileNotFoundException e) {
 				// Error fetching flac info, ignore

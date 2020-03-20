@@ -59,7 +59,7 @@ public class SysopManager implements PluginInterface {
 		Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
 				getPropertiesForPlugin("sysop.conf");
 		if (cfg == null) {
-			logger.fatal("conf/plugins/sysop.conf not found");
+			logger.fatal("config/plugins/sysop.conf not found");
 			return;
 		}
 

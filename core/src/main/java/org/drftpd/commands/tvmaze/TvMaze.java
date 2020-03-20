@@ -44,12 +44,12 @@ import java.util.ResourceBundle;
 public class TvMaze extends CommandInterface {
 	private static final Logger logger = LogManager.getLogger(TvMaze.class);
 	private ResourceBundle _bundle;
-	private String _keyPrefix;
+
 
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
 		super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 		TvMazeConfig.getInstance();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
@@ -76,7 +76,7 @@ public class TvMaze extends CommandInterface {
 		if (tvmaze.getTvShow() == null) {
 			env.add("searchstr", searchstring);
 			env.add("error", tvmaze.getError());
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+"tv.none", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, "tv.none", env, request.getUser()));
 		} else {
 			env = TvMazeUtils.getShowEnv(tvmaze.getTvShow());
 			if (tvmaze.getTvShow().getEPList().length == 0) {
@@ -142,17 +142,17 @@ public class TvMaze extends CommandInterface {
 
 	private void addTagToEnvironment(ReplacerEnvironment env, CommandRequest request, String tag, String key, boolean verbose) {
 		if (verbose) {
-			env.add(tag, request.getSession().jprintf(_bundle, _keyPrefix+key+".verbose", env, request.getUser()));
+			env.add(tag, request.getSession().jprintf(_bundle, key+".verbose", env, request.getUser()));
 		} else {
-			env.add(tag, request.getSession().jprintf(_bundle, _keyPrefix+key, env, request.getUser()));
+			env.add(tag, request.getSession().jprintf(_bundle, key, env, request.getUser()));
 		}
 	}
 
 	private void addResponse(ReplacerEnvironment env, CommandRequest request, CommandResponse response, String key, boolean verbose) {
 		if (verbose) {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+key+".verbose", env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, key+".verbose", env, request.getUser()));
 		} else {
-			response.addComment(request.getSession().jprintf(_bundle, _keyPrefix+key, env, request.getUser()));
+			response.addComment(request.getSession().jprintf(_bundle, key, env, request.getUser()));
 		}
 	}
 
@@ -173,14 +173,14 @@ public class TvMaze extends CommandInterface {
 		if (dirsToCheck.isEmpty()) {
 			return new CommandResponse(500, "Not a valid section, aborting");
 		}
-		request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix+"createtvmaze.start", env, request.getUser()));
+		request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "createtvmaze.start", env, request.getUser()));
 		for (DirectoryHandle dirToCheck : dirsToCheck) {
 			parseTvMazeDirs(dirToCheck, request);
 		}
 		if (request.getSession().isAborted()) {
-			return new CommandResponse(200, request.getSession().jprintf(_bundle, _keyPrefix+"createtvmaze.aborted", env, request.getUser()));
+			return new CommandResponse(200, request.getSession().jprintf(_bundle, "createtvmaze.aborted", env, request.getUser()));
 		} else {
-			return new CommandResponse(200, request.getSession().jprintf(_bundle, _keyPrefix+"createtvmaze.complete", env, request.getUser()));
+			return new CommandResponse(200, request.getSession().jprintf(_bundle, "createtvmaze.complete", env, request.getUser()));
 		}
 	}
 
@@ -200,9 +200,9 @@ public class TvMaze extends CommandInterface {
 					env.add("dirname", dir.getName());
 					env.add("dirpath", dir.getPath());
 					if (cache) {
-						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.cache", env, request.getUser()));
+						request.getSession().printOutput(200, request.getSession().jprintf(_bundle,  "createtvmaze.cache", env, request.getUser()));
 					} else {
-						request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix + "createtvmaze.add", env, request.getUser()));
+						request.getSession().printOutput(200, request.getSession().jprintf(_bundle,  "createtvmaze.add", env, request.getUser()));
 						try {
 							// Sleep for randomly generated seconds specified in conf
 							Thread.sleep(TvMazeUtils.randomNumber());
@@ -247,14 +247,14 @@ public class TvMaze extends CommandInterface {
 		if (dirsToCheck.isEmpty()) {
 			return new CommandResponse(500, "Not a valid section, aborting");
 		}
-		request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix+"removetvmaze.start", env, request.getUser()));
+		request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "removetvmaze.start", env, request.getUser()));
 		for (DirectoryHandle dirToCheck : dirsToCheck) {
 			removeMetaDataRecursive(dirToCheck, request);
 		}
 		if (request.getSession().isAborted()) {
-			return new CommandResponse(200, request.getSession().jprintf(_bundle, _keyPrefix+"removetvmaze.aborted", env, request.getUser()));
+			return new CommandResponse(200, request.getSession().jprintf(_bundle, "removetvmaze.aborted", env, request.getUser()));
 		} else {
-			return new CommandResponse(200, request.getSession().jprintf(_bundle, _keyPrefix+"removetvmaze.complete", env, request.getUser()));
+			return new CommandResponse(200, request.getSession().jprintf(_bundle, "removetvmaze.complete", env, request.getUser()));
 		}
 	}
 
@@ -265,7 +265,7 @@ public class TvMaze extends CommandInterface {
 				ReplacerEnvironment env = new ReplacerEnvironment();
 				env.add("dirname", dir.getName());
 				env.add("dirpath", dir.getPath());
-				request.getSession().printOutput(200, request.getSession().jprintf(_bundle, _keyPrefix+"removetvmaze.remove", env, request.getUser()));
+				request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "removetvmaze.remove", env, request.getUser()));
 			}
 		} catch(FileNotFoundException e) {
 			// No inode to remove tvmaze info from
@@ -319,7 +319,7 @@ public class TvMaze extends CommandInterface {
 	public CommandResponse doSITE_TVQUEUE(CommandRequest request) throws ImproperUsageException {
 		ReplacerEnvironment env = new ReplacerEnvironment();
 		env.add("size", TvMazeConfig.getInstance().getQueueSize());
-		return new CommandResponse(200, request.getSession().jprintf(_bundle, _keyPrefix+"tv.queue", env, request.getUser()));
+		return new CommandResponse(200, request.getSession().jprintf(_bundle, "tv.queue", env, request.getUser()));
 	}
 
 	/*

@@ -75,11 +75,11 @@ public class ZipscriptZipPostHook extends ZipTools {
 
 	private ResourceBundle _bundle;
 
-	private String _keyPrefix;
+
 
 	public ZipscriptZipPostHook() {
 		_bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
-		_keyPrefix = this.getClass().getName()+".";
+
 	}
 
 	@CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
@@ -280,16 +280,16 @@ public class ZipscriptZipPostHook extends ZipTools {
 					"bytes", "high");
 			Collection<GroupPosition> groups = RankUtils.topFileGroup(getZipFiles(dir));
 
-			String racerline = _bundle.getString(_keyPrefix+"cwd.racers.body");
-			String groupline = _bundle.getString(_keyPrefix+"cwd.groups.body");
+			String racerline = _bundle.getString("cwd.racers.body");
+			String groupline = _bundle.getString("cwd.groups.body");
 
 			ReplacerEnvironment env = request.getSession().getReplacerEnvironment(null,
 					request.getSession().getUserNull(request.getUser()));
 
 			//Start building race message
-			StringBuilder raceTextBuilder = new StringBuilder(_bundle.getString(_keyPrefix+"cwd.racestats.header"));
+			StringBuilder raceTextBuilder = new StringBuilder(_bundle.getString("cwd.racestats.header"));
 			raceTextBuilder.append('\n');
-			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.racers.header"));
+			raceTextBuilder.append(_bundle.getString("cwd.racers.header"));
 			raceTextBuilder.append('\n');
 
 			ReplacerFormat raceformat = null;
@@ -333,9 +333,9 @@ public class ZipscriptZipPostHook extends ZipTools {
 				}
 			}
 
-			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.racers.footer"));
+			raceTextBuilder.append(_bundle.getString("cwd.racers.footer"));
 			raceTextBuilder.append('\n');
-			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.groups.header"));
+			raceTextBuilder.append(_bundle.getString("cwd.groups.header"));
 			raceTextBuilder.append('\n');
 
 			//add groups stats
@@ -363,7 +363,7 @@ public class ZipscriptZipPostHook extends ZipTools {
 				}
 			}
 
-			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.groups.footer"));
+			raceTextBuilder.append(_bundle.getString("cwd.groups.footer"));
 			raceTextBuilder.append('\n');
 
 			env.add("completefiles", Integer.toString(dizStatus.getPresent()) + "/" + Integer.toString(dizInfo.getTotal()));
@@ -375,9 +375,9 @@ public class ZipscriptZipPostHook extends ZipTools {
 							(getZipFiles(dir).size() * 100) / dizInfo.getTotal()) +
 			"%");
 
-			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.totals.body"));
+			raceTextBuilder.append(_bundle.getString("cwd.totals.body"));
 			raceTextBuilder.append('\n');
-			raceTextBuilder.append(_bundle.getString(_keyPrefix+"cwd.racestats.footer"));
+			raceTextBuilder.append(_bundle.getString("cwd.racestats.footer"));
 			raceTextBuilder.append('\n');
 
 			try {
