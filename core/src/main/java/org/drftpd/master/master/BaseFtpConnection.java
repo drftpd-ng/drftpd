@@ -434,7 +434,7 @@ public class BaseFtpConnection extends Session implements Runnable {
 	 * returns a two-line status
 	 */
 	public String status() {
-		return jprintf(_commandManager.getResourceBundle(), "statusline", null);
+		return jprintf(_commandManager.getResourceBundle(), "statusline", _user);
 	}
 
 	/**
