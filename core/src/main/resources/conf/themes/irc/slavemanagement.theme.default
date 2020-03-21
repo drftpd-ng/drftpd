@@ -1,0 +1,10 @@
+# $Id$
+slave.online=${color}15${bold}${slavename}${coloroff}: ${bold}${status}${bold} ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} @ ${throughputup} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdown} @ ${throughputdown} ${color}15${bold})-(${bold}${coloroff} DF:${bold}${coloroff} ${bold}${diskfree}${bold}/${disktotal} ${color}15${bold})${bold}${coloroff}
+slave.offline=${color}15${bold}${slavename}${coloroff}: ${color}4${bold}OFFLINE${bold}${coloroff}
+slave.remerging=${color}15${bold}${slavename}${coloroff}: ${color}4${bold}REMERGING${bold}${coloroff}
+slave.notfound=${color}15${bold}${slavename}${coloroff}: ${color}4${bold}NOTFOUND${bold}${coloroff}
+slave.none=No slaves are currently loaded
+
+slave.queues=${slavename} queue sizes - [rename : ${renamesize}] [remerge : ${remergesize}] [remerge crc : ${remergecrcsize}]
+
+diskfree=${color}15${bold}DISKFREE${bold}${coloroff}: We have ${bold}${diskfree}${bold} free, with a total disk space of ${bold}${disktotal}${bold}. Total ${diskfreepercent} free on ${slavesonline} of ${slavestotal} slaves.

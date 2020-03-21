@@ -1,0 +1,24 @@
+# $Id$
+slave.online=${slavename}: ${status} ( UP: ${xfersup} @ ${throughputup} )-( DN: ${xfersdown} @ ${throughputdown} )-( DF: ${diskfree}/${disktotal} )
+slave.offline=${slavename}: OFFLINE
+slave.remerging=${slavename}: REMERGING
+slave.none=No slaves are currently loaded
+
+diskfree=DISKFREE: ${diskfree}/${disktotal} 
+
+slave.notfound=${slavename} is not a valid slave
+slave.addmask.success=${mask} has successfully been added to ${slavename}
+slave.addmask.dupe=${mask} failed to be added to ${slavename}, ${mask} already exists
+slave.delmask.success=${mask} has successfully been removed from ${slavename}
+slave.delmask.failed=${mask} failed to be removed from ${slavename}, check that the mask is in ${slavename}
+slave.masks=Valid masks: ${masks}
+slave.data.header=            Key            Value
+slave.data=${key,15} ${value,15}
+slave.set.success=${key} was set to ${value}
+slave.unset.success=Removed ${key} with value ${value}
+slave.unset.failure=Cannot remove ${key} from slave, key does not exist
+addslave.success=Successfully added ${slavename}
+addslave.exists=${slavename} already exists as a valid slave, could not add it
+delslave.notfound=${slavename} is not a valid slave, cannot delete it
+delslave.success=Successfully removed ${slavename}
+slave.queues=${slavename} queue sizes\nRename queue: ${renamesize,14}\nRemerge queue: ${remergesize,13}\nRemerge(CRC) queue: ${remergecrcsize,8}

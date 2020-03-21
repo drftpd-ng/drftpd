@@ -103,7 +103,7 @@ public class SpeedTest extends CommandInterface {
 			// First run?, load server list
 			_servers = SpeedTestUtils.getClosetsServers();
 			request.getSession().printOutput(200, request.getSession().jprintf(
-					_bundle, "servers.refresh", env, request.getUser()));
+					_bundle, "speedtest.servers.refresh", env, request.getUser()));
 		}
 		if (args.length == 2 && !allSlaves && !wildcardSlaves && args[1].equals("-list")) {
 			listservers = true;
@@ -115,10 +115,10 @@ public class SpeedTest extends CommandInterface {
 
 		if (_servers == null) {
 			return new CommandResponse(500, request.getSession().jprintf(
-					_bundle, "servers.null", env, request.getUser()));
+					_bundle, "speedtest.servers.null", env, request.getUser()));
 		} else if (_servers.isEmpty()) {
 			return new CommandResponse(500, request.getSession().jprintf(
-					_bundle, "servers.empty", env, request.getUser()));
+					_bundle, "speedtest.servers.empty", env, request.getUser()));
 		}
 
 		ArrayList<RemoteSlave> rslaves = new ArrayList<>();
@@ -138,7 +138,7 @@ public class SpeedTest extends CommandInterface {
 		} catch (ObjectNotFoundException e) {
 			env.add("slave.name", slaveName);
 			return new CommandResponse(500, request.getSession().jprintf(
-					_bundle, "slavename.error", env, request.getUser()));
+					_bundle, "speedtest.slavename.error", env, request.getUser()));
 		}
 
 		HashMap<String, SpeedTestServer> usedServers = new HashMap<>();
@@ -151,7 +151,7 @@ public class SpeedTest extends CommandInterface {
 			env.add("slave.name", rslave.getName());
 			if (!rslave.isOnline()) {
 				request.getSession().printOutput(500, request.getSession().jprintf(
-						_bundle, "slave.offline", env, request.getUser()));
+						_bundle, "speedtest.slave.offline", env, request.getUser()));
 				continue;
 			}
 			HashMap<String, SpeedTestServer> testServers = new HashMap<>();
@@ -169,7 +169,7 @@ public class SpeedTest extends CommandInterface {
 				slaveLocation = SpeedTestUtils.getSlaveLocation(rslave);
 				if (slaveLocation.getLatitude() == 0 && slaveLocation.getLongitude() == 0) {
 					request.getSession().printOutput(500, request.getSession().jprintf(
-							_bundle,  "slave.geoip.error", env, request.getUser()));
+							_bundle,  "speedtest.slave.geoip.error", env, request.getUser()));
 				}
 			}
 
@@ -192,7 +192,7 @@ public class SpeedTest extends CommandInterface {
 						env.add("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
 						env.add("unit", _unitSuffix);
 						request.getSession().printOutput(200, request.getSession().jprintf(
-								_bundle, "slave.server.list", env, request.getUser()));
+								_bundle, "speedtest.slave.server.list", env, request.getUser()));
 					} else {
 						testServers.put(server.getUrl(),server);
 					}
@@ -213,14 +213,14 @@ public class SpeedTest extends CommandInterface {
 				// Server list not empty but could not find any test server, id must not be valid
 				env.add("server.id", testServerID);
 				request.getSession().printOutput(500, request.getSession().jprintf(
-						_bundle, "server.id.error", env, request.getUser()));
+						_bundle, "speedtest.server.id.error", env, request.getUser()));
 				continue;
 			}
 
 			usedServers.putAll(testServers);
 
 			request.getSession().printOutput(200, request.getSession().jprintf(
-					_bundle, "start.test", env, request.getUser()));
+					_bundle, "speedtest.start.test", env, request.getUser()));
 			Callable<SpeedTestInfo> slaveThread = new SpeedTestCallable(rslave, testServers);
 			Future<SpeedTestInfo> future = executor.submit(slaveThread);
 			slaveThreadList.add(future);
@@ -245,7 +245,7 @@ public class SpeedTest extends CommandInterface {
 					env.add("speed.up", _numberFormat.format(result.getUp()));
 					env.add("speed.down", _numberFormat.format(result.getDown()));
 					request.getSession().printOutput(200, request.getSession().jprintf(
-							_bundle, "slave.result", env, request.getUser()));
+							_bundle, "speedtest.slave.result", env, request.getUser()));
 				}
 			} catch (InterruptedException e) {
 				request.getSession().printOutput(500,e.getMessage());
