@@ -20,7 +20,6 @@ package org.drftpd.commands.sitemanagement;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.plugins.util.PluginManager;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
@@ -29,11 +28,13 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ResourceBundle;
 
 /**
  * @author mog
@@ -41,84 +42,84 @@ import java.util.*;
  * @version $Id$
  */
 public class SiteManagementHandler extends CommandInterface {
-	private static final Logger logger = LogManager.getLogger(SiteManagementHandler.class);
+    private static final Logger logger = LogManager.getLogger(SiteManagementHandler.class);
 
-	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		super.initialize(method, pluginName, cManager);
-	}
+    public void initialize(String method, String pluginName, StandardCommandManager cManager) {
+        super.initialize(method, pluginName, cManager);
+    }
 
-	public CommandResponse doSITE_LIST(CommandRequest request) {
+    public CommandResponse doSITE_LIST(CommandRequest request) {
 
-		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-		DirectoryHandle dir = request.getCurrentDirectory();
-		InodeHandle target;
-		User user = request.getSession().getUserNull(request.getUser());
+        DirectoryHandle dir = request.getCurrentDirectory();
+        InodeHandle target;
+        User user = request.getSession().getUserNull(request.getUser());
 
-		if (request.hasArgument()) {
-			try {
-				target = dir.getInodeHandle(request.getArgument(), user);
-			} catch (FileNotFoundException e) {
-				logger.debug("FileNotFound", e);
-				return new CommandResponse(200, e.getMessage());
-			}
-		} else {
-			target = dir;
-		}
+        if (request.hasArgument()) {
+            try {
+                target = dir.getInodeHandle(request.getArgument(), user);
+            } catch (FileNotFoundException e) {
+                logger.debug("FileNotFound", e);
+                return new CommandResponse(200, e.getMessage());
+            }
+        } else {
+            target = dir;
+        }
 
-		List<InodeHandle> inodes;
-		try {
-			if (target.isFile()) {
-				inodes = Collections.singletonList(dir);
-			} else {
-				inodes = new ArrayList<>(dir.getInodeHandles(user));
-			}
-			Collections.sort(inodes);
+        List<InodeHandle> inodes;
+        try {
+            if (target.isFile()) {
+                inodes = Collections.singletonList(dir);
+            } else {
+                inodes = new ArrayList<>(dir.getInodeHandles(user));
+            }
+            Collections.sort(inodes);
 
-			for (InodeHandle inode : inodes) {
-				response.addComment(inode.toString());
-			}
-		} catch (FileNotFoundException e) {
-			logger.debug("FileNotFound", e);
-			return new CommandResponse(200, e.getMessage());
-		}
-		return response;
-	}
+            for (InodeHandle inode : inodes) {
+                response.addComment(inode.toString());
+            }
+        } catch (FileNotFoundException e) {
+            logger.debug("FileNotFound", e);
+            return new CommandResponse(200, e.getMessage());
+        }
+        return response;
+    }
 
-	public CommandResponse doSITE_RELOAD(CommandRequest request) {
+    public CommandResponse doSITE_RELOAD(CommandRequest request) {
 
-		try {
-			GlobalContext.getGlobalContext().getSectionManager().reload();
-			GlobalContext.getGlobalContext().reloadFtpConfig();
-			GlobalContext.getGlobalContext().loadPluginsConfig();
-			GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
+        try {
+            GlobalContext.getGlobalContext().getSectionManager().reload();
+            GlobalContext.getGlobalContext().reloadFtpConfig();
+            GlobalContext.getGlobalContext().loadPluginsConfig();
+            GlobalContext.getGlobalContext().getSlaveSelectionManager().reload();
 
-			 // GlobalContext.getEventService().publish(new ReloadEvent(CommonPluginUtils.getPluginIdForObject(this)));
+            // GlobalContext.getEventService().publish(new ReloadEvent(CommonPluginUtils.getPluginIdForObject(this)));
 
-		} catch (IOException e) {
-			logger.log(Level.FATAL, "Error reloading config", e);
+        } catch (IOException e) {
+            logger.log(Level.FATAL, "Error reloading config", e);
 
-			return new CommandResponse(200, e.getMessage());
-		}
+            return new CommandResponse(200, e.getMessage());
+        }
 
-		// Clear base system classloader also
-		ResourceBundle.clearCache(ClassLoader.getSystemClassLoader());
-		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-	}
+        // Clear base system classloader also
+        ResourceBundle.clearCache(ClassLoader.getSystemClassLoader());
+        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    }
 
-	public CommandResponse doSITE_SHUTDOWN(CommandRequest request) {
+    public CommandResponse doSITE_SHUTDOWN(CommandRequest request) {
 
-		String message;
+        String message;
 
-		if (!request.hasArgument()) {
-			message = "Service shutdown issued by "
-				+ request.getUser();
-		} else {
-			message = request.getArgument();
-		}
+        if (!request.hasArgument()) {
+            message = "Service shutdown issued by "
+                    + request.getUser();
+        } else {
+            message = request.getArgument();
+        }
 
-		GlobalContext.getGlobalContext().shutdown(message);
+        GlobalContext.getGlobalContext().shutdown(message);
 
-		return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-	}
+        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+    }
 }
