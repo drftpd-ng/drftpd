@@ -1,6 +1,0 @@
-# $Id: SysopAnnouncer.irc.properties
-sysop.login.success=${bold}${user}${bold}: ${message} ( ${response} )
-sysop.login.failed=${bold}${user}${bold}: ${message} ( ${response} )
-
-sysop.success=${bold}${user}${bold}: ${message} ( ${response} )
-sysop.failed=${bold}${user}${bold}: ${message} ( ${response} )
