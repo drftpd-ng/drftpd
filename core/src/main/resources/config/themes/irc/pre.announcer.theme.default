@@ -1,0 +1,2 @@
+# @version $Id$
+pre=${color}15${bold}PRE${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${grpname}${bold} gives us ${bold}${name}${bold} (${bold}${files} files${bold} - ${bold}${bytes}${bold}).

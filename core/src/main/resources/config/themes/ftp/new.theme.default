@@ -1,0 +1,7 @@
+# $Id$
+new=[${pos,2}] ${age,7} ${diruser,-12} ${files,3}F ${size,7} ${name,-40}
+new.empty=No directories found in current section directory for any section!
+header=----+-------+-----------+-------------+----------------------------------------\n\
+      \ ## |  Age  | Owner     | Files  Size | Directory Name\n\
+       ----+-------+-----------+-------------+----------------------------------------
+footer=-------------------------------------------------------------------------------

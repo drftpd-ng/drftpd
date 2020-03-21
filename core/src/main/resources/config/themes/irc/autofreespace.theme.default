@@ -1,0 +1,5 @@
+# tags: path, dir, size, date, slave, slavesize
+afs.delete=${color}04${bold}AutoFreeSpace:${coloroff} ${bold}${path}${bold} deleted(${size} - ${date}) to free up space on ${bold}${slave}${bold}, ${bold}${slavesize}${bold} free.
+
+# tags: slave, slavesize
+afs.announce=${color}04${bold}AutoFreeSpace:${coloroff} Low disk space on ${bold}${slave}${bold}, ${bold}${slavesize}${bold} free.

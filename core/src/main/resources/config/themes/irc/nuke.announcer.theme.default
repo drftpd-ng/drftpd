@@ -1,0 +1,5 @@
+nuke=${underline}${color}04/${color}08,04${bold}!${coloroff}${underline}${color}04\\${underline}${bold} NUKE ${multiplier}X ${bold}${underline}${color}04/${color}08,04${bold}!${coloroff}${underline}${color}04\\${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${relpath}${bold} ${bold}[${bold} NUKER : ${user} ${bold}-${bold} REASON : ${reason} ${bold}]${bold}\n
+nuke.nukees=${color}15${bold}NUKEES${bold}${coloroff}: ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} with ${bold}${nukedamount}${bold}.\n
+
+unnuke=${color}15${bold}UNNUKE ${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${relpath}${bold} ${bold}[${bold} UNNUKER : ${user} ${bold}-${bold} REASON : ${reason} ${bold}]${bold}\n
+unnuke.nukees=${color}15${bold}UNUKEES${bold}${coloroff}: ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} : restored ${bold}${nukedamount}${bold}.\n

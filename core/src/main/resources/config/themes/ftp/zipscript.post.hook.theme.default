@@ -1,0 +1,17 @@
+# $Id$
+cwd.uploaders=${targetuser}/${targetgroup} [${files}/${bytes}]
+
+cwd.racestats.header= ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿\n\
+                      ³                                                                              ³\n\
+                      ³                             r a c e   s t a t s                              ³\n\
+                      ³                                                                              ³\n\
+                      ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄ´
+cwd.racers.header   = ³    --- Users ---                  ³          ³         ³            ³        ³
+cwd.racers.body     = ³  #${position,3.3} ${user,-13} @ ${group,-11} ³ ${files,7}F ³ ${bytes,7} ³ ${speed,10} ³ ${percent,6} ³
+cwd.racers.footer   = ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄ´
+cwd.groups.header   = ³   --- Groups ---                  ³          ³         ³            ³        ³
+cwd.groups.body     = ³  #${position,3.3} ${group,-27} ³ ${files,7}F ³ ${bytes,7} ³ ${speed,10} ³ ${percent,6} ³
+cwd.groups.footer   = ÃÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄÄÄÄÄÅÄÄÄÄÄÄÄÄ´
+cwd.totals.body     = ³                            TOTALS ³ ${completefiles,7}F ³ ${totalbytes,7} ³ ${totalspeed,10} ³ ${totalpercent,6} ³
+cwd.racestats.footer= ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÙ
+ 

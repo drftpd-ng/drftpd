@@ -1,0 +1,24 @@
+# $Id: StatsAnnouncer.irc.properties 1925 2009-06-15 21:46:05Z tdsoul $
+daydn=${color}04${bold}Top Downloaders For The Day:
+daydn.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
+daydn.none=${color}04${bold}Nobody Downloaded Anything Today!
+
+dayup=${color}04${bold}Top Uploaders For The Day:
+dayup.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
+dayup.none=${color}04${bold}Nobody Uploaded Anything Today!
+
+monthup=${color}04${bold}Top Uploaders For The Month:
+monthup.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
+monthup.none=${color}04${bold}Nobody Uploaded Anything This Month!
+
+monthdn=${color}04${bold}Top Downloaders For The Month:
+monthdn.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
+monthdn.none=${color}04${bold}Nobody Downloaded Anything This Month! 
+
+wkup=${color}04${bold}Top Uploaders For The Week:
+wkup.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
+wkup.none=${color}04${bold}Nobody Uploaded Anything This Week!
+
+wkdn=${color}04${bold}Top Downloaders For The Week:
+wkdn.item=${color} - ${color}04${bold}[${coloroff}${num}${color}04${bold}]${coloroff} - ${name} - (${files} Files) - (${bytes})${color}04${bold}
+wkdn.none=${color}04${bold}Nobody Downloaded Anything This Week!

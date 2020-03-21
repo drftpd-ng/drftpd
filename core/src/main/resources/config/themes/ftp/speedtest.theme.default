@@ -1,0 +1,11 @@
+speedtest.servers.refresh=speedtest.net server list updated!
+speedtest.slave.server.list=${slave.name} :: Server -> ${server.sponsor} (${server.country}) [${distance} ${unit}] (${server.id})
+speedtest.start.test=Starting test on ${slave.name}
+speedtest.slave.result=${slave.name} :: Server -> ${server.sponsor} (${server.country}) [${distance} ${unit}] (${server.id}) : ${server.latency} ms\n${slave.name} :: Up -> ${speed.up} Mbit/s  <>  Down -> ${speed.down} Mbit/s
+
+speedtest.servers.null=No test servers cached, check log for warn message!
+speedtest.servers.empty=Could not find any speedtest.net servers, refresh list with -refresh
+speedtest.slavename.error=${slave.name} not found, check spelling!
+speedtest.slave.offline=${slave.name} is offline, unable to run speed test
+speedtest.slave.geoip.error=Failed getting ${slave.name} location from ipinfo.io, using default 0/0 (lat/lon)
+speedtest.server.id.error=${slave.name}: Server id ${server.id} not valid!

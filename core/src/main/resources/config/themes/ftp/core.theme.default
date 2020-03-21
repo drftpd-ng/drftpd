@@ -1,0 +1,2 @@
+# $Id$
+statusline=[Ul: ${uploaded}] [Dl: ${downloaded}] [Average speed: ${averagespeed}]\n[Credits: ${credits}] [Ratio: 1:${org.drftpd.commands.UserManagement@ratio}]

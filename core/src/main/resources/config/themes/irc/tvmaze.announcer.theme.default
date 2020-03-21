@@ -1,0 +1,7 @@
+#info tags    : id, url, name, type, language, genres, status, runtime, premiered,
+#               network, country, summary
+
+#ep tags      : epid, epurl, epname, epseason, epnumber, epairdate,
+#             : epairtime, epruntime, epsummary, epage
+
+tvmaze.announce=${color}${sectioncolor}${bold}${section}${bold}${coloroff} ${color}14-TvMaze-${coloroff} ${color}07${name}${coloroff} (${epname} - ${epairdate}) :: ${color}07${country}${coloroff} :: ${color}07${network}${coloroff} :: ${color}07${status}${coloroff} :: ${color}07${type}${coloroff} :: ${color}07${genres}${coloroff} :: ${underline}${url}${underline}

@@ -1,0 +1,5 @@
+# $Id$
+new=${color}15${bold}NEW${bold}${coloroff}: [${pos,2}] ${age,7} ${diruser,-12} ${bold}${files,3}F ${size,7} ${name,-40}${bold}
+new.empty=${color}15${bold}ERROR${bold}${coloroff}: No directories found in current section directory for any section!
+header=
+footer=

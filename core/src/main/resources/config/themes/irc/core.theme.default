@@ -1,0 +1,10 @@
+# $Id$
+addslave=${color}15${bold}${slave}${coloroff} came online with ${bold}${diskfree}${bold}/${disktotal} free.
+delslave=${color}15${bold}${slave}${coloroff} went offline: ${message}
+msgslave=${color}15${bold}${slave}${coloroff} ${message}.
+msgmaster=${color}15${bold}MASTERSTATUS${coloroff} ${message}.
+mkdir=${color}15${bold}NEW${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+rmdir=${color}15${bold}DELDIR${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} was deleted by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+wipe=${color}15${bold}WIPE${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} was wiped by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group}.
+invite.success=${color}15${bold}INVITE${bold}${coloroff}: ${bold}${user}${bold}/${group} invited himself as ${bold}${nick}${bold}
+invite.failed=${color}15${bold}INVITE${bold}${coloroff}: ${bold}${user}${bold}/${group} failed to invite themselves as ${bold}${nick}${bold}

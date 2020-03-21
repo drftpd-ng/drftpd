@@ -1,0 +1,53 @@
+#info tags    : id, url, name, type, language, genres, status, runtime, premiered,
+#               network, country, summary
+
+#prev ep tags : prevepid, prevepurl, prevepname, prevepseason, prevepnumber, prevepairdate,
+#             : prevepairtime, prevepruntime, prevepsummary, prevepage
+
+#next ep tags : SAME AS ABOVE but next instead of prev
+
+#ep tags      : SAME AS ABOVE but ep instead of prevep incl info tags
+
+#dir/pre tags : SAME AS EP + section
+
+#verbose version used when -v switch is used.
+
+tv.none=${bold}TvMaze${bold} -> No info found for ${bold}${searchstr}${bold} :: ${error}
+
+tv.show=${bold}TvMaze${bold} -> ${bold}${name}${bold} - ${underline}${url}${underline}\n${runtime}m :: ${country} :: ${language} :: ${network} :: ${genres} :: ${status} :: ${type}\n${prevep} :: ${nextep}
+tv.show.verbose=${bold}TvMaze${bold} -> ${bold}${name}${bold} - ${underline}${url}${underline}\nPremiered: ${premiered} - Runtime: ${runtime}m - Country: ${country} - Language: ${language}\nGenre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}\n${summary}\n${prevep}\n${nextep}
+# Previous and next episode lines are added to tv.show output with ${prevep} and ${nextep} tags.
+tv.prevep=${bold}Prev EP${bold} -> ${prevepseason}x${prevepnumber} - ${prevepname} - Aired ${prevepage} ago (${prevepairdate})
+tv.prevep.verbose=Previous episode: ${prevepseason}x${prevepnumber} - ${prevepname} - Aired ${prevepage} ago (${prevepairdate}) - ${underline}${prevepurl}${underline}
+tv.nextep=${bold}Next EP${bold} -> ${nextepseason}x${nextepnumber} - ${nextepname} - Airs in ${nextepage} (${nextepairdate})
+tv.nextep.verbose=Next episode: ${nextepseason}x${nextepnumber} - ${nextepname} - Airs in ${nextepage} (${nextepairdate}) - ${underline}${nextepurl}${underline}
+
+tv.ep=${bold}TvMaze${bold} -> ${bold}${name}${bold}\n${epseason}x${epnumber} - ${epname} - ${underline}${epurl}${underline}\nAiring: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n${release}
+tv.ep.verbose=${bold}TvMaze${bold} -> ${bold}${name}${bold}\n${epseason}x${epnumber} - ${epname} - ${underline}${epurl}${underline}\nAiring: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n${release}
+# Release info added to tv.ep output with ${release} tag.
+tv.ep.release= Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
+tv.ep.release.verbose= Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
+
+tv.ep.season.header=${bold}TvMaze${bold} -> ${bold}${name}${bold} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
+tv.ep.season.header.verbose=${bold}TvMaze${bold} -> ${bold}${name}${bold} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
+tv.ep.season=${epseason}x${epnumber} - ${epname} - Aired ${epage} ago (${epairdate}) - ${underline}${epurl}${underline}
+tv.ep.season.verbose=${epseason}x${epnumber} - ${epname} - Aired ${epage} ago (${epairdate}) - ${underline}${epurl}${underline}
+
+#Tags: dirname dirpath + Above show tags
+#what to show when adding metadata for dir on CREATETV command
+#could be very spammy so set it to an empty string if unwanted
+createtvmaze.add=Added TvMaze metadata to ${dirpath}
+createtvmaze.cache=TvMAze metadata already added to ${dirpath}
+createtvmaze.start=TvMaze metadata creation started on ${dirpath}
+createtvmaze.complete=Finished creating TvMaze metadata on ${dirpath}
+createtvmaze.aborted=Creation of TvMaze metadata was aborted before it could complete
+
+#Tags: dirname dirpath + Above show tags
+#what to show when removing metadata for dir on REMOVETV command
+#could be very spammy so set it to an empty string if unwanted
+removetvmaze.remove=Removed TvMaze metadata for ${dirpath}
+removetvmaze.start=TvMaze metadata deletion started on ${dirpath}
+removetvmaze.complete=Finished removing TvMaze metadata on ${dirpath}
+removetvmaze.aborted=TvMaze metadata deletion was aborted before it could complete
+
+tv.queue=Items in queue: ${size}

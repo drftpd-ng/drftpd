@@ -1,0 +1,2 @@
+#specify the format of the Nuke REASON bar
+nuke.reason=REASON-${reason}

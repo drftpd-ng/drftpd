@@ -1,0 +1,11 @@
+#MediaInfo bar format
+mkvbar.video=[VIDEO]-${v_Format}_${v_Width}x${v_Height}@${v_Bit rate}_${v_Frame rate}_${v_Display aspect ratio}_${v_Format profile}_${v_Duration}-[VIDEO]
+mkvbar.audio=[AUDIO]-${a_Language}_${a_Format}@${a_Bit rate}_${a_Bit rate mode}_${a_Sampling rate}_${a_Channel(s)}-[AUDIO]
+mkvbar.sub=[SUB]-${s_Languages}-[SUB]
+
+mp4bar.video=[VIDEO]-${v_Format}_${v_Width}x${v_Height}@${v_Bit rate}_${v_Frame rate}_${v_Display aspect ratio}_${v_Format profile}_${v_Duration}-[VIDEO]
+mp4bar.audio=[AUDIO]-${a_Language}_${a_Format}@${a_Bit rate}_${a_Bit rate mode}_${a_Sampling rate}_${a_Channel(s)}-[AUDIO]
+mp4bar.sub=[SUB]-${s_Languages}-[SUB]
+
+avibar.video=[VIDEO]-${v_Codec ID/Hint}_${v_Width}x${v_Height}@${v_Bit rate}_${v_Frame rate}_${v_Display aspect ratio}_${v_Duration}-[VIDEO]
+avibar.audio=[AUDIO]-${a_Codec ID/Hint}@${a_Bit rate}_${a_Bit rate mode}_${a_Sampling rate}_${a_Channel(s)}-[AUDIO]

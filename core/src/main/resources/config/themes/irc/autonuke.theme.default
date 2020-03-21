@@ -1,0 +1,27 @@
+autonukes.header=# AutoNukes #
+autonukes.empty=Queue empty
+# Tags: section nbrtotal
+autonukes.section.empty=Queue empty for section ${bold}${section}. ${nbrtotal}${bold} directories in queue for all sections.
+# Tags: section dir path timeleft multiplier reason
+autonukes.item=${bold}${path}${bold} [ AutoNuke: ${color}10${timeleft}${coloroff} ] [ ${bold}${multiplier}X${bold} with reason: ${bold}${reason}${bold} ]
+
+# Tags: dir path
+autonukes.del.success=Successfully removed ${bold}${dir}${bold} from AutoNuke queue.
+autonukes.del.notfound=Unable to find ${bold}${path}${bold} in AutoNuke queue.
+# Tags: items
+autonukes.del.clear=AutoNuke queue cleared, ${bold}${items}${bold} items removed.
+# Tags: path
+autonukes.del.error=Error getting ${bold}${path}${bold}, invalid dir/path specified.
+
+# Tags: section
+autonukescan.start=AutoNuke scan started on ${bold}${section}${bold}\n
+autonukescan.complete=Finished scanning section(s) for nukes
+autonukescan.aborted=AutoNuke scan aborted before it could complete
+
+approve.search.empty=No directory found with that name.
+approve.search.item=${path}
+approve.search.end=End of matching directories. Use !approve on full path.
+approve.error.path=Specified path does not exist, ${path}
+approve.success=${path} marked as approved overriding autonuke.
+approve.remove=${path} is no longer marked as approved.
+

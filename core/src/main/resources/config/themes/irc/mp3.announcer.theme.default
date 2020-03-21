@@ -1,0 +1,3 @@
+## Modify this area to change appearance of iRC site channel announcements for iD3 info on first MP3 upload
+## Available tags are artist, genre, year, album, title, track, bitrate, samplerate, stereomode, runtime
+id3tag=${color}15${bold}iD3${bold}${coloroff} in ${color}${sectioncolor}${bold}${section}${bold}${coloroff}: -> ${bold}${path}${bold} [${bold}${genre}${bold} from ${bold}${year}${bold} at ${bold}${bitrate} ${stereomode}${bold}]

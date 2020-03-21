@@ -1,0 +1,1 @@
+speedtest=${color}15${bold}SPEEDTEST${bold}${coloroff}: -> ${bold}${file}${bold} (${size}) sent by ${bold}${user}${bold}${color}14${bold}/${bold}${coloroff}${group} @ ${bold}${speed}${bold} to ${slave}.

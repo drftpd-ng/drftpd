@@ -1,0 +1,11 @@
+# PRE (tags: section, dir, bytes, users, groups, bw, bwavg, bwtop, bwusertop, leechtop, messuretime)
+prebw.announce=${bold}[${color}${sectioncolor}${section}${coloroff}]${bold} ${color}14-PREBW-${coloroff} ${dir} :: Leeched: ${bold}${bytes}${bold} :: Average speed: ${bold}${bwavg}${bold} :: Best: ${bold}${bwtop}${bold}\n${bold}[${section}]${bold} ${color}14-PREBW-${coloroff} ${bw}\n${leechtop}
+
+# Format of messure/bw (tags: time, speed)
+prebw.bw.format=${bold}${time}${bold}: ${speed}
+# Number of chars to trim at beginning and end of bw announce
+prebw.bw.separator=|
+
+# Format of leechtop (tags: section, dir, username, files, bytes, avgspeed, topspeed)
+prebw.leechtop.format=${bold}[${color}${sectioncolor}${section}${coloroff}]${bold} ${color}14-PREBW-${coloroff} :: ${username} :: ${bytes} :: ${files} files :: ${avgspeed} (Peak: ${topspeed})\n
+prebw.leechtop.empty=${bold}[${color}${sectioncolor}${section}${coloroff}]${bold} ${color}14-PREBW-${coloroff} ${dir} :: All leechers asleep!

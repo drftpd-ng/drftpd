@@ -1,0 +1,9 @@
+#specify the format of the tvmaze bar
+
+#info tags    : id, url, name, type, language, genres, status, runtime, premiered,
+#               network, country, summary
+
+#ep tags      : epid, epurl, epname, epseason, epnumber, epairdate,
+#             : epairtime, epruntime, epsummary, epage
+
+tvmaze.dir=[TvMaze]-${name}_${epseason}x${epnumber}_${epairdate}_${country}_${network}_${type}_${runtime}m-[TvMaze]

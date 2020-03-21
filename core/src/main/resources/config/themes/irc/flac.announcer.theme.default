@@ -1,0 +1,3 @@
+## Modify this area to change appearance of iRC site channel announcements for Vorbis info on first flac upload
+## Available tags are artist, genre, year, album, title, track, samplerate, channels, runtime
+vorbistag=${color}15${bold}FLAC${bold}${coloroff} for ${bold}${path}${bold} [${bold}${genre}${bold} from ${bold}${year}${bold} at sample rate ${bold}${samplerate} Hz${bold}, channels ${bold}${channels}${bold}]
