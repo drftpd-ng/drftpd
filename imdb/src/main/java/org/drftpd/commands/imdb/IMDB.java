@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.commands.imdb.hooks.IMDBPostHook;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
@@ -31,7 +32,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.commandmanager.*;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.commands.imdb.protocol.IMDBInfo;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

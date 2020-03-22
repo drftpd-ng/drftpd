@@ -20,5 +20,15 @@
             <artifactId>drftpd-imdb</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-autonuke</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-speedtest</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

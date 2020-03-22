@@ -34,8 +34,8 @@ import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
-import org.drftpd.vfs.index.lucene.extensions.imdb.IMDBQueryParams;
+import org.drftpd.commands.imdb.protocol.IMDBInfo;
+import org.drftpd.commands.imdb.index.IMDBQueryParams;
 import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;

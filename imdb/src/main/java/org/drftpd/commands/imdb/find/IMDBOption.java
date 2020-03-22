@@ -22,7 +22,7 @@ import org.drftpd.commands.find.option.OptionInterface;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.plugins.commandmanager.ImproperUsageException;
-import org.drftpd.vfs.index.lucene.extensions.imdb.IMDBQueryParams;
+import org.drftpd.commands.imdb.index.IMDBQueryParams;
 
 /**
  * @author scitz0

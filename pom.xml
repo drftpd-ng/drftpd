@@ -18,6 +18,8 @@
     <modules>
         <module>core</module>
         <module>imdb</module>
+        <module>autonuke</module>
+        <module>speedtest</module>
         <module>development</module>
     </modules>
 

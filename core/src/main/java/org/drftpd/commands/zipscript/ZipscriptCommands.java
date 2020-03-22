@@ -17,12 +17,9 @@
  */
 package org.drftpd.commands.zipscript;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.commands.autonuke.Config;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.master.Checksum;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -39,8 +36,11 @@ import org.reflections.Reflections;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 //import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
 

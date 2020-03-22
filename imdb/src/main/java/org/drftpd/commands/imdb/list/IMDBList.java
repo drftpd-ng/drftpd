@@ -21,7 +21,7 @@ import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.protocol.imdb.common.IMDBInfo;
+import org.drftpd.commands.imdb.protocol.IMDBInfo;
 import org.drftpd.slave.slave.LightRemoteInode;
 import org.tanesha.replacer.ReplacerEnvironment;
 
