@@ -71,7 +71,7 @@ public class SpeedTestAnnouncer extends AbstractAnnouncer {
 		if (writer != null) {
 			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
 			env.add("path", event.getFilePath());
-			env.add("file", VirtualFileSystem.getLast(event.getFilePath()));
+			env.add("transferfile", VirtualFileSystem.getLast(event.getFilePath()));
 			env.add("user", event.getUser().getName());
 			env.add("group", event.getUser().getGroup());
 			env.add("slave", event.getSlaveName());

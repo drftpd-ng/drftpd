@@ -42,8 +42,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-//import org.drftpd.slave.async.AsyncResponseSiteBotMessage;
-
 /**
  * @author djb61
  * @version $Id$
