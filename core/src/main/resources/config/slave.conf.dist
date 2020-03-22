@@ -58,7 +58,7 @@ diskselection=org.drftpd.slave.slave.diskselection.filter.DiskSelectionFilter
 # Both blacklist and whitelist use regular expression pattern.
 # Multiple whitelist/blacklist rules are supported.
 #cipher.whitelist.1=
-cipher.blacklist.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV|GCM)_.*
+cipher.blacklist.1=.*_(NULL|EXPORT|DES|RC4|3DES|MD5|PSK|anon|SCSV)_.*
 
 # Enabled protocols
 # If left empty, default set will be used

@@ -8,7 +8,6 @@ target
 build
 logs
 /config
-target
 userdata/drftpd.key
 userdata/slaves
 userdata/vfs
