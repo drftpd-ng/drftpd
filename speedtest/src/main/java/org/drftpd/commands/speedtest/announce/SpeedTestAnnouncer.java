@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.speedtest.announce;
+package org.drftpd.commands.speedtest.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
@@ -26,7 +26,7 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.plugins.speedtest.event.SpeedTestEvent;
+import org.drftpd.commands.speedtest.SpeedTestEvent;
 import org.drftpd.slave.slave.TransferStatus;
 import org.tanesha.replacer.ReplacerEnvironment;
 

@@ -20,7 +20,7 @@ import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.event.PreEvent;
+import org.drftpd.commands.pre.PreEvent;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;

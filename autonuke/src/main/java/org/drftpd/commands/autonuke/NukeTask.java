@@ -23,7 +23,7 @@ import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.commands.nuke.NukeException;
 import org.drftpd.commands.nuke.NukeUtils;
 import org.drftpd.commands.nuke.metadata.NukeData;
-import org.drftpd.event.NukeEvent;
+import org.drftpd.commands.nuke.NukeEvent;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.usermanager.NoSuchUserException;

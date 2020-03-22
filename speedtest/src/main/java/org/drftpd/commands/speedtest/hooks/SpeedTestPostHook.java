@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.speedtest;
+package org.drftpd.commands.speedtest.hooks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -33,8 +33,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.drftpd.plugins.speedtest.event.SpeedTestEvent;
+import org.drftpd.commands.speedtest.SpeedTestEvent;
 import org.drftpd.slave.slave.TransferStatus;
 
 import java.io.FileNotFoundException;

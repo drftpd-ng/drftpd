@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.master.def;
+package org.drftpd.protocol;
 
 
 import org.drftpd.master.common.exceptions.SSLUnavailableException;

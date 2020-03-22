@@ -23,7 +23,7 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.nuke.NukeBeans;
 import org.drftpd.commands.nuke.NukeUtils;
 import org.drftpd.commands.nuke.NukedUser;
-import org.drftpd.event.NukeEvent;
+import org.drftpd.commands.nuke.NukeEvent;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.Bytes;
