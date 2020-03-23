@@ -28,7 +28,7 @@ import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.commands.speedtest.net.protocol.SpeedTestInfo;
+import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.tanesha.replacer.ReplacerEnvironment;
 

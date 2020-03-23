@@ -22,9 +22,9 @@ import org.apache.logging.log4j.LogManager;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.master.RemoteSlave;
-import org.drftpd.commands.speedtest.net.protocol.SpeedTestInfo;
-import org.drftpd.commands.speedtest.net.protocol.AsyncResponseSpeedTestInfo;
-import org.drftpd.commands.speedtest.net.protocol.SpeedTestIssuer;
+import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
+import org.drftpd.protocol.speedtest.net.common.async.AsyncResponseSpeedTestInfo;
+import org.drftpd.protocol.speedtest.net.master.SpeedTestIssuer;
 import org.drftpd.slave.slave.RemoteIOException;
 
 import java.util.HashMap;
