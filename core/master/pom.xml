@@ -10,7 +10,7 @@
         <version>4.0</version>
     </parent>
 					  
-    <artifactId>drftpd-core</artifactId>
+    <artifactId>drftpd-master</artifactId>
     <packaging>jar</packaging>
 
     <build>

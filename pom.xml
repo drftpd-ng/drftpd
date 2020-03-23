@@ -16,11 +16,11 @@
     </properties>
 
     <modules>
-        <module>core</module>
-        <module>imdb</module>
-        <module>autonuke</module>
-        <module>speedtest</module>
-        <module>development</module>
+        <module>core/master</module>
+        <module>plugins/imdb</module>
+        <module>plugins/autonuke</module>
+        <module>plugins/speedtest</module>
+        <module>core/dev</module>
     </modules>
 
 	<build>

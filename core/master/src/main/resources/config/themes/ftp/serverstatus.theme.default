@@ -1,0 +1,13 @@
+# $Id$
+master.uptime=Master has been online for ${uptime}
+slave.uptime=${slave} has been online for ${uptime}
+slave.offline=${slave}: OFFLINE
+slave.notfound=${slave}: NOTFOUND
+
+status.osinfo=Operational System: ${os.name} vers. ${os.version} (${os.arch})
+status.vminfo=JVM: ${vm.name} vers. ${vm.version} by ${vm.vendor}
+status.heap=Heap Memory: ${heap.used} used / ${heap.available} available / ${heap.max} maximum
+status.nonheap=Non-Heap Memory: ${nonheap.used} used / ${nonheap.available} available / ${nonheap.max} maximum
+status.threads=Threads running: ${current.threads} / Peak thread count: ${max.threads} / Amount of created threads since startup: ${total.threads}
+status.gcinfo=Garbage Collector was executed ${collection.count}x, spent ${collection.time} during those operations.
+status.classes=Classes: ${loaded.classes} currently loaded / ${unloaded.classes} unloaded / ${total.classes} total loaded since startup.

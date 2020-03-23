@@ -5,14 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 	
     <groupId>org.drftpd</groupId>
-    <artifactId>drftpd-development</artifactId>
+    <artifactId>drftpd-dev</artifactId>
     <packaging>pom</packaging>
     <version>4.0</version>
 
     <dependencies>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-core</artifactId>
+            <artifactId>drftpd-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
