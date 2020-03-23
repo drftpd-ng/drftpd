@@ -17,14 +17,12 @@
  */
 package org.drftpd.commands.speedtest.net;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.drftpd.commands.speedtest.net.protocol.AsyncResponseSpeedTestInfo;
+import org.drftpd.commands.speedtest.net.protocol.SpeedTestInfo;
+import org.drftpd.commands.speedtest.net.protocol.SpeedTestIssuer;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.master.RemoteSlave;
-import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
-import org.drftpd.protocol.speedtest.net.common.async.AsyncResponseSpeedTestInfo;
-import org.drftpd.protocol.speedtest.net.master.SpeedTestIssuer;
 import org.drftpd.slave.slave.RemoteIOException;
 
 import java.util.HashMap;
@@ -35,8 +33,6 @@ import java.util.concurrent.ExecutionException;
  * @author scitz0
  */
 public class SpeedTestCallable implements Callable<SpeedTestInfo> {
-
-	private static final Logger logger = LogManager.getLogger(SpeedTestCallable.class);
 
 	private RemoteSlave _rslave;
 	private HashMap<String, SpeedTestServer> _testServers;

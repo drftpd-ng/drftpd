@@ -23,12 +23,12 @@ import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.commands.speedtest.net.protocol.SpeedTestInfo;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.protocol.speedtest.net.common.SpeedTestInfo;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.tanesha.replacer.ReplacerEnvironment;
 

@@ -18,6 +18,7 @@
 package org.drftpd.commands.speedtest.net.protocol;
 
 
+import org.drftpd.commands.speedtest.net.protocol.SpeedTestInfo;
 import org.drftpd.master.common.slave.async.AsyncResponse;
 
 /**
