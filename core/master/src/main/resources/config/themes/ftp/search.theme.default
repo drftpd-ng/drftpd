@@ -1,0 +1,4 @@
+# $Id$
+search.header=Found ${results} entries in index (limit ${limit}):
+search.empty=No results found!
+search.item=${path}

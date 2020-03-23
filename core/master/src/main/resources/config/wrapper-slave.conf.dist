@@ -59,12 +59,12 @@ wrapper.java.mainclass=org.tanukisoftware.wrapper.WrapperSimpleApp
 
 # Java Classpath (include wrapper.jar)  Add class path elements as
 #  needed starting from 1
-wrapper.java.classpath.1=build/drftpd-master-4.0.jar
-wrapper.java.classpath.2=build/drftpd-imdb-4.0.jar
-wrapper.java.classpath.3=build/drftpd-autonuke-4.0.jar
-wrapper.java.classpath.4=build/drftpd-speedtest-4.0.jar
-wrapper.java.classpath.5=build/drftpd-speedtest-net-4.0.jar
-wrapper.java.classpath.6=build/drftpd-tvmaze-4.0.jar
+wrapper.java.classpath.1=build/drftpd-master-4.0-SNAPSHOT.jar
+wrapper.java.classpath.2=build/drftpd-imdb-4.0-SNAPSHOT.jar
+wrapper.java.classpath.3=build/drftpd-autonuke-4.0-SNAPSHOT.jar
+wrapper.java.classpath.4=build/drftpd-speedtest-4.0-SNAPSHOT.jar
+wrapper.java.classpath.5=build/drftpd-speedtest-net-4.0-SNAPSHOT.jar
+wrapper.java.classpath.6=build/drftpd-tvmaze-4.0-SNAPSHOT.jar
 
 # URLBootStrap (more options further down, need to comment out item 3 above)
 #wrapper.java.classpath.x=classes

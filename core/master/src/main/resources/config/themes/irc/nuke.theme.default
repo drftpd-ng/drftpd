@@ -1,0 +1,12 @@
+# $Id$
+nukes=[NUKE] - Path: ${path} - Multiplier: ${multiplier} - UsersNuked: ${usersnuked} - Size: ${size} - Reason: ${reason}
+nukes.empty=Nukelog empty.
+nukes.empty.section=Nukelog empty for section ${section}.
+
+nuke.search.empty=No directory found with that name.
+nuke.search.item=${path}
+nuke.search.end=End of matching directories. Use !nuke on full path to nuke.
+
+unnuke.search.empty=No directory found with that name.
+unnuke.search.item=${path}
+unnuke.search.end=End of matching directories. Use !unnuke on full path to nuke.

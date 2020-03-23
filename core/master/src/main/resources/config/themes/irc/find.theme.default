@@ -1,0 +1,3 @@
+# $Id$
+find.header=Found ${results} entries in index (limit ${limit}):
+find.empty=No results found!
