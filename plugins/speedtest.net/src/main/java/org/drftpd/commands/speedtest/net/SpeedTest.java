@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.speedtest;
+package org.drftpd.commands.speedtest.net;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Logger;
@@ -28,7 +28,7 @@ import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.commands.speedtest.protocol.SpeedTestInfo;
+import org.drftpd.commands.speedtest.net.protocol.SpeedTestInfo;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.tanesha.replacer.ReplacerEnvironment;
 

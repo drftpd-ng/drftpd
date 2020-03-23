@@ -15,33 +15,27 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.speedtest.protocol;
+package org.drftpd.commands.speedtest.net.protocol;
 
-
-import org.drftpd.master.common.slave.async.AsyncResponse;
+import org.drftpd.master.exceptions.SlaveUnavailableException;
+import org.drftpd.master.master.RemoteSlave;
+import org.drftpd.master.protocol.master.AbstractIssuer;
+import org.drftpd.slave.slave.async.AsyncCommandArgument;
 
 /**
  * @author Scitz0
  */
-@SuppressWarnings("serial")
-public class AsyncResponseSpeedTestInfo extends AsyncResponse {
-	private SpeedTestInfo _speedtest;
+public class SpeedTestIssuer extends AbstractIssuer {
 
-	public AsyncResponseSpeedTestInfo(String index, SpeedTestInfo speedtest) {
-		super(index);
-
-		if (speedtest == null) {
-			throw new IllegalArgumentException("speedtest cannot be null");
-		}
-
-		_speedtest = speedtest;
+	@Override
+	public String getProtocolName() {
+		return "SpeedTestProtocol";
 	}
 
-	public SpeedTestInfo getSpeedTest() {
-		return _speedtest;
-	}
-
-	public String toString() {
-		return getClass().getName();
+	public String issueSpeedTestToSlave(RemoteSlave rslave, String urls) throws SlaveUnavailableException {
+		String index = rslave.fetchIndex();
+		AsyncCommandArgument ac = new AsyncCommandArgument(index, "speedTest", urls);
+		rslave.sendCommand(ac);
+		return index;
 	}
 }

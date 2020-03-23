@@ -20,6 +20,7 @@
         <module>plugins/imdb</module>
         <module>plugins/autonuke</module>
         <module>plugins/speedtest</module>
+        <module>plugins/speedtest.net</module>
         <module>core/dev</module>
     </modules>
 

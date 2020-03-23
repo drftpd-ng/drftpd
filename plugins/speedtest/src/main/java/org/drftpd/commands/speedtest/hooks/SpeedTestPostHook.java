@@ -33,7 +33,7 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.commands.speedtest.SpeedTestEvent;
+import org.drftpd.commands.speedtest.event.SpeedTestEvent;
 import org.drftpd.slave.slave.TransferStatus;
 
 import java.io.FileNotFoundException;

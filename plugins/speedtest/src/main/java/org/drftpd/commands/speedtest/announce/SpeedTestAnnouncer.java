@@ -26,7 +26,7 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.commands.speedtest.SpeedTestEvent;
+import org.drftpd.commands.speedtest.event.SpeedTestEvent;
 import org.drftpd.slave.slave.TransferStatus;
 import org.tanesha.replacer.ReplacerEnvironment;
 

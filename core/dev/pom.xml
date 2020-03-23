@@ -30,5 +30,10 @@
             <artifactId>drftpd-speedtest</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-speedtest-net</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

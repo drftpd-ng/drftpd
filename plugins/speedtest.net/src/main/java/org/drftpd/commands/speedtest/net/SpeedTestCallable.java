@@ -15,16 +15,16 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.speedtest;
+package org.drftpd.commands.speedtest.net;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.master.RemoteSlave;
-import org.drftpd.commands.speedtest.protocol.SpeedTestInfo;
-import org.drftpd.commands.speedtest.protocol.AsyncResponseSpeedTestInfo;
-import org.drftpd.commands.speedtest.protocol.SpeedTestIssuer;
+import org.drftpd.commands.speedtest.net.protocol.SpeedTestInfo;
+import org.drftpd.commands.speedtest.net.protocol.AsyncResponseSpeedTestInfo;
+import org.drftpd.commands.speedtest.net.protocol.SpeedTestIssuer;
 import org.drftpd.slave.slave.RemoteIOException;
 
 import java.util.HashMap;

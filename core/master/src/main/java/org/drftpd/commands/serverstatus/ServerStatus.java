@@ -55,7 +55,7 @@ public class ServerStatus extends CommandInterface {
 		
 		long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
 		env.add("uptime", Time.formatTime(uptime));
-		response.setMessage(request.getSession().jprintf(_bundle, "master.uptime", env, request.getUser()));
+		response.setMessage(request.getSession().jprintf(_bundle, "status.master.uptime", env, request.getUser()));
 		
 		return response;		
 	}
@@ -76,7 +76,7 @@ public class ServerStatus extends CommandInterface {
             response.addComment(makeOutput(session, rslave));            
 	    } catch (ObjectNotFoundException e2) {
             env.add("slave", slaveName);
-            response.addComment(session.jprintf(_bundle, env, "slave.notfound"));
+            response.addComment(session.jprintf(_bundle, env, "status.slave.notfound"));
         }	    
 	    return response;
 	}
@@ -101,9 +101,9 @@ public class ServerStatus extends CommandInterface {
         	long connectTime = rslave.getTransientKeyedMap().getObjectLong(CONNECTTIME);
         	long uptime = System.currentTimeMillis() - connectTime;
         	env.add("uptime", Time.formatTime(uptime));	
-    		return session.jprintf(_bundle, env, "slave.uptime");
+    		return session.jprintf(_bundle, env, "status.slave.uptime");
         }
-		return session.jprintf(_bundle, env, "slave.offline");
+		return session.jprintf(_bundle, env, "status.slave.offline");
 	}
 	
 	public CommandResponse doStatus(CommandRequest request) throws ImproperUsageException {
