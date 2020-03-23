@@ -1,0 +1,79 @@
+# $Id$
+who.up=${color}15${bold}WHO${coloroff}: ${targetuser} -> UP: ${file} @ ${speed} to ${slave}.
+who.down=${color}15${bold}WHO${coloroff}: ${targetuser} -> DN: ${file} @ ${speed} from ${slave} (${percentcomplete}% done).
+who.idle=${color}15${bold}WHO${coloroff}: ${targetuser} -> IDLE: User has been idle for ${idle}.
+who.new=${color}15${bold}WHO${coloroff}: ${targetuser} -> IDLE: User has been idle for ${idle}.
+who.statusspeed=${color}15${bold}WHO${coloroff}: Total upload speed: ${totalupspeed,9} Total download speed: ${totaldnspeed,9}
+who.statususers=${color}15${bold}WHO${coloroff}: ${currentusers} of ${maxusers} User(s) Currently Online
+idle.empty=${color}15${bold}WHO${coloroff}: No idle connections found
+download.empty=${color}15${bold}WHO${coloroff}: No active download connections found
+upload.empty=${color}15${bold}WHO${coloroff}: No active upload connections found
+
+bw.statusspeed=${color}15${bold}BANDWIDTH${bold}${coloroff}: ${color}15${bold}(${bold}${coloroff} UP: ${xfersup} at ${totalupspeed} ${color}15${bold})-(${bold}${coloroff} DN: ${xfersdn} at ${totaldnspeed} ${color}15${bold})-(${bold}${coloroff} TOTAL: ${xfers} at ${totalspeed} ${color}15${bold})${bold}${coloroff}
+speed.up=${color}15${bold}${targetuser}${coloroff}: UP: ${file} @ ${speed} to ${slave}.
+
+speed.down=${color}15${bold}${targetuser}${coloroff}: DN: ${file} @ ${speed} from ${slave} (${percentcomplete}% done).
+speed.idle=${color}15${bold}${targetuser}${coloroff}: IDLE: User has been idle for ${idle}
+
+credits.user=${color}15${bold}CREDITS${coloroff}: ${bold}${credituser}${bold} has ${bold}${creditscount}${bold} credits
+credits.total=${color}15${bold}CREDITS${coloroff}: Total credits for ${usercount} users is ${totalcredits}
+credits.error=${color}15${bold}CREDITS${coloroff}: ${bold}${credituser}${bold} is not a valid username
+
+addip.specify=${color}15${bold}ADDIP${coloroff}: You need to specify a Ident@IP to add
+addip.dupe=${color}15${bold}ADDID${coloroff}: IP ${mask} already added to ${targetuser}
+addip.success=${color}15${bold}ADDIP${coloroff}: IP ${mask} added to ${targetuser}
+
+adduser.noslots=${color}15${bold}ADDUSER${coloroff}: Sorry, no more open slots available
+adduser.missingpass=${color}15${bold}ADDUSER${coloroff}: You forgot a password
+adduser.primgroup=${color}15${bold}ADDUSER${coloroff}: Primary group set to ${primgroup}
+adduser.success=${color}15${bold}ADDUSER${coloroff}: User ${targetuser} created
+
+change.specify=${color}15${bold}CHANGE${coloroff}: You need to specify a value to change
+
+changeratio.invalidratio=${color}15${bold}CHANGE${coloroff}: Ratio must be 0 or between ${minratio} and ${maxratio}
+changeratio.nomoreslots=${color}15${bold}CHANGE${coloroff}: You have used all your leech slots
+changeratio.success=${color}15${bold}CHANGE${coloroff}: Changed ratio to 1:${newratio}
+changecredits.success=${color}15${bold}CHANGE${coloroff}: Changed credits to ${newcredits}
+changecomment.success=${color}15${bold}CHANGE${coloroff}: ${targetuser} comment is: ${comment}
+changeidletime.success=${color}15${bold}CHANGE${coloroff}: Changed idle time to ${newidletime}s
+changeprimgroup.success=${color}15${bold}CHANGE${coloroff}: Changed primary group to ${primgroup}
+changenumlogins.success=${color}15${bold}CHANGE${coloroff}: Changed max logins to ${numlogins} and from same IP to ${numloginsip}
+changegroupslots.success=${color}15${bold}CHANGE${coloroff}: Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
+changemaxsim.success=${color}15${bold}CHANGE${coloroff}: Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
+changecreated.success=${color}15${bold}CHANGE${coloroff}: Reset creation time for ${targetuser}
+changegadminratio.success=${color}15${bold}CHANGE${coloroff}: Changed gadmin min/max ratio to ${minratio}/${maxratio}
+
+user=Username: ${username,-20} Created: ${org.drftpd.commands.UserManagement@created}\n\
+Comment: ${org.drftpd.commands.UserManagement@comment,-21} Last seen: ${org.drftpd.commands.UserManagement@lastseen}\n\
+Total logins: ${org.drftpd.plugins.stats.metadata.StatsUserData@logins,-16}\n\
+Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.commands.UserManagement@wkly_allotment}\n\
+Ratio: ${org.drftpd.commands.UserManagement@ratio,-23} Credits: ${credits}\n\
+Max logins: ${org.drftpd.commands.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.commands.UserManagement@maxloginsip}\n\
+Max sim uploads: ${org.drftpd.commands.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.commands.UserManagement@maxsimdn}\n\
+Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
+Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
+Total uploaded: ${uploaded,-14} Total downloaded: ${downloaded}\n\
+Times nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nuked,-17} Bytes nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nukedBytes}\n\
+Requests: ${org.drftpd.commands.request.metadata.RequestUserData@requests,-20} Filled requests: ${org.drftpd.commands.request.metadata.RequestUserData@requestsFilled}\n\
+Requests this week: ${org.drftpd.commands.request.metadata.RequestUserData@weekReqs}\n\
+Primary group: ${group,-15} Banned: ${isbanned}\n\
+Extra groups: ${groups,-16} Banned Until: ${org.drftpd.commands.UserManagement@ban_time}\n\
+IP masks: ${ipmasks}\n\
+IRC Ident: ${org.drftpd.commands.UserManagement@ircident,-23}\n\
+Tagline: ${org.drftpd.commands.UserManagement@tagline}
+
+bans=${color}15${bold}BANS${coloroff}: ${username} banned for another ${timeleft}m until ${org.drftpd.commands.UserManagement@ban_time} (${org.drftpd.commands.UserManagement@ban_reason})
+
+ginfo.head=\
+${group}\n\
+.----- /______| -------------------------------------- |_____| ---------.\n\
+|  Username |     Up |      Megs |     Dn |      Megs | Ratio |    Wkly |\n\
+|-----------+--------+-----------+--------+-----------+-------+---------|
+ginfo.user=|${user,-11}|${fup,8}|${mbup,10} |${fdn,8}|${mbdn,10} | ${ratio} |${wkly,8} |
+ginfo.tail=\
+|-----------+--------+-----------+--------+-----------+-------+---------|\n\
+|        * = siteop           + = gadmin            ! = deleted         |\n\
+|-----------+--------+-----------+--------+-----------+-------+---------|\n\
+|   Tot Megs Up:${allmbup,10}   Tot Files Up:${allfup,7}   Users in group:${numusers,2}   |\n\
+|   Tot Megs Dn:${allmbdn,10}   Tot Files Dn:${allfdn,7}       With leech:${numleech,2}   |\n\
+`-----------------------------------------------------------------------'
