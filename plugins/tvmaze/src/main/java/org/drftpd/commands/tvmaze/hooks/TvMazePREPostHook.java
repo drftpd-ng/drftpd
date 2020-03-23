@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.tvmaze.pre;
+package org.drftpd.commands.tvmaze.hooks;
 import org.drftpd.commands.pre.Pre;
 import org.drftpd.commands.tvmaze.TvMazeConfig;
 import org.drftpd.commands.tvmaze.TvMazePrintThread;
@@ -49,11 +49,13 @@ public class TvMazePREPostHook {
 		}
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(preDir);
-		if (!TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getRaceSections()))
+		if (!TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getRaceSections()))  {
 			return;
+		}
 
-		if (preDir.getName().matches(TvMazeConfig.getInstance().getExclude()))
+		if (preDir.getName().matches(TvMazeConfig.getInstance().getExclude())) {
 			return;
+		}
 
 		// TvMaze data collected in TvMazeConfig by listening on the VirtualFileSystemInodeCreatedEvent event
 		// Spawn a print thread that waits on the result to print the TvMaze info

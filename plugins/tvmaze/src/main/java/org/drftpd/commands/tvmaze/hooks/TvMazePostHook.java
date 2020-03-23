@@ -15,10 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.tvmaze;
+package org.drftpd.commands.tvmaze.hooks;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.drftpd.commands.tvmaze.TvMazeConfig;
+import org.drftpd.commands.tvmaze.TvMazePrintThread;
+import org.drftpd.commands.tvmaze.TvMazeUtils;
 import org.drftpd.common.CommandHook;
 import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
@@ -51,12 +54,18 @@ public class TvMazePostHook  {
 			return;
 		}
 
-		if (!TvMazeUtils.isRelease(workingDir.getName())) return;
+		if (!TvMazeUtils.isRelease(workingDir.getName())) {
+			return;
+		}
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(workingDir);
-		if (!TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getRaceSections())) return;
+		if (!TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getRaceSections())) {
+			return;
+		}
 
-		if (workingDir.getName().matches(TvMazeConfig.getInstance().getExclude())) return;
+		if (workingDir.getName().matches(TvMazeConfig.getInstance().getExclude())) {
+			return;
+		}
 
 		// Spawn a TvMazePrintThread and exit.
 		// This so its not stalling MKD

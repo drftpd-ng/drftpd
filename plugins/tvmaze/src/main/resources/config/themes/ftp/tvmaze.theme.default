@@ -14,22 +14,22 @@
 
 tv.none=No info found for ${searchstr} :: ${error}
 
-tv.show=${name} - ${url}\nPremiered: ${premiered} - Runtime: ${runtime}m - Country: ${country} - Language: ${language}\nGenre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}\n${summary}\n${prevep}\n${nextep}
-tv.show.verbose=${name} - ${url}\nPremiered: ${premiered} - Runtime: ${runtime}m - Country: ${country} - Language: ${language}\nGenre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}\n${summary}\n${prevep}\n${nextep}
+tv.show=${tvname} - ${tvurl}\nPremiered: ${premiered} - Runtime: ${runtime}m - Country: ${country} - Language: ${language}\nGenre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}\n${summary}\n${prevep}\n${nextep}
+tv.show.verbose=${tvname} - ${tvurl}\nPremiered: ${premiered} - Runtime: ${runtime}m - Country: ${country} - Language: ${language}\nGenre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}\n${summary}\n${prevep}\n${nextep}
 # Previous and next episode lines are added to tv.show output with ${prevep} and ${nextep} tags.
 tv.prevep=Previous episode: ${prevepseason}x${prevepnumber} - ${prevepname} - Aired ${prevepage} ago (${prevepairdate}) - ${prevepurl}
 tv.prevep.verbose=Previous episode: ${prevepseason}x${prevepnumber} - ${prevepname} - Aired ${prevepage} ago (${prevepairdate}) - ${prevepurl}
 tv.nextep=Next episode: ${nextepseason}x${nextepnumber} - ${nextepname} - Airs in ${nextepage} (${nextepairdate}) - ${nextepurl}
 tv.nextep.verbose=Next episode: ${nextepseason}x${nextepnumber} - ${nextepname} - Airs in ${nextepage} (${nextepairdate}) - ${nextepurl}
 
-tv.ep=${name}\n${epseason}x${epnumber} - ${epname} - ${epurl}\nAiring: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n${release}
-tv.ep.verbose=${name}\n${epseason}x${epnumber} - ${epname} - ${epurl}\nAiring: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n${release}
+tv.ep=${tvname}\n${epseason}x${epnumber} - ${epname} - ${epurl}\nAiring: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n${release}
+tv.ep.verbose=${tvname}\n${epseason}x${epnumber} - ${epname} - ${epurl}\nAiring: ${epairtime} on ${network} - Age: ${epage} (${epairdate})\n${release}
 # Release info added to tv.ep output with ${release} tag.
 tv.ep.release= Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
 tv.ep.release.verbose= Exist in :: SD: ${foundSD}, HD: ${foundHD} :: ${results} match(es) found
 
-tv.ep.season.header=${name} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
-tv.ep.season.header.verbose=${name} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
+tv.ep.season.header=${tvname} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
+tv.ep.season.header.verbose=${tvname} - Genre: ${genres} - Network: ${network} - Status: ${status} - Type: ${type}
 tv.ep.season=${epseason}x${epnumber} - ${epname} - Aired ${epage} ago (${epairdate}) - ${epurl}
 tv.ep.season.verbose=${epseason}x${epnumber} - ${epname} - Aired ${epage} ago (${epairdate}) - ${epurl}
 

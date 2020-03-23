@@ -15,13 +15,13 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.commands.find.tvmaze;
+package org.drftpd.commands.tvmaze.find;
 
 import org.drftpd.commands.find.option.OptionInterface;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.plugins.commandmanager.ImproperUsageException;
-import org.drftpd.vfs.index.lucene.extensions.tvmaze.TvMazeQueryParams;
+import org.drftpd.commands.tvmaze.index.TvMazeQueryParams;
 
 /**
  * @author scitz0

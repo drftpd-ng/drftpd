@@ -39,7 +39,7 @@ import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.vfs.index.lucene.extensions.tvmaze.TvMazeQueryParams;
+import org.drftpd.commands.tvmaze.index.TvMazeQueryParams;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
@@ -69,8 +69,8 @@ public class TvMazeUtils {
 		DateTimeFormatter tf = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getTimeFormat());
 
 		env.add("id", tvShow.getID());
-		env.add("url", tvShow.getURL());
-		env.add("name", tvShow.getName());
+		env.add("tvurl", tvShow.getURL());
+		env.add("tvname", tvShow.getName());
 		env.add("type", tvShow.getType());
 		env.add("language", tvShow.getLanguage());
 		env.add("genres", StringUtils.join(tvShow.getGenres(), " | "));
@@ -116,8 +116,8 @@ public class TvMazeUtils {
 		DateTimeFormatter tf = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getTimeFormat());
 
 		env.add("id", tvShow.getID());
-		env.add("url", tvShow.getURL());
-		env.add("name", tvShow.getName());
+		env.add("tvurl", tvShow.getURL());
+		env.add("tvname", tvShow.getName());
 		env.add("type", tvShow.getType());
 		env.add("language", tvShow.getLanguage());
 		env.add("genres", StringUtils.join(tvShow.getGenres(), " | "));

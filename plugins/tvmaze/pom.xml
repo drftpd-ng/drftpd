@@ -10,7 +10,7 @@
         <version>4.0</version>
     </parent>
 					  
-    <artifactId>drftpd-imdb</artifactId>
+    <artifactId>drftpd-tvmaze</artifactId>
     <packaging>jar</packaging>
 
     <build>

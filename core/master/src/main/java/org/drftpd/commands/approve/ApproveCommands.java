@@ -47,7 +47,6 @@ public class ApproveCommands extends CommandInterface {
 
 	private ResourceBundle _bundle;
 
-
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
 		_bundle = cManager.getResourceBundle();

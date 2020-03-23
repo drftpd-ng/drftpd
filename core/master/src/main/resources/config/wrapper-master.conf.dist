@@ -64,6 +64,7 @@ wrapper.java.classpath.2=build/drftpd-imdb-4.0.jar
 wrapper.java.classpath.3=build/drftpd-autonuke-4.0.jar
 wrapper.java.classpath.4=build/drftpd-speedtest-4.0.jar
 wrapper.java.classpath.5=build/drftpd-speedtest-net-4.0.jar
+wrapper.java.classpath.6=build/drftpd-tvmaze-4.0.jar
 
 # Java Library Path (location of Wrapper.DLL or libwrapper.so)
 wrapper.java.library.path.1=wrapper
