@@ -1,0 +1,135 @@
+# $Id$
+## This file controls where events will be announced on irc (if anywhere)
+# There are two types of events, those that have a path/section associated with
+# them such as mkdir/wipe and similar and those that don't have a path, such
+# as invite/shutdown and similar.
+#
+# First looking at the events with a path associated
+# They have two basic types of configuration parameters, with a couple of
+# settings for each, these are:
+# type.path.1=/path/subpath/*
+# type.path.1.destination=#channel1 #channel2
+# type.path.1.displayname=PSUEDOSECTION
+# type.path.1.regex=false
+#
+# type.section.1=SECTION_NAME
+# type.section.1.destination=#channel1 #channel2
+#
+# If you do not wish to specify all sections manually you can set SECTION_NAME
+# in the last numbered section rule to * , this will match any sections you
+# haven't explicitly listed.
+#
+# There is a special type named "default" that is described later
+#
+# IT IS NOT REQUIRED TO USE PATH TYPES IF YOU DON'T NEED THEM, IF YOU SIMPLY
+# WANT TO ANNOUNCE BY SECTION IGNORE THEM
+#
+# The values for path work exactly the same as path permissions in perms.conf
+# The values for section are simply the names of sections you have configured
+# The values for destination are a space separated list of channel names to
+# announce to, the value "public" can also be used if you simply want to
+# announce to all channels the sitebot is in.
+# The displayname value for path parameters allow you to make the bot format
+# the output for those events as if it came from a section with that name, and
+# truncating the path announced to only show the subpath below the path set.
+# The regex value(true/false) for path determines if regex style matching
+# is to be used, else glob matching. Use double backslashes to escape character.
+# Regex pattern is case insensitive.
+# A named regex group of either "truncate" or "announce" has to be included in
+# the regex string if you want to exclude parts of the path in the announce.
+# The former to exclude this part from the announce and the
+# latter to specificaly include only this part in the annonce.
+# Example:
+# default.path.1=^(?<truncate>/SECTION1/\\d{4}/).+
+# default.path.1.destination=#irc-channel
+# default.path.1.displayname=SECTION1
+# default.path.1.regex=true
+#
+# When looking for somewhere to announce an event the bot will start with the
+# first path rule for the event type, then proceed to the second path rule.
+# If after checking all the path rules for the event type it has not found
+# one that matches it'll proceed to check for it will then check the section
+# rules defined for this type. If after checking all the defined sections
+# it still does not find a match it will proceed to check the default type.
+# First it checks any paths defined for the default type, if that fails it
+# will check any sections defined for the default type. If no match is found
+# at that point the event will be ignored.
+# It is therefore recommended to make sure your default type configuration
+# catches everything as a last resort.
+# There is a special destination of "null" that can be used to explicitly
+# suppress output, this allows certain paths/sections/events to not announce
+# to IRC whilst still allowing a catch all default to be used.
+#
+# The default type is configured identically to any other type, simply with
+# the name of default, like this:
+# default.path.1=/path/subpath/*
+# default.path.1.destination=#channel1 #channel2
+# default.path.1.displayname=PSUEDOSECTION
+# default.path.1.regex=false
+#
+# default.section.1=SECTION_NAME
+# default.section.1.destination=#channel1 #channel2
+#
+#
+# Example:
+# mkdir.path.1=/incoming/*
+# mkdir.path.1.destination=#newstuff
+# mkdir.path.2=/specialdir/*
+# mkdir.path.2.destination=#privatechannel
+# mkdir.path.3=/hiddendir/*
+# mkdir.path.3.destination=null
+# mkdir.section.1=MP3
+# mkdir.section.1.destination=public
+#
+# default.path.1=*
+# default.path.1.destination=#mainchannel
+# default.path.1.displayname=DEFAULT
+# default.path.1.regex=false
+#
+# This will announce any directories made inside /incoming/ or any sub directories
+# of there in #newstuff. Any directories made inside /specialdir/ or any sub
+# directories of there will be announced in #privatechannel.
+# Any directories made in the MP3 section will be announced in all channels.
+# Any directories made inside /hiddendir/ or any sub directories of there will not
+# be announced at all.
+# Any directories made anywhere else on the site will be passed onto the default
+# type and announced in #mainchannel with a section name of DEFAULT
+#
+# TYPES WITHOUT PATH:
+# The configuration for events without a path is simpler, there is only one setting
+# per type and again a default type for any event types not explicitly set, this is:
+#
+# type.destination=#channel1 #channel2
+# default.destination=#channel1 #channel2
+#
+# Example:
+# invite.destination=#siteopchannel
+# default.destination=#mainchannel
+#
+# The above example will result in all invite events being announced in #siteopchannel,
+# any other event type, such as shutdown or slave events will be announced in #mainchannel
+#
+#
+# REMOVE PARTS OF PATH IN ANNOUNCEMENT:
+# The configuration of a DrFTPd v2 similar way of announcing of dated dirs is possible.
+# Default in v3 it would include the dated dirs subfolder in the announcement.
+# To avoid this use the example below.
+#
+# Example:
+# default.path.1=/SECTION1/****/*
+# default.path.1.destination=#irc-channel
+# default.path.1.displayname=SECTION1
+# default.path.1.regex=false
+#
+# default.path.2=/SECTION2/****-**/*
+# default.path.2.destination=#irc-channel
+# default.path.2.displayname=SECTION2
+# default.path.2.regex=false
+#
+# The first section is an example howto remove date from the announcement defined as MMdd.
+# The second section is an example howto remove year and week from the announcement
+# defined as yyyy-ww.
+
+default.section.1=*
+default.section.1.destination=public
+default.destination=public

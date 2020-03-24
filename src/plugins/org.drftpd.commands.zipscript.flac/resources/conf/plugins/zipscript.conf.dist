@@ -1,3 +1,0 @@
-#enable Flac info [true/false]
-cwd.flacinfo.enabled=true
-stor.flacinfo.enabled=true
