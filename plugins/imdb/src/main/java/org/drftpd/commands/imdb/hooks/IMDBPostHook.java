@@ -50,8 +50,9 @@ public class IMDBPostHook  {
 		DirectoryHandle workingDir = request.getCurrentDirectory();
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(workingDir);
-		if (!IMDBUtils.containSection(sec, IMDBConfig.getInstance().getRaceSections()))
+		if (!IMDBUtils.containSection(sec, IMDBConfig.getInstance().getRaceSections())) {
 			return;
+		}
 
 		// Spawn an IMDBPrintThread and exit.
 		// This so its not stalling nfo upload

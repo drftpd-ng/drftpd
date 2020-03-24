@@ -23,7 +23,12 @@
         <dependency>
             <groupId>org.drftpd</groupId>
             <artifactId>drftpd-tvmaze</artifactId>
-            <version>4.0</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-mediainfo</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>

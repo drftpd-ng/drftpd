@@ -6,6 +6,11 @@ Partial stuff, partial support, not for everyone :D
 
 For dev:
 Checkout the project
-maven validate
-maven install
+
+mvn validate
+
+mvn install -DskipTests
+
+Copy config files removing dist extensions
+
 master.bat|sh and slave.bat|sh

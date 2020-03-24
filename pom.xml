@@ -22,6 +22,7 @@
         <module>plugins/speedtest</module>
         <module>plugins/speedtest.net</module>
         <module>plugins/tvmaze</module>
+        <module>plugins/mediainfo</module>
         <module>core/dev</module>
     </modules>
 

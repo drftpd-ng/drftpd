@@ -14,11 +14,9 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.protocol.mediainfo.slave;
+package org.drftpd.plugins.mediainfo.protocol;
 
 import org.drftpd.master.common.slave.async.AsyncResponse;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
-import org.drftpd.protocol.mediainfo.common.async.AsyncResponseMediaInfo;
 import org.drftpd.slave.protocol.slave.AbstractHandler;
 import org.drftpd.slave.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.slave.Slave;
@@ -41,7 +39,7 @@ public class MediaInfoHandler extends AbstractHandler {
 		super(central);
 	}
 
-	public AsyncResponse handleMediaFile(AsyncCommandArgument ac) {
+	public AsyncResponse handleMediaInfo(AsyncCommandArgument ac) {
 		try {
 			return new AsyncResponseMediaInfo(ac.getIndex(),
 					getMediaInfo(getSlaveObject(), getSlaveObject().mapPathToRenameQueue(ac.getArgs())));

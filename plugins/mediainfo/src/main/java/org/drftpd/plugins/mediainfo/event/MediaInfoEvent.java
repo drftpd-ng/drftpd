@@ -17,7 +17,7 @@
 package org.drftpd.plugins.mediainfo.event;
 
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.plugins.mediainfo.protocol.MediaInfo;
 
 /**
  * @author scitz0

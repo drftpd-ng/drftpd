@@ -30,7 +30,7 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.plugins.mediainfo.MediaInfoUtils;
 import org.drftpd.plugins.mediainfo.vfs.MediaInfoVFSData;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.plugins.mediainfo.protocol.MediaInfo;
 import org.drftpd.slave.slave.LightRemoteInode;
 import org.tanesha.replacer.ReplacerEnvironment;
 

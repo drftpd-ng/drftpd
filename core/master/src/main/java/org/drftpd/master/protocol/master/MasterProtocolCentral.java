@@ -82,32 +82,6 @@ public class MasterProtocolCentral {
 			logger.error("Failed to load plugins for master extension point 'ProtocolExtension', possibly the master"
 					+" extension point definition has changed in the plugin.xml",e);
 		}
-		/*
-		try {
-			List<PluginObjectContainer<AbstractIssuer>> loadedIssuers =
-				CommonPluginUtils.getPluginObjectsInContainer(this, "master", "ProtocolExtension", "IssuerClass");
-			for (PluginObjectContainer<AbstractIssuer> container : loadedIssuers) {
-				String protocolName = 
-					container.getPluginExtension().getDeclaringPluginDescriptor().getAttribute("ProtocolName").getValue();
-				Class<?> issuerClass = container.getPluginClass();
-				if (!issuersMap.containsKey(issuerClass)) {
-
-					// hackish way to allow us to have an AbstractBasicIssuer.
-					Class<?> superClass = issuerClass.getSuperclass();
-					if (superClass != AbstractIssuer.class) {
-						issuerClass = superClass;
-					}
-					issuersMap.put(issuerClass, container.getPluginObject());
-				}
-
-				if (!protocols.contains(protocolName)) {
-					protocols.add(protocolName);
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			logger.error("Failed to load plugins for master extension point 'ProtocolExtension', possibly the master"
-					+" extension point definition has changed in the plugin.xml",e);
-		}*/
 
 		_issuersMap = Collections.unmodifiableMap(issuersMap);
 		_protocols = Collections.unmodifiableList(protocols);

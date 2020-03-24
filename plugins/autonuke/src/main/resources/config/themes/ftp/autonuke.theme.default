@@ -17,10 +17,3 @@ autonukes.del.error=Error getting ${path}, invalid dir/path specified.
 autonukescan.start=AutoNuke scan started on ${section}
 autonukescan.complete=Finished scanning section(s) for nukes
 autonukescan.aborted=AutoNuke scan aborted before it could complete
-
-approve.search.empty=No directory found with that name.
-approve.search.item=${path}
-approve.search.end=End of matching directories. Use !approve on full path.
-approve.error.path=Specified path does not exist, ${path}
-approve.success=${path} marked as approved overriding autonuke.
-approve.remove=${path} is no longer marked as approved.

@@ -23,9 +23,9 @@ import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
-import org.drftpd.protocol.mediainfo.common.async.AsyncResponseMediaInfo;
-import org.drftpd.protocol.mediainfo.master.MediaInfoIssuer;
+import org.drftpd.plugins.mediainfo.protocol.MediaInfo;
+import org.drftpd.plugins.mediainfo.protocol.AsyncResponseMediaInfo;
+import org.drftpd.plugins.mediainfo.protocol.MediaInfoIssuer;
 import org.drftpd.slave.slave.RemoteIOException;
 
 import java.io.FileNotFoundException;

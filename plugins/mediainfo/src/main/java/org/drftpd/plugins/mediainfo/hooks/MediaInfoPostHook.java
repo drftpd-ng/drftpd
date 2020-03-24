@@ -15,7 +15,7 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.plugins.mediainfo;
+package org.drftpd.plugins.mediainfo.hooks;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,9 +34,10 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.plugins.mediainfo.MediaInfoUtils;
 import org.drftpd.plugins.mediainfo.event.MediaInfoEvent;
 import org.drftpd.plugins.mediainfo.vfs.MediaInfoVFSData;
-import org.drftpd.protocol.mediainfo.common.MediaInfo;
+import org.drftpd.plugins.mediainfo.protocol.MediaInfo;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,8 +87,9 @@ public class MediaInfoPostHook {
 			return;
 		}
 
-		if (MediaInfoUtils.getValidFileExtension(request.getArgument(), _extensions) == null)
+		if (MediaInfoUtils.getValidFileExtension(request.getArgument(), _extensions) == null){
 			return;
+		}
 
 		DirectoryHandle workingDir = request.getCurrentDirectory();
 		FileHandle file;
@@ -99,8 +101,9 @@ public class MediaInfoPostHook {
 		}
 
 		SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(workingDir);
-		if (_exclSections.contains(sec.getName().toLowerCase()))
+		if (_exclSections.contains(sec.getName().toLowerCase())) {
 			return;
+		}
 
         MediaInfo mediaInfo;
 		MediaInfoVFSData mediaData = new MediaInfoVFSData(file);
