@@ -86,7 +86,8 @@ public class ApproveCommands extends CommandInterface {
 				params.setSortOrder(true);
 
 				try {
-					inodes = ie.advancedFind(dir, params);
+					String caller = doremove ? "doSITE_REMAPPROVE" : "doSITE_APPROVE";
+					inodes = ie.advancedFind(dir, params, caller);
 				} catch (IndexException e) {
                     logger.error("Index Exception: {}", e.getMessage());
 					return new CommandResponse(500, "Index Exception: " + e.getMessage());

@@ -184,7 +184,7 @@ public class Find extends CommandInterface {
         Map<String, String> inodes;
 
         try {
-            inodes = ie.advancedFind(dir, params);
+            inodes = ie.advancedFind(dir, params, "doFIND");
         } catch (IndexException e) {
             logger.error(e.getMessage());
             return new CommandResponse(550, e.getMessage());

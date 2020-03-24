@@ -115,7 +115,7 @@ public class Nuke extends CommandInterface {
 					// Get dirs from index system
 					ArrayList<DirectoryHandle> dirsToNuke;
 					try {
-						dirsToNuke = NukeUtils.findNukeDirs(currentDir, requestUser, nukeDirPath);
+						dirsToNuke = NukeUtils.findNukeDirs(currentDir, requestUser, nukeDirPath, "doSITE_NUKE");
 					} catch (FileNotFoundException e) {
 						logger.warn(e);
 						return new CommandResponse(550, e.getMessage());
@@ -320,7 +320,7 @@ public class Nuke extends CommandInterface {
 					// Get dirs from index system
 					ArrayList<DirectoryHandle> dirsToUnNuke;
 					try {
-						dirsToUnNuke = NukeUtils.findNukeDirs(currentDir, user, nukeName);
+						dirsToUnNuke = NukeUtils.findNukeDirs(currentDir, user, nukeName, "doSITE_UNNUKE");
 					} catch (FileNotFoundException e) {
 						logger.warn(e);
 						return new CommandResponse(550, e.getMessage());

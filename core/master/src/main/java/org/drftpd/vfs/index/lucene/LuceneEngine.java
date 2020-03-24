@@ -615,7 +615,7 @@ public class LuceneEngine implements IndexEngineInterface {
      * @param startNode The dir where the search will begin.
      * @param params    Search options.
      */
-    public Map<String, String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params)
+    public Map<String, String> advancedFind(DirectoryHandle startNode, AdvancedSearchParams params, String caller)
             throws IndexException, IllegalArgumentException {
         IndexSearcher iSearcher = null;
         IndexReader iReader = null;
@@ -728,7 +728,7 @@ public class LuceneEngine implements IndexEngineInterface {
                 queryExtension.addQueryTerms(query, params);
             }
 
-            logger.debug("Query: {}", query);
+            logger.debug(caller + " query: {}", query);
 
             iReader = IndexReader.open(_iWriter, true);
             iSearcher = new IndexSearcher(iReader);

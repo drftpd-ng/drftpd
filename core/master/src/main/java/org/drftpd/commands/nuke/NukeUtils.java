@@ -113,7 +113,7 @@ public class NukeUtils {
 		}
 	}
 
-	public static ArrayList<DirectoryHandle> findNukeDirs(DirectoryHandle currentDir, User user, String name) throws FileNotFoundException {
+	public static ArrayList<DirectoryHandle> findNukeDirs(DirectoryHandle currentDir, User user, String name, String caller) throws FileNotFoundException {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -125,7 +125,7 @@ public class NukeUtils {
 		params.setSortOrder(true);
 
 		try {
-			inodes = ie.advancedFind(currentDir, params);
+			inodes = ie.advancedFind(currentDir, params, caller);
 		} catch (IndexException e) {
 			throw new FileNotFoundException("Index Exception: "+e.getMessage());
 		}

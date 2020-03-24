@@ -79,7 +79,7 @@ public class Search extends CommandInterface {
 		Map<String,String> inodes;
 
 		try {
-			inodes = ie.advancedFind(request.getCurrentDirectory(), params);
+			inodes = ie.advancedFind(request.getCurrentDirectory(), params, "doSEARCH");
 		} catch (IndexException e) {
 			logger.error(e.getMessage());
 			return new CommandResponse(550, e.getMessage());

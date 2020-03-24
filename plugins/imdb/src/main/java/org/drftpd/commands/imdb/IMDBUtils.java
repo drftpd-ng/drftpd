@@ -170,7 +170,7 @@ public class IMDBUtils {
 		return newTitle;
 	}
 
-	public static Map<String,String> getNFOFiles(DirectoryHandle dir) throws IndexException {
+	public static Map<String,String> getNFOFiles(DirectoryHandle dir, String caller) throws IndexException {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 
 		AdvancedSearchParams params = new AdvancedSearchParams();
@@ -178,7 +178,7 @@ public class IMDBUtils {
 		params.setInodeType(AdvancedSearchParams.InodeType.FILE);
 		params.setLimit(0);
 
-		return ie.advancedFind(dir, params);
+		return ie.advancedFind(dir, params, caller);
 	}
 
 	public static boolean isRelease(String dirName) {
@@ -187,7 +187,7 @@ public class IMDBUtils {
 		return m.find();
 	}
 
-	public static ArrayList<DirectoryHandle> findReleases(DirectoryHandle sectionDir, User user, String title, int year) throws FileNotFoundException {
+	public static ArrayList<DirectoryHandle> findReleases(String caller, DirectoryHandle sectionDir, User user, String title, int year) throws FileNotFoundException {
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		Map<String,String> inodes;
 
@@ -208,7 +208,7 @@ public class IMDBUtils {
 		params.setSortOrder(true);
 
 		try {
-			inodes = ie.advancedFind(sectionDir, params);
+			inodes = ie.advancedFind(sectionDir, params, caller);
 		} catch (IndexException e) {
 			throw new FileNotFoundException("Index Exception: "+e.getMessage());
 		}

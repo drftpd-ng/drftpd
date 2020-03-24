@@ -242,6 +242,7 @@ public class BasicHandler extends AbstractHandler {
 			if (getSlaveObject().threadedRemerge()) {
 				if (threadMergeCount.get() == 0) {
 					// Create worker threads
+					logger.info("Starting to merge with threads");
 					mergeThreads = new HandleRemergeRecursiveThread[maxMergeThreads];
 					for (int i = 0; i < maxMergeThreads; i++) {
 						mergeThreads[i] = new HandleRemergeRecursiveThread(getSlaveObject().getRoots(), partialRemerge, skipAgeCutoff, i + 1);
@@ -254,14 +255,16 @@ public class BasicHandler extends AbstractHandler {
 					sendResponse(new AsyncResponseSiteBotMessage("Merge already running, wait for it to finish"));
 				}
 			} else if (getSlaveObject().concurrentRootIteration()) {
+				logger.info("Starting to merge with roots concurrently with handleRemergeRecursiveConcurrent");
 				sendResponse(new AsyncResponseSiteBotMessage("Starting to merge with roots concurrently"));
 				handleRemergeRecursiveConcurrent(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
 			} else {
+				logger.info("Starting to merge with handleRemergeRecursive2");
 				sendResponse(new AsyncResponseSiteBotMessage("Starting to merge"));
 				handleRemergeRecursive2(getSlaveObject().getRoots(), argsArray[0], partialRemerge, skipAgeCutoff);
 			}
 
-			// Make sure we dont make the slave avalible online until the whole filesystem is sent
+			// Make sure we dont make the slave available online until the whole filesystem is sent
 			if (getSlaveObject().threadedRemerge()) {
 				while (threadMergeCount.get() != 0) {
 					if (!getSlaveObject().isOnline()) {

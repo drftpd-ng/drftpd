@@ -51,130 +51,130 @@ import java.util.regex.Pattern;
  */
 
 public class DupeCheckHooks {
-	private static final Logger logger = LogManager.getLogger(DupeCheckHooks.class);
+    private static final Logger logger = LogManager.getLogger(DupeCheckHooks.class);
 
-	private Pattern _exempt = null;
-	private int _type = 0;
-	
-	public DupeCheckHooks() {
-		loadConf();
-	}
-	
-    @EventSubscriber
-	public void onReloadEvent(ReloadEvent event) {
-    	loadConf();
+    private Pattern _exempt = null;
+    private int _type = 0;
+
+    public DupeCheckHooks() {
+        loadConf();
     }
-	
+
+    @EventSubscriber
+    public void onReloadEvent(ReloadEvent event) {
+        loadConf();
+    }
+
     /*
      * Loads config from file and sets regex patterns
      */
-	private void loadConf() {
-    	Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("dupecheck.conf");
-        
-    	String exempt = cfg.getProperty("exempt");
+    private void loadConf() {
+        Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("dupecheck.conf");
+
+        String exempt = cfg.getProperty("exempt");
         String type = cfg.getProperty("type");
-        
+
         if (exempt != null) {
-        	_exempt = null;
-        	_exempt = Pattern.compile(exempt.trim());
+            _exempt = null;
+            _exempt = Pattern.compile(exempt.trim());
         }
 
         if (type != null) {
-        	_type = Integer.parseInt(type.trim());
-        }        
-    	
-	}
+            _type = Integer.parseInt(type.trim());
+        }
 
-	/*
-	 * Prehook method for Making a New DIR
-	 */
-	@CommandHook(commands = "doMKD", type = HookType.PRE)
-	public CommandRequestInterface doDupeCheckMKD(CommandRequest request) {
-		if (request.hasArgument()) {
-			String dirname = request.getCurrentDirectory().getNonExistentDirectoryHandle(VirtualFileSystem.fixPath(request.getArgument())).getName();
-			if (((_type == 2) || (_type == 3)) && (!checkFile(dirname))) {
-				return doDupeCheck(request,dirname);
-			}
-		}
-		return request;
-	}
+    }
 
-	/*
-	 * Prehook method for Creating a New FILE
-	 */
-	@CommandHook(commands = "doSTOR", type = HookType.PRE)
-	public CommandRequestInterface doDupeCheckSTOR(CommandRequest request) {
-		if (request.hasArgument()) {
-			String filename = request.getCurrentDirectory().getNonExistentFileHandle(VirtualFileSystem.fixPath(request.getArgument())).getName();
-			if (((_type == 1) || (_type == 3)) && (!checkFile(filename))) {
-				return doDupeCheck(request,filename);
-			}
-		}
-		return request;
-	}	
-	
-	/*
-	 * Checks the file/dir to see if its in the regex exclude list
-	 */
-	private boolean checkFile(String file) {
-		if (_exempt != null) {
-			Matcher matcher = _exempt.matcher(file.toLowerCase());
+    /*
+     * Prehook method for Making a New DIR
+     */
+    @CommandHook(commands = "doMKD", type = HookType.PRE)
+    public CommandRequestInterface doDupeCheckMKD(CommandRequest request) {
+        if (request.hasArgument()) {
+            String dirname = request.getCurrentDirectory().getNonExistentDirectoryHandle(VirtualFileSystem.fixPath(request.getArgument())).getName();
+            if (((_type == 2) || (_type == 3)) && (!checkFile(dirname))) {
+                return doDupeCheck(request, dirname, "doDupeCheckMKD");
+            }
+        }
+        return request;
+    }
+
+    /*
+     * Prehook method for Creating a New FILE
+     */
+    @CommandHook(commands = "doSTOR", type = HookType.PRE)
+    public CommandRequestInterface doDupeCheckSTOR(CommandRequest request) {
+        if (request.hasArgument()) {
+            String filename = request.getCurrentDirectory().getNonExistentFileHandle(VirtualFileSystem.fixPath(request.getArgument())).getName();
+            if (((_type == 1) || (_type == 3)) && (!checkFile(filename))) {
+                return doDupeCheck(request, filename, "doDupeCheckSTOR");
+            }
+        }
+        return request;
+    }
+
+    /*
+     * Checks the file/dir to see if its in the regex exclude list
+     */
+    private boolean checkFile(String file) {
+        if (_exempt != null) {
+            Matcher matcher = _exempt.matcher(file.toLowerCase());
             return matcher.find();
-		}
-		return false;
-	}
-	
-	/*
-	 * Checks to see if file/dir is already in database
-	 * Then checks to see if user has permission to upload file/dir 
-	 */
-	private CommandRequestInterface doDupeCheck(CommandRequest request, String realname) {
+        }
+        return false;
+    }
 
-		try {
-			User user = request.getSession().getUserNull(request.getUser());
+    /*
+     * Checks to see if file/dir is already in database
+     * Then checks to see if user has permission to upload file/dir
+     */
+    private CommandRequestInterface doDupeCheck(CommandRequest request, String realname, String caller) {
 
-			AdvancedSearchParams params = new AdvancedSearchParams();
-			params.setExact(realname);
-			
-			IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
-			Map<String,String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params);
-			
-			if (!inodes.isEmpty()) {
-				for (Map.Entry<String,String> item : inodes.entrySet()) {
-					boolean isDupe = false;
+        try {
+            User user = request.getSession().getUserNull(request.getUser());
 
-					InodeHandle inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey()) : new FileHandle(item.getKey());					
-					
-					try {
-						if (inode.getPluginMetaData(DupeCheckFileData.DUPE)) {
-							isDupe = true;
-						}
-					} catch (KeyNotFoundException e) {
-						// This is fine, means file/dir has not been un-duped
-						isDupe = true;
-					} catch (FileNotFoundException e) {
-						// File not found, not good, index refers to file that does not exist
+            AdvancedSearchParams params = new AdvancedSearchParams();
+            params.setExact(realname);
+
+            IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
+            Map<String, String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params, caller);
+
+            if (!inodes.isEmpty()) {
+                for (Map.Entry<String, String> item : inodes.entrySet()) {
+                    boolean isDupe = false;
+
+                    InodeHandle inode = item.getValue().equals("d") ? new DirectoryHandle(item.getKey()) : new FileHandle(item.getKey());
+
+                    try {
+                        if (inode.getPluginMetaData(DupeCheckFileData.DUPE)) {
+                            isDupe = true;
+                        }
+                    } catch (KeyNotFoundException e) {
+                        // This is fine, means file/dir has not been un-duped
+                        isDupe = true;
+                    } catch (FileNotFoundException e) {
+                        // File not found, not good, index refers to file that does not exist
                         logger.warn("Index Contained an unexistent inode: {}", item.getKey());
-					}
-					
-					if (isDupe) {
-				        ConfigInterface config = GlobalContext.getConfig();
-						if (config.checkPathPermission("dupecheck", user, request.getCurrentDirectory())) {
-							request.setDeniedResponse(new CommandResponse(400,"DUPE: " + inode.getPath()));
-							request.setAllowed(false);
-							return request;
-						}							
-					}
-				}
-			}				
-			
-		} catch (IndexException e) {
-			//Index Exception while searching
-			logger.error(e.getMessage());
-		} catch (IllegalArgumentException e) {
-			//Invalid Arguement while searching
-			logger.info(e.getMessage());
-		}
-		return request;
-	}
+                    }
+
+                    if (isDupe) {
+                        ConfigInterface config = GlobalContext.getConfig();
+                        if (config.checkPathPermission("dupecheck", user, request.getCurrentDirectory())) {
+                            request.setDeniedResponse(new CommandResponse(400, "DUPE: " + inode.getPath()));
+                            request.setAllowed(false);
+                            return request;
+                        }
+                    }
+                }
+            }
+
+        } catch (IndexException e) {
+            //Index Exception while searching
+            logger.error(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            //Invalid Arguement while searching
+            logger.info(e.getMessage());
+        }
+        return request;
+    }
 }

@@ -64,7 +64,7 @@ public class DupeCheckCommands extends CommandInterface {
 
 		try {
 			IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
-			Map<String,String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params);
+			Map<String,String> inodes = ie.advancedFind(GlobalContext.getGlobalContext().getRoot(), params, "doSITE_UNDUPE");
 			
 			if (!inodes.isEmpty()) {
 				for (Map.Entry<String,String> item : inodes.entrySet()) {        
