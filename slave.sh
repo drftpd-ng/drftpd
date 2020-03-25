@@ -1,7 +1,7 @@
 #! /bin/sh
 
 #
-# Copyright (c) 1999, 2019 Tanuki Software, Ltd.
+# Copyright (c) 1999, 2020 Tanuki Software, Ltd.
 # http://www.tanukisoftware.com
 # All rights reserved.
 #
@@ -16,7 +16,7 @@
 
 #-----------------------------------------------------------------------------
 # These settings can be modified to fit the needs of your application
-# Optimized for use with version 3.5.41 of the Wrapper.
+# Optimized for use with version 3.5.42 of the Wrapper.
 
 # IMPORTANT - Please always stop and uninstall an application before making
 #             any changes to this file.  Failure to do so could remove the
@@ -224,47 +224,65 @@ gettext() {
     fi
 }
 
-resolveIdLocation() {
-    if [ "X$ID_BIN" = "X" ] ; then
-        # On Solaris, the version in /usr/xpg4/bin should be used.
-        ID_BIN="/usr/xpg4/bin/id"
-        if [ ! -x "$ID_BIN" ] ; then
-            ID_BIN="id"
-            result=`command -v id 2>/dev/null`
-            if [ $? -ne 0 ] ; then
-                ID_BIN="/usr/bin/id"
-                if [ ! -x "$ID_BIN" ] ; then
-                    eval echo `gettext 'Unable to locate "id".'`
-                    eval echo `gettext 'Please report this message along with the location of the command on your system.'`
-                    exit 1
+##
+# Resolves the location of a system command.
+#
+# $1: the name of the variable to set (without the $)
+# $2: the name of the command
+# $3: an ordered and semicolon-separated list of paths where the command should
+#     be searched. The list should contain an empty value for the command to be
+#     searched using the PATH environment variable.
+# $4: 1 to be strict (the script will stop with an error), 0 otherwise.
+resolveLocation() {
+    eval "CMD_TEMP=\$$1"
+    if [ "X$CMD_TEMP" = "X" ] ; then
+        found=0
+        
+        OIFS=$IFS
+        IFS=';'
+        for CMD_PATH in $3
+        do
+            if [ -z "$CMD_PATH" ] ; then
+                # empty path
+                CMD_TEMP="$2"
+                ret=`command -v $CMD_TEMP 2>/dev/null`
+                if [ $? -eq 0 ] ; then
+                    found=1
+                    break
+                fi
+            else
+                CMD_TEMP="${CMD_PATH}/$2"
+                if [ -x "$CMD_TEMP" ] ; then
+                    found=1
+                    break
                 fi
             fi
+        done
+        IFS=$OIFS
+        
+        if [ $found -eq 1 ] ; then
+            eval "$1=$CMD_TEMP"
+        elif [ $4 -eq 1 ] ; then
+            eval echo `gettext 'Unable to locate "$2".'`
+            eval echo `gettext 'Please report this message along with the location of the command on your system.'`
+            exit 1
+        else
+            # return the error
+            return 1
         fi
     fi
+    return 0
+}
+
+resolveIdLocation() {
+    # On Solaris, the version in /usr/xpg4/bin should be used in priority.
+    resolveLocation ID_BIN id "/usr/xpg4/bin/id;;/usr/bin/id" 1
 }
 
 resolveCurrentUser() {
     if [ "X$CURRENT_USER" = "X" ] ; then
         resolveIdLocation
         CURRENT_USER=`$ID_BIN -u -n 2>/dev/null`
-    fi
-}
-
-resolvePidofLocation() {
-    if [ "X$PIDOF_BIN" = "X" ] ; then
-        PIDOF_BIN="pidof"
-        result=`command -v pidof 2>/dev/null`
-        if [ $? -ne 0 ] ; then
-            PIDOF_BIN="/bin/pidof"
-            if [ ! -x "$PIDOF_BIN" ] ; then
-                PIDOF_BIN="/usr/sbin/pidof"
-                if [ ! -x "$PIDOF_BIN" ] ; then
-                    eval echo `gettext 'Unable to locate "pidof".'`
-                    eval echo `gettext 'Please report this message along with the location of the command on your system.'`
-                    exit 1
-                fi
-            fi
-        fi
     fi
 }
 
@@ -462,9 +480,6 @@ if [ "X$APP_LONG_NAME" = "X" -o "$APP_LONG_NAME" = "${DELIMITER}app.long.name${D
     APP_LONG_NAME=$APP_NAME
 fi
 
-# Create logs dir if not present
-mkdir -p "$REALDIR/logs"
-
 # default location for the service file
 SYSTEMD_SERVICE_FILE="/etc/systemd/system/$APP_NAME.service"
 
@@ -486,34 +501,10 @@ LOCKDIR="/var/lock/subsys"
 LOCKFILE="$LOCKDIR/$APP_NAME"
 pid=""
 
-# Resolve the location of the 'ps' command
-PS_BIN="/usr/ucb/ps"
-if [ ! -x "$PS_BIN" ]
-then
-    PS_BIN="/usr/bin/ps"
-    if [ ! -x "$PS_BIN" ]
-    then
-        PS_BIN="/bin/ps"
-        if [ ! -x "$PS_BIN" ]
-        then
-            eval echo `gettext 'Unable to locate "ps".'`
-            eval echo `gettext 'Please report this message along with the location of the command on your system.'`
-            exit 1
-        fi
-    fi
-fi
+# Resolve the location of the 'ps' & 'tr' command
+resolveLocation PS_BIN ps "/usr/ucb;/usr/bin;/bin" 1
+resolveLocation TR_BIN tr "/usr/bin;/bin" 1
 
-TR_BIN="/usr/bin/tr"
-if [ ! -x "$TR_BIN" ]
-then
-    TR_BIN="/bin/tr"
-    if [ ! -x "$TR_BIN" ]
-    then
-        eval echo `gettext 'Unable to locate "tr".'`
-        eval echo `gettext 'Please report this message along with the location of the command on your system.'`
-        exit 1
-    fi
-fi
 # Resolve the os
 DIST_OS=`uname -s | $TR_BIN "[A-Z]" "[a-z]" | $TR_BIN -d ' '`
 case "$DIST_OS" in
@@ -524,7 +515,7 @@ case "$DIST_OS" in
         # HP-UX needs the XPG4 version of ps (for -o args)
         DIST_OS="hpux"
         UNIX95=""
-        export UNIX95   
+        export UNIX95
         ;;
     'darwin')
         DIST_OS="macosx"
@@ -536,23 +527,7 @@ case "$DIST_OS" in
         DIST_OS="zos"
         ;;
     'linux')
-        if [ -f /etc/fedora-release -o -f /etc/redhat-release -o -f /etc/redhat_version ] ; then
-            if [ "X`command -v /sbin/chkconfig`" != "X" ] ; then
-                DIST_LINUX_FAMILY="Red Hat"
-            fi
-        elif [ -f /etc/SuSE-release ] ; then
-            if [ "X`command -v insserv`" != "X" ] ; then
-                DIST_LINUX_FAMILY="SUSE"
-            fi
-        elif [ -f /etc/lsb-release -o -f /etc/debian_version -o -f /etc/debian_release ] ; then
-            if [ "X`command -v update-rc.d`" != "X" ] ; then
-                DIST_LINUX_FAMILY="Debian"
-            fi
-        fi
-        DIST_LINUX_NAME=`grep "^NAME=" /etc/os-release 2>/dev/null | cut -d= -f 2 | sed 's/\"//g'`
-        if [ "$DIST_LINUX_NAME" = "Amazon Linux" ] && [ "X`command -v /sbin/chkconfig`" != "X" ] ; then
-            DIST_LINUX_FAMILY="Red Hat"
-        fi
+        DIST_OS="linux"
         ;;
 esac
 
@@ -1346,7 +1321,7 @@ launchinternal() {
     if [ "X$pid" = "X" ]
     then 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.daemonize=TRUE $APPNAMEPROP $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.41 $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.daemonize=TRUE $APPNAMEPROP $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.42 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
     else
         eval echo `gettext '$APP_LONG_NAME is already running.'`
@@ -1369,7 +1344,7 @@ console() {
         prepAdditionalParams "$@"
 
         # The string passed to eval must handles spaces in paths correctly.
-        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" $APPNAMEPROP $ANCHORPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.41 $ADDITIONAL_PARA"
+        COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" $APPNAMEPROP $ANCHORPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.42 $ADDITIONAL_PARA"
         eval $COMMAND_LINE
         COMMAND_EXIT_CODE=$?
         if [ $COMMAND_EXIT_CODE -ne 0 ] ; then
@@ -1569,7 +1544,7 @@ upstartInstall() {
         return 1
     fi
     
-    eval echo `gettext ' Installing the $APP_LONG_NAME daemon using upstart...'`
+    eval echo `gettext ' Installing the $APP_LONG_NAME daemon with upstart...'`
     if [ -f "${REALDIR}/${APP_NAME}.install" ] ; then 
         eval echo `gettext ' a custom upstart conf file ${APP_NAME}.install found'`
         cp "${REALDIR}/${APP_NAME}.install" "/etc/init/${APP_NAME}.conf"
@@ -1627,7 +1602,7 @@ upstartRestart() {
 
 upstartRemove() {
     stopit "0"
-    eval echo `gettext ' Removing $APP_LONG_NAME daemon from upstart...'`
+    eval echo `gettext ' Removing the $APP_LONG_NAME daemon from upstart...'`
     rm "/etc/init/${APP_NAME}.conf"
 }
 
@@ -1638,7 +1613,7 @@ systemdDetection() {
         return 1
     fi
 
-    resolvePidofLocation
+    resolveLocation PIDOF_BIN pidof ";/bin;/usr/sbin" 1
     result=`$PIDOF_BIN systemd`
     return $?
 }
@@ -1651,7 +1626,7 @@ systemdInstall() {
       return 1
     fi
     
-    eval echo `gettext ' Installing the $APP_LONG_NAME daemon using systemd...'`
+    eval echo `gettext ' Installing the $APP_LONG_NAME daemon with systemd...'`
     if [ -f "${REALDIR}/${APP_NAME}.service" ] ; then 
         eval echo `gettext ' a custom service file ${APP_NAME}.service found'`
         cp "${REALDIR}/${APP_NAME}.service" "${SYSTEMD_SERVICE_FILE}"
@@ -1745,7 +1720,7 @@ systemdRestart() {
 
 systemdRemove() {
     stopit "0"
-    eval echo `gettext ' Removing $APP_LONG_NAME daemon from systemd...'`
+    eval echo `gettext ' Removing the $APP_LONG_NAME daemon from systemd...'`
     systemctl disable $APP_NAME
     rm "/etc/systemd/system/${APP_NAME}.service"
     systemctl daemon-reload
@@ -1833,7 +1808,7 @@ start() {
     prepAdditionalParams "$@"
 
     # The string passed to eval must handles spaces in paths correctly.
-    COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.daemonize=TRUE $APPNAMEPROP $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.41 $ADDITIONAL_PARA"
+    COMMAND_LINE="$CMDNICE \"$WRAPPER_CMD\" \"$WRAPPER_CONF\" wrapper.syslog.ident=\"$APP_NAME\" wrapper.pidfile=\"$PIDFILE\" wrapper.daemonize=TRUE $APPNAMEPROP $ANCHORPROP $IGNOREPROP $STATUSPROP $COMMANDPROP $LOCKPROP wrapper.script.version=3.5.42 $ADDITIONAL_PARA"
     eval $COMMAND_LINE
     
     startwait
@@ -1984,67 +1959,24 @@ checkInstalled() {
             installedStatus=$SERVICE_INSTALLED_DEFAULT
         fi
     elif [ "$DIST_OS" = "linux" ] ; then
-        case "$DIST_LINUX_FAMILY" in
-        'Red Hat')
-            if [ "X$1" != "Xstrict" -o \( -z "$USE_SYSTEMD" -a -z "$USE_UPSTART" \) ] ; then
-                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
-                    installedStatus=$SERVICE_INSTALLED_DEFAULT
-                    installedWith="init.d"
-                fi
-            fi
-            if [ "X$1" != "Xstrict" -o -n "$USE_SYSTEMD" ] ; then
-                if [ -f "${SYSTEMD_SERVICE_FILE}" ] ; then
-                    installedStatus=`expr $installedStatus + $SERVICE_INSTALLED_SYSTEMD`
-                    installedWith="${installedWith}${installedWith:+, }systemd"
-                fi
-            fi
-            if [ "X$1" != "Xstrict" -o -n "$USE_UPSTART" ] ; then
-                if [ -f "/etc/init/${APP_NAME}.conf" ] ; then
-                    installedStatus=`expr $installedStatus + $SERVICE_INSTALLED_UPSTART`
-                    installedWith="${installedWith}${installedWith:+, }upstart"
-                fi
-            fi
-            ;;
-        'SUSE')
-            if [ "X$1" != "Xstrict" -o \( -z "$USE_SYSTEMD" -a -z "$USE_UPSTART" \) ] ; then
-                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
-                    installedStatus=$SERVICE_INSTALLED_DEFAULT
-                    installedWith="init.d"
-                fi
-            fi
-            if [ "X$1" != "Xstrict" -o -n "$USE_SYSTEMD" ] ; then
-                if [ -f "${SYSTEMD_SERVICE_FILE}" ] ; then
-                    installedStatus=`expr $installedStatus + $SERVICE_INSTALLED_SYSTEMD`
-                    installedWith="${installedWith}${installedWith:+, }systemd"
-                fi
-            fi
-            ;;
-        'Debian')
-            if [ "X$1" != "Xstrict" -o \( -z "$USE_SYSTEMD" -a -z "$USE_UPSTART" \) ] ; then
-                if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
-                    installedStatus=$SERVICE_INSTALLED_DEFAULT
-                    installedWith="init.d"
-                fi
-            fi
-            if [ "X$1" != "Xstrict" -o -n "$USE_SYSTEMD" ] ; then
-                if [ -f "${SYSTEMD_SERVICE_FILE}" ] ; then
-                    installedStatus=`expr $installedStatus + $SERVICE_INSTALLED_SYSTEMD`
-                    installedWith="${installedWith}${installedWith:+, }systemd"
-                fi
-            fi
-            if [ "X$1" != "Xstrict" -o -n "$USE_UPSTART" ] ; then
-                if [ -f "/etc/init/${APP_NAME}.conf" ] ; then
-                    installedStatus=`expr $installedStatus + $SERVICE_INSTALLED_UPSTART`
-                    installedWith="${installedWith}${installedWith:+, }upstart"
-                fi
-            fi
-            ;;
-        *)
+        if [ "X$1" != "Xstrict" -o \( -z "$USE_SYSTEMD" -a -z "$USE_UPSTART" \) ] ; then
             if [ -f "/etc/init.d/$APP_NAME" -o -L "/etc/init.d/$APP_NAME" ] ; then
                 installedStatus=$SERVICE_INSTALLED_DEFAULT
+                installedWith="init.d"
             fi
-            ;;
-        esac
+        fi
+        if [ "X$1" != "Xstrict" -o -n "$USE_SYSTEMD" ] ; then
+            if [ -f "${SYSTEMD_SERVICE_FILE}" ] ; then
+                installedStatus=`expr $installedStatus + $SERVICE_INSTALLED_SYSTEMD`
+                installedWith="${installedWith}${installedWith:+, }systemd"
+            fi
+        fi
+        if [ "X$1" != "Xstrict" -o -n "$USE_UPSTART" ] ; then
+            if [ -f "/etc/init/${APP_NAME}.conf" ] ; then
+                installedStatus=`expr $installedStatus + $SERVICE_INSTALLED_UPSTART`
+                installedWith="${installedWith}${installedWith:+, }upstart"
+            fi
+        fi
     elif [ "$DIST_OS" = "hpux" ] ; then
         if [ -f "/sbin/init.d/$APP_NAME" -o -L "/sbin/init.d/$APP_NAME" ] ; then
             installedStatus=$SERVICE_INSTALLED_DEFAULT
@@ -2138,11 +2070,30 @@ validateAppNameLength() {
     fi
 }
 
-printDetectedDistro() {
-    if [ "X$DIST_LINUX_NAME" != "X" ] ; then
-        eval echo `gettext 'Detected $DIST_LINUX_NAME \($DIST_LINUX_FAMILY family\):'`
+resolveInitdCommand() {
+    # NOTE: update-rc.d & chkconfig are the recommended interfaces for managing
+    #       init scripts. insserv is a low level tool used by these interfaces.
+    #       chkconfig was available on old versions Ubuntu, but update-rc.d is
+    #       preferred. chkconfig is used on RHEL based Linux.
+
+    # update-rc.d is used on distros such as Debian/Ubuntu
+    resolveLocation INITD_COMMAND "update-rc.d" ";/usr/sbin" 0
+    if [ $? -eq 0 ] ; then
+        USE_UPDATE_RC=1
     else
-        eval echo `gettext 'Detected $DIST_LINUX_FAMILY or one of its derivatives:'`
+        # chkconfig is used on distros such as RHEL or Amazon Linux
+        resolveLocation INITD_COMMAND chkconfig ";/sbin" 0
+        if [ $? -eq 0 ] ; then
+            USE_CHKCONFIG=1
+        else
+            # if neither chkconfig nor update-rc.d are present, try insserv 
+            resolveLocation INITD_COMMAND insserv ";/sbin" 0
+            if [ $? -eq 0 ] ; then
+                USE_INSSERV=1
+            else
+                INITD_COMMAND=""
+            fi
+        fi
     fi
 }
 
@@ -2166,54 +2117,30 @@ installdaemon() {
             ln -s "/etc/init.d/$APP_NAME" "/etc/rc3.d/S${APP_RUN_LEVEL_S}$APP_NAME_LOWER"
         fi
     elif [ "$DIST_OS" = "linux" ] ; then
-        case "$DIST_LINUX_FAMILY" in
-        'Red Hat')
-            printDetectedDistro
-            if [ $installedStatus -ne $SERVICE_NOT_INSTALLED ] ; then
-                eval echo `gettext ' The $APP_LONG_NAME daemon is already installed with $installedWith.'`
-            elif [ -n "$USE_SYSTEMD" ] ; then
-                systemdInstall
-            elif [ -n "$USE_UPSTART" ] ; then
-                upstartInstall
-            else 
-                eval echo `gettext ' Installing the $APP_LONG_NAME daemon...'`
+        eval echo `gettext 'Detected Linux:'`
+        if [ $installedStatus -ne $SERVICE_NOT_INSTALLED ] ; then
+            eval echo `gettext ' The $APP_LONG_NAME daemon is already installed with $installedWith.'`
+        elif [ -n "$USE_SYSTEMD" ] ; then
+            systemdInstall
+        elif [ -n "$USE_UPSTART" ] ; then
+            upstartInstall
+        else
+            resolveInitdCommand
+            if [ -n "$USE_CHKCONFIG" ] ; then
+                eval echo `gettext ' Installing the $APP_LONG_NAME daemon with init.d \($INITD_COMMAND\)...'`
                 ln -s "$REALPATH" "/etc/init.d/$APP_NAME"
-                /sbin/chkconfig --add "$APP_NAME"
-                /sbin/chkconfig "$APP_NAME" on
-            fi
-            ;;
-        'SUSE')
-            printDetectedDistro
-            if [ $installedStatus -ne $SERVICE_NOT_INSTALLED ] ; then
-                eval echo `gettext ' The $APP_LONG_NAME daemon is already installed with $installedWith.'`
-            elif [ -n "$USE_SYSTEMD" ] ; then
-                systemdInstall
+                $INITD_COMMAND --add "$APP_NAME"
+                $INITD_COMMAND "$APP_NAME" on
+            elif [ "$USE_INSSERV" ] ; then
+                eval echo `gettext ' Installing the $APP_LONG_NAME daemon with init.d \($INITD_COMMAND\)...'`
+                ln -s "$REALPATH" "/etc/init.d/$APP_NAME"
+                $INITD_COMMAND "/etc/init.d/$APP_NAME"
+            elif [ "$USE_UPDATE_RC" ] ; then
+                eval echo `gettext ' Installing the $APP_LONG_NAME daemon with init.d \($INITD_COMMAND\)...'`
+                ln -s "$REALPATH" "/etc/init.d/$APP_NAME"
+                $INITD_COMMAND "$APP_NAME" defaults
             else
-                eval echo `gettext ' Installing the $APP_LONG_NAME daemon...'`
-                ln -s "$REALPATH" "/etc/init.d/$APP_NAME"
-                insserv "/etc/init.d/$APP_NAME"
-            fi
-            ;;
-        'Debian')
-            printDetectedDistro
-            if [ $installedStatus -ne $SERVICE_NOT_INSTALLED ] ; then
-                eval echo `gettext ' The $APP_LONG_NAME daemon is already installed with $installedWith.'`
-            elif [ -n "$USE_SYSTEMD" ] ; then
-                systemdInstall
-            elif [ -n "$USE_UPSTART" ] ; then
-                upstartInstall
-            else 
-                eval echo `gettext ' Installing the $APP_LONG_NAME daemon using init.d...'`
-                ln -s "$REALPATH" "/etc/init.d/$APP_NAME"
-                update-rc.d "$APP_NAME" defaults
-            fi
-            ;;
-        *)
-            eval echo `gettext 'Detected Linux:'`
-            if [ $installedStatus -ne $SERVICE_NOT_INSTALLED ] ; then
-                eval echo `gettext ' The $APP_LONG_NAME daemon is already installed.'`
-            else
-                eval echo `gettext ' Installing the $APP_LONG_NAME daemon...'`
+                eval echo `gettext ' Installing the $APP_LONG_NAME daemon with init.d...'`
                 ln -s "$REALPATH" /etc/init.d/$APP_NAME
                 for i in `ls "/etc/rc3.d/K"??"$APP_NAME_LOWER" "/etc/rc5.d/K"??"$APP_NAME_LOWER" "/etc/rc3.d/S"??"$APP_NAME_LOWER" "/etc/rc5.d/S"??"$APP_NAME_LOWER" 2>/dev/null` ; do
                     eval echo `gettext ' Removing unexpected file before proceeding: $i'`
@@ -2224,8 +2151,7 @@ installdaemon() {
                 ln -s "/etc/init.d/$APP_NAME" "/etc/rc5.d/S${APP_RUN_LEVEL_S}$APP_NAME_LOWER"
                 ln -s "/etc/init.d/$APP_NAME" "/etc/rc5.d/K${APP_RUN_LEVEL_K}$APP_NAME_LOWER"
             fi
-            ;;
-        esac
+        fi
     elif [ "$DIST_OS" = "hpux" ] ; then
         eval echo `gettext 'Detected HP-UX:'`
         if [ $installedStatus -ne $SERVICE_NOT_INSTALLED ] ; then
@@ -2439,7 +2365,7 @@ removedaemon() {
         isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
         if [ $? -eq 1 ] ; then
             stopit "0"
-            eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
+            eval echo `gettext ' Removing the $APP_LONG_NAME daemon...'`
             for i in `ls "/etc/rc3.d/K"??"$APP_NAME_LOWER" "/etc/rc3.d/S"??"$APP_NAME_LOWER" "/etc/init.d/$APP_NAME" 2>/dev/null` ; do
                 rm -f $i
             done
@@ -2448,50 +2374,7 @@ removedaemon() {
             exit 1
         fi
     elif [ "$DIST_OS" = "linux" ] ; then
-        case "$DIST_LINUX_FAMILY" in
-        'Red Hat')
-            printDetectedDistro
-            isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
-            if [ $? -eq 1 ] ; then
-                stopit "0"
-                eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
-                /sbin/chkconfig "$APP_NAME" off
-                /sbin/chkconfig --del "$APP_NAME"
-                rm -f "/etc/init.d/$APP_NAME"
-            fi
-            ;;
-        'SUSE')
-            printDetectedDistro
-            isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
-            if [ $? -eq 1 ] ; then
-                stopit "0"
-                eval echo `gettext ' Removing $APP_LONG_NAME daemon from init.d...'`
-                insserv -r "/etc/init.d/$APP_NAME"
-                rm -f "/etc/init.d/$APP_NAME"
-            fi
-            ;;
-        'Debian')
-            printDetectedDistro
-            isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
-            if [ $? -eq 1 ] ; then
-                stopit "0"
-                eval echo `gettext ' Removing $APP_LONG_NAME daemon from init.d...'`
-                update-rc.d -f "$APP_NAME" remove
-                rm -f "/etc/init.d/$APP_NAME"
-            fi
-            ;;
-        *)
-            eval echo `gettext 'Detected Linux:'`
-            isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
-            if [ $? -eq 1 ] ; then
-                stopit "0"
-                eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
-                for i in `ls "/etc/rc3.d/K"??"$APP_NAME_LOWER" "/etc/rc5.d/K"??"$APP_NAME_LOWER" "/etc/rc3.d/S"??"$APP_NAME_LOWER" "/etc/rc5.d/S"??"$APP_NAME_LOWER" "/etc/init.d/$APP_NAME" 2>/dev/null` ; do
-                    rm -f $i
-                done
-            fi
-            ;;
-        esac
+        eval echo `gettext 'Detected Linux:'`
         isBitSet $installedStatus $SERVICE_INSTALLED_SYSTEMD
         if [ $? -eq 1 ] ; then
             systemdRemove
@@ -2499,6 +2382,27 @@ removedaemon() {
         isBitSet $installedStatus $SERVICE_INSTALLED_UPSTART
         if [ $? -eq 1 ] ; then
             upstartRemove
+        fi
+        isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
+        if [ $? -eq 1 ] ; then
+            stopit "0"
+            eval echo `gettext ' Removing the $APP_LONG_NAME daemon from init.d...'`
+            resolveInitdCommand
+            if [ -n "$USE_CHKCONFIG" ] ; then
+                $INITD_COMMAND "$APP_NAME" off
+                $INITD_COMMAND --del "$APP_NAME"
+                rm -f "/etc/init.d/$APP_NAME"
+            elif [ "$USE_INSSERV" ] ; then
+                $INITD_COMMAND -r "/etc/init.d/$APP_NAME"
+                rm -f "/etc/init.d/$APP_NAME"
+            elif [ "$USE_UPDATE_RC" ] ; then
+                $INITD_COMMAND -f "$APP_NAME" remove
+                rm -f "/etc/init.d/$APP_NAME"
+            else
+                for i in `ls "/etc/rc3.d/K"??"$APP_NAME_LOWER" "/etc/rc5.d/K"??"$APP_NAME_LOWER" "/etc/rc3.d/S"??"$APP_NAME_LOWER" "/etc/rc5.d/S"??"$APP_NAME_LOWER" "/etc/init.d/$APP_NAME" 2>/dev/null` ; do
+                    rm -f $i
+                done
+            fi
         fi
         if [ $installedStatus -eq $SERVICE_NOT_INSTALLED ] ; then
             eval echo `gettext ' The $APP_LONG_NAME daemon is not currently installed.'`
@@ -2509,7 +2413,7 @@ removedaemon() {
         isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
         if [ $? -eq 1 ] ; then
             stopit "0"
-            eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
+            eval echo `gettext ' Removing the $APP_LONG_NAME daemon...'`
             for i in `ls "/sbin/rc3.d/K"??"$APP_NAME_LOWER" "/sbin/rc3.d/S"??"$APP_NAME_LOWER" "/sbin/init.d/$APP_NAME" 2>/dev/null` ; do
                 rm -f $i
             done
@@ -2521,7 +2425,7 @@ removedaemon() {
         eval echo `gettext 'Detected AIX:'`
         if [ $installedStatus -ne $SERVICE_NOT_INSTALLED ] ; then
             stopit "0"
-            eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
+            eval echo `gettext ' Removing the $APP_LONG_NAME daemon...'`
             isBitSet $installedStatus $SERVICE_INSTALLED_DEFAULT
             if [ $? -eq 1 ] ; then
                 for i in `ls "/etc/rc.d/rc2.d/K"??"$APP_NAME_LOWER" "/etc/rc.d/rc2.d/S"??"$APP_NAME_LOWER" "/etc/rc.d/init.d/$APP_NAME" 2>/dev/null` ; do
@@ -2545,7 +2449,7 @@ removedaemon() {
         eval echo `gettext 'Detected FreeBSD:'`
         if [ -f "/etc/rc.d/$APP_NAME" -o -L "/etc/rc.d/$APP_NAME" ] ; then
             stopit "0"
-            eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
+            eval echo `gettext ' Removing the $APP_LONG_NAME daemon...'`
             for i in "/etc/rc.d/$APP_NAME"
             do
                 rm -f $i
@@ -2559,7 +2463,7 @@ removedaemon() {
         eval echo `gettext 'Detected Mac OSX:'`
         if [ -f "/Library/LaunchDaemons/${APP_PLIST}" -o -L "/Library/LaunchDaemons/${APP_PLIST}" ] ; then
             stopit "0"
-            eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
+            eval echo `gettext ' Removing the $APP_LONG_NAME daemon...'`
             # Make sure the plist is installed
             LOADED_PLIST=`launchctl list | grep ${APP_PLIST_BASE}`
             if [ "X${LOADED_PLIST}" != "X" ] ; then
@@ -2574,7 +2478,7 @@ removedaemon() {
         eval echo `gettext 'Detected z/OS:'`
         if [ -f /etc/rc.bak ] ; then
             stopit "0"
-            eval echo `gettext ' Removing $APP_LONG_NAME daemon...'`
+            eval echo `gettext ' Removing the $APP_LONG_NAME daemon...'`
             cp /etc/rc /etc/rc.bak
             sed  "s/_BPX_JOBNAME=\'APP_NAME\'.*//g" /etc/rc.bak > /etc/rc
             rm /etc/rc.bak
@@ -2975,4 +2879,3 @@ sourceFiles
 docommand "$@"
 
 exit 0
-

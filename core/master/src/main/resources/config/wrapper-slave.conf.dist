@@ -150,7 +150,7 @@ wrapper.ignore_sequence_gaps=TRUE
 wrapper.pidfile.strict=TRUE
 
 # Title to use when running as a console
-wrapper.console.title=Distributed Daemon FTP Server 3.4.2 Slave
+wrapper.console.title=Distributed Daemon FTP Server v4 Slave
 
 #********************************************************************
 # Wrapper JVM Checks
@@ -224,7 +224,7 @@ wrapper.name=drftpd-slave
 wrapper.displayname=DrFTPD Slave
 
 # Description of the service
-wrapper.description=Distributed Daemon FTP Server 3.4.2 Slave https://github.com/drftpd-ng/drftpd3
+wrapper.description=Distributed Daemon FTP Server v4 Slave https://github.com/drftpd-ng/drftpd3
 
 # Service dependencies.  Add dependencies as needed starting from 1
 wrapper.ntservice.dependency.1=
@@ -235,3 +235,7 @@ wrapper.ntservice.starttype=AUTO_START
 # Allow the service to interact with the desktop (Windows NT/2000/XP only).
 wrapper.ntservice.interactive=FALSE
 
+# Allow the current user to perform certain actions without being prompted for
+#  administrator credentials. (Requires Professional Edition)
+#wrapper.ntservice.permissions.1.account=CURRENT_USER
+#wrapper.ntservice.permissions.1.allow=START, STOP, PAUSE_RESUME
