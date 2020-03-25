@@ -16,6 +16,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.request;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -26,7 +28,6 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author scitz0
@@ -66,13 +67,13 @@ public class RequestAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getSimpleWriter(event.getCommand());
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("requestroot", event.getRequestRoot().getPath());
-			env.add("requestname", event.getRequestName());
-			env.add("issuer", event.getCommandIssuer().getName());
-			env.add("issuerGroup", event.getCommandIssuer().getGroup());
-			env.add("owner", event.getRequestOwner().getName());
-			env.add("ownerGroup", event.getRequestOwner().getGroup());
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+			env.put("requestroot", event.getRequestRoot().getPath());
+			env.put("requestname", event.getRequestName());
+			env.put("issuer", event.getCommandIssuer().getName());
+			env.put("issuerGroup", event.getCommandIssuer().getGroup());
+			env.put("owner", event.getRequestOwner().getName());
+			env.put("ownerGroup", event.getRequestOwner().getGroup());
 			sayOutput(ReplacerUtils.jprintf(event.getCommand(), env, _bundle), writer);
 		}
 	}

@@ -28,8 +28,9 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.commands.speedtest.event.SpeedTestEvent;
 import org.drftpd.slave.slave.TransferStatus;
-import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -40,9 +41,7 @@ public class SpeedTestAnnouncer extends AbstractAnnouncer {
 	private AnnounceConfig _config;
 
 	private ResourceBundle _bundle;
-
-
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -69,16 +68,16 @@ public class SpeedTestAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getSimpleWriter("speedTest");
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("path", event.getFilePath());
-			env.add("transferfile", VirtualFileSystem.getLast(event.getFilePath()));
-			env.add("user", event.getUser().getName());
-			env.add("group", event.getUser().getGroup());
-			env.add("slave", event.getSlaveName());
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+			env.put("path", event.getFilePath());
+			env.put("transferfile", VirtualFileSystem.getLast(event.getFilePath()));
+			env.put("user", event.getUser().getName());
+			env.put("group", event.getUser().getGroup());
+			env.put("slave", event.getSlaveName());
 			TransferStatus status = event.getStatus();
-			env.add("size", Bytes.formatBytes(status.getTransfered()));
-			env.add("time", Time.formatTime(status.getElapsed()));
-			env.add("speed", Bytes.formatBytes(status.getXferSpeed())+"/s");
+			env.put("size", Bytes.formatBytes(status.getTransfered()));
+			env.put("time", Time.formatTime(status.getElapsed()));
+			env.put("speed", Bytes.formatBytes(status.getXferSpeed())+"/s");
 			sayOutput(ReplacerUtils.jprintf("speedtest", env, _bundle), writer);
 		}
 	}

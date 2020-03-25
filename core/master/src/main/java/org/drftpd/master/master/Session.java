@@ -17,16 +17,15 @@
  */
 package org.drftpd.master.master;
 
-import org.drftpd.master.common.Bytes;
-import org.drftpd.master.GlobalContext;
 import org.drftpd.commands.UserManagement;
+import org.drftpd.master.GlobalContext;
+import org.drftpd.master.common.Bytes;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.dynamicdata.KeyedMap;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.util.ReplacerUtils;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.*;
 
@@ -49,32 +48,31 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 		return getObject(Session.COMMANDS, null);
 	}
 
-	public ReplacerEnvironment getReplacerEnvironment(
-			ReplacerEnvironment env, User user) {
-		env = new ReplacerEnvironment(env);
-
+	public Map<String, Object> getReplacerEnvironment(Map<String, Object> inheritedEnv, User user) {
+		Map<String, Object> env = new HashMap<>();
+		if (inheritedEnv != null) env.putAll(inheritedEnv);
 		if (user != null) {
 			for (Map.Entry<Key<?>, Object> entry : user.getKeyedMap().getAllObjects().entrySet()) {
 				String key = entry.getKey().toString();
 				String value = entry.getValue().toString();
 				if (key.equals("org.drftpd.master.commands.nuke.metadata.NukeUserData@nukedBytes"))
 					value = Bytes.formatBytes(Long.parseLong(value));
-				env.add(key, value);
+				env.put(key, value);
 			}
-			env.add("user", user.getName());
-			env.add("username", user.getName());
-			env.add("idletime", "" + user.getIdleTime());
-			env.add("credits", Bytes.formatBytes(user.getCredits()));
-			env.add("ratio", ""+ user.getKeyedMap().get(UserManagement.RATIO));
-			env.add("tagline", user.getKeyedMap().get(UserManagement.TAGLINE));
-			env.add("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
-			env.add("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
-			env.add("group", user.getGroup());
-			env.add("groups", user.getGroups());
-			env.add("averagespeed", Bytes.formatBytes((user.getDownloadedBytes()+user.getUploadedBytes())
+			env.put("user", user.getName());
+			env.put("username", user.getName());
+			env.put("idletime", "" + user.getIdleTime());
+			env.put("credits", Bytes.formatBytes(user.getCredits()));
+			env.put("ratio", ""+ user.getKeyedMap().get(UserManagement.RATIO));
+			env.put("tagline", user.getKeyedMap().get(UserManagement.TAGLINE));
+			env.put("uploaded", Bytes.formatBytes(user.getUploadedBytes()));
+			env.put("downloaded", Bytes.formatBytes(user.getDownloadedBytes()));
+			env.put("group", user.getGroup());
+			env.put("groups", user.getGroups());
+			env.put("averagespeed", Bytes.formatBytes((user.getDownloadedBytes()+user.getUploadedBytes())
 					/ (((user.getDownloadedTime()+user.getUploadedTime())/1000)+1)));
-			env.add("ipmasks", user.getHostMaskCollection().toString());
-			env.add("isbanned",""+ (user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date()).getTime() > System.currentTimeMillis()));
+			env.put("ipmasks", user.getHostMaskCollection().toString());
+			env.put("isbanned",""+ (user.getKeyedMap().getObject(UserManagement.BAN_TIME, new Date()).getTime() > System.currentTimeMillis()));
 		}
 		return env;
 	}
@@ -100,16 +98,16 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 		return ReplacerUtils.jprintf(key, getReplacerEnvironment(null, getUserNull(user)), bundle);
 	}
 	
-	public String jprintf(ResourceBundle bundle, ReplacerEnvironment env, String key) {
-		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, null), bundle);
+	public String jprintf(ResourceBundle bundle, Map<String, Object> inheritedEnv, String key) {
+		return ReplacerUtils.jprintf(key, getReplacerEnvironment(inheritedEnv, null), bundle);
 	}
 
-	public String jprintf(ResourceBundle bundle, String key, ReplacerEnvironment env, String user) {
+	public String jprintf(ResourceBundle bundle, String key, Map<String, Object> env, String user) {
 		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, getUserNull(user)), bundle);
 	}
 
-	public String jprintf(ResourceBundle bundle, String key, ReplacerEnvironment env, User user) {
-		return ReplacerUtils.jprintf(key, getReplacerEnvironment(env, user), bundle);
+	public String jprintf(ResourceBundle bundle, String key, Map<String, Object> inheritedEnv, User user) {
+		return ReplacerUtils.jprintf(key, getReplacerEnvironment(inheritedEnv, user), bundle);
 	}
 
 	public abstract boolean isSecure();

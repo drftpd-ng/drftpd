@@ -16,6 +16,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.pre;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -26,7 +28,6 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author lh
@@ -37,9 +38,7 @@ public class PreAnnouncer extends AbstractAnnouncer {
 	private AnnounceConfig _config;
 
 	private ResourceBundle _bundle;
-
-
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -66,14 +65,14 @@ public class PreAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("pre", event.getDir());
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 			String name = event.getDir().getName();
-            env.add("name", name);
-			env.add("grpname", name.lastIndexOf("-") == -1 ? "NoGroup" : name.substring(name.lastIndexOf("-")+1));
-			env.add("section", event.getSection().getName());
-			env.add("sectioncolor", event.getSection().getColor());
-			env.add("files", event.getFiles());
-			env.add("bytes", event.getBytes());
+            env.put("name", name);
+			env.put("grpname", name.lastIndexOf("-") == -1 ? "NoGroup" : name.substring(name.lastIndexOf("-")+1));
+			env.put("section", event.getSection().getName());
+			env.put("sectioncolor", event.getSection().getColor());
+			env.put("files", event.getFiles());
+			env.put("bytes", event.getBytes());
 			sayOutput(ReplacerUtils.jprintf("pre", env, _bundle), writer);
 		}
 	}

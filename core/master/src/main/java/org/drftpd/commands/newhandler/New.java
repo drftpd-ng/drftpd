@@ -24,7 +24,6 @@ import org.drftpd.master.sections.SectionManagerInterface;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.plugins.commandmanager.*;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -113,7 +112,7 @@ public class New extends CommandInterface {
 			}
 		}
 
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 		if (directories.size() == 0) {
 			response.addComment(request.getSession().jprintf(_bundle,"new.empty", env, request.getUser()));
 		} else {
@@ -132,15 +131,15 @@ public class New extends CommandInterface {
 						pos--;
 						continue;
 					}
-					env.add("pos", "" + pos);
-					env.add("name", allSections ? dir.getPath() : dir.getName());
+					env.put("pos", "" + pos);
+					env.put("name", allSections ? dir.getPath() : dir.getName());
 					SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-					env.add("section", section.getName());
-					env.add("sectioncolor", section.getColor());
-					env.add("diruser", dir.getUsername());
-					env.add("files", "" + dir.getInodeHandles(user).size());
-					env.add("size", Bytes.formatBytes(dir.getSize()));
-					env.add("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
+					env.put("section", section.getName());
+					env.put("sectioncolor", section.getColor());
+					env.put("diruser", dir.getUsername());
+					env.put("files", "" + dir.getInodeHandles(user).size());
+					env.put("size", Bytes.formatBytes(dir.getSize()));
+					env.put("age", Time.formatTime(System.currentTimeMillis() - dir.lastModified()));
 					response.addComment(request.getSession().jprintf(_bundle,"new", env, request.getUser()));
 				} catch (FileNotFoundException e) {
 					// Directory was deleted whilst this was running, simply omit the dir

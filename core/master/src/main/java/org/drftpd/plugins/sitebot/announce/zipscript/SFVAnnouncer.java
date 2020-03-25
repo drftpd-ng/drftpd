@@ -19,12 +19,7 @@ package org.drftpd.plugins.sitebot.announce.zipscript;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.ResourceBundle;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -61,7 +56,6 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author djb61
@@ -113,7 +107,7 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 	}
 
 	private void outputSFVMemberSTOR(SFVMemberTransferEvent sfvEvent) {
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 
 		DirectoryHandle dir = sfvEvent.getDirectory();
 
@@ -131,8 +125,8 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 					AnnounceWriter writer = _config.getPathWriter("store.first", dir);
 					if (writer != null) {
 						fillEnvSection(env, sfvEvent, writer, true);
-						env.add("files", Integer.toString(sfvEvent.getSFVInfo().getSize()));
-						env.add("expectedsize", (Bytes.formatBytes(
+						env.put("files", Integer.toString(sfvEvent.getSFVInfo().getSize()));
+						env.put("expectedsize", (Bytes.formatBytes(
 								SFVTools.getSFVLargestFileBytes(dir, sfvEvent.getSFVData()) * sfvEvent.getSFVInfo().getSize())));
 						sayOutput(ReplacerUtils.jprintf( "sfv.store.first", env, _bundle), writer);
 					}
@@ -154,9 +148,9 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 						AnnounceWriter writer = _config.getPathWriter("store.race", dir);
 						if (writer != null) {
 							fillEnvSection(env, sfvEvent, writer, true);
-							env.add("filesleft",
+							env.put("filesleft",
 									Integer.toString(sfvStatus.getMissing()));
-							env.add("percentdone", Integer.toString(
+							env.put("percentdone", Integer.toString(
 									(sfvStatus.getPresent() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
 							sayOutput(ReplacerUtils.jprintf("sfv.store.race", env, _bundle), writer);
 						}
@@ -180,13 +174,13 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 
 						UploaderPosition stat = uploaders.iterator().next();
 
-						env.add("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
-						env.add("leadfiles", Integer.toString(stat.getFiles()));
-						env.add("leadsize", Bytes.formatBytes(stat.getBytes()));
-						env.add("leadpercent",
+						env.put("leadspeed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
+						env.put("leadfiles", Integer.toString(stat.getFiles()));
+						env.put("leadsize", Bytes.formatBytes(stat.getBytes()));
+						env.put("leadpercent",
 								Integer.toString((stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) +
 										"%");
-						env.add("filesleft", Integer.toString(sfvStatus.getMissing()));
+						env.put("filesleft", Integer.toString(sfvStatus.getMissing()));
 
 						User leaduser = null;
 						try {
@@ -197,8 +191,8 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 						} catch (UserFileException e3) {
 							logger.warn("Error reading userfile for: {}", stat.getUsername(), e3);
 						}
-						env.add("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
-						env.add("leadgroup", leaduser != null ? leaduser.getGroup() : "");
+						env.put("leaduser", leaduser != null ? leaduser.getName() : stat.getUsername());
+						env.put("leadgroup", leaduser != null ? leaduser.getGroup() : "");
 						fillEnvSection(env, sfvEvent, writer, false);
 						sayOutput(ReplacerUtils.jprintf( "sfv.store.halfway", env, _bundle), writer);
 					}
@@ -234,11 +228,11 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 
 						fillEnvSection(env, sfvEvent, writer, false);
 
-						env.add("racers", Integer.toString(racers.size()));
-						env.add("groups", Integer.toString(groups.size()));
-						env.add("files", Integer.toString(sfvEvent.getSFVInfo().getSize()));
-						env.add("size", Bytes.formatBytes(SFVTools.getSFVTotalBytes(dir, sfvEvent.getSFVData())));
-						env.add("speed", Bytes.formatBytes(SFVTools.getXferspeed(dir, sfvEvent.getSFVData())) + "/s");
+						env.put("racers", Integer.toString(racers.size()));
+						env.put("groups", Integer.toString(groups.size()));
+						env.put("files", Integer.toString(sfvEvent.getSFVInfo().getSize()));
+						env.put("size", Bytes.formatBytes(SFVTools.getSFVTotalBytes(dir, sfvEvent.getSFVData())));
+						env.put("speed", Bytes.formatBytes(SFVTools.getXferspeed(dir, sfvEvent.getSFVData())) + "/s");
 						sayOutput(ReplacerUtils.jprintf( "sfv.store.complete", env, _bundle), writer);
 
 						// Find max users/groups to announce
@@ -275,40 +269,40 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 								continue;
 							}
 
-							ReplacerEnvironment raceenv = ReplacerEnvironment.chain(SiteBot.GLOBAL_ENV, env);
+							Map<String, Object> raceenv = new HashMap<>(env);
 
-							raceenv.add("speed",
+							raceenv.put("speed",
 									Bytes.formatBytes(stat.getXferspeed()) + "/s");
-							raceenv.add("user", stat.getUsername());
-							raceenv.add("group", raceuser.getGroup());
-							raceenv.add("files", "" + stat.getFiles());
-							raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
-							raceenv.add("position", String.valueOf(position));
-							raceenv.add("percent",
+							raceenv.put("user", stat.getUsername());
+							raceenv.put("group", raceuser.getGroup());
+							raceenv.put("files", "" + stat.getFiles());
+							raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
+							raceenv.put("position", String.valueOf(position));
+							raceenv.put("percent",
 									Integer.toString(
 											(stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
-							raceenv.add("alup",
+							raceenv.put("alup",
 									UserTransferStats.getStatsPlace("ALUP", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
-							raceenv.add("monthup",
+							raceenv.put("monthup",
 									UserTransferStats.getStatsPlace("MONTHUP", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
-							raceenv.add("wkup",
+							raceenv.put("wkup",
 									UserTransferStats.getStatsPlace("WKUP", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
-							raceenv.add("dayup",
+							raceenv.put("dayup",
 									UserTransferStats.getStatsPlace("DAYUP", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
-							raceenv.add("aldn",
+							raceenv.put("aldn",
 									UserTransferStats.getStatsPlace("ALDN", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
-							raceenv.add("monthdn",
+							raceenv.put("monthdn",
 									UserTransferStats.getStatsPlace("MONTHDN", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
-							raceenv.add("wkdn",
+							raceenv.put("wkdn",
 									UserTransferStats.getStatsPlace("WKDN", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
-							raceenv.add("daydn",
+							raceenv.put("daydn",
 									UserTransferStats.getStatsPlace("DAYDN", raceuser,
 											GlobalContext.getGlobalContext().getUserManager()));
 							sayOutput(ReplacerUtils.jprintf( "sfv.store.complete.racer", raceenv, _bundle), writer);
@@ -324,16 +318,16 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 
 						sayOutput(ReplacerUtils.jprintf( "sfv.store.complete.group.header", env, _bundle), writer);
 						for (GroupPosition stat : groups) {
-							ReplacerEnvironment raceenv = ReplacerEnvironment.chain(SiteBot.GLOBAL_ENV, env);
+							Map<String, Object> raceenv = new HashMap<>(env);
 
-							raceenv.add("group", stat.getGroupname());
-							raceenv.add("position", String.valueOf(position));
-							raceenv.add("size", Bytes.formatBytes(stat.getBytes()));
-							raceenv.add("files", Integer.toString(stat.getFiles()));
-							raceenv.add("percent",
+							raceenv.put("group", stat.getGroupname());
+							raceenv.put("position", String.valueOf(position));
+							raceenv.put("size", Bytes.formatBytes(stat.getBytes()));
+							raceenv.put("files", Integer.toString(stat.getFiles()));
+							raceenv.put("percent",
 									Integer.toString(
 											(stat.getFiles() * 100) / sfvEvent.getSFVInfo().getSize()) + "%");
-							raceenv.add("speed",
+							raceenv.put("speed",
 									Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
 							sayOutput(ReplacerUtils.jprintf( "sfv.store.complete.group", raceenv, _bundle), writer);
@@ -346,25 +340,23 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 					}
 				}
 			}
-		} catch (NoAvailableSlaveException e) {
+		} catch (NoAvailableSlaveException | SlaveUnavailableException e) {
 			// Slave with sfv is offline
 		} catch (FileNotFoundException e) {
 			// SFV deleted?
 		} catch (IOException e) {
 			// SFV not readable
-		} catch (SlaveUnavailableException e) {
-			// Slave with sfv is offline
 		}
 	}
 
-	private void fillEnvSection(ReplacerEnvironment env,
+	private void fillEnvSection(Map<String, Object> env,
 			DirectoryFtpEvent direvent, AnnounceWriter writer, boolean isFile) {
 		DirectoryHandle dir = direvent.getDirectory();
-		env.add("user", direvent.getUser().getName());
-		env.add("group", direvent.getUser().getGroup());
-		env.add("section", writer.getSectionName(dir));
-		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
-		env.add("path", writer.getPath(dir));
+		env.put("user", direvent.getUser().getName());
+		env.put("group", direvent.getUser().getGroup());
+		env.put("section", writer.getSectionName(dir));
+		env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
+		env.put("path", writer.getPath(dir));
 
 		TransferEvent event;
 
@@ -387,8 +379,8 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 			} catch (NoSuchElementException e) {
 				starttime = dir.lastModified();
 			}
-			env.add("size", Bytes.formatBytes(dir.getSize()));
-			env.add("file", inode.getName());
+			env.put("size", Bytes.formatBytes(dir.getSize()));
+			env.put("file", inode.getName());
 			long xferSpeed = 0L;
 			if (isFile) {
 				FileHandle file = (FileHandle) inode;
@@ -396,11 +388,11 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 					xferSpeed = file.getSize() / file.getXfertime();
 				}
 			}
-			env.add("speed",Bytes.formatBytes(xferSpeed * 1000) + "/s");
+			env.put("speed",Bytes.formatBytes(xferSpeed * 1000) + "/s");
 			long elapsed = event.getTime() - starttime;
-			env.add("secondstocomplete", Time.formatTime(elapsed));
+			env.put("secondstocomplete", Time.formatTime(elapsed));
 			long elapsedSeconds = elapsed / 1000;
-			env.add("averagespeed",
+			env.put("averagespeed",
 					(elapsedSeconds == 0) ? "n/a"
 							: (Bytes.formatBytes(
 									inode.getSize() / elapsedSeconds) + "/s"));
@@ -423,18 +415,18 @@ public class SFVAnnouncer extends AbstractAnnouncer {
 				// will just not be available
 			}
 			if (totalsfv > 0) {
-				env.add("totalfiles", "" + totalfiles);
-				env.add("totalsize",  Bytes.formatBytes(totalbytes));
+				env.put("totalfiles", "" + totalfiles);
+				env.put("totalsize",  Bytes.formatBytes(totalbytes));
 
 				if (totalxfertime > 0) {
-					env.add("totalspeed", Bytes.formatBytes((totalbytes / totalxfertime) * 1000));
+					env.put("totalspeed", Bytes.formatBytes((totalbytes / totalxfertime) * 1000));
 				} else {
-					env.add("totalspeed", Bytes.formatBytes(0));
+					env.put("totalspeed", Bytes.formatBytes(0));
 				}
 			} else {
-				env.add("totalfiles", "" + 0);
-				env.add("totalsize",  Bytes.formatBytes(0));
-				env.add("totalspeed", Bytes.formatBytes(0));
+				env.put("totalfiles", "" + 0);
+				env.put("totalsize",  Bytes.formatBytes(0));
+				env.put("totalspeed", Bytes.formatBytes(0));
 
 				logger.warn("Couldn't get SFV file in announce");
 			}

@@ -20,9 +20,9 @@ package org.drftpd.plugins.sitebot;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.usermanager.User;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -102,10 +102,10 @@ public class ServiceCommand extends Session {
 	}
 
 	@Override
-	public ReplacerEnvironment getReplacerEnvironment(
-			ReplacerEnvironment env, User user) {
-		env = super.getReplacerEnvironment(env, user);
-		return ReplacerEnvironment.chain(env, SiteBot.GLOBAL_ENV);
+	public Map<String, Object> getReplacerEnvironment(Map<String, Object> inheritedEnv, User user) {
+		Map<String, Object> env = super.getReplacerEnvironment(inheritedEnv, user);
+		env.putAll(SiteBot.GLOBAL_ENV);
+		return env;
 	}
 
 	@Override

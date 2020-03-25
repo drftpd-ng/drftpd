@@ -17,6 +17,8 @@
 package org.drftpd.plugins.sitebot.plugins.dailystats.announce;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -28,7 +30,6 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.plugins.dailystats.UserStats;
 import org.drftpd.plugins.sitebot.plugins.dailystats.event.StatsEvent;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author djb61
@@ -95,14 +96,14 @@ public class StatsAnnouncer extends AbstractAnnouncer {
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
 			Collection<UserStats> outputStats = event.getOutputStats();
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 			sayOutput(ReplacerUtils.jprintf(statsType, env, _bundle), writer);
 			int count = 1;
 			for (UserStats line : outputStats) {
-				env.add("num",count);
-				env.add("name",line.getName());
-				env.add("files",line.getFiles());
-				env.add("bytes",line.getBytes());
+				env.put("num",count);
+				env.put("name",line.getName());
+				env.put("files",line.getFiles());
+				env.put("bytes",line.getBytes());
 				sayOutput(ReplacerUtils.jprintf(statsType+".item", env, _bundle), writer);
 				count++;
 			}

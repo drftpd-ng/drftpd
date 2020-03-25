@@ -16,21 +16,17 @@
  */
 package org.drftpd.plugins.trialmanager.types.grouptop;
 
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Collections;
-
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.util.GroupPosition;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.trialmanager.TrialType;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.drftpd.master.util.GroupPosition;
+
+import java.util.*;
 
 /**
  * @author CyBeR
@@ -232,26 +228,26 @@ public class GroupTop extends TrialType {
 
         Collections.sort(grpList);
 
-        ReplacerEnvironment env2 = new ReplacerEnvironment();
-        env2.add("name", getName());
-        env2.add("min", Bytes.formatBytes(getMin()));
-        env2.add("period", getPeriodStr());
-        env2.add("time", getRemainingTime());
-        env2.add("keep", getKeep());
-        env2.add("percent", getMinPercent());
-        env2.add("grps", grpList.size());
+        Map<String, Object> env2 = new HashMap<>();
+        env2.put("name", getName());
+        env2.put("min", Bytes.formatBytes(getMin()));
+        env2.put("period", getPeriodStr());
+        env2.put("time", getRemainingTime());
+        env2.put("keep", getKeep());
+        env2.put("percent", getMinPercent());
+        env2.put("grps", grpList.size());
 
         if (top) {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle,  "grouptop.top.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "grouptop.top.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle,  "grouptop.top.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "grouptop.top.header", env2, requestuser));
             }
         } else {
             if (getMin() > 0) {
-                response.addComment(request.getSession().jprintf(bundle,  "grouptop.cut.header.min", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "grouptop.cut.header.min", env2, requestuser));
             } else {
-                response.addComment(request.getSession().jprintf(bundle,  "grouptop.cut.header", env2, requestuser));
+                response.addComment(request.getSession().jprintf(bundle, "grouptop.cut.header", env2, requestuser));
             }
         }
 
@@ -261,31 +257,31 @@ public class GroupTop extends TrialType {
                 break;
             }
 
-            ReplacerEnvironment env = new ReplacerEnvironment();
+            Map<String, Object> env = new HashMap<>();
             long uploaded = grp.getBytes();
             long avguploaded = uploaded / grp.getMembers();
-            env.add("min", Bytes.formatBytes((getMin() * grp.getMembers())));
-            env.add("grpbytes", Bytes.formatBytes(uploaded));
-            env.add("avgbytes", Bytes.formatBytes(avguploaded));
-            env.add("grpname", grp.getGroupname());
-            env.add("grpsize", grp.getMembers());
-            env.add("grprank", i);
+            env.put("min", Bytes.formatBytes((getMin() * grp.getMembers())));
+            env.put("grpbytes", Bytes.formatBytes(uploaded));
+            env.put("avgbytes", Bytes.formatBytes(avguploaded));
+            env.put("grpname", grp.getGroupname());
+            env.put("grpsize", grp.getMembers());
+            env.put("grprank", i);
 
             if (i < 10) {
-                env.add("rank", "0" + i);
+                env.put("rank", "0" + i);
             }
 
             if ((i < getKeep()) && (uploaded >= (getMin() * grp.getMembers())) && (uploaded >= minPercentage)) {
                 //Passing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle,  "grouptop.top.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "grouptop.top.passed", env, requestuser));
                 }
             } else {
                 //Failing
                 if (top) {
-                    response.addComment(request.getSession().jprintf(bundle,  "grouptop.top.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "grouptop.top.failed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle,  "grouptop.cut.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "grouptop.cut.failed", env, requestuser));
                 }
             }
             i++;
@@ -362,48 +358,48 @@ public class GroupTop extends TrialType {
             i++;
         }
 
-        ReplacerEnvironment env2 = new ReplacerEnvironment();
-        env2.add("grpname", group);
+        Map<String, Object> env2 = new HashMap<>();
+        env2.put("grpname", group);
 
         if (grp == null) {
-            response.addComment(request.getSession().jprintf(bundle,  "grouptop.passed.nosuchgroup", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.nosuchgroup", env2, requestuser));
             return response;
         }
 
 
         long uploaded = grp.getBytes();
-        env2.add("min", Bytes.formatBytes(getMin() * grp.getMembers()));
-        env2.add("upBytes", Bytes.formatBytes(uploaded));
-        env2.add("size", grp.getMembers());
-        env2.add("upBytesPU", Bytes.formatBytes(grp.getBytes() / grp.getMembers()));
-        env2.add("rank", i);
-        env2.add("percent", getMinPercent());
+        env2.put("min", Bytes.formatBytes(getMin() * grp.getMembers()));
+        env2.put("upBytes", Bytes.formatBytes(uploaded));
+        env2.put("size", grp.getMembers());
+        env2.put("upBytesPU", Bytes.formatBytes(grp.getBytes() / grp.getMembers()));
+        env2.put("rank", i);
+        env2.put("percent", getMinPercent());
 
         long minPercentage = getTop() / 100 * getMinPercent();
 
         if ((i < getKeep()) && (uploaded >= (getMin() * grp.getMembers())) && (uploaded >= minPercentage)) {
-            response.addComment(request.getSession().jprintf(bundle,  "grouptop.passed.passed.header", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.passed.header", env2, requestuser));
         } else {
-            response.addComment(request.getSession().jprintf(bundle,  "grouptop.passed.failed.header", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.failed.header", env2, requestuser));
         }
 
         int count = 0;
         for (User user : users) {
             if (user.isMemberOf(group)) {
                 ++count;
-                ReplacerEnvironment env = new ReplacerEnvironment();
-                env.add("name", this.getName());
-                env.add("usernick", user.getName());
-                env.add("usergroup", user.getGroup());
-                env.add("rank", count);
+                Map<String, Object> env = new HashMap<>();
+                env.put("name", this.getName());
+                env.put("usernick", user.getName());
+                env.put("usergroup", user.getGroup());
+                env.put("rank", count);
                 uploaded = user.getUploadedBytesForPeriod(getPeriod());
-                env.add("up", Bytes.formatBytes(uploaded));
-                env.add("time", getRemainingTime());
+                env.put("up", Bytes.formatBytes(uploaded));
+                env.put("time", getRemainingTime());
 
                 if ((count < getKeep()) && (uploaded >= getMin())) {
-                    response.addComment(request.getSession().jprintf(bundle,  "grouptop.passed.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.passed", env, requestuser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle,  "grouptop.passed.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.failed", env, requestuser));
                 }
 
             }

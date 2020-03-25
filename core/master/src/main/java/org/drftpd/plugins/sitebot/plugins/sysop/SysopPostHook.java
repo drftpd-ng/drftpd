@@ -4,6 +4,8 @@ package org.drftpd.plugins.sitebot.plugins.sysop;
 import org.drftpd.common.CommandHook;
 import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.master.BaseFtpConnection;
+import org.drftpd.master.usermanager.User;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
@@ -13,25 +15,28 @@ public class SysopPostHook {
 
     @CommandHook(commands = {"doPASS", "doIDNT", "doUSER"}, type = HookType.POST)
     public void doLOGINPostHook(CommandRequest request, CommandResponse response) {
+        String user;
         String cmd = request.getCommand().toUpperCase();
 
-        if (cmd.equals("IDNT") && response == null)
+        if (cmd.equals("IDNT") && response == null) {
             response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        }
 
         String code = String.valueOf(response.getCode());
-        String message;
-        if (cmd.equals("PASS")) {
+        String message = cmd;
+        if (cmd.equals("USER")) {
+            user = request.getArgument();
+        } else if (cmd.equals("PASS")) {
+            user = ((BaseFtpConnection) request.getSession()).getUserNullUnchecked().getName();
             message = "LOGIN";
-        } else {
-            message = cmd + " " + request.getArgument();
+        } else { // IDNT
+            user = response.getUser();
         }
         if ((code.startsWith("5") || code.startsWith("4")) && !code.startsWith("530") && showFailed(cmd)) {
-            GlobalContext.getEventService().publishAsync(
-                    new SysopEvent(request.getUser(), message, response
+            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response
                             .getMessage(), true, false));
         } else if (showSuccessful(cmd)) {
-            GlobalContext.getEventService().publishAsync(
-                    new SysopEvent(request.getUser(), message, response
+            GlobalContext.getEventService().publishAsync(new SysopEvent(user, message, response
                             .getMessage(), true, true));
         }
     }

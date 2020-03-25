@@ -17,15 +17,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.store;
 
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
@@ -40,7 +33,9 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.util.*;
 
 public class StoreAnnouncer extends AbstractAnnouncer {
 
@@ -49,8 +44,6 @@ public class StoreAnnouncer extends AbstractAnnouncer {
     private AnnounceConfig _config;
 
     private ResourceBundle _bundle;
-
-
 
     private List<String> _storeGroups;
 
@@ -102,7 +95,7 @@ public class StoreAnnouncer extends AbstractAnnouncer {
     }
 
     private void outputDirectorySTOR(TransferEvent event) {
-        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+        Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 
         for (String storeGroupPattern : _storeGroups) {
             if (event.getTransferFile().getName().toLowerCase().matches(storeGroupPattern)) {
@@ -116,26 +109,26 @@ public class StoreAnnouncer extends AbstractAnnouncer {
         }
     }
 
-    private void fillEnvSection(ReplacerEnvironment env, TransferEvent event, AnnounceWriter writer) {
+    private void fillEnvSection(Map<String, Object> env, TransferEvent event, AnnounceWriter writer) {
         DirectoryHandle dir = event.getDirectory();
         FileHandle file = event.getTransferFile();
-        env.add("user", event.getUser().getName());
-        env.add("group", event.getUser().getGroup());
-        env.add("section", writer.getSectionName(dir));
-        env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
-        env.add("path", writer.getPath(dir));
-        env.add("file", file.getName());
+        env.put("user", event.getUser().getName());
+        env.put("group", event.getUser().getGroup());
+        env.put("section", writer.getSectionName(dir));
+        env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
+        env.put("path", writer.getPath(dir));
+        env.put("file", file.getName());
         String ext = getFileExtension(file);
-        env.add("ext", ext);
-        env.add("extLowerCase", ext.toLowerCase());
-        env.add("extUpperCase", ext.toUpperCase());
+        env.put("ext", ext);
+        env.put("extLowerCase", ext.toLowerCase());
+        env.put("extUpperCase", ext.toUpperCase());
         try {
-            env.add("size", Bytes.formatBytes(file.getSize()));
+            env.put("size", Bytes.formatBytes(file.getSize()));
             long xferSpeed = 0L;
             if (file.getXfertime() > 0) {
                 xferSpeed = file.getSize() / file.getXfertime();
             }
-            env.add("speed", Bytes.formatBytes(xferSpeed * 1000) + "/s");
+            env.put("speed", Bytes.formatBytes(xferSpeed * 1000) + "/s");
         } catch (FileNotFoundException e) {
             // The file no longer exists, just fail out of the method
         }

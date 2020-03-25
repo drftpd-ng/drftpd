@@ -32,7 +32,6 @@ import org.drftpd.plugins.mediainfo.MediaInfoUtils;
 import org.drftpd.plugins.mediainfo.vfs.MediaInfoVFSData;
 import org.drftpd.plugins.mediainfo.protocol.MediaInfo;
 import org.drftpd.slave.slave.LightRemoteInode;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -133,25 +132,25 @@ public class MediaInfoList implements AddListElementsInterface {
 			MediaInfo mediaInfo = mediaData.getMediaInfo();
 
 			ArrayList<String> mediaBarEntries = new ArrayList<>();
-			ReplacerEnvironment env = new ReplacerEnvironment();
+			Map<String, Object> env = new HashMap<>();
 			for (HashMap<String,String> props : mediaInfo.getVideoInfos()) {
 				for (Map.Entry<String,String> field : props.entrySet()) {
 					String value = field.getValue();
 					value = MediaInfoUtils.fixOutput(value);
-					env.add("v_"+field.getKey(), value);
+					env.put("v_"+field.getKey(), value);
 				}
 				if (!props.containsKey("Language")) {
-					env.add("Language", "Unknown");
+					env.put("Language", "Unknown");
 				}
 			}
 			for (HashMap<String,String> props : mediaInfo.getAudioInfos()) {
 				for (Map.Entry<String,String> field : props.entrySet()) {
 					String value = field.getValue();
 					value = MediaInfoUtils.fixOutput(value);
-					env.add("a_"+field.getKey(), value);
+					env.put("a_"+field.getKey(), value);
 				}
 				if (!props.containsKey("Language")) {
-					env.add("a_Language", "Unknown");
+					env.put("a_Language", "Unknown");
 				}
 			}
 			StringBuilder subs = new StringBuilder();
@@ -164,9 +163,9 @@ public class MediaInfoList implements AddListElementsInterface {
 				}
 			}
 			if (subs.length() != 0) {
-				env.add("s_Languages", subs.substring(0,subs.length()-1));
+				env.put("s_Languages", subs.substring(0,subs.length()-1));
 			} else {
-				env.add("s_Languages", "NA");
+				env.put("s_Languages", "NA");
 			}
 
 			if (!mediaInfo.getVideoInfos().isEmpty()) {

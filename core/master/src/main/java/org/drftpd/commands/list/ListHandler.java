@@ -18,30 +18,24 @@
 package org.drftpd.commands.list;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.drftpd.commands.zipscript.list.ZipscriptListStatusBarInterface;
+import org.drftpd.master.Checksum;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
-import org.drftpd.master.*;
 import org.drftpd.master.master.*;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
-import org.drftpd.master.vfs.perms.VFSPermHandler;
 import org.drftpd.plugins.commandmanager.*;
-import org.drftpd.slave.protocol.slave.AbstractHandler;
 import org.drftpd.slave.slave.LightRemoteInode;
 import org.drftpd.slave.vfs.InodeHandleInterface;
 import org.reflections.Reflections;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.*;
-import java.lang.reflect.Modifier;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author djb61
@@ -127,15 +121,15 @@ public class ListHandler extends CommandInterface {
 	public CommandResponse doSTAT(CommandRequest request) throws ImproperUsageException {
 		if (!request.hasArgument()) {
 			BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+
+			Map<String, Object> env = new HashMap<>();
 			
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			
-			env.add("ssl.enabled", conn.isSecure() ? "Yes" : "No");
-			env.add("user", conn.getUsername());
-			env.add("user.ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
-			env.add("user.timeout", conn.getUserNull().getIdleTime());
-			env.add("conns", ConnectionManager.getConnectionManager().getConnections().size()); // TODO sync this.
-			env.add("version", GlobalContext.VERSION);
+			env.put("ssl.enabled", conn.isSecure() ? "Yes" : "No");
+			env.put("user", conn.getUsername());
+			env.put("user.ip", conn.getObject(BaseFtpConnection.ADDRESS, null).getHostAddress());
+			env.put("user.timeout", conn.getUserNull().getIdleTime());
+			env.put("conns", ConnectionManager.getConnectionManager().getConnections().size()); // TODO sync this.
+			env.put("version", GlobalContext.VERSION);
 			
 			CommandResponse response = new CommandResponse(211, "End of status");
 			response.addComment(conn.jprintf(_bundle, env,  "daemon.stat"));
@@ -292,8 +286,8 @@ public class ListHandler extends CommandInterface {
 			if (offlineFilesEnabled && element.isFile()) {
 				try {
 					if (!((FileHandleInterface) element).isAvailable()) {
-						ReplacerEnvironment env = new ReplacerEnvironment();
-						env.add("ofilename", element.getName());
+						Map<String, Object> env = new HashMap<>();
+						env.put("ofilename", element.getName());
 						String oFileName = session.jprintf(_bundle, "files.offline.filename", env, user);
 	
 						listFiles.add(new LightRemoteInode(oFileName, element.getUsername(),

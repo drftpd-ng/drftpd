@@ -20,23 +20,15 @@ package org.drftpd.plugins.commandmanager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.commandmanager.CommandManagerInterface;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
 import org.drftpd.master.commandmanager.CommandResponseInterface;
 import org.drftpd.master.exceptions.FatalException;
 import org.drftpd.master.master.Session;
-import org.drftpd.master.util.ExtendedPropertyResourceBundle;
+import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.util.ThemeResourceBundle;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.SimplePrintf;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -139,14 +131,10 @@ public class StandardCommandManager implements CommandManagerInterface {
                 response.addComment("Bug your siteop to add help for the \""
                         + request.getCommand() + "\" command");
             } else {
-                ReplacerEnvironment env = new ReplacerEnvironment();
-                env.add("command", request.getCommand().toUpperCase());
-                try {
-                    response.addComment(SimplePrintf.jprintf(helpString, env));
-                } catch (FormatterException e1) {
-                    response.addComment(request.getCommand().toUpperCase()
-                            + " command has an invalid help.specific definition");
-                }
+                Map<String, Object> env = new HashMap<>();
+                env.put("command", request.getCommand().toUpperCase());
+                String answerMessage = ReplacerUtils.jprintf(helpString, env);
+                response.addComment(answerMessage);
             }
         } catch (Throwable t) {
             if (!(t instanceof Error)) {

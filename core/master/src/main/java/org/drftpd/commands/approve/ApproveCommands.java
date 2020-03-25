@@ -17,9 +17,8 @@
  */
 package org.drftpd.commands.approve;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.commands.approve.metadata.Approve;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
@@ -35,10 +34,10 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -106,9 +105,9 @@ public class ApproveCommands extends CommandInterface {
 					}
 				}
 
-				ReplacerEnvironment env = new ReplacerEnvironment();
-				env.add("user", user.getName());
-				env.add("searchstr", path);
+				Map<String, Object> env = new HashMap<>();
+				env.put("user", user.getName());
+				env.put("searchstr", path);
 				if (dirsToApprove.isEmpty()) {
 					return new CommandResponse(550, session.jprintf(_bundle,"approve.search.empty",env, user));
 				} else if (dirsToApprove.size() == 1) {
@@ -119,12 +118,12 @@ public class ApproveCommands extends CommandInterface {
 					int count = 1;
 					for (DirectoryHandle foundDir : dirsToApprove) {
 						try {
-							env.add("name", foundDir.getName());
-							env.add("path", foundDir.getPath());
-							env.add("owner", foundDir.getUsername());
-							env.add("group", foundDir.getGroup());
-							env.add("num", count++);
-							env.add("size", Bytes.formatBytes(foundDir.getSize()));
+							env.put("name", foundDir.getName());
+							env.put("path", foundDir.getPath());
+							env.put("owner", foundDir.getUsername());
+							env.put("group", foundDir.getGroup());
+							env.put("num", count++);
+							env.put("size", Bytes.formatBytes(foundDir.getSize()));
 							response.addComment(session.jprintf(_bundle,"approve.search.item", env, user));
 						} catch (FileNotFoundException e) {
                             logger.warn("Dir deleted after index search?, skip and continue: {}", foundDir.getPath());
@@ -139,15 +138,15 @@ public class ApproveCommands extends CommandInterface {
 			}
 			dir = new DirectoryHandle(path);
 			if (!dir.exists()) {
-				ReplacerEnvironment env = new ReplacerEnvironment();
-				env.add("path", path);
+				Map<String, Object> env = new HashMap<>();
+				env.put("path", path);
 				return new CommandResponse(500, session.jprintf(_bundle,"approve.error.path", env, user));
 			}
 		} 
 		
 		if ((user != null) && (!dir.isRoot())) {
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			env.add("path", dir.getPath());
+			Map<String, Object> env = new HashMap<>();
+			env.put("path", dir.getPath());
 	
 			// Mark or remove dir as approved!
 			try {

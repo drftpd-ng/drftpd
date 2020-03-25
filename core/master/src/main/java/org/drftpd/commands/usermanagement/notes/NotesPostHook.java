@@ -30,8 +30,9 @@ import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.PostHookInterface;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -52,21 +53,18 @@ public class NotesPostHook implements PostHookInterface {
 		try {
 			myUser = GlobalContext.getGlobalContext().getUserManager()
 					.getUserByNameUnchecked(request.getArgument());
-		} catch (NoSuchUserException ex) {
-			return;
-		} catch (UserFileException ex) {
+		} catch (NoSuchUserException | UserFileException ex) {
 			return;
 		}
 		try {
 			// Test if metadata exist for user and if so add to response
 			NotesData notes = myUser.getKeyedMap().getObject(NotesData.NOTES);
-			ReplacerEnvironment env = new ReplacerEnvironment();
+			Map<String, Object> env = new HashMap<>();
 			int cnt = 1;
 			for (String note : notes.getNotes()) {
-				env.add("number", cnt++);
-				env.add("note", note);
-				response.addComment(request.getSession().jprintf(_bundle,
-						"note", env, myUser));
+				env.put("number", cnt++);
+				env.put("note", note);
+				response.addComment(request.getSession().jprintf(_bundle, "note", env, myUser));
 			}
 
 		} catch (KeyNotFoundException e) {

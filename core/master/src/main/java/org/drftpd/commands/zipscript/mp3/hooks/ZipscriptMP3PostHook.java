@@ -18,6 +18,7 @@ package org.drftpd.commands.zipscript.mp3.hooks;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -37,7 +38,6 @@ import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
 import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author djb61
@@ -121,31 +121,31 @@ public class ZipscriptMP3PostHook {
 			ZipscriptVFSDataMP3 mp3Data = new ZipscriptVFSDataMP3(inode);
 			MP3Info mp3Info = mp3Data.getMP3Info();
 
-			ReplacerEnvironment env = request.getSession().getReplacerEnvironment(null,
+			Map<String, Object> env = request.getSession().getReplacerEnvironment(null,
 					request.getSession().getUserNull(request.getUser()));
 			ID3Tag id3 = mp3Info.getID3Tag();
 			if (id3 != null) {
-				env.add("artist", id3.getArtist());
-				env.add("genre", id3.getGenre());
-				env.add("album", id3.getAlbum());
-				env.add("year", id3.getYear());
-				env.add("title", id3.getTitle());
+				env.put("artist", id3.getArtist());
+				env.put("genre", id3.getGenre());
+				env.put("album", id3.getAlbum());
+				env.put("year", id3.getYear());
+				env.put("title", id3.getTitle());
 				if (id3.getTrack() == 0) {
-					env.add("track","");
+					env.put("track","");
 				} else {
-					env.add("track", id3.getTrack());
+					env.put("track", id3.getTrack());
 				}
 			} else {
-				env.add("artist", "unknown");
-				env.add("genre", "unknown");
-				env.add("album", "unknown");
-				env.add("year", "unknown");
-				env.add("title", "unknown");
-				env.add("track", "unknown");
+				env.put("artist", "unknown");
+				env.put("genre", "unknown");
+				env.put("album", "unknown");
+				env.put("year", "unknown");
+				env.put("title", "unknown");
+				env.put("track", "unknown");
 			}
-			env.add("bitrate", Integer.toString(mp3Info.getBitrate() / 1000) + " kbit/s " + mp3Info.getEncodingtype());
-			env.add("samplerate", mp3Info.getSamplerate());
-			env.add("stereomode", mp3Info.getStereoMode());
+			env.put("bitrate", Integer.toString(mp3Info.getBitrate() / 1000) + " kbit/s " + mp3Info.getEncodingtype());
+			env.put("samplerate", mp3Info.getSamplerate());
+			env.put("stereomode", mp3Info.getStereoMode());
 			int runSeconds = (int) (mp3Info.getRuntime() / 1000);
 			String runtime = "";
 			if (runSeconds > 59) {
@@ -154,7 +154,7 @@ public class ZipscriptMP3PostHook {
 				runtime = runMins + "m ";
 			}
 			runtime = runtime + runSeconds + "s";
-			env.add("runtime", runtime);
+			env.put("runtime", runtime);
 
 			if (isStor) {
 				Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().

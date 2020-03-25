@@ -27,16 +27,16 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.Time;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.SimplePrintf;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -75,30 +75,27 @@ public class AutoNukeAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("autonuke", dir);
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("dir", dir.getName());
-			env.add("path", dir.getPath());
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+			env.put("dir", dir.getName());
+			env.put("path", dir.getPath());
 			SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-			env.add("section", section.getName());
-			env.add("sectioncolor", section.getColor());
+			env.put("section", section.getName());
+			env.put("sectioncolor", section.getColor());
 			try {
-				env.add("user", dir.getUsername());
-				env.add("group", dir.getGroup());
-				env.add("dirsize", Bytes.formatBytes(dir.getSize()));
-				env.add("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
+				env.put("user", dir.getUsername());
+				env.put("group", dir.getGroup());
+				env.put("dirsize", Bytes.formatBytes(dir.getSize()));
+				env.put("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
 			} catch (FileNotFoundException e) {
                 logger.warn("AutoNukeAnnouncer: Dir gone :( - {}", dir.getPath());
 			}
 			int i = 1;
 			for (String var : event.getData()) {
-				env.add("var"+i, var);
+				env.put("var"+i, var);
 				i++;
 			}
-			try {
-				sayOutput(SimplePrintf.jprintf(event.getIRCString(), env), writer);
-			} catch (FormatterException e) {
-                logger.warn("Error in irc format: {}", event.getIRCString(), e);
-			}
+
+			sayOutput(ReplacerUtils.jprintf(event.getIRCString(), env), writer);
 		}
 	}
 }

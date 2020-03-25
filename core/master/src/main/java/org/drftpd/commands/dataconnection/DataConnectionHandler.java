@@ -33,7 +33,6 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.drftpd.slave.*;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.util.FtpRequest;
 import org.drftpd.master.vfs.FileHandle;
@@ -41,7 +40,6 @@ import org.drftpd.master.vfs.ListUtils;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.slave.*;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
@@ -52,6 +50,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
@@ -746,7 +746,7 @@ public class DataConnectionHandler extends CommandInterface {
     private CommandResponse transfer(CommandRequest request) {
         BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
         TransferState ts = conn.getTransferState();
-        ReplacerEnvironment env = new ReplacerEnvironment();
+        Map<String, Object> env = new HashMap<>();
         if (!ts.getSendFilesEncrypted() &&
                 GlobalContext.getConfig().checkPermission("denydatauncrypted", conn.getUserNull())) {
             reset(conn);
@@ -781,14 +781,14 @@ public class DataConnectionHandler extends CommandInterface {
             // _simup OR _simdown = 0, exempt
             int comparison = 0;
             int count = BaseFtpConnection.countTransfersForUser(conn.getUserNull(), direction);
-            env.add("maxsim", count);
+            env.put("maxsim", count);
 
             if (direction == Transfer.TRANSFER_RECEIVING_UPLOAD) {
                 comparison = conn.getUserNull().getMaxSimUp();
-                env.add("direction", "upload");
+                env.put("direction", "upload");
             } else {
                 comparison = conn.getUserNull().getMaxSimDown();
-                env.add("direction", "download");
+                env.put("direction", "download");
             }
 
             if (comparison != 0 && count >= comparison) {
@@ -1053,11 +1053,11 @@ public class DataConnectionHandler extends CommandInterface {
             }
 
             if (transferEnded && !conn.isAborted()) {
-                env = new ReplacerEnvironment();
-                env.add("bytes", Bytes.formatBytes(status.getTransfered()));
-                env.add("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
-                env.add("seconds", "" + (status.getElapsed() / 1000F));
-                env.add("checksum", Checksum.formatChecksum(status.getChecksum()));
+                env = new HashMap<>();
+                env.put("bytes", Bytes.formatBytes(status.getTransfered()));
+                env.put("speed", Bytes.formatBytes(status.getXferSpeed()) + "/s");
+                env.put("seconds", "" + (status.getElapsed() / 1000F));
+                env.put("checksum", Checksum.formatChecksum(status.getChecksum()));
 
                 response = new CommandResponse(226, conn.jprintf(_bundle,
                         "transfer.complete", env, request.getUser()));

@@ -36,7 +36,6 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.IOException;
 import java.util.*;
@@ -139,35 +138,35 @@ public class TransferStatistics extends CommandInterface {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         UserManager userman = GlobalContext.getGlobalContext().getUserManager();
 
-        ReplacerEnvironment env = new ReplacerEnvironment();
+        Map<String, Object> env = new HashMap<>();
 
-        env.add("created", user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
+        env.put("created", user.getKeyedMap().getObject(UserManagement.CREATED, new Date(0L)));
 
-        env.add("aluprank", UserTransferStats.getStatsPlace("ALUP", user, userman));
-        env.add("aldnrank", UserTransferStats.getStatsPlace("ALDN", user, userman));
-        env.add("mnuprank", UserTransferStats.getStatsPlace("MONTHUP", user, userman));
-        env.add("mndnrank", UserTransferStats.getStatsPlace("MONTHDN", user, userman));
-        env.add("wkuprank", UserTransferStats.getStatsPlace("WKUP", user, userman));
-        env.add("wkdnrank", UserTransferStats.getStatsPlace("WKDN", user, userman));
-        env.add("dayuprank", UserTransferStats.getStatsPlace("DAYUP", user, userman));
-        env.add("daydnrank", UserTransferStats.getStatsPlace("DAYDN", user, userman));
+        env.put("aluprank", UserTransferStats.getStatsPlace("ALUP", user, userman));
+        env.put("aldnrank", UserTransferStats.getStatsPlace("ALDN", user, userman));
+        env.put("mnuprank", UserTransferStats.getStatsPlace("MONTHUP", user, userman));
+        env.put("mndnrank", UserTransferStats.getStatsPlace("MONTHDN", user, userman));
+        env.put("wkuprank", UserTransferStats.getStatsPlace("WKUP", user, userman));
+        env.put("wkdnrank", UserTransferStats.getStatsPlace("WKDN", user, userman));
+        env.put("dayuprank", UserTransferStats.getStatsPlace("DAYUP", user, userman));
+        env.put("daydnrank", UserTransferStats.getStatsPlace("DAYDN", user, userman));
 
-        env.add("alupfiles", user.getUploadedFiles());
-        env.add("alupbytes", Bytes.formatBytes(user.getUploadedBytes()));
-        env.add("aldnfiles", user.getDownloadedFiles());
-        env.add("aldnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
-        env.add("mnupfiles", user.getUploadedFilesMonth());
-        env.add("mnupbytes", Bytes.formatBytes(user.getUploadedBytesMonth()));
-        env.add("mndnfiles", user.getDownloadedFilesMonth());
-        env.add("mndnbytes", Bytes.formatBytes(user.getDownloadedBytesMonth()));
-        env.add("wkupfiles", user.getUploadedFilesWeek());
-        env.add("wkupbytes", Bytes.formatBytes(user.getUploadedBytesWeek()));
-        env.add("wkdnfiles", user.getDownloadedFilesWeek());
-        env.add("wkdnbytes", Bytes.formatBytes(user.getDownloadedBytesWeek()));
-        env.add("dayupfiles", user.getUploadedFilesDay());
-        env.add("dayupbytes", Bytes.formatBytes(user.getUploadedBytesDay()));
-        env.add("daydnfiles", user.getDownloadedFilesDay());
-        env.add("daydnbytes", Bytes.formatBytes(user.getDownloadedBytesDay()));
+        env.put("alupfiles", user.getUploadedFiles());
+        env.put("alupbytes", Bytes.formatBytes(user.getUploadedBytes()));
+        env.put("aldnfiles", user.getDownloadedFiles());
+        env.put("aldnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
+        env.put("mnupfiles", user.getUploadedFilesMonth());
+        env.put("mnupbytes", Bytes.formatBytes(user.getUploadedBytesMonth()));
+        env.put("mndnfiles", user.getDownloadedFilesMonth());
+        env.put("mndnbytes", Bytes.formatBytes(user.getDownloadedBytesMonth()));
+        env.put("wkupfiles", user.getUploadedFilesWeek());
+        env.put("wkupbytes", Bytes.formatBytes(user.getUploadedBytesWeek()));
+        env.put("wkdnfiles", user.getDownloadedFilesWeek());
+        env.put("wkdnbytes", Bytes.formatBytes(user.getDownloadedBytesWeek()));
+        env.put("dayupfiles", user.getUploadedFilesDay());
+        env.put("dayupbytes", Bytes.formatBytes(user.getUploadedBytesDay()));
+        env.put("daydnfiles", user.getDownloadedFilesDay());
+        env.put("daydnbytes", Bytes.formatBytes(user.getDownloadedBytesDay()));
 
         response.addComment(session.jprintf(_bundle, "stats", env, request.getUser()));
 
@@ -238,7 +237,7 @@ public class TransferStatistics extends CommandInterface {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         ArrayList<User> users2 = new ArrayList<>(users);
         users2.sort(new UserComparator(type));
-        ReplacerEnvironment env = new ReplacerEnvironment();
+        Map<String, Object> env = new HashMap<>();
 
         String headerBundleKey = type + ".header";
         String headerText = request.getSession().jprintf(_bundle, headerBundleKey, env,
@@ -260,38 +259,38 @@ public class TransferStatistics extends CommandInterface {
                 break;
             }
 
-            env.add("pos", "" + i);
+            env.put("pos", "" + i);
 
-            env.add("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
-            env.add("upfilesday", "" + user.getUploadedFilesDay());
-            env.add("uprateday", getUpRate(user, PERIOD_DAILY));
-            env.add("upbytesweek",
+            env.put("upbytesday", Bytes.formatBytes(user.getUploadedBytesDay()));
+            env.put("upfilesday", "" + user.getUploadedFilesDay());
+            env.put("uprateday", getUpRate(user, PERIOD_DAILY));
+            env.put("upbytesweek",
                     Bytes.formatBytes(user.getUploadedBytesWeek()));
-            env.add("upfilesweek", "" + user.getUploadedFilesWeek());
-            env.add("uprateweek", getUpRate(user, PERIOD_WEEKLY));
-            env.add("upbytesmonth",
+            env.put("upfilesweek", "" + user.getUploadedFilesWeek());
+            env.put("uprateweek", getUpRate(user, PERIOD_WEEKLY));
+            env.put("upbytesmonth",
                     Bytes.formatBytes(user.getUploadedBytesMonth()));
-            env.add("upfilesmonth", "" + user.getUploadedFilesMonth());
-            env.add("upratemonth", getUpRate(user, PERIOD_MONTHLY));
-            env.add("upbytes", Bytes.formatBytes(user.getUploadedBytes()));
-            env.add("upfiles", "" + user.getUploadedFiles());
-            env.add("uprate", getUpRate(user, PERIOD_ALL));
+            env.put("upfilesmonth", "" + user.getUploadedFilesMonth());
+            env.put("upratemonth", getUpRate(user, PERIOD_MONTHLY));
+            env.put("upbytes", Bytes.formatBytes(user.getUploadedBytes()));
+            env.put("upfiles", "" + user.getUploadedFiles());
+            env.put("uprate", getUpRate(user, PERIOD_ALL));
 
-            env.add("dnbytesday",
+            env.put("dnbytesday",
                     Bytes.formatBytes(user.getDownloadedBytesDay()));
-            env.add("dnfilesday", "" + user.getDownloadedFilesDay());
-            env.add("dnrateday", getDownRate(user, PERIOD_DAILY));
-            env.add("dnbytesweek",
+            env.put("dnfilesday", "" + user.getDownloadedFilesDay());
+            env.put("dnrateday", getDownRate(user, PERIOD_DAILY));
+            env.put("dnbytesweek",
                     Bytes.formatBytes(user.getDownloadedBytesWeek()));
-            env.add("dnfilesweek", "" + user.getDownloadedFilesWeek());
-            env.add("dnrateweek", getDownRate(user, PERIOD_WEEKLY));
-            env.add("dnbytesmonth",
+            env.put("dnfilesweek", "" + user.getDownloadedFilesWeek());
+            env.put("dnrateweek", getDownRate(user, PERIOD_WEEKLY));
+            env.put("dnbytesmonth",
                     Bytes.formatBytes(user.getDownloadedBytesMonth()));
-            env.add("dnfilesmonth", "" + user.getDownloadedFilesMonth());
-            env.add("dnratemonth", getDownRate(user, PERIOD_MONTHLY));
-            env.add("dnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
-            env.add("dnfiles", "" + user.getDownloadedFiles());
-            env.add("dnrate", getDownRate(user, PERIOD_ALL));
+            env.put("dnfilesmonth", "" + user.getDownloadedFilesMonth());
+            env.put("dnratemonth", getDownRate(user, PERIOD_MONTHLY));
+            env.put("dnbytes", Bytes.formatBytes(user.getDownloadedBytes()));
+            env.put("dnfiles", "" + user.getDownloadedFiles());
+            env.put("dnrate", getDownRate(user, PERIOD_ALL));
 
             response.addComment(request.getSession().jprintf(_bundle, type, env,
                     user.getName()));

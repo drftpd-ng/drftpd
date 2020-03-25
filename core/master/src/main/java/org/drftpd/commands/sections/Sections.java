@@ -23,11 +23,8 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * @author mog
@@ -35,9 +32,7 @@ import java.util.ResourceBundle;
  */
 public class Sections extends CommandInterface {
 	private ResourceBundle _bundle;
-
-
-
+	
 	public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_bundle = cManager.getResourceBundle();
@@ -47,7 +42,7 @@ public class Sections extends CommandInterface {
     public CommandResponse doSITE_SECTIONS(CommandRequest request) {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
-        ReplacerEnvironment env = new ReplacerEnvironment();
+        Map<String, Object> env = new HashMap<>();
 
         ArrayList<SectionInterface> sections =
                 new ArrayList<>(GlobalContext.getGlobalContext().getSectionManager().getSections());
@@ -55,9 +50,9 @@ public class Sections extends CommandInterface {
        sections.sort(new SectionComparator());
         
         for (SectionInterface section : sections) {
-            env.add("section", section.getName());
-			env.add("sectioncolor", section.getName());
-            env.add("path", section.getCurrentDirectory().getPath());
+            env.put("section", section.getName());
+			env.put("sectioncolor", section.getName());
+            env.put("path", section.getCurrentDirectory().getPath());
             response.addComment(request.getSession().jprintf(_bundle, "section", env, request.getUser()));
         }
 

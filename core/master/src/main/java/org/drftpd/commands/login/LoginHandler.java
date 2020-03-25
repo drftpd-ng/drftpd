@@ -32,11 +32,12 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.regex.PatternSyntaxException;
 
@@ -250,9 +251,9 @@ public class LoginHandler extends CommandInterface {
                 if (ftpResponse != null) {
                 	return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
                 }
-                
-                ReplacerEnvironment env = new ReplacerEnvironment();
-                env.add("user", newUser.getName());
+
+                Map<String, Object> env = new HashMap<>();
+                env.put("user", newUser.getName());
                 
                 request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
                 return new CommandResponse(331,

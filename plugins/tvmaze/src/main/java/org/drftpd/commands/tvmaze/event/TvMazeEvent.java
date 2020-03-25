@@ -17,22 +17,23 @@
 package org.drftpd.commands.tvmaze.event;
 
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.Map;
 
 /**
  * @author lh
  */
 public class TvMazeEvent {
 
-	private ReplacerEnvironment _env;
+	private Map<String, Object> _env;
 	private DirectoryHandle _dir;
 	
-	public TvMazeEvent(ReplacerEnvironment env, DirectoryHandle dir) {
+	public TvMazeEvent(Map<String, Object> env, DirectoryHandle dir) {
 		_env = env;
 		_dir = dir;
 	}
 
-	public ReplacerEnvironment getEnv() {
+	public Map<String, Object> getEnv() {
 		return _env;
 	}
 

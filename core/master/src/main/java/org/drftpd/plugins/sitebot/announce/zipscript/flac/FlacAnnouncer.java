@@ -16,6 +16,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.zipscript.flac;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -28,7 +30,6 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
 import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author norox
@@ -70,30 +71,30 @@ public class FlacAnnouncer extends AbstractAnnouncer {
 		if (writer != null) {
 			// Check if this is the first flac in this dir
 			if (event.isFirst()) {
-				ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+				Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 				FlacInfo flacInfo = event.getFlacInfo();
 				VorbisTag vorbis = flacInfo.getVorbisTag();
 				if (vorbis != null) {
-					env.add("artist", vorbis.getArtist());
-					env.add("genre", vorbis.getGenre());
-					env.add("album", vorbis.getAlbum());
-					env.add("year", vorbis.getYear());
-					env.add("title", vorbis.getTitle());
+					env.put("artist", vorbis.getArtist());
+					env.put("genre", vorbis.getGenre());
+					env.put("album", vorbis.getAlbum());
+					env.put("year", vorbis.getYear());
+					env.put("title", vorbis.getTitle());
 					if (vorbis.getTrack() == 0) {
-						env.add("track","");
+						env.put("track","");
 					} else {
-						env.add("track", vorbis.getTrack());
+						env.put("track", vorbis.getTrack());
 					}
 				} else {
-					env.add("artist", "unknown");
-					env.add("genre", "unknown");
-					env.add("album", "unknown");
-					env.add("year", "unknown");
-					env.add("title", "unknown");
-					env.add("track", "unknown");
+					env.put("artist", "unknown");
+					env.put("genre", "unknown");
+					env.put("album", "unknown");
+					env.put("year", "unknown");
+					env.put("title", "unknown");
+					env.put("track", "unknown");
 				}
-				env.add("samplerate", flacInfo.getSamplerate());
-				env.add("channels", flacInfo.getChannels());
+				env.put("samplerate", flacInfo.getSamplerate());
+				env.put("channels", flacInfo.getChannels());
 				int runSeconds = (int)flacInfo.getRuntime();
 				String runtime = "";
 				if (runSeconds > 59) {
@@ -102,8 +103,8 @@ public class FlacAnnouncer extends AbstractAnnouncer {
 					runtime = runMins + "m ";
 				}
 				runtime = runtime + runSeconds + "s";
-				env.add("runtime", runtime);
-				env.add("path", event.getDir().getName());
+				env.put("runtime", runtime);
+				env.put("path", event.getDir().getName());
 				sayOutput(ReplacerUtils.jprintf("vorbistag", env, _bundle), writer);
 			}
 		}

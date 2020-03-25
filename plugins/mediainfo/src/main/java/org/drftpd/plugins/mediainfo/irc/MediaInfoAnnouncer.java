@@ -31,7 +31,6 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -74,22 +73,22 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("mediainfo", dir);
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 			MediaInfo mediaInfo = event.getMediaInfo();
-			env.add("dirpath",dir.getPath());
-			env.add("dirname",dir.getName());
-			env.add("filepath",dir.getPath()+VirtualFileSystem.separator+mediaInfo.getFileName());
-			env.add("filename",mediaInfo.getFileName());
+			env.put("dirpath",dir.getPath());
+			env.put("dirname",dir.getName());
+			env.put("filepath",dir.getPath()+VirtualFileSystem.separator+mediaInfo.getFileName());
+			env.put("filename",mediaInfo.getFileName());
 			SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
-			env.add("section",sec.getName());
-			env.add("sectioncolor", sec.getColor());
+			env.put("section",sec.getName());
+			env.put("sectioncolor", sec.getColor());
 			String sample_ok = "";
 			if (!mediaInfo.getSampleOk()) {
-				env.add("real_filesize", Bytes.formatBytes(mediaInfo.getActFileSize(), true));
+				env.put("real_filesize", Bytes.formatBytes(mediaInfo.getActFileSize(), true));
 				if (mediaInfo.getCalFileSize() == 0L) {
 					sample_ok = ReplacerUtils.jprintf("mediainfo.unreadable", env, _bundle);
 				} else {
-					env.add("cal_filesize", Bytes.formatBytes(mediaInfo.getCalFileSize(), true));
+					env.put("cal_filesize", Bytes.formatBytes(mediaInfo.getCalFileSize(), true));
 					sample_ok = ReplacerUtils.jprintf("mediainfo.nok", env, _bundle);
 				}
 			} else {
@@ -102,11 +101,11 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 				}
 			}
 			if (!mediaInfo.getRealFormat().isEmpty()) {
-				env.add("real_format", mediaInfo.getRealFormat());
-				env.add("renamed_format", mediaInfo.getUploadedFormat());
+				env.put("real_format", mediaInfo.getRealFormat());
+				env.put("renamed_format", mediaInfo.getUploadedFormat());
 				sample_ok += " " + ReplacerUtils.jprintf("mediainfo.type.missmatch", env, _bundle);
 			}
-			env.add("sample_ok", sample_ok);
+			env.put("sample_ok", sample_ok);
 
 			String ext = MediaInfoUtils.getFileExtension(mediaInfo.getFileName());
 			if (ext != null) {
@@ -116,10 +115,10 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 					for (Map.Entry<String,String> field : videoInfo.entrySet()) {
 						String value = field.getValue();
 						value = MediaInfoUtils.fixOutput(value);
-						env.add("v_"+field.getKey(), value);
+						env.put("v_"+field.getKey(), value);
 					}
 					if (!videoInfo.containsKey("Language")) {
-						env.add("v_Language", "Unknown");
+						env.put("v_Language", "Unknown");
 					}
 				}
 
@@ -128,7 +127,7 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 					for (Map.Entry<String,String> field : audioInfo.entrySet()) {
 						String value = field.getValue();
 						value = MediaInfoUtils.fixOutput(value);
-						env.add("a_"+field.getKey(), value);
+						env.put("a_"+field.getKey(), value);
 					}
 					StringBuilder audioLanguages = new StringBuilder();
 					for (HashMap<String,String> props : mediaInfo.getAudioInfos()) {
@@ -140,7 +139,7 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 						}
 					}
 					if (audioLanguages.length() != 0) {
-						env.add("a_Languages", audioLanguages.substring(0,audioLanguages.length()-3));
+						env.put("a_Languages", audioLanguages.substring(0,audioLanguages.length()-3));
 					}
 				}
 
@@ -154,7 +153,7 @@ public class MediaInfoAnnouncer extends AbstractAnnouncer {
 					}
 				}
 				if (subs.length() != 0) {
-					env.add("s_Languages", subs.substring(0,subs.length()-3));
+					env.put("s_Languages", subs.substring(0,subs.length()-3));
 				}
 
 				if (!mediaInfo.getVideoInfos().isEmpty()) {

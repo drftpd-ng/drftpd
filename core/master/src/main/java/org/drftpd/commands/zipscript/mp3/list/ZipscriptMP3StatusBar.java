@@ -19,6 +19,8 @@ package org.drftpd.commands.zipscript.mp3.list;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.drftpd.commands.list.ListElementsContainer;
@@ -30,7 +32,6 @@ import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
 import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author djb61
@@ -48,13 +49,13 @@ public class ZipscriptMP3StatusBar implements ZipscriptListStatusBarInterface {
 				ArrayList<String> statusBarEntries = new ArrayList<>();
 				ZipscriptVFSDataMP3 mp3Data = new ZipscriptVFSDataMP3(dir);
 				MP3Info mp3Info = mp3Data.getMP3Info();
-				ReplacerEnvironment env = new ReplacerEnvironment();
+				Map<String, Object> env = new HashMap<>();
 				ID3Tag id3 = mp3Info.getID3Tag();
 				if (id3 != null) {
-					env.add("artist", id3.getArtist());
-					env.add("genre", id3.getGenre());
-					env.add("album", id3.getAlbum());
-					env.add("year", id3.getYear());
+					env.put("artist", id3.getArtist());
+					env.put("genre", id3.getGenre());
+					env.put("album", id3.getAlbum());
+					env.put("year", id3.getYear());
 				} else {
 					throw new NoEntryAvailableException();
 				}

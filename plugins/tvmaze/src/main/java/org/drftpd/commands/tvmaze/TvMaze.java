@@ -31,12 +31,9 @@ import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.ResourceBundle;
+import java.util.*;
 
 /**
  * @author lh
@@ -70,12 +67,12 @@ public class TvMaze extends CommandInterface {
 
         TvMazeParser tvmaze = new TvMazeParser();
         tvmaze.doTV(searchstring);
-        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+        Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         if (tvmaze.getTvShow() == null) {
-            env.add("searchstr", searchstring);
-            env.add("error", tvmaze.getError());
+            env.put("searchstr", searchstring);
+            env.put("error", tvmaze.getError());
             response.addComment(request.getSession().jprintf(_bundle, "tv.none", env, request.getUser()));
         } else {
             env = TvMazeUtils.getShowEnv(tvmaze.getTvShow());
@@ -101,8 +98,8 @@ public class TvMaze extends CommandInterface {
                     env = TvMazeUtils.getEPEnv(tvmaze.getTvShow(), tvEP);
 
                     if (TvMazeConfig.getInstance().searchRelease()) {
-                        env.add("foundSD", "No");
-                        env.add("foundHD", "No");
+                        env.put("foundSD", "No");
+                        env.put("foundHD", "No");
 
                         ArrayList<DirectoryHandle> results = new ArrayList<>();
 
@@ -120,13 +117,13 @@ public class TvMaze extends CommandInterface {
                             for (DirectoryHandle dir : results) {
                                 SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
                                 if (TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getHDSections())) {
-                                    env.add("foundHD", "Yes");
+                                    env.put("foundHD", "Yes");
                                 }
                                 if (TvMazeUtils.containSection(sec, TvMazeConfig.getInstance().getSDSections())) {
-                                    env.add("foundSD", "Yes");
+                                    env.put("foundSD", "Yes");
                                 }
                             }
-                            env.add("results", results.size());
+                            env.put("results", results.size());
                             addTagToEnvironment(env, request, "release", "tv.ep.release", verbose);
                         } catch (Exception e) {
                             logger.error(e.getMessage(), e);
@@ -140,15 +137,15 @@ public class TvMaze extends CommandInterface {
         return response;
     }
 
-    private void addTagToEnvironment(ReplacerEnvironment env, CommandRequest request, String tag, String key, boolean verbose) {
+    private void addTagToEnvironment(Map<String, Object> env, CommandRequest request, String tag, String key, boolean verbose) {
         if (verbose) {
-            env.add(tag, request.getSession().jprintf(_bundle, key + ".verbose", env, request.getUser()));
+            env.put(tag, request.getSession().jprintf(_bundle, key + ".verbose", env, request.getUser()));
         } else {
-            env.add(tag, request.getSession().jprintf(_bundle, key, env, request.getUser()));
+            env.put(tag, request.getSession().jprintf(_bundle, key, env, request.getUser()));
         }
     }
 
-    private void addResponse(ReplacerEnvironment env, CommandRequest request, CommandResponse response, String key, boolean verbose) {
+    private void addResponse(Map<String, Object> env, CommandRequest request, CommandResponse response, String key, boolean verbose) {
         if (verbose) {
             response.addComment(request.getSession().jprintf(_bundle, key + ".verbose", env, request.getUser()));
         } else {
@@ -166,9 +163,9 @@ public class TvMaze extends CommandInterface {
                 return new CommandResponse(500, "Failed getting path, invalid or no permission!");
             }
         }
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("dirname", dir.getName());
-        env.add("dirpath", dir.getPath());
+        Map<String, Object> env = new HashMap<>();
+        env.put("dirname", dir.getName());
+        env.put("dirpath", dir.getPath());
         ArrayList<DirectoryHandle> dirsToCheck = getDirsToCheck(request, dir);
         if (dirsToCheck.isEmpty()) {
             return new CommandResponse(500, "Not a valid section, aborting");
@@ -198,9 +195,9 @@ public class TvMaze extends CommandInterface {
                     tvmazeInfo = TvMazeUtils.getTvMazeInfo(dir);
                 }
                 if (tvmazeInfo != null) {
-                    ReplacerEnvironment env = TvMazeUtils.getShowEnv(tvmazeInfo);
-                    env.add("dirname", dir.getName());
-                    env.add("dirpath", dir.getPath());
+                    Map<String, Object> env = TvMazeUtils.getShowEnv(tvmazeInfo);
+                    env.put("dirname", dir.getName());
+                    env.put("dirpath", dir.getPath());
                     if (cache) {
                         request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "createtvmaze.cache", env, request.getUser()));
                     } else {
@@ -244,9 +241,9 @@ public class TvMaze extends CommandInterface {
                 return new CommandResponse(500, "Failed getting path, invalid or no permission!");
             }
         }
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("dirname", dir.getName());
-        env.add("dirpath", dir.getPath());
+        Map<String, Object> env = new HashMap<>();
+        env.put("dirname", dir.getName());
+        env.put("dirpath", dir.getPath());
         ArrayList<DirectoryHandle> dirsToCheck = getDirsToCheck(request, dir);
         if (dirsToCheck.isEmpty()) {
             return new CommandResponse(500, "Not a valid section, aborting");
@@ -268,9 +265,9 @@ public class TvMaze extends CommandInterface {
         }
         try {
             if (!dir.isHidden(request.getUserObject()) && dir.removePluginMetaData(TvMazeInfo.TVMAZEINFO) != null) {
-                ReplacerEnvironment env = new ReplacerEnvironment();
-                env.add("dirname", dir.getName());
-                env.add("dirpath", dir.getPath());
+                Map<String, Object> env = new HashMap<>();
+                env.put("dirname", dir.getName());
+                env.put("dirpath", dir.getPath());
                 request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "removetvmaze.remove", env, request.getUser()));
             }
         } catch (FileNotFoundException e) {
@@ -323,8 +320,8 @@ public class TvMaze extends CommandInterface {
     }
 
     public CommandResponse doSITE_TVQUEUE(CommandRequest request) throws ImproperUsageException {
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("size", TvMazeConfig.getInstance().getQueueSize());
+        Map<String, Object> env = new HashMap<>();
+        env.put("size", TvMazeConfig.getInstance().getQueueSize());
         return new CommandResponse(200, request.getSession().jprintf(_bundle, "tv.queue", env, request.getUser()));
     }
 

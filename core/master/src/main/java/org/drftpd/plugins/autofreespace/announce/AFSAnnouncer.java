@@ -28,8 +28,6 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
-
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -42,8 +40,6 @@ public class AFSAnnouncer extends AbstractAnnouncer {
 	private AnnounceConfig _config;
 
 	private ResourceBundle _bundle;
-
-
 
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
@@ -71,20 +67,20 @@ public class AFSAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getSimpleWriter("autofreespace");
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
             InodeHandle inode = event.getInode();
 			RemoteSlave slave = event.getSlave();
 			try {
 				if (inode != null) {
-					env.add("path", inode.getPath());
-					env.add("dir", inode.getName());
+					env.put("path", inode.getPath());
+					env.put("dir", inode.getName());
 					long inodeSpace = inode.getSize();
-					env.add("size", Bytes.formatBytes(inodeSpace));
-					env.add("date", (new SimpleDateFormat("MM/dd/yy h:mma")).format(new Date(inode.lastModified())));
+					env.put("size", Bytes.formatBytes(inodeSpace));
+					env.put("date", (new SimpleDateFormat("MM/dd/yy h:mma")).format(new Date(inode.lastModified())));
 				}
-				env.add("slave", slave.getName());
+				env.put("slave", slave.getName());
 				long slaveSpace = slave.getSlaveStatus().getDiskSpaceAvailable();
-				env.add("slavesize", Bytes.formatBytes(slaveSpace));
+				env.put("slavesize", Bytes.formatBytes(slaveSpace));
 			} catch (FileNotFoundException e) {
 				// Hmm, file deleted?
 			} catch (SlaveUnavailableException e) {

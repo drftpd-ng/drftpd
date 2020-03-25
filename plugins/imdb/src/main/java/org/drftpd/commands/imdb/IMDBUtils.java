@@ -36,7 +36,6 @@ import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.commands.imdb.protocol.IMDBInfo;
 import org.drftpd.commands.imdb.index.IMDBQueryParams;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,19 +70,19 @@ public class IMDBUtils {
 		imdbInfo.setMovieFound(imdbParser.foundMovie());
 	}
 
-	public static ReplacerEnvironment getEnv(IMDBInfo imdbInfo) {
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("title", imdbInfo.getTitle());
-		env.add("year", imdbInfo.getYear() != null ? imdbInfo.getYear() : "-");
-		env.add("language", imdbInfo.getLanguage());
-		env.add("country", imdbInfo.getCountry());
-		env.add("director", imdbInfo.getDirector());
-		env.add("genres", imdbInfo.getGenres());
-		env.add("plot", imdbInfo.getPlot());
-		env.add("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "-");
-		env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "-");
-		env.add("url", imdbInfo.getURL());
-		env.add("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "-");
+	public static Map<String, Object> getEnv(IMDBInfo imdbInfo) {
+		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+		env.put("title", imdbInfo.getTitle());
+		env.put("year", imdbInfo.getYear() != null ? imdbInfo.getYear() : "-");
+		env.put("language", imdbInfo.getLanguage());
+		env.put("country", imdbInfo.getCountry());
+		env.put("director", imdbInfo.getDirector());
+		env.put("genres", imdbInfo.getGenres());
+		env.put("plot", imdbInfo.getPlot());
+		env.put("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "-");
+		env.put("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "-");
+		env.put("url", imdbInfo.getURL());
+		env.put("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "-");
 		return env;
 	}
 
@@ -120,10 +120,10 @@ public class IMDBUtils {
 		}
 		if (imdbInfo.getMovieFound()) {
 			//Announce
-			ReplacerEnvironment env = getEnv(imdbInfo);
-			env.add("release", dir.getName());
-			env.add("section", section.getName());
-			env.add("sectioncolor", section.getColor());
+			Map<String, Object> env = getEnv(imdbInfo);
+			env.put("release", dir.getName());
+			env.put("section", section.getName());
+			env.put("sectioncolor", section.getColor());
 			GlobalContext.getEventService().publishAsync(new IMDBEvent(env, dir));
 		}
 	}

@@ -16,8 +16,6 @@
  */
 package org.drftpd.plugins.sitebot.announce.zipscript.mp3;
 
-import java.util.ResourceBundle;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.zipscript.mp3.event.MP3Event;
@@ -29,7 +27,10 @@ import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.protocol.zipscript.mp3.common.ID3Tag;
 import org.drftpd.protocol.zipscript.mp3.common.MP3Info;
-import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author djb61
@@ -72,33 +73,33 @@ public class MP3Announcer extends AbstractAnnouncer {
 		if (writer != null) {
 			// Check if this is the first mp3 in this dir
 			if (event.isFirst()) {
-				ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-				env.add("section", writer.getSectionName(event.getDir()));
-				env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDir()).getColor());
+				Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+				env.put("section", writer.getSectionName(event.getDir()));
+				env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDir()).getColor());
 				MP3Info mp3Info = event.getMP3Info();
 				ID3Tag id3 = mp3Info.getID3Tag();
 				if (id3 != null) {
-					env.add("artist", id3.getArtist());
-					env.add("genre", id3.getGenre());
-					env.add("album", id3.getAlbum());
-					env.add("year", id3.getYear());
-					env.add("title", id3.getTitle());
+					env.put("artist", id3.getArtist());
+					env.put("genre", id3.getGenre());
+					env.put("album", id3.getAlbum());
+					env.put("year", id3.getYear());
+					env.put("title", id3.getTitle());
 					if (id3.getTrack() == 0) {
-						env.add("track","");
+						env.put("track","");
 					} else {
-						env.add("track", id3.getTrack());
+						env.put("track", id3.getTrack());
 					}
 				} else {
-					env.add("artist", "unknown");
-					env.add("genre", "unknown");
-					env.add("album", "unknown");
-					env.add("year", "unknown");
-					env.add("title", "unknown");
-					env.add("track", "unknown");
+					env.put("artist", "unknown");
+					env.put("genre", "unknown");
+					env.put("album", "unknown");
+					env.put("year", "unknown");
+					env.put("title", "unknown");
+					env.put("track", "unknown");
 				}
-				env.add("bitrate", Integer.toString(mp3Info.getBitrate() / 1000) + " kbit/s " + mp3Info.getEncodingtype());
-				env.add("samplerate", mp3Info.getSamplerate());
-				env.add("stereomode", mp3Info.getStereoMode());
+				env.put("bitrate", Integer.toString(mp3Info.getBitrate() / 1000) + " kbit/s " + mp3Info.getEncodingtype());
+				env.put("samplerate", mp3Info.getSamplerate());
+				env.put("stereomode", mp3Info.getStereoMode());
 				int runSeconds = (int) (mp3Info.getRuntime() / 1000);
 				String runtime = "";
 				if (runSeconds > 59) {
@@ -107,8 +108,8 @@ public class MP3Announcer extends AbstractAnnouncer {
 					runtime = runMins + "m ";
 				}
 				runtime = runtime + runSeconds + "s";
-				env.add("runtime", runtime);
-				env.add("path", event.getDir().getName());
+				env.put("runtime", runtime);
+				env.put("path", event.getDir().getName());
 				sayOutput(ReplacerUtils.jprintf("id3tag", env, _bundle), writer);
 			}
 		}

@@ -9,8 +9,9 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -48,14 +49,14 @@ public class NukeFilterAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("nukefilter", nfni.getDirectoryHandle());
 		//no point in writing to null
 		if(writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("dir", nfni.getDirectoryName());
-			env.add("path", nfni.getPath());
-			env.add("delay", String.valueOf(nfni.getDelay()));
-			env.add("section", nfni.getSectionName());
-			env.add("sectioncolor", nfni.getSectionColor());
-			env.add("element", nfni.getElement());
-			env.add("nukex", String.valueOf(nfni.getNukex()));
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+			env.put("dir", nfni.getDirectoryName());
+			env.put("path", nfni.getPath());
+			env.put("delay", String.valueOf(nfni.getDelay()));
+			env.put("section", nfni.getSectionName());
+			env.put("sectioncolor", nfni.getSectionColor());
+			env.put("element", nfni.getElement());
+			env.put("nukex", String.valueOf(nfni.getNukex()));
 			sayOutput(ReplacerUtils.jprintf(event.getIRCString(), env, _bundle), writer);
 		}
 	}

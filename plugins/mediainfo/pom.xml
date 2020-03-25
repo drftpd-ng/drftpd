@@ -39,6 +39,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.mp4parser</groupId>
+            <artifactId>isoparser</artifactId>
+            <version>1.9.41</version>
+        </dependency>
+        <dependency>
             <groupId>org.drftpd</groupId>
             <artifactId>drftpd-master</artifactId>
             <version>${project.version}</version>

@@ -16,9 +16,7 @@
  */
 package org.drftpd.plugins.trialmanager.types.toptrial;
 
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
@@ -28,7 +26,6 @@ import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.trialmanager.TrialType;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author CyBeR
@@ -199,16 +196,16 @@ public class TopTrial extends TrialType {
             }
         }
 
-        ReplacerEnvironment env2 = new ReplacerEnvironment();
-        env2.add("name", getName());
-        env2.add("min", Bytes.formatBytes(getMin()));
-        env2.add("period", getPeriodStr());
-        env2.add("time", getRemainingTime());
-        env2.add("keep", getKeep());
-        env2.add("percent", getMinPercent());
+        Map<String, Object> env2 = new HashMap<>();
+        env2.put("name", getName());
+        env2.put("min", Bytes.formatBytes(getMin()));
+        env2.put("period", getPeriodStr());
+        env2.put("time", getRemainingTime());
+        env2.put("keep", getKeep());
+        env2.put("percent", getMinPercent());
 
         ArrayList<User> users = getUsers();
-        env2.add("racers", users.size());
+        env2.put("racers", users.size());
 
         if (top) {
             if (getMin() > 0) {
@@ -230,15 +227,15 @@ public class TopTrial extends TrialType {
             if (i > list) {
                 break;
             }
-            ReplacerEnvironment env = new ReplacerEnvironment();
+            Map<String, Object> env = new HashMap<>();
             long uploaded = user.getUploadedBytesForPeriod(getPeriod());
-            env.add("upbytes", Bytes.formatBytes(uploaded));
-            env.add("usernick", user.getName());
-            env.add("usergroup", user.getGroup());
+            env.put("upbytes", Bytes.formatBytes(uploaded));
+            env.put("usernick", user.getName());
+            env.put("usergroup", user.getGroup());
 
-            env.add("rank", i);
+            env.put("rank", i);
             if (i < 10) {
-                env.add("rank", "0" + i);
+                env.put("rank", "0" + i);
             }
 
             if ((i < getKeep()) && (uploaded >= getMin()) && (uploaded >= minPercentage)) {
@@ -306,25 +303,25 @@ public class TopTrial extends TrialType {
             ++count;
             if (user == checkuser) {
                 found = true;
-                ReplacerEnvironment env = new ReplacerEnvironment();
-                env.add("name", this.getName());
-                env.add("usernick", user.getName());
-                env.add("usergroup", user.getGroup());
-                env.add("rank", count);
+                Map<String, Object> env = new HashMap<>();
+                env.put("name", this.getName());
+                env.put("usernick", user.getName());
+                env.put("usergroup", user.getGroup());
+                env.put("rank", count);
                 long uploaded = user.getUploadedBytesForPeriod(getPeriod());
-                env.add("up", Bytes.formatBytes(uploaded));
-                env.add("time", getRemainingTime());
+                env.put("up", Bytes.formatBytes(uploaded));
+                env.put("time", getRemainingTime());
 
-                ReplacerEnvironment env2 = new ReplacerEnvironment();
+                Map<String, Object> env2 = new HashMap<>();
                 if (prevuser != null) {
-                    env2.add("userlead", prevuser.getName());
-                    env2.add("diff", Bytes.formatBytes(prevuser.getUploadedBytesForPeriod(getPeriod()) - user.getUploadedBytesForPeriod(getPeriod())));
+                    env2.put("userlead", prevuser.getName());
+                    env2.put("diff", Bytes.formatBytes(prevuser.getUploadedBytesForPeriod(getPeriod()) - user.getUploadedBytesForPeriod(getPeriod())));
                 }
 
                 if (count == 1) {
-                    env.add("place", request.getSession().jprintf(bundle,  "toptrial.place.winning", env2, requestuser));
+                    env.put("place", request.getSession().jprintf(bundle,  "toptrial.place.winning", env2, requestuser));
                 } else {
-                    env.add("place", request.getSession().jprintf(bundle,  "toptrial.place.losing", env2, requestuser));
+                    env.put("place", request.getSession().jprintf(bundle,  "toptrial.place.losing", env2, requestuser));
                 }
 
                 if ((count < getKeep()) && (uploaded >= getMin())) {
@@ -339,8 +336,8 @@ public class TopTrial extends TrialType {
         }
 
         if (!found) {
-            ReplacerEnvironment env = new ReplacerEnvironment();
-            env.add("name", request.getArgument());
+            Map<String, Object> env = new HashMap<>();
+            env.put("name", request.getArgument());
             response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.notfound", env, requestuser));
         }
 

@@ -28,9 +28,9 @@ import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.slave.LightRemoteInode;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -48,7 +48,7 @@ public class TvMazeList implements AddListElementsInterface {
 				TvMazeVFSData tvmazeData = new TvMazeVFSData(dir);
 				TvMazeInfo tvmazeInfo = tvmazeData.getTvMazeInfoFromCache();
 				if (tvmazeInfo != null) {
-					ReplacerEnvironment env;
+					Map<String, Object> env;
 					if (tvmazeInfo.getEPList().length == 1) {
 						env = TvMazeUtils.getEPEnv(tvmazeInfo, tvmazeInfo.getEPList()[0]);
 					} else {

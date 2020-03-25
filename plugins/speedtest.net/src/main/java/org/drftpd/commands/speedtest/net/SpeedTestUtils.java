@@ -20,11 +20,11 @@ package org.drftpd.commands.speedtest.net;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.util.HttpUtils;
-import org.tanesha.replacer.ReplacerEnvironment;
+
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -37,6 +37,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author scitz0
@@ -171,16 +172,16 @@ public class SpeedTestUtils {
 		return (rad * 180 / Math.PI);
 	}
 
-	public static void addServerEnvVariables(SpeedTestServer server, ReplacerEnvironment env) {
-		env.add("server.url", server.getUrl());
-		env.add("server.name", server.getName());
-		env.add("server.country", server.getCountry());
-		env.add("server.cc", server.getCc());
-		env.add("server.sponsor", server.getSponsor());
-		env.add("server.id", server.getId());
-		env.add("server.host", server.getHost());
-		env.add("server.latency", server.getLatency());
-		env.add("server.latitude", server.getLatitude());
-		env.add("server.longitude", server.getLongitude());
+	public static void addServerEnvVariables(SpeedTestServer server, Map<String, Object> env) {
+		env.put("server.url", server.getUrl());
+		env.put("server.name", server.getName());
+		env.put("server.country", server.getCountry());
+		env.put("server.cc", server.getCc());
+		env.put("server.sponsor", server.getSponsor());
+		env.put("server.id", server.getId());
+		env.put("server.host", server.getHost());
+		env.put("server.latency", server.getLatency());
+		env.put("server.latitude", server.getLatitude());
+		env.put("server.longitude", server.getLongitude());
 	}
 }

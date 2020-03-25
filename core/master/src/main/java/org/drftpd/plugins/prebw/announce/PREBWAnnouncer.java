@@ -29,9 +29,10 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -42,9 +43,7 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 	private AnnounceConfig _config;
 
 	private ResourceBundle _bundle;
-
-
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -73,17 +72,17 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 		AnnounceWriter writer = _config.getPathWriter("prebw", dir);
 		// Check we got a writer back, if it is null do nothing and ignore the event
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 			SectionInterface section = preInfo.getSection();
-			env.add("dir", dir.getName());
-			env.add("section", section.getName());
-			env.add("sectioncolor", section.getColor());
+			env.put("dir", dir.getName());
+			env.put("section", section.getName());
+			env.put("sectioncolor", section.getColor());
 			StringBuilder bw = new StringBuilder();
 			String delim = ReplacerUtils.jprintf("prebw.bw.separator", env, _bundle).trim();
 			for (String messure : preInfo.getMessures().keySet()) {
-				ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-				tmpenv.add("time", messure);
-				tmpenv.add("speed", preInfo.getMessures().get(messure));
+				Map<String, Object> tmpenv = new HashMap<>(SiteBot.GLOBAL_ENV);
+				tmpenv.put("time", messure);
+				tmpenv.put("speed", preInfo.getMessures().get(messure));
 				if (bw.length() != 0) {
 					bw.append(" ");
 					bw.append(delim);
@@ -91,14 +90,14 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 				}
 				bw.append(ReplacerUtils.jprintf("prebw.bw.format", tmpenv, _bundle));
 			}
-			env.add("bw", bw);
+			env.put("bw", bw);
 			StringBuilder leechers = new StringBuilder();
 			if (event.getLeechtopCount() != 0) {
 				if (preInfo.getUsers().isEmpty()) {
-					ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-					tmpenv.add("dir", dir.getName());
-					tmpenv.add("section", section.getName());
-					tmpenv.add("sectioncolor", section.getColor());
+					Map<String, Object> tmpenv = new HashMap<>(SiteBot.GLOBAL_ENV);
+					tmpenv.put("dir", dir.getName());
+					tmpenv.put("section", section.getName());
+					tmpenv.put("sectioncolor", section.getColor());
 					leechers.append(ReplacerUtils.jprintf( "prebw.leechtop.empty",
 							tmpenv, _bundle));
 				} else {
@@ -107,29 +106,29 @@ public class PREBWAnnouncer extends AbstractAnnouncer {
 					for (UserInfo u : preInfo.getUsers()) {
 						if (i == event.getLeechtopCount())
 							break;
-						ReplacerEnvironment tmpenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-						tmpenv.add("dir", dir);
-						tmpenv.add("section", section.getName());
-						tmpenv.add("sectioncolor", section.getColor());
-						tmpenv.add("username", u.getName());
-						tmpenv.add("group", u.getGroup());
-						tmpenv.add("bytes", Bytes.formatBytes(u.getBytes()));
-						tmpenv.add("files", u.getFiles());
-						tmpenv.add("avgspeed", Bytes.formatBytes(u.getAvgSpeed()) + "/s");
-						tmpenv.add("topspeed", Bytes.formatBytes(u.getTopSpeed()) + "/s");
+						Map<String, Object> tmpenv = new HashMap<>(SiteBot.GLOBAL_ENV);
+						tmpenv.put("dir", dir);
+						tmpenv.put("section", section.getName());
+						tmpenv.put("sectioncolor", section.getColor());
+						tmpenv.put("username", u.getName());
+						tmpenv.put("group", u.getGroup());
+						tmpenv.put("bytes", Bytes.formatBytes(u.getBytes()));
+						tmpenv.put("files", u.getFiles());
+						tmpenv.put("avgspeed", Bytes.formatBytes(u.getAvgSpeed()) + "/s");
+						tmpenv.put("topspeed", Bytes.formatBytes(u.getTopSpeed()) + "/s");
 						leechers.append(ReplacerUtils.jprintf( "prebw.leechtop.format",
 								tmpenv, _bundle));
 						i++;
 					}
 				}
 			}
-			env.add("leechtop", leechers);
-			env.add("users", preInfo.getUsers().size());
-			env.add("groups", preInfo.getGroups().size());
-			env.add("bytes", Bytes.formatBytes(preInfo.getBytes()));
-			env.add("messuretime", preInfo.getMtime());
-			env.add("bwavg", Bytes.formatBytes(preInfo.getBWAvg())+"/s");
-			env.add("bwtop", Bytes.formatBytes(preInfo.getBWTop())+"/s");
+			env.put("leechtop", leechers);
+			env.put("users", preInfo.getUsers().size());
+			env.put("groups", preInfo.getGroups().size());
+			env.put("bytes", Bytes.formatBytes(preInfo.getBytes()));
+			env.put("messuretime", preInfo.getMtime());
+			env.put("bwavg", Bytes.formatBytes(preInfo.getBWAvg())+"/s");
+			env.put("bwtop", Bytes.formatBytes(preInfo.getBWTop())+"/s");
 			sayOutput(ReplacerUtils.jprintf("prebw.announce", env, _bundle), writer);
 		}
 	}

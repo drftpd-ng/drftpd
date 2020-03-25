@@ -17,14 +17,11 @@
  */
 package org.drftpd.master.util;
 
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.text.StringSubstitutor;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
-
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -32,26 +29,26 @@ import java.util.ResourceBundle;
  * @version $Id$
  */
 public class ReplacerUtils {
-	
-	private static final Logger logger = LogManager.getLogger(ReplacerUtils.class);
-	
-	private ReplacerUtils() {
-		super();
-	}
-	
-	public static ReplacerFormat finalFormat(ResourceBundle bundle, String key)
-			throws FormatterException {
 
-		return ReplacerFormat.createFormat(bundle.getString(key));
-	}
+    private static final Logger logger = LogManager.getLogger(ReplacerUtils.class);
 
-	public static String jprintf(String key, ReplacerEnvironment env,
-			ResourceBundle bundle) {
-		try {
-			return SimplePrintf.jprintf(finalFormat(bundle, key), env);
-		} catch (Exception e) {
+    private ReplacerUtils() {
+        super();
+    }
+
+    public static String jprintf(String template, Map<String, Object> env) {
+        StringSubstitutor sub = new StringSubstitutor(env);
+        return sub.replace(template);
+    }
+
+    public static String jprintf(String key, Map<String, Object> env, ResourceBundle bundle) {
+        try {
+            String template = bundle.getString(key);
+            StringSubstitutor sub = new StringSubstitutor(env);
+            return sub.replace(template);
+        } catch (Exception e) {
             logger.info("Error formatting message for key - {}", key, e);
-			return key;
-		}
-	}
+            return key;
+        }
+    }
 }

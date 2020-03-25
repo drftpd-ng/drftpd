@@ -19,6 +19,8 @@ package org.drftpd.commands.zipscript.flac.list;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.drftpd.commands.list.ListElementsContainer;
@@ -30,7 +32,6 @@ import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
 import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author norox
@@ -47,23 +48,19 @@ public class ZipscriptFlacStatusBar implements ZipscriptListStatusBarInterface {
 				ArrayList<String> statusBarEntries = new ArrayList<>();
 				ZipscriptVFSDataFlac flacData = new ZipscriptVFSDataFlac(dir);
 				FlacInfo flacInfo = flacData.getFlacInfo();
-				ReplacerEnvironment env = new ReplacerEnvironment();
+				Map<String, Object> env = new HashMap<>();
 				VorbisTag vorbistag = flacInfo.getVorbisTag();
 				if (vorbistag != null) {
-					env.add("artist", vorbistag.getArtist());
-					env.add("genre", vorbistag.getGenre());
-					env.add("album", vorbistag.getAlbum());
-					env.add("year", vorbistag.getYear());
+					env.put("artist", vorbistag.getArtist());
+					env.put("genre", vorbistag.getGenre());
+					env.put("album", vorbistag.getAlbum());
+					env.put("year", vorbistag.getYear());
 				} else {
 					throw new NoEntryAvailableException();
 				}
 				statusBarEntries.add(container.getSession().jprintf(bundle, "statusbar.vorbistag", env, container.getUser()));
 				return statusBarEntries;
-			} catch (FileNotFoundException e) {
-				// Error fetching flac info, ignore
-			} catch (IOException e) {
-				// Error fetching flac info, ignore
-			} catch (NoAvailableSlaveException e) {
+			} catch (IOException | NoAvailableSlaveException e) {
 				// Error fetching flac info, ignore
 			}
 		}

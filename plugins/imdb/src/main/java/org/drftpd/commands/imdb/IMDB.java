@@ -17,11 +17,11 @@
  */
 package org.drftpd.commands.imdb;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.commands.imdb.hooks.IMDBPostHook;
+import org.drftpd.commands.imdb.protocol.IMDBInfo;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
@@ -32,11 +32,10 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.commandmanager.*;
-import org.drftpd.commands.imdb.protocol.IMDBInfo;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -57,15 +56,15 @@ public class IMDB extends CommandInterface {
         AnnotationProcessor.process(this);
     }
 
-    private void addTagToEnvironment(ReplacerEnvironment env, CommandRequest request, String tag, String key, boolean verbose) {
+    private void addTagToEnvironment(Map<String, Object> env, CommandRequest request, String tag, String key, boolean verbose) {
         if (verbose) {
-            env.add(tag, request.getSession().jprintf(_bundle, key + ".verbose", env, request.getUser()));
+            env.put(tag, request.getSession().jprintf(_bundle, key + ".verbose", env, request.getUser()));
         } else {
-            env.add(tag, request.getSession().jprintf(_bundle, key, env, request.getUser()));
+            env.put(tag, request.getSession().jprintf(_bundle, key, env, request.getUser()));
         }
     }
 
-    private void addResponse(ReplacerEnvironment env, CommandRequest request, CommandResponse response, String key, boolean verbose) {
+    private void addResponse(Map<String, Object> env, CommandRequest request, CommandResponse response, String key, boolean verbose) {
         if (verbose) {
             response.addComment(request.getSession().jprintf(_bundle, key + ".verbose", env, request.getUser()));
         } else {
@@ -92,11 +91,11 @@ public class IMDB extends CommandInterface {
         imdb.doSEARCH(searchstring);
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        ReplacerEnvironment env = imdb.getEnv();
+        Map<String, Object> env = imdb.getEnv();
         if (imdb.foundMovie()) {
             if (IMDBConfig.getInstance().searchRelease()) {
-                env.add("foundSD", "No");
-                env.add("foundHD", "No");
+                env.put("foundSD", "No");
+                env.put("foundHD", "No");
 
                 ArrayList<DirectoryHandle> results = new ArrayList<>();
 
@@ -114,13 +113,13 @@ public class IMDB extends CommandInterface {
                     for (DirectoryHandle dir : results) {
                         SectionInterface sec = GlobalContext.getGlobalContext().getSectionManager().lookup(dir);
                         if (IMDBUtils.containSection(sec, IMDBConfig.getInstance().getHDSections())) {
-                            env.add("foundHD", "Yes");
+                            env.put("foundHD", "Yes");
                         }
                         if (IMDBUtils.containSection(sec, IMDBConfig.getInstance().getSDSections())) {
-                            env.add("foundSD", "Yes");
+                            env.put("foundSD", "Yes");
                         }
                     }
-                    env.add("results", results.size());
+                    env.put("results", results.size());
                     addTagToEnvironment(env, request, "release", "announce.release", verbose);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
@@ -145,9 +144,9 @@ public class IMDB extends CommandInterface {
             }
         }
 
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("dirname", dir.getName());
-        env.add("dirpath", dir.getPath());
+        Map<String, Object> env = new HashMap<>();
+        env.put("dirname", dir.getName());
+        env.put("dirpath", dir.getPath());
 
         Map<String, String> nfoFiles;
         try {
@@ -184,10 +183,10 @@ public class IMDB extends CommandInterface {
                         if (imdbInfo == null) {
                             continue;
                         }
-                        env.add("dirname", parent.getName());
-                        env.add("dirpath", parent.getPath());
-                        env.add("filename", nfo.getName());
-                        env.add("filepath", nfo.getPath());
+                        env.put("dirname", parent.getName());
+                        env.put("dirpath", parent.getPath());
+                        env.put("filename", nfo.getName());
+                        env.put("filepath", nfo.getPath());
                         if (imdbInfo.getMovieFound()) {
                             request.getSession().printOutput(200, request.getSession().jprintf(_bundle,
                                     "createimdb.cache", env, request.getUser()));
@@ -217,8 +216,8 @@ public class IMDB extends CommandInterface {
             }
         }
 
-        env.add("dirname", dir.getName());
-        env.add("dirpath", dir.getPath());
+        env.put("dirname", dir.getName());
+        env.put("dirpath", dir.getPath());
 
         if (request.getSession().isAborted()) {
             return new CommandResponse(200, request.getSession().jprintf(_bundle, "createimdb.aborted", env, request.getUser()));
@@ -237,9 +236,9 @@ public class IMDB extends CommandInterface {
                 return new CommandResponse(500, "Failed getting path, invalid or no permission!");
             }
         }
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("dirname", dir.getName());
-        env.add("dirpath", dir.getPath());
+        Map<String, Object> env = new HashMap<>();
+        env.put("dirname", dir.getName());
+        env.put("dirpath", dir.getPath());
 
         Map<String, String> nfoFiles;
         try {
@@ -269,9 +268,9 @@ public class IMDB extends CommandInterface {
                 if (!nfo.isHidden(user)) {
                     try {
                         if (nfo.getParent().removePluginMetaData(IMDBInfo.IMDBINFO) != null) {
-                            ReplacerEnvironment env2 = new ReplacerEnvironment();
-                            env2.add("dirname", nfo.getParent().getName());
-                            env2.add("dirpath", nfo.getParent().getPath());
+                            Map<String, Object> env2 = new HashMap<>();
+                            env2.put("dirname", nfo.getParent().getName());
+                            env2.put("dirpath", nfo.getParent().getPath());
                             request.getSession().printOutput(200, request.getSession().jprintf(_bundle, "removeimdb.remove", env2, request.getUser()));
                         }
                     } catch (FileNotFoundException e) {
@@ -294,8 +293,8 @@ public class IMDB extends CommandInterface {
     }
 
     public CommandResponse doSITE_IMDBQUEUE(CommandRequest request) throws ImproperUsageException {
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("size", IMDBConfig.getInstance().getQueueSize());
+        Map<String, Object> env = new HashMap<>();
+        env.put("size", IMDBConfig.getInstance().getQueueSize());
         return new CommandResponse(200, request.getSession().jprintf(_bundle, "imdb.queue", env, request.getUser()));
     }
 }

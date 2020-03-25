@@ -16,6 +16,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.trafficmanager.ban;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -29,7 +31,6 @@ import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.trafficmanager.types.ban.TrafficTypeBanEvent;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author CyBeR
@@ -40,9 +41,7 @@ public class TrafficBanAnnouncer extends AbstractAnnouncer {
     private AnnounceConfig _config;
 
     private ResourceBundle _bundle;
-
-
-
+    
     public void initialise(AnnounceConfig config, ResourceBundle bundle) {
         _config = config;
         _bundle = bundle;
@@ -68,17 +67,17 @@ public class TrafficBanAnnouncer extends AbstractAnnouncer {
         if (event.getType().equalsIgnoreCase("ban")) {
             AnnounceWriter writer = _config.getSimpleWriter("trafficmanager.ban");
             if (writer != null) {
-                ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+                Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 
-                env.add("nickname", event.getUser().getName());
-                env.add("file", event.getFile().getName());
-                env.add("path", event.getFile().getParent().getPath());
-                env.add("slave", event.getSlaveName());
+                env.put("nickname", event.getUser().getName());
+                env.put("file", event.getFile().getName());
+                env.put("path", event.getFile().getParent().getPath());
+                env.put("slave", event.getSlaveName());
 
-                env.add("transfered", Bytes.formatBytes(event.getTransfered()));
-                env.add("minspeed", Bytes.formatBytes(event.getMinSpeed()) + "/s");
-                env.add("speed", Bytes.formatBytes(event.getSpeed()) + "/s");
-                env.add("bantime", Time.formatTime(event.getBanTime()));
+                env.put("transfered", Bytes.formatBytes(event.getTransfered()));
+                env.put("minspeed", Bytes.formatBytes(event.getMinSpeed()) + "/s");
+                env.put("speed", Bytes.formatBytes(event.getSpeed()) + "/s");
+                env.put("bantime", Time.formatTime(event.getBanTime()));
 
                 if (event.isStor()) {
                     sayOutput(ReplacerUtils.jprintf( "traffic.ban.up", env, _bundle), writer);

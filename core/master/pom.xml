@@ -40,36 +40,6 @@
                 <version>2.5.2</version>
                 <executions>
                     <execution>
-                        <id>install-isoparser</id>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <phase>validate</phase>
-                        <configuration>
-                            <groupId>org.isoparser</groupId>
-                            <artifactId>isoparser</artifactId>
-                            <version>1.9.41</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/lib/isoparser-1.9.41.jar</file>
-                            <generatePom>true</generatePom>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>install-tanesha</id>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <phase>validate</phase>
-                        <configuration>
-                            <groupId>org.tanesha</groupId>
-                            <artifactId>tanesha</artifactId>
-                            <version>1.0</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/lib/tanesha-1.0.jar</file>
-                            <generatePom>true</generatePom>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>install-tanukisoft</id>
                         <goals>
                             <goal>install-file</goal>
@@ -117,16 +87,6 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
             <version>3.6.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.isoparser</groupId>
-            <artifactId>isoparser</artifactId>
-            <version>1.9.41</version>
-        </dependency>
-        <dependency>
-            <groupId>org.tanesha</groupId>
-            <artifactId>tanesha</artifactId>
-            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>tanukisoft</groupId>

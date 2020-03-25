@@ -30,7 +30,6 @@ import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -92,7 +91,7 @@ public class SpeedTest extends CommandInterface {
 		boolean wildcardSlaves = slaveName.endsWith("*") && !allSlaves;
 		boolean listservers = false;
 
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 
 		if (args[0].equals("-refresh")) {
 			_servers = SpeedTestUtils.getClosetsServers();
@@ -136,7 +135,7 @@ public class SpeedTest extends CommandInterface {
 				rslaves.add(GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName));
 			}
 		} catch (ObjectNotFoundException e) {
-			env.add("slave.name", slaveName);
+			env.put("slave.name", slaveName);
 			return new CommandResponse(500, request.getSession().jprintf(
 					_bundle, "speedtest.slavename.error", env, request.getUser()));
 		}
@@ -148,7 +147,7 @@ public class SpeedTest extends CommandInterface {
 		List<Future<SpeedTestInfo>> slaveThreadList = new ArrayList<>();
 
 		for (RemoteSlave rslave : rslaves) {
-			env.add("slave.name", rslave.getName());
+			env.put("slave.name", rslave.getName());
 			if (!rslave.isOnline()) {
 				request.getSession().printOutput(500, request.getSession().jprintf(
 						_bundle, "speedtest.slave.offline", env, request.getUser()));
@@ -189,8 +188,8 @@ public class SpeedTest extends CommandInterface {
 						SpeedTestUtils.addServerEnvVariables(server, env);
 						double distance = SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
 								slaveLocation.getLatitude(), slaveLocation.getLongitude(), _unit);
-						env.add("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
-						env.add("unit", _unitSuffix);
+						env.put("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
+						env.put("unit", _unitSuffix);
 						request.getSession().printOutput(200, request.getSession().jprintf(
 								_bundle, "speedtest.slave.server.list", env, request.getUser()));
 					} else {
@@ -211,7 +210,7 @@ public class SpeedTest extends CommandInterface {
 			}
 			if (testServers.isEmpty()) {
 				// Server list not empty but could not find any test server, id must not be valid
-				env.add("server.id", testServerID);
+				env.put("server.id", testServerID);
 				request.getSession().printOutput(500, request.getSession().jprintf(
 						_bundle, "speedtest.server.id.error", env, request.getUser()));
 				continue;
@@ -235,15 +234,15 @@ public class SpeedTest extends CommandInterface {
 					server.setLatency(result.getLatency());
 					SpeedTestUtils.addServerEnvVariables(server, env);
 					SlaveLocation loc = slaveLocations.get(result.getSlaveName());
-					env.add("slave.name", result.getSlaveName());
-					env.add("slave.lat", loc.getLatitude());
-					env.add("slave.lon", loc.getLongitude());
+					env.put("slave.name", result.getSlaveName());
+					env.put("slave.lat", loc.getLatitude());
+					env.put("slave.lon", loc.getLongitude());
 					double distance = SpeedTestUtils.getDistance(server.getLatitude(), server.getLongitude(),
 							loc.getLatitude(), loc.getLongitude(), _unit);
-					env.add("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
-					env.add("unit", _unitSuffix);
-					env.add("speed.up", _numberFormat.format(result.getUp()));
-					env.add("speed.down", _numberFormat.format(result.getDown()));
+					env.put("distance", distance < 1.0 ? "<1.00" : _numberFormat.format(distance));
+					env.put("unit", _unitSuffix);
+					env.put("speed.up", _numberFormat.format(result.getUp()));
+					env.put("speed.down", _numberFormat.format(result.getDown()));
 					request.getSession().printOutput(200, request.getSession().jprintf(
 							_bundle, "speedtest.slave.result", env, request.getUser()));
 				}

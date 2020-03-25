@@ -30,9 +30,9 @@ import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.commandmanager.*;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -88,7 +88,7 @@ public class Search extends CommandInterface {
 			return new CommandResponse(550, e.getMessage());
 		}
 
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 
 		User user = request.getSession().getUserNull(request.getUser());
 
@@ -111,11 +111,11 @@ public class Search extends CommandInterface {
 				if ((observePrivPath && inode.isHidden(user)) || (!observePrivPath && inode.isHidden(null))) {
 					continue;
 				}
-				env.add("name", inode.getName());
-				env.add("path", inode.getPath());
-				env.add("owner", inode.getUsername());
-				env.add("group", inode.getGroup());
-				env.add("size", Bytes.formatBytes(inode.getSize()));
+				env.put("name", inode.getName());
+				env.put("path", inode.getPath());
+				env.put("owner", inode.getUsername());
+				env.put("group", inode.getGroup());
+				env.put("size", Bytes.formatBytes(inode.getSize()));
 				responses.add(session.jprintf(_bundle,"search.item", env, user.getName()));
 			} catch (FileNotFoundException e) {
                 logger.warn("Index contained an unexistent inode: {}", item.getKey());
@@ -127,8 +127,8 @@ public class Search extends CommandInterface {
 			return response;
 		}
 
-		env.add("limit", limit);
-		env.add("results", responses.size());
+		env.put("limit", limit);
+		env.put("results", responses.size());
 		response.addComment(session.jprintf(_bundle,"search.header", env, user.getName()));
 
 		for (String line : responses) {

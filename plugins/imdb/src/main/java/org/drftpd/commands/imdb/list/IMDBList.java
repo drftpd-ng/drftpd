@@ -23,9 +23,10 @@ import org.drftpd.commands.list.ListElementsContainer;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.commands.imdb.protocol.IMDBInfo;
 import org.drftpd.slave.slave.LightRemoteInode;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -42,18 +43,18 @@ public class IMDBList implements AddListElementsInterface {
 			IMDBInfo imdbInfo = imdbData.getIMDBInfoFromCache();
 			if (imdbInfo != null) {
 				if (imdbInfo.getMovieFound()) {
-					ReplacerEnvironment env = new ReplacerEnvironment();
-					env.add("title", imdbInfo.getTitle());
-					env.add("year", imdbInfo.getYear() != null ? imdbInfo.getYear() : "9999");
-					env.add("language", imdbInfo.getLanguage());
-					env.add("country", imdbInfo.getCountry());
-					env.add("director", imdbInfo.getDirector());
-					env.add("genres", imdbInfo.getGenres());
-					env.add("plot", imdbInfo.getPlot());
-					env.add("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "0");
-					env.add("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "0");
-					env.add("url", imdbInfo.getURL());
-					env.add("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "0");
+					Map<String, Object> env = new HashMap<>();
+					env.put("title", imdbInfo.getTitle());
+					env.put("year", imdbInfo.getYear() != null ? imdbInfo.getYear() : "9999");
+					env.put("language", imdbInfo.getLanguage());
+					env.put("country", imdbInfo.getCountry());
+					env.put("director", imdbInfo.getDirector());
+					env.put("genres", imdbInfo.getGenres());
+					env.put("plot", imdbInfo.getPlot());
+					env.put("rating", imdbInfo.getRating() != null ? imdbInfo.getRating()/10+"."+imdbInfo.getRating()%10 : "0");
+					env.put("votes", imdbInfo.getVotes() != null ? imdbInfo.getVotes() : "0");
+					env.put("url", imdbInfo.getURL());
+					env.put("runtime", imdbInfo.getRuntime() != null ? imdbInfo.getRuntime() : "0");
 					String imdbDirName = container.getSession().jprintf(bundle, "imdb.dir", env, container.getUser());
 					try {
 						container.getElements().add(new LightRemoteInode(imdbDirName, "drftpd", "drftpd",

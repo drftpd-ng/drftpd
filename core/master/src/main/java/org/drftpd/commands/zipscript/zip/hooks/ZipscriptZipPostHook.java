@@ -17,18 +17,8 @@
  */
 package org.drftpd.commands.zipscript.zip.hooks;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.zip.ZipTools;
@@ -49,19 +39,21 @@ import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.util.GroupPosition;
+import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.util.UploaderPosition;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
 import org.drftpd.protocol.zipscript.zip.common.DizInfo;
 import org.drftpd.protocol.zipscript.zip.common.DizStatus;
 import org.drftpd.slave.slave.RemoteIOException;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.ReplacerFormat;
-import org.tanesha.replacer.SimplePrintf;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 
 /**
@@ -71,337 +63,293 @@ import org.tanesha.replacer.SimplePrintf;
 
 public class ZipscriptZipPostHook extends ZipTools {
 
-	private static final Logger logger = LogManager.getLogger(ZipscriptZipPostHook.class);
+    private static final Logger logger = LogManager.getLogger(ZipscriptZipPostHook.class);
 
-	private ResourceBundle _bundle;
+    private ResourceBundle _bundle;
 
 
+    public ZipscriptZipPostHook() {
+        _bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
 
-	public ZipscriptZipPostHook() {
-		_bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
+    }
 
-	}
-
-	@CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
-	public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
-		// removing this in-case of a bad transfer
+    @CommandHook(commands = "doSTOR", priority = 13, type = HookType.POST)
+    public void doZipscriptSTORZipPostCheck(CommandRequest request, CommandResponse response) {
+        // removing this in-case of a bad transfer
 		/*if (response.getCode() != 226) {
 			// Transfer failed, abort checks
 			return;
 		}*/
-		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
-		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("stor.zip.integrity.check.enabled", "false").equalsIgnoreCase("true")) {
-			FileHandle transferFile;
-			try {
-				transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
-			} catch (KeyNotFoundException e) {
-				// We don't have a file, we shouldn't have ended up here but return anyway
-				return;
-			}
-			if (!transferFile.exists()) {
-				// No point checking the file as it has already been deleted (i.e. an abort)
-				return;
-			}
+        Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
+                getPropertiesForPlugin("zipscript.conf");
+        if (cfg.getProperty("stor.zip.integrity.check.enabled", "false").equalsIgnoreCase("true")) {
+            FileHandle transferFile;
+            try {
+                transferFile = response.getObject(DataConnectionHandler.TRANSFER_FILE);
+            } catch (KeyNotFoundException e) {
+                // We don't have a file, we shouldn't have ended up here but return anyway
+                return;
+            }
+            if (!transferFile.exists()) {
+                // No point checking the file as it has already been deleted (i.e. an abort)
+                return;
+            }
 
-			String transferFileName = transferFile.getName();
-			try {
-				if (transferFile.getSize() > 0 && transferFileName.toLowerCase().endsWith(".zip")) {
+            String transferFileName = transferFile.getName();
+            try {
+                if (transferFile.getSize() > 0 && transferFileName.toLowerCase().endsWith(".zip")) {
                     logger.debug("Running zipscript integrity check on stored file {}", transferFileName);
-					try {
-						RemoteSlave rslave = transferFile.getASlaveForFunction();
-						String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
-						boolean ok = getZipIntegrityFromIndex(rslave, index);
-						if (ok) {
-							response.addComment("Zip integrity check OK");
-							if (transferFile.exists()) {
-								try {
-									BaseFtpConnection conn = (BaseFtpConnection)request.getSession();
-									RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
-									InetAddress transferSlaveInetAddr =
-										response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
-									char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
-									ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(request.getCurrentDirectory());
-									GlobalContext.getEventService().publishAsync(
-											new ZipTransferEvent(conn, "STOR", transferFile,
-													conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
-													transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
-								} catch (KeyNotFoundException e1) {
-									// one or more bits of information didn't get populated correctly, have to skip the event
-								} catch (IOException e) {
-									// Do nothing, from user perspective STOR has completed so no point informing them
-								}
-							}
-						} else {
-							response.addComment("Zip integrity check failed, deleting file");
-							try {
-								transferFile.deleteUnchecked();
-							} catch (FileNotFoundException e) {
-								// file disappeared, not a problem as we wanted it gone anyway
-							}
-						}
-					} catch (SlaveUnavailableException e) {
-						// okay, it went offline while trying
-						response.addComment("Slave went offline whilst checking zip integrity");
-					} catch (RemoteIOException e) {
-						response.addComment("Slave encountered an error whilst checking zip integrity");
-						logger.warn("Error encountered whilst checking zip integrity",e);
-					} catch (NoAvailableSlaveException e) {
-						response.addComment("No available slave found to perform zip integrity check");
-					}
-				}
-			} catch (FileNotFoundException e) {
-				response.addComment("File has already been deleted, skipping zip integrity check");
-			}
-		}
-	}
+                    try {
+                        RemoteSlave rslave = transferFile.getASlaveForFunction();
+                        String index = ZipscriptVFSDataZip.getZipIssuer().issueZipCRCToSlave(rslave, transferFile.getPath());
+                        boolean ok = getZipIntegrityFromIndex(rslave, index);
+                        if (ok) {
+                            response.addComment("Zip integrity check OK");
+                            if (transferFile.exists()) {
+                                try {
+                                    BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
+                                    RemoteSlave transferSlave = response.getObject(DataConnectionHandler.TRANSFER_SLAVE);
+                                    InetAddress transferSlaveInetAddr =
+                                            response.getObject(DataConnectionHandler.TRANSFER_SLAVE_INET_ADDRESS);
+                                    char transferType = response.getObject(DataConnectionHandler.TRANSFER_TYPE);
+                                    ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(request.getCurrentDirectory());
+                                    GlobalContext.getEventService().publishAsync(
+                                            new ZipTransferEvent(conn, "STOR", transferFile,
+                                                    conn.getClientAddress(), transferSlave, transferSlaveInetAddr,
+                                                    transferType, zipData, zipData.getDizInfo(), zipData.getDizStatus()));
+                                } catch (KeyNotFoundException e1) {
+                                    // one or more bits of information didn't get populated correctly, have to skip the event
+                                } catch (IOException e) {
+                                    // Do nothing, from user perspective STOR has completed so no point informing them
+                                }
+                            }
+                        } else {
+                            response.addComment("Zip integrity check failed, deleting file");
+                            try {
+                                transferFile.deleteUnchecked();
+                            } catch (FileNotFoundException e) {
+                                // file disappeared, not a problem as we wanted it gone anyway
+                            }
+                        }
+                    } catch (SlaveUnavailableException e) {
+                        // okay, it went offline while trying
+                        response.addComment("Slave went offline whilst checking zip integrity");
+                    } catch (RemoteIOException e) {
+                        response.addComment("Slave encountered an error whilst checking zip integrity");
+                        logger.warn("Error encountered whilst checking zip integrity", e);
+                    } catch (NoAvailableSlaveException e) {
+                        response.addComment("No available slave found to perform zip integrity check");
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                response.addComment("File has already been deleted, skipping zip integrity check");
+            }
+        }
+    }
 
-	@CommandHook(commands = "doSTOR", priority = 14, type = HookType.POST)
-	public void doZipscriptSTORDizStatsHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 226) {
-			// STOR failed, abort stats
-			return;
-		}
-		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
-				getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("stor.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
-			addRaceStats(request, response, request.getCurrentDirectory());
-		}
-	}
+    @CommandHook(commands = "doSTOR", priority = 14, type = HookType.POST)
+    public void doZipscriptSTORDizStatsHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 226) {
+            // STOR failed, abort stats
+            return;
+        }
+        Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
+                getPropertiesForPlugin("zipscript.conf");
+        if (cfg.getProperty("stor.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
+            addRaceStats(request, response, request.getCurrentDirectory());
+        }
+    }
 
-	@CommandHook(commands = "doCWD", priority = 13, type = HookType.POST)
-	public void doZipscriptCWDDizInfoHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 250) {
-			// CWD failed, abort diz info
-			return;
-		}
-		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
-		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("cwd.diz.info.enabled", "false").equalsIgnoreCase("true")) {
-			try {
-				ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
-				DizInfo dizInfo = zipData.getDizInfo();
-				response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()), StandardCharsets.ISO_8859_1)); 
-			} catch (IOException | NoAvailableSlaveException e) {
-				//Error fetching .diz, ignore
-			}
-		}
-	}
+    @CommandHook(commands = "doCWD", priority = 13, type = HookType.POST)
+    public void doZipscriptCWDDizInfoHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 250) {
+            // CWD failed, abort diz info
+            return;
+        }
+        Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
+                getPropertiesForPlugin("zipscript.conf");
+        if (cfg.getProperty("cwd.diz.info.enabled", "false").equalsIgnoreCase("true")) {
+            try {
+                ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(response.getCurrentDirectory());
+                DizInfo dizInfo = zipData.getDizInfo();
+                response.addComment(new String(Base64.getMimeDecoder().decode(dizInfo.getString()), StandardCharsets.ISO_8859_1));
+            } catch (IOException | NoAvailableSlaveException e) {
+                //Error fetching .diz, ignore
+            }
+        }
+    }
 
-	@CommandHook(commands = "doCWD", priority = 14, type = HookType.POST)
-	public void doZipscriptCWDDizStatsHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 250) {
-			// CWD failed, abort stats
-			return;
-		}
-		Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
-		getPropertiesForPlugin("zipscript.conf");
-		if (cfg.getProperty("cwd.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
-			addRaceStats(request, response, response.getCurrentDirectory());
-		}
-	}
+    @CommandHook(commands = "doCWD", priority = 14, type = HookType.POST)
+    public void doZipscriptCWDDizStatsHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 250) {
+            // CWD failed, abort stats
+            return;
+        }
+        Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().
+                getPropertiesForPlugin("zipscript.conf");
+        if (cfg.getProperty("cwd.zip.racestats.enabled", "false").equalsIgnoreCase("true")) {
+            addRaceStats(request, response, response.getCurrentDirectory());
+        }
+    }
 
-	@CommandHook(commands = "doDELE", priority = 13, type = HookType.POST)
-	public void doZipscriptDELEDizCleanupHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 250) {
-			// DELE failed, abort info
-			return;
-		}
-		String deleFileName;
-		try {
-			deleFileName = response.getObject(Dir.FILENAME);
-		} catch (KeyNotFoundException e) {
-			// We don't have a file, we shouldn't have ended up here but return anyway
-			return;
-		}
-		if (deleFileName.toLowerCase().endsWith(".zip")) {
-			try {
-				boolean noZip = true;
-				// Check if there are any other zips left
-				for(FileHandle file : request.getCurrentDirectory().getFilesUnchecked()) {
-					if (file.getName().toLowerCase().endsWith(".zip")) {
-						noZip = false;
-						break;
-					}
-				}
-				if (noZip) {
-					request.getCurrentDirectory().removePluginMetaData(DizInfo.DIZINFO);
-				}
-			} catch(FileNotFoundException e) {
-				// No inode to remove dizinfo from or dir has been deleted
-			}
-		}
-	}
+    @CommandHook(commands = "doDELE", priority = 13, type = HookType.POST)
+    public void doZipscriptDELEDizCleanupHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 250) {
+            // DELE failed, abort info
+            return;
+        }
+        String deleFileName;
+        try {
+            deleFileName = response.getObject(Dir.FILENAME);
+        } catch (KeyNotFoundException e) {
+            // We don't have a file, we shouldn't have ended up here but return anyway
+            return;
+        }
+        if (deleFileName.toLowerCase().endsWith(".zip")) {
+            try {
+                boolean noZip = true;
+                // Check if there are any other zips left
+                for (FileHandle file : request.getCurrentDirectory().getFilesUnchecked()) {
+                    if (file.getName().toLowerCase().endsWith(".zip")) {
+                        noZip = false;
+                        break;
+                    }
+                }
+                if (noZip) {
+                    request.getCurrentDirectory().removePluginMetaData(DizInfo.DIZINFO);
+                }
+            } catch (FileNotFoundException e) {
+                // No inode to remove dizinfo from or dir has been deleted
+            }
+        }
+    }
 
-	@CommandHook(commands = "doSITE_WIPE", priority = 13, type = HookType.POST)
-	public void doZipscriptWIPEDizCleanupHook(CommandRequest request, CommandResponse response) {
-		if (response.getCode() != 200) {
-			// WIPE failed, abort cleanup
-			return;
-		}
-		String arg = request.getArgument();
-		
-		if (!arg.toLowerCase().endsWith(".zip")) { 
-			return;
-		}
-		
-		DirectoryHandle wipeDir;
-		try {
-			wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(response.getObject(Dir.WIPE_PATH)).getParent();
-		} catch (KeyNotFoundException e) {
-			return;
-		}
-		
-		try {
-			boolean noZip = true;
-			// Check if there are any other zips left
-			for(FileHandle file : wipeDir.getFilesUnchecked()) {
-				if (file.getName().toLowerCase().endsWith(".zip")) {
-					noZip = false;
-					break;
-				}
-			}
-			if (noZip) {
-				wipeDir.removePluginMetaData(DizInfo.DIZINFO);
-			}
-		} catch(FileNotFoundException e) {
-			// No inode to remove dizinfo from or dir has been deleted
-		}
-	}	
-	
-	private void addRaceStats(CommandRequest request, CommandResponse response, DirectoryHandle dir) {
-		// show race stats
-		try {
-			ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
-			DizInfo dizInfo = zipData.getDizInfo();
-			DizStatus dizStatus = zipData.getDizStatus();
+    @CommandHook(commands = "doSITE_WIPE", priority = 13, type = HookType.POST)
+    public void doZipscriptWIPEDizCleanupHook(CommandRequest request, CommandResponse response) {
+        if (response.getCode() != 200) {
+            // WIPE failed, abort cleanup
+            return;
+        }
+        String arg = request.getArgument();
 
-			Collection<UploaderPosition> racers = RankUtils.userSort(getZipFiles(dir),
-					"bytes", "high");
-			Collection<GroupPosition> groups = RankUtils.topFileGroup(getZipFiles(dir));
+        if (!arg.toLowerCase().endsWith(".zip")) {
+            return;
+        }
 
-			String racerline = _bundle.getString("cwd.racers.body");
-			String groupline = _bundle.getString("cwd.groups.body");
+        DirectoryHandle wipeDir;
+        try {
+            wipeDir = request.getCurrentDirectory().getNonExistentFileHandle(response.getObject(Dir.WIPE_PATH)).getParent();
+        } catch (KeyNotFoundException e) {
+            return;
+        }
 
-			ReplacerEnvironment env = request.getSession().getReplacerEnvironment(null,
-					request.getSession().getUserNull(request.getUser()));
+        try {
+            boolean noZip = true;
+            // Check if there are any other zips left
+            for (FileHandle file : wipeDir.getFilesUnchecked()) {
+                if (file.getName().toLowerCase().endsWith(".zip")) {
+                    noZip = false;
+                    break;
+                }
+            }
+            if (noZip) {
+                wipeDir.removePluginMetaData(DizInfo.DIZINFO);
+            }
+        } catch (FileNotFoundException e) {
+            // No inode to remove dizinfo from or dir has been deleted
+        }
+    }
 
-			//Start building race message
-			StringBuilder raceTextBuilder = new StringBuilder(_bundle.getString("cwd.racestats.header"));
-			raceTextBuilder.append('\n');
-			raceTextBuilder.append(_bundle.getString("cwd.racers.header"));
-			raceTextBuilder.append('\n');
+    private void addRaceStats(CommandRequest request, CommandResponse response, DirectoryHandle dir) {
+        // show race stats
+        try {
+            ZipscriptVFSDataZip zipData = new ZipscriptVFSDataZip(dir);
+            DizInfo dizInfo = zipData.getDizInfo();
+            DizStatus dizStatus = zipData.getDizStatus();
 
-			ReplacerFormat raceformat = null;
+            Collection<UploaderPosition> racers = RankUtils.userSort(getZipFiles(dir),
+                    "bytes", "high");
+            Collection<GroupPosition> groups = RankUtils.topFileGroup(getZipFiles(dir));
 
-			//Add racer stats
-			int position = 1;
+            String racerline = _bundle.getString("cwd.racers.body");
+            String groupline = _bundle.getString("cwd.groups.body");
 
-			for (UploaderPosition stat : racers) {
-				User raceuser;
+            Map<String, Object> env = request.getSession().getReplacerEnvironment(null,
+                    request.getSession().getUserNull(request.getUser()));
 
-				try {
-					raceuser = GlobalContext.getGlobalContext().getUserManager()
-					.getUserByName(stat.getUsername());
-				} catch (NoSuchUserException e2) {
-					continue;
-				} catch (UserFileException e2) {
-					logger.error("Error reading userfile", e2);
+            //Start building race message
+            StringBuilder raceTextBuilder = new StringBuilder(_bundle.getString("cwd.racestats.header"));
+            raceTextBuilder.append('\n');
+            raceTextBuilder.append(_bundle.getString("cwd.racers.header"));
+            raceTextBuilder.append('\n');
 
-					continue;
-				}
+            //Add racer stats
+            int position = 1;
 
-				ReplacerEnvironment raceenv = new ReplacerEnvironment();
+            for (UploaderPosition stat : racers) {
+                User raceuser;
 
-				raceenv.add("speed",
-						Bytes.formatBytes(stat.getXferspeed()) + "/s");
-				raceenv.add("user", stat.getUsername());
-				raceenv.add("group", raceuser.getGroup());
-				raceenv.add("files", "" + stat.getFiles());
-				raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
-				raceenv.add("position", String.valueOf(position));
-				raceenv.add("percent",
-						Integer.toString(
-								(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
+                try {
+                    raceuser = GlobalContext.getGlobalContext().getUserManager().getUserByName(stat.getUsername());
+                } catch (NoSuchUserException e2) {
+                    continue;
+                } catch (UserFileException e2) {
+                    logger.error("Error reading userfile", e2);
+                    continue;
+                }
 
-				try {
-					raceTextBuilder.append(SimplePrintf.jprintf(racerline,raceenv));
-					raceTextBuilder.append('\n');
-					position++;
-				} catch (FormatterException e) {
-					logger.warn(e);
-				}
-			}
+                Map<String, Object> raceenv = new HashMap<>();
+                raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
+                raceenv.put("user", stat.getUsername());
+                raceenv.put("group", raceuser.getGroup());
+                raceenv.put("files", "" + stat.getFiles());
+                raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
+                raceenv.put("position", String.valueOf(position));
+                raceenv.put("percent", (stat.getFiles() * 100) / dizInfo.getTotal() + "%");
 
-			raceTextBuilder.append(_bundle.getString("cwd.racers.footer"));
-			raceTextBuilder.append('\n');
-			raceTextBuilder.append(_bundle.getString("cwd.groups.header"));
-			raceTextBuilder.append('\n');
+                raceTextBuilder.append(ReplacerUtils.jprintf(racerline, raceenv));
+                raceTextBuilder.append('\n');
+                position++;
+            }
 
-			//add groups stats
-			position = 1;
+            raceTextBuilder.append(_bundle.getString("cwd.racers.footer"));
+            raceTextBuilder.append('\n');
+            raceTextBuilder.append(_bundle.getString("cwd.groups.header"));
+            raceTextBuilder.append('\n');
 
-			for (GroupPosition stat: groups) {
-				ReplacerEnvironment raceenv = new ReplacerEnvironment();
+            //add groups stats
+            position = 1;
 
-				raceenv.add("group", stat.getGroupname());
-				raceenv.add("position", String.valueOf(position));
-				raceenv.add("bytes", Bytes.formatBytes(stat.getBytes()));
-				raceenv.add("files", Integer.toString(stat.getFiles()));
-				raceenv.add("percent",
-						Integer.toString(
-								(stat.getFiles() * 100) / dizInfo.getTotal()) + "%");
-				raceenv.add("speed",
-						Bytes.formatBytes(stat.getXferspeed()) + "/s");
+            for (GroupPosition stat : groups) {
+                Map<String, Object> raceenv = new HashMap<>();
+                raceenv.put("group", stat.getGroupname());
+                raceenv.put("position", String.valueOf(position));
+                raceenv.put("bytes", Bytes.formatBytes(stat.getBytes()));
+                raceenv.put("files", Integer.toString(stat.getFiles()));
+                raceenv.put("percent", (stat.getFiles() * 100) / dizInfo.getTotal() + "%");
+                raceenv.put("speed", Bytes.formatBytes(stat.getXferspeed()) + "/s");
 
-				try {
-					raceTextBuilder.append(SimplePrintf.jprintf(groupline,raceenv));
-					raceTextBuilder.append('\n');
-					position++;
-				} catch (FormatterException e) {
-					logger.warn(e);
-				}
-			}
+                raceTextBuilder.append(ReplacerUtils.jprintf(groupline, raceenv));
+                raceTextBuilder.append('\n');
+                position++;
+            }
 
-			raceTextBuilder.append(_bundle.getString("cwd.groups.footer"));
-			raceTextBuilder.append('\n');
+            raceTextBuilder.append(_bundle.getString("cwd.groups.footer"));
+            raceTextBuilder.append('\n');
 
-			env.add("completefiles", Integer.toString(dizStatus.getPresent()) + "/" + Integer.toString(dizInfo.getTotal()));
-			env.add("totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
-			env.add("totalspeed",
-					Bytes.formatBytes(getXferspeed(dir)) + "/s");
-			env.add("totalpercent",
-					Integer.toString(
-							(getZipFiles(dir).size() * 100) / dizInfo.getTotal()) +
-			"%");
+            env.put("completefiles", dizStatus.getPresent() + "/" + dizInfo.getTotal());
+            env.put("totalbytes", Bytes.formatBytes(getZipTotalBytes(dir)));
+            env.put("totalspeed", Bytes.formatBytes(getXferspeed(dir)) + "/s");
+            env.put("totalpercent", (getZipFiles(dir).size() * 100) / dizInfo.getTotal() + "%");
 
-			raceTextBuilder.append(_bundle.getString("cwd.totals.body"));
-			raceTextBuilder.append('\n');
-			raceTextBuilder.append(_bundle.getString("cwd.racestats.footer"));
-			raceTextBuilder.append('\n');
+            raceTextBuilder.append(_bundle.getString("cwd.totals.body"));
+            raceTextBuilder.append('\n');
+            raceTextBuilder.append(_bundle.getString("cwd.racestats.footer"));
+            raceTextBuilder.append('\n');
 
-			try {
-				raceformat = ReplacerFormat.createFormat(raceTextBuilder.toString());
-			} catch (FormatterException e1) {
-				logger.warn(e1);
-			}
-
-			try {
-				if (raceformat == null) {
-					response.addComment("cwd.uploaders");
-				} else {
-					response.addComment(SimplePrintf.jprintf(raceformat, env));
-				}
-			} catch (FormatterException e) {
-				response.addComment("cwd.uploaders");
-				logger.warn("", e);
-			}
-		} catch (FileNotFoundException e) {
-			//Error fetching SFV, ignore
-		} catch (IOException e) {
-			//Error fetching SFV, ignore
-		} catch (NoAvailableSlaveException e) {
-			//Error fetching SFV, ignore
-		}
-	}
+            response.addComment(ReplacerUtils.jprintf(raceTextBuilder.toString(), env));
+        } catch (IOException | NoAvailableSlaveException e) {
+            //Error fetching SFV, ignore
+        }
+    }
 }

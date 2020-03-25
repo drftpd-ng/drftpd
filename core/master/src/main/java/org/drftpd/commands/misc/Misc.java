@@ -17,15 +17,12 @@
  */
 package org.drftpd.commands.misc;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.master.BaseFtpConnection;
+import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.plugins.commandmanager.*;
-import org.tanesha.replacer.FormatterException;
-import org.tanesha.replacer.ReplacerEnvironment;
-import org.tanesha.replacer.SimplePrintf;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -180,15 +177,10 @@ public class Misc extends CommandInterface {
 						+ request.getArgument() + "\" command");
     		}
     		else {
-    			ReplacerEnvironment env = new ReplacerEnvironment();
-    			env.add("command", request.getArgument().toUpperCase());
-    			try {
-    				response.addComment(SimplePrintf.jprintf(helpString,env));
-    			}
-    			catch (FormatterException e) {
-    				response.addComment(request.getArgument() 
-    						+ " command has an invalid help.specific definition");
-    			}
+				Map<String, Object> env = new HashMap<>();
+    			env.put("command", request.getArgument().toUpperCase());
+				String message = ReplacerUtils.jprintf(helpString, env);
+    			response.addComment(message);
     		}
     		return response;
     	}

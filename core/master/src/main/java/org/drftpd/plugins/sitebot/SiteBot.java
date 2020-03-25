@@ -17,12 +17,10 @@
  */
 package org.drftpd.plugins.sitebot;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
-import org.drftpd.commands.zipscript.RescanPostProcessDirInterface;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commandmanager.CommandManagerInterface;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
@@ -38,7 +36,6 @@ import org.drftpd.plugins.sitebot.config.ServerConfig;
 import org.drftpd.plugins.sitebot.config.SiteBotConfig;
 import org.drftpd.plugins.sitebot.event.InviteEvent;
 import org.reflections.Reflections;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocket;
@@ -58,13 +55,13 @@ import java.util.concurrent.*;
 public class SiteBot implements ReplyConstants, Runnable {
 
     private static final Logger logger = LogManager.getLogger(SiteBot.class);
-    public static final ReplacerEnvironment GLOBAL_ENV = new ReplacerEnvironment();
+    public static final Map<String, Object> GLOBAL_ENV = new HashMap<>();
 
     static {
-        GLOBAL_ENV.add("bold", "\u0002");
-        GLOBAL_ENV.add("coloroff", "\u000f");
-        GLOBAL_ENV.add("color", "\u0003");
-        GLOBAL_ENV.add("underline", "\u001f");
+        GLOBAL_ENV.put("bold", "\u0002");
+        GLOBAL_ENV.put("coloroff", "\u000f");
+        GLOBAL_ENV.put("color", "\u0003");
+        GLOBAL_ENV.put("underline", "\u001f");
     }
 
     // Configuration

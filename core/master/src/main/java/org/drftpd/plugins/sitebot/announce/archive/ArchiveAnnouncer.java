@@ -16,6 +16,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.archive;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -28,7 +30,6 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author CyBeR
@@ -39,9 +40,7 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 	private AnnounceConfig _config;
 
 	private ResourceBundle _bundle;
-
-
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -66,12 +65,12 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 	public void onArchiveStartEvent(ArchiveStartEvent event) {
 		AnnounceWriter writer = _config.getPathWriter("archive_start", event.getArchiveType().getDirectory());
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
             
-			env.add("type", event.getArchiveType().getClass().getSimpleName());
-			env.add("rls", event.getArchiveType().getDirectory().getName());
-			env.add("files", event.getJobs().size());
-			env.add("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
+			env.put("type", event.getArchiveType().getClass().getSimpleName());
+			env.put("rls", event.getArchiveType().getDirectory().getName());
+			env.put("files", event.getJobs().size());
+			env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
 
 			sayOutput(ReplacerUtils.jprintf("archive.start", env, _bundle), writer);
 		}
@@ -81,15 +80,15 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 	public void onArchiveFinishEvent(ArchiveFinishEvent event) {
     	AnnounceWriter writer = _config.getPathWriter("archive_finish", event.getArchiveType().getDirectory());
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
             
-			env.add("type", event.getArchiveType().getClass().getSimpleName());
-			env.add("rls", event.getArchiveType().getDirectory().getName());
-			env.add("time", event.getArchiveTime());
-			env.add("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
+			env.put("type", event.getArchiveType().getClass().getSimpleName());
+			env.put("rls", event.getArchiveType().getDirectory().getName());
+			env.put("time", event.getArchiveTime());
+			env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
 			
 			if (event.getArchiveType().getDestinationDirectory() != null) {
-				env.add("destdir", event.getArchiveType().getDestinationDirectory().getParent().getPath());
+				env.put("destdir", event.getArchiveType().getDestinationDirectory().getParent().getPath());
 				sayOutput(ReplacerUtils.jprintf("archive.finish.move", env, _bundle), writer);
 			} else {
 				sayOutput(ReplacerUtils.jprintf("archive.finish", env, _bundle), writer);
@@ -101,13 +100,13 @@ public class ArchiveAnnouncer extends AbstractAnnouncer {
 	public void onArchiveFailedEvent(ArchiveFailedEvent event) {
     	AnnounceWriter writer = _config.getPathWriter("archive_failed", event.getArchiveType().getDirectory());
 		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
             
-			env.add("type", event.getArchiveType().getClass().getSimpleName());
-			env.add("rls", event.getArchiveType().getDirectory().getName());
-			env.add("time", event.getArchiveTime());
-			env.add("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
-			env.add("reason", event.getFailReason());
+			env.put("type", event.getArchiveType().getClass().getSimpleName());
+			env.put("rls", event.getArchiveType().getDirectory().getName());
+			env.put("time", event.getArchiveTime());
+			env.put("srcdir", event.getArchiveType().getDirectory().getParent().getPath());
+			env.put("reason", event.getFailReason());
 			
 			sayOutput(ReplacerUtils.jprintf("archive.failed", env, _bundle), writer);
 		}

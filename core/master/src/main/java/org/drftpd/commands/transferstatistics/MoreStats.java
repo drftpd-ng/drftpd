@@ -29,13 +29,9 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.ResourceBundle;
+import java.util.*;
 
 
 /**
@@ -176,7 +172,7 @@ public class MoreStats extends CommandInterface {
 
         Collections.sort(grpList);
 
-        ReplacerEnvironment env = new ReplacerEnvironment();
+        Map<String, Object> env = new HashMap<>();
 
         //morestats.grpstats=| ${grp,-15} |${grpname,7} |${files,8} | ${megs,9} | ${members,9} |
         try {
@@ -192,11 +188,11 @@ public class MoreStats extends CommandInterface {
                 break;
             }
 
-            env.add("none", "");
-            env.add("pos", i);
-            env.add("grp", grp.getGroupname());
-            env.add("files", grp.getFiles());
-            env.add("megs", Bytes.formatBytes(grp.getBytes()));
+            env.put("none", "");
+            env.put("pos", i);
+            env.put("grp", grp.getGroupname());
+            env.put("files", grp.getFiles());
+            env.put("megs", Bytes.formatBytes(grp.getBytes()));
 
             double avrage = grp.getXfertime();
             double s = avrage / 1000.0;
@@ -207,9 +203,9 @@ public class MoreStats extends CommandInterface {
                 avrage = grp.getBytes() / s;
             }
 
-            env.add("average", Bytes.formatBytes((long) avrage));
+            env.put("average", Bytes.formatBytes((long) avrage));
 
-            env.add("members", grp.getMembers());
+            env.put("members", grp.getMembers());
             response.addComment(ReplacerUtils.jprintf("morestats.grpstats", env, _bundle));
         }
 
@@ -255,11 +251,11 @@ public class MoreStats extends CommandInterface {
             avrage = megs / s;
         }
 
-        ReplacerEnvironment env = new ReplacerEnvironment();
-        env.add("stat", type);
-        env.add("average", Bytes.formatBytes((long) avrage));
-        env.add("megs", Bytes.formatBytes(megs));
-        env.add("files", Integer.toString(files));
+        Map<String, Object> env = new HashMap<>();
+        env.put("stat", type);
+        env.put("average", Bytes.formatBytes((long) avrage));
+        env.put("megs", Bytes.formatBytes(megs));
+        env.put("files", Integer.toString(files));
         response.addComment(ReplacerUtils.jprintf("morestats.trafficstats", env, _bundle));
     }
 

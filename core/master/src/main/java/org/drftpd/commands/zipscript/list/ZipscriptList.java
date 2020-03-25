@@ -34,14 +34,10 @@ import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 import org.drftpd.slave.slave.LightRemoteInode;
 import org.reflections.Reflections;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author djb61
@@ -79,7 +75,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                 getPropertiesForPlugin("zipscript.conf").getProperty("files.missing.enabled", "false").equalsIgnoreCase("true");
         if (statusBarEnabled || missingFilesEnabled) {
             ArrayList<String> statusBarEntries = new ArrayList<>();
-            ReplacerEnvironment env = new ReplacerEnvironment();
+            Map<String, Object> env = new HashMap<>();
             try {
                 ZipscriptVFSDataSFV sfvData = new ZipscriptVFSDataSFV(dir);
                 SFVInfo sfvfile = sfvData.getSFVInfo();
@@ -87,18 +83,18 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
 
                 if (statusBarEnabled) {
                     if (sfvfile.getSize() != 0) {
-                        env.add("complete.total", "" + sfvfile.getSize());
-                        env.add("complete.number", "" + sfvstatus.getPresent());
-                        env.add("complete.percent", "" + (sfvstatus.getPresent() * 100)
+                        env.put("complete.total", "" + sfvfile.getSize());
+                        env.put("complete.number", "" + sfvstatus.getPresent());
+                        env.put("complete.percent", "" + (sfvstatus.getPresent() * 100)
                                 / sfvfile.getSize());
-                        env.add("complete.totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
+                        env.put("complete.totalbytes", Bytes.formatBytes(getSFVTotalBytes(dir, sfvData)));
                         statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.complete", env, container.getUser()));
 
                         if (sfvstatus.getOffline() != 0) {
-                            env.add("offline.number", "" + sfvstatus.getOffline());
-                            env.add("offline.percent", "" + (sfvstatus.getOffline() * 100) / sfvstatus.getPresent());
-                            env.add("online.number", "" + sfvstatus.getPresent());
-                            env.add("online.percent", "" + (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent());
+                            env.put("offline.number", "" + sfvstatus.getOffline());
+                            env.put("offline.percent", "" + (sfvstatus.getOffline() * 100) / sfvstatus.getPresent());
+                            env.put("online.number", "" + sfvstatus.getPresent());
+                            env.put("online.percent", "" + (sfvstatus.getAvailable() * 100) / sfvstatus.getPresent());
                             statusBarEntries.add(container.getSession().jprintf(bundle, "zip.statusbar.offline", env, container.getUser()));
                         }
                     }
@@ -107,7 +103,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                     for (String fileName : sfvfile.getEntries().keySet()) {
                         FileHandle file = new FileHandle(dir.getPath() + VirtualFileSystem.separator + fileName);
                         if (!file.exists()) {
-                            env.add("mfilename", fileName);
+                            env.put("mfilename", fileName);
                             container.getElements().add(new LightRemoteInode(
                                     container.getSession().jprintf(bundle, "zip.files.missing.filename", env, container.getUser()),
                                     "drftpd", "drftpd", dir.lastModified(), 0L));
@@ -145,7 +141,7 @@ public class ZipscriptList extends SFVTools implements AddListElementsInterface 
                     }
                 }
                 if (statusBarBuilder.length() > 0) {
-                    env.add("statusbar", statusBarBuilder.toString());
+                    env.put("statusbar", statusBarBuilder.toString());
                     String statusDirName = container.getSession().jprintf(bundle, "zip.statusbar.format", env, container.getUser());
 
                     if (statusDirName == null) {

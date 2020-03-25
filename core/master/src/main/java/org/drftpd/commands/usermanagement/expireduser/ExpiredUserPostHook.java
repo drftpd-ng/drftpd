@@ -30,9 +30,10 @@ import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.PostHookInterface;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -53,18 +54,15 @@ public class ExpiredUserPostHook implements PostHookInterface {
 		try {
 			myUser = GlobalContext.getGlobalContext().getUserManager()
 					.getUserByNameUnchecked(request.getArgument());
-		} catch (NoSuchUserException ex) {
-			return;
-		} catch (UserFileException ex) {
+		} catch (NoSuchUserException | UserFileException ex) {
 			return;
 		}
 		try {
 			// Test if metadata exist for user and if so add to response
 			Date expiredate = myUser.getKeyedMap().getObject(ExpiredUserData.EXPIRES);
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			env.add("expiredate", expiredate);
-			response.addComment(request.getSession().jprintf(_bundle,
-					"expireduser", env, myUser.getName()));
+			Map<String, Object> env = new HashMap<>();
+			env.put("expiredate", expiredate);
+			response.addComment(request.getSession().jprintf(_bundle, "expireduser", env, myUser.getName()));
 		} catch (KeyNotFoundException e) {
 			// ignore
 		}

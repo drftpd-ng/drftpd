@@ -34,10 +34,11 @@ import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
 import org.drftpd.sections.conf.DatedSection;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -74,19 +75,19 @@ public class AutoNukeCommands extends CommandInterface {
 			response.addComment(session.jprintf(_bundle, "autonukes.empty", request.getUser()));
 		}
 
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 
 		boolean foundItem = false;
 		for (NukeItem ni : DirsToNuke.getDirsToNuke().get()) {
 			if (ni.getDir().getPath().startsWith(request.getArgument(), 1)) {
 				SectionInterface niSection = GlobalContext.getGlobalContext().getSectionManager().lookup(ni.getDir());
-				env.add("section", niSection.getName());
-				env.add("sectioncolor", niSection.getColor());
-				env.add("dir", ni.getDir().getName());
-				env.add("path", ni.getDir().getPath());
-				env.add("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
-				env.add("multiplier", ""+ni.getMultiplier());
-				env.add("reason", ni.getReason());
+				env.put("section", niSection.getName());
+				env.put("sectioncolor", niSection.getColor());
+				env.put("dir", ni.getDir().getName());
+				env.put("path", ni.getDir().getPath());
+				env.put("timeleft", Time.formatTime(ni.getTime() - System.currentTimeMillis()));
+				env.put("multiplier", ""+ni.getMultiplier());
+				env.put("reason", ni.getReason());
 				response.addComment(session.jprintf(
 						_bundle, "autonukes.item", env, request.getUser()));
 				if (!foundItem) foundItem = true;
@@ -94,9 +95,9 @@ public class AutoNukeCommands extends CommandInterface {
 		}
 
 		if (!foundItem && !DirsToNuke.getDirsToNuke().empty()) {
-			env.add("section", section.getName());
-			env.add("sectioncolor", section.getColor());
-			env.add("nbrtotal", ""+DirsToNuke.getDirsToNuke().size());
+			env.put("section", section.getName());
+			env.put("sectioncolor", section.getColor());
+			env.put("nbrtotal", ""+DirsToNuke.getDirsToNuke().size());
 			response.addComment(session.jprintf(
 					_bundle, "autonukes.section.empty", request.getUser()));
 		}
@@ -106,10 +107,10 @@ public class AutoNukeCommands extends CommandInterface {
 
 	public CommandResponse doSITE_DELQUEUE(CommandRequest request) {
 		Session session = request.getSession();
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 
 		if (!request.hasArgument()) {
-			env.add("items", ""+DirsToNuke.getDirsToNuke().clear());
+			env.put("items", ""+DirsToNuke.getDirsToNuke().clear());
 			return new CommandResponse(200, session.jprintf(
 					_bundle, "autonukes.del.clear", env, request.getUser()));
 		}
@@ -124,7 +125,7 @@ public class AutoNukeCommands extends CommandInterface {
 				path = request.getCurrentDirectory().getPath() + VirtualFileSystem.separator + path;
 			}
 		}
-		env.add("path", path);
+		env.put("path", path);
 		try {
 			dir = request.getCurrentDirectory().getDirectoryUnchecked(path);
 		} catch (FileNotFoundException e) {
@@ -134,7 +135,7 @@ public class AutoNukeCommands extends CommandInterface {
 			return new CommandResponse(501, session.jprintf(
 					_bundle, "autonukes.del.error", env, request.getUser()));
 		}
-		env.add("dir", dir.getName());
+		env.put("dir", dir.getName());
 
 		if (DirsToNuke.getDirsToNuke().del(dir)) {
 			return new CommandResponse(200, session.jprintf(
@@ -171,11 +172,11 @@ public class AutoNukeCommands extends CommandInterface {
         if (sectionsToCheck.isEmpty()) {
             return new CommandResponse(500, "Section excluded from autonuke scan, aborting");
         }
-        ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
         for (SectionInterface section : sectionsToCheck) {
 			DirectoryHandle sectionRoot = section.getBaseDirectory();
-			env.add("section", section.getName());
-			env.add("sectioncolor", section.getColor());
+			env.put("section", section.getName());
+			env.put("sectioncolor", section.getColor());
 			request.getSession().printOutput(200, request.getSession().jprintf(
 					_bundle, "autonukescan.start", env, request.getUser()));
 

@@ -16,11 +16,9 @@
  */
 package org.drftpd.commands.find;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.find.action.ActionInterface;
 import org.drftpd.commands.find.option.OptionInterface;
 import org.drftpd.master.GlobalContext;
@@ -35,11 +33,8 @@ import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.commandmanager.*;
-import org.drftpd.slave.slave.diskselection.filter.DiskFilter;
 import org.reflections.Reflections;
-import org.tanesha.replacer.ReplacerEnvironment;
 
-import javax.swing.*;
 import java.io.FileNotFoundException;
 import java.util.*;
 
@@ -193,7 +188,7 @@ public class Find extends CommandInterface {
             return new CommandResponse(550, e.getMessage());
         }
 
-        ReplacerEnvironment env = new ReplacerEnvironment();
+        Map<String, Object> env = new HashMap<>();
 
         Session session = request.getSession();
 
@@ -219,11 +214,11 @@ public class Find extends CommandInterface {
                 if ((observePrivPath && inode.isHidden(user)) || (!observePrivPath && inode.isHidden(null))) {
                     continue;
                 }
-                env.add("name", inode.getName());
-                env.add("path", inode.getPath());
-                env.add("owner", inode.getUsername());
-                env.add("group", inode.getGroup());
-                env.add("size", Bytes.formatBytes(inode.getSize()));
+                env.put("name", inode.getName());
+                env.put("path", inode.getPath());
+                env.put("owner", inode.getUsername());
+                env.put("group", inode.getGroup());
+                env.put("size", Bytes.formatBytes(inode.getSize()));
                 for (ActionInterface action : actions) {
                     if ((inode.isFile() && action.execInFiles()) ||
                             (inode.isDirectory() && action.execInDirs())) {
@@ -244,8 +239,8 @@ public class Find extends CommandInterface {
             return response;
         }
 
-        env.add("limit", limit);
-        env.add("results", results);
+        env.put("limit", limit);
+        env.put("results", results);
         response.addComment(session.jprintf(_bundle,  "find.header", env, user.getName()));
 
         for (String line : responses) {

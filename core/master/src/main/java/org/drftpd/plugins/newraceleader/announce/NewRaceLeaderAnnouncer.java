@@ -30,8 +30,9 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -45,9 +46,7 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 	private AnnounceConfig _config;
 
 	private ResourceBundle _bundle;
-
-
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -72,22 +71,22 @@ public class NewRaceLeaderAnnouncer extends AbstractAnnouncer {
 
 	@EventSubscriber
 	public void onNewRaceLeaderEvent(NewRaceLeaderEvent event) {
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 		AnnounceWriter writer = _config.getPathWriter("store.newraceleader", event.getDirectory());
 		if (writer != null) {
-			env.add("section",writer.getSectionName(event.getDirectory()));
-			env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDirectory()).getColor());
-			env.add("dir",writer.getPath(event.getDirectory()));
+			env.put("section",writer.getSectionName(event.getDirectory()));
+			env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(event.getDirectory()).getColor());
+			env.put("dir",writer.getPath(event.getDirectory()));
 
-			env.add("path",event.getDirectory().getPath());
-			env.add("filesleft", event.getFiles());
-			env.add("leaduser", event.getUser());
-			env.add("prevuser", event.getPrevUser());
+			env.put("path",event.getDirectory().getPath());
+			env.put("filesleft", event.getFiles());
+			env.put("leaduser", event.getUser());
+			env.put("prevuser", event.getPrevUser());
 
-			env.add("size", Bytes.formatBytes(event.getUploaderPosition().getBytes()));
-			env.add("files", event.getUploaderPosition().getFiles());
-			env.add("speed", Bytes.formatBytes(event.getUploaderPosition().getXferspeed()));
-			env.add("percent", event.getFiles() / event.getUploaderPosition().getFiles());
+			env.put("size", Bytes.formatBytes(event.getUploaderPosition().getBytes()));
+			env.put("files", event.getUploaderPosition().getFiles());
+			env.put("speed", Bytes.formatBytes(event.getUploaderPosition().getXferspeed()));
+			env.put("percent", event.getFiles() / event.getUploaderPosition().getFiles());
 
 			sayOutput(ReplacerUtils.jprintf("store.newraceleader", env, _bundle), writer);
 		}

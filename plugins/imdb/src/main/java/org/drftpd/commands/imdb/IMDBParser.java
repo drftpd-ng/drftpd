@@ -23,8 +23,9 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.util.HttpUtils;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.tanesha.replacer.ReplacerEnvironment;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,20 +147,20 @@ public class IMDBParser {
 		return true;
 	}
 	
-	public ReplacerEnvironment getEnv() {
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("title", getTitle());
-		env.add("director", getDirector());
-		env.add("genres", getGenres());
-		env.add("language", getLanguage());
-		env.add("country", getCountry());
-		env.add("plot", getPlot());
-		env.add("rating", getRating() != null ? getRating()/10+"."+getRating()%10 : "0");
-		env.add("votes", getVotes() != null ? getVotes() : "0");
-		env.add("year", getYear() != null ? getYear() : "9999");
-		env.add("url", getURL());
-		env.add("runtime", getRuntime() != null ? getRuntime() : "0");
-		env.add("searchstr", _searchString != null ? _searchString : "");
+	public Map<String, Object> getEnv() {
+		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+		env.put("title", getTitle());
+		env.put("director", getDirector());
+		env.put("genres", getGenres());
+		env.put("language", getLanguage());
+		env.put("country", getCountry());
+		env.put("plot", getPlot());
+		env.put("rating", getRating() != null ? getRating()/10+"."+getRating()%10 : "0");
+		env.put("votes", getVotes() != null ? getVotes() : "0");
+		env.put("year", getYear() != null ? getYear() : "9999");
+		env.put("url", getURL());
+		env.put("runtime", getRuntime() != null ? getRuntime() : "0");
+		env.put("searchstr", _searchString != null ? _searchString : "");
 		return env;
 	}
 

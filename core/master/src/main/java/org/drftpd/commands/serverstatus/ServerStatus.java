@@ -25,12 +25,9 @@ import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.master.Session;
 import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.lang.management.*;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * @author fr0w
@@ -51,10 +48,10 @@ public class ServerStatus extends CommandInterface {
 	
 	public CommandResponse doMasterUptime(CommandRequest request) {
 		CommandResponse response = new CommandResponse(200);
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 		
 		long uptime = ManagementFactory.getRuntimeMXBean().getUptime();
-		env.add("uptime", Time.formatTime(uptime));
+		env.put("uptime", Time.formatTime(uptime));
 		response.setMessage(request.getSession().jprintf(_bundle, "status.master.uptime", env, request.getUser()));
 		
 		return response;		
@@ -62,7 +59,7 @@ public class ServerStatus extends CommandInterface {
 	
 	public CommandResponse doSlaveUptime(CommandRequest request) throws ImproperUsageException {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-	    ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 	    
 		if (!request.hasArgument()) {
 			throw new ImproperUsageException();
@@ -75,7 +72,7 @@ public class ServerStatus extends CommandInterface {
             RemoteSlave rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slaveName);
             response.addComment(makeOutput(session, rslave));            
 	    } catch (ObjectNotFoundException e2) {
-            env.add("slave", slaveName);
+            env.put("slave", slaveName);
             response.addComment(session.jprintf(_bundle, env, "status.slave.notfound"));
         }	    
 	    return response;
@@ -93,14 +90,14 @@ public class ServerStatus extends CommandInterface {
 	}
 	
 	private String makeOutput(Session session, RemoteSlave rslave) {
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 		
-        env.add("slave", rslave.getName()); 
+        env.put("slave", rslave.getName()); 
         
         if (rslave.isAvailable()) {
         	long connectTime = rslave.getTransientKeyedMap().getObjectLong(CONNECTTIME);
         	long uptime = System.currentTimeMillis() - connectTime;
-        	env.add("uptime", Time.formatTime(uptime));	
+        	env.put("uptime", Time.formatTime(uptime));	
     		return session.jprintf(_bundle, env, "status.slave.uptime");
         }
 		return session.jprintf(_bundle, env, "status.slave.offline");
@@ -108,7 +105,7 @@ public class ServerStatus extends CommandInterface {
 	
 	public CommandResponse doStatus(CommandRequest request) throws ImproperUsageException {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 		Session session = request.getSession();
 		
 		if (!request.hasArgument()) {
@@ -134,47 +131,47 @@ public class ServerStatus extends CommandInterface {
 			
 			if (arg.equals("os") || isAll) {
 				OperatingSystemMXBean omx = ManagementFactory.getOperatingSystemMXBean();
-				env.add("os.name", omx.getName());
-				env.add("os.version", omx.getVersion());
-				env.add("os.arch", omx.getArch());
+				env.put("os.name", omx.getName());
+				env.put("os.version", omx.getVersion());
+				env.put("os.arch", omx.getArch());
 				response.addComment(session.jprintf(_bundle, env, "status.osinfo"));
 			}
 
 			if (arg.equals("vm") || isAll) {
 				RuntimeMXBean rmx = ManagementFactory.getRuntimeMXBean();
-				env.add("vm.name", rmx.getVmName());
-				env.add("vm.version", System.getProperty("java.version"));
-				env.add("vm.vendor", rmx.getVmVendor());
+				env.put("vm.name", rmx.getVmName());
+				env.put("vm.version", System.getProperty("java.version"));
+				env.put("vm.vendor", rmx.getVmVendor());
 				response.addComment(session.jprintf(_bundle, env, "status.vminfo"));
 			}
 
 			if (arg.equals("memory") || isAll) { 
 				MemoryUsage heap = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
-				env.add("heap.used", Bytes.formatBytes(heap.getUsed()));
-				env.add("heap.available", Bytes.formatBytes(heap.getCommitted()));
-				env.add("heap.max", Bytes.formatBytes(heap.getMax()));
+				env.put("heap.used", Bytes.formatBytes(heap.getUsed()));
+				env.put("heap.available", Bytes.formatBytes(heap.getCommitted()));
+				env.put("heap.max", Bytes.formatBytes(heap.getMax()));
 				response.addComment(session.jprintf(_bundle, env, "status.heap"));
 
 				MemoryUsage nonheap = ManagementFactory.getMemoryMXBean().getNonHeapMemoryUsage();
-				env.add("nonheap.used", Bytes.formatBytes(nonheap.getUsed()));
-				env.add("nonheap.available", Bytes.formatBytes(nonheap.getCommitted()));
-				env.add("nonheap.max", Bytes.formatBytes(nonheap.getMax()));
+				env.put("nonheap.used", Bytes.formatBytes(nonheap.getUsed()));
+				env.put("nonheap.available", Bytes.formatBytes(nonheap.getCommitted()));
+				env.put("nonheap.max", Bytes.formatBytes(nonheap.getMax()));
 				response.addComment(session.jprintf(_bundle, env, "status.nonheap"));
 			}
 			
 			if (arg.equals("classes") || isAll) {
 				ClassLoadingMXBean cmx = ManagementFactory.getClassLoadingMXBean();
-				env.add("loaded.classes", cmx.getLoadedClassCount());
-				env.add("unloaded.classes", cmx.getUnloadedClassCount());
-				env.add("total.classes", cmx.getTotalLoadedClassCount());
+				env.put("loaded.classes", cmx.getLoadedClassCount());
+				env.put("unloaded.classes", cmx.getUnloadedClassCount());
+				env.put("total.classes", cmx.getTotalLoadedClassCount());
 				response.addComment(session.jprintf(_bundle, env, "status.classes"));
 			}
 			
 			if (arg.equals("threads") || isAll) {
 				ThreadMXBean tmx = ManagementFactory.getThreadMXBean();
-				env.add("current.threads", tmx.getThreadCount());
-				env.add("max.threads", tmx.getPeakThreadCount());
-				env.add("total.threads", tmx.getTotalStartedThreadCount());
+				env.put("current.threads", tmx.getThreadCount());
+				env.put("max.threads", tmx.getPeakThreadCount());
+				env.put("total.threads", tmx.getTotalStartedThreadCount());
 				response.addComment(session.jprintf(_bundle, env, "status.threads"));
 			}
 
@@ -185,12 +182,12 @@ public class ServerStatus extends CommandInterface {
 					collectionCount += gmx.getCollectionCount();
 					collectionTime += gmx.getCollectionTime();
 				}
-				env.add("collection.count", String.valueOf(collectionCount));
+				env.put("collection.count", String.valueOf(collectionCount));
 				
 				if (collectionTime > 1000)
-					env.add("collection.time", Time.formatTime(collectionTime));
+					env.put("collection.time", Time.formatTime(collectionTime));
 				else
-					env.add("collection.time", collectionTime+"ms");
+					env.put("collection.time", collectionTime+"ms");
 
 				response.addComment(session.jprintf(_bundle, env, "status.gcinfo"));
 			}

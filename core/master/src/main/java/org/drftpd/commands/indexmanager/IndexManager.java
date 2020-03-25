@@ -30,10 +30,11 @@ import org.drftpd.plugins.commandmanager.CommandInterface;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
 import org.drftpd.plugins.commandmanager.StandardCommandManager;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
@@ -78,14 +79,14 @@ public class IndexManager extends CommandInterface {
 	
 	public CommandResponse doIndexStatus(CommandRequest request) {
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-		ReplacerEnvironment env = new ReplacerEnvironment();
+		Map<String, Object> env = new HashMap<>();
 
 		IndexEngineInterface ie = GlobalContext.getGlobalContext().getIndexEngine();
 		
 		if (request.getArgument().equalsIgnoreCase("full")) {
 			for (Entry<String,String> entry : ie.getStatus().entrySet()) {
-				env.add("key", entry.getKey());
-				env.add("value", entry.getValue());
+				env.put("key", entry.getKey());
+				env.put("value", entry.getValue());
 				response.addComment(request.getSession().jprintf(_bundle,"indexstatus", env, request.getUser()));
 			}
 		} else {

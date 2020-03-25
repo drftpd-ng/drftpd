@@ -20,9 +20,10 @@ package org.drftpd.commands.tvmaze;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.drftpd.commands.tvmaze.event.TvMazeEvent;
+import org.drftpd.commands.tvmaze.index.TvMazeQueryParams;
 import org.drftpd.commands.tvmaze.metadata.TvEpisode;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.commands.tvmaze.vfs.TvMazeVFSData;
@@ -39,19 +40,20 @@ import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
 import org.drftpd.plugins.sitebot.SiteBot;
-import org.drftpd.commands.tvmaze.index.TvMazeQueryParams;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,82 +65,82 @@ public class TvMazeUtils {
 
     private static final String[] _seperators = {".", "-", "_"};
 
-    public static ReplacerEnvironment getShowEnv(TvMazeInfo tvShow) {
-        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    public static Map<String, Object> getShowEnv(TvMazeInfo tvShow) {
+        Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
         DateTimeFormatter df = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getDateFormat());
         DateTimeFormatter tf = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getTimeFormat());
 
-        env.add("id", tvShow.getID());
-        env.add("tvurl", tvShow.getURL());
-        env.add("tvname", tvShow.getName());
-        env.add("type", tvShow.getType());
-        env.add("language", tvShow.getLanguage());
-        env.add("genres", StringUtils.join(tvShow.getGenres(), " | "));
-        env.add("status", tvShow.getStatus());
-        env.add("runtime", tvShow.getRuntime());
+        env.put("id", tvShow.getID());
+        env.put("tvurl", tvShow.getURL());
+        env.put("tvname", tvShow.getName());
+        env.put("type", tvShow.getType());
+        env.put("language", tvShow.getLanguage());
+        env.put("genres", StringUtils.join(tvShow.getGenres(), " | "));
+        env.put("status", tvShow.getStatus());
+        env.put("runtime", tvShow.getRuntime());
         DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd");
-        env.add("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(dtf.parseDateTime(tvShow.getPremiered())));
-        env.add("network", tvShow.getNetwork());
-        env.add("country", tvShow.getCountry());
-        env.add("summary", StringUtils.abbreviate(tvShow.getSummary(), 250));
+        env.put("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(dtf.parseDateTime(tvShow.getPremiered())));
+        env.put("network", tvShow.getNetwork());
+        env.put("country", tvShow.getCountry());
+        env.put("summary", StringUtils.abbreviate(tvShow.getSummary(), 250));
 
         if (tvShow.getPreviousEP() != null) {
-            env.add("prevepid", tvShow.getPreviousEP().getID());
-            env.add("prevepurl", tvShow.getPreviousEP().getURL());
-            env.add("prevepname", tvShow.getPreviousEP().getName());
-            env.add("prevepseason", tvShow.getPreviousEP().getSeason());
-            env.add("prevepnumber", String.format("%02d", tvShow.getPreviousEP().getNumber()));
-            env.add("prevepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getPreviousEP().getAirDate())));
-            env.add("prevepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getPreviousEP().getAirDate())));
-            env.add("prevepruntime", tvShow.getPreviousEP().getRuntime());
-            env.add("prevepsummary", StringUtils.abbreviate(tvShow.getPreviousEP().getSummary(), 250));
-            env.add("prevepage", calculateAge(new DateTime(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepid", tvShow.getPreviousEP().getID());
+            env.put("prevepurl", tvShow.getPreviousEP().getURL());
+            env.put("prevepname", tvShow.getPreviousEP().getName());
+            env.put("prevepseason", tvShow.getPreviousEP().getSeason());
+            env.put("prevepnumber", String.format("%02d", tvShow.getPreviousEP().getNumber()));
+            env.put("prevepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getPreviousEP().getAirDate())));
+            env.put("prevepruntime", tvShow.getPreviousEP().getRuntime());
+            env.put("prevepsummary", StringUtils.abbreviate(tvShow.getPreviousEP().getSummary(), 250));
+            env.put("prevepage", calculateAge(new DateTime(tvShow.getPreviousEP().getAirDate())));
         }
         if (tvShow.getNextEP() != null) {
-            env.add("nextepid", tvShow.getNextEP().getID());
-            env.add("nextepurl", tvShow.getNextEP().getURL());
-            env.add("nextepname", tvShow.getNextEP().getName());
-            env.add("nextepseason", tvShow.getNextEP().getSeason());
-            env.add("nextepnumber", String.format("%02d", tvShow.getNextEP().getNumber()));
-            env.add("nextepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getNextEP().getAirDate())));
-            env.add("nextepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getNextEP().getAirDate())));
-            env.add("nextepruntime", tvShow.getNextEP().getRuntime());
-            env.add("nextepsummary", StringUtils.abbreviate(tvShow.getNextEP().getSummary(), 250));
-            env.add("nextepage", calculateAge(new DateTime(tvShow.getNextEP().getAirDate())));
+            env.put("nextepid", tvShow.getNextEP().getID());
+            env.put("nextepurl", tvShow.getNextEP().getURL());
+            env.put("nextepname", tvShow.getNextEP().getName());
+            env.put("nextepseason", tvShow.getNextEP().getSeason());
+            env.put("nextepnumber", String.format("%02d", tvShow.getNextEP().getNumber()));
+            env.put("nextepairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getNextEP().getAirDate())));
+            env.put("nextepairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvShow.getNextEP().getAirDate())));
+            env.put("nextepruntime", tvShow.getNextEP().getRuntime());
+            env.put("nextepsummary", StringUtils.abbreviate(tvShow.getNextEP().getSummary(), 250));
+            env.put("nextepage", calculateAge(new DateTime(tvShow.getNextEP().getAirDate())));
         }
 
         return env;
     }
 
-    public static ReplacerEnvironment getEPEnv(TvMazeInfo tvShow, TvEpisode tvEP) {
-        ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+    public static Map<String, Object> getEPEnv(TvMazeInfo tvShow, TvEpisode tvEP) {
+        Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
         DateTimeFormatter df = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getDateFormat());
         DateTimeFormatter tf = DateTimeFormat.forPattern(TvMazeConfig.getInstance().getTimeFormat());
 
-        env.add("id", tvShow.getID());
-        env.add("tvurl", tvShow.getURL());
-        env.add("tvname", tvShow.getName());
-        env.add("type", tvShow.getType());
-        env.add("language", tvShow.getLanguage());
-        env.add("genres", StringUtils.join(tvShow.getGenres(), " | "));
-        env.add("status", tvShow.getStatus());
-        env.add("runtime", tvShow.getRuntime());
+        env.put("id", tvShow.getID());
+        env.put("tvurl", tvShow.getURL());
+        env.put("tvname", tvShow.getName());
+        env.put("type", tvShow.getType());
+        env.put("language", tvShow.getLanguage());
+        env.put("genres", StringUtils.join(tvShow.getGenres(), " | "));
+        env.put("status", tvShow.getStatus());
+        env.put("runtime", tvShow.getRuntime());
         DateTimeFormatter dtf = DateTimeFormat.forPattern("yyyy-MM-dd");
-        env.add("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(dtf.parseDateTime(tvShow.getPremiered())));
-        env.add("network", tvShow.getNetwork());
-        env.add("country", tvShow.getCountry());
-        env.add("summary", StringUtils.abbreviate(tvShow.getSummary(), 250));
+        env.put("premiered", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(dtf.parseDateTime(tvShow.getPremiered())));
+        env.put("network", tvShow.getNetwork());
+        env.put("country", tvShow.getCountry());
+        env.put("summary", StringUtils.abbreviate(tvShow.getSummary(), 250));
 
-        env.add("epid", tvEP.getID());
-        env.add("epurl", tvEP.getURL());
-        env.add("epname", tvEP.getName());
-        env.add("epseason", tvEP.getSeason());
-        env.add("epnumber", String.format("%02d", tvEP.getNumber()));
-        env.add("epairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvEP.getAirDate())));
-        env.add("epairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvEP.getAirDate())));
-        env.add("epruntime", tvEP.getRuntime());
-        env.add("epsummary", StringUtils.abbreviate(tvEP.getSummary(), 250));
-        env.add("epage", calculateAge(new DateTime(tvEP.getAirDate())));
+        env.put("epid", tvEP.getID());
+        env.put("epurl", tvEP.getURL());
+        env.put("epname", tvEP.getName());
+        env.put("epseason", tvEP.getSeason());
+        env.put("epnumber", String.format("%02d", tvEP.getNumber()));
+        env.put("epairdate", df.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvEP.getAirDate())));
+        env.put("epairtime", tf.withZone(TvMazeConfig.getInstance().getTimezone()).print(new DateTime(tvEP.getAirDate())));
+        env.put("epruntime", tvEP.getRuntime());
+        env.put("epsummary", StringUtils.abbreviate(tvEP.getSummary(), 250));
+        env.put("epage", calculateAge(new DateTime(tvEP.getAirDate())));
 
         return env;
     }
@@ -414,15 +416,15 @@ public class TvMazeUtils {
     public static void publishEvent(TvMazeInfo tvmazeInfo, DirectoryHandle dir, SectionInterface section) {
         if (tvmazeInfo != null) {
             // TvMaze show found, announce to IRC
-            ReplacerEnvironment env;
+            Map<String, Object> env;
             if (tvmazeInfo.getEPList().length == 1) {
                 env = getEPEnv(tvmazeInfo, tvmazeInfo.getEPList()[0]);
             } else {
                 env = getShowEnv(tvmazeInfo);
             }
-            env.add("release", dir.getName());
-            env.add("section", section.getName());
-            env.add("sectioncolor", section.getColor());
+            env.put("release", dir.getName());
+            env.put("section", section.getName());
+            env.put("sectioncolor", section.getColor());
             GlobalContext.getEventService().publishAsync(new TvMazeEvent(env, dir));
         }
     }

@@ -16,9 +16,8 @@
  */
 package org.drftpd.commands.nuke.list;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.drftpd.commands.list.AddListElementsInterface;
 import org.drftpd.commands.list.ListElementsContainer;
@@ -27,9 +26,10 @@ import org.drftpd.master.common.Bytes;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.slave.slave.LightRemoteInode;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 import java.io.FileNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 /**
@@ -38,33 +38,34 @@ import java.util.ResourceBundle;
 public class NukeList implements AddListElementsInterface {
     private static final Logger logger = LogManager.getLogger(NukeList.class);
 
-	public void initialize() { }
+    public void initialize() {
+    }
 
-	public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
+    public ListElementsContainer addElements(DirectoryHandle dir, ListElementsContainer container) {
         try {
             ResourceBundle bundle = container.getCommandManager().getResourceBundle();
-			NukeData nukeData = dir.getPluginMetaData(NukeData.NUKEDATA);
-			ReplacerEnvironment env = new ReplacerEnvironment();
-			env.add("reason", nukeData.getReason());
-			env.add("amount", Bytes.formatBytes(nukeData.getAmount()));
-			env.add("multiplier", ""+nukeData.getMultiplier());
-			env.add("nuker", nukeData.getUser());
-			String reasonBarName = container.getSession().jprintf(bundle, "nuke.reason", env, container.getUser());
-			try {
-				container.getElements().add(
-						new LightRemoteInode(reasonBarName, "drftpd", "drftpd", true, dir.lastModified(), 0L));
-			} catch (FileNotFoundException e) {
-				// dir was deleted during list operation
-			}
+            NukeData nukeData = dir.getPluginMetaData(NukeData.NUKEDATA);
+            Map<String, Object> env = new HashMap<>();
+            env.put("reason", nukeData.getReason());
+            env.put("amount", Bytes.formatBytes(nukeData.getAmount()));
+            env.put("multiplier", "" + nukeData.getMultiplier());
+            env.put("nuker", nukeData.getUser());
+            String reasonBarName = container.getSession().jprintf(bundle, "nuke.reason", env, container.getUser());
+            try {
+                container.getElements().add(
+                        new LightRemoteInode(reasonBarName, "drftpd", "drftpd", true, dir.lastModified(), 0L));
+            } catch (FileNotFoundException e) {
+                // dir was deleted during list operation
+            }
         } catch (KeyNotFoundException ex) {
             // Dir not nuked, just continue
         } catch (FileNotFoundException ex) {
             logger.error("Could not find directory: {}", dir.getPath(), ex);
         }
-		return container;
-	}
+        return container;
+    }
 
-    public void unload() {  
+    public void unload() {
         AnnotationProcessor.unprocess(this);
     }
 }

@@ -17,6 +17,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.def;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.apache.logging.log4j.Logger;
@@ -39,7 +41,6 @@ import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.sitebot.config.ChannelConfig;
 import org.drftpd.plugins.sitebot.event.InviteEvent;
 import org.drftpd.slave.slave.SlaveStatus;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author djb61
@@ -47,53 +48,51 @@ import org.tanesha.replacer.ReplacerEnvironment;
  */
 public class BasicAnnouncer extends AbstractAnnouncer {
 
-	private static final Logger logger = LogManager.getLogger(BasicAnnouncer.class);
+    private static final Logger logger = LogManager.getLogger(BasicAnnouncer.class);
 
-	private AnnounceConfig _config;
+    private AnnounceConfig _config;
 
-	private ResourceBundle _bundle;
+    private ResourceBundle _bundle;
 
+    public void initialise(AnnounceConfig config, ResourceBundle bundle) {
+        _config = config;
+        _bundle = bundle;
 
+        // Subscribe to events
+        AnnotationProcessor.process(this);
+    }
 
-	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
-		_config = config;
-		_bundle = bundle;
+    public void stop() {
+        AnnotationProcessor.unprocess(this);
+    }
 
-		// Subscribe to events
-		AnnotationProcessor.process(this);
-	}
+    public String[] getEventTypes() {
+        return new String[]{"mkdir", "rmdir", "wipe", "addslave",
+                "delslave", "msgslave", "msgmaster", "invite"};
+    }
 
-	public void stop() {
-		AnnotationProcessor.unprocess(this);
-	}
+    public void setResourceBundle(ResourceBundle bundle) {
+        _bundle = bundle;
+    }
 
-	public String[] getEventTypes() {
-		return new String[]{"mkdir","rmdir","wipe","addslave",
-				"delslave","msgslave", "msgmaster","invite"};
-	}
-	
-	public void setResourceBundle(ResourceBundle bundle) {
-		_bundle = bundle;
-	}
+    @EventSubscriber
+    public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {
+        if ("MKD".equals(direvent.getCommand())) {
+            outputDirectoryEvent(direvent, "mkdir");
+        } else if ("RMD".equals(direvent.getCommand())) {
+            outputDirectoryEvent(direvent, "rmdir");
+        } else if ("WIPE".equals(direvent.getCommand())) {
+            if (direvent.getDirectory().isDirectory()) {
+                outputDirectoryEvent(direvent, "wipe");
+            }
+        }
+    }
 
-	@EventSubscriber
-	public void onDirectoryFtpEvent(DirectoryFtpEvent direvent) {
-		if ("MKD".equals(direvent.getCommand())) {
-			outputDirectoryEvent(direvent, "mkdir");
-		} else if ("RMD".equals(direvent.getCommand())) {
-			outputDirectoryEvent(direvent, "rmdir");
-		} else if ("WIPE".equals(direvent.getCommand())) {
-			if (direvent.getDirectory().isDirectory()) {
-				outputDirectoryEvent(direvent, "wipe");
-			}
-		}
-	}
-
-	@EventSubscriber
-	public void onSlaveEvent(SlaveEvent event) {
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("slave", event.getRSlave().getName());
-		env.add("message", event.getMessage());
+    @EventSubscriber
+    public void onSlaveEvent(SlaveEvent event) {
+        Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+        env.put("slave", event.getRSlave().getName());
+        env.put("message", event.getMessage());
 
         switch (event.getCommand()) {
             case "ADDSLAVE":
@@ -109,70 +108,70 @@ public class BasicAnnouncer extends AbstractAnnouncer {
 
                 SlaveManagement.fillEnvWithSlaveStatus(env, status);
 
-                outputSimpleEvent(ReplacerUtils.jprintf( "addslave", env, _bundle), "addslave");
+                outputSimpleEvent(ReplacerUtils.jprintf("addslave", env, _bundle), "addslave");
                 break;
             case "DELSLAVE":
-                outputSimpleEvent(ReplacerUtils.jprintf( "delslave", env, _bundle), "delslave");
+                outputSimpleEvent(ReplacerUtils.jprintf("delslave", env, _bundle), "delslave");
                 break;
             case "MSGSLAVE":
-                outputSimpleEvent(ReplacerUtils.jprintf( "msgslave", env, _bundle), "msgslave");
+                outputSimpleEvent(ReplacerUtils.jprintf("msgslave", env, _bundle), "msgslave");
                 break;
         }
-	}
+    }
 
-	@EventSubscriber
-	public void onMasterEvent(MasterEvent event) {
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-		env.add("message", event.getMessage());
+    @EventSubscriber
+    public void onMasterEvent(MasterEvent event) {
+        Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+        env.put("message", event.getMessage());
 
         outputSimpleEvent(ReplacerUtils.jprintf("msgmaster", env, _bundle), "msgmaster");
-	}
+    }
 
-	@EventSubscriber
-	public void onInviteEvent(InviteEvent event) {
-		if (_config.getBot().getBotName().equalsIgnoreCase(event.getTargetBot())) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env.add("user", event.getUser().getName());
-			env.add("nick", event.getIrcNick());
-			env.add("group", event.getUser().getGroup());
-			if (event.getCommand().equals("INVITE")) {
-				outputSimpleEvent(ReplacerUtils.jprintf("invite.success", env, _bundle), "invite");
-				for (ChannelConfig chan : _config.getBot().getConfig().getChannels()) {
-					if (chan.isPermitted(event.getUser())) {
-						_config.getBot().sendInvite(event.getIrcNick(), chan.getName());
-					}
-				}
-			} else if (event.getCommand().equals("BINVITE")) {
-				outputSimpleEvent(ReplacerUtils.jprintf("invite.failed", env, _bundle), "invite");
-			}
-		}
-	}
+    @EventSubscriber
+    public void onInviteEvent(InviteEvent event) {
+        if (_config.getBot().getBotName().equalsIgnoreCase(event.getTargetBot())) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            env.put("user", event.getUser().getName());
+            env.put("nick", event.getIrcNick());
+            env.put("group", event.getUser().getGroup());
+            if (event.getCommand().equals("INVITE")) {
+                outputSimpleEvent(ReplacerUtils.jprintf("invite.success", env, _bundle), "invite");
+                for (ChannelConfig chan : _config.getBot().getConfig().getChannels()) {
+                    if (chan.isPermitted(event.getUser())) {
+                        _config.getBot().sendInvite(event.getIrcNick(), chan.getName());
+                    }
+                }
+            } else if (event.getCommand().equals("BINVITE")) {
+                outputSimpleEvent(ReplacerUtils.jprintf("invite.failed", env, _bundle), "invite");
+            }
+        }
+    }
 
-	private void outputDirectoryEvent(DirectoryFtpEvent direvent, String type) {
-		AnnounceWriter writer = _config.getPathWriter(type, direvent.getDirectory());
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			fillEnvSection(env, direvent, writer);
-			sayOutput(ReplacerUtils.jprintf(type, env, _bundle), writer);
-		}
-	}
+    private void outputDirectoryEvent(DirectoryFtpEvent direvent, String type) {
+        AnnounceWriter writer = _config.getPathWriter(type, direvent.getDirectory());
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+            fillEnvSection(env, direvent, writer);
+            sayOutput(ReplacerUtils.jprintf(type, env, _bundle), writer);
+        }
+    }
 
-	private void outputSimpleEvent(String output, String type) {
-		AnnounceWriter writer = _config.getSimpleWriter(type);
-		// Check we got a writer back, if it is null do nothing and ignore the event
-		if (writer != null) {
-			sayOutput(output, writer);
-		}
-	}
+    private void outputSimpleEvent(String output, String type) {
+        AnnounceWriter writer = _config.getSimpleWriter(type);
+        // Check we got a writer back, if it is null do nothing and ignore the event
+        if (writer != null) {
+            sayOutput(output, writer);
+        }
+    }
 
-	private void fillEnvSection(ReplacerEnvironment env,
-			DirectoryFtpEvent direvent, AnnounceWriter writer) {
-		DirectoryHandle dir = direvent.getDirectory();
-		env.add("user", direvent.getUser().getName());
-		env.add("group", direvent.getUser().getGroup());
-		env.add("section", writer.getSectionName(dir));
-		env.add("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
-		env.add("path", writer.getPath(dir));
-	}
+    private void fillEnvSection(Map<String, Object> env,
+                                DirectoryFtpEvent direvent, AnnounceWriter writer) {
+        DirectoryHandle dir = direvent.getDirectory();
+        env.put("user", direvent.getUser().getName());
+        env.put("group", direvent.getUser().getGroup());
+        env.put("section", writer.getSectionName(dir));
+        env.put("sectioncolor", GlobalContext.getGlobalContext().getSectionManager().lookup(dir).getColor());
+        env.put("path", writer.getPath(dir));
+    }
 }

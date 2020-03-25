@@ -16,9 +16,6 @@
  */
 package org.drftpd.plugins.sitebot.announce.trialmanager.toptrial;
 
-import java.util.ArrayList;
-import java.util.ResourceBundle;
-
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.common.Bytes;
@@ -29,7 +26,11 @@ import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
 import org.drftpd.plugins.trialmanager.types.toptrial.TopTrialEvent;
-import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * @author CyBeR
@@ -40,9 +41,7 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 	private AnnounceConfig _config;
 
 	private ResourceBundle _bundle;
-
-
-
+	
 	public void initialise(AnnounceConfig config, ResourceBundle bundle) {
 		_config = config;
 		_bundle = bundle;
@@ -67,20 +66,20 @@ public class TopTrialAnnouncer extends AbstractAnnouncer {
 	public void onTopTrialEvent(TopTrialEvent event) {
 		AnnounceWriter writer = _config.getSimpleWriter("trialmanager.toptrial");
 		if (writer != null) {
-			ReplacerEnvironment env_header = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-			env_header.add("name",event.getName());
-			env_header.add("min",event.getMin());
-			env_header.add("period",event.getPeriodStr());
+			Map<String, Object> env_header = new HashMap<>(SiteBot.GLOBAL_ENV);
+			env_header.put("name",event.getName());
+			env_header.put("min",event.getMin());
+			env_header.put("period",event.getPeriodStr());
 			
 			sayOutput(ReplacerUtils.jprintf("toptrial.header", env_header, _bundle), writer);
 			int passed = 0;
 			ArrayList<User> users = event.getUsers();
 			for (User user : users) {
-				ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
-				env.add("num",++passed);
-				env.add("bytes", Bytes.formatBytes(user.getUploadedBytesForPeriod(event.getPeriod())));
-				env.add("files",user.getUploadedFilesForPeriod(event.getPeriod()));
-				env.add("name", user.getName());
+				Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+				env.put("num",++passed);
+				env.put("bytes", Bytes.formatBytes(user.getUploadedBytesForPeriod(event.getPeriod())));
+				env.put("files",user.getUploadedFilesForPeriod(event.getPeriod()));
+				env.put("name", user.getName());
 				if ((user.getUploadedBytesForPeriod(event.getPeriod()) > event.getMin()) && (passed < event.getKeep())) {
 					sayOutput(ReplacerUtils.jprintf("toptrial.passed", env, _bundle), writer);
 				} else {

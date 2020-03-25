@@ -16,6 +16,8 @@
  */
 package org.drftpd.plugins.sitebot.announce.nuke;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
@@ -37,7 +39,6 @@ import org.drftpd.plugins.sitebot.AbstractAnnouncer;
 import org.drftpd.plugins.sitebot.AnnounceWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.config.AnnounceConfig;
-import org.tanesha.replacer.ReplacerEnvironment;
 
 /**
  * @author scitz0
@@ -77,24 +78,24 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 		String type = "NUKE".equals(event.getCommand()) ? "nuke" : "unnuke";
 		StringBuilder output = new StringBuilder();
 
-		ReplacerEnvironment env = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
 		DirectoryHandle nukeDir = new DirectoryHandle(event.getPath());
 		SectionInterface section = GlobalContext.getGlobalContext().getSectionManager().lookup(nukeDir);
-		env.add("section", section.getName());
-		env.add("sectioncolor", section.getColor());
-		env.add("dir", nukeDir.getName());
-		env.add("path", event.getPath());
-		env.add("relpath", event.getPath().replaceAll("/.*?"+section.getName()+"/",""));
-		env.add("user", event.getUser().getName());
-		env.add("multiplier", ""+event.getMultiplier());
-		env.add("nukedamount", Bytes.formatBytes(event.getNukedAmount()));
-		env.add("reason", event.getReason());
-		env.add("size", Bytes.formatBytes(event.getSize()));
+		env.put("section", section.getName());
+		env.put("sectioncolor", section.getColor());
+		env.put("dir", nukeDir.getName());
+		env.put("path", event.getPath());
+		env.put("relpath", event.getPath().replaceAll("/.*?"+section.getName()+"/",""));
+		env.put("user", event.getUser().getName());
+		env.put("multiplier", ""+event.getMultiplier());
+		env.put("nukedamount", Bytes.formatBytes(event.getNukedAmount()));
+		env.put("reason", event.getReason());
+		env.put("size", Bytes.formatBytes(event.getSize()));
 
 		output.append(ReplacerUtils.jprintf(type, env, _bundle));
 
 		for (NukedUser nukeeObj : NukeBeans.getNukeeList(event.getNukeData())) {
-			ReplacerEnvironment nukeeenv = new ReplacerEnvironment(SiteBot.GLOBAL_ENV);
+			Map<String, Object> nukeeenv = new HashMap<>(SiteBot.GLOBAL_ENV);
 			User nukee;
 			try {
 				nukee = GlobalContext.getGlobalContext().getUserManager().getUserByName(nukeeObj.getUsername());
@@ -103,11 +104,11 @@ public class NukeAnnouncer extends AbstractAnnouncer {
 				continue;
             } // Error in user file.. skip announce for this user
 
-			nukeeenv.add("user", nukee.getName());
-			nukeeenv.add("group", nukee.getGroup());
+			nukeeenv.put("user", nukee.getName());
+			nukeeenv.put("group", nukee.getGroup());
 			long debt = NukeUtils.calculateNukedAmount(nukeeObj.getAmount(),
                     nukee.getKeyedMap().getObjectFloat(UserManagement.RATIO), event.getMultiplier());
-			nukeeenv.add("nukedamount", Bytes.formatBytes(debt));
+			nukeeenv.put("nukedamount", Bytes.formatBytes(debt));
 			output.append(ReplacerUtils.jprintf(type+".nukees", nukeeenv, _bundle));
 		}
 

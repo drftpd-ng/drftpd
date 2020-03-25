@@ -16,11 +16,6 @@
  */
 package org.drftpd.commands.zipscript.flac.hooks;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.commands.dir.Dir;
 import org.drftpd.commands.zipscript.flac.event.FlacEvent;
@@ -35,10 +30,14 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.plugins.commandmanager.CommandRequest;
 import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
 import org.drftpd.protocol.zipscript.flac.common.FlacInfo;
 import org.drftpd.protocol.zipscript.flac.common.VorbisTag;
-import org.tanesha.replacer.ReplacerEnvironment;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ResourceBundle;
 
 /**
  * @author norox
@@ -121,30 +120,30 @@ public class ZipscriptFlacPostHook {
 			ZipscriptVFSDataFlac flacData = new ZipscriptVFSDataFlac(inode);
 			FlacInfo flacInfo = flacData.getFlacInfo();
 
-			ReplacerEnvironment env = request.getSession().getReplacerEnvironment(null,
+			Map<String, Object> env = request.getSession().getReplacerEnvironment(null,
 					request.getSession().getUserNull(request.getUser()));
 			VorbisTag vorbistag = flacInfo.getVorbisTag();
 			if (vorbistag != null) {
-				env.add("artist", vorbistag.getArtist());
-				env.add("genre", vorbistag.getGenre());
-				env.add("album", vorbistag.getAlbum());
-				env.add("year", vorbistag.getYear());
-				env.add("title", vorbistag.getTitle());
+				env.put("artist", vorbistag.getArtist());
+				env.put("genre", vorbistag.getGenre());
+				env.put("album", vorbistag.getAlbum());
+				env.put("year", vorbistag.getYear());
+				env.put("title", vorbistag.getTitle());
 				if (vorbistag.getTrack() == 0) {
-					env.add("track","");
+					env.put("track","");
 				} else {
-					env.add("track", vorbistag.getTrack());
+					env.put("track", vorbistag.getTrack());
 				}
 			} else {
-				env.add("artist", "unknown");
-				env.add("genre", "unknown");
-				env.add("album", "unknown");
-				env.add("year", "unknown");
-				env.add("title", "unknown");
-				env.add("track", "unknown");
+				env.put("artist", "unknown");
+				env.put("genre", "unknown");
+				env.put("album", "unknown");
+				env.put("year", "unknown");
+				env.put("title", "unknown");
+				env.put("track", "unknown");
 			}
-			env.add("samplerate", flacInfo.getSamplerate());
-			env.add("channels", flacInfo.getChannels());
+			env.put("samplerate", flacInfo.getSamplerate());
+			env.put("channels", flacInfo.getChannels());
 			int runSeconds = (int)flacInfo.getRuntime();
 			String runtime = "";
 			if (runSeconds > 59) {
@@ -153,7 +152,7 @@ public class ZipscriptFlacPostHook {
 				runtime = runMins + "m ";
 			}
 			runtime = runtime + runSeconds + "s";
-			env.add("runtime", runtime);
+			env.put("runtime", runtime);
 
 			if (isStor) {
 				Properties cfg =  GlobalContext.getGlobalContext().getPluginsConfig().
