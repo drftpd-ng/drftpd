@@ -36,28 +36,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
-                <executions>
-                    <execution>
-                        <id>install-tanukisoft</id>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <phase>validate</phase>
-                        <configuration>
-                            <groupId>tanukisoft</groupId>
-                            <artifactId>wrapper</artifactId>
-                            <version>3.5.42</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/lib/wrapper-3.5.42.jar</file>
-                            <generatePom>true</generatePom>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>14</source>
@@ -87,11 +65,6 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
             <version>3.6.2</version>
-        </dependency>
-        <dependency>
-            <groupId>tanukisoft</groupId>
-            <artifactId>wrapper</artifactId>
-            <version>3.5.42</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

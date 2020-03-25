@@ -29,7 +29,6 @@ import org.drftpd.commands.UserManagement;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
-import org.tanukisoftware.wrapper.WrapperManager;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -136,8 +135,6 @@ public class ConnectionManager {
 		} catch (Throwable th) {
 			th.printStackTrace();
 			logger.error("", th);
-			WrapperManager.stop(0);
-
 		}
 	}
 

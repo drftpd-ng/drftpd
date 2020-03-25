@@ -30,7 +30,6 @@ import org.drftpd.slave.protocol.slave.AbstractHandler;
 import org.drftpd.slave.protocol.slave.SlaveProtocolCentral;
 import org.drftpd.slave.slave.*;
 import org.drftpd.slave.slave.async.*;
-import org.tanukisoftware.wrapper.WrapperManager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -751,10 +750,7 @@ public class BasicHandler extends AbstractHandler {
 		try {
 			return new AsyncResponseTransferStatus(t.sendFile(path, type,
 					position, inetAddress));
-		} catch (IOException e) {
-			return new AsyncResponseTransferStatus(new TransferStatus(t
-					.getTransferIndex(), e));
-		} catch (TransferDeniedException e) {
+		} catch (IOException | TransferDeniedException e) {
 			return new AsyncResponseTransferStatus(new TransferStatus(t
 					.getTransferIndex(), e));
 		}
@@ -771,7 +767,6 @@ public class BasicHandler extends AbstractHandler {
 	public AsyncResponse handleShutdown(AsyncCommandArgument ac) {
 		logger.info("The master has requested that I shutdown");
 		getSlaveObject().shutdown();
-		WrapperManager.stop(0);
 		return null;
 	}
 

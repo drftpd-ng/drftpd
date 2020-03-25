@@ -51,10 +51,8 @@ import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import org.tanukisoftware.wrapper.WrapperManager;
 
 import javax.net.ssl.SSLContext;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -328,7 +326,6 @@ public class GlobalContext {
                 }
             }
             logger.info("Shutdown complete, exiting");
-            WrapperManager.stop(0);
         }
     }
 
