@@ -40,21 +40,6 @@
                 <version>2.5.2</version>
                 <executions>
                     <execution>
-                        <id>install-isoparser</id>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <phase>validate</phase>
-                        <configuration>
-                            <groupId>org.isoparser</groupId>
-                            <artifactId>isoparser</artifactId>
-                            <version>1.9.41</version>
-                            <packaging>jar</packaging>
-                            <file>${basedir}/lib/isoparser-1.9.41.jar</file>
-                            <generatePom>true</generatePom>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>install-tanesha</id>
                         <goals>
                             <goal>install-file</goal>
@@ -119,7 +104,7 @@
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>org.isoparser</groupId>
+            <groupId>org.mp4parser</groupId>
             <artifactId>isoparser</artifactId>
             <version>1.9.41</version>
         </dependency>
@@ -191,7 +176,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.11</version>
+            <version>4.13</version>
         </dependency>
     </dependencies>
 </project>
