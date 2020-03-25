@@ -70,10 +70,7 @@ public class ZipscriptPostHook extends SFVTools {
 	private static final Logger logger = LogManager.getLogger(ZipscriptPostHook.class);
 	private ResourceBundle _bundle;
 
-
-
 	public ZipscriptPostHook() {
-
 		_bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
 	}
 

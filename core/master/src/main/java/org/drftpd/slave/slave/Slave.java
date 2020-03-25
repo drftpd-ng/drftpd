@@ -285,7 +285,6 @@ public class Slave {
 		try {
 			Class<?> aClass = Class.forName(desiredDs);
 			_diskSelection = (DiskSelectionInterface) aClass.getConstructor(Slave.class).newInstance(this);
-			// TODO [DONE] @JRI slave selector
 		} catch (Exception e) {
 			throw new RuntimeException(
 					"Cannot create instance of diskselection, check 'diskselection' in the configuration file", e);
