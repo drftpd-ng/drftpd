@@ -7,7 +7,6 @@
 target
 build
 logs
-bin/wrapper-windows-x86-64.exe
 /config
 /site
 userdata/drftpd.key
