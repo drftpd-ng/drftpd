@@ -11,7 +11,7 @@
         <relativePath>../../</relativePath>
     </parent>
 					  
-    <artifactId>drftpd-tvmaze</artifactId>
+    <artifactId>drftpd-jobmanager</artifactId>
     <packaging>jar</packaging>
 
     <build>
@@ -41,12 +41,6 @@
         <dependency>
             <groupId>org.drftpd</groupId>
             <artifactId>drftpd-master</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-find</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>

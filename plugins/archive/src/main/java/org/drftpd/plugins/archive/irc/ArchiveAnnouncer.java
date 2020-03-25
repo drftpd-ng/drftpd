@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.sitebot.announce.archive;
+package org.drftpd.plugins.archive.irc;
 
 import java.util.HashMap;
 import java.util.Map;

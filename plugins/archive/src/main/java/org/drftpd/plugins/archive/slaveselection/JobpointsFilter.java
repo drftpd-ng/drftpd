@@ -1,4 +1,4 @@
-package org.drftpd.slaveselection.filter.archive;
+package org.drftpd.plugins.archive.slaveselection;
 
 import java.net.InetAddress;
 import java.util.Properties;

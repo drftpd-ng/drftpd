@@ -12,7 +12,17 @@
     <dependencies>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-master</artifactId>
+            <artifactId>drftpd-archive</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-autonuke</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-find</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -22,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-tvmaze</artifactId>
+            <artifactId>drftpd-jobmanager</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -32,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-autonuke</artifactId>
+            <artifactId>drftpd-mirror</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -43,6 +53,16 @@
         <dependency>
             <groupId>org.drftpd</groupId>
             <artifactId>drftpd-speedtest-net</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-tvmaze</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-master</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

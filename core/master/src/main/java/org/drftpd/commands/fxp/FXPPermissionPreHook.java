@@ -14,7 +14,7 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.fxp;
+package org.drftpd.commands.fxp;
 
 import org.drftpd.commands.dataconnection.DataConnectionHandler;
 import org.drftpd.common.CommandHook;

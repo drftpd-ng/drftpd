@@ -23,6 +23,10 @@
         <module>plugins/speedtest.net</module>
         <module>plugins/tvmaze</module>
         <module>plugins/mediainfo</module>
+        <module>plugins/jobmanager</module>
+        <module>plugins/mirror</module>
+        <module>plugins/archive</module>
+        <module>plugins/find</module>
         <module>core/dev</module>
     </modules>
 

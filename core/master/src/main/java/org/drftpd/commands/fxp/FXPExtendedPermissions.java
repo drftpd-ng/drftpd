@@ -1,4 +1,4 @@
-package org.drftpd.plugins.fxp;
+package org.drftpd.commands.fxp;
 
 import org.drftpd.commands.config.hooks.DefaultConfigHandler;
 import org.drftpd.common.ExtendedPermissions;
