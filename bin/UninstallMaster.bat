@@ -2,7 +2,7 @@
 setlocal
 
 rem
-rem Copyright (c) 1999, 2019 Tanuki Software, Ltd.
+rem Copyright (c) 1999, 2020 Tanuki Software, Ltd.
 rem http://www.tanukisoftware.com
 rem All rights reserved.
 rem
@@ -16,7 +16,7 @@ rem
 
 rem -----------------------------------------------------------------------------
 rem These settings can be modified to fit the needs of your application
-rem Optimized for use with version 3.5.41 of the Wrapper.
+rem Optimized for use with version 3.5.42 of the Wrapper.
 
 rem The base name for the Wrapper binary.
 set _WRAPPER_BASE=wrapper
@@ -31,7 +31,7 @@ rem  if the user does not specify a configuration file as the first parameter to
 rem  this script.
 rem If a relative path is specified, please note that the location is based on the 
 rem location of the Wrapper executable.
-set _WRAPPER_CONF_DEFAULT="../conf/wrapper-master.conf"
+set _WRAPPER_CONF_DEFAULT="../config/wrapper-master.conf"
 
 rem Makes it possible to override the Wrapper configuration file by specifying it
 rem  as the first parameter.

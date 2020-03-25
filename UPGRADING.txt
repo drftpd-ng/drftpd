@@ -1,10 +1,10 @@
 UPGRADING
 
-To upgrade from 1.1.4 to 3.4.2 you will need install 2.x first and utilize
+To upgrade from 1.1.4 to v4 you will need install 2.x first and utilize
 bin/xstream2beans.sh to convert userfiles from 1.1.4 to 2.x format.
 Next follow the steps below.
 
-To upgrade from 2.x to 3.4.2 you will not be able to keep the virtual file system
+To upgrade from 2.x to v4 you will not be able to keep the virtual file system
 or slave files. Userfiles will be converted correctly if password is not encrypted.
 
 Follow the installation documentation and do now install into the version 2.x:
@@ -12,9 +12,9 @@ Follow the installation documentation and do now install into the version 2.x:
 
 During the execution of ./build.sh you have the option to convert 2.x userfiles.
 Check that option and you are asked to point to the folder where version 2.x is
-installed. The build process will then copy and convert all files into the 3.4.2
+installed. The build process will then copy and convert all files into the v4
 environment. Next start the master and readd slaves. Themes and all .conf files
-have to be rebuild in 3.4.2. Copying over the files will give you alot of problems.
+have to be rebuild in v4. Copying over the files will give you alot of problems.
 The virtual file system will be built when slaves are merged for the first time.
 
 To upgrade from 3.x to the latest:
