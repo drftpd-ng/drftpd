@@ -103,7 +103,14 @@ public class Dir extends CommandInterface {
 		User user = request.getSession().getUserNull(request.getUser());
 
 		try {
-			newCurrentDirectory = request.getCurrentDirectory().getDirectory(request.getArgument(), user);
+			DirectoryHandle currentDirectory = request.getCurrentDirectory();
+			if (currentDirectory.exists()) {
+				// If the current directory exist, proceed as usual
+				newCurrentDirectory = currentDirectory.getDirectory(request.getArgument(), user);
+			} else {
+				// If directly no longer exists (wipe, nuke), try to change from root
+				newCurrentDirectory = new DirectoryHandle("/").getDirectory(request.getArgument(), user);
+			}
 		} catch (FileNotFoundException ex) {
 			return new CommandResponse(550, ex.getMessage());
 		} catch (ObjectNotValidException e) {
