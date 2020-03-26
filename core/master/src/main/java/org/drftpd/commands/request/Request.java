@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.master.BaseFtpConnection;
@@ -29,7 +30,6 @@ import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ListUtils;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;

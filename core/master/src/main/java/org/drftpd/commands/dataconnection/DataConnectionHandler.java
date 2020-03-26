@@ -29,10 +29,10 @@ import org.drftpd.master.common.io.PermissionDeniedException;
 import org.drftpd.master.exceptions.*;
 import org.drftpd.master.*;
 import org.drftpd.master.master.*;
-import org.drftpd.plugins.commandmanager.CommandInterface;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandInterface;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.util.FtpRequest;
 import org.drftpd.master.vfs.FileHandle;
@@ -185,6 +185,7 @@ public class DataConnectionHandler extends CommandInterface {
         InetSocketAddress address = null;
 
         if (ts.isLocalPreTransfer()) {
+            logger.debug("PASV initiate local transfer");
             // setup a PassiveConnection for a local transfer, LIST/NLST
             PassiveConnection pc;
             try {
@@ -196,24 +197,30 @@ public class DataConnectionHandler extends CommandInterface {
             try {
                 address = new InetSocketAddress(GlobalContext.getConfig().getPasvAddress(), pc.getLocalPort());
             } catch (NullPointerException e) {
-                address = new InetSocketAddress(conn.getControlSocket()
-                        .getLocalAddress(), pc.getLocalPort());
+                address = new InetSocketAddress(conn.getControlSocket().getLocalAddress(), pc.getLocalPort());
             }
             ts.setLocalPassiveConnection(pc);
         } else {
             RemoteSlave slave = null;
             ConnectInfo ci;
             if (ts.isPASVDownload()) {
+                logger.debug("PASV Download started");
                 while (slave == null) {
                     try {
                         slave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(conn,
                                 Transfer.TRANSFER_SENDING_DOWNLOAD, ts.getTransferFile());
+                        logger.debug("PASV Download slave selected " + slave.getName());
                         String index = SlaveManager.getBasicIssuer().issueListenToSlave(slave,
                                 ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
+                        logger.debug("PASV Download index calculated " + index);
                         ci = slave.fetchTransferResponseFromIndex(index);
+                        logger.debug("PASV Download fetch connection info " + ci.toString());
                         ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
+                        logger.debug("PASV Download transfer set to index");
                         address = new InetSocketAddress(slave.getPASVIP(), ts.getAddress().getPort());
+                        logger.debug("PASV Download address selected " + address.getHostString());
                     } catch (NoAvailableSlaveException e) {
+                        logger.error("PASV Download NoAvailableSlaveException", e);
                         reset(conn);
                         return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
                     } catch (SlaveUnavailableException e) {
@@ -226,24 +233,28 @@ public class DataConnectionHandler extends CommandInterface {
                         // make it loop until it finds a good one
                         slave = null;
                     } catch (SSLUnavailableException e) {
+                        logger.error("PASV Download SSLUnavailableException", e);
                         return new CommandResponse(421, e.getMessage());
                     }
                 }
             } else if (ts.isPASVUpload()) {
+                logger.debug("PASV Upload started");
                 while (slave == null) {
                     try {
-                        slave = conn.getGlobalContext()
-                                .getSlaveSelectionManager().getASlave(
-                                        conn,
-                                        Transfer.TRANSFER_RECEIVING_UPLOAD,
-                                        ts.getTransferFile());
+                        slave = conn.getGlobalContext().getSlaveSelectionManager().getASlave(
+                                        conn, Transfer.TRANSFER_RECEIVING_UPLOAD, ts.getTransferFile());
+                        logger.debug("PASV Upload slave selected " + slave.getName());
                         String index = SlaveManager.getBasicIssuer().issueListenToSlave(slave,
-                                ts.getSendFilesEncrypted(), ts
-                                        .getSSLHandshakeClientMode());
+                                ts.getSendFilesEncrypted(), ts.getSSLHandshakeClientMode());
+                        logger.debug("PASV Upload index calculated " + index);
                         ci = slave.fetchTransferResponseFromIndex(index);
+                        logger.debug("PASV Upload fetch connection info " + ci.toString());
                         ts.setTransfer(slave.getTransfer(ci.getTransferIndex()));
+                        logger.debug("PASV Upload transfer set to index");
                         address = new InetSocketAddress(slave.getPASVIP(), ts.getAddress().getPort());
+                        logger.debug("PASV Upload address selected " + address.getHostString());
                     } catch (NoAvailableSlaveException e) {
+                        logger.error("PASV Upload NoAvailableSlaveException", e);
                         reset(conn);
                         return StandardCommandManager.genericResponse("RESPONSE_450_SLAVE_UNAVAILABLE");
                     } catch (SlaveUnavailableException e) {
@@ -256,15 +267,18 @@ public class DataConnectionHandler extends CommandInterface {
                         // make it loop until it finds a good one
                         slave = null;
                     } catch (SSLUnavailableException e) {
+                        logger.error("PASV Upload SSLUnavailableException", e);
                         return new CommandResponse(421, e.getMessage());
                     }
                 }
             } else {
                 return StandardCommandManager.genericResponse("RESPONSE_502_COMMAND_NOT_IMPLEMENTED");
             }
+            logger.debug("PASV setTransferSlave " + slave.getName());
             ts.setTransferSlave(slave);
         }
 
+        logger.debug("PASV getting remote slave");
         RemoteSlave transferSlave = ts.getTransferSlave();
         logger.debug("PASV/CPSV finding " + (ts.isLocalPreTransfer() ? "master" : transferSlave.getName()));
         if (conn.getRequest().getCommand().equals("CPSV")) {
@@ -277,6 +291,7 @@ public class DataConnectionHandler extends CommandInterface {
                     "Address is unresolvable, check pasv_addr setting on " + transferSlave.getName());
         }
 
+        logger.debug("PASV getting addrStr to reply");
         String addrStr = address.getAddress().getHostAddress().replace('.', ',') +
                 ',' + (address.getPort() >> 8) + ',' + (address.getPort() & 0xFF);
         CommandResponse response = new CommandResponse(227, "Entering Passive Mode (" + addrStr + ").");

@@ -26,10 +26,10 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
-import org.drftpd.plugins.commandmanager.CommandInterface;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandInterface;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.StandardCommandManager;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;

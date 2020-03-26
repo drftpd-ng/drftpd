@@ -20,6 +20,7 @@ package org.drftpd.plugins.archive.commands;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.PluginInterface;
 import org.drftpd.master.master.RemoteSlave;
@@ -31,7 +32,6 @@ import org.drftpd.plugins.archive.Archive;
 import org.drftpd.plugins.archive.DuplicateArchiveException;
 import org.drftpd.plugins.archive.archivetypes.ArchiveHandler;
 import org.drftpd.plugins.archive.archivetypes.ArchiveType;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import java.io.FileNotFoundException;
 import java.util.*;

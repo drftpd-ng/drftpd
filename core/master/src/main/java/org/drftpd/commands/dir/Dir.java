@@ -20,6 +20,7 @@ package org.drftpd.commands.dir;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import org.drftpd.commands.*;
 import org.drftpd.master.Checksum;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
@@ -30,7 +31,6 @@ import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;

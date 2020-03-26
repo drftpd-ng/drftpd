@@ -17,7 +17,7 @@
 package org.drftpd.commands.find.option;
 
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
-import org.drftpd.plugins.commandmanager.ImproperUsageException;
+import org.drftpd.commands.ImproperUsageException;
 
 /**
  * @author scitz0

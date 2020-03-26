@@ -19,7 +19,7 @@ package org.drftpd.commands.nuke;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.drftpd.commands.UserManagement;
+import org.drftpd.commands.*;
 import org.drftpd.commands.nuke.metadata.NukeData;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
@@ -32,7 +32,6 @@ import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;

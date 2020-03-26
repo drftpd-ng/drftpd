@@ -22,8 +22,8 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.common.io.PermissionDeniedException;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.ImproperUsageException;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.ImproperUsageException;
 
 import java.io.FileNotFoundException;
 

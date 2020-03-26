@@ -28,8 +28,8 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.ImproperUsageException;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.ImproperUsageException;
 
 import java.io.FileNotFoundException;
 

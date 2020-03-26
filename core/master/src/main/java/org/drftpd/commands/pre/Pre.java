@@ -19,8 +19,8 @@ package org.drftpd.commands.pre;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
-import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.master.config.ConfigInterface;
@@ -32,7 +32,6 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.stats.StatsManager;
 
 import java.io.FileNotFoundException;

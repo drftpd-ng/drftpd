@@ -23,8 +23,8 @@ import org.drftpd.master.common.Bytes;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 import org.drftpd.plugins.trialmanager.TrialType;
 
 /**

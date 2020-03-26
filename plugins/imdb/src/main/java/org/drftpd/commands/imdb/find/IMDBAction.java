@@ -22,8 +22,8 @@ import org.drftpd.commands.find.action.ActionInterface;
 import org.drftpd.commands.imdb.vfs.IMDBVFSDataNFO;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.ImproperUsageException;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.imdb.protocol.IMDBInfo;
 
 /**

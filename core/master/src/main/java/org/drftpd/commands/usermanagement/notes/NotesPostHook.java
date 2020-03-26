@@ -26,10 +26,10 @@ import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.PostHookInterface;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.PostHookInterface;
+import org.drftpd.commands.StandardCommandManager;
 
 import java.util.HashMap;
 import java.util.Map;

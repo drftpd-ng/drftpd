@@ -19,7 +19,7 @@ package org.drftpd.commands.find.option;
 
 import org.drftpd.commands.find.FindUtils;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
-import org.drftpd.plugins.commandmanager.ImproperUsageException;
+import org.drftpd.commands.ImproperUsageException;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

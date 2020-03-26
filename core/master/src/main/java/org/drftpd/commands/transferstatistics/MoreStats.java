@@ -25,10 +25,10 @@ import org.drftpd.master.common.Bytes;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.util.GroupPosition;
 import org.drftpd.master.util.ReplacerUtils;
-import org.drftpd.plugins.commandmanager.CommandInterface;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandInterface;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.StandardCommandManager;
 
 import java.io.IOException;
 import java.util.*;

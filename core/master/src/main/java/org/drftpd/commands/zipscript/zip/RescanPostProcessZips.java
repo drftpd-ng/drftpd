@@ -27,8 +27,8 @@ import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.slave.slave.RemoteIOException;
 
 import java.io.FileNotFoundException;

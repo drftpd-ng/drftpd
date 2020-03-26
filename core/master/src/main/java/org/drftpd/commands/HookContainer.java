@@ -14,13 +14,28 @@
  * DrFTPD; if not, write to the Free Software Foundation, Inc., 59 Temple Place,
  * Suite 330, Boston, MA 02111-1307 USA
  */
-package org.drftpd.plugins.commandmanager;
+package org.drftpd.commands;
+
+import java.lang.reflect.Method;
 
 /**
- * @author djb61
+ * @author zubov
  * @version $Id$
  */
-public interface PreHookInterface {
-
-	void initialize(StandardCommandManager cManager);
+public class HookContainer<T> {
+	private Method _method;
+	private T _interfaceInstance;
+	
+	public HookContainer(Method m, T interfaceInstance) {
+		_method = m;
+		_interfaceInstance = interfaceInstance;
+	}
+	
+	public Method getMethod() {
+		return _method;
+	}
+	
+	public T getHookInterfaceInstance() {
+		return _interfaceInstance;
+	}
 }

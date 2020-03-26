@@ -17,13 +17,13 @@
  */
 package org.drftpd.commands.serverstatus;
 
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.Time;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.master.Session;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.lang.management.*;

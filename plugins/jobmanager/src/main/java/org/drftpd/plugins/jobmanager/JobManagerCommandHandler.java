@@ -16,13 +16,13 @@
  */
 package org.drftpd.plugins.jobmanager;
 
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.PluginInterface;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;

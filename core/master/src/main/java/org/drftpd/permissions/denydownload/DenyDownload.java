@@ -26,8 +26,8 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.LinkHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 
 import java.io.FileNotFoundException;
 

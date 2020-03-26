@@ -17,8 +17,8 @@
 package org.drftpd.commands.zipscript;
 
 
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.StandardCommandManager;
 
 /**
  * @author djb61

@@ -29,10 +29,10 @@ import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.plugins.commandmanager.CommandInterface;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandInterface;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.sections.conf.DatedSection;
 
 import java.io.FileNotFoundException;

@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.drftpd.commands.newhandler;
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.Time;
 import org.drftpd.master.common.Bytes;
@@ -23,7 +24,6 @@ import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.sections.SectionManagerInterface;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.plugins.commandmanager.*;
 
 import java.io.FileNotFoundException;
 import java.util.*;

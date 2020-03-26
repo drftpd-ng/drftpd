@@ -24,7 +24,7 @@ import org.drftpd.master.commandmanager.CommandRequestInterface;
 import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.master.config.ConfigInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
+import org.drftpd.commands.CommandRequest;
 import org.drftpd.slave.slave.Transfer;
 
 import java.net.InetAddress;

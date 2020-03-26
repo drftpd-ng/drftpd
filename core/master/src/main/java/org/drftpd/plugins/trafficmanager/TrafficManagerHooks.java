@@ -22,7 +22,7 @@ import org.drftpd.common.HookType;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.plugins.commandmanager.CommandRequest;
+import org.drftpd.commands.CommandRequest;
 
 /**
  * @author CyBeR

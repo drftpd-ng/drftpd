@@ -18,7 +18,7 @@ package org.drftpd.commands.list;
 
 
 import org.drftpd.master.master.Session;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.slave.vfs.InodeHandleInterface;
 
 import java.util.ArrayList;

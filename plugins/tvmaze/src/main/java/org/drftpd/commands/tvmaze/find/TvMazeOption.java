@@ -20,7 +20,7 @@ package org.drftpd.commands.tvmaze.find;
 import org.drftpd.commands.find.option.OptionInterface;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
-import org.drftpd.plugins.commandmanager.ImproperUsageException;
+import org.drftpd.commands.ImproperUsageException;
 import org.drftpd.commands.tvmaze.index.TvMazeQueryParams;
 
 /**

@@ -20,12 +20,12 @@ package org.drftpd.plugins.sitebot.commands;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.PluginInterface;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.sitebot.OutputWriter;
 import org.drftpd.plugins.sitebot.SiteBot;
 import org.drftpd.plugins.sitebot.SiteBotWrapper;

@@ -22,10 +22,8 @@ import org.drftpd.common.CommandHook;
 import org.drftpd.common.HookType;
 import org.drftpd.master.commandmanager.*;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.PreHookInterface;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 
 /**
  * Nuke PreHook. 

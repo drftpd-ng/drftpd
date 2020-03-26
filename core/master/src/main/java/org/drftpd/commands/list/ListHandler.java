@@ -21,13 +21,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.commands.*;
 import org.drftpd.master.Checksum;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.master.*;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.*;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.slave.LightRemoteInode;
 import org.drftpd.slave.vfs.InodeHandleInterface;
 import org.reflections.Reflections;
@@ -147,7 +147,7 @@ public class ListHandler extends CommandInterface {
 		return list(request, false, false, false, true);
 	}
 
-	protected CommandResponse list(CommandRequest request, boolean isList, boolean isStat, boolean isMlst, boolean isMlsd) 
+	protected CommandResponse list(CommandRequest request, boolean isList, boolean isStat, boolean isMlst, boolean isMlsd)
 	throws ImproperUsageException {
 		try {
 			String directoryName = null;

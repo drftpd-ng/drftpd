@@ -21,8 +21,8 @@ import org.drftpd.common.CommandHook;
 import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.permissions.MessagePathPermission;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 
 import java.util.Collection;
 

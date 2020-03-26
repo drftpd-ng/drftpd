@@ -28,8 +28,8 @@ import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.master.ConnectionManager;
 import org.drftpd.master.master.config.ConfigInterface;
 import org.drftpd.master.vfs.perms.VFSPermissions;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.StandardCommandManager;
 
 import java.util.List;
 

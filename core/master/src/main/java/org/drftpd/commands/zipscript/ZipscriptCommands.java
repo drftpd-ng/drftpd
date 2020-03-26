@@ -20,6 +20,7 @@ package org.drftpd.commands.zipscript;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.commands.*;
 import org.drftpd.commands.zipscript.vfs.ZipscriptVFSDataSFV;
 import org.drftpd.master.Checksum;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
@@ -30,7 +31,6 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.reflections.Reflections;
 

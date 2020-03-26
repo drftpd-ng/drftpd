@@ -28,8 +28,8 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 
 import java.io.FileNotFoundException;
 

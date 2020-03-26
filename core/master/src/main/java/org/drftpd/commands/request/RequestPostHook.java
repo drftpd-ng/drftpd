@@ -23,10 +23,10 @@ import org.drftpd.commands.request.metadata.RequestUserData;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.PostHookInterface;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.PostHookInterface;
+import org.drftpd.commands.StandardCommandManager;
 
 import java.util.Properties;
 

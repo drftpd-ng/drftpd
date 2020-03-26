@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
-import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.commands.*;
 import org.drftpd.commands.tvmaze.metadata.TvEpisode;
 import org.drftpd.commands.tvmaze.metadata.TvMazeInfo;
 import org.drftpd.master.GlobalContext;
@@ -29,7 +29,6 @@ import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.plugins.sitebot.SiteBot;
 
 import java.io.FileNotFoundException;

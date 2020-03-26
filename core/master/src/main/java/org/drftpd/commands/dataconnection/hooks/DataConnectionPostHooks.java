@@ -26,10 +26,8 @@ import org.drftpd.master.event.TransferEvent;
 import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.PostHookInterface;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 
 import java.net.InetAddress;
 

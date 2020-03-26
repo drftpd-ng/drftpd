@@ -19,6 +19,7 @@ package org.drftpd.commands.find;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.master.Session;
@@ -29,7 +30,6 @@ import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
-import org.drftpd.plugins.commandmanager.*;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;

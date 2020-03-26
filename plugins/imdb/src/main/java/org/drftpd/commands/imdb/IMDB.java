@@ -20,6 +20,7 @@ package org.drftpd.commands.imdb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
+import org.drftpd.commands.*;
 import org.drftpd.commands.imdb.hooks.IMDBPostHook;
 import org.drftpd.commands.imdb.protocol.IMDBInfo;
 import org.drftpd.master.GlobalContext;
@@ -31,7 +32,6 @@ import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.index.IndexException;
-import org.drftpd.plugins.commandmanager.*;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

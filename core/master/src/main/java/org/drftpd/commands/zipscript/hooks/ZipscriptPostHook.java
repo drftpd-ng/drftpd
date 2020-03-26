@@ -44,8 +44,8 @@ import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.util.UploaderPosition;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 import org.drftpd.protocol.zipscript.common.SFVInfo;
 import org.drftpd.protocol.zipscript.common.SFVStatus;
 

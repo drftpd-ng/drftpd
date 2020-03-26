@@ -22,10 +22,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+import org.drftpd.commands.*;
 import org.drftpd.commands.usermanagement.expireduser.metadata.ExpiredUserData;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.plugins.commandmanager.*;
 
 /**
  * @author CyBeR

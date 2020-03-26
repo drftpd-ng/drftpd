@@ -17,6 +17,7 @@
  */
 package org.drftpd.commands.slavemanagement;
 
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
@@ -30,7 +31,6 @@ import org.drftpd.master.slaveselection.filter.ScoreChart;
 import org.drftpd.master.slaveselection.filter.SlaveSelectionManager;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.plugins.commandmanager.*;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.slave.RemoteIOException;
 import org.drftpd.slave.slave.SlaveStatus;

@@ -19,10 +19,10 @@ package org.drftpd.commands.usermanagement.notes;
 
 import java.util.StringTokenizer;
 
+import org.drftpd.commands.*;
 import org.drftpd.commands.usermanagement.notes.metadata.NotesData;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.usermanager.User;
-import org.drftpd.plugins.commandmanager.*;
 
 /**
  * @author CyBeR

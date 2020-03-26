@@ -22,10 +22,10 @@ import org.apache.logging.log4j.LogManager;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.plugins.commandmanager.*;
 
 import java.util.ArrayList;
 import java.util.Properties;

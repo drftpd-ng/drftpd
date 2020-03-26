@@ -24,8 +24,8 @@ import org.drftpd.master.master.cron.TimeManager;
 import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.util.UserComparator;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 
 import java.util.*;
 

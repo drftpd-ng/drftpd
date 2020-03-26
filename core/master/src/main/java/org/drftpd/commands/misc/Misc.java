@@ -19,10 +19,10 @@ package org.drftpd.commands.misc;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.drftpd.commands.*;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.util.ReplacerUtils;
-import org.drftpd.plugins.commandmanager.*;
 
 import java.util.*;
 import java.util.Map.Entry;

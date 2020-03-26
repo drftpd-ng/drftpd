@@ -27,10 +27,10 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.PostHookInterface;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.PostHookInterface;
+import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.plugins.mirror.MirrorUtils;
 
 import java.io.FileNotFoundException;

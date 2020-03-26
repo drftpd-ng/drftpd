@@ -17,7 +17,7 @@
  */
 package org.drftpd.commands.dummy;
 
-import org.drftpd.plugins.commandmanager.*;
+import org.drftpd.commands.*;
 
 import java.util.ArrayList;
 import java.util.Map;

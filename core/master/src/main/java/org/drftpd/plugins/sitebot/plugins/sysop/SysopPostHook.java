@@ -5,10 +5,9 @@ import org.drftpd.common.CommandHook;
 import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.master.BaseFtpConnection;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
-import org.drftpd.plugins.commandmanager.StandardCommandManager;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
+import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.plugins.sitebot.plugins.sysop.event.SysopEvent;
 
 public class SysopPostHook {

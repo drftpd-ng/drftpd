@@ -26,8 +26,8 @@ import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.plugins.commandmanager.CommandRequest;
-import org.drftpd.plugins.commandmanager.CommandResponse;
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.CommandResponse;
 import org.drftpd.sections.conf.DatedSection;
 
 import java.io.FileNotFoundException;
