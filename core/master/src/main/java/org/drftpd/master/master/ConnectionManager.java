@@ -135,6 +135,7 @@ public class ConnectionManager {
 		} catch (Throwable th) {
 			th.printStackTrace();
 			logger.error("", th);
+			System.exit(1);
 		}
 	}
 

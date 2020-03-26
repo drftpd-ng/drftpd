@@ -326,6 +326,7 @@ public class GlobalContext {
                 }
             }
             logger.info("Shutdown complete, exiting");
+            System.exit(0);
         }
     }
 

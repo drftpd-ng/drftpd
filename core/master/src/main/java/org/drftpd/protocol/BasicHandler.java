@@ -767,6 +767,7 @@ public class BasicHandler extends AbstractHandler {
 	public AsyncResponse handleShutdown(AsyncCommandArgument ac) {
 		logger.info("The master has requested that I shutdown");
 		getSlaveObject().shutdown();
+		System.exit(0);
 		return null;
 	}
 
