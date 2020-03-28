@@ -6,6 +6,7 @@
 .idea
 target
 build
+dependencies
 logs
 /config
 /site

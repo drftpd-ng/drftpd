@@ -46,15 +46,35 @@
                 <version>3.1.1</version>
                 <executions>
                     <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <overWrite>true</overWrite>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>${project.packaging}</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${session.executionRootDirectory}/build</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>true</overWriteSnapshots>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-installed</id>
                         <phase>install</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>
-                                ${session.executionRootDirectory}/build
-                            </outputDirectory>
+                            <excludeScope>provided</excludeScope>
+                            <outputDirectory>${session.executionRootDirectory}/dependencies</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
