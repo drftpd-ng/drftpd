@@ -7,4 +7,4 @@ if not exist "%USERDATA%" (
     goto :eof
   )
 )
-keytool -genkeypair -keyalg EC -keysize 256 -sigalg SHA256withECDSA -alias drftpd -dname CN=drftpd -keypass drftpd -keystore "%USERDATA%drftpd.key" -storetype pkcs12 -storepass drftpd
+keytool -genkeypair -keyalg EC -groupname secp384r1 -alias drftpd -dname CN=drftpd -keypass drftpd -keystore "%USERDATA%drftpd.key" -storetype pkcs12 -storepass drftpd -validity 365
