@@ -1815,27 +1815,31 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, "Userfile error: " + ex.getMessage());
         }
 
+        // We deny any access if the current request does not have a user object
+        if (request.getUser() == null) {
+            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        }
+
+        // Get the session object
         Session session = request.getSession();
+
+        // Basic check
+        User currentUser = session.getUserNull(request.getUser());
 
         // This command can be accessed by anyone, we impose restrictions here to ensure no data is leaked we do not want to be leaked
         boolean hasPermission = false;
 
-        // Basic check
-        if (request.getUser() != null) {
-            User currentUser = session.getUserNull(request.getUser());
-
-            if (currentUser.equals(requestedUser)) {
-                // Allow the command if the current user is requesting himself
-                hasPermission = true;
-            } else if(currentUser.isAdmin()) {
-                // Allow the command if the user is part of the 'master' group
-                hasPermission = true;
-            } else {
-                if (currentUser.isGroupAdmin()) {
-                    if (requestedUser.isMemberOf(currentUser.getGroup())) {
-                        // Allow the command if the current user is a groupadmin and the requested user is part of the group the user is groupadmin off
-                        hasPermission = true;
-                    }
+        if (currentUser.equals(requestedUser)) {
+            // Allow the command if the current user is requesting himself
+            hasPermission = true;
+        } else if(currentUser.isAdmin()) {
+            // Allow the command if the user is part of the 'master' group
+            hasPermission = true;
+        } else {
+            if (currentUser.isGroupAdmin()) {
+                if (requestedUser.isMemberOf(currentUser.getGroup())) {
+                    // Allow the command if the current user is a groupadmin and the requested user is part of the group the user is groupadmin off
+                    hasPermission = true;
                 }
             }
         }
