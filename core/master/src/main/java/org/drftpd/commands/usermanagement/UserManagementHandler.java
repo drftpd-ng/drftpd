@@ -1826,17 +1826,17 @@ public class UserManagementHandler extends CommandInterface {
 
         // Basic check
         if (request.getUser() != null) {
-            User curentUser = session.getUserNull(request.getUser());
+            User currentUser = session.getUserNull(request.getUser());
 
-            if (curentUser.equals(requestedUser)) {
+            if (currentUser.equals(requestedUser)) {
                 // Allow the command if the current user is requesting himself
                 hasPermission = true;
-            } else if(curentUser.isAdmin()) {
+            } else if(currentUser.isAdmin()) {
                 // Allow the command if the user is part of the 'master' group
                 hasPermission = true;
             } else {
-                if (curentUser.isGroupAdmin()) {
-                    if (requestedUser.isMemberOf(curentUser.getGroup())) {
+                if (currentUser.isGroupAdmin()) {
+                    if (requestedUser.isMemberOf(currentUser.getGroup())) {
                         // Allow the command if the current user is a groupadmin and the requested user is part of the group the user is groupadmin off
                         hasPermission = true;
                     }
