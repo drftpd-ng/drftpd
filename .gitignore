@@ -14,6 +14,7 @@ userdata/drftpd.key
 userdata/slaves
 userdata/vfs
 userdata/users
+userdata/groups
 userdata/index
 index.bkp
 
