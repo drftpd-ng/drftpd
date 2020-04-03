@@ -110,10 +110,6 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	 */
 	public abstract boolean isDeleted();
 
-	public abstract boolean isExempt();
-
-	public abstract boolean isGroupAdmin();
-
 	public abstract boolean isMemberOf(String group);
 
 	/**

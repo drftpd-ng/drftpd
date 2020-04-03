@@ -64,4 +64,10 @@ public interface UserManager extends TimeEventInterface {
 
 	Group getGroupByNameUnchecked(String groupname)
 			throws NoSuchGroupException, GroupFileException;
+
+  boolean isGroupAdminOfUser(User groupadminUser, User requestedUser);
+
+  boolean isGroupAdmin(User user);
+
+  Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser);
 }

@@ -19,6 +19,7 @@ package org.drftpd.master.usermanager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.commands.GroupManagement;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.common.exceptions.DuplicateElementException;
@@ -58,12 +59,13 @@ public abstract class AbstractUserManager implements UserManager {
 
 	protected void createSiteopUser() {
 		Group group = createGroupImpl("drftpd");
+		group.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
+		group.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
+    group.commit();
 		User user = createUserImpl("drftpd");
 		user.setGroup(group.getName());
 		user.setPassword("drftpd");
 		user.getKeyedMap().setObject(UserManagement.RATIO, (float) 0);
-		user.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
-		user.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXLOGINS, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXSIMUP, 0);
@@ -194,6 +196,18 @@ public abstract class AbstractUserManager implements UserManager {
 
 		return c;
 	}
+
+  public boolean isGroupAdminOfUser(User groupadminUser, User requestedUser) {
+    return false; // TODO: MIKEVG FIX THIS
+  }
+
+  public boolean isGroupAdmin(User user) {
+    return false; // TODO: MIKEVG FIX THIS
+  }
+
+  public Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser) {
+    return null; // TODO: MIKEVG FIX THIS
+  }
 
 	public User getUserByNameIncludeDeleted(String username) throws NoSuchUserException, UserFileException {
 		User user = getUserByNameUnchecked(username);

@@ -90,21 +90,6 @@ public class BeanUser extends AbstractUser {
 		_um = manager;
 	}
 
-	/**
-	 * Setter for userfile backwards comptibility. Should work but i had nothing
-	 * to test with.
-	 */
-	// public void setGroupSlots(int s) {
-	// getKeyedMap().setObject(UserManagement.GROUPSLOTS, s);
-	// }
-	/**
-	 * Setter for userfile backwards comptibility. Should work but i had nothing
-	 * to test with.
-	 */
-	public void setGroupLeechSlots(int s) {
-		getKeyedMap().setObject(UserManagement.LEECHSLOTS, s);
-	}
-
 	public void writeToDisk() throws IOException {
 		if (_purged)
 			return;

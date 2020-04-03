@@ -41,10 +41,6 @@ public class UserManagement {
 
 	public static final Key<String> IRCIDENT = new Key<>(UserManagement.class, "ircident");
 
-	public static final Key<Integer> GROUPSLOTS = new Key<>(UserManagement.class, "groupslots");
-
-	public static final Key<Integer> LEECHSLOTS = new Key<>(UserManagement.class, "leechslots");
-
 	public static final Key<Integer> MAXLOGINS = new Key<>(UserManagement.class, "maxlogins");
 
 	public static final Key<Integer> MAXLOGINSIP = new Key<>(UserManagement.class, "maxloginsip");

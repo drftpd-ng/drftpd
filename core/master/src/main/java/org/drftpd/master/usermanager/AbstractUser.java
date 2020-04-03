@@ -208,14 +208,6 @@ public abstract class AbstractUser extends User implements Commitable {
 		return isMemberOf("deleted");
 	}
 
-	public boolean isExempt() {
-		return isMemberOf("exempt");
-	}
-
-	public boolean isGroupAdmin() {
-		return isMemberOf("gadmin");
-	}
-
 	public boolean isMemberOf(String group) {
 		if (getGroup().equals(group)) {
 			return true;
@@ -394,5 +386,6 @@ public abstract class AbstractUser extends User implements Commitable {
 	public void setMaxSimDown(int maxSimDown) {
 		getKeyedMap().setObject(UserManagement.MAXSIMDN, maxSimDown);
 	}
+
 	public abstract void writeToDisk() throws IOException;
 }

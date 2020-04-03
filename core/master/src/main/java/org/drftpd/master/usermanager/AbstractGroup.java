@@ -23,10 +23,13 @@ import org.drftpd.commands.GroupManagement;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.dynamicdata.KeyedMap;
 import org.drftpd.master.event.GroupEvent;
+import org.drftpd.master.common.exceptions.DuplicateElementException;
 import org.drftpd.master.master.Commitable;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Implements basic functionality for the Group interface.
@@ -38,6 +41,8 @@ public abstract class AbstractGroup extends Group implements Commitable {
 	private static final Logger logger = LogManager.getLogger(AbstractUser.class);
 
 	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
+
+  private ArrayList<String> _admins = new ArrayList<>();
 
 	private String _groupname;
 
@@ -57,6 +62,32 @@ public abstract class AbstractGroup extends Group implements Commitable {
 	 * To avoid casting to AbstractUserManager
 	 */
 	public abstract AbstractUserManager getAbstractUserManager();
+
+  public List<String> getAdmins() {
+    return _admins;
+  }
+
+  public void setAdmins(List<String> admins) {
+    _admins = new ArrayList<>(admins);
+  }
+
+  public void addAdmin(User u) throws DuplicateElementException {
+    if (_admins.contains(u.getName())) {
+      throw new DuplicateElementException(
+          "User is already an admin for that group");
+    }
+    _admins.add(u.getName());
+  }
+
+  public void removeAdmin(User u) throws NoSuchFieldException {
+    if(!_admins.remove(u.getName())) {
+      throw new NoSuchFieldException("User is not an admin for that group");
+    }
+  }
+
+  public boolean isAdmin(User u) {
+    return _admins.contains(u.getName());
+  }
 
 	public KeyedMap<Key<?>, Object> getKeyedMap() {
 		return _data;

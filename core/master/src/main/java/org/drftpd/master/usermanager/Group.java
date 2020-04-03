@@ -40,6 +40,10 @@ public abstract class Group implements Entity {
 
 	public abstract String getName();
 
+  public abstract List<String> getAdmins();
+
+  public abstract boolean isAdmin(User u);
+
   // useless for group objects
   public boolean isMemberOf(String ignore)
   {
