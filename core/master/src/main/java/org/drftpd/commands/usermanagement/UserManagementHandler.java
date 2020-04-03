@@ -1817,10 +1817,6 @@ public class UserManagementHandler extends CommandInterface {
 
         Session session = request.getSession();
 
-        if (request.getUser() == null) {
-            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
-
         // This command can be accessed by anyone, we impose restrictions here to ensure no data is leaked we do not want to be leaked
         boolean hasPermission = false;
 
