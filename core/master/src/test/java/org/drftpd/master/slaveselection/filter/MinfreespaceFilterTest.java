@@ -22,7 +22,7 @@ import junit.framework.TestSuite;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.master.RemoteSlave;
-import org.drftpd.master.tests.DummyRemoteSlave;
+import org.drftpd.common.DummyRemoteSlave;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.slave.DiskStatus;
 import org.drftpd.slave.slave.SlaveStatus;

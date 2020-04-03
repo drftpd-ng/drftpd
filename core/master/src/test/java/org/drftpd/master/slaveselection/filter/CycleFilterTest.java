@@ -20,7 +20,7 @@ package org.drftpd.master.slaveselection.filter;
 import junit.framework.TestCase;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.master.RemoteSlave;
-import org.drftpd.master.tests.DummyRemoteSlave;
+import org.drftpd.common.DummyRemoteSlave;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.slave.slave.Transfer;
 import org.junit.Assert;

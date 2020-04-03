@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.GlobalContext;
+import org.drftpd.master.master.config.ConfigInterface;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -50,7 +51,7 @@ public class TimeManager {
 		if (isEuropeanCalendar()) {
 			cal.setFirstDayOfWeek(Calendar.MONDAY);
 		}
-		
+
 		int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
 		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
 		int hourOfDay = cal.get(Calendar.HOUR_OF_DAY);
@@ -97,11 +98,7 @@ public class TimeManager {
 				Method m = TimeEventInterface.class.getDeclaredMethod(methodName,
 						classArg);
 				m.invoke(event, d);
-			} catch (IllegalAccessException e) {
-                logger.error("{} does not properly implement TimeEventInterface", event.getClass().getName(), e);
-			} catch (InvocationTargetException e) {
-                logger.error("{} does not properly implement TimeEventInterface", event.getClass().getName(), e);
-			} catch (NoSuchMethodException e) {
+			} catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 logger.error("{} does not properly implement TimeEventInterface", event.getClass().getName(), e);
 			} catch (RuntimeException e) {
                 logger.error("{} had an error processing {}", event.getClass().getName(), methodName, e);
@@ -113,7 +110,8 @@ public class TimeManager {
 	 * Checks conf file to see if european calendar is being used.
 	 */
 	public boolean isEuropeanCalendar() {
-		return GlobalContext.getConfig().getMainProperties().getProperty("european.cal","false").equalsIgnoreCase("true");
+		ConfigInterface config = GlobalContext.getConfig();
+		return config != null && config.getMainProperties().getProperty("european.cal","false").equalsIgnoreCase("true");
 	}
 	
 	public TimeManager () {
@@ -139,7 +137,7 @@ public class TimeManager {
 	
 	/**
 	 * Should be called on startup after the appropriate TimeEventInterfaces have been added
-	 * @param date
+	 * @param oldDate
 	 */
 	public void processTimeEventsBetweenDates(Date oldDate, Date newDate) {
 		Calendar oldCal = Calendar.getInstance();

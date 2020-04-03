@@ -105,7 +105,7 @@ public class TimeManagerTest extends TestCase {
 	public void testDoReset() throws ParseException {
 		Calendar cal = Calendar.getInstance();
 		SimpleDateFormat df = new SimpleDateFormat("MM/dd/yy HH:mm");
-		Date date = null;
+		Date date;
 		// parseFormat = MM/dd/yy HH:mm
 		
 		// test year & week

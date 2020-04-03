@@ -1,4 +1,4 @@
-package org.drftpd.master.tests;
+package org.drftpd.common;
 
 import org.drftpd.master.master.RemoteSlave;
 

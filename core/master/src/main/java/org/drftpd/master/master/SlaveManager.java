@@ -71,7 +71,7 @@ public class SlaveManager implements Runnable, TimeEventInterface {
 
     private boolean _sslSlaves;
 
-    private MasterProtocolCentral _central;
+    protected MasterProtocolCentral _central;
 
     private boolean _listForSlaves = true;
 

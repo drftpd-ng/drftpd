@@ -17,9 +17,11 @@
  */
 package org.drftpd.master.tests;
 
+import org.drftpd.common.DummyRemoteSlave;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.master.RemoteSlave;
 import org.drftpd.master.master.SlaveManager;
+import org.drftpd.master.protocol.master.MasterProtocolCentral;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.util.Collection;
@@ -33,6 +35,10 @@ import java.util.HashMap;
 public class DummySlaveManager extends SlaveManager {
 	public void setSlaves(HashMap<String,RemoteSlave> rslaves) {
         _rslaves = rslaves;
+    }
+
+    public DummySlaveManager() {
+        _central = new MasterProtocolCentral();
     }
 
     public Collection<RemoteSlave> getAvailableSlaves() throws NoAvailableSlaveException {
