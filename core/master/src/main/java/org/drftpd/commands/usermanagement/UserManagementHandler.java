@@ -1817,12 +1817,27 @@ public class UserManagementHandler extends CommandInterface {
 
         Session session = request.getSession();
 
-        if (request.getUser() == null) {
-            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        // This command can be accessed by anyone, we impose restrictions here to ensure no data is leaked we do not want to be leaked
+        boolean hasPermission = false;
+
+        // Basic check
+        if (request.getUser() != null) {
+            User reqUser = session.getUserNull(request.getUser());
+            if (reqUser.equals(myUser)) {
+                hasPermission = true;
+            } else if(reqUser.isAdmin()) {
+                hasPermission = true;
+            } else {
+                if (reqUser.isGroupAdmin()) {
+                    if (myUser.isMemberOf(reqUser.getGroup())) {
+                        hasPermission = true;
+                    }
+                }
+            }
         }
 
-        if (session.getUserNull(request.getUser()).isGroupAdmin()
-                && !myUser.isMemberOf(session.getUserNull(request.getUser()).getGroup())) {
+        // Deny access if permissions are not in order
+        if (!hasPermission) {
             return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
