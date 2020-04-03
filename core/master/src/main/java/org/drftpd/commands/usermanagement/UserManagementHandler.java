@@ -1804,10 +1804,10 @@ public class UserManagementHandler extends CommandInterface {
         }
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-        User myUser;
+        User requestedUser;
 
         try {
-            myUser = GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(request.getArgument());
+            requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(request.getArgument());
         } catch (NoSuchUserException ex) {
             response.setMessage("User " + request.getArgument() + " not found");
             return response;
@@ -1815,18 +1815,41 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, "Userfile error: " + ex.getMessage());
         }
 
-        Session session = request.getSession();
-
+        // We deny any access if the current request does not have a user object
         if (request.getUser() == null) {
             return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
-        if (session.getUserNull(request.getUser()).isGroupAdmin()
-                && !myUser.isMemberOf(session.getUserNull(request.getUser()).getGroup())) {
+        // Get the session object
+        Session session = request.getSession();
+
+        // Basic check
+        User currentUser = session.getUserNull(request.getUser());
+
+        // This command can be accessed by anyone, we impose restrictions here to ensure no data is leaked we do not want to be leaked
+        boolean hasPermission = false;
+
+        if (currentUser.equals(requestedUser)) {
+            // Allow the command if the current user is requesting himself
+            hasPermission = true;
+        } else if(currentUser.isAdmin()) {
+            // Allow the command if the user is part of the 'master' group
+            hasPermission = true;
+        } else {
+            if (currentUser.isGroupAdmin()) {
+                if (requestedUser.isMemberOf(currentUser.getGroup())) {
+                    // Allow the command if the current user is a groupadmin and the requested user is part of the group the user is groupadmin off
+                    hasPermission = true;
+                }
+            }
+        }
+
+        // Deny access if permissions are not in order
+        if (!hasPermission) {
             return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
         }
 
-        String message = request.getSession().jprintf(_bundle, "user", myUser.getName());
+        String message = request.getSession().jprintf(_bundle, "user", requestedUser.getName());
         response.addComment(message);
         return response;
     }

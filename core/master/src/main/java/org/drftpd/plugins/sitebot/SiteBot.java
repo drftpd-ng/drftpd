@@ -239,6 +239,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (_factory == null) {
                 _factory = SocketFactory.getDefault();
             }
+            logger.debug("Connecting to ["+_server+":"+_port+"]");
             if (bindAddress == null || bindAddress.equals("")) {
                 socket = _factory.createSocket(_server, _port);
             } else {
@@ -248,7 +249,7 @@ public class SiteBot implements ReplyConstants, Runnable {
             if (sslProtocols != null && sslProtocols.length > 0) {
                 ((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
             }
-            logger.info("*** Connected to server.");
+            logger.info("*** Connected to server ["+_server+":"+_port+"]");
         } catch (IOException e) {
             // Something failed during connecting, call reconnect() to try another server
             logger.warn("Connection to {}:{} failed, retrying or trying next server if one is available", _server, _port);
@@ -772,7 +773,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         if (line.length() == 0) {
             return;
         }
-        logger.debug(line);
+        logger.debug("[RAW INPUT]: "+line);
 
         // Check for server pings.
         if (line.startsWith("PING ")) {
