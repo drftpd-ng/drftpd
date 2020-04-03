@@ -42,12 +42,13 @@ import java.util.HashMap;
  */
 public abstract class AbstractUserManager implements UserManager {
 	protected HashMap<String, SoftReference<User>> _users;
+	protected HashMap<String, SoftReference<Group>> _groups;
 
 	private ArrayList<UserResetHookInterface> _preResetHooks = new ArrayList<>();
 
 	private ArrayList<UserResetHookInterface> _postResetHooks = new ArrayList<>();
 
-	public void init() throws UserFileException {
+	public void init() throws UserFileException, GroupFileException {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 		loadResetHooks();
@@ -56,8 +57,9 @@ public abstract class AbstractUserManager implements UserManager {
 	protected abstract File getUserpathFile();
 
 	protected void createSiteopUser() {
-		User user = createUser("drftpd");
-		user.setGroup("drftpd");
+		Group group = createGroupImpl("drftpd");
+		User user = createUserImpl("drftpd");
+		user.setGroup(group.getName());
 		user.setPassword("drftpd");
 		user.getKeyedMap().setObject(UserManagement.RATIO, (float) 0);
 		user.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
@@ -91,7 +93,7 @@ public abstract class AbstractUserManager implements UserManager {
 		user.commit();
 	}
 
-	public User create(String username) throws UserFileException {
+	public User createUser(String username) throws UserFileException {
 		try {
 			getUserByName(username);
 			// bad, .json file already exists.
@@ -103,25 +105,55 @@ public abstract class AbstractUserManager implements UserManager {
 			// good, no such user was found. create it!
 		}
 
-		User user = createUser(username);
+		User user = createUserImpl(username);
 		user.commit();
 
 		return user;
 	}
 
-	protected abstract User createUser(String username);
+	public Group createGroup(String groupname) throws GroupFileException {
+		try {
+			getGroupByName(groupname);
+			// bad, .json file already exists.
+			throw new FileExistsException("Group " + groupname + " already exists");
+		} catch (IOException e) {
+			// bad, some I/O error ocurred.
+			throw new GroupFileException(e);
+		} catch (NoSuchGroupException e) {
+			// good, no such group was found. create it!
+		}
+
+		Group group = createGroupImpl(groupname);
+		group.commit();
+
+		return group;
+	}
+
+	protected abstract User createUserImpl(String username);
+
+	protected abstract Group createGroupImpl(String groupname);
 
 	/**
 	 * final for now to remove duplicate implementations
 	 */
-	public synchronized void delete(String username) {
+	public synchronized void deleteUser(String username) {
 		if (!getUserFile(username).delete())
 			throw new RuntimeException(new PermissionDeniedException());
 		_users.remove(username);
 	}
 
+	public synchronized void deleteGroup(String groupname) {
+		if (!getGroupFile(groupname).delete())
+			throw new RuntimeException(new PermissionDeniedException());
+		_groups.remove(groupname);
+	}
+
 	protected abstract File getUserFile(String username);
 
+	protected abstract File getGroupFile(String groupname);
+
+  public abstract Collection<Group> getAllGroups();
+/*
 	public Collection<String> getAllGroups() {
 		Collection<User> users = getAllUsers();
 		ArrayList<String> ret = new ArrayList<>();
@@ -143,6 +175,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 		return ret;
 	}
+*/
 
 	/**
 	 * Get all user names in the system.
@@ -177,6 +210,11 @@ public abstract class AbstractUserManager implements UserManager {
 		return user;
 	}
 
+	public Group getGroupByName(String groupname) throws NoSuchGroupException, GroupFileException {
+		Group group = getGroupByNameUnchecked(groupname);
+		return group;
+	}
+
 	public static GlobalContext getGlobalContext() {
 		return GlobalContext.getGlobalContext();
 	}
@@ -209,7 +247,9 @@ public abstract class AbstractUserManager implements UserManager {
 
 	public abstract User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException;
 
-	protected synchronized void rename(User oldUser, String newUsername) throws UserExistsException, UserFileException {
+	public abstract Group getGroupByNameUnchecked(String groupname) throws NoSuchGroupException, GroupFileException;
+
+	protected synchronized void renameUser(User oldUser, String newUsername) throws UserExistsException, UserFileException {
 		if (!_users.containsKey(newUsername)) {
 			try {
 				getUserByNameUnchecked(newUsername);
@@ -221,6 +261,20 @@ public abstract class AbstractUserManager implements UserManager {
 		}
 
 		throw new UserExistsException("user " + newUsername + " exists");
+	}
+
+	protected synchronized void renameGroup(Group oldGroup, String newGroupname) throws GroupExistsException, GroupFileException {
+		if (!_groups.containsKey(newGroupname)) {
+			try {
+				getGroupByNameUnchecked(newGroupname);
+			} catch (NoSuchGroupException e) {
+				_groups.remove(oldGroup.getName());
+				_groups.put(newGroupname, new SoftReference<>(oldGroup));
+				return;
+			}
+		}
+
+		throw new GroupExistsException("group " + newGroupname + " exists");
 	}
 
 	/*

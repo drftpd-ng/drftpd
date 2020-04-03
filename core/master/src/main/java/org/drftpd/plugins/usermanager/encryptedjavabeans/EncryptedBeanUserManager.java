@@ -30,10 +30,10 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 		readPasscrypt();
 	}
 	
-    @EventSubscriber
-	public void onReloadEvent(ReloadEvent event) {
-    	readPasscrypt();
-    }
+  @EventSubscriber
+  public void onReloadEvent(ReloadEvent event) {
+   	readPasscrypt();
+  }
 	
 	/*
 	 * Reads the Password Encryption into memory for user
@@ -72,7 +72,7 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 	/**
 	 * Creates a user named 'username' and adds it to the users map.
 	 */
-	protected synchronized User createUser(String username) {
+	protected synchronized User createUserImpl(String username) {
 		EncryptedBeanUser buser = new EncryptedBeanUser(this, username);
 		_users.put(username, new SoftReference<>(buser));
 		return buser;

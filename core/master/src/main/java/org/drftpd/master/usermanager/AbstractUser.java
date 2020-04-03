@@ -247,9 +247,9 @@ public abstract class AbstractUser extends User implements Commitable {
 
 	public void rename(String username) throws UserExistsException,
 			UserFileException {
-		getAbstractUserManager().rename(this, username); // throws
+		getAbstractUserManager().renameUser(this, username); // throws
 															// ObjectExistsException
-		getAbstractUserManager().delete(this.getName());
+		getAbstractUserManager().deleteUser(this.getName());
 		_username = username;
 		commit(); // throws IOException
 	}

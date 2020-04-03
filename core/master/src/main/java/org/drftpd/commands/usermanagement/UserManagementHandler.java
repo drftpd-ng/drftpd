@@ -30,6 +30,7 @@ import org.drftpd.master.master.ConnectionManager;
 import org.drftpd.master.master.Session;
 import org.drftpd.master.master.TransferState;
 import org.drftpd.master.permissions.Permission;
+import org.drftpd.master.usermanager.Group;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserExistsException;
@@ -244,7 +245,7 @@ public class UserManagementHandler extends CommandInterface {
 
 
             // action, no more NoSuchElementException below here
-            newUser = GlobalContext.getGlobalContext().getUserManager().create(newUsername);
+            newUser = GlobalContext.getGlobalContext().getUserManager().createUser(newUsername);
 
             newUser.setPassword(pass);
             newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
@@ -1382,13 +1383,13 @@ public class UserManagementHandler extends CommandInterface {
     }
 
     public CommandResponse doSITE_GROUPS(CommandRequest request) {
-        Collection<String> groups = GlobalContext.getGlobalContext().getUserManager().getAllGroups();
+        Collection<Group> groups = GlobalContext.getGlobalContext().getUserManager().getAllGroups();
 
         CommandResponse response = new CommandResponse(200);
         response.addComment("All groups:");
 
-        for (String element : groups) {
-            response.addComment(element);
+        for (Group element : groups) {
+            response.addComment(element.getName());
         }
 
         return response;
