@@ -29,6 +29,11 @@ import org.drftpd.master.usermanager.AbstractUserManager;
  * @version $Id$
  */
 public class DummyGlobalContext extends GlobalContext {
+
+    public DummyGlobalContext() {
+        _gctx = this;
+    }
+
     public void setSectionManager(SectionManagerInterface manager) {
         _sectionManager = manager;
     }

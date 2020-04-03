@@ -18,12 +18,14 @@
 package org.drftpd.master.tests;
 
 import junit.framework.TestCase;
-import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPClientConfig;
 import org.apache.commons.net.ftp.FTPReply;
+import org.apache.commons.net.ftp.FTPSClient;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +38,7 @@ import java.util.Collections;
  * @author fr0w
  * @version $Id$
  */
+@Ignore
 public class ConnectionStressTest extends TestCase {
 	
 	private static final Logger logger = LogManager.getLogger(ConnectionStressTest.class);
@@ -49,7 +52,7 @@ public class ConnectionStressTest extends TestCase {
 	public ConnectionStressTest(String fName) {
 		super(fName);
 	}
-	
+
 	public void testStress() {
 		int i = 0;
 		for (; i < 200; i++) {
@@ -66,6 +69,13 @@ public class ConnectionStressTest extends TestCase {
 			} catch (InterruptedException e) {
 				logger.fatal(e,e);
 			} 
+		}
+
+		// Wait for all threads to finish
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			logger.fatal(e,e);
 		}
 
 		Assert.assertTrue(success == i); // means that every attemp was successful when connecting
@@ -104,11 +114,11 @@ class DummyClient implements Runnable {
 	
 	public void run() {
 		try {
-			FTPClient c = new FTPClient();
+			FTPSClient c = new FTPSClient();
 			c.configure(ftpConfig);
 
 			logger.debug("Trying to connect");
-			c.connect("127.0.0.1", 21211);
+			c.connect("127.0.0.1", 2121);
 			logger.debug("Connected");
 
 			c.setSoTimeout(5000);

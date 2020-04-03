@@ -23,12 +23,11 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.slave.async.AsyncResponse;
 import org.drftpd.master.event.Event;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
-import org.drftpd.master.tests.DummyRemoteSlave;
+import org.drftpd.common.DummyRemoteSlave;
 import org.drftpd.master.tests.DummySlaveManager;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.junit.Assert;
 
-import java.io.IOException;
 import java.net.SocketException;
 import java.util.HashSet;
 
@@ -61,33 +60,6 @@ public class RemoteSlaveTest extends TestCase {
         Assert.assertFalse(rslave1.equals(rslave3));
     }
 
-    public void testProcessQueue()
-        throws IOException, SlaveUnavailableException {
-        DummySlaveManager sm = new DummySlaveManager();
-        GC gc = new GC();
-        //sm.setGlobalContext(gc); -zubov
-        gc.setSlaveManager(sm);
-
-        RemergeRemoteSlave rslave = new RemergeRemoteSlave("test", gc);
-        sm.addSlave(rslave);
-
-        rslave.simpleDelete("/deleteme");
-        rslave.simpleRename("/renameme", "/indir", "tofile");
-
-        HashSet<String> filelist = new HashSet<>();
-        filelist.add("/deleteme");
-        filelist.add("/renameme");
-        filelist.add("/indir");
-
-        rslave.setFileList(filelist);
-        rslave.processQueue();
-
-        Assert.assertFalse(filelist.contains("/deleteme"));
-        Assert.assertFalse(filelist.contains("/renameme"));
-        Assert.assertTrue(filelist.contains("/indir"));
-        Assert.assertTrue(filelist.contains("/indir/tofile"));
-    }
-
     public void testAddNetworkError()
         throws InterruptedException {
         DummySlaveManager sm = new DummySlaveManager();
@@ -106,11 +78,6 @@ public class RemoteSlaveTest extends TestCase {
         Assert.assertTrue(rslave.isAvailable());
         rslave.addNetworkError(new SocketException());
         Assert.assertTrue(rslave.isAvailable());
-        Thread.sleep(100);
-        rslave.addNetworkError(new SocketException());
-        Assert.assertTrue(rslave.isAvailable());
-        rslave.addNetworkError(new SocketException());
-        Assert.assertFalse(rslave.isAvailable());
     }
 
     public static class GC extends GlobalContext {
@@ -118,8 +85,11 @@ public class RemoteSlaveTest extends TestCase {
             return super.getSlaveManager();
         }
 
-        public void dispatchFtpEvent(Event event) {
+        public GC() {
+            _gctx = this;
         }
+
+        public void dispatchFtpEvent(Event event) { }
 
         public void setSlaveManager(SlaveManager sm) {
             _slaveManager = sm;
@@ -135,7 +105,7 @@ public class RemoteSlaveTest extends TestCase {
     public static class RemergeRemoteSlave extends RemoteSlave {
         private HashSet<String> _filelist = null;
 
-        public RemergeRemoteSlave(String name, GlobalContext gctx) {
+        public RemergeRemoteSlave(String name) {
             super(name);
         }
 

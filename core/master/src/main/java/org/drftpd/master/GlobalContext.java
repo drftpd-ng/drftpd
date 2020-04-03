@@ -74,7 +74,7 @@ public class GlobalContext {
 
     private static final Logger logger = LogManager.getLogger(GlobalContext.class);
 
-    private static GlobalContext _gctx;
+    protected static GlobalContext _gctx;
 
     private PluginsConfig _pluginsConfig;
 

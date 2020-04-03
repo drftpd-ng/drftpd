@@ -62,7 +62,7 @@
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${session.executionRootDirectory}/build</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteReleases>true</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
                         </configuration>
                     </execution>
