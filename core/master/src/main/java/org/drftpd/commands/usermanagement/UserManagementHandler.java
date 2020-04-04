@@ -37,6 +37,7 @@ import org.drftpd.master.usermanager.UserExistsException;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.slave.slave.Transfer;
+import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
@@ -205,7 +206,7 @@ public class UserManagementHandler extends CommandInterface {
             {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
-            Collection<User> groupUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g.getName());
+            Collection<User> groupUsers = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g);
             int users = groupUsers.size();
             logger.debug("Group: ["+g.getName()+"], users["+users+"]: ["+groupUsers+"]");
             if (users >= g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS)) {
@@ -276,7 +277,7 @@ public class UserManagementHandler extends CommandInterface {
             newUser.setIdleTime(idletimeVal);
             newUser.setCredits(creditsVal);
 
-            newUser.setGroup(g.getName());
+            newUser.setGroup(g);
             logger.info("'{}' added '{}' with group {}'", request.getUser(), newUser.getName(), newUser.getGroup());
             env.put("primgroup", newUser.getGroup());
             response.addComment(session.jprintf(_bundle, "adduser.primgroup", env, request.getUser()));
@@ -284,6 +285,8 @@ public class UserManagementHandler extends CommandInterface {
             newUser.commit();
             response.addComment(session.jprintf(_bundle, "adduser.success", env, request.getUser()));
 
+        } catch (FileExistsException e) {
+            return new CommandResponse(500, "User already exists");
         } catch (NoSuchElementException e) {
             return new CommandResponse(501, session.jprintf(_bundle, "adduser.missingpass", request.getUser()));
         } catch (UserFileException e) {
@@ -522,7 +525,7 @@ public class UserManagementHandler extends CommandInterface {
                         if (ratio == 0F) {
                             int usedleechslots = 0;
 
-                            for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g.getName())) {
+                            for (User user : GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g)) {
                                 if ((user).getKeyedMap().getObjectFloat(UserManagement.RATIO) == 0F) {
                                     usedleechslots++;
                                 }
@@ -1114,7 +1117,7 @@ public class UserManagementHandler extends CommandInterface {
         long allmbup = 0;
         long allmbdn = 0;
 
-        ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g.getName()));
+        ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g));
         users.sort(UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
 
         for (User user : users) {

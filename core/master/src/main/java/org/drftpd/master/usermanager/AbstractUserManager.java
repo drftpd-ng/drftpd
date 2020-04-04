@@ -184,12 +184,12 @@ public abstract class AbstractUserManager implements UserManager {
 	 */
 	public abstract Collection<User> getAllUsers();
 
-	public Collection<User> getAllUsersByGroup(String group) {
+	public Collection<User> getAllUsersByGroup(Group g) {
 		Collection<User> c = new ArrayList<>();
 
 		for (User user : getAllUsers()) {
 
-			if (user.isMemberOf(group)) {
+			if (user.isMemberOf(g.getName())) {
 				c.add(user);
 			}
 		}

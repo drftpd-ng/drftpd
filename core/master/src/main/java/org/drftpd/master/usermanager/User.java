@@ -38,7 +38,7 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	public abstract void addIPMask(String mask)
 			throws DuplicateElementException;
 
-	public abstract void addSecondaryGroup(String group)
+	public abstract void addSecondaryGroup(Group g)
 			throws DuplicateElementException;
 
 	public abstract boolean checkPassword(String password);
@@ -121,7 +121,7 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 
 	public abstract void removeIpMask(String mask) throws NoSuchFieldException;
 
-	public abstract void removeSecondaryGroup(String group)
+	public abstract void removeSecondaryGroup(Group g)
 			throws NoSuchFieldException;
 
 	public abstract void rename(String username) throws UserExistsException,
@@ -143,9 +143,9 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	 */
 	public abstract void setDeleted(boolean deleted);
 
-	public abstract void setGroup(String group);
+	public abstract void setGroup(Group g);
 	
-	public abstract void toggleGroup(String string);
+	public abstract void toggleGroup(Group g);
 
 	public abstract void updateCredits(long credits);
 

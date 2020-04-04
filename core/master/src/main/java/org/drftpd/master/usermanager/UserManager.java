@@ -39,7 +39,7 @@ public interface UserManager extends TimeEventInterface {
 	 */
   Collection<User> getAllUsers();
 
-	Collection<User> getAllUsersByGroup(String group);
+	Collection<User> getAllUsersByGroup(Group g);
 
 	/**
 	 * Get user by name.
