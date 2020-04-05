@@ -31,13 +31,9 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.slave.exceptions.FileExistsException;
 
-import java.beans.XMLDecoder;
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * This is a new usermanager that after recommendation from captain- serializes
@@ -76,14 +72,19 @@ public class BeanUserManager extends AbstractUserManager {
 
 	/**
 	 * UserManager initializer.
-	 * @throws UserFileException
+	 * @throws UserFileException If the user files locations has an error
+	 * @throws GroupFileException If the group files locations has an error
 	 */
 	public void init() throws UserFileException, GroupFileException {
 		super.init();
-		if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
+
+		File userpath = getUserpathFile();
+		File grouppath = getGrouppathFile();
+
+		if (!userpath.exists() && !userpath.mkdirs()) {
 			throw new UserFileException(new IOException("Error creating directories: " + getUserpathFile()));
 		}
-		if (!getGrouppathFile().exists() && !getGrouppathFile().mkdirs()) {
+		if (!grouppath.exists() && !grouppath.mkdirs()) {
 			throw new GroupFileException(new IOException("Error creating directories: " + getGrouppathFile()));
 		}
 		
@@ -91,7 +92,7 @@ public class BeanUserManager extends AbstractUserManager {
 		_groups = new HashMap<>();
 
 		logger.debug("Creating users map...");
-		for (String filename : getUserpathFile().list()) {
+		for (String filename : Objects.requireNonNull(userpath.list())) {
 			if (filename.endsWith(".xml") || filename.endsWith(".json")) {
 				String username = filename.substring(0, filename.lastIndexOf('.'));
 				_users.put(username, null); // the user exists, loading it is useless right now.
@@ -99,14 +100,14 @@ public class BeanUserManager extends AbstractUserManager {
 		}
 		
 		logger.debug("Creating groups map...");
-		for (String filename : getGrouppathFile().list()) {
+		for (String filename : Objects.requireNonNull(grouppath.list())) {
 			if (filename.endsWith(".xml") || filename.endsWith(".json")) {
 				String groupname = filename.substring(0, filename.lastIndexOf('.'));
 				_groups.put(groupname, null); // the group exists, loading it is useless right now.
 			}
 		}
 
-    // This also created the group
+		// This also creates the group
 		if (_users.size() == 0) {
 			createSiteopUser();
 		}
@@ -119,8 +120,7 @@ public class BeanUserManager extends AbstractUserManager {
 	 * @throws NoSuchUserException, if there's no such user w/ this Username.
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
-	public User getUserByNameUnchecked(String username)
-	throws NoSuchUserException, UserFileException {
+	public User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException {
 		try {
 			return getUserFromSoftReference(username);
 		} catch (Exception ex) {
@@ -136,10 +136,9 @@ public class BeanUserManager extends AbstractUserManager {
 	 * This method does not care about if the group exists or not,
 	 * it simply tries to find it.
 	 * @throws NoSuchGroupException, if there's no such group w/ this Groupname.
-	 * @throws UserFileException, if an error (i/o) occured while loading data.
+	 * @throws GroupFileException, if an error (i/o) occured while loading data.
 	 */
-	public Group getGroupByNameUnchecked(String groupname)
-	throws NoSuchGroupException, GroupFileException {
+	public Group getGroupByNameUnchecked(String groupname) throws NoSuchGroupException, GroupFileException {
 		try {
 			return getGroupFromSoftReference(groupname);
 		} catch (Exception ex) {
@@ -152,15 +151,13 @@ public class BeanUserManager extends AbstractUserManager {
 
 	/**
 	 * Lowest level method for loading a Group object.
-	 * @param groupName
-	 * @throws NoSuchGroupException, if there's no such group w/ this Groupname.
-	 * Meaning that the groupfile does not exists.
+	 * @param groupName The group name to load
 	 * @throws GroupFileException, if an error (i/o) occured while loading data.
 	 */
-	protected Group loadGroup(String groupName) throws NoSuchGroupException, GroupFileException {
+	protected Group loadGroup(String groupName) throws GroupFileException {
 		try (InputStream in = new FileInputStream(getGroupFile(groupName));
 			 JsonReader reader = new JsonReader(in)) {
-      logger.debug("Loading '{}' Json group data from disk.", groupName);
+			logger.debug("Loading '{}' Json group data from disk.", groupName);
 			BeanGroup group = (BeanGroup) reader.readObject();
 			group.setUserManager(this);
 			return group;
@@ -169,58 +166,23 @@ public class BeanUserManager extends AbstractUserManager {
 		}
 	}
 
-
 	/**
 	 * Lowest level method for loading a User object.
-	 * @param userName
-	 * @throws NoSuchUserException, if there's no such user w/ this Username.
-	 * Meaning that the userfile does not exists.
+	 * @param userName The user name to load
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
-	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
+	protected User loadUser(String userName) throws UserFileException {
 		try (InputStream in = new FileInputStream(getUserFile(userName));
 			 JsonReader reader = new JsonReader(in)) {
-      logger.debug("Loading '{}' Json user data from disk.", userName);
+			logger.debug("Loading '{}' Json user data from disk.", userName);
 			BeanUser user = (BeanUser) reader.readObject();
 			user.setUserManager(this);
 			return user;
-		} catch (FileNotFoundException e) {
-			// Lets see if there is a legacy xml user file to load
-			return loadXMLUser(userName);
 		} catch (Exception e) {
 			throw new UserFileException("Error loading " + userName, e);
 		}
 	}
 
-	/**
-	 * Legacy XML loader used to convert users to json schema.
-	 * @param userName
-	 * @throws NoSuchUserException, if there's no such user w/ this Username.
-	 * Meaning that the userfile does not exists.
-	 * @throws UserFileException, if an error (i/o) occured while loading data.
-	 */
-	private User loadXMLUser(String userName) throws NoSuchUserException, UserFileException {
-		File xmlUserFile = getXMLUserFile(userName);
-		try (XMLDecoder xd = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlUserFile)))) {
-			BeanUser user;
-            logger.debug("Loading '{}' XML data from disk.", userName);
-			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			user = (BeanUser) xd.readObject();
-			Thread.currentThread().setContextClassLoader(prevCL);
-			user.setUserManager(this);
-			// Commit new json userfile and delete old xml
-			user.commit();
-			if (!xmlUserFile.delete()) {
-                logger.error("Failed to delete old xml userfile: {}", xmlUserFile.getName());
-			}
-			return user;
-		} catch (FileNotFoundException e) {
-			throw new NoSuchUserException("No such user: '"+userName+"'", e);
-		} catch (Exception e) {
-			throw new UserFileException("Error loading " + userName, e);
-		}
-	}
-	
 	/**
 	 * This methods fetches the SoftReference from the users map
 	 * and checks if it still holds a reference to a User object.<br>
@@ -234,7 +196,7 @@ public class BeanUserManager extends AbstractUserManager {
 	 */
 	private synchronized User getUserFromSoftReference(String name)
 			throws NoSuchUserException, UserFileException {
-		if (!_users.keySet().contains(name)) {
+		if (!_users.containsKey(name)) {
 			throw new NoSuchUserException("No such user found: " + name);
 		}
 		SoftReference<User> sf = _users.get(name);
@@ -263,7 +225,7 @@ public class BeanUserManager extends AbstractUserManager {
 	 */
 	private synchronized Group getGroupFromSoftReference(String name)
 			throws NoSuchGroupException, GroupFileException {
-		if (!_groups.keySet().contains(name)) {
+		if (!_groups.containsKey(name)) {
 			throw new NoSuchGroupException("No such group found: " + name);
 		}
 		SoftReference<Group> sf = _groups.get(name);
@@ -333,10 +295,12 @@ public class BeanUserManager extends AbstractUserManager {
 	
 	/**
 	 * Testing routine.
-	 * @param args
-	 * @throws UserFileException
+	 * @param args Command line arguments
+	 * @throws UserFileException There is a problem with the user file
+	 * @throws GroupFileException There is a problem with the user file
+	 * @throws FileExistsException The files already exist
 	 */
-	public static void main(String args[]) throws UserFileException, GroupFileException, FileExistsException {
+	public static void main(String[] args) throws UserFileException, GroupFileException, FileExistsException {
 		BeanUserManager bu = new BeanUserManager();
     	Group g = bu.createGroup("drftpd");
     	g.commit();
@@ -359,13 +323,5 @@ public class BeanUserManager extends AbstractUserManager {
 
 	protected final File getGroupFile(String groupname) {
 		return new File(_grouppath + groupname + ".json");
-	}
-
-	private File getXMLUserFile(String username) {
-		return new File(_userpath + username + ".xml");
-	}
-
-	private File getXMLGroupFile(String groupname) {
-		return new File(_grouppath + groupname + ".xml");
 	}
 }

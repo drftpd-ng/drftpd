@@ -22,7 +22,6 @@ import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.commands.UserManagement;
 import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.master.CommitManager;
 import org.drftpd.master.usermanager.AbstractUser;
@@ -93,6 +92,7 @@ public class BeanUser extends AbstractUser {
 	public void writeToDisk() throws IOException {
 		if (_purged)
 			return;
+
 		Map<String,Object> params = new HashMap<>();
 		params.put(JsonWriter.PRETTY_PRINT, true);
 		try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
