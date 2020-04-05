@@ -86,9 +86,7 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 		}
 		try {
 			return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(user);
-		} catch (NoSuchUserException e) {
-			return null;
-		} catch (UserFileException e) {
+		} catch (NoSuchUserException | UserFileException e) {
 			return null;
 		}
 	}
@@ -103,9 +101,7 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 		}
 		try {
 			return GlobalContext.getGlobalContext().getUserManager().getGroupByNameUnchecked(group);
-		} catch (NoSuchGroupException e) {
-			return null;
-		} catch (GroupFileException e) {
+		} catch (NoSuchGroupException | GroupFileException e) {
 			return null;
 		}
 	}

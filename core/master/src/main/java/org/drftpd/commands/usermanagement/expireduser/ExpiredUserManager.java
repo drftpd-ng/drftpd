@@ -27,6 +27,8 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.usermanagement.expireduser.metadata.ExpiredUserData;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
+import org.drftpd.master.usermanager.GroupFileException;
+import org.drftpd.master.usermanager.NoSuchGroupException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserResetHookInterface;
 
@@ -76,14 +78,25 @@ public class ExpiredUserManager implements UserResetHookInterface {
 		if (!_chgrp.isEmpty()) {
 			String[] groups = _chgrp.split(" ");
 			for (String group : groups) {
-				user.toggleGroup(group);	
+				try {
+					user.toggleGroup(user.getUserManager().getGroupByName(group));
+				} catch (NoSuchGroupException e) {
+					logger.warn("[doExpired] Tried to chgrp to a unknown group: {}", group);
+				} catch (GroupFileException e) {
+					logger.warn("There was an error reading the group file for {} while trying to use chgrp", group, e);
+				}
 			}
-			
 		}
 		
 		if (!_setgrp.isEmpty()) {
 			String[] groups = _setgrp.split(" ");
-			user.setGroup(groups[0]);
+			try {
+				user.setGroup(user.getUserManager().getGroupByName(groups[0]));
+			} catch (NoSuchGroupException e) {
+				logger.warn("[doExpired] Tried to setgrp to a unknown group: {}", groups[0]);
+			} catch (GroupFileException e) {
+				logger.warn("There was an error reading the group file for {} while trying to use chgrp", groups[0], e);
+			}
 		}		
 		user.commit();
 	}

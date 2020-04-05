@@ -6,7 +6,7 @@
     "@type":"java.util.TreeMap",
     "testSlave":{
       "@type":"java.util.concurrent.atomic.AtomicInteger",
-      "value":22
+      "value":24
     }
   },
   "_username":"drftpd",
@@ -20,6 +20,6 @@
   "_untypedPluginMap":{
     "@type":"java.util.TreeMap"
   },
-  "_lastModified":1585932209357,
+  "_lastModified":1586026884969,
   "_creationTime":1585931016562
 }

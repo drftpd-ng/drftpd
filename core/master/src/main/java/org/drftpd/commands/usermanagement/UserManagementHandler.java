@@ -192,7 +192,7 @@ public class UserManagementHandler extends CommandInterface {
             g = session.getGroupNull(st.nextToken());
         } else {
             // regular adduser, take over primary group of user
-            g = session.getGroupNull(currentUser.getGroup());
+            g = currentUser.getGroup();
         }
 
         // If the group is unknown we bail out
@@ -424,8 +424,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_CHANGE(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_CHANGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -439,6 +438,8 @@ public class UserManagementHandler extends CommandInterface {
 
         StringTokenizer arguments = new StringTokenizer(request.getArgument());
 
+        Session session = request.getSession();
+
         if (!arguments.hasMoreTokens()) {
             throw new ImproperUsageException();
         }
@@ -449,7 +450,11 @@ public class UserManagementHandler extends CommandInterface {
             if (username.startsWith("=")) {
                 // This request is to change something for all users in a group
                 String group = username.replace("=", "");
-                users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(group);
+                Group g = session.getGroupNull(group);
+                if (g == null) {
+                    return new CommandResponse(550, "Unknown group");
+                }
+                users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g);
             } else if (username.equals("*")) {
                 // This request is to change all users
                 users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
@@ -470,8 +475,6 @@ public class UserManagementHandler extends CommandInterface {
         }
 
         String command = arguments.nextToken().toLowerCase();
-
-        Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
 
@@ -697,11 +700,16 @@ public class UserManagementHandler extends CommandInterface {
                         throw new ImproperUsageException();
                     }
 
-                    logger.info("'{}' changed primary group for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getGroup(), commandArguments[0]);
-                    userToChange.setGroup(commandArguments[0]);
-                    env.put("primgroup", userToChange.getGroup());
-                    response.addComment(session.jprintf(_bundle,
-                            "changeprimgroup.success", env, request.getUser()));
+                    String newGroup = commandArguments[0];
+                    Group g = session.getGroupNull(newGroup);
+                    if(g == null) {
+                        return new CommandResponse(550, "Unknown group");
+                    }
+
+                    logger.info("'{}' changed primary group for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getGroup().getName(), g.getName());
+                    userToChange.setGroup(g);
+                    env.put("primgroup", userToChange.getGroup().getName());
+                    response.addComment(session.jprintf(_bundle,"changeprimgroup.success", env, request.getUser()));
 
                     // group_slots Number of users a GADMIN is allowed to add.
                     // If you specify a second argument, it will be the
@@ -801,73 +809,6 @@ public class UserManagementHandler extends CommandInterface {
 
         }
 
-        return response;
-    }
-
-    /**
-     * USAGE: site chgrp <user><group>[ <group>] Adds/removes a user from
-     * group(s).
-     * <p>
-     * ex. site chgrp archimede ftp This would change the group to 'ftp' for the
-     * user 'archimede'.
-     * <p>
-     * ex1. site chgrp archimede ftp This would remove the group ftp from the
-     * user 'archimede'.
-     * <p>
-     * ex2. site chgrp archimede ftp eleet This moves archimede from ftp group
-     * to eleet group.
-     *
-     * @throws ImproperUsageException
-     */
-    public CommandResponse doSITE_CHGRP(CommandRequest request) throws ImproperUsageException {
-
-        if (!request.hasArgument()) {
-            throw new ImproperUsageException();
-        }
-
-        String[] args = request.getArgument().split("[ ,]");
-
-        if (args.length < 2) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-
-        User myUser;
-
-        try {
-            myUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(
-                    args[0]);
-        } catch (NoSuchUserException e) {
-            return new CommandResponse(452, "User not found: " + e.getMessage());
-        } catch (UserFileException e) {
-            logger.log(Level.FATAL, "IO error reading user", e);
-
-            return new CommandResponse(452, "IO error reading user: " + e.getMessage());
-        }
-
-        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
-        Session session = request.getSession();
-        for (int i = 1; i < args.length; i++) {
-            String string = args[i];
-
-            try {
-                myUser.removeSecondaryGroup(string);
-                logger.info("'{}' removed '{}' from group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
-                response.addComment(myUser.getName() + " removed from group "
-                        + string);
-            } catch (NoSuchFieldException e1) {
-                try {
-                    myUser.addSecondaryGroup(string);
-                    logger.info("'{}' added '{}' to group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
-                    response.addComment(myUser.getName() + " added to group "
-                            + string);
-                } catch (DuplicateElementException e2) {
-                    throw new RuntimeException(
-                            "Error, user was not a member before", e2);
-                }
-            }
-        }
-        myUser.commit();
         return response;
     }
 
@@ -1296,165 +1237,6 @@ public class UserManagementHandler extends CommandInterface {
 
         return new CommandResponse(200, "OK, gave " + Bytes.formatBytes(credits)
                 + " of your credits to " + myUser.getName());
-    }
-
-    public CommandResponse doSITE_GROUP(CommandRequest request)
-            throws ImproperUsageException {
-
-        boolean ip = false;
-        float ratio = 0;
-        int numLogin = 0, numLoginIP = 0, maxUp = 0, maxDn = 0;
-        String opt, group;
-
-        if (!request.hasArgument()) {
-            throw new ImproperUsageException();
-        }
-
-        StringTokenizer st = new StringTokenizer(request.getArgument());
-
-        if (!st.hasMoreTokens()) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-        group = st.nextToken();
-
-        if (!st.hasMoreTokens()) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-        opt = st.nextToken();
-
-        if (!st.hasMoreTokens()) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-
-        switch (opt) {
-            case "num_logins":
-                numLogin = Integer.parseInt(st.nextToken());
-                if (st.hasMoreTokens()) {
-                    ip = true;
-                    numLoginIP = Integer.parseInt(st.nextToken());
-                }
-                break;
-            case "ratio":
-                ratio = Float.parseFloat(st.nextToken());
-                break;
-            case "max_sim":
-                maxUp = Integer.parseInt(st.nextToken());
-                if (!st.hasMoreTokens()) {
-                    throw new ImproperUsageException();
-                }
-                maxDn = Integer.parseInt(st.nextToken());
-                break;
-            default:
-                return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-
-        // getting data
-
-        CommandResponse response = new CommandResponse(200);
-
-        Collection<User> users = GlobalContext.getGlobalContext().getUserManager()
-                .getAllUsersByGroup(group);
-
-        response.addComment("Changing '" + group + "' members " + opt);
-
-        for (User userToChange : users) {
-
-            if (userToChange.getGroup().equals(group)) {
-                if (opt.equals("num_logins")) {
-                    userToChange.getKeyedMap().setObject(
-                            UserManagement.MAXLOGINS, numLogin);
-                    if (ip) {
-                        userToChange.getKeyedMap().setObject(
-                                UserManagement.MAXLOGINSIP, numLoginIP);
-                    }
-                }
-                if (opt.equals("max_sim")) {
-                    userToChange.setMaxSimDown(maxDn);
-                    userToChange.setMaxSimUp(maxUp);
-                }
-                if (opt.equals("ratio")) {
-                    userToChange.getKeyedMap().setObject(UserManagement.RATIO,
-                            ratio);
-                }
-                userToChange.commit();
-                response.addComment("Changed " + userToChange.getName() + "!");
-
-            }
-        }
-
-        response.addComment("Done!");
-
-        return response;
-    }
-
-    public CommandResponse doSITE_GROUPS(CommandRequest request) {
-        Collection<Group> groups = GlobalContext.getGlobalContext().getUserManager().getAllGroups();
-
-        CommandResponse response = new CommandResponse(200);
-        response.addComment("All groups:");
-
-        for (Group element : groups) {
-            response.addComment(element.getName());
-        }
-
-        return response;
-    }
-
-    public CommandResponse doSITE_GRPREN(CommandRequest request)
-            throws ImproperUsageException {
-
-        if (!request.hasArgument()) {
-            throw new ImproperUsageException();
-        }
-
-        StringTokenizer st = new StringTokenizer(request.getArgument());
-
-        if (!st.hasMoreTokens()) {
-            throw new ImproperUsageException();
-        }
-
-        String oldGroup = st.nextToken();
-
-        if (!st.hasMoreTokens()) {
-            throw new ImproperUsageException();
-        }
-
-        String newGroup = st.nextToken();
-        Collection<User> users = GlobalContext.getGlobalContext().getUserManager()
-                .getAllUsersByGroup(oldGroup);
-
-        if (!GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(
-                newGroup).isEmpty()) {
-            return new CommandResponse(500, newGroup + " already exists");
-        }
-
-        CommandResponse response = new CommandResponse(200);
-        response.addComment("Renaming group " + oldGroup + " to " + newGroup);
-
-        for (User userToChange : users) {
-            if (userToChange.getGroup().equals(oldGroup)) {
-                userToChange.setGroup(newGroup);
-            } else {
-                try {
-                    userToChange.removeSecondaryGroup(oldGroup);
-                } catch (NoSuchFieldException e1) {
-                    throw new RuntimeException(
-                            "User was not in group returned by getAllUsersByGroup");
-                }
-
-                try {
-                    userToChange.addSecondaryGroup(newGroup);
-                } catch (DuplicateElementException e2) {
-                    throw new RuntimeException("group " + newGroup
-                            + " already exists");
-                }
-            }
-
-            userToChange.commit();
-            response.addComment("Changed user " + userToChange.getName());
-        }
-
-        return response;
     }
 
     public CommandResponse doSITE_KICK(CommandRequest request)

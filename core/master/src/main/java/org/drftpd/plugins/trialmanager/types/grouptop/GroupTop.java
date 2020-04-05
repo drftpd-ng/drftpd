@@ -18,9 +18,7 @@ package org.drftpd.plugins.trialmanager.types.grouptop;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
-import org.drftpd.master.usermanager.NoSuchUserException;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.usermanager.*;
 import org.drftpd.master.util.GroupPosition;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
@@ -70,7 +68,6 @@ public class GroupTop extends TrialType {
 
     }
 
-
     public int getList() {
         return _list;
     }
@@ -93,14 +90,26 @@ public class GroupTop extends TrialType {
         if (commands.length > 1) {
             if (commands[0].equalsIgnoreCase("chgrp")) {
                 for (int i = 1; i < commands.length; i++) {
-                    user.toggleGroup(commands[i]);
-                    logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                    try {
+                        user.toggleGroup(user.getUserManager().getGroupByName(commands[i]));
+                        logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                    } catch (NoSuchGroupException e) {
+                        logger.warn("[GroupTop][handlePassed] We tried to chgrp to a unknown group: {} for user {}", commands[i], user.getName());
+                    } catch (GroupFileException e) {
+                        logger.warn("[GroupTop][handlePassed] There was an error reading the group file for group {}", commands[i], e);
+                    }
                 }
                 return;
             }
             if (commands[0].equalsIgnoreCase("setgrp")) {
-                user.setGroup(commands[1]);
-                logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                try {
+                    user.setGroup(user.getUserManager().getGroupByName(commands[1]));
+                    logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                } catch (NoSuchGroupException e) {
+                    logger.warn("[GroupTop][handlePassed] We tried to setgrp to a unknown group: {} for user {}", commands[1], user.getName());
+                } catch (GroupFileException e) {
+                    logger.warn("[GroupTop][handlePassed] There was an error reading the group file for group {}", commands[1], e);
+                }
                 return;
             }
         }
@@ -114,14 +123,26 @@ public class GroupTop extends TrialType {
             if (commands.length > 1) {
                 if (commands[0].equalsIgnoreCase("chgrp")) {
                     for (int i = 1; i < commands.length; i++) {
-                        user.toggleGroup(commands[i]);
-                        logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                        try {
+                            user.toggleGroup(user.getUserManager().getGroupByName(commands[i]));
+                            logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                        } catch (NoSuchGroupException e) {
+                            logger.warn("[GroupTop][handleFailed] We tried to chgrp to a unknown group: {} for user {}", commands[i], user.getName());
+                        } catch (GroupFileException e) {
+                            logger.warn("[GroupTop][handleFailed] There was an error reading the group file for group {}", commands[i], e);
+                        }
                     }
                     return;
                 }
                 if (commands[0].equalsIgnoreCase("setgrp")) {
-                    user.setGroup(commands[1]);
-                    logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                    try {
+                        user.setGroup(user.getUserManager().getGroupByName(commands[1]));
+                        logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                    } catch (NoSuchGroupException e) {
+                        logger.warn("[GroupTop][handleFailed] We tried to setgrp to a unknown group: {} for user {}", commands[1], user.getName());
+                    } catch (GroupFileException e) {
+                        logger.warn("[GroupTop][handleFailed] There was an error reading the group file for group {}", commands[1], e);
+                    }
                     return;
                 }
             } else {
@@ -171,16 +192,12 @@ public class GroupTop extends TrialType {
         return top;
     }
 
-    private CommandResponse doGroupTop(CommandRequest request, ResourceBundle bundle, CommandResponse response, boolean top) {
+    private void doGroupTop(CommandRequest request, ResourceBundle bundle, CommandResponse response, boolean top) {
         User requestuser;
         try {
             requestuser = request.getUserObject();
-        } catch (NoSuchUserException e1) {
-            //No Such User Exists - return
-            return response;
-        } catch (UserFileException e1) {
-            // User File Corrupt - return
-            return response;
+        } catch (NoSuchUserException | UserFileException ignored) {
+            return;
         }
 
         /*
@@ -202,12 +219,12 @@ public class GroupTop extends TrialType {
          * Gets the Groups and members
          */
         MyGroupPosition stat = null;
-        String groupname = "";
+        String groupname;
         ArrayList<User> users = getUsers();
         ArrayList<MyGroupPosition> grpList = new ArrayList<>();
         long minPercentage = getTop() / 100 * getMinPercent();
         for (User user : users) {
-            groupname = user.getGroup();
+            groupname = user.getGroup().getName();
             for (MyGroupPosition stat2 : grpList) {
                 if (stat2.getGroupname().equals(groupname)) {
                     stat = stat2;
@@ -216,7 +233,7 @@ public class GroupTop extends TrialType {
             }
 
             if (stat == null) {
-                stat = new MyGroupPosition(groupname, 0, 0, 0, 0, 0);
+                stat = new MyGroupPosition(groupname, 0, 0, 0, 0);
                 grpList.add(stat);
             }
 
@@ -286,7 +303,6 @@ public class GroupTop extends TrialType {
             }
             i++;
         }
-        return response;
     }
 
     @Override
@@ -307,28 +323,32 @@ public class GroupTop extends TrialType {
     }
 
 
-    private CommandResponse doGroupPassed(CommandRequest request, ResourceBundle bundle, CommandResponse response) {
-        String group = request.getArgument();
+    private void doGroupPassed(CommandRequest request, ResourceBundle bundle, CommandResponse response) {
 
-        User requestuser = null;
+        User requestedUser;
         try {
-            requestuser = request.getUserObject();
-        } catch (NoSuchUserException e1) {
-            return response;
-        } catch (UserFileException e1) {
-            return response;
+            requestedUser = request.getUserObject();
+        } catch (NoSuchUserException | UserFileException e1) {
+            return;
         }
 
-        if (group.equals("") || group == null) {
-            group = requestuser.getGroup();
+        Group g;
+        try {
+            if (!request.hasArgument()) {
+                g = requestedUser.getGroup();
+            } else {
+                g = requestedUser.getUserManager().getGroupByName(request.getArgument());
+            }
+        } catch (NoSuchGroupException | GroupFileException ignored) {
+            return;
         }
 
         MyGroupPosition stat = null;
-        String groupname = "";
+        String groupname;
         ArrayList<User> users = getUsers();
         ArrayList<MyGroupPosition> grpList = new ArrayList<>();
         for (User user : users) {
-            groupname = user.getGroup();
+            groupname = user.getGroup().getName();
             for (MyGroupPosition stat2 : grpList) {
                 if (stat2.getGroupname().equals(groupname)) {
                     stat = stat2;
@@ -336,7 +356,7 @@ public class GroupTop extends TrialType {
                 }
             }
             if (stat == null) {
-                stat = new MyGroupPosition(groupname, 0, 0, 0, 0, 0);
+                stat = new MyGroupPosition(groupname, 0, 0, 0, 0);
                 grpList.add(stat);
             }
 
@@ -351,7 +371,7 @@ public class GroupTop extends TrialType {
         int i = 1;
         MyGroupPosition grp = null;
         for (MyGroupPosition gr : grpList) {
-            if (gr.getGroupname().equals(group)) {
+            if (gr.getGroupname().equals(g.getName())) {
                 grp = gr;
                 break;
             }
@@ -359,11 +379,11 @@ public class GroupTop extends TrialType {
         }
 
         Map<String, Object> env2 = new HashMap<>();
-        env2.put("grpname", group);
+        env2.put("grpname", g.getName());
 
         if (grp == null) {
-            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.nosuchgroup", env2, requestuser));
-            return response;
+            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.nosuchgroup", env2, requestedUser));
+            return;
         }
 
 
@@ -378,14 +398,14 @@ public class GroupTop extends TrialType {
         long minPercentage = getTop() / 100 * getMinPercent();
 
         if ((i < getKeep()) && (uploaded >= (getMin() * grp.getMembers())) && (uploaded >= minPercentage)) {
-            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.passed.header", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.passed.header", env2, requestedUser));
         } else {
-            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.failed.header", env2, requestuser));
+            response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.failed.header", env2, requestedUser));
         }
 
         int count = 0;
         for (User user : users) {
-            if (user.isMemberOf(group)) {
+            if (user.isMemberOf(g.getName())) {
                 ++count;
                 Map<String, Object> env = new HashMap<>();
                 env.put("name", this.getName());
@@ -397,21 +417,19 @@ public class GroupTop extends TrialType {
                 env.put("time", getRemainingTime());
 
                 if ((count < getKeep()) && (uploaded >= getMin())) {
-                    response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.passed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.passed", env, requestedUser));
                 } else {
-                    response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.failed", env, requestuser));
+                    response.addComment(request.getSession().jprintf(bundle, "grouptop.passed.failed", env, requestedUser));
                 }
 
             }
         }
-        return response;
     }
 
     static class MyGroupPosition extends GroupPosition {
         int members;
 
-        public MyGroupPosition(String groupname, long bytes, int files,
-                               long xfertime, int members, int racesWon) {
+        public MyGroupPosition(String groupname, long bytes, int files, long xfertime, int members) {
             super(groupname, bytes, files, xfertime);
             this.members = members;
         }
@@ -423,7 +441,6 @@ public class GroupTop extends TrialType {
             long anotherVal = mo.getBytes() / mo.getMembers();
             return (Long.compare(anotherVal, thisVal));
         }
-
 
         public int getMembers() {
             return this.members;

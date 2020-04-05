@@ -29,6 +29,7 @@ import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.NoSuchGroupException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.beans.XMLDecoder;
 import java.io.*;
@@ -335,12 +336,12 @@ public class BeanUserManager extends AbstractUserManager {
 	 * @param args
 	 * @throws UserFileException
 	 */
-	public static void main(String args[]) throws UserFileException, GroupFileException {
+	public static void main(String args[]) throws UserFileException, GroupFileException, FileExistsException {
 		BeanUserManager bu = new BeanUserManager();
-    Group g = bu.createGroup("drftpd");
-    g.commit();
+    	Group g = bu.createGroup("drftpd");
+    	g.commit();
 		User u = bu.createUser("drftpd");
-    u.setGroup(g.getName());
+    	u.setGroup(g);
 		u.commit();
 	}
 

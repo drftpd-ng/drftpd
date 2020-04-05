@@ -40,9 +40,15 @@ import java.util.List;
 public abstract class AbstractGroup extends Group implements Commitable {
 	private static final Logger logger = LogManager.getLogger(AbstractUser.class);
 
+	public static void checkValidGroupName(String group) {
+		if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
+			throw new IllegalArgumentException("Groups cannot contain space or other illegal characters");
+		}
+	}
+
 	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
 
-  private ArrayList<String> _admins = new ArrayList<>();
+	private ArrayList<String> _admins = new ArrayList<>();
 
 	private String _groupname;
 

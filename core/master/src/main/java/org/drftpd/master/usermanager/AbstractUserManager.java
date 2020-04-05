@@ -61,9 +61,9 @@ public abstract class AbstractUserManager implements UserManager {
 		Group group = createGroupImpl("drftpd");
 		group.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
 		group.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
-    group.commit();
+		group.commit();
 		User user = createUserImpl("drftpd");
-		user.setGroup(group.getName());
+		user.setGroup(group);
 		user.setPassword("drftpd");
 		user.getKeyedMap().setObject(UserManagement.RATIO, (float) 0);
 		user.getKeyedMap().setObject(UserManagement.MAXLOGINS, 0);
@@ -88,14 +88,18 @@ public abstract class AbstractUserManager implements UserManager {
 		}
 
 		try {
-			user.addSecondaryGroup("siteop");
+			Group g = createGroupImpl("siteop");
+			g.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
+			g.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
+			g.commit();
+			user.addSecondaryGroup(g);
 		} catch (DuplicateElementException e1) {
 		}
 
 		user.commit();
 	}
 
-	public User createUser(String username) throws UserFileException {
+	public User createUser(String username) throws UserFileException, FileExistsException {
 		try {
 			getUserByName(username);
 			// bad, .json file already exists.
@@ -113,7 +117,7 @@ public abstract class AbstractUserManager implements UserManager {
 		return user;
 	}
 
-	public Group createGroup(String groupname) throws GroupFileException {
+	public Group createGroup(String groupname) throws GroupFileException, FileExistsException {
 		try {
 			getGroupByName(groupname);
 			// bad, .json file already exists.

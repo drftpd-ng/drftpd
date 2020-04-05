@@ -27,6 +27,7 @@ import org.drftpd.master.event.UserEvent;
 import org.drftpd.master.common.exceptions.DuplicateElementException;
 import org.drftpd.master.master.Commitable;
 import org.drftpd.master.common.util.HostMaskCollection;
+import org.drftpd.slave.exceptions.FileExistsException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,46 +44,29 @@ import java.util.List;
 public abstract class AbstractUser extends User implements Commitable {
 	private static final Logger logger = LogManager.getLogger(AbstractUser.class);
 
-	public static void checkValidGroupName(String group) {
-		if ((group.indexOf(' ') != -1) || (group.indexOf(';') != -1)) {
-			throw new IllegalArgumentException(
-					"Groups cannot contain space or other illegal characters");
-		}
-	}
-
 	private long _credits;
 
 	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
 
-	private String _group = "nogroup";
+	private Group _group = null;
 
-	private ArrayList<String> _groups = new ArrayList<>();
+	// We keep this String based, but for the outside world this always needs to be an object of type Group
+	private ArrayList<Group> _groups = new ArrayList<>();
 
 	private HostMaskCollection _hostMasks = new HostMaskCollection();
 
 	private int _idleTime = 0; // no limit
-
-	// private long _lastNuked;
 
 	/**
 	 * Protected for DummyUser b/c TrialTest
 	 */
 	protected long _lastReset;
 
-	// private long _nukedBytes;
-	// private int _racesLost;
-	// private int _racesParticipated;
-	// private int _racesWon;
-	// private float _ratio = 3.0F;
-	// private int _requests;
-	// private int _requestsFilled;
-
 	private String _username;
 
 	public AbstractUser(String username) {
 		_username = username;
-		_data.setObject(UserManagement.CREATED, new Date(System
-				.currentTimeMillis()));
+		_data.setObject(UserManagement.CREATED, new Date(System.currentTimeMillis()));
 		_data.setObject(UserManagement.TAGLINE, "no tagline");
 	}
 
@@ -94,34 +78,12 @@ public abstract class AbstractUser extends User implements Commitable {
 		getHostMaskCollection().addMask(mask);
 	}
 
-	// public void addRacesLost() {
-	// _racesLost++;
-	// }
-	//
-	// public void addRacesParticipated() {
-	// _racesParticipated++;
-	// }
-	//
-	// public void addRacesWon() {
-	// _racesWon++;
-	// }
-	//
-	// public void addRequests() {
-	// _requests++;
-	// }
-	//
-	// public void addRequestsFilled() {
-	// _requestsFilled++;
-	// }
-	public void addSecondaryGroup(String group)
-			throws DuplicateElementException {
-		if (_groups.contains(group)) {
-			throw new DuplicateElementException(
-					"User is already a member of that group");
+	public void addSecondaryGroup(Group g) throws DuplicateElementException {
+		if (_groups.contains(g)) {
+			throw new DuplicateElementException("User is already a member of that group");
 		}
 
-		checkValidGroupName(group);
-		_groups.add(group);
+		_groups.add(g);
 	}
 
 	public boolean equals(Object obj) {
@@ -140,19 +102,15 @@ public abstract class AbstractUser extends User implements Commitable {
 		return _credits;
 	}
 
-	public String getGroup() {
-		if (_group == null) {
-			return "nogroup";
-		}
-
+	public Group getGroup() {
 		return _group;
 	}
 
-	public List<String> getGroups() {
+	public List<Group> getGroups() {
 		return _groups;
 	}
 
-	public void setGroups(List<String> groups) {
+	public void setGroups(List<Group> groups) {
 		_groups = new ArrayList<>(groups);
 	}
 
@@ -184,14 +142,6 @@ public abstract class AbstractUser extends User implements Commitable {
 		_lastReset = lastReset;
 	}
 
-	// public int getRequests() {
-	// return _requests;
-	// }
-	//
-	// public int getRequestsFilled() {
-	// return _requestsFilled;
-	// }
-	
 	public String getName() {
 		return _username;
 	}
@@ -209,20 +159,17 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public boolean isMemberOf(String group) {
-		if (getGroup().equals(group)) {
+		if (getGroup().getName().equals(group)) {
 			return true;
 		}
 
-		for (String myGroup : getGroups()) {
-			if (group.equals(myGroup)) {
+		for (Group myGroup : getGroups()) {
+			if (group.equals(myGroup.getName())) {
 				return true;
 			}
 		}
 
 		return false;
-	}
-
-	public void logout() {
 	}
 
 	public void removeIpMask(String mask) throws NoSuchFieldException {
@@ -231,7 +178,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		}
 	}
 
-	public void removeSecondaryGroup(String group) throws NoSuchFieldException {
+	public void removeSecondaryGroup(Group group) throws NoSuchFieldException {
 		if (!_groups.remove(group)) {
 			throw new NoSuchFieldException("User is not a member of that group");
 		}
@@ -293,21 +240,34 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void setDeleted(boolean deleted) {
+		Group g;
+		try {
+			g = getUserManager().getGroupByName("deleted");
+		} catch(NoSuchGroupException e) {
+			// This should normally not happen, but this part needs to be changed anyway, so we silently allow this and create the group here
+			try {
+				g = getUserManager().createGroup("deleted");
+			} catch (GroupFileException | FileExistsException ignored) {
+				// File error...
+				return;
+			}
+		} catch (GroupFileException ignored) {
+			// File error...
+			return;
+		}
+
 		if (deleted) {
 			try {
-				addSecondaryGroup("deleted");
-			} catch (DuplicateElementException e) {
-			}
+				addSecondaryGroup(g);
+			} catch (DuplicateElementException ignored) {}
 		} else {
 			try {
-				removeSecondaryGroup("deleted");
-			} catch (NoSuchFieldException e) {
-			}
+				removeSecondaryGroup(g);
+			} catch (NoSuchFieldException ignored) {}
 		}
 	}
 
-	public void setGroup(String g) {
-		checkValidGroupName(g);
+	public void setGroup(Group g) {
 		_group = g;
 	}
 
@@ -315,16 +275,16 @@ public abstract class AbstractUser extends User implements Commitable {
 		_idleTime = idleTime;
 	}
 
-	public void toggleGroup(String string) {
-		if (isMemberOf(string)) {
+	public void toggleGroup(Group g) {
+		if (isMemberOf(g.getName())) {
 			try {
-				removeSecondaryGroup(string);
+				removeSecondaryGroup(g);
 			} catch (NoSuchFieldException e) {
 				logger.error("isMemberOf() said we were in the group", e);
 			}
 		} else {
 			try {
-				addSecondaryGroup(string);
+				addSecondaryGroup(g);
 			} catch (DuplicateElementException e) {
 				logger.error("isMemberOf() said we weren't in the group", e);
 			}

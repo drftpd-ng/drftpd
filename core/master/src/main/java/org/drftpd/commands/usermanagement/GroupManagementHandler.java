@@ -79,8 +79,7 @@ public class GroupManagementHandler extends CommandInterface {
 
     }
 
-    public CommandResponse doSITE_ADDGROUP(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_ADDGROUP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -234,8 +233,7 @@ public class GroupManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_GRPCHANGE(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_GRPCHANGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -410,8 +408,7 @@ public class GroupManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_CHGRP(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_CHGRP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -438,16 +435,17 @@ public class GroupManagementHandler extends CommandInterface {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         Session session = request.getSession();
+
         for (int i = 1; i < args.length; i++) {
             String string = args[i];
 
             try {
-                myUser.removeSecondaryGroup(string);
+                myUser.removeSecondaryGroup(session.getGroupNull(string));
                 logger.info("'{}' removed '{}' from group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
                 response.addComment(myUser.getName() + " removed from group " + string);
             } catch (NoSuchFieldException e1) {
                 try {
-                    myUser.addSecondaryGroup(string);
+                    myUser.addSecondaryGroup(session.getGroupNull(string));
                     logger.info("'{}' added '{}' to group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
                     response.addComment(myUser.getName() + " added to group " + string);
                 } catch (DuplicateElementException e2) {
@@ -459,8 +457,7 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_GINFO(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_GINFO(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -502,7 +499,7 @@ public class GroupManagementHandler extends CommandInterface {
         long allmbup = 0;
         long allmbdn = 0;
 
-        ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g.getName()));
+        ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g));
         users.sort(GroupManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
 
         for (User user : users) {
@@ -560,32 +557,31 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_GROUP(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_GROUP(CommandRequest request) throws ImproperUsageException {
 
         boolean ip = false;
         float ratio = 0;
-        int numLogin = 0, numLoginIP = 0, maxUp = 0, maxDn = 0;
-        String opt, group;
+        int numLogin = 0;
+        int numLoginIP = 0;
+        int maxUp = 0;
+        int maxDn = 0;
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
 
+        Session session = request.getSession();
+
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
-        if (!st.hasMoreTokens()) {
+        if (st.countTokens() < 3) {
             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
         }
-        group = st.nextToken();
+        Group g = session.getGroupNull(st.nextToken());
+        String opt = st.nextToken();
 
-        if (!st.hasMoreTokens()) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-        }
-        opt = st.nextToken();
-
-        if (!st.hasMoreTokens()) {
-            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        if (g == null) {
+            return new CommandResponse(452, "Unknown group: ");
         }
 
         switch (opt) {
@@ -614,13 +610,13 @@ public class GroupManagementHandler extends CommandInterface {
 
         CommandResponse response = new CommandResponse(200);
 
-        Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(group);
+        Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g);
 
-        response.addComment("Changing '" + group + "' members " + opt);
+        response.addComment("Changing '" + g.getName() + "' members " + opt);
 
         for (User userToChange : users) {
 
-            if (userToChange.getGroup().equals(group)) {
+            if (userToChange.getGroup().equals(g)) {
                 if (opt.equals("num_logins")) {
                     userToChange.getKeyedMap().setObject(UserManagement.MAXLOGINS, numLogin);
                     if (ip) {
@@ -657,38 +653,52 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_GRPREN(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_GRPREN(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
         }
 
+        Session session = request.getSession();
+
         StringTokenizer st = new StringTokenizer(request.getArgument());
 
-        if (!st.hasMoreTokens()) {
+        if (st.countTokens() != 2) {
             throw new ImproperUsageException();
         }
 
-        String oldGroup = st.nextToken();
-
-        if (!st.hasMoreTokens()) {
-            throw new ImproperUsageException();
-        }
-
+        Group g = session.getGroupNull(st.nextToken());
+        String oldGroup = g.getName();
         String newGroup = st.nextToken();
-        Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(oldGroup);
+        Group g2 = session.getGroupNull(newGroup);
 
-        if (!GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(newGroup).isEmpty()) {
+        Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g);
+
+        if (g2 != null) {
             return new CommandResponse(500, newGroup + " already exists");
         }
 
         CommandResponse response = new CommandResponse(200);
-        response.addComment("Renaming group " + oldGroup + " to " + newGroup);
+        response.addComment("Renaming group " + g.getName() + " to " + newGroup);
+        try {
+            g.rename(newGroup);
+        } catch (GroupFileException | GroupExistsException e) {
+            logger.error("Unable to rename group from {} to {}", oldGroup, newGroup, e);
+            return new CommandResponse(500, "Failed to rename group from " + oldGroup + " to " + newGroup);
+        }
+
+        g.commit();
 
         for (User userToChange : users) {
+            userToChange.commit();
+            response.addComment("Changed user " + userToChange.getName());
+        }
+
+        /*
+        This should be handled by the rename above, as the Users should have a 'Group' instance connected to them. TODO: MIKEVG VERIFY
+        for (User userToChange : users) {
             if (userToChange.getGroup().equals(oldGroup)) {
-                userToChange.setGroup(newGroup);
+                userToChange.setGroup(g);
             } else {
                 try {
                     userToChange.removeSecondaryGroup(oldGroup);
@@ -697,7 +707,7 @@ public class GroupManagementHandler extends CommandInterface {
                 }
 
                 try {
-                    userToChange.addSecondaryGroup(newGroup);
+                    userToChange.addSecondaryGroup(g);
                 } catch (DuplicateElementException e2) {
                     throw new RuntimeException("group " + newGroup + " already exists");
                 }
@@ -706,8 +716,8 @@ public class GroupManagementHandler extends CommandInterface {
             userToChange.commit();
             response.addComment("Changed user " + userToChange.getName());
         }
+        */
 
         return response;
     }
-
 }

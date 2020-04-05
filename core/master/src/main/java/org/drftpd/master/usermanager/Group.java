@@ -32,20 +32,19 @@ public abstract class Group implements Entity {
 
 	/**
 	 * Commit changes.
-	 * 
-	 * @throws GroupFileException
-	 *             if an error saving the groupfile occured.
 	 */
 	public abstract void commit();
 
 	public abstract String getName();
 
-  public abstract List<String> getAdmins();
+	public abstract void rename(String groupname) throws GroupExistsException, GroupFileException;
 
-  public abstract boolean isAdmin(User u);
+	public abstract List<String> getAdmins();
 
-  // useless for group objects
-  public boolean isMemberOf(String ignore)
+	public abstract boolean isAdmin(User u);
+
+	// useless for group objects
+	public boolean isMemberOf(String ignore)
   {
     return false;
   }
