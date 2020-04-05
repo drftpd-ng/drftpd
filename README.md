@@ -79,17 +79,17 @@ You can find the installation documentation here: http://ant.apache.org/manual/i
 
 ## Downloading DrFTPD
 
-Download DrFTPD from https://github.com/drftpd-ng/drftpd3
+Download DrFTPD from https://github.com/drftpd-ng/drftpd
 
 ### Details
 
 Change to the main DrFTPD folder, for example ~/drftpd (*nix) or c:\drftpd (windows).
 ```    
 For Master Branch:
-git clone -b master --single-branch https://github.com/drftpd-ng/drftpd3.git 
+git clone -b master --single-branch https://github.com/drftpd-ng/drftpd.git 
 For Develop Branch:
-git clone -b develop --single-branch https://github.com/drftpd-ng/drftpd3.git 
-cd drftpd3
+git clone -b develop --single-branch https://github.com/drftpd-ng/drftpd.git 
+cd drftpd
 ```
 
 ## Build DrFTPD
@@ -186,4 +186,4 @@ Search on libTerminal.so where you can test a few versions that people have uplo
 
 # Online Help 
 
-If you use IRC, connect to EFnet and join #drftpd, #drftpd-devel. Alternatively use the github repository https://github.com/drftpd-ng/drftpd3
+If you use IRC, connect to EFnet and join #drftpd, #drftpd-devel. Alternatively use the github repository https://github.com/drftpd-ng/drftpd
