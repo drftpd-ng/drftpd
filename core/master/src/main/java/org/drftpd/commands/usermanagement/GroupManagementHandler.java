@@ -678,6 +678,23 @@ public class GroupManagementHandler extends CommandInterface {
 
         CommandResponse response = new CommandResponse(200);
         response.addComment("Renaming group " + g.getName() + " to " + newGroup);
+
+        // First we loop through all the users are remove the old group
+        List<User> usersToSet = new ArrayList<>();
+        List<User> usersToAdd = new ArrayList<>();
+        for (User userToChange : users) {
+            if (userToChange.getGroup().getName().equals(oldGroup)) {
+                usersToSet.add(userToChange);
+            } else {
+                usersToAdd.add(userToChange);
+                try {
+                    userToChange.removeSecondaryGroup(g);
+                } catch (NoSuchFieldException e1) {
+                    throw new RuntimeException("User was not in group returned by getAllUsersByGroup");
+                }
+            }
+        }
+
         try {
             g.rename(newGroup);
         } catch (GroupFileException | GroupExistsException e) {
@@ -687,34 +704,19 @@ public class GroupManagementHandler extends CommandInterface {
 
         g.commit();
 
+        for (User u1 : usersToSet) {
+            u1.setGroup(g);
+        }
+        for (User u2 : usersToAdd) {
+            try {
+                u2.addSecondaryGroup(g);
+            } catch (DuplicateElementException ignored) {}
+        }
+
         for (User userToChange : users) {
             userToChange.commit();
             response.addComment("Changed user " + userToChange.getName());
         }
-
-        /*
-        This should be handled by the rename above, as the Users should have a 'Group' instance connected to them. TODO: MIKEVG VERIFY
-        for (User userToChange : users) {
-            if (userToChange.getGroup().equals(oldGroup)) {
-                userToChange.setGroup(g);
-            } else {
-                try {
-                    userToChange.removeSecondaryGroup(oldGroup);
-                } catch (NoSuchFieldException e1) {
-                    throw new RuntimeException("User was not in group returned by getAllUsersByGroup");
-                }
-
-                try {
-                    userToChange.addSecondaryGroup(g);
-                } catch (DuplicateElementException e2) {
-                    throw new RuntimeException("group " + newGroup + " already exists");
-                }
-            }
-
-            userToChange.commit();
-            response.addComment("Changed user " + userToChange.getName());
-        }
-        */
 
         return response;
     }
