@@ -8,6 +8,8 @@ adduser.missingpass=You forgot a password
 adduser.primgroup=Primary group set to ${primgroup}
 adduser.success=User ${targetuser} created
 
+addgroup.success=Group ${targetgroup} created
+
 change.specify=You need to specify a value to change
 
 changeratio.invalidratio=Ratio must be 0 or between ${minratio} and ${maxratio}
@@ -32,8 +34,6 @@ Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.commands.UserManagemen
 Ratio: ${org.drftpd.commands.UserManagement@ratio,-23} Credits: ${credits}\n\
 Max logins: ${org.drftpd.commands.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.commands.UserManagement@maxloginsip}\n\
 Max sim uploads: ${org.drftpd.commands.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.commands.UserManagement@maxsimdn}\n\
-Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
-Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
 Total uploaded: ${uploaded,-14} Total downloaded: ${downloaded}\n\
 Times nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nuked,-17} Bytes nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nukedBytes}\n\
 Requests: ${org.drftpd.commands.request.metadata.RequestUserData@requests,-20} Filled requests: ${org.drftpd.commands.request.metadata.RequestUserData@requestsFilled}\n\
@@ -43,6 +43,9 @@ Extra groups: ${groups,-16} Banned Until: ${org.drftpd.commands.UserManagement@b
 IP masks: ${ipmasks}\n\
 IRC Ident: ${org.drftpd.commands.UserManagement@ircident,-23}\n\
 Tagline: ${org.drftpd.commands.UserManagement@tagline}
+
+mike.saved.group=Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
+Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
 
 bans=${username} banned for another ${timeleft}m until ${org.drftpd.commands.UserManagement@ban_time} (${org.drftpd.commands.UserManagement@ban_reason})
 
