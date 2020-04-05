@@ -105,7 +105,7 @@ public class GroupManagementHandler extends CommandInterface {
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         Map<String, Object> env = new HashMap<>();
-        env.put("targetuser", currentUser.getName());
+        env.put("targetgroup", newGroupname);
 
         try {
             Group newGroup = GlobalContext.getGlobalContext().getUserManager().createGroup(newGroupname);
@@ -115,14 +115,12 @@ public class GroupManagementHandler extends CommandInterface {
             newGroup.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
 
             logger.info("'{}' added grup '{}'", request.getUser(), newGroup.getName());
-            env.put("group", newGroup.getName());
-            response.addComment(session.jprintf(_bundle, "addgroup.group", env, request.getUser()));
 
             newGroup.commit();
             response.addComment(session.jprintf(_bundle, "addgroup.success", env, request.getUser()));
 
         } catch (FileExistsException e) {
-            return new CommandResponse(500, "User already exists");
+            return new CommandResponse(500, "Group already exists");
         } catch (GroupFileException e) {
             logger.error(e, e);
             return new CommandResponse(452, e.getMessage());
