@@ -2629,6 +2629,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         Properties cmd = _cmds.get(request.getCommand());
         // Check if we know of this command, if not just return
         if (cmd == null) {
+            logger.debug("Found line starting with correct command trigger " + _config.getCommandTrigger() + ", but no matching command found");
             return;
         }
         String inputs = cmd.getProperty("input", "");
@@ -2650,7 +2651,9 @@ public class SiteBot implements ReplyConstants, Runnable {
                 break;
             }
         }
-        if (proceed) {
+        if (!proceed) {
+            logger.debug("No valid input combination found for command " + request.getCommand());
+        } else {
             // Find what outputs we should be sending the response to
             ArrayList<OutputWriter> cmdOutputs = new ArrayList<>();
             String outputs = cmd.getProperty("output", "");
@@ -2674,7 +2677,9 @@ public class SiteBot implements ReplyConstants, Runnable {
                 }
             }
             // Check if we found valid outputs and if so proceed
-            if (!cmdOutputs.isEmpty()) {
+            if (cmdOutputs.isEmpty()) {
+                logger.debug("No valid output combination found for command " + request.getCommand());
+            } else {
                 ServiceCommand service = getUserDetails(sender, ident).getCommandSession(cmdOutputs, channel);
                 service.setCommands(_cmds);
                 try {
