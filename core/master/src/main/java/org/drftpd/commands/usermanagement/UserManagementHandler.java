@@ -421,7 +421,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_CHANGE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSITE_USERCHANGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();

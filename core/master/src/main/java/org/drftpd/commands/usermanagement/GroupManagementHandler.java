@@ -160,6 +160,11 @@ public class GroupManagementHandler extends CommandInterface {
         try {
             Group requestedGroup = GlobalContext.getGlobalContext().getUserManager().getGroupByName(groupname);
 
+            // Make sure the group is not used anymore
+            if (GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(requestedGroup).size() != 0) {
+                return new CommandResponse(500, "This group " + requestedGroup.getName() + " still has users attached");
+            }
+
             requestedGroup.purge();
             response.addComment(session.jprintf(_bundle, "addgroup.success", env, request.getUser()));
             logger.info("'{}' purged '{}'", currentUser.getName(), requestedGroup.getName());
@@ -274,7 +279,7 @@ public class GroupManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_GRPCHANGE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSITE_CHANGEGROUP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
