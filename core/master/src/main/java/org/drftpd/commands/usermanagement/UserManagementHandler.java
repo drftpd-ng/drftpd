@@ -500,6 +500,7 @@ public class UserManagementHandler extends CommandInterface {
 
         for (User user1 : users) {
             userToChange = user1;
+            env.put("targetuser", userToChange.getName());
 
             switch (command) {
                 case "ratio":

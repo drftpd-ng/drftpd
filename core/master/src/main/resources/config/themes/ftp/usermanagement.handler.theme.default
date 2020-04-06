@@ -25,8 +25,10 @@ changeprimgroup.success=Changed primary group to ${primgroup}
 changenumlogins.success=Changed max logins to ${numlogins} and from same IP to ${numloginsip}
 changegroupslots.success=Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
 changemaxsim.success=Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
-changecreated.success=Reset creation time for ${targetuser}
+changeuser.created.success=Reset creation time for ${targetuser}
 changegadminratio.success=Changed gadmin min/max ratio to ${minratio}/${maxratio}
+
+changegroup.created.success=Reset creation time for ${targetgroup}
 
 debug=Debug now set to ${org.drftpd.commands.UserManagement@debug}
 

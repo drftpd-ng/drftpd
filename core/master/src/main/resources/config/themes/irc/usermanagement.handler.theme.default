@@ -45,8 +45,10 @@ changeprimgroup.success=${color}15${bold}CHANGE${coloroff}: Changed primary grou
 changenumlogins.success=${color}15${bold}CHANGE${coloroff}: Changed max logins to ${numlogins} and from same IP to ${numloginsip}
 changegroupslots.success=${color}15${bold}CHANGE${coloroff}: Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
 changemaxsim.success=${color}15${bold}CHANGE${coloroff}: Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
-changecreated.success=${color}15${bold}CHANGE${coloroff}: Reset creation time for ${targetuser}
+changeuser.created.success=${color}15${bold}CHANGEUSER${coloroff}: Reset creation time for ${targetuser}
 changegadminratio.success=${color}15${bold}CHANGE${coloroff}: Changed gadmin min/max ratio to ${minratio}/${maxratio}
+
+changegroup.created.success=${color}15${bold}CHANGEGROUP${coloroff}: Reset creation time for ${targetgroup}
 
 user=Username: ${username,-20} Created: ${org.drftpd.commands.UserManagement@created}\n\
 Comment: ${org.drftpd.commands.UserManagement@comment,-21} Last seen: ${org.drftpd.commands.UserManagement@lastseen}\n\
