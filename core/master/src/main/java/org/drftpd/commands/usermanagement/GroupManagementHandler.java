@@ -352,8 +352,9 @@ public class GroupManagementHandler extends CommandInterface {
             env.put("targetgroup", groupToChange.getName());
 
             switch (command) {
-                case "ratio":
+                //TODO: Figure out what this is used for?
 /*
+                case "ratio":
                     // [# min] [# max]
                     if (commandArguments.length != 2) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -380,34 +381,39 @@ public class GroupManagementHandler extends CommandInterface {
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-*/
                     break;
+*/
                 case "slots":
-/*
                     try {
-                        if ((commandArguments.length < 1) || (commandArguments.length > 2)) {
+                        if (commandArguments.length != 1) {
                             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                         }
 
                         int groupSlots = Short.parseShort(commandArguments[0]);
-                        int groupLeechSlots;
 
-                        if (commandArguments.length >= 2) {
-                            groupLeechSlots = Integer.parseInt(commandArguments[1]);
-                        } else {
-                            groupLeechSlots = userToChange.getKeyedMap().getObjectInteger(UserManagement.LEECHSLOTS);
-                        }
-
-                        logger.info("'{}' changed group_slots for '{}' from '{}' {}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectInteger(UserManagement.GROUPSLOTS), userToChange.getKeyedMap().getObjectInteger(UserManagement.LEECHSLOTS), groupSlots, groupLeechSlots);
-                        userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS, groupSlots);
-                        userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS, groupLeechSlots);
-                        env.put("groupslots", "" + userToChange.getKeyedMap().getObjectInteger(UserManagement.GROUPSLOTS));
-                        env.put("groupleechslots", "" + userToChange.getKeyedMap().getObjectInteger(UserManagement.LEECHSLOTS));
-                        response.addComment(session.jprintf(_bundle, "changegroupslots.success", env, request.getUser()));
+                        logger.info("'{}' changed group slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS), groupSlots);
+                        groupToChange.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, groupSlots);
+                        env.put("groupslots", "" + groupToChange.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS));
+                        response.addComment(session.jprintf(_bundle, "changegroup.slots.success", env, request.getUser()));
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-*/
+                    break;
+                case "leechslots":
+                    try {
+                        if (commandArguments.length != 1) {
+                            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+                        }
+
+                        int leechSlots = Short.parseShort(commandArguments[0]);
+
+                        logger.info("'{}' changed group leech slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS), leechSlots);
+                        groupToChange.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, leechSlots);
+                        env.put("leechslots", "" + groupToChange.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS));
+                        response.addComment(session.jprintf(_bundle, "changegroup.leechslots.success", env, request.getUser()));
+                    } catch (NumberFormatException ex) {
+                        return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+                    }
                     break;
                 case "created":
                     Date myDate;
@@ -596,8 +602,10 @@ public class GroupManagementHandler extends CommandInterface {
         env.put("allmbup", Bytes.formatBytes(allmbup));
         env.put("allfdn", "" + allfdn);
         env.put("allmbdn", Bytes.formatBytes(allmbdn));
-        env.put("numusers", "" + numUsers);
-        env.put("numleech", "" + numLeechUsers);
+        env.put("slotstotal", g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS));
+        env.put("slotsfree", g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS) - numUsers);
+        env.put("leechtotal", g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS));
+        env.put("leechfree", g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS) - numLeechUsers);
 
         String tail = _bundle.getString("ginfo.tail");
         try {
@@ -765,7 +773,8 @@ public class GroupManagementHandler extends CommandInterface {
         for (User u2 : usersToAdd) {
             try {
                 u2.addSecondaryGroup(g);
-            } catch (DuplicateElementException ignored) {}
+            } catch (DuplicateElementException ignored) {
+            }
         }
 
         for (User userToChange : users) {

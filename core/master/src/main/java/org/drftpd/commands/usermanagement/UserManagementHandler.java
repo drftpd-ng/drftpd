@@ -1494,8 +1494,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_USER(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_USER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1520,8 +1519,7 @@ public class UserManagementHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
 
-            String message = request.getSession().jprintf(_bundle, "user", requestedUser.getName());
-            response.addComment(message);
+            response.addComment(request.getSession().jprintf(_bundle, "user", requestedUser.getName()));
 
         } catch (NoSuchUserException ex) {
             response.setMessage("User " + request.getArgument() + " not found");
