@@ -411,7 +411,7 @@ public class GroupManagementHandler extends CommandInterface {
                 case "created":
                     Date myDate;
 
-                    if (commandArguments.length == 0) {
+                    if (commandArguments.length != 0) {
                         try {
                             myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0]);
                         } catch (ParseException e1) {

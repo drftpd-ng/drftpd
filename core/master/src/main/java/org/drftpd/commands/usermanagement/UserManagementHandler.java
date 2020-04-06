@@ -753,10 +753,9 @@ public class UserManagementHandler extends CommandInterface {
                 case "created":
                     Date myDate;
 
-                    if (commandArguments.length == 0) {
+                    if (commandArguments.length != 0) {
                         try {
-                            myDate = new SimpleDateFormat("yyyy-MM-dd")
-                                    .parse(commandArguments[0]);
+                            myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0]);
                         } catch (ParseException e1) {
                             logger.log(Level.INFO, e1);
 
@@ -766,13 +765,10 @@ public class UserManagementHandler extends CommandInterface {
                         myDate = new Date();
                     }
 
-                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(
-                            UserManagement.CREATED, new Date(0)), myDate);
-                    userToChange.getKeyedMap()
-                            .setObject(UserManagement.CREATED, myDate);
+                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.CREATED, new Date(0)), myDate);
+                    userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
 
-                    response = new CommandResponse(200, session.jprintf(_bundle,
-                            "changecreated.success", env, request.getUser()));
+                    response = new CommandResponse(200, session.jprintf(_bundle,"changecreated.success", env, request.getUser()));
                     break;
                 case "wkly_allotment":
                     if (commandArguments.length != 1) {
