@@ -40,7 +40,6 @@ public class IrcUser implements Comparable<IrcUser> {
 		_lowerNick = nick.toLowerCase();
 	}
 
-
 	/**
 	 * Returns the prefix of the user. If the User object has been obtained
 	 * from a list of users in a channel, then this will reflect the user's
@@ -52,7 +51,6 @@ public class IrcUser implements Comparable<IrcUser> {
 	public String getPrefix() {
 		return _prefix;
 	}
-
 
 	/**
 	 * Returns whether or not the user represented by this object is an
@@ -66,7 +64,6 @@ public class IrcUser implements Comparable<IrcUser> {
 		return _prefix.indexOf('@') >= 0;
 	}
 
-
 	/**
 	 * Returns whether or not the user represented by this object has
 	 * voice. If the User object has been obtained from a list of users
@@ -79,7 +76,6 @@ public class IrcUser implements Comparable<IrcUser> {
 		return _prefix.indexOf('+') >= 0;
 	}        
 
-
 	/**
 	 * Returns the nick of the user.
 	 * 
@@ -88,7 +84,6 @@ public class IrcUser implements Comparable<IrcUser> {
 	public String getNick() {
 		return _nick;
 	}
-
 
 	/**
 	 * Returns the nick of the user complete with their prefix if they
@@ -100,7 +95,6 @@ public class IrcUser implements Comparable<IrcUser> {
 		return this.getPrefix() + this.getNick();
 	}
 
-
 	/**
 	 * Returns true if the nick represented by this User object is the same
 	 * as the argument. A case insensitive comparison is made.
@@ -110,7 +104,6 @@ public class IrcUser implements Comparable<IrcUser> {
 	public boolean equals(String nick) {
 		return nick.toLowerCase().equals(_lowerNick);
 	}
-
 
 	/**
 	 * Returns true if the nick represented by this User object is the same
@@ -127,7 +120,6 @@ public class IrcUser implements Comparable<IrcUser> {
 		return false;
 	}
 
-
 	/**
 	 * Returns the hash code of this User object.
 	 * 
@@ -136,7 +128,6 @@ public class IrcUser implements Comparable<IrcUser> {
 	public int hashCode() {
 		return _lowerNick.hashCode();
 	}
-
 
 	/**
 	 * Returns the result of calling the compareTo method on lowercased
@@ -147,7 +138,6 @@ public class IrcUser implements Comparable<IrcUser> {
 	public int compareTo(IrcUser u) {
 		return u._lowerNick.compareTo(_lowerNick);
 	}
-
 
 	/**
 	 * Returns whether or not the user represented by this object has the given 
@@ -191,5 +181,4 @@ public class IrcUser implements Comparable<IrcUser> {
 			_prefix = _prefix.substring(0, location) + _prefix.substring(location+1);
 		}
 	}
-
 }

@@ -58,16 +58,14 @@ public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandR
 
 	private static final Key<Properties> PROPERTIES = new Key<>(CommandRequest.class, "properties");
 
-	public CommandRequest(String argument, String command,
-			DirectoryHandle directory, String user) {
+	public CommandRequest(String argument, String command, DirectoryHandle directory, String user) {
 		setArgument(argument);
 		setCommand(command);
 		setCurrentDirectory(directory);
 		setUser(user);
 	}
 
-	public CommandRequest(String command, String argument, DirectoryHandle directory,
-			String user, Session session, Properties p) {
+	public CommandRequest(String command, String argument, DirectoryHandle directory, String user, Session session, Properties p) {
 		setArgument(argument);
 		setCommand(command);
 		setCurrentDirectory(directory);
@@ -78,6 +76,10 @@ public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandR
 
 	public void setAllowed(Boolean allowed) {
 		setObject(CommandRequest.ALLOWED, allowed);
+	}
+
+	public void setAllowed(boolean b) {
+		setAllowed(Boolean.valueOf(b));
 	}
 
 	public void setArgument(String argument) {
@@ -180,7 +182,4 @@ public class CommandRequest extends KeyedMap<Key<?>, Object> implements CommandR
 		return GlobalContext.getGlobalContext().getUserManager().getUserByName(getUser());
 	}
 
-	public void setAllowed(boolean b) {
-		setAllowed(Boolean.valueOf(b));
-	}
 }

@@ -50,8 +50,8 @@ public class Permission {
 	 * Non-authenticated users
 	 * If no Permission line is given, this assumes !% is the last one
 	 * returns true if the User has permission
-	 * @param user
-	 * @return
+	 * @param user The User Object we need to check
+	 * @return true if the user is allowed, false otherwise
 	 */
 	public boolean check(User user) {
 		boolean allow = false;
@@ -84,8 +84,7 @@ public class Permission {
                     return allow;
                 }
             } else {
-                // FLAG, we don't have flags, we have groups and that's the same
-                // but multiple letters
+                // FLAG, we don't have flags, we have groups and that's the same but multiple letters
                 // Does anyone use these?  Do we want to get rid of the = modifier?
                 if (user == null) {
                     continue;

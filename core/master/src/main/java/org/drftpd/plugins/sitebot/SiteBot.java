@@ -2958,8 +2958,7 @@ public class SiteBot implements ReplyConstants, Runnable {
 
         public void run() {
             UserDetails user = getUserDetails(_nickname, _ident);
-            CommandRequestInterface cmdRequest = _commandManager.newRequest(_request.getCommand(),
-                    _request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), _service, _cmds.get(_request.getCommand()));
+            CommandRequestInterface cmdRequest = _commandManager.newRequest(_request.getCommand(), _request.getArgument(), new DirectoryHandle("/"), user.getFtpUser(), _service, _cmds.get(_request.getCommand()));
             CommandResponseInterface cmdResponse = _commandManager.execute(cmdRequest);
             if (cmdResponse != null) {
                 _service.printOutput(new IrcReply(cmdResponse));

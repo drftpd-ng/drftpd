@@ -18,7 +18,6 @@
 package org.drftpd.master.commandmanager;
 
 import org.drftpd.master.master.Session;
-import org.drftpd.master.util.ExtendedPropertyResourceBundle;
 import org.drftpd.master.util.ThemeResourceBundle;
 import org.drftpd.master.vfs.DirectoryHandle;
 
@@ -54,8 +53,7 @@ public interface CommandManagerInterface {
 	 * @param session, the Session object provided by the frontend for storing data.
 	 * @param config, the Properties object containing details and setting for the command sent.
 	 */
-    CommandRequestInterface newRequest(String originalCommand, String argument,
-                                       DirectoryHandle directory, String user, Session session, Properties config);
+    CommandRequestInterface newRequest(String originalCommand, String argument, DirectoryHandle directory, String user, Session session, Properties config);
 
 	ThemeResourceBundle getResourceBundle();
 }

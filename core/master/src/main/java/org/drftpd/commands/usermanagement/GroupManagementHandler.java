@@ -76,7 +76,6 @@ public class GroupManagementHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
     public CommandResponse doSITE_ADDGROUP(CommandRequest request) throws ImproperUsageException {
@@ -466,6 +465,11 @@ public class GroupManagementHandler extends CommandInterface {
         Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
+        if(currentUser == null) {
+            // This is a safeguard
+            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        }
+
         Group g = session.getGroupNull(group);
 
         if (g == null) {
