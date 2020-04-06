@@ -17,24 +17,26 @@
  */
 package org.drftpd.commands.usermanagement.expireduser;
 
-import java.util.Date;
-
+import org.drftpd.commands.CommandRequest;
+import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.commands.usermanagement.expireduser.metadata.ExpiredUserData;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
 import org.drftpd.master.master.BaseFtpConnection;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
-import org.drftpd.commands.CommandRequest;
-import org.drftpd.commands.PreHookInterface;
-import org.drftpd.commands.StandardCommandManager;
+
+import java.util.Date;
 
 
 /*
  * @author CyBeR
  */
-public class ExpiredUserPreHook implements PreHookInterface {
-	
+public class ExpiredUserPreHook {
+
+    @CommandHook(commands = "doUSER", type = HookType.PRE)
     public CommandRequestInterface doUSERPreHook(CommandRequest request) {
     	BaseFtpConnection conn = (BaseFtpConnection) request.getSession();
     	request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, true);
@@ -68,9 +70,4 @@ public class ExpiredUserPreHook implements PreHookInterface {
         }
 		return request;
     }
-	
-	
-	@Override
-	public void initialize(StandardCommandManager cManager) {
-	}
 }

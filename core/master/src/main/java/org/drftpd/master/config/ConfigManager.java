@@ -68,7 +68,7 @@ public class ConfigManager implements ConfigInterface {
     private VFSPermissions _vfsPerms;
 
     private ArrayList<InetAddress> _bouncerIps;
-    private String _loginPrompt = GlobalContext.VERSION + " https://github.com/drftpd-ng/drftpd3";
+    private String _loginPrompt = GlobalContext.VERSION + " https://github.com/drftpd-ng/drftpd";
     private String _allowConnectionsDenyReason = "";
     private String _pasvAddr = null;
     private PortRange _portRange = new PortRange(0);

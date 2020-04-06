@@ -28,6 +28,8 @@ package org.drftpd.commands.usermanagement.securepass.hooks;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.drftpd.commands.usermanagement.securepass.SecurePassManager;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
@@ -35,7 +37,6 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
-import org.drftpd.commands.PreHookInterface;
 import org.drftpd.commands.StandardCommandManager;
 
 /**
@@ -43,13 +44,14 @@ import org.drftpd.commands.StandardCommandManager;
  * @version : v1.0 
  */
 
-public class SecurePassHooks implements PreHookInterface {
+public class SecurePassHooks {
+
 	private static final Logger logger = LogManager.getLogger(SecurePassHooks.class);
 	
 	/*
 	 * Checks the IP from arguments (Used for ADDUSER/GADDUSER/ADDIP)
 	 */
-	public CommandRequest checkPASS(CommandRequest request, int usernum, int passnum, boolean newuser) {
+	private CommandRequest checkPASS(CommandRequest request, int usernum, int passnum, boolean newuser) {
 		if (!request.hasArgument()) {
 			return request;
 		}
@@ -93,6 +95,7 @@ public class SecurePassHooks implements PreHookInterface {
 	/*
 	 * Prehook method for CHPASS
 	 */
+	@CommandHook(commands = "doSITE_CHPASS", type = HookType.PRE)
 	public CommandRequestInterface doSecurePassCHPASSPreCheck(CommandRequest request) {
 		return checkPASS(request,1,2,false);
 	}
@@ -100,6 +103,7 @@ public class SecurePassHooks implements PreHookInterface {
 	/*
 	 * Prehook method for PASSWD
 	 */
+	@CommandHook(commands = "doSITE_PASSWD", type = HookType.PRE)
 	public CommandRequestInterface doSecurePassPASSWDPreCheck(CommandRequest request) {
 		return checkPASS(request,0,1,false);
 	}	
@@ -107,6 +111,7 @@ public class SecurePassHooks implements PreHookInterface {
 	/*
 	 * Prehook method for ADDUSER
 	 */
+	@CommandHook(commands = "doSITE_ADDUSER", type = HookType.PRE)
 	public CommandRequestInterface doSecurePassADDUSERPreCheck(CommandRequest request) {
 		return checkPASS(request,1,2,true);
 	}
@@ -114,12 +119,8 @@ public class SecurePassHooks implements PreHookInterface {
 	/*
 	 * Prehook method for GADDUSER
 	 */
+	@CommandHook(commands = "doSITE_GADDUSER", type = HookType.PRE)
 	public CommandRequestInterface doSecurePassGADDUSERPreCheck(CommandRequest request) {
 		return checkPASS(request,2,3,true);
 	}
-
-	@Override
-	public void initialize(StandardCommandManager cManager) {
-		
-	}	
 }

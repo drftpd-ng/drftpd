@@ -84,7 +84,7 @@ public class ConnectionManager {
 
 	public static void boot() {
 		System.out.println(GlobalContext.VERSION + " Master starting.");
-		System.out.println("https://github.com/drftpd-ng/drftpd3");
+		System.out.println("https://github.com/drftpd-ng/drftpd");
 		System.out.println("Further logging will be done using (mostly) log4j, check logs/");
 		// Set current thread name to make it clear in logfiles what is coming from the main master process 
 		// instead of being named after the wrapper

@@ -17,10 +17,9 @@
  */
 package org.drftpd.commands.usermanagement.expireduser;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import org.drftpd.commands.usermanagement.expireduser.metadata.ExpiredUserData;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.usermanager.NoSuchUserException;
@@ -28,7 +27,6 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
-import org.drftpd.commands.PostHookInterface;
 import org.drftpd.commands.StandardCommandManager;
 
 import java.util.Date;
@@ -39,16 +37,16 @@ import java.util.ResourceBundle;
 /**
  * @author Scitz0
  */
-public class ExpiredUserPostHook implements PostHookInterface {
-	private static final Logger logger = LogManager.getLogger(ExpiredUserPostHook.class);
-	private ResourceBundle _bundle;
+public class ExpiredUserPostHook {
 
+	private ResourceBundle _bundle;
 
 	public void initialize(StandardCommandManager manager) {
 		_bundle = manager.getResourceBundle();
 
 	}
 
+	@CommandHook(commands = "doSITE_USER", priority = 1000, type = HookType.POST)
 	public void doExpiredUserPostHook(CommandRequest request, CommandResponse response) {
 		User myUser;
 		try {
