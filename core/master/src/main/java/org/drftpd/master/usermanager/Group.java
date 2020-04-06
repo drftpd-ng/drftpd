@@ -48,4 +48,6 @@ public abstract class Group implements Entity {
 	{
 		return false;
 	}
+
+	public abstract void purge();
 }

@@ -128,6 +128,50 @@ public class GroupManagementHandler extends CommandInterface {
         return response;
     }
 
+    public CommandResponse doSITE_DELGROUP(CommandRequest request) throws ImproperUsageException {
+
+        if (!request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
+
+        Session session = request.getSession();
+
+        // The user requesting this command
+        User currentUser = session.getUserNull(request.getUser());
+
+        boolean isAdmin = currentUser.isAdmin();
+
+        if (!isAdmin) {
+            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        }
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+
+        if (st.countTokens() != 1) {
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        String groupname = st.nextToken();
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetgroup", groupname);
+
+        try {
+            Group requestedGroup = GlobalContext.getGlobalContext().getUserManager().getGroupByName(groupname);
+
+            requestedGroup.purge();
+            response.addComment(session.jprintf(_bundle, "addgroup.success", env, request.getUser()));
+            logger.info("'{}' purged '{}'", currentUser.getName(), requestedGroup.getName());
+        } catch (GroupFileException e) {
+            return new CommandResponse(452, e.getMessage());
+        } catch (NoSuchGroupException e) {
+            return new CommandResponse(500, "Group does not exist");
+        }
+
+        return response;
+    }
+
     /**
      * USAGE: site change <user><field><value>- change a field for a user site
      * change =<group><field><value>- change a field for each member of group

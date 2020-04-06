@@ -7,8 +7,11 @@ adduser.noslots=Sorry, no more open slots available
 adduser.missingpass=You forgot a password
 adduser.primgroup=Primary group set to ${primgroup}
 adduser.success=User ${targetuser} created
+deluser.success=User ${targetuser} deleted
+purgeuser.success=User ${tagetuser} purged
 
 addgroup.success=Group ${targetgroup} created
+delgroup.success=Group ${targetgroup} deleted
 
 change.specify=You need to specify a value to change
 

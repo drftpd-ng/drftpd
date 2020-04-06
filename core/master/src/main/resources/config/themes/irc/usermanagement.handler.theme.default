@@ -27,6 +27,11 @@ adduser.noslots=${color}15${bold}ADDUSER${coloroff}: Sorry, no more open slots a
 adduser.missingpass=${color}15${bold}ADDUSER${coloroff}: You forgot a password
 adduser.primgroup=${color}15${bold}ADDUSER${coloroff}: Primary group set to ${primgroup}
 adduser.success=${color}15${bold}ADDUSER${coloroff}: User ${targetuser} created
+deluser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} deleted
+purgeuser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} purged
+
+addgroup.success=${color}15${bold}ADDGROUP{coloroff}: Group ${targetgroup} created
+delgroup.success=${color}15${bold}ADDGROUP{coloroff}: Group ${targetgroup} deleted
 
 change.specify=${color}15${bold}CHANGE${coloroff}: You need to specify a value to change
 

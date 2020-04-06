@@ -54,7 +54,6 @@ public class UserManagementHandler extends CommandInterface {
 
     private ResourceBundle _bundle;
 
-
     private static final UserCaseInsensitiveComparator USER_CASE_INSENSITIVE_COMPARATOR = new UserCaseInsensitiveComparator();
 
     static class UserCaseInsensitiveComparator implements Comparator<User> {
@@ -69,11 +68,9 @@ public class UserManagementHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
-    public CommandResponse doSITE_ADDIP(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_ADDIP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -941,6 +938,10 @@ public class UserManagementHandler extends CommandInterface {
 
         User currentUser = session.getUserNull(request.getUser());
 
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetuser", delUsername);
+
         try {
             User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(delUsername);
 
@@ -957,10 +958,12 @@ public class UserManagementHandler extends CommandInterface {
                 requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
+            response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
             logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
 
             requestedUser.purge();
+            response.addComment(session.jprintf(_bundle, "purgeuser.success", env, request.getUser()));
             logger.info("'{}' purged '{}'", currentUser.getName(), requestedUser.getName());
 
         } catch (NoSuchUserException e) {
@@ -969,7 +972,7 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
         }
 
-        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        return response;
     }
 
     public CommandResponse doSITE_DELUSER(CommandRequest request)
@@ -987,6 +990,10 @@ public class UserManagementHandler extends CommandInterface {
 
         User currentUser = session.getUserNull(request.getUser());
 
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetuser", delUsername);
+
         try {
             User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(delUsername);
 
@@ -1003,6 +1010,7 @@ public class UserManagementHandler extends CommandInterface {
                 requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
+            response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
             logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
 
@@ -1012,7 +1020,7 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
         }
 
-        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        return response;
     }
 
     public CommandResponse doSITE_SWAP(CommandRequest request) throws ImproperUsageException {
@@ -1258,6 +1266,10 @@ public class UserManagementHandler extends CommandInterface {
 
         User currentUser = session.getUserNull(request.getUser());
 
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetgroup", delUsername);
+
         try {
             User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(delUsername);
 
@@ -1272,6 +1284,7 @@ public class UserManagementHandler extends CommandInterface {
                 return new CommandResponse(452, "User isn't deleted");
             }
             requestedUser.purge();
+            response.addComment(session.jprintf(_bundle, "purgeuser.success", env, request.getUser()));
             logger.info("'{}' purged '{}'", currentUser.getName(), requestedUser.getName());
 
         } catch (NoSuchUserException e) {
@@ -1280,7 +1293,7 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
         }
 
-        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        return response;
     }
 
     public CommandResponse doSITE_READD(CommandRequest request)
