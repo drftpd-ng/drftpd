@@ -272,6 +272,14 @@ public abstract class AbstractUser extends User implements Commitable {
 		}
 
 		if (deleted) {
+			// Remove this user as a group admin
+			for (Group g2 : getGroups()) {
+				if (g2.isAdmin(this)) {
+					try {
+						g2.removeAdmin(this);
+					} catch(NoSuchFieldException ignored) {}
+				}
+			}
 			try {
 				addSecondaryGroup(g);
 			} catch (DuplicateElementException ignored) {}

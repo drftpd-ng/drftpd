@@ -784,4 +784,65 @@ public class GroupManagementHandler extends CommandInterface {
 
         return response;
     }
+
+    /**
+     * USAGE: site changegroupadmin <group> <user>[ <user>] Adds/removes a group admin from group.
+     * <p>
+     * ex1. site changegroupadmin ftp archimede This would add/remove 'archimede' as a group admin for 'ftp' group.
+     *
+     * @throws ImproperUsageException If there is something wrong with this request
+     */
+    public CommandResponse doSITE_CHANGEGROUPADMIN(CommandRequest request) throws ImproperUsageException {
+
+        if (!request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+
+        if (st.countTokens() < 2) {
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        Session session = request.getSession();
+
+        User currentUser = session.getUserNull(request.getUser());
+
+        String groupname = st.nextToken();
+
+        Group requestedGroup = session.getGroupNull(groupname);
+
+        if (requestedGroup == null) {
+            return new CommandResponse(500, "Group " + groupname + " does not exist");
+        }
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetgroup", groupname);
+
+        while(st.hasMoreTokens()) {
+            String username = st.nextToken();
+            User requestedUser = session.getUserNull(username);
+            env.put("targetuser", requestedUser.getName());
+            if (requestedUser == null) {
+                response.addComment(session.jprintf(_bundle, "changegroupadmin.bad.user", env, request.getUser()));
+            } else {
+                try {
+                    requestedGroup.removeAdmin(requestedUser);
+                    logger.info("'{}' removed group admin '{}' from group '{}'", currentUser.getName(), requestedUser.getName(), groupname);
+                    response.addComment(session.jprintf(_bundle, "changegroupadmin.remove.user", env, request.getUser()));
+                } catch (NoSuchFieldException e1) {
+                    try {
+                        requestedGroup.addAdmin(requestedUser);
+                        logger.info("'{}' added group admin '{}' to group '{}'", currentUser.getName(), requestedUser.getName(), groupname);
+                        response.addComment(session.jprintf(_bundle, "changegroupadmin.add.user", env, request.getUser()));
+                    } catch (DuplicateElementException e2) {
+                        throw new RuntimeException("Error, user was not a group admin before", e2);
+                    }
+                }
+            }
+        }
+
+        return response;
+    }
 }

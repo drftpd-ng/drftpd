@@ -820,8 +820,7 @@ public class UserManagementHandler extends CommandInterface {
      *                                Denotes any email-like password, ex. site chpass arch @ This will allow
      *                                arch to login with a@b.com but not ab.com
      */
-    public CommandResponse doSITE_CHPASS(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_CHPASS(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -867,8 +866,7 @@ public class UserManagementHandler extends CommandInterface {
      * @param request
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_DELIP(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_DELIP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -920,8 +918,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_DELPURGE(CommandRequest request)
-             throws ImproperUsageException {
+    public CommandResponse doSITE_DELPURGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -972,8 +969,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_DELUSER(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_DELUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1083,8 +1079,7 @@ public class UserManagementHandler extends CommandInterface {
         return new CommandResponse(200, "OK, gave " + Bytes.formatBytes(credits) + " of " + srcUser.getName() + "'s credits to " + destUser.getName());
     }
 
-    public CommandResponse doSITE_GIVE(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_GIVE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1143,8 +1138,7 @@ public class UserManagementHandler extends CommandInterface {
                 + " of your credits to " + myUser.getName());
     }
 
-    public CommandResponse doSITE_KICK(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_KICK(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1232,8 +1226,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_PASSWD(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_PASSWD(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1250,8 +1243,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_PURGE(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_PURGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();

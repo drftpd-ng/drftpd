@@ -52,6 +52,10 @@ changegroup.slots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group
 changegroup.leechslots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group leech slots to ${leechslots}
 changegroup.created.success=${color}15${bold}CHANGEGROUP${coloroff}: Reset creation time for ${targetgroup}
 
+changegroupadmin.bad.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} does not exist
+changegroupadmin.add.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} added as group admin to ${targetgroup}
+changegroupadmin.remove.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} removed from ${targetgroup} as group admin
+
 user=Username: ${username,-20} Created: ${org.drftpd.commands.UserManagement@created}\n\
 Comment: ${org.drftpd.commands.UserManagement@comment,-21} Last seen: ${org.drftpd.commands.UserManagement@lastseen}\n\
 Total logins: ${org.drftpd.plugins.stats.metadata.StatsUserData@logins,-16}\n\

@@ -31,6 +31,10 @@ changegroup.slots.success=Changed group slots to ${groupslots}
 changegroup.leechslots.success=Changed group leech slots to ${leechslots}
 changegroup.created.success=Reset creation time for ${targetgroup}
 
+changegroupadmin.bad.user=User ${targetuser} does not exist
+changegroupadmin.add.user=User ${targetuser} added as group admin to ${targetgroup}
+changegroupadmin.remove.user=User ${targetuser} removed from ${targetgroup} as group admin
+
 debug=Debug now set to ${org.drftpd.commands.UserManagement@debug}
 
 user=Username: ${username,-20} Created: ${org.drftpd.commands.UserManagement@created}\n\
