@@ -61,6 +61,7 @@ public abstract class CommandInterface {
 		Multimap<Integer, HookContainer<PreHookInterface>> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
 		Set<Method> hooksMethods = GlobalContext.getHooksMethods();
 		// TODO [DONE] @JRI Plug hooks
+		logger.debug("[" +pluginName + ":" + method + "] Looking for hooks to attach here");
 		try {
 			for (Method annotatedMethod : hooksMethods) {
 				Class<?> declaringClass = annotatedMethod.getDeclaringClass();
@@ -81,6 +82,7 @@ public abstract class CommandInterface {
 		} catch (Exception e) {
 			logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
 		}
+		logger.debug("[" +pluginName + ":" + method + "] Loaded [" + preHooks.size() + "] prehooks and [" + postHooks.size() + "] posthooks");
 		_preHooks = preHooks;
 		_postHooks = postHooks;
 	}
@@ -92,10 +94,8 @@ public abstract class CommandInterface {
 				m.invoke(hook.getHookInterfaceInstance(), request, response);
 			}
 			catch (Exception e) {
+				// Not that important, this just means that this post hook failed and we'll just move onto the next one
                 logger.error("Error while loading/invoking posthook {}", m.toString(), e.getCause());
-				/* Not that important, this just means that this post hook
-				 * failed and we'll just move onto the next one
-				 */
 			}
 		}
 	}
@@ -108,10 +108,8 @@ public abstract class CommandInterface {
 				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[] {request});
 			}
 			catch (Exception e) {
+				// Not that important, this just means that this pre hook failed and we'll just move onto the next one
                 logger.error("Error while loading/invoking prehook {}", m.toString(), e.getCause());
-				/* Not that important, this just means that this pre hook
-				 * failed and we'll just move onto the next one
-				 */
 			}
 		}
 		return request;
@@ -155,10 +153,7 @@ public abstract class CommandInterface {
 		User user;
 		try {
 			user = request.getUserObject();
-		} catch (NoSuchUserException e) {
-			logger.warn("",e);
-			return false;
-		} catch (UserFileException e) {
+		} catch (NoSuchUserException | UserFileException e) {
 			logger.warn("",e);
 			return false;
 		}
