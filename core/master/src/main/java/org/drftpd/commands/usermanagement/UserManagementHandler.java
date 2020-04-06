@@ -769,7 +769,7 @@ public class UserManagementHandler extends CommandInterface {
                     logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.CREATED, new Date(0)), myDate);
                     userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
 
-                    response = new CommandResponse(200, session.jprintf(_bundle,"changecreated.success", env, request.getUser()));
+                    response = new CommandResponse(200, session.jprintf(_bundle,"changeuser.created.success", env, request.getUser()));
                     break;
                 case "wkly_allotment":
                     if (commandArguments.length != 1) {

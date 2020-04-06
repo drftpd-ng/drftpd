@@ -427,7 +427,7 @@ public class GroupManagementHandler extends CommandInterface {
                     logger.info("'{}' changed created for group '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObject(GroupManagement.CREATED, new Date(0)), myDate);
                     groupToChange.getKeyedMap().setObject(GroupManagement.CREATED, myDate);
 
-                    response = new CommandResponse(200, session.jprintf(_bundle, "changeuser.created.success", env, request.getUser()));
+                    response = new CommandResponse(200, session.jprintf(_bundle, "changegroup.created.success", env, request.getUser()));
                     break;
                 default:
                     throw new ImproperUsageException();
