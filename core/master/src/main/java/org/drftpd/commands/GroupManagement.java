@@ -28,8 +28,8 @@ public class GroupManagement {
 
 	public static final Key<Date> CREATED = new Key<>(GroupManagement.class, "created");
 
-  public static final Key<Integer> GROUPSLOTS = new Key<>(GroupManagement.class, "groupslots");
+    public static final Key<Integer> GROUPSLOTS = new Key<>(GroupManagement.class, "groupslots");
 
-  public static final Key<Integer> LEECHSLOTS = new Key<>(GroupManagement.class, "leechslots");
+    public static final Key<Integer> LEECHSLOTS = new Key<>(GroupManagement.class, "leechslots");
 
 }

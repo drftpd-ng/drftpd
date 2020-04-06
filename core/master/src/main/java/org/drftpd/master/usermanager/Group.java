@@ -39,13 +39,13 @@ public abstract class Group implements Entity {
 
 	public abstract void rename(String groupname) throws GroupExistsException, GroupFileException;
 
-	public abstract List<String> getAdmins();
+	public abstract List<User> getAdmins();
 
 	public abstract boolean isAdmin(User u);
 
 	// useless for group objects
 	public boolean isMemberOf(String ignore)
-  {
-    return false;
-  }
+	{
+		return false;
+	}
 }
