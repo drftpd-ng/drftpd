@@ -436,17 +436,22 @@ public class GroupManagementHandler extends CommandInterface {
         for (int i = 1; i < args.length; i++) {
             String string = args[i];
 
-            try {
-                myUser.removeSecondaryGroup(session.getGroupNull(string));
-                logger.info("'{}' removed '{}' from group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
-                response.addComment(myUser.getName() + " removed from group " + string);
-            } catch (NoSuchFieldException e1) {
+            Group groupToChange = session.getGroupNull(string);
+            if (groupToChange == null) {
+                response.addComment("Unknown group " + string);
+            } else {
                 try {
-                    myUser.addSecondaryGroup(session.getGroupNull(string));
-                    logger.info("'{}' added '{}' to group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
-                    response.addComment(myUser.getName() + " added to group " + string);
-                } catch (DuplicateElementException e2) {
-                    throw new RuntimeException("Error, user was not a member before", e2);
+                    myUser.removeSecondaryGroup(session.getGroupNull(string));
+                    logger.info("'{}' removed '{}' from group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
+                    response.addComment(myUser.getName() + " removed from group " + string);
+                } catch (NoSuchFieldException e1) {
+                    try {
+                        myUser.addSecondaryGroup(session.getGroupNull(string));
+                        logger.info("'{}' added '{}' to group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
+                        response.addComment(myUser.getName() + " added to group " + string);
+                    } catch (DuplicateElementException e2) {
+                        throw new RuntimeException("Error, user was not a member before", e2);
+                    }
                 }
             }
         }
@@ -465,10 +470,6 @@ public class GroupManagementHandler extends CommandInterface {
         Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
-        if(currentUser == null) {
-            // This is a safeguard
-            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
 
         Group g = session.getGroupNull(group);
 
