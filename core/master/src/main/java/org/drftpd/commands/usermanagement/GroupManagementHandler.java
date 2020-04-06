@@ -842,6 +842,7 @@ public class GroupManagementHandler extends CommandInterface {
                 }
             }
         }
+        requestedGroup.commit();
 
         return response;
     }
