@@ -87,7 +87,9 @@ public class Permission {
                 }
                 // TODO: Monkey patch this so we can revisit this later when we fix =deleted, =siteop and =gadmin (maybe more?)
                 if (aclUser.equals("=gadmin")) {
-                    return GlobalContext.getGlobalContext().getUserManager().isGroupAdmin(user);
+                    if (GlobalContext.getGlobalContext().getUserManager().isGroupAdmin(user)) {
+                    	return allow;
+					}
                 } else if (user.isMemberOf(aclUser.substring(1))) {
                     return allow;
                 }
