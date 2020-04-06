@@ -17,20 +17,17 @@
  */
 package org.drftpd.commands.usermanagement.notes;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import org.drftpd.commands.usermanagement.notes.metadata.NotesData;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.master.master.ConnectionManager;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
-import org.drftpd.commands.PostHookInterface;
-import org.drftpd.commands.StandardCommandManager;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -38,16 +35,14 @@ import java.util.ResourceBundle;
 /**
  * @author Scitz0
  */
-public class NotesPostHook implements PostHookInterface {
-	private static final Logger logger = LogManager.getLogger(NotesPostHook.class);
+public class NotesPostHook {
 	private ResourceBundle _bundle;
 
-
-	public void initialize(StandardCommandManager manager) {
-		_bundle = manager.getResourceBundle();
-
+	public void NotesPostHook() {
+		_bundle = ConnectionManager.getConnectionManager().getCommandManager().getResourceBundle();
 	}
 
+	@CommandHook(commands = "doSITE_USER", priority = 1000, type = HookType.POST)
 	public void doNotesPostHook(CommandRequest request, CommandResponse response) {
 		User myUser;
 		try {

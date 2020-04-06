@@ -32,25 +32,28 @@ import org.drftpd.commands.CommandResponse;
  */
 public class PermissionPreHook  {
 
-	@CommandHook(commands = {"doSITE_REQUEST", "doSITE_REQFILLED", "doSITE_REQDELETE", "doSITE_REQUESTS",
-			"doSITE_SECTIONS", "doSITE_SPEEDTEST", "doTEXT_OUTPUT", "doSITE_TV", "doSITE_CREATETV", "doSITE_REMOVETV",
-	"doSITE_TVQUEUE", "doSITE_RESCAN", "doRETR", "doSITE_UNDUPE", "doSITE_FIXLINKS", "doSITE_UNMIRROR",
-	"doSITE_INVITE", "doSITE_BLOWFISH", "doSITE_SETBLOWFISH", "doSITE_IRC", "doTOP", "doCUT", "doPASSED"},
-			priority = 2, type = HookType.PRE)
+	@CommandHook(commands = "*", type = HookType.PRE)
 	public CommandRequestInterface doPermissionCheck(CommandRequest request) {
 		try {
+			// Every command need to enforce permissions
 			Permission perm = request.getPermission();
 			if (perm == null) {
 				request.setDeniedResponse(new CommandResponse(500, "Permissions are not configured for command " + request.getCommand()));
 				request.setAllowed(false);
 				return request;
 			}
+			// Command can be granted for unauthenticated users (Like AUTH, ...)
+			if(perm.isGrantUnauthenticated()) {
+				return request;
+			}
+			// If request required authentication, let get the user
 			User user = null;
 			try {
 				user = request.getUserObject();
 			} catch (NoSuchUserException e) {
 				request.setDeniedResponse(new CommandResponse(500, "You are not authenticated"));
 			}
+			// And then check the permission
 			if (perm.check(user)) {
 				// it worked, you passed the test
 				return request;

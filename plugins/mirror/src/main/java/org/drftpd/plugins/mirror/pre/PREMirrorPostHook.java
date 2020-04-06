@@ -23,14 +23,14 @@ import org.apache.logging.log4j.LogManager;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.pre.Pre;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
-import org.drftpd.commands.PostHookInterface;
-import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.plugins.mirror.MirrorUtils;
 
 import java.io.FileNotFoundException;
@@ -42,13 +42,13 @@ import java.util.TimerTask;
 /**
  * @author lh
  */
-public class PREMirrorPostHook implements PostHookInterface {
+public class PREMirrorPostHook {
 	private static final Logger logger = LogManager.getLogger(PREMirrorPostHook.class);
 	private long _unmirrorTime;
 	private ArrayList<String> _excludePaths;
 	private Timer _preTimer;
 
-	public void initialize(StandardCommandManager manager) {
+	public void PREMirrorPostHook() {
 		_excludePaths = new ArrayList<>();
 		_preTimer = new Timer();
 		loadConf();
@@ -74,6 +74,7 @@ public class PREMirrorPostHook implements PostHookInterface {
 		}
 	}
 
+	@CommandHook(commands = "doSITE_PRE", type = HookType.POST)
 	public void doPREPostHook(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 250) {
 			// PRE failed, abort
@@ -110,20 +111,4 @@ public class PREMirrorPostHook implements PostHookInterface {
 	public void onReloadEvent(ReloadEvent event) {
 		loadConf();
 	}
-
-	/*
-	@EventSubscriber
-	public void onUnloadPluginEvent(UnloadPluginEvent event) {
-		String currentPlugin = CommonPluginUtils.getPluginIdForObject(this);
-		for (String pluginExtension : event.getParentPlugins()) {
-			int pointIndex = pluginExtension.lastIndexOf("@");
-			String pluginName = pluginExtension.substring(0, pointIndex);
-			if (pluginName.equals(currentPlugin)) {
-				AnnotationProcessor.unprocess(this);
-				logger.info("Cancelling timer all active unmirror tasks");
-				_preTimer.cancel();
-				return;
-			}
-		}
-	}*/
 }

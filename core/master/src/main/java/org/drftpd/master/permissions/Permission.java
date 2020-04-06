@@ -23,6 +23,7 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.usermanager.User;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author mog
@@ -47,6 +48,10 @@ public class Permission {
 	public Permission(String permissionString) {
 		this(makeUsers(new StringTokenizer(permissionString)));
 	}
+
+	public boolean isGrantUnauthenticated() {
+        return _users.stream().filter(u -> u.equals("=unauthenticated")).collect(Collectors.toList()).size() > 0;
+    }
 
 	/**
 	 * Accepts 5 kinds of modifiers Authenticated users = * Non-authenticated

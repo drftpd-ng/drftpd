@@ -32,6 +32,8 @@ import org.apache.logging.log4j.LogManager;
 import java.util.StringTokenizer;
 
 import org.drftpd.commands.usermanagement.ipsecurity.IpSecurityManager;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commandmanager.CommandRequestInterface;
 
@@ -42,7 +44,6 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
-import org.drftpd.commands.PreHookInterface;
 import org.drftpd.commands.StandardCommandManager;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
@@ -51,13 +52,13 @@ import org.drftpd.slave.exceptions.ObjectNotFoundException;
  * @version : v1.0 
  */
 
-public class IpSecurityHooks implements PreHookInterface {
+public class IpSecurityHooks {
 	private static final Logger logger = LogManager.getLogger(IpSecurityHooks.class);
 	
 	/*
 	 * Checks the IP from arguments (Used for ADDUSER/GADDUSER/ADDIP)
 	 */
-	public CommandRequest checkIP(CommandRequest request, int argnum, int ipnum, boolean newuser) {
+	private CommandRequest checkIP(CommandRequest request, int argnum, int ipnum, boolean newuser) {
 		if (!request.hasArgument()) {
 			return request;
 		}
@@ -107,6 +108,7 @@ public class IpSecurityHooks implements PreHookInterface {
 	/*
 	 * Prehook method for ADDIP
 	 */
+	@CommandHook(commands = "doSITE_ADDIP", type = HookType.PRE)
 	public CommandRequestInterface doIpSecurityADDIPPreCheck(CommandRequest request) {
 		return checkIP(request,2,1,false);
 	}
@@ -114,6 +116,7 @@ public class IpSecurityHooks implements PreHookInterface {
 	/*
 	 * Prehook method for ADDUSER
 	 */
+	@CommandHook(commands = "doSITE_ADDUSER", type = HookType.PRE)
 	public CommandRequestInterface doIpSecurityADDUSERPreCheck(CommandRequest request) {
 		return checkIP(request,3,2,true);
 	}
@@ -121,6 +124,7 @@ public class IpSecurityHooks implements PreHookInterface {
 	/*
 	 * Prehook method for GADDUSER
 	 */
+	@CommandHook(commands = "doSITE_GADDUSER", type = HookType.PRE)
 	public CommandRequestInterface doIpSecurityGADDUSERPreCheck(CommandRequest request) {
 		return checkIP(request,4,3,true);
 	}
@@ -129,6 +133,7 @@ public class IpSecurityHooks implements PreHookInterface {
 	 * Prehook method for SLAVE ADDIP
 	 * Gets the ip, and preforms checks.
 	 */
+	@CommandHook(commands = "doSITE_SLAVE", type = HookType.PRE)
 	public CommandRequestInterface doIpSecuritySLAVEPreCheck(CommandRequest request) {
 		if (!request.hasArgument()) {
 			return request;
@@ -143,7 +148,7 @@ public class IpSecurityHooks implements PreHookInterface {
 		
 		String slavename = arguments.nextToken();
 		
-		RemoteSlave rslave = null;
+		RemoteSlave rslave;
 		try {
 			rslave = GlobalContext.getGlobalContext().getSlaveManager().getRemoteSlave(slavename);
 		} catch (ObjectNotFoundException e) {
@@ -176,8 +181,4 @@ public class IpSecurityHooks implements PreHookInterface {
 		}
 		return request;
 	}
-	
-	public void initialize(StandardCommandManager cManager) {
-		
-	}	
 }

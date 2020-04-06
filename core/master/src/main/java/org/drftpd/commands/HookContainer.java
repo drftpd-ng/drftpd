@@ -22,11 +22,11 @@ import java.lang.reflect.Method;
  * @author zubov
  * @version $Id$
  */
-public class HookContainer<T> {
+public class HookContainer {
 	private Method _method;
-	private T _interfaceInstance;
+	private Object _interfaceInstance;
 	
-	public HookContainer(Method m, T interfaceInstance) {
+	public HookContainer(Method m, Object interfaceInstance) {
 		_method = m;
 		_interfaceInstance = interfaceInstance;
 	}
@@ -35,7 +35,7 @@ public class HookContainer<T> {
 		return _method;
 	}
 	
-	public T getHookInterfaceInstance() {
+	public Object getHookInterfaceInstance() {
 		return _interfaceInstance;
 	}
 }

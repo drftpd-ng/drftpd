@@ -20,6 +20,8 @@ package org.drftpd.commands.request;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.request.metadata.RequestUserData;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commandmanager.*;
 import org.drftpd.master.event.ReloadEvent;
@@ -27,25 +29,23 @@ import org.drftpd.master.permissions.Permission;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
-import org.drftpd.commands.PreHookInterface;
-import org.drftpd.commands.StandardCommandManager;
-
 import java.util.Properties;
 
 /**
  * @author scitz0
  * @version $Id$
  */
-public class RequestPreHook implements PreHookInterface {
+public class RequestPreHook {
 	private int _weekMax;
     private Permission _weekExempt;
 
-	public void initialize(StandardCommandManager cManager) {
+	public void RequestPreHook() {
 		readConfig();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
 
+	@CommandHook(commands = "doSITE_REQUEST", priority = 10, type = HookType.PRE)
 	public CommandRequestInterface doWklyAllotmentPreCheck(CommandRequest request) {
 		User user = request.getSession().getUserNull(request.getUser());
 		if (user != null) {

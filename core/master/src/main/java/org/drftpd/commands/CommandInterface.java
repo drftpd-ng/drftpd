@@ -36,6 +36,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author djb61
@@ -47,9 +48,9 @@ public abstract class CommandInterface {
 
 	protected String[] _featReplies;
 
-	private Multimap<Integer, HookContainer<PostHookInterface>> _postHooks;
+	private Multimap<Integer, HookContainer> _postHooks;
 
-	private Multimap<Integer, HookContainer<PreHookInterface>> _preHooks;
+	private Multimap<Integer, HookContainer> _preHooks;
 
 	public CommandInterface() {
 		// Subscribe to events
@@ -57,8 +58,8 @@ public abstract class CommandInterface {
 	}
 
 	public synchronized void initialize(String method, String pluginName, StandardCommandManager cManager) {
-		Multimap<Integer, HookContainer<PostHookInterface>> postHooks = MultimapBuilder.treeKeys().linkedListValues().build();
-		Multimap<Integer, HookContainer<PreHookInterface>> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
+		Multimap<Integer, HookContainer> postHooks = MultimapBuilder.treeKeys().linkedListValues().build();
+		Multimap<Integer, HookContainer> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
 		Set<Method> hooksMethods = GlobalContext.getHooksMethods();
 		// TODO [DONE] @JRI Plug hooks
 		logger.debug("[" +pluginName + ":" + method + "] Looking for hooks to attach here");
@@ -67,8 +68,10 @@ public abstract class CommandInterface {
 				Class<?> declaringClass = annotatedMethod.getDeclaringClass();
 				CommandHook annotation = annotatedMethod.getAnnotation(CommandHook.class);
 				int priority = annotation.priority();
-				String[] commands = annotation.commands();
-				boolean handleClass = Arrays.stream(commands).anyMatch(method::equals);
+				List<String> commands = Arrays.asList(annotation.commands());
+				// boolean handleClass = commands.stream().filter(c -> method.matches(c)).collect(Collectors.toList()).size() > 0;
+
+				boolean handleClass = commands.contains(method) || commands.contains("*");
 				if (!handleClass) continue;
 
 				Object hookClass = declaringClass.getConstructor().newInstance();
@@ -88,7 +91,7 @@ public abstract class CommandInterface {
 	}
 
 	protected void doPostHooks(CommandRequestInterface request, CommandResponseInterface response) {
-		for (HookContainer<PostHookInterface> hook : _postHooks.values()) {
+		for (HookContainer hook : _postHooks.values()) {
 			Method m = hook.getMethod();
 			try {
 				m.invoke(hook.getHookInterfaceInstance(), request, response);
@@ -102,7 +105,7 @@ public abstract class CommandInterface {
 
 	protected CommandRequestInterface doPreHooks(CommandRequestInterface request) {
 		request.setAllowed(true);
-		for (HookContainer<PreHookInterface> hook : _preHooks.values()) {
+		for (HookContainer hook : _preHooks.values()) {
 			Method m = hook.getMethod();
 			try {
 				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[] {request});

@@ -20,12 +20,13 @@ package org.drftpd.commands.request;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.commands.request.metadata.RequestUserData;
+import org.drftpd.common.CommandHook;
+import org.drftpd.common.HookType;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
-import org.drftpd.commands.PostHookInterface;
 import org.drftpd.commands.StandardCommandManager;
 
 import java.util.Properties;
@@ -34,15 +35,16 @@ import java.util.Properties;
  * @author scitz0
  * @version $Id$
  */
-public class RequestPostHook implements PostHookInterface {
+public class RequestPostHook {
 	private boolean _decreaseWeekReqs;
 
-	public void initialize(StandardCommandManager cManager) {
+	public void RequestPostHook() {
 		readConfig();
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 	}
 
+	@CommandHook(commands = "doSITE_REQUEST", priority = 10, type = HookType.POST)
 	public void doREQUESTIncrement(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 257 && response.getCode() != 200) {
 			// Request failed, abort
@@ -54,6 +56,7 @@ public class RequestPostHook implements PostHookInterface {
 		user.commit();
 	}
 
+	@CommandHook(commands = "doSITE_REQFILLED", priority = 10, type = HookType.POST)
 	public void doREQFILLEDIncrement(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 200) {
 			// Reqfilled failed, abort
@@ -64,6 +67,7 @@ public class RequestPostHook implements PostHookInterface {
 		user.commit();
 	}
 
+	@CommandHook(commands = "doSITE_REQDELETE", priority = 10, type = HookType.POST)
 	public void doWklyAllotmentDecrease(CommandRequest request, CommandResponse response) {
 		if (response.getCode() != 200) {
 			// Reqdel failed, abort

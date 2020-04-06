@@ -69,15 +69,17 @@ public class StandardCommandManager implements CommandManagerInterface {
          * 	map to be used
          */
         for (Entry<String, Properties> requiredCmd : requiredCmds.entrySet()) {
-            String methodString = requiredCmd.getValue().getProperty("method");
-            String classString = requiredCmd.getValue().getProperty("class");
-            String pluginString = requiredCmd.getValue().getProperty("plugin");
-            if (methodString == null || classString == null || pluginString == null) {
-                throw new FatalException("Cannot load command " + requiredCmd.getKey() + ", make sure method, class, and plugin are all specified");
+            Properties properties = requiredCmd.getValue();
+            String methodString = properties.getProperty("method");
+            String classString = properties.getProperty("class");
+            String pluginString = properties.getProperty("plugin");
+            String permsString = properties.getProperty("perms");
+            if (methodString == null || classString == null || pluginString == null || permsString == null) {
+                throw new FatalException("Cannot load command " + requiredCmd.getKey()
+                        + ", make sure method, class, perms and plugin are all specified");
             }
 
             try {
-                // TODO [DONE] @JRI Plug commands
                 Class<?> aClass = Class.forName(pluginString + "." + classString);
                 Method commandMethod = aClass.getMethod(methodString, CommandRequest.class);
                 CommandInterface cmdInstance = (CommandInterface) aClass.getConstructor().newInstance();
