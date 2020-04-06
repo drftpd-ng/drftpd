@@ -16,6 +16,8 @@
  */
 package org.drftpd.master.usermanager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
@@ -29,10 +31,7 @@ import org.drftpd.slave.exceptions.FileExistsException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * This is the base class of all the user manager classes. If we want to add a
@@ -42,6 +41,8 @@ import java.util.HashMap;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
+	private static final Logger logger = LogManager.getLogger(AbstractUserManager.class);
+
 	protected HashMap<String, SoftReference<User>> _users;
 	protected HashMap<String, SoftReference<Group>> _groups;
 
@@ -84,7 +85,7 @@ public abstract class AbstractUserManager implements UserManager {
 		try {
 			user.addIPMask("*@127.0.0.1");
 			user.addIPMask("*@0:0:0:0:0:0:0:1");
-		} catch (DuplicateElementException e) {
+		} catch (DuplicateElementException ignored) {
 		}
 
 		try {
@@ -93,7 +94,7 @@ public abstract class AbstractUserManager implements UserManager {
 			g.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
 			g.commit();
 			user.addSecondaryGroup(g);
-		} catch (DuplicateElementException e1) {
+		} catch (DuplicateElementException ignored) {
 		}
 
 		user.commit();
@@ -158,30 +159,7 @@ public abstract class AbstractUserManager implements UserManager {
 
 	protected abstract File getGroupFile(String groupname);
 
-  public abstract Collection<Group> getAllGroups();
-/*
-	public Collection<String> getAllGroups() {
-		Collection<User> users = getAllUsers();
-		ArrayList<String> ret = new ArrayList<>();
-
-		for (User myUser : users) {
-			Collection<String> myGroups = myUser.getGroups();
-
-			for (String myGroup : myGroups) {
-
-				if (!ret.contains(myGroup)) {
-					ret.add(myGroup);
-				}
-			}
-
-			if (!ret.contains(myUser.getGroup())) {
-				ret.add(myUser.getGroup());
-			}
-		}
-
-		return ret;
-	}
-*/
+	public abstract Collection<Group> getAllGroups();
 
 	/**
 	 * Get all user names in the system.
@@ -201,21 +179,43 @@ public abstract class AbstractUserManager implements UserManager {
 		return c;
 	}
 
-  public boolean isGroupAdminOfUser(User groupadminUser, User requestedUser) {
-    return false; // TODO: MIKEVG FIX THIS
-  }
+	public boolean isGroupAdminOfUser(User groupadminUser, User requestedUser) {
+		for (Group g : groupadminUser.getGroups()) {
+			if (g.isAdmin(groupadminUser)) {
+				if (requestedUser.isMemberOf((g.getName()))) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-  public boolean isGroupAdmin(User user) {
-    return false; // TODO: MIKEVG FIX THIS
-  }
+	public boolean isGroupAdmin(User user) {
+		for (Group g : user.getGroups()) {
+			if (g.isAdmin(user)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
-  public Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser) {
-    return null; // TODO: MIKEVG FIX THIS
-  }
+	public Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser) {
+		List<Group> groups = new ArrayList<>();
+		for (Group g : requestedUser.getGroups()) {
+			if (g.isAdmin(groupadminUser)) {
+				groups.add(g);
+			}
+		}
+		// TODO: Think about if we could return more than one group here, but for now we only accept one group to match here
+		if (groups.size() == 1) {
+			return groups.get(0);
+		}
+		logger.debug("[getGroupByGroupAdminOfUser] We were unable to find a match between [user:" + requestedUser.getName() + "]'s groups and [user:" +groupadminUser.getName() + "] as group admin. Groups found are: [" + groups.size() + "]");
+		return null;
+	}
 
 	public User getUserByNameIncludeDeleted(String username) throws NoSuchUserException, UserFileException {
-		User user = getUserByNameUnchecked(username);
-		return user;
+		return getUserByNameUnchecked(username);
 	}
 
 	public User getUserByName(String username) throws NoSuchUserException, UserFileException {
@@ -229,8 +229,7 @@ public abstract class AbstractUserManager implements UserManager {
 	}
 
 	public Group getGroupByName(String groupname) throws NoSuchGroupException, GroupFileException {
-		Group group = getGroupByNameUnchecked(groupname);
-		return group;
+		return getGroupByNameUnchecked(groupname);
 	}
 
 	public static GlobalContext getGlobalContext() {
@@ -257,7 +256,7 @@ public abstract class AbstractUserManager implements UserManager {
 						return user;
 					}
 				}
-			} catch (KeyNotFoundException e1) {
+			} catch (KeyNotFoundException ignored) {
 			}
 		}
 		throw new NoSuchUserException("No user found with ident = " + ident);

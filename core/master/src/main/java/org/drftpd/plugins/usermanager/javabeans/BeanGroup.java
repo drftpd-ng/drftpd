@@ -22,7 +22,6 @@ import com.cedarsoftware.util.io.JsonWriter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import org.drftpd.commands.UserManagement;
 import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.master.CommitManager;
 import org.drftpd.master.usermanager.AbstractGroup;
@@ -44,7 +43,7 @@ public class BeanGroup extends AbstractGroup {
 
 	private transient BeanUserManager _um;
 
-  private transient boolean _purged;
+	private transient boolean _purged;
 
 	public BeanGroup(String groupname) {
 		super(groupname);
@@ -79,12 +78,13 @@ public class BeanGroup extends AbstractGroup {
 	public void writeToDisk() throws IOException {
 		if (_purged)
 			return;
+
 		Map<String,Object> params = new HashMap<>();
 		params.put(JsonWriter.PRETTY_PRINT, true);
 		try (OutputStream out = new SafeFileOutputStream(_um.getGroupFile(getName()));
 			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(this);
-      logger.debug("Wrote groupfile for {}", this.getName());
+		logger.debug("Wrote groupfile for {}", this.getName());
 		} catch (IOException | JsonIoException e) {
 			throw new IOException("Unable to write " + _um.getGroupFile(getName()) + " to disk", e);
 		}

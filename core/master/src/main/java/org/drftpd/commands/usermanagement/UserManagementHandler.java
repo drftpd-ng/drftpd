@@ -54,7 +54,6 @@ public class UserManagementHandler extends CommandInterface {
 
     private ResourceBundle _bundle;
 
-
     private static final UserCaseInsensitiveComparator USER_CASE_INSENSITIVE_COMPARATOR = new UserCaseInsensitiveComparator();
 
     static class UserCaseInsensitiveComparator implements Comparator<User> {
@@ -69,11 +68,9 @@ public class UserManagementHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
-    public CommandResponse doSITE_ADDIP(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_ADDIP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -424,7 +421,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_CHANGE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSITE_CHANGEUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -503,6 +500,7 @@ public class UserManagementHandler extends CommandInterface {
 
         for (User user1 : users) {
             userToChange = user1;
+            env.put("targetuser", userToChange.getName());
 
             switch (command) {
                 case "ratio":
@@ -756,10 +754,9 @@ public class UserManagementHandler extends CommandInterface {
                 case "created":
                     Date myDate;
 
-                    if (commandArguments.length == 0) {
+                    if (commandArguments.length != 0) {
                         try {
-                            myDate = new SimpleDateFormat("yyyy-MM-dd")
-                                    .parse(commandArguments[0]);
+                            myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0]);
                         } catch (ParseException e1) {
                             logger.log(Level.INFO, e1);
 
@@ -769,13 +766,10 @@ public class UserManagementHandler extends CommandInterface {
                         myDate = new Date();
                     }
 
-                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(
-                            UserManagement.CREATED, new Date(0)), myDate);
-                    userToChange.getKeyedMap()
-                            .setObject(UserManagement.CREATED, myDate);
+                    logger.info("'{}' changed created for '{}' from '{}' to '{}'", currentUser.getName(), userToChange.getName(), userToChange.getKeyedMap().getObject(UserManagement.CREATED, new Date(0)), myDate);
+                    userToChange.getKeyedMap().setObject(UserManagement.CREATED, myDate);
 
-                    response = new CommandResponse(200, session.jprintf(_bundle,
-                            "changecreated.success", env, request.getUser()));
+                    response = new CommandResponse(200, session.jprintf(_bundle,"changeuser.created.success", env, request.getUser()));
                     break;
                 case "wkly_allotment":
                     if (commandArguments.length != 1) {
@@ -826,8 +820,7 @@ public class UserManagementHandler extends CommandInterface {
      *                                Denotes any email-like password, ex. site chpass arch @ This will allow
      *                                arch to login with a@b.com but not ab.com
      */
-    public CommandResponse doSITE_CHPASS(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_CHPASS(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -873,8 +866,7 @@ public class UserManagementHandler extends CommandInterface {
      * @param request
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_DELIP(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_DELIP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -926,8 +918,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_DELPURGE(CommandRequest request)
-             throws ImproperUsageException {
+    public CommandResponse doSITE_DELPURGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -940,6 +931,10 @@ public class UserManagementHandler extends CommandInterface {
         Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetuser", delUsername);
 
         try {
             User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(delUsername);
@@ -957,10 +952,12 @@ public class UserManagementHandler extends CommandInterface {
                 requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
+            response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
             logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
 
             requestedUser.purge();
+            response.addComment(session.jprintf(_bundle, "purgeuser.success", env, request.getUser()));
             logger.info("'{}' purged '{}'", currentUser.getName(), requestedUser.getName());
 
         } catch (NoSuchUserException e) {
@@ -969,11 +966,10 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
         }
 
-        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        return response;
     }
 
-    public CommandResponse doSITE_DELUSER(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_DELUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -986,6 +982,10 @@ public class UserManagementHandler extends CommandInterface {
         Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetuser", delUsername);
 
         try {
             User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(delUsername);
@@ -1003,6 +1003,7 @@ public class UserManagementHandler extends CommandInterface {
                 requestedUser.getKeyedMap().setObject(UserManagement.REASON, reason = st.nextToken("").substring(1));
             }
             requestedUser.commit();
+            response.addComment(session.jprintf(_bundle, "deluser.success", env, request.getUser()));
             logger.info("'{}' deleted user '{}' with reason '{}'", currentUser.getName(), requestedUser.getName(), reason);
             logger.debug("reason {}", requestedUser.getKeyedMap().getObjectString(UserManagement.REASON));
 
@@ -1010,107 +1011,6 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, e.getMessage());
         } catch (UserFileException e) {
             return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
-        }
-
-        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-    }
-
-    public CommandResponse doSITE_GINFO(CommandRequest request)
-            throws ImproperUsageException {
-
-        if (!request.hasArgument()) {
-            throw new ImproperUsageException();
-        }
-
-        String group = request.getArgument();
-
-        Session session = request.getSession();
-
-        User currentUser = session.getUserNull(request.getUser());
-        Group g = session.getGroupNull(group);
-
-        if (g == null) {
-            throw new ImproperUsageException();
-        }
-
-        boolean isGroupAdmin = g.isAdmin(currentUser);
-        boolean isAdmin = currentUser.isAdmin();
-
-        if (!isAdmin && !isGroupAdmin) {
-            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
-        }
-
-        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
-
-        Map<String, Object> env = new HashMap<>();
-        env.put("group", g.getName());
-        env.put("sp", " ");
-
-        // add header
-        String head = _bundle.getString("ginfo.head");
-        response.addComment(ReplacerUtils.jprintf(head, env));
-
-        // vars for total stats
-        int numUsers = 0;
-        int numLeechUsers = 0;
-        int allfup = 0;
-        int allfdn = 0;
-        long allmbup = 0;
-        long allmbdn = 0;
-
-        ArrayList<User> users = new ArrayList<>(GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(g));
-        users.sort(UserManagementHandler.USER_CASE_INSENSITIVE_COMPARATOR);
-
-        for (User user : users) {
-
-            char status = ' ';
-            if (g.isAdmin(user)) {
-                status = '+';
-            } else if (user.isAdmin()) {
-                status = '*';
-            } else if (user.isDeleted()) {
-                status = '!';
-            }
-
-            try {
-                String body = _bundle.getString("ginfo.user");
-                env.put("user", status + user.getName());
-                env.put("fup", "" + user.getUploadedFiles());
-                env.put("mbup", Bytes.formatBytes(user.getUploadedBytes()));
-                env.put("fdn", "" + user.getDownloadedFiles());
-                env.put("mbdn", Bytes.formatBytes(user.getDownloadedBytes()));
-                env.put("ratio", "1:" + user.getKeyedMap().getObjectFloat(UserManagement.RATIO));
-                env.put("wkly", Bytes.formatBytes(user.getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT)));
-                response.addComment(ReplacerUtils.jprintf(body, env));
-            } catch (MissingResourceException e) {
-                response.addComment(e.getMessage());
-            }
-
-            // update totals
-            numUsers++;
-            if (user.getKeyedMap().getObjectFloat(UserManagement.RATIO).intValue() == 0) {
-                numLeechUsers++;
-            }
-            allfup += user.getUploadedFiles();
-            allfdn += user.getDownloadedFiles();
-            allmbup += user.getUploadedBytes();
-            allmbdn += user.getDownloadedBytes();
-        }
-
-        // add tail
-        env.put("allfup", "" + allfup);
-        env.put("allmbup", Bytes.formatBytes(allmbup));
-        env.put("allfdn", "" + allfdn);
-        env.put("allmbdn", Bytes.formatBytes(allmbdn));
-        env.put("numusers", "" + numUsers);
-        env.put("numleech", "" + numLeechUsers);
-
-        String tail = _bundle.getString("ginfo.tail");
-        try {
-            response.addComment(ReplacerUtils.jprintf(tail, env));
-        } catch (MissingResourceException e) {
-            logger.warn("", e);
-            response.addComment(e.getMessage());
         }
 
         return response;
@@ -1179,8 +1079,7 @@ public class UserManagementHandler extends CommandInterface {
         return new CommandResponse(200, "OK, gave " + Bytes.formatBytes(credits) + " of " + srcUser.getName() + "'s credits to " + destUser.getName());
     }
 
-    public CommandResponse doSITE_GIVE(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_GIVE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1239,8 +1138,7 @@ public class UserManagementHandler extends CommandInterface {
                 + " of your credits to " + myUser.getName());
     }
 
-    public CommandResponse doSITE_KICK(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_KICK(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1328,8 +1226,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_PASSWD(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_PASSWD(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1346,8 +1243,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_PURGE(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_PURGE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1358,6 +1254,10 @@ public class UserManagementHandler extends CommandInterface {
         Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetgroup", delUsername);
 
         try {
             User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(delUsername);
@@ -1373,6 +1273,7 @@ public class UserManagementHandler extends CommandInterface {
                 return new CommandResponse(452, "User isn't deleted");
             }
             requestedUser.purge();
+            response.addComment(session.jprintf(_bundle, "purgeuser.success", env, request.getUser()));
             logger.info("'{}' purged '{}'", currentUser.getName(), requestedUser.getName());
 
         } catch (NoSuchUserException e) {
@@ -1381,7 +1282,7 @@ public class UserManagementHandler extends CommandInterface {
             return new CommandResponse(452, "Couldn't getUser: " + e.getMessage());
         }
 
-        return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        return response;
     }
 
     public CommandResponse doSITE_READD(CommandRequest request)
@@ -1585,8 +1486,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_USER(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_USER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1611,8 +1511,7 @@ public class UserManagementHandler extends CommandInterface {
                 return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
             }
 
-            String message = request.getSession().jprintf(_bundle, "user", requestedUser.getName());
-            response.addComment(message);
+            response.addComment(request.getSession().jprintf(_bundle, "user", requestedUser.getName()));
 
         } catch (NoSuchUserException ex) {
             response.setMessage("User " + request.getArgument() + " not found");

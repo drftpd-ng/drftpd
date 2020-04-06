@@ -27,6 +27,11 @@ adduser.noslots=${color}15${bold}ADDUSER${coloroff}: Sorry, no more open slots a
 adduser.missingpass=${color}15${bold}ADDUSER${coloroff}: You forgot a password
 adduser.primgroup=${color}15${bold}ADDUSER${coloroff}: Primary group set to ${primgroup}
 adduser.success=${color}15${bold}ADDUSER${coloroff}: User ${targetuser} created
+deluser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} deleted
+purgeuser.success=${color}15${bold}DELUSER${coloroff}: User ${targetuser} purged
+
+addgroup.success=${color}15${bold}ADDGROUP{coloroff}: Group ${targetgroup} created
+delgroup.success=${color}15${bold}ADDGROUP{coloroff}: Group ${targetgroup} deleted
 
 change.specify=${color}15${bold}CHANGE${coloroff}: You need to specify a value to change
 
@@ -40,8 +45,16 @@ changeprimgroup.success=${color}15${bold}CHANGE${coloroff}: Changed primary grou
 changenumlogins.success=${color}15${bold}CHANGE${coloroff}: Changed max logins to ${numlogins} and from same IP to ${numloginsip}
 changegroupslots.success=${color}15${bold}CHANGE${coloroff}: Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
 changemaxsim.success=${color}15${bold}CHANGE${coloroff}: Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
-changecreated.success=${color}15${bold}CHANGE${coloroff}: Reset creation time for ${targetuser}
+changeuser.created.success=${color}15${bold}CHANGEUSER${coloroff}: Reset creation time for ${targetuser}
 changegadminratio.success=${color}15${bold}CHANGE${coloroff}: Changed gadmin min/max ratio to ${minratio}/${maxratio}
+
+changegroup.slots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group slots to ${groupslots}
+changegroup.leechslots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group leech slots to ${leechslots}
+changegroup.created.success=${color}15${bold}CHANGEGROUP${coloroff}: Reset creation time for ${targetgroup}
+
+changegroupadmin.bad.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} does not exist
+changegroupadmin.add.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} added as group admin to ${targetgroup}
+changegroupadmin.remove.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} removed from ${targetgroup} as group admin
 
 user=Username: ${username,-20} Created: ${org.drftpd.commands.UserManagement@created}\n\
 Comment: ${org.drftpd.commands.UserManagement@comment,-21} Last seen: ${org.drftpd.commands.UserManagement@lastseen}\n\
@@ -50,8 +63,6 @@ Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.commands.UserManagemen
 Ratio: ${org.drftpd.commands.UserManagement@ratio,-23} Credits: ${credits}\n\
 Max logins: ${org.drftpd.commands.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.commands.UserManagement@maxloginsip}\n\
 Max sim uploads: ${org.drftpd.commands.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.commands.UserManagement@maxsimdn}\n\
-Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
-Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
 Total uploaded: ${uploaded,-14} Total downloaded: ${downloaded}\n\
 Times nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nuked,-17} Bytes nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nukedBytes}\n\
 Requests: ${org.drftpd.commands.request.metadata.RequestUserData@requests,-20} Filled requests: ${org.drftpd.commands.request.metadata.RequestUserData@requestsFilled}\n\
@@ -62,18 +73,21 @@ IP masks: ${ipmasks}\n\
 IRC Ident: ${org.drftpd.commands.UserManagement@ircident,-23}\n\
 Tagline: ${org.drftpd.commands.UserManagement@tagline}
 
+mike.saved.group=Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
+Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
+
 bans=${color}15${bold}BANS${coloroff}: ${username} banned for another ${timeleft}m until ${org.drftpd.commands.UserManagement@ban_time} (${org.drftpd.commands.UserManagement@ban_reason})
 
 ginfo.head=\
-${group}\n\
-.----- /______| -------------------------------------- |_____| ---------.\n\
+.-----------------------------------------------------------------------.\n\
 |  Username |     Up |      Megs |     Dn |      Megs | Ratio |    Wkly |\n\
 |-----------+--------+-----------+--------+-----------+-------+---------|
 ginfo.user=|${user,-11}|${fup,8}|${mbup,10} |${fdn,8}|${mbdn,10} | ${ratio} |${wkly,8} |
 ginfo.tail=\
 |-----------+--------+-----------+--------+-----------+-------+---------|\n\
-|        * = siteop           + = gadmin            ! = deleted         |\n\
+|        * = Site Admin       + = Group Admin       ! = deleted         |\n\
 |-----------+--------+-----------+--------+-----------+-------+---------|\n\
-|   Tot Megs Up:${allmbup,10}   Tot Files Up:${allfup,7}   Users in group:${numusers,2}   |\n\
-|   Tot Megs Dn:${allmbdn,10}   Tot Files Dn:${allfdn,7}       With leech:${numleech,2}   |\n\
+|   Tot Megs Up:${allmbup,10}         Tot Files Up:${allfup,7}          |\n\
+|   Tot Megs Dn:${allmbdn,10}         Tot Files Dn:${allfdn,7}          |\n\
+|   Slots(Total/Free): ${slotstotal}/${slotsfree}   Leech Slots(Total/Free): ${leechtotal}/${leechfree}  |\n\
 `-----------------------------------------------------------------------'

@@ -17,6 +17,9 @@
  */
 package org.drftpd.master.permissions;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.drftpd.master.GlobalContext;
 import org.drftpd.master.usermanager.User;
 
 import java.util.*;
@@ -26,6 +29,8 @@ import java.util.*;
  * @version $Id$
  */
 public class Permission {
+    private static final Logger logger = LogManager.getLogger();
+
 	protected Collection<String> _users;
 
 	private boolean _invert = false;
@@ -50,8 +55,8 @@ public class Permission {
 	 * Non-authenticated users
 	 * If no Permission line is given, this assumes !% is the last one
 	 * returns true if the User has permission
-	 * @param user
-	 * @return
+	 * @param user The User Object we need to check
+	 * @return true if the user is allowed, false otherwise
 	 */
 	public boolean check(User user) {
 		boolean allow = false;
@@ -80,19 +85,17 @@ public class Permission {
                 if (user == null) {
                     continue;
                 }
-                if (user.isMemberOf(aclUser.substring(1))) {
+                // TODO: Monkey patch this so we can revisit this later when we fix =deleted, =siteop and =gadmin (maybe more?)
+                if (aclUser.equals("=gadmin")) {
+                    if (GlobalContext.getGlobalContext().getUserManager().isGroupAdmin(user)) {
+                    	return allow;
+					}
+                } else if (user.isMemberOf(aclUser.substring(1))) {
                     return allow;
                 }
             } else {
-                // FLAG, we don't have flags, we have groups and that's the same
-                // but multiple letters
-                // Does anyone use these?  Do we want to get rid of the = modifier?
-                if (user == null) {
-                    continue;
-                }
-                if (user.isMemberOf(aclUser)) {
-                    return allow;
-                }
+                // FLAG, we don't have flags
+                logger.error("Incorrect usage of perms string '" + aclUser + "' is unsupported");
             }
         }
 

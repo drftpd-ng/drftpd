@@ -48,10 +48,10 @@ public abstract class AbstractUser extends User implements Commitable {
 
 	protected KeyedMap<Key<?>, Object> _data = new KeyedMap<>();
 
-	private Group _group = null;
+	private String _group = null;
 
 	// We keep this String based, but for the outside world this always needs to be an object of type Group
-	private ArrayList<Group> _groups = new ArrayList<>();
+	private ArrayList<String> _groups = new ArrayList<>();
 
 	private HostMaskCollection _hostMasks = new HostMaskCollection();
 
@@ -79,11 +79,11 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void addSecondaryGroup(Group g) throws DuplicateElementException {
-		if (_groups.contains(g)) {
+		if (_groups.contains(g.getName())) {
 			throw new DuplicateElementException("User is already a member of that group");
 		}
 
-		_groups.add(g);
+		_groups.add(g.getName());
 	}
 
 	public boolean equals(Object obj) {
@@ -103,15 +103,32 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public Group getGroup() {
-		return _group;
+		Group g = null;
+		try {
+			g = getUserManager().getGroupByName(_group);
+		} catch(NoSuchGroupException | GroupFileException e) {
+			logger.error("Unable to get group entity for group name "+_group);
+		}
+		return g;
 	}
 
 	public List<Group> getGroups() {
-		return _groups;
+		List<Group> groups = new ArrayList<>(_groups.size());
+		for (String group : _groups) {
+			try {
+				groups.add(getUserManager().getGroupByName(group));
+			} catch(NoSuchGroupException | GroupFileException e) {
+				logger.error("Unable to get group entity for group name "+group);
+			}
+		}
+		return groups;
 	}
 
 	public void setGroups(List<Group> groups) {
-		_groups = new ArrayList<>(groups);
+		_groups = new ArrayList<>(groups.size());
+		for (Group g : groups) {
+			_groups.add(g.getName());
+		}
 	}
 
 	public void setHostMaskCollection(HostMaskCollection masks) {
@@ -179,31 +196,27 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void removeSecondaryGroup(Group group) throws NoSuchFieldException {
-		if (!_groups.remove(group)) {
+		if (!_groups.remove(group.getName())) {
 			throw new NoSuchFieldException("User is not a member of that group");
 		}
 	}
 
-	public void rename(String username) throws UserExistsException,
-			UserFileException {
-		getAbstractUserManager().renameUser(this, username); // throws
-															// ObjectExistsException
+	public void rename(String username) throws UserExistsException, UserFileException {
+		getAbstractUserManager().renameUser(this, username); // throws ObjectExistsException
 		getAbstractUserManager().deleteUser(this.getName());
 		_username = username;
 		commit(); // throws IOException
 	}
 
 	public void resetDay(Date resetDate) {
-		GlobalContext.getEventService().publish(new UserEvent(this, "RESETDAY", resetDate
-				.getTime()));
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETDAY", resetDate.getTime()));
 		super.resetDay(resetDate);
 		super.resetHour(resetDate);
         logger.info("Reset daily stats for {}", getName());
 	}
 
 	public void resetMonth(Date resetDate) {
-		GlobalContext.getEventService().publish(new UserEvent(this, "RESETMONTH", resetDate
-				.getTime()));
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETMONTH", resetDate.getTime()));
 		super.resetMonth(resetDate);
 		super.resetDay(resetDate);
 		super.resetHour(resetDate);
@@ -211,8 +224,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void resetWeek(Date resetDate) {
-		GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate
-				.getTime()));
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETWEEK", resetDate.getTime()));
 		super.resetWeek(resetDate);
 		if (getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT) > 0) {
 			setCredits(getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT));
@@ -226,8 +238,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void resetYear(Date resetDate) {
-		GlobalContext.getEventService().publish(new UserEvent(this, "RESETYEAR", resetDate
-				.getTime()));
+		GlobalContext.getEventService().publish(new UserEvent(this, "RESETYEAR", resetDate.getTime()));
 		super.resetYear(resetDate);
 		super.resetMonth(resetDate);
 		super.resetDay(resetDate);	
@@ -255,8 +266,20 @@ public abstract class AbstractUser extends User implements Commitable {
 			// File error...
 			return;
 		}
+		if (g == null) {
+			// Something is wrong above and we do not continue here
+			return;
+		}
 
 		if (deleted) {
+			// Remove this user as a group admin
+			for (Group g2 : getGroups()) {
+				if (g2.isAdmin(this)) {
+					try {
+						g2.removeAdmin(this);
+					} catch(NoSuchFieldException ignored) {}
+				}
+			}
 			try {
 				addSecondaryGroup(g);
 			} catch (DuplicateElementException ignored) {}
@@ -268,7 +291,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	}
 
 	public void setGroup(Group g) {
-		_group = g;
+		_group = g.getName();
 	}
 
 	public void setIdleTime(int idleTime) {
@@ -303,18 +326,9 @@ public abstract class AbstractUser extends User implements Commitable {
 	 * Hit user - update last access time
 	 */
 	public void updateLastAccessTime() {
-		_data.setObject(UserManagement.LASTSEEN, new Date(System
-				.currentTimeMillis()));
+		_data.setObject(UserManagement.LASTSEEN, new Date(System.currentTimeMillis()));
 	}
 
-	// public void updateNukedBytes(long bytes) {
-	// _nukedBytes += bytes;
-	// }
-	//
-	// public void updateTimesNuked(int timesNuked) {
-	// _timesNuked += timesNuked;
-	// }
-	
 	public int getMaxSimUp() {
 		return getKeyedMap().getObjectInteger(UserManagement.MAXSIMUP);
 	}

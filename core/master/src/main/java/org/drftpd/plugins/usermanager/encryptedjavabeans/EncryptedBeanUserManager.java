@@ -79,7 +79,7 @@ public class EncryptedBeanUserManager extends BeanUserManager {
 	}
 	
 	@Override
-	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
+	protected User loadUser(String userName) throws UserFileException {
 		User user = super.loadUser(userName);
 		if ( !(user instanceof EncryptedBeanUser) && (user instanceof BeanUser)) {
 			return new EncryptedBeanUser(this,(BeanUser) user);

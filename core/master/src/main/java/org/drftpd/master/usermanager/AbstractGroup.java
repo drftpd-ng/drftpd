@@ -22,7 +22,6 @@ import org.apache.logging.log4j.LogManager;
 import org.drftpd.commands.GroupManagement;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.dynamicdata.KeyedMap;
-import org.drftpd.master.event.GroupEvent;
 import org.drftpd.master.common.exceptions.DuplicateElementException;
 import org.drftpd.master.master.Commitable;
 
@@ -53,6 +52,7 @@ public abstract class AbstractGroup extends Group implements Commitable {
 	private String _groupname;
 
 	public AbstractGroup(String groupname) {
+		checkValidGroupName(groupname);
 		_groupname = groupname;
 		_data.setObject(GroupManagement.CREATED, new Date(System.currentTimeMillis()));
 	}
@@ -69,31 +69,41 @@ public abstract class AbstractGroup extends Group implements Commitable {
 	 */
 	public abstract AbstractUserManager getAbstractUserManager();
 
-  public List<String> getAdmins() {
-    return _admins;
-  }
+	public List<User> getAdmins() {
+		List<User> admins = new ArrayList<>(_admins.size());
+		for (String user : _admins) {
+			try {
+				admins.add(getUserManager().getUserByName(user));
+			} catch(NoSuchUserException | UserFileException e) {
+				logger.error("Unable to get user entity for user name "+user);
+			}
+		}
+		return admins;
+	}
 
-  public void setAdmins(List<String> admins) {
-    _admins = new ArrayList<>(admins);
-  }
+	public void setAdmins(List<User> admins) {
+		_admins = new ArrayList<>(admins.size());
+		for (User u : admins) {
+			_admins.add(u.getName());
+		}
+	}
 
-  public void addAdmin(User u) throws DuplicateElementException {
-    if (_admins.contains(u.getName())) {
-      throw new DuplicateElementException(
-          "User is already an admin for that group");
-    }
-    _admins.add(u.getName());
-  }
+	public void addAdmin(User u) throws DuplicateElementException {
+		if (_admins.contains(u.getName())) {
+			throw new DuplicateElementException("User is already an admin for that group");
+		}
+		_admins.add(u.getName());
+	  }
 
-  public void removeAdmin(User u) throws NoSuchFieldException {
-    if(!_admins.remove(u.getName())) {
-      throw new NoSuchFieldException("User is not an admin for that group");
-    }
-  }
+	public void removeAdmin(User u) throws NoSuchFieldException {
+		if(!_admins.remove(u.getName())) {
+			throw new NoSuchFieldException("User is not an admin for that group");
+		}
+	}
 
-  public boolean isAdmin(User u) {
-    return _admins.contains(u.getName());
-  }
+	public boolean isAdmin(User u) {
+		return _admins.contains(u.getName());
+	}
 
 	public KeyedMap<Key<?>, Object> getKeyedMap() {
 		return _data;

@@ -7,8 +7,11 @@ adduser.noslots=Sorry, no more open slots available
 adduser.missingpass=You forgot a password
 adduser.primgroup=Primary group set to ${primgroup}
 adduser.success=User ${targetuser} created
+deluser.success=User ${targetuser} deleted
+purgeuser.success=User ${tagetuser} purged
 
 addgroup.success=Group ${targetgroup} created
+delgroup.success=Group ${targetgroup} deleted
 
 change.specify=You need to specify a value to change
 
@@ -20,10 +23,17 @@ changecomment.success=${targetuser} comment is: ${comment}
 changeidletime.success=Changed idle time to ${newidletime}s
 changeprimgroup.success=Changed primary group to ${primgroup}
 changenumlogins.success=Changed max logins to ${numlogins} and from same IP to ${numloginsip}
-changegroupslots.success=Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
 changemaxsim.success=Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
-changecreated.success=Reset creation time for ${targetuser}
+changeuser.created.success=Reset creation time for ${targetuser}
 changegadminratio.success=Changed gadmin min/max ratio to ${minratio}/${maxratio}
+
+changegroup.slots.success=Changed group slots to ${groupslots}
+changegroup.leechslots.success=Changed group leech slots to ${leechslots}
+changegroup.created.success=Reset creation time for ${targetgroup}
+
+changegroupadmin.bad.user=User ${targetuser} does not exist
+changegroupadmin.add.user=User ${targetuser} added as group admin to ${targetgroup}
+changegroupadmin.remove.user=User ${targetuser} removed from ${targetgroup} as group admin
 
 debug=Debug now set to ${org.drftpd.commands.UserManagement@debug}
 
@@ -98,6 +108,7 @@ ginfo.tail=\
 |-----------+--------+-----------+--------+-----------+-------+---------|\n\
 |        * = siteop           + = gadmin            ! = deleted         |\n\
 |-----------+--------+-----------+--------+-----------+-------+---------|\n\
-|   Tot Megs Up:${allmbup,10}   Tot Files Up:${allfup,7}   Users in group:${numusers,2}   |\n\
-|   Tot Megs Dn:${allmbdn,10}   Tot Files Dn:${allfdn,7}       With leech:${numleech,2}   |\n\
+|   Tot Megs Up:${allmbup,10}         Tot Files Up:${allfup,7}          |\n\
+|   Tot Megs Dn:${allmbdn,10}         Tot Files Dn:${allfdn,7}          |\n\
+|   Slots(Total/Free): ${slotstotal}/${slotsfree}   Leech Slots(Total/Free): ${leechtotal}/${leechfree}  |\n\
 `-----------------------------------------------------------------------'

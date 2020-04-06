@@ -76,7 +76,6 @@ public class GroupManagementHandler extends CommandInterface {
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
         super.initialize(method, pluginName, cManager);
         _bundle = cManager.getResourceBundle();
-
     }
 
     public CommandResponse doSITE_ADDGROUP(CommandRequest request) throws ImproperUsageException {
@@ -124,6 +123,55 @@ public class GroupManagementHandler extends CommandInterface {
         } catch (GroupFileException e) {
             logger.error(e, e);
             return new CommandResponse(452, e.getMessage());
+        }
+
+        return response;
+    }
+
+    public CommandResponse doSITE_DELGROUP(CommandRequest request) throws ImproperUsageException {
+
+        if (!request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
+
+        Session session = request.getSession();
+
+        // The user requesting this command
+        User currentUser = session.getUserNull(request.getUser());
+
+        boolean isAdmin = currentUser.isAdmin();
+
+        if (!isAdmin) {
+            return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+        }
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+
+        if (st.countTokens() != 1) {
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        String groupname = st.nextToken();
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetgroup", groupname);
+
+        try {
+            Group requestedGroup = GlobalContext.getGlobalContext().getUserManager().getGroupByName(groupname);
+
+            // Make sure the group is not used anymore
+            if (GlobalContext.getGlobalContext().getUserManager().getAllUsersByGroup(requestedGroup).size() != 0) {
+                return new CommandResponse(500, "This group " + requestedGroup.getName() + " still has users attached");
+            }
+
+            requestedGroup.purge();
+            response.addComment(session.jprintf(_bundle, "addgroup.success", env, request.getUser()));
+            logger.info("'{}' purged '{}'", currentUser.getName(), requestedGroup.getName());
+        } catch (GroupFileException e) {
+            return new CommandResponse(452, e.getMessage());
+        } catch (NoSuchGroupException e) {
+            return new CommandResponse(500, "Group does not exist");
         }
 
         return response;
@@ -231,7 +279,7 @@ public class GroupManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_GRPCHANGE(CommandRequest request) throws ImproperUsageException {
+    public CommandResponse doSITE_CHANGEGROUP(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -301,10 +349,12 @@ public class GroupManagementHandler extends CommandInterface {
 
         for (Group group1 : groups) {
             groupToChange = group1;
+            env.put("targetgroup", groupToChange.getName());
 
             switch (command) {
-                case "ratio":
+                //TODO: Figure out what this is used for?
 /*
+                case "ratio":
                     // [# min] [# max]
                     if (commandArguments.length != 2) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -331,39 +381,44 @@ public class GroupManagementHandler extends CommandInterface {
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-*/
                     break;
+*/
                 case "slots":
-/*
                     try {
-                        if ((commandArguments.length < 1) || (commandArguments.length > 2)) {
+                        if (commandArguments.length != 1) {
                             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                         }
 
                         int groupSlots = Short.parseShort(commandArguments[0]);
-                        int groupLeechSlots;
 
-                        if (commandArguments.length >= 2) {
-                            groupLeechSlots = Integer.parseInt(commandArguments[1]);
-                        } else {
-                            groupLeechSlots = userToChange.getKeyedMap().getObjectInteger(UserManagement.LEECHSLOTS);
-                        }
-
-                        logger.info("'{}' changed group_slots for '{}' from '{}' {}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectInteger(UserManagement.GROUPSLOTS), userToChange.getKeyedMap().getObjectInteger(UserManagement.LEECHSLOTS), groupSlots, groupLeechSlots);
-                        userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS, groupSlots);
-                        userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS, groupLeechSlots);
-                        env.put("groupslots", "" + userToChange.getKeyedMap().getObjectInteger(UserManagement.GROUPSLOTS));
-                        env.put("groupleechslots", "" + userToChange.getKeyedMap().getObjectInteger(UserManagement.LEECHSLOTS));
-                        response.addComment(session.jprintf(_bundle, "changegroupslots.success", env, request.getUser()));
+                        logger.info("'{}' changed group slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS), groupSlots);
+                        groupToChange.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, groupSlots);
+                        env.put("groupslots", "" + groupToChange.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS));
+                        response.addComment(session.jprintf(_bundle, "changegroup.slots.success", env, request.getUser()));
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
-*/
+                    break;
+                case "leechslots":
+                    try {
+                        if (commandArguments.length != 1) {
+                            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+                        }
+
+                        int leechSlots = Short.parseShort(commandArguments[0]);
+
+                        logger.info("'{}' changed group leech slots for '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS), leechSlots);
+                        groupToChange.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, leechSlots);
+                        env.put("leechslots", "" + groupToChange.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS));
+                        response.addComment(session.jprintf(_bundle, "changegroup.leechslots.success", env, request.getUser()));
+                    } catch (NumberFormatException ex) {
+                        return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+                    }
                     break;
                 case "created":
                     Date myDate;
 
-                    if (commandArguments.length == 0) {
+                    if (commandArguments.length != 0) {
                         try {
                             myDate = new SimpleDateFormat("yyyy-MM-dd").parse(commandArguments[0]);
                         } catch (ParseException e1) {
@@ -378,7 +433,7 @@ public class GroupManagementHandler extends CommandInterface {
                     logger.info("'{}' changed created for group '{}' from '{}' to '{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getKeyedMap().getObject(GroupManagement.CREATED, new Date(0)), myDate);
                     groupToChange.getKeyedMap().setObject(GroupManagement.CREATED, myDate);
 
-                    response = new CommandResponse(200, session.jprintf(_bundle, "changecreated.success", env, request.getUser()));
+                    response = new CommandResponse(200, session.jprintf(_bundle, "changegroup.created.success", env, request.getUser()));
                     break;
                 default:
                     throw new ImproperUsageException();
@@ -437,17 +492,22 @@ public class GroupManagementHandler extends CommandInterface {
         for (int i = 1; i < args.length; i++) {
             String string = args[i];
 
-            try {
-                myUser.removeSecondaryGroup(session.getGroupNull(string));
-                logger.info("'{}' removed '{}' from group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
-                response.addComment(myUser.getName() + " removed from group " + string);
-            } catch (NoSuchFieldException e1) {
+            Group groupToChange = session.getGroupNull(string);
+            if (groupToChange == null) {
+                response.addComment("Unknown group " + string);
+            } else {
                 try {
-                    myUser.addSecondaryGroup(session.getGroupNull(string));
-                    logger.info("'{}' added '{}' to group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
-                    response.addComment(myUser.getName() + " added to group " + string);
-                } catch (DuplicateElementException e2) {
-                    throw new RuntimeException("Error, user was not a member before", e2);
+                    myUser.removeSecondaryGroup(session.getGroupNull(string));
+                    logger.info("'{}' removed '{}' from group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
+                    response.addComment(myUser.getName() + " removed from group " + string);
+                } catch (NoSuchFieldException e1) {
+                    try {
+                        myUser.addSecondaryGroup(session.getGroupNull(string));
+                        logger.info("'{}' added '{}' to group '{}'", session.getUserNull(request.getUser()).getName(), myUser.getName(), string);
+                        response.addComment(myUser.getName() + " added to group " + string);
+                    } catch (DuplicateElementException e2) {
+                        throw new RuntimeException("Error, user was not a member before", e2);
+                    }
                 }
             }
         }
@@ -466,6 +526,7 @@ public class GroupManagementHandler extends CommandInterface {
         Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
+
         Group g = session.getGroupNull(group);
 
         if (g == null) {
@@ -541,8 +602,10 @@ public class GroupManagementHandler extends CommandInterface {
         env.put("allmbup", Bytes.formatBytes(allmbup));
         env.put("allfdn", "" + allfdn);
         env.put("allmbdn", Bytes.formatBytes(allmbdn));
-        env.put("numusers", "" + numUsers);
-        env.put("numleech", "" + numLeechUsers);
+        env.put("slotstotal", g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS));
+        env.put("slotsfree", g.getKeyedMap().getObjectInteger(GroupManagement.GROUPSLOTS) - numUsers);
+        env.put("leechtotal", g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS));
+        env.put("leechfree", g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS) - numLeechUsers);
 
         String tail = _bundle.getString("ginfo.tail");
         try {
@@ -678,6 +741,23 @@ public class GroupManagementHandler extends CommandInterface {
 
         CommandResponse response = new CommandResponse(200);
         response.addComment("Renaming group " + g.getName() + " to " + newGroup);
+
+        // First we loop through all the users are remove the old group
+        List<User> usersToSet = new ArrayList<>();
+        List<User> usersToAdd = new ArrayList<>();
+        for (User userToChange : users) {
+            if (userToChange.getGroup().getName().equals(oldGroup)) {
+                usersToSet.add(userToChange);
+            } else {
+                usersToAdd.add(userToChange);
+                try {
+                    userToChange.removeSecondaryGroup(g);
+                } catch (NoSuchFieldException e1) {
+                    throw new RuntimeException("User was not in group returned by getAllUsersByGroup");
+                }
+            }
+        }
+
         try {
             g.rename(newGroup);
         } catch (GroupFileException | GroupExistsException e) {
@@ -687,34 +767,82 @@ public class GroupManagementHandler extends CommandInterface {
 
         g.commit();
 
+        for (User u1 : usersToSet) {
+            u1.setGroup(g);
+        }
+        for (User u2 : usersToAdd) {
+            try {
+                u2.addSecondaryGroup(g);
+            } catch (DuplicateElementException ignored) {
+            }
+        }
+
         for (User userToChange : users) {
             userToChange.commit();
             response.addComment("Changed user " + userToChange.getName());
         }
 
-        /*
-        This should be handled by the rename above, as the Users should have a 'Group' instance connected to them. TODO: MIKEVG VERIFY
-        for (User userToChange : users) {
-            if (userToChange.getGroup().equals(oldGroup)) {
-                userToChange.setGroup(g);
+        return response;
+    }
+
+    /**
+     * USAGE: site changegroupadmin <group> <user>[ <user>] Adds/removes a group admin from group.
+     * <p>
+     * ex1. site changegroupadmin ftp archimede This would add/remove 'archimede' as a group admin for 'ftp' group.
+     *
+     * @throws ImproperUsageException If there is something wrong with this request
+     */
+    public CommandResponse doSITE_CHANGEGROUPADMIN(CommandRequest request) throws ImproperUsageException {
+
+        if (!request.hasArgument()) {
+            throw new ImproperUsageException();
+        }
+
+        StringTokenizer st = new StringTokenizer(request.getArgument());
+
+        if (st.countTokens() < 2) {
+            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
+        }
+
+        Session session = request.getSession();
+
+        User currentUser = session.getUserNull(request.getUser());
+
+        String groupname = st.nextToken();
+
+        Group requestedGroup = session.getGroupNull(groupname);
+
+        if (requestedGroup == null) {
+            return new CommandResponse(500, "Group " + groupname + " does not exist");
+        }
+
+        CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
+        Map<String, Object> env = new HashMap<>();
+        env.put("targetgroup", groupname);
+
+        while(st.hasMoreTokens()) {
+            String username = st.nextToken();
+            User requestedUser = session.getUserNull(username);
+            env.put("targetuser", requestedUser.getName());
+            if (requestedUser == null) {
+                response.addComment(session.jprintf(_bundle, "changegroupadmin.bad.user", env, request.getUser()));
             } else {
                 try {
-                    userToChange.removeSecondaryGroup(oldGroup);
+                    requestedGroup.removeAdmin(requestedUser);
+                    logger.info("'{}' removed group admin '{}' from group '{}'", currentUser.getName(), requestedUser.getName(), groupname);
+                    response.addComment(session.jprintf(_bundle, "changegroupadmin.remove.user", env, request.getUser()));
                 } catch (NoSuchFieldException e1) {
-                    throw new RuntimeException("User was not in group returned by getAllUsersByGroup");
-                }
-
-                try {
-                    userToChange.addSecondaryGroup(g);
-                } catch (DuplicateElementException e2) {
-                    throw new RuntimeException("group " + newGroup + " already exists");
+                    try {
+                        requestedGroup.addAdmin(requestedUser);
+                        logger.info("'{}' added group admin '{}' to group '{}'", currentUser.getName(), requestedUser.getName(), groupname);
+                        response.addComment(session.jprintf(_bundle, "changegroupadmin.add.user", env, request.getUser()));
+                    } catch (DuplicateElementException e2) {
+                        throw new RuntimeException("Error, user was not a group admin before", e2);
+                    }
                 }
             }
-
-            userToChange.commit();
-            response.addComment("Changed user " + userToChange.getName());
         }
-        */
+        requestedGroup.commit();
 
         return response;
     }

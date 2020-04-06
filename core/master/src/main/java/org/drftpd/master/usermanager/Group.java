@@ -18,6 +18,7 @@ package org.drftpd.master.usermanager;
 
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.dynamicdata.KeyedMap;
+import org.drftpd.master.common.exceptions.DuplicateElementException;
 
 import java.util.List;
 
@@ -39,13 +40,20 @@ public abstract class Group implements Entity {
 
 	public abstract void rename(String groupname) throws GroupExistsException, GroupFileException;
 
-	public abstract List<String> getAdmins();
+	public abstract List<User> getAdmins();
 
 	public abstract boolean isAdmin(User u);
 
 	// useless for group objects
 	public boolean isMemberOf(String ignore)
-  {
-    return false;
-  }
+	{
+		return false;
+	}
+
+	public abstract void purge();
+
+	public abstract void addAdmin(User u) throws DuplicateElementException;
+
+	public abstract void removeAdmin(User u) throws NoSuchFieldException;
+
 }
