@@ -30,38 +30,25 @@ import org.drftpd.commands.CommandResponse;
  * @author zubov
  * @version $Id$
  */
-public class PermissionPreHook  {
+public class PermissionPreHook {
 
-	@CommandHook(commands = "*", type = HookType.PRE)
-	public CommandRequestInterface doPermissionCheck(CommandRequest request) {
-		try {
-			// Every command need to enforce permissions
-			Permission perm = request.getPermission();
-			if (perm == null) {
-				request.setDeniedResponse(new CommandResponse(500, "Permissions are not configured for command " + request.getCommand()));
-				request.setAllowed(false);
-				return request;
-			}
-			// Command can be granted for unauthenticated users (Like AUTH, ...)
-			if(perm.isGrantUnauthenticated()) {
-				return request;
-			}
-			// If request required authentication, let get the user
-			User user = null;
-			try {
-				user = request.getUserObject();
-			} catch (NoSuchUserException e) {
-				request.setDeniedResponse(new CommandResponse(500, "You are not authenticated"));
-			}
-			// And then check the permission
-			if (perm.check(user)) {
-				// it worked, you passed the test
-				return request;
-			}
-		} catch (UserFileException e) {
-			request.setDeniedResponse(new CommandResponse(500, "Your userfile is corrupted"));
-		}
-		request.setAllowed(false);
-		return request;
-	}
+    @CommandHook(commands = "*", type = HookType.PRE)
+    public CommandRequestInterface doPermissionCheck(CommandRequest request) {
+        // Every command need to enforce permissions
+        Permission perm = request.getPermission();
+        if (perm == null) {
+            request.setDeniedResponse(new CommandResponse(500, "Permissions are not configured for command " + request.getCommand()));
+            request.setAllowed(false);
+            return request;
+        }
+        User user = request.getSession().getUserNull(request.getUser());
+        // And then check the permission
+        if (perm.check(user)) {
+            // it worked, you passed the test
+            return request;
+        }
+        request.setDeniedResponse(new CommandResponse(500, "You are not allowed to do this"));
+        request.setAllowed(false);
+        return request;
+    }
 }
