@@ -44,10 +44,6 @@ public class Permission {
 		this(makeUsers(new StringTokenizer(permissionString)));
 	}
 
-	public boolean isGrantUnauthenticated() {
-        return _users.stream().filter(u -> u.equals("=unauthenticated")).collect(Collectors.toList()).size() > 0;
-    }
-
 	/**
 	 * Accepts 5 kinds of modifiers Authenticated users = * Non-authenticated
 	 * users = % Group = =<groupname> User = -<username> NOT = !<nextmodifier>
