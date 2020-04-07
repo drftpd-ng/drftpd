@@ -1,3 +1,13 @@
+==== 4.0
+* Java Plugin Framework has been removed and replaced by java reflections framework
+* Now compiles and runs on JDK14
+* Users groups are now seperate entities:
+  - Group admins are set on the group level and no longer on the user level
+  - To be a group admin it is no longer required for it to be the primary group
+  - group member slots / leech slots has been moved to the group object
+  - There was a notion of group ratio, which has been removed with this (pending review)
+  - User files from pre 4.0 need a conversion
+
 ==== 3.0
 The reasons it's 3.0 and not 2.1
 * Virtual file system is now not held in memory, but saved in ./files as XML files.
