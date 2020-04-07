@@ -162,8 +162,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doGenericAddUser(boolean isGAdduser, CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doGenericAddUser(boolean isGAdduser, CommandRequest request) throws ImproperUsageException {
 
         Session session = request.getSession();
 
@@ -1285,8 +1284,7 @@ public class UserManagementHandler extends CommandInterface {
         return response;
     }
 
-    public CommandResponse doSITE_READD(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_READD(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1299,7 +1297,7 @@ public class UserManagementHandler extends CommandInterface {
         User currentUser = session.getUserNull(request.getUser());
 
         try {
-            User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(requestedUsername);
+            User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(requestedUsername);
 
             boolean isGroupAdmin = GlobalContext.getGlobalContext().getUserManager().isGroupAdminOfUser(currentUser, requestedUser);
             boolean isAdmin = currentUser.isAdmin();
@@ -1325,8 +1323,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_RENUSER(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_RENUSER(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1357,8 +1354,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_SEEN(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_SEEN(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1425,8 +1421,7 @@ public class UserManagementHandler extends CommandInterface {
      *
      * @throws ImproperUsageException
      */
-    public CommandResponse doSITE_TAKE(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_TAKE(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1501,7 +1496,7 @@ public class UserManagementHandler extends CommandInterface {
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
         try {
-            User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(requestedUsername);
+            User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(requestedUsername);
 
             boolean isGroupAdmin = GlobalContext.getGlobalContext().getUserManager().isGroupAdminOfUser(currentUser, requestedUser);
             boolean isAdmin = currentUser.isAdmin();
@@ -1802,8 +1797,7 @@ public class UserManagementHandler extends CommandInterface {
         return doListConnections(request, "speed", true, true, true, false, false, false, true);
     }
 
-    public CommandResponse doSITE_BAN(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_BAN(CommandRequest request) throws ImproperUsageException {
 
         Session session = request.getSession();
         if (!request.hasArgument()) {
@@ -1855,8 +1849,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_BANALL(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_BANALL(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();
@@ -1896,8 +1889,7 @@ public class UserManagementHandler extends CommandInterface {
         return StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
     }
 
-    public CommandResponse doSITE_UNBAN(CommandRequest request)
-            throws ImproperUsageException {
+    public CommandResponse doSITE_UNBAN(CommandRequest request) throws ImproperUsageException {
 
         if (!request.hasArgument()) {
             throw new ImproperUsageException();

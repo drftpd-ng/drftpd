@@ -182,7 +182,7 @@ public abstract class AbstractUserManager implements UserManager {
 	public boolean isGroupAdminOfUser(User groupadminUser, User requestedUser) {
 		for (Group g : groupadminUser.getGroups()) {
 			if (g.isAdmin(groupadminUser)) {
-				if (requestedUser.isMemberOf((g.getName()))) {
+				if (requestedUser.isMemberOf(g.getName())) {
 					return true;
 				}
 			}
