@@ -1256,10 +1256,10 @@ public class UserManagementHandler extends CommandInterface {
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
         Map<String, Object> env = new HashMap<>();
-        env.put("targetgroup", delUsername);
+        env.put("targetuser", delUsername);
 
         try {
-            User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByName(delUsername);
+            User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(delUsername);
 
             boolean isGroupAdmin = GlobalContext.getGlobalContext().getUserManager().isGroupAdminOfUser(currentUser, requestedUser);
             boolean isAdmin = currentUser.isAdmin();
