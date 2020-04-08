@@ -208,17 +208,21 @@ public abstract class AbstractUserManager implements UserManager {
 	}
 
 	public Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser) {
-		List<Group> groups = new ArrayList<>();
-		for (Group g : requestedUser.getGroups()) {
+		List<Group> groups_admin = new ArrayList<>();
+
+		List<Group> groups = groupadminUser.getGroups();
+		groups.add(groupadminUser.getGroup());
+
+		for (Group g : groups) {
 			if (g.isAdmin(groupadminUser)) {
-				groups.add(g);
+				groups_admin.add(g);
 			}
 		}
 		// TODO: Think about if we could return more than one group here, but for now we only accept one group to match here
-		if (groups.size() == 1) {
-			return groups.get(0);
+		if (groups_admin.size() == 1) {
+			return groups_admin.get(0);
 		}
-		logger.debug("[getGroupByGroupAdminOfUser] We were unable to find a match between [user:" + requestedUser.getName() + "]'s groups and [user:" +groupadminUser.getName() + "] as group admin. Groups found are: [" + groups.size() + "]");
+		logger.debug("[getGroupByGroupAdminOfUser] We were unable to find a match between [user:" + requestedUser.getName() + "]'s groups and [user:" +groupadminUser.getName() + "] as group admin. Groups found are: [" + groups_admin.size() + "]");
 		return null;
 	}
 
