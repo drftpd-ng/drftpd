@@ -62,7 +62,7 @@ public abstract class CommandInterface {
 		Multimap<Integer, HookContainer> preHooks = MultimapBuilder.treeKeys().linkedListValues().build();
 		Set<Method> hooksMethods = GlobalContext.getHooksMethods();
 		// TODO [DONE] @JRI Plug hooks
-		logger.debug("[" +pluginName + ":" + method + "] Looking for hooks to attach here");
+		logger.debug("[" + pluginName + ":" + method + "] Looking for hooks to attach here");
 		try {
 			for (Method annotatedMethod : hooksMethods) {
 				Class<?> declaringClass = annotatedMethod.getDeclaringClass();
@@ -85,7 +85,7 @@ public abstract class CommandInterface {
 		} catch (Exception e) {
 			logger.error("Failed to load plugins for {} extension point 'PreHook', possibly the {} extension point definition has changed in the plugin.xml", pluginName, pluginName, e);
 		}
-		logger.debug("[" +pluginName + ":" + method + "] Loaded [" + preHooks.size() + "] prehooks and [" + postHooks.size() + "] posthooks");
+		logger.debug("[" + pluginName + ":" + method + "] Loaded [" + preHooks.size() + "] prehooks and [" + postHooks.size() + "] posthooks");
 		_preHooks = preHooks;
 		_postHooks = postHooks;
 	}
@@ -95,10 +95,9 @@ public abstract class CommandInterface {
 			Method m = hook.getMethod();
 			try {
 				m.invoke(hook.getHookInterfaceInstance(), request, response);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				// Not that important, this just means that this post hook failed and we'll just move onto the next one
-                logger.error("Error while loading/invoking posthook {}", m.toString(), e.getCause());
+				logger.error("Error while loading/invoking posthook {}", m.toString(), e.getCause());
 			}
 		}
 	}
@@ -108,11 +107,10 @@ public abstract class CommandInterface {
 		for (HookContainer hook : _preHooks.values()) {
 			Method m = hook.getMethod();
 			try {
-				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[] {request});
-			}
-			catch (Exception e) {
+				request = (CommandRequestInterface) m.invoke(hook.getHookInterfaceInstance(), new Object[]{request});
+			} catch (Exception e) {
 				// Not that important, this just means that this pre hook failed and we'll just move onto the next one
-                logger.error("Error while loading/invoking prehook {}", m.toString(), e.getCause());
+				logger.error("Error while loading/invoking prehook {}", m.toString(), e.getCause());
 			}
 		}
 		return request;
@@ -145,19 +143,19 @@ public abstract class CommandInterface {
 		try {
 			return targetUser.getGroup().equals(request.getUserObject().getGroup());
 		} catch (NoSuchUserException | UserFileException e) {
-			logger.warn("",e);
+			logger.warn("", e);
 			return false;
 		}
 	}
 
 	protected boolean checkCustomPermission(CommandRequest request, String permissionName,
-			String defaultPermission) {
-		String permissionString = request.getProperties().getProperty(permissionName,defaultPermission);
+	                                        String defaultPermission) {
+		String permissionString = request.getProperties().getProperty(permissionName, defaultPermission);
 		User user;
 		try {
 			user = request.getUserObject();
 		} catch (NoSuchUserException | UserFileException e) {
-			logger.warn("",e);
+			logger.warn("", e);
 			return false;
 		}
 		return new Permission(permissionString).check(user);

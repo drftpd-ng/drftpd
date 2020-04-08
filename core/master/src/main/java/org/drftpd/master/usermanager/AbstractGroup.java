@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * Implements basic functionality for the Group interface.
- * 
+ *
  * @author mikevg
  * @version $Id$
  */
@@ -60,7 +60,7 @@ public abstract class AbstractGroup extends Group implements Commitable {
 	public boolean equals(Object obj) {
 		if (!(obj instanceof Group))
 			return false;
-		
+
 		return ((Group) obj).getName().equals(getName());
 	}
 
@@ -74,8 +74,8 @@ public abstract class AbstractGroup extends Group implements Commitable {
 		for (String user : _admins) {
 			try {
 				admins.add(getUserManager().getUserByName(user));
-			} catch(NoSuchUserException | UserFileException e) {
-				logger.error("Unable to get user entity for user name "+user);
+			} catch (NoSuchUserException | UserFileException e) {
+				logger.error("Unable to get user entity for user name " + user);
 			}
 		}
 		return admins;
@@ -93,10 +93,10 @@ public abstract class AbstractGroup extends Group implements Commitable {
 			throw new DuplicateElementException("User is already an admin for that group");
 		}
 		_admins.add(u.getName());
-	  }
+	}
 
 	public void removeAdmin(User u) throws NoSuchFieldException {
-		if(!_admins.remove(u.getName())) {
+		if (!_admins.remove(u.getName())) {
 			throw new NoSuchFieldException("User is not an admin for that group");
 		}
 	}

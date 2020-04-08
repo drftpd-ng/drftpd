@@ -36,7 +36,7 @@ import java.util.List;
 
 /**
  * Implements basic functionality for the User interface.
- * 
+ *
  * @author <a href="mailto:rana_b@yahoo.com">Rana Bhattacharyya </a>
  * @author mog
  * @version $Id$
@@ -89,7 +89,7 @@ public abstract class AbstractUser extends User implements Commitable {
 	public boolean equals(Object obj) {
 		if (!(obj instanceof User))
 			return false;
-		
+
 		return ((User) obj).getName().equals(getName());
 	}
 
@@ -106,8 +106,8 @@ public abstract class AbstractUser extends User implements Commitable {
 		Group g = null;
 		try {
 			g = getUserManager().getGroupByName(_group);
-		} catch(NoSuchGroupException | GroupFileException e) {
-			logger.error("Unable to get group entity for group name "+_group);
+		} catch (NoSuchGroupException | GroupFileException e) {
+			logger.error("Unable to get group entity for group name " + _group);
 		}
 		return g;
 	}
@@ -117,8 +117,8 @@ public abstract class AbstractUser extends User implements Commitable {
 		for (String group : _groups) {
 			try {
 				groups.add(getUserManager().getGroupByName(group));
-			} catch(NoSuchGroupException | GroupFileException e) {
-				logger.error("Unable to get group entity for group name "+group);
+			} catch (NoSuchGroupException | GroupFileException e) {
+				logger.error("Unable to get group entity for group name " + group);
 			}
 		}
 		return groups;
@@ -212,7 +212,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		GlobalContext.getEventService().publish(new UserEvent(this, "RESETDAY", resetDate.getTime()));
 		super.resetDay(resetDate);
 		super.resetHour(resetDate);
-        logger.info("Reset daily stats for {}", getName());
+		logger.info("Reset daily stats for {}", getName());
 	}
 
 	public void resetMonth(Date resetDate) {
@@ -220,7 +220,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		super.resetMonth(resetDate);
 		super.resetDay(resetDate);
 		super.resetHour(resetDate);
-        logger.info("Reset monthly stats for {}", getName());
+		logger.info("Reset monthly stats for {}", getName());
 	}
 
 	public void resetWeek(Date resetDate) {
@@ -229,8 +229,8 @@ public abstract class AbstractUser extends User implements Commitable {
 		if (getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT) > 0) {
 			setCredits(getKeyedMap().getObjectLong(UserManagement.WKLY_ALLOTMENT));
 		}
-        logger.info("Reset weekly stats for {}", getName());
-	}	
+		logger.info("Reset weekly stats for {}", getName());
+	}
 
 	public void resetHour(Date resetDate) {
 		// do nothing for now
@@ -241,9 +241,9 @@ public abstract class AbstractUser extends User implements Commitable {
 		GlobalContext.getEventService().publish(new UserEvent(this, "RESETYEAR", resetDate.getTime()));
 		super.resetYear(resetDate);
 		super.resetMonth(resetDate);
-		super.resetDay(resetDate);	
+		super.resetDay(resetDate);
 		super.resetHour(resetDate);
-        logger.info("Reset Yearly stats for {}", getName());
+		logger.info("Reset Yearly stats for {}", getName());
 	}
 
 	public void setCredits(long credits) {
@@ -254,7 +254,7 @@ public abstract class AbstractUser extends User implements Commitable {
 		Group g;
 		try {
 			g = getUserManager().getGroupByName("deleted");
-		} catch(NoSuchGroupException e) {
+		} catch (NoSuchGroupException e) {
 			// This should normally not happen, but this part needs to be changed anyway, so we silently allow this and create the group here
 			try {
 				g = getUserManager().createGroup("deleted");
@@ -277,16 +277,19 @@ public abstract class AbstractUser extends User implements Commitable {
 				if (g2.isAdmin(this)) {
 					try {
 						g2.removeAdmin(this);
-					} catch(NoSuchFieldException ignored) {}
+					} catch (NoSuchFieldException ignored) {
+					}
 				}
 			}
 			try {
 				addSecondaryGroup(g);
-			} catch (DuplicateElementException ignored) {}
+			} catch (DuplicateElementException ignored) {
+			}
 		} else {
 			try {
 				removeSecondaryGroup(g);
-			} catch (NoSuchFieldException ignored) {}
+			} catch (NoSuchFieldException ignored) {
+			}
 		}
 	}
 

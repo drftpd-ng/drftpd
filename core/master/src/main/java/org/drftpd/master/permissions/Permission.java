@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
  * @version $Id$
  */
 public class Permission {
-    private static final Logger logger = LogManager.getLogger();
+	private static final Logger logger = LogManager.getLogger();
 
 	protected Collection<String> _users;
 
@@ -44,7 +44,7 @@ public class Permission {
 		this(users);
 		_invert = invert;
 	}
-	
+
 	public Permission(String permissionString) {
 		this(makeUsers(new StringTokenizer(permissionString)));
 	}
@@ -56,54 +56,56 @@ public class Permission {
 	 * Non-authenticated users
 	 * If no Permission line is given, this assumes !% is the last one
 	 * returns true if the User has permission
+	 *
 	 * @param user The User Object we need to check
 	 * @return true if the user is allowed, false otherwise
 	 */
 	public boolean check(User user) {
 		boolean allow = false;
 
-        for (String aclUser : _users) {
-            allow = true;
-            if (aclUser.charAt(0) == '!') {
-                allow = false;
-                aclUser = aclUser.substring(1);
-            }
-            if (aclUser.equals("%")) {
-                return allow;
-            } else if (aclUser.equals("*") && user != null) {
-                return allow;
-            } else if (aclUser.charAt(0) == '-') {
-                // USER
-                if (user == null) {
-                    continue;
-                }
-                if (aclUser.substring(1).equals(user.getName())) {
-                    return allow;
-                }
+		for (String aclUser : _users) {
+			logger.debug("[Permission::check] aclUser: [" + aclUser + "]");
+			allow = true;
+			if (aclUser.charAt(0) == '!') {
+				allow = false;
+				aclUser = aclUser.substring(1);
+			}
+			if (aclUser.equals("%")) {
+				return allow;
+			} else if (aclUser.equals("*") && user != null) {
+				return allow;
+			} else if (aclUser.charAt(0) == '-') {
+				// USER
+				if (user == null) {
+					continue;
+				}
+				if (aclUser.substring(1).equals(user.getName())) {
+					return allow;
+				}
 
-            } else if (aclUser.charAt(0) == '=') {
-                // GROUP
-                if (user == null) {
-                    continue;
-                }
-                // TODO: Monkey patch this so we can revisit this later when we fix =deleted, =siteop and =gadmin (maybe more?)
-                if (aclUser.equals("=gadmin")) {
-                    if (GlobalContext.getGlobalContext().getUserManager().isGroupAdmin(user)) {
-                    	return allow;
+			} else if (aclUser.charAt(0) == '=') {
+				// GROUP
+				if (user == null) {
+					continue;
+				}
+				// TODO: Monkey patch this so we can revisit this later when we fix =deleted, =siteop and =gadmin (maybe more?)
+				if (aclUser.equals("=gadmin")) {
+					if (GlobalContext.getGlobalContext().getUserManager().isGroupAdmin(user)) {
+						return allow;
 					}
-                } else if (user.isMemberOf(aclUser.substring(1))) {
-                    return allow;
-                }
-            } else {
-                // FLAG, we don't have flags
-                logger.error("Incorrect usage of perms string '" + aclUser + "' is unsupported");
-            }
-        }
+				} else if (user.isMemberOf(aclUser.substring(1))) {
+					return allow;
+				}
+			} else {
+				// FLAG, we don't have flags
+				logger.error("Incorrect usage of perms string '" + aclUser + "' is unsupported");
+			}
+		}
 
 		// didn't match..
 		return _invert && (!allow);
 	}
-	
+
 	public static ArrayList<String> makeUsers(Enumeration<Object> st) {
 		ArrayList<String> users = new ArrayList<>();
 
