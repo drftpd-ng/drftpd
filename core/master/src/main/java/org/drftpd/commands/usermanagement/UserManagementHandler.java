@@ -1492,6 +1492,7 @@ public class UserManagementHandler extends CommandInterface {
         Session session = request.getSession();
 
         User currentUser = session.getUserNull(request.getUser());
+        boolean isAdmin = currentUser.isAdmin();
 
         CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
 
@@ -1499,7 +1500,6 @@ public class UserManagementHandler extends CommandInterface {
             User requestedUser = GlobalContext.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(requestedUsername);
 
             boolean isGroupAdmin = GlobalContext.getGlobalContext().getUserManager().isGroupAdminOfUser(currentUser, requestedUser);
-            boolean isAdmin = currentUser.isAdmin();
             boolean isMyself = currentUser.equals(requestedUser);
 
             if (!isAdmin && !isGroupAdmin && !isMyself) {
@@ -1509,9 +1509,17 @@ public class UserManagementHandler extends CommandInterface {
             response.addComment(request.getSession().jprintf(_bundle, "user", requestedUser.getName()));
 
         } catch (NoSuchUserException ex) {
+            // Only global admins get the real error
+            if (!isAdmin) {
+                return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+            }
             response.setMessage("User " + request.getArgument() + " not found");
             return response;
         } catch (UserFileException ex) {
+            // Only global admins get the real error
+            if (!isAdmin) {
+                return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+            }
             return new CommandResponse(452, "Userfile error: " + ex.getMessage());
         }
 
