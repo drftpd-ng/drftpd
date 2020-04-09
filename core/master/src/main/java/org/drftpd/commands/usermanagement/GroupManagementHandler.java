@@ -527,17 +527,32 @@ public class GroupManagementHandler extends CommandInterface {
 
 		User currentUser = session.getUserNull(request.getUser());
 
-		Group g = session.getGroupNull(group);
-
-		if (g == null) {
-			throw new ImproperUsageException();
-		}
-
-		boolean isGroupAdmin = g.isAdmin(currentUser);
+		boolean isGroupAdmin = GlobalContext.getGlobalContext().getUserManager().isGroupAdmin(currentUser);
 		boolean isAdmin = currentUser.isAdmin();
 
+		// Disallow this command if these scenario's are not met
 		if (!isAdmin && !isGroupAdmin) {
 			return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+		}
+
+		// Get the group entity
+		Group g = session.getGroupNull(group);
+
+		// If the user is not an admin we check if he actually has rights
+		if (!isAdmin) {
+			// Group does not exist
+			if (g == null) {
+				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			}
+			// Group exists, but user is not an admin
+			if (!g.isAdmin(currentUser)) {
+				return StandardCommandManager.genericResponse("RESPONSE_530_ACCESS_DENIED");
+			}
+		}
+
+		// Group does not exist
+		if (g == null) {
+			throw new ImproperUsageException();
 		}
 
 		CommandResponse response = StandardCommandManager.genericResponse("RESPONSE_200_COMMAND_OK");
