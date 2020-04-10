@@ -104,7 +104,7 @@ public class GlobalContext {
 
     private static AsyncThreadSafeEventService eventService = new AsyncThreadSafeEventService();
 
-    private static Set<Method> _hooksMethods;
+    private static Set<Method> hooksMethods;
 
     public static final String VERSION = "DrFTPD v4";
 
@@ -117,14 +117,16 @@ public class GlobalContext {
      * you're not doing it correctly, GlobalContext is a Singleton
      */
     protected GlobalContext() {
-        Reflections reflections = new Reflections(new ConfigurationBuilder().setUrls(ClasspathHelper.forPackage("org.drftpd")).setScanners(new MethodAnnotationsScanner()));
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage("org.drftpd"))
+                .setScanners(new MethodAnnotationsScanner()));
 
-        _hooksMethods = reflections.getMethodsAnnotatedWith(CommandHook.class);
-        logger.debug("We have annotated (found) [" + _hooksMethods.size() + "] hook methods");
+        hooksMethods = reflections.getMethodsAnnotatedWith(CommandHook.class);
+        logger.debug("We have annotated (found) [" + hooksMethods.size() + "] hook methods");
     }
 
     public static Set<Method> getHooksMethods() {
-        return _hooksMethods;
+        return hooksMethods;
     }
 
     private void loadSlaveSelectionManager(Properties cfg) {
