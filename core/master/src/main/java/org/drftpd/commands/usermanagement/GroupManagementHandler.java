@@ -107,11 +107,20 @@ public class GroupManagementHandler extends CommandInterface {
 		env.put("targetgroup", newGroupname);
 
 		try {
+			Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("defaultgroup");
+
+			String minratio = cfg.getProperty("min_ratio", "3.0");
+			String maxratio = cfg.getProperty("max_ratio", "3.0");
+			float minratioVal = Float.parseFloat(minratio);
+			float maxratioVal = Float.parseFloat(maxratio);
+
 			Group newGroup = GlobalContext.getGlobalContext().getUserManager().createGroup(newGroupname);
 
 			newGroup.getKeyedMap().setObject(GroupManagement.CREATED, new Date());
 			newGroup.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
 			newGroup.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
+			newGroup.getKeyedMap().setObject(GroupManagement.MINRATIO, minratioVal);
+			newGroup.getKeyedMap().setObject(GroupManagement.MAXRATIO, maxratioVal);
 
 			logger.info("'{}' added group '{}'", request.getUser(), newGroup.getName());
 
@@ -352,9 +361,7 @@ public class GroupManagementHandler extends CommandInterface {
 			env.put("targetgroup", groupToChange.getName());
 
 			switch (command) {
-				//TODO: Figure out what this is used for?
-/*
-                case "ratio":
+				case "ratio":
                     // [# min] [# max]
                     if (commandArguments.length != 2) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
@@ -367,22 +374,20 @@ public class GroupManagementHandler extends CommandInterface {
                         env.put("minratio", "" + minRatio);
                         env.put("maxratio", "" + maxRatio);
 
-                        logger.info("'{}' changed gadmin min/max ratio for user '{}' group '{}' from '{}/{}' to '{}/{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getGroup(), userToChange.getMinRatio(), userToChange.getMaxRatio(), minRatio, maxRatio);
+                        logger.info("'{}' changed min/max ratio for group '{}' from '{}/{}' to '{}/{}'", currentUser.getName(), groupToChange.getName(), groupToChange.getMinRatio(), groupToChange.getMaxRatio(), minRatio, maxRatio);
 
                         if (minRatio < 1 || maxRatio < minRatio)
                             return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
 
-                        userToChange.setMinRatio(minRatio);
-                        userToChange.setMaxRatio(maxRatio);
+						groupToChange.setMinRatio(minRatio);
+						groupToChange.setMaxRatio(maxRatio);
 
-                        response.addComment(session.jprintf(_bundle,
-                                "changegadminratio.success", env, request.getUser()));
+                        response.addComment(session.jprintf(_bundle, "changegroup.ratio.success", env, request.getUser()));
 
                     } catch (NumberFormatException ex) {
                         return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
                     }
                     break;
-*/
 				case "slots":
 					try {
 						if (commandArguments.length != 1) {

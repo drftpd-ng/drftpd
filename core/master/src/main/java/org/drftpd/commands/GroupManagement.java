@@ -32,4 +32,8 @@ public class GroupManagement {
 
     public static final Key<Integer> LEECHSLOTS = new Key<>(GroupManagement.class, "leechslots");
 
+    public static final Key<Float> MINRATIO = new Key<>(GroupManagement.class, "minratio");
+
+    public static final Key<Float> MAXRATIO = new Key<>(GroupManagement.class, "maxratio");
+
 }

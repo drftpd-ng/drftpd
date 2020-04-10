@@ -56,4 +56,12 @@ public abstract class Group implements Entity {
 
 	public abstract void removeAdmin(User u) throws NoSuchFieldException;
 
+	public abstract float getMinRatio();
+
+	public abstract float getMaxRatio();
+
+	public abstract void setMinRatio(float minRatio);
+
+	public abstract void setMaxRatio(float MaxRatio);
+
 }

@@ -340,22 +340,6 @@ public abstract class AbstractUser extends User implements Commitable {
 		getKeyedMap().setObject(UserManagement.MAXSIMUP, maxSimUp);
 	}
 
-	public float getMinRatio() {
-		return getKeyedMap().getObject(UserManagement.MINRATIO, 3F);
-	}
-
-	public void setMinRatio(float minRatio) {
-		getKeyedMap().setObject(UserManagement.MINRATIO, minRatio);
-	}
-
-	public float getMaxRatio() {
-		return getKeyedMap().getObject(UserManagement.MAXRATIO, 3F);
-	}
-
-	public void setMaxRatio(float maxRatio) {
-		getKeyedMap().setObject(UserManagement.MAXRATIO, maxRatio);
-	}
-
 	public int getMaxSimDown() {
 		return getKeyedMap().getObjectInteger(UserManagement.MAXSIMDN);
 	}

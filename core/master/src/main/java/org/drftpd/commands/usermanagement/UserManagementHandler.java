@@ -222,8 +222,6 @@ public class UserManagementHandler extends CommandInterface {
             Properties cfg = GlobalContext.getGlobalContext().getPluginsConfig().getPropertiesForPlugin("defaultuser");
 
             String ratio = cfg.getProperty("ratio", "3.0");
-            String minratio = cfg.getProperty("min_ratio", "3.0");
-            String maxratio = cfg.getProperty("max_ratio", "3.0");
             String maxlogins = cfg.getProperty("max_logins", "2");
             String maxloginsip = cfg.getProperty("max_logins_ip", "2");
             String maxsimup = cfg.getProperty("max_uploads", "2");
@@ -232,11 +230,8 @@ public class UserManagementHandler extends CommandInterface {
             String wklyallot = cfg.getProperty("wkly_allotment", "0");
             String credits = cfg.getProperty("credits", "0b");
             String tagline = cfg.getProperty("tagline", "No tagline set.");
-            // String group = cfg.getProperty("group", "nogroup"); // TODO: Remove this as it is no longer used
 
             float ratioVal = Float.parseFloat(ratio);
-            float minratioVal = Float.parseFloat(minratio);
-            float maxratioVal = Float.parseFloat(maxratio);
             int maxloginsVal = Integer.parseInt(maxlogins);
             int maxloginsipVal = Integer.parseInt(maxloginsip);
             int maxsimupVal = Integer.parseInt(maxsimup);
@@ -245,7 +240,6 @@ public class UserManagementHandler extends CommandInterface {
             long creditsVal = Bytes.parseBytes(credits);
             long wklyallotVal = Bytes.parseBytes(wklyallot);
 
-
             // action, no more NoSuchElementException below here
             newUser = GlobalContext.getGlobalContext().getUserManager().createUser(newUsername);
 
@@ -253,9 +247,7 @@ public class UserManagementHandler extends CommandInterface {
             newUser.getKeyedMap().setObject(UserManagement.CREATED, new Date());
             newUser.getKeyedMap().setObject(UserManagement.LASTSEEN, new Date());
             newUser.getKeyedMap().setObject(UserManagement.BAN_TIME, new Date());
-            newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Added by " + session.getUserNull(request.getUser()).getName());
-            newUser.getKeyedMap().setObject(UserManagement.MINRATIO, minratioVal);
-            newUser.getKeyedMap().setObject(UserManagement.MAXRATIO, maxratioVal);
+            newUser.getKeyedMap().setObject(UserManagement.COMMENT, "Added by " + currentUser.getName());
 
             // TODO fix this.
             //newUser.getKeyedMap().setObject(Statistics.LOGINS,0);
@@ -534,9 +526,9 @@ public class UserManagementHandler extends CommandInterface {
                             if (usedleechslots >= g.getKeyedMap().getObjectInteger(GroupManagement.LEECHSLOTS)) {
                                 return new CommandResponse(452, session.jprintf(_bundle, "changeratio.nomoreslots", request.getUser()));
                             }
-                        } else if (ratio < currentUser.getMinRatio() || ratio > currentUser.getMaxRatio()) {
-                            env.put("minratio", currentUser.getMinRatio());
-                            env.put("maxratio", currentUser.getMaxRatio());
+                        } else if (ratio < g.getMinRatio() || ratio > g.getMaxRatio()) {
+                            env.put("minratio", g.getMinRatio());
+                            env.put("maxratio", g.getMaxRatio());
                             return new CommandResponse(452, session.jprintf(_bundle, "changeratio.invalidratio", env, request.getUser()));
                         }
 
@@ -632,34 +624,6 @@ public class UserManagementHandler extends CommandInterface {
                     // } else if ("max_ulspeed".equals(command)) {
                     // myUser.setMaxUploadRate(Integer.parseInt(commandArgument));
                     break;
-                case "group_ratio":
-                    // [# min] [# max]
-                    if (commandArguments.length != 2) {
-                        return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                    }
-
-                    try {
-                        float minRatio = Float.parseFloat(commandArguments[0]);
-                        float maxRatio = Float.parseFloat(commandArguments[1]);
-
-                        env.put("minratio", "" + minRatio);
-                        env.put("maxratio", "" + maxRatio);
-
-                        logger.info("'{}' changed gadmin min/max ratio for user '{}' group '{}' from '{}/{}' to '{}/{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getGroup(), userToChange.getMinRatio(), userToChange.getMaxRatio(), minRatio, maxRatio);
-
-                        if (minRatio < 1 || maxRatio < minRatio)
-                            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-
-                        userToChange.setMinRatio(minRatio);
-                        userToChange.setMaxRatio(maxRatio);
-
-                        response.addComment(session.jprintf(_bundle,
-                                "changegadminratio.success", env, request.getUser()));
-
-                    } catch (NumberFormatException ex) {
-                        return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                    }
-                    break;
                 case "max_sim":
                     // [# DN] [# UP]
 
@@ -708,48 +672,7 @@ public class UserManagementHandler extends CommandInterface {
                     env.put("primgroup", userToChange.getGroup().getName());
                     response.addComment(session.jprintf(_bundle,"changeprimgroup.success", env, request.getUser()));
 
-                    // group_slots Number of users a GADMIN is allowed to add.
-                    // If you specify a second argument, it will be the
-                    // number of leech accounts the gadmin can give (done by
-                    // "site change user ratio 0") (2nd arg = leech slots)
                     break;
-/* Moving to grpchange
-                case "group_slots":
-                    try {
-                        if ((commandArguments.length < 1)
-                                || (commandArguments.length > 2)) {
-                            return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                        }
-
-                        int groupSlots = Short.parseShort(commandArguments[0]);
-                        int groupLeechSlots;
-
-                        if (commandArguments.length >= 2) {
-                            groupLeechSlots = Integer.parseInt(commandArguments[1]);
-                        } else {
-                            groupLeechSlots = userToChange.getKeyedMap().getObjectInteger(UserManagement.LEECHSLOTS);
-                        }
-
-                        logger.info("'{}' changed group_slots for '{}' from '{}' {}' to '{}' '{}'", session.getUserNull(request.getUser()).getName(), userToChange.getName(), userToChange.getKeyedMap().getObjectInteger(
-                                UserManagement.GROUPSLOTS), userToChange.getKeyedMap().getObjectInteger(
-                                UserManagement.LEECHSLOTS), groupSlots, groupLeechSlots);
-                        userToChange.getKeyedMap().setObject(UserManagement.GROUPSLOTS,
-                                groupSlots);
-                        userToChange.getKeyedMap().setObject(UserManagement.LEECHSLOTS,
-                                groupLeechSlots);
-                        env.put("groupslots", ""
-                                + userToChange.getKeyedMap().getObjectInteger(
-                                UserManagement.GROUPSLOTS));
-                        env.put("groupleechslots", ""
-                                + userToChange.getKeyedMap().getObjectInteger(
-                                UserManagement.LEECHSLOTS));
-                        response.addComment(session.jprintf(_bundle,
-                                "changegroupslots.success", env, request.getUser()));
-                    } catch (NumberFormatException ex) {
-                        return StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
-                    }
-                    break;
-*/
                 case "created":
                     Date myDate;
 

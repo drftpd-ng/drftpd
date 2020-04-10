@@ -46,11 +46,11 @@ changenumlogins.success=${color}15${bold}CHANGE${coloroff}: Changed max logins t
 changegroupslots.success=${color}15${bold}CHANGE${coloroff}: Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
 changemaxsim.success=${color}15${bold}CHANGE${coloroff}: Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
 changeuser.created.success=${color}15${bold}CHANGEUSER${coloroff}: Reset creation time for ${targetuser}
-changegadminratio.success=${color}15${bold}CHANGE${coloroff}: Changed gadmin min/max ratio to ${minratio}/${maxratio}
 
 changegroup.slots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group slots to ${groupslots}
 changegroup.leechslots.success=${color}15${bold}CHANGEGROUP${coloroff}: Changed group leech slots to ${leechslots}
 changegroup.created.success=${color}15${bold}CHANGEGROUP${coloroff}: Reset creation time for ${targetgroup}
+changegroup.ratio.success=${color}15${bold}CHANGE${coloroff}: Changed group min/max ratio to ${minratio}/${maxratio}
 
 changegroupadmin.bad.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} does not exist
 changegroupadmin.add.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} added as group admin to ${targetgroup}

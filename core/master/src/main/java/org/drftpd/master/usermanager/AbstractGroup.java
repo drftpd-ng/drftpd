@@ -133,4 +133,21 @@ public abstract class AbstractGroup extends Group implements Commitable {
 	}
 
 	public abstract void writeToDisk() throws IOException;
+
+	public float getMinRatio() {
+		return getKeyedMap().getObject(GroupManagement.MINRATIO, 3F);
+	}
+
+	public void setMinRatio(float minRatio) {
+		getKeyedMap().setObject(GroupManagement.MINRATIO, minRatio);
+	}
+
+	public float getMaxRatio() {
+		return getKeyedMap().getObject(GroupManagement.MAXRATIO, 3F);
+	}
+
+	public void setMaxRatio(float maxRatio) {
+		getKeyedMap().setObject(GroupManagement.MAXRATIO, maxRatio);
+	}
+
 }

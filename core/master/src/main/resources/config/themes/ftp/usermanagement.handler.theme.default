@@ -25,11 +25,11 @@ changeprimgroup.success=Changed primary group to ${primgroup}
 changenumlogins.success=Changed max logins to ${numlogins} and from same IP to ${numloginsip}
 changemaxsim.success=Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
 changeuser.created.success=Reset creation time for ${targetuser}
-changegadminratio.success=Changed gadmin min/max ratio to ${minratio}/${maxratio}
 
 changegroup.slots.success=Changed group slots to ${groupslots}
 changegroup.leechslots.success=Changed group leech slots to ${leechslots}
 changegroup.created.success=Reset creation time for ${targetgroup}
+changegroup.ratio.success=Changed gorup min/max ratio to ${minratio}/${maxratio}
 
 changegroupadmin.bad.user=User ${targetuser} does not exist
 changegroupadmin.add.user=User ${targetuser} added as group admin to ${targetgroup}

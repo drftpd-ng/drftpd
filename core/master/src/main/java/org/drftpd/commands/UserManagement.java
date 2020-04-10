@@ -45,10 +45,6 @@ public class UserManagement {
 
 	public static final Key<Integer> MAXLOGINSIP = new Key<>(UserManagement.class, "maxloginsip");
 
-	public static final Key<Float> MINRATIO = new Key<>(UserManagement.class, "minratio");
-
-	public static final Key<Float> MAXRATIO = new Key<>(UserManagement.class, "maxratio");
-
 	public static final Key<Integer> MAXSIMUP = new Key<>(UserManagement.class, "maxsimup");
 
 	public static final Key<Integer> MAXSIMDN = new Key<>(UserManagement.class, "maxsimdn");

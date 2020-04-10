@@ -130,12 +130,4 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	public abstract int getMaxSimDown();
 
 	public abstract int getMaxSimUp();
-
-	public abstract float getMinRatio();
-
-	public abstract float getMaxRatio();
-
-	public abstract void setMinRatio(float minRatio);
-
-	public abstract void setMaxRatio(float MaxRatio);
 }
