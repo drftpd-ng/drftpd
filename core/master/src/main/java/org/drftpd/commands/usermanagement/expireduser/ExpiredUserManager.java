@@ -83,19 +83,23 @@ public class ExpiredUserManager implements UserResetHookInterface {
 				} catch (NoSuchGroupException e) {
 					logger.warn("[doExpired] Tried to chgrp to a unknown group: {}", group);
 				} catch (GroupFileException e) {
-					logger.warn("There was an error reading the group file for {} while trying to use chgrp", group, e);
+					logger.warn("[doExpired] There was an error reading the group file for {} while trying to use chgrp", group, e);
 				}
 			}
 		}
 		
 		if (!_setgrp.isEmpty()) {
 			String[] groups = _setgrp.split(" ");
+			// We can only set 1 primary group on a user, log a warning if there is more than one group specified here
+			if (groups.length != 1) {
+				logger.warn("[doExpired] We can only set one primary group per user, but found more than one, ignoring others");
+			}
 			try {
 				user.setGroup(user.getUserManager().getGroupByName(groups[0]));
 			} catch (NoSuchGroupException e) {
 				logger.warn("[doExpired] Tried to setgrp to a unknown group: {}", groups[0]);
 			} catch (GroupFileException e) {
-				logger.warn("There was an error reading the group file for {} while trying to use chgrp", groups[0], e);
+				logger.warn("[doExpired] There was an error reading the group file for {} while trying to use chgrp", groups[0], e);
 			}
 		}		
 		user.commit();
