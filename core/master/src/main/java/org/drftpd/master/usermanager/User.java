@@ -35,27 +35,22 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 
 	public abstract void addAllMasks(HostMaskCollection hostMaskCollection);
 
-	public abstract void addIPMask(String mask)
-			throws DuplicateElementException;
+	public abstract void addIPMask(String mask) throws DuplicateElementException;
 
-	public abstract void addSecondaryGroup(String group)
-			throws DuplicateElementException;
+	public abstract void addSecondaryGroup(Group g) throws DuplicateElementException;
 
 	public abstract boolean checkPassword(String password);
 
 	/**
 	 * Commit changes.
-	 * 
-	 * @throws UserFileException
-	 *             if an error saving the userfile occured.
 	 */
 	public abstract void commit();
 
 	public abstract long getCredits();
 
-	public abstract String getGroup();
+	public abstract Group getGroup();
 
-	public abstract List<String> getGroups();
+	public abstract List<Group> getGroups();
 
 	public abstract HostMaskCollection getHostMaskCollection();
 
@@ -65,39 +60,6 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	 * @return int
 	 */
 	public abstract int getIdleTime();
-
-	// /**
-	// * Returns the nukedBytes.
-	// *
-	// * @return long
-	// */
-	// public abstract long getNukedBytes();
-	// public abstract int getRacesLost();
-	//
-	// public abstract int getRacesParticipated();
-	// /**
-	// * Returns the downloadedSecondsWeek.
-	// *
-	// * @return int
-	// */
-	// public abstract int getRacesWon();
-
-	/**
-	 * Returns the ratio.
-	 * 
-	 * @return float
-	 */
-
-	// public abstract float getRatio();
-	// public abstract int getRequests();
-	//
-	// public abstract int getRequestsFilled();
-	// /**
-	// * Returns the nuked.
-	// *
-	// * @return int
-	// */
-	// public abstract int getTimesNuked();
 
 	public abstract String getName();
 
@@ -110,26 +72,15 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	 */
 	public abstract boolean isDeleted();
 
-	public abstract boolean isExempt();
-
-	public abstract boolean isGroupAdmin();
-
 	public abstract boolean isMemberOf(String group);
-
-	/**
-	 * User logout
-	 */
-	public abstract void logout();
 
 	public abstract void purge();
 
 	public abstract void removeIpMask(String mask) throws NoSuchFieldException;
 
-	public abstract void removeSecondaryGroup(String group)
-			throws NoSuchFieldException;
+	public abstract void removeSecondaryGroup(Group g) throws NoSuchFieldException;
 
-	public abstract void rename(String username) throws UserExistsException,
-			UserFileException;
+	public abstract void rename(String username) throws UserExistsException, UserFileException;
 
 	/**
 	 * Sets the credits.
@@ -147,9 +98,9 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	 */
 	public abstract void setDeleted(boolean deleted);
 
-	public abstract void setGroup(String group);
+	public abstract void setGroup(Group g);
 	
-	public abstract void toggleGroup(String string);
+	public abstract void toggleGroup(Group g);
 
 	public abstract void updateCredits(long credits);
 
@@ -163,8 +114,6 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 
 	public abstract void setPassword(String password);
 
-	// public abstract void setTimesNuked(int nuked);
-	
 	/**
 	 * Hit user - update last access time
 	 */
@@ -181,12 +130,4 @@ public abstract class User extends ExtendedTimedStats implements Entity {
 	public abstract int getMaxSimDown();
 
 	public abstract int getMaxSimUp();
-
-	public abstract float getMinRatio();
-
-	public abstract float getMaxRatio();
-
-	public abstract void setMinRatio(float minRatio);
-
-	public abstract void setMaxRatio(float MaxRatio);
 }

@@ -23,62 +23,91 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.usermanager.AbstractUserManager;
+import org.drftpd.master.usermanager.Group;
+import org.drftpd.master.usermanager.GroupFileException;
 import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.NoSuchGroupException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.slave.exceptions.FileExistsException;
 
-import java.beans.XMLDecoder;
 import java.io.*;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
 /**
  * This is a new usermanager that after recommendation from captain- serializes
  * user data using javabeans XMLSerialize.
  * 
  * @author mog
+ * @author mikevg
  * @version $Id$
  */
 public class BeanUserManager extends AbstractUserManager {
 
 	private static final String _userpath = "userdata/users/javabeans/";
+	private static final String _grouppath = "userdata/groups/javabeans/";
 	private static final File _userpathFile = new File(_userpath);
+	private static final File _grouppathFile = new File(_grouppath);
 
 	protected static final Logger logger = LogManager.getLogger(BeanUserManager.class);
 
 	/**
 	 * Creates a user named 'username' and adds it to the users map.
 	 */
-	protected synchronized User createUser(String username) {
+	protected synchronized User createUserImpl(String username) {
 		BeanUser buser = new BeanUser(this, username);
 		_users.put(username, new SoftReference<>(buser));
 		return buser;
 	}
 
 	/**
-	 * UserManager initializer.
-	 * @throws UserFileException
+	 * Creates a group named 'groupname' and adds it to the groups map.
 	 */
-	public void init() throws UserFileException {
+	protected synchronized Group createGroupImpl(String groupname) {
+		BeanGroup bgroup = new BeanGroup(this, groupname);
+		_groups.put(groupname, new SoftReference<>(bgroup));
+		return bgroup;
+	}
+
+	/**
+	 * UserManager initializer.
+	 * @throws UserFileException If the user files locations has an error
+	 * @throws GroupFileException If the group files locations has an error
+	 */
+	public void init() throws UserFileException, GroupFileException {
 		super.init();
-		if (!getUserpathFile().exists() && !getUserpathFile().mkdirs()) {
-			throw new UserFileException(new IOException(
-					"Error creating directories: " + getUserpathFile()));
+
+		File userpath = getUserpathFile();
+		File grouppath = getGrouppathFile();
+
+		if (!userpath.exists() && !userpath.mkdirs()) {
+			throw new UserFileException(new IOException("Error creating directories: " + getUserpathFile()));
+		}
+		if (!grouppath.exists() && !grouppath.mkdirs()) {
+			throw new GroupFileException(new IOException("Error creating directories: " + getGrouppathFile()));
 		}
 		
 		_users = new HashMap<>();
-		
+		_groups = new HashMap<>();
+
 		logger.debug("Creating users map...");
-		for (String filename : getUserpathFile().list()) {
+		for (String filename : Objects.requireNonNull(userpath.list())) {
 			if (filename.endsWith(".xml") || filename.endsWith(".json")) {
 				String username = filename.substring(0, filename.lastIndexOf('.'));
 				_users.put(username, null); // the user exists, loading it is useless right now.
 			}
 		}
 		
+		logger.debug("Creating groups map...");
+		for (String filename : Objects.requireNonNull(grouppath.list())) {
+			if (filename.endsWith(".xml") || filename.endsWith(".json")) {
+				String groupname = filename.substring(0, filename.lastIndexOf('.'));
+				_groups.put(groupname, null); // the group exists, loading it is useless right now.
+			}
+		}
+
+		// This also creates the group
 		if (_users.size() == 0) {
 			createSiteopUser();
 		}
@@ -91,8 +120,7 @@ public class BeanUserManager extends AbstractUserManager {
 	 * @throws NoSuchUserException, if there's no such user w/ this Username.
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
-	public User getUserByNameUnchecked(String username)
-	throws NoSuchUserException, UserFileException {
+	public User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException {
 		try {
 			return getUserFromSoftReference(username);
 		} catch (Exception ex) {
@@ -104,56 +132,57 @@ public class BeanUserManager extends AbstractUserManager {
 	}
 
 	/**
+	 * Tries to find a group in the Map that matches the 'groupname'.
+	 * This method does not care about if the group exists or not,
+	 * it simply tries to find it.
+	 * @throws NoSuchGroupException, if there's no such group w/ this Groupname.
+	 * @throws GroupFileException, if an error (i/o) occured while loading data.
+	 */
+	public Group getGroupByNameUnchecked(String groupname) throws NoSuchGroupException, GroupFileException {
+		try {
+			return getGroupFromSoftReference(groupname);
+		} catch (Exception ex) {
+			if (ex instanceof NoSuchGroupException) {
+				throw (NoSuchGroupException) ex;
+			}
+			throw new GroupFileException("Error loading " + groupname, ex);
+		}
+	}
+
+	/**
+	 * Lowest level method for loading a Group object.
+	 * @param groupName The group name to load
+	 * @throws GroupFileException, if an error (i/o) occured while loading data.
+	 */
+	protected Group loadGroup(String groupName) throws GroupFileException {
+		try (InputStream in = new FileInputStream(getGroupFile(groupName));
+			 JsonReader reader = new JsonReader(in)) {
+			logger.debug("Loading '{}' Json group data from disk.", groupName);
+			BeanGroup group = (BeanGroup) reader.readObject();
+			group.setUserManager(this);
+			return group;
+		} catch (Exception e) {
+			throw new GroupFileException("Error loading " + groupName, e);
+		}
+	}
+
+	/**
 	 * Lowest level method for loading a User object.
-	 * @param userName
-	 * @throws NoSuchUserException, if there's no such user w/ this Username.
-	 * Meaning that the userfile does not exists.
+	 * @param userName The user name to load
 	 * @throws UserFileException, if an error (i/o) occured while loading data.
 	 */
-	protected User loadUser(String userName) throws NoSuchUserException, UserFileException {
+	protected User loadUser(String userName) throws UserFileException {
 		try (InputStream in = new FileInputStream(getUserFile(userName));
 			 JsonReader reader = new JsonReader(in)) {
-            logger.debug("Loading '{}' Json data from disk.", userName);
+			logger.debug("Loading '{}' Json user data from disk.", userName);
 			BeanUser user = (BeanUser) reader.readObject();
 			user.setUserManager(this);
 			return user;
-		} catch (FileNotFoundException e) {
-			// Lets see if there is a legacy xml user file to load
-			return loadXMLUser(userName);
 		} catch (Exception e) {
 			throw new UserFileException("Error loading " + userName, e);
 		}
 	}
 
-	/**
-	 * Legacy XML loader used to convert users to json schema.
-	 * @param userName
-	 * @throws NoSuchUserException, if there's no such user w/ this Username.
-	 * Meaning that the userfile does not exists.
-	 * @throws UserFileException, if an error (i/o) occured while loading data.
-	 */
-	private User loadXMLUser(String userName) throws NoSuchUserException, UserFileException {
-		File xmlUserFile = getXMLUserFile(userName);
-		try (XMLDecoder xd = new XMLDecoder(new BufferedInputStream(new FileInputStream(xmlUserFile)))) {
-			BeanUser user;
-            logger.debug("Loading '{}' XML data from disk.", userName);
-			ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
-			user = (BeanUser) xd.readObject();
-			Thread.currentThread().setContextClassLoader(prevCL);
-			user.setUserManager(this);
-			// Commit new json userfile and delete old xml
-			user.commit();
-			if (!xmlUserFile.delete()) {
-                logger.error("Failed to delete old xml userfile: {}", xmlUserFile.getName());
-			}
-			return user;
-		} catch (FileNotFoundException e) {
-			throw new NoSuchUserException("No such user: '"+userName+"'", e);
-		} catch (Exception e) {
-			throw new UserFileException("Error loading " + userName, e);
-		}
-	}
-	
 	/**
 	 * This methods fetches the SoftReference from the users map
 	 * and checks if it still holds a reference to a User object.<br>
@@ -161,13 +190,13 @@ public class BeanUserManager extends AbstractUserManager {
 	 * User data from the disk and return it.
 	 * @param name, the username.
 	 * @return a User object.
-	 * @throws NoSuchUserException, if not such file containing use data was found,
+	 * @throws NoSuchUserException, if no such file containing use data was found,
 	 * so the user does not exist.
 	 * @throws UserFileException, if an error (i/o) occurs during the load. 
 	 */
 	private synchronized User getUserFromSoftReference(String name)
 			throws NoSuchUserException, UserFileException {
-		if (!_users.keySet().contains(name)) {
+		if (!_users.containsKey(name)) {
 			throw new NoSuchUserException("No such user found: " + name);
 		}
 		SoftReference<User> sf = _users.get(name);
@@ -181,6 +210,35 @@ public class BeanUserManager extends AbstractUserManager {
 			_users.put(name, new SoftReference<>(u));
 		}
 		return u;
+	}
+	
+	/**
+	 * This methods fetches the SoftReference from the groups map
+	 * and checks if it still holds a reference to a Group object.<br>
+	 * If it does return the object, if not it tries to load the
+	 * Group data from the disk and return it.
+	 * @param name, the groupname.
+	 * @return a Group object.
+	 * @throws NoSuchGroupException, if no such file containing use data was found,
+	 * so the group does not exist.
+	 * @throws GroupFileException, if an error (i/o) occurs during the load. 
+	 */
+	private synchronized Group getGroupFromSoftReference(String name)
+			throws NoSuchGroupException, GroupFileException {
+		if (!_groups.containsKey(name)) {
+			throw new NoSuchGroupException("No such group found: " + name);
+		}
+		SoftReference<Group> sf = _groups.get(name);
+		Group g = null;
+		if (sf != null) {
+			g = sf.get();
+		}
+		if (g == null) {
+			// group object was garbage collected or was never loaded
+			g = loadGroup(name);
+			_groups.put(name, new SoftReference<>(g));
+		}
+		return g;
 	}
 	
 	/**
@@ -210,13 +268,44 @@ public class BeanUserManager extends AbstractUserManager {
 	}
 	
 	/**
-	 * Testing routine.
-	 * @param args
-	 * @throws UserFileException
+	 * List all groups.<br>
+	 * If some of the Group objects are not loaded, they will be loaded and
+	 * saved in the memory for future usage, but they still subject to
+	 * GarbageColector.
 	 */
-	public static void main(String args[]) throws UserFileException {
+	public synchronized Collection<Group> getAllGroups() {
+		ArrayList<Group> groups = new ArrayList<>(_groups.size());
+		for (Iterator<String> iter = _groups.keySet().iterator(); iter.hasNext();) {
+			String name = iter.next();
+			try {
+				Group g = getGroupFromSoftReference(name);
+				groups.add(g);
+				_groups.put(name, new SoftReference<>(g));
+			} catch (NoSuchGroupException e) {
+        logger.error("{} data wasnt found in the disk! How come the group is in the Map and does not have a groupfile?! Deleting it.", name);
+				iter.remove();
+				// nothing else to do, user wasnt loaded properly.
+			} catch (GroupFileException e) {
+        logger.error("Error loading {}", name, e);
+				// nothing else to do, an error ocurred while loading data.
+			}
+		}
+		return groups;
+	}
+	
+	/**
+	 * Testing routine.
+	 * @param args Command line arguments
+	 * @throws UserFileException There is a problem with the user file
+	 * @throws GroupFileException There is a problem with the user file
+	 * @throws FileExistsException The files already exist
+	 */
+	public static void main(String[] args) throws UserFileException, GroupFileException, FileExistsException {
 		BeanUserManager bu = new BeanUserManager();
+    	Group g = bu.createGroup("drftpd");
+    	g.commit();
 		User u = bu.createUser("drftpd");
+    	u.setGroup(g);
 		u.commit();
 	}
 
@@ -224,11 +313,15 @@ public class BeanUserManager extends AbstractUserManager {
 		return _userpathFile;
 	}	
 
+	protected final File getGrouppathFile() {
+		return _grouppathFile;
+	}	
+
 	protected final File getUserFile(String username) {
 		return new File(_userpath + username + ".json");
 	}
 
-	private File getXMLUserFile(String username) {
-		return new File(_userpath + username + ".xml");
+	protected final File getGroupFile(String groupname) {
+		return new File(_grouppath + groupname + ".json");
 	}
 }

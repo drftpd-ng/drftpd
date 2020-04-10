@@ -844,7 +844,7 @@ public class DirectoryHandle extends InodeHandle implements
 			throw new PermissionDeniedException("You are not allowed to create a directory at "+ newDir.getParent());
 		}
 		
-		return createDirectoryUnchecked(name, user.getName(), user.getGroup());
+		return createDirectoryUnchecked(name, user.getName(), user.getGroup().getName());
 	}
 
 	/**
@@ -913,7 +913,7 @@ public class DirectoryHandle extends InodeHandle implements
 			throw new PermissionDeniedException("You are not allowed to upload to "+ getPath());
 		}
 		
-		return createFileUnchecked(name, user.getName(), user.getGroup(), initialSlave);
+		return createFileUnchecked(name, user.getName(), user.getGroup().getName(), initialSlave);
 	}
 
 	/**
@@ -949,7 +949,7 @@ public class DirectoryHandle extends InodeHandle implements
 			throw new PermissionDeniedException("Impossible to point a link to a link");
 		}
 		
-		return createLinkUnchecked(name, target, user.getName(), user.getGroup());	
+		return createLinkUnchecked(name, target, user.getName(), user.getGroup().getName());
 	}
 
 	public boolean isRoot() {

@@ -16,9 +16,12 @@
  */
 package org.drftpd.master.usermanager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
+import org.drftpd.commands.GroupManagement;
 import org.drftpd.commands.UserManagement;
 import org.drftpd.master.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.common.exceptions.DuplicateElementException;
@@ -28,10 +31,7 @@ import org.drftpd.slave.exceptions.FileExistsException;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * This is the base class of all the user manager classes. If we want to add a
@@ -41,13 +41,16 @@ import java.util.HashMap;
  * @version $Id$
  */
 public abstract class AbstractUserManager implements UserManager {
+	private static final Logger logger = LogManager.getLogger(AbstractUserManager.class);
+
 	protected HashMap<String, SoftReference<User>> _users;
+	protected HashMap<String, SoftReference<Group>> _groups;
 
 	private ArrayList<UserResetHookInterface> _preResetHooks = new ArrayList<>();
 
 	private ArrayList<UserResetHookInterface> _postResetHooks = new ArrayList<>();
 
-	public void init() throws UserFileException {
+	public void init() throws UserFileException, GroupFileException {
 		// Subscribe to events
 		AnnotationProcessor.process(this);
 		loadResetHooks();
@@ -56,12 +59,14 @@ public abstract class AbstractUserManager implements UserManager {
 	protected abstract File getUserpathFile();
 
 	protected void createSiteopUser() {
-		User user = createUser("drftpd");
-		user.setGroup("drftpd");
+		Group group = createGroupImpl("drftpd");
+		group.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
+		group.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
+		group.commit();
+		User user = createUserImpl("drftpd");
+		user.setGroup(group);
 		user.setPassword("drftpd");
 		user.getKeyedMap().setObject(UserManagement.RATIO, (float) 0);
-		user.getKeyedMap().setObject(UserManagement.GROUPSLOTS, 0);
-		user.getKeyedMap().setObject(UserManagement.LEECHSLOTS, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXLOGINS, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXLOGINSIP, 0);
 		user.getKeyedMap().setObject(UserManagement.MAXSIMUP, 0);
@@ -80,18 +85,22 @@ public abstract class AbstractUserManager implements UserManager {
 		try {
 			user.addIPMask("*@127.0.0.1");
 			user.addIPMask("*@0:0:0:0:0:0:0:1");
-		} catch (DuplicateElementException e) {
+		} catch (DuplicateElementException ignored) {
 		}
 
 		try {
-			user.addSecondaryGroup("siteop");
-		} catch (DuplicateElementException e1) {
+			Group g = createGroupImpl("siteop");
+			g.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
+			g.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
+			g.commit();
+			user.addSecondaryGroup(g);
+		} catch (DuplicateElementException ignored) {
 		}
 
 		user.commit();
 	}
 
-	public User create(String username) throws UserFileException {
+	public User createUser(String username) throws UserFileException, FileExistsException {
 		try {
 			getUserByName(username);
 			// bad, .json file already exists.
@@ -103,58 +112,66 @@ public abstract class AbstractUserManager implements UserManager {
 			// good, no such user was found. create it!
 		}
 
-		User user = createUser(username);
+		User user = createUserImpl(username);
 		user.commit();
 
 		return user;
 	}
 
-	protected abstract User createUser(String username);
+	public Group createGroup(String groupname) throws GroupFileException, FileExistsException {
+		try {
+			getGroupByName(groupname);
+			// bad, .json file already exists.
+			throw new FileExistsException("Group " + groupname + " already exists");
+		} catch (IOException e) {
+			// bad, some I/O error ocurred.
+			throw new GroupFileException(e);
+		} catch (NoSuchGroupException e) {
+			// good, no such group was found. create it!
+		}
+
+		Group group = createGroupImpl(groupname);
+		group.commit();
+
+		return group;
+	}
+
+	protected abstract User createUserImpl(String username);
+
+	protected abstract Group createGroupImpl(String groupname);
 
 	/**
 	 * final for now to remove duplicate implementations
 	 */
-	public synchronized void delete(String username) {
+	public synchronized void deleteUser(String username) {
 		if (!getUserFile(username).delete())
 			throw new RuntimeException(new PermissionDeniedException());
 		_users.remove(username);
 	}
 
+	public synchronized void deleteGroup(String groupname) {
+		if (!getGroupFile(groupname).delete())
+			throw new RuntimeException(new PermissionDeniedException());
+		_groups.remove(groupname);
+	}
+
 	protected abstract File getUserFile(String username);
 
-	public Collection<String> getAllGroups() {
-		Collection<User> users = getAllUsers();
-		ArrayList<String> ret = new ArrayList<>();
+	protected abstract File getGroupFile(String groupname);
 
-		for (User myUser : users) {
-			Collection<String> myGroups = myUser.getGroups();
-
-			for (String myGroup : myGroups) {
-
-				if (!ret.contains(myGroup)) {
-					ret.add(myGroup);
-				}
-			}
-
-			if (!ret.contains(myUser.getGroup())) {
-				ret.add(myUser.getGroup());
-			}
-		}
-
-		return ret;
-	}
+	public abstract Collection<Group> getAllGroups();
 
 	/**
 	 * Get all user names in the system.
 	 */
 	public abstract Collection<User> getAllUsers();
 
-	public Collection<User> getAllUsersByGroup(String group) {
+	public Collection<User> getAllUsersByGroup(Group g) {
 		Collection<User> c = new ArrayList<>();
 
 		for (User user : getAllUsers()) {
 
-			if (user.isMemberOf(group)) {
+			if (user.isMemberOf(g.getName())) {
 				c.add(user);
 			}
 		}
@@ -162,9 +179,55 @@ public abstract class AbstractUserManager implements UserManager {
 		return c;
 	}
 
+	public boolean isGroupAdminOfUser(User groupadminUser, User requestedUser) {
+		List<Group> groups = groupadminUser.getGroups();
+		groups.add(groupadminUser.getGroup());
+
+		// Then check secondary groups
+		for (Group g : groups) {
+			if (g.isAdmin(groupadminUser)) {
+				if (requestedUser.isMemberOf(g.getName())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public boolean isGroupAdmin(User user) {
+		List<Group> groups = user.getGroups();
+		groups.add(user.getGroup());
+
+		// Then check secondary groups
+		for (Group g : groups) {
+			if (g.isAdmin(user)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public Group getGroupByGroupAdminOfUser(User groupadminUser, User requestedUser) {
+		List<Group> groups_admin = new ArrayList<>();
+
+		List<Group> groups = groupadminUser.getGroups();
+		groups.add(groupadminUser.getGroup());
+
+		for (Group g : groups) {
+			if (g.isAdmin(groupadminUser)) {
+				groups_admin.add(g);
+			}
+		}
+		// TODO: Think about if we could return more than one group here, but for now we only accept one group to match here
+		if (groups_admin.size() == 1) {
+			return groups_admin.get(0);
+		}
+		logger.debug("[getGroupByGroupAdminOfUser] We were unable to find a match between [user:" + requestedUser.getName() + "]'s groups and [user:" +groupadminUser.getName() + "] as group admin. Groups found are: [" + groups_admin.size() + "]");
+		return null;
+	}
+
 	public User getUserByNameIncludeDeleted(String username) throws NoSuchUserException, UserFileException {
-		User user = getUserByNameUnchecked(username);
-		return user;
+		return getUserByNameUnchecked(username);
 	}
 
 	public User getUserByName(String username) throws NoSuchUserException, UserFileException {
@@ -175,6 +238,10 @@ public abstract class AbstractUserManager implements UserManager {
 		}
 
 		return user;
+	}
+
+	public Group getGroupByName(String groupname) throws NoSuchGroupException, GroupFileException {
+		return getGroupByNameUnchecked(groupname);
 	}
 
 	public static GlobalContext getGlobalContext() {
@@ -201,7 +268,7 @@ public abstract class AbstractUserManager implements UserManager {
 						return user;
 					}
 				}
-			} catch (KeyNotFoundException e1) {
+			} catch (KeyNotFoundException ignored) {
 			}
 		}
 		throw new NoSuchUserException("No user found with ident = " + ident);
@@ -209,7 +276,9 @@ public abstract class AbstractUserManager implements UserManager {
 
 	public abstract User getUserByNameUnchecked(String username) throws NoSuchUserException, UserFileException;
 
-	protected synchronized void rename(User oldUser, String newUsername) throws UserExistsException, UserFileException {
+	public abstract Group getGroupByNameUnchecked(String groupname) throws NoSuchGroupException, GroupFileException;
+
+	protected synchronized void renameUser(User oldUser, String newUsername) throws UserExistsException, UserFileException {
 		if (!_users.containsKey(newUsername)) {
 			try {
 				getUserByNameUnchecked(newUsername);
@@ -221,6 +290,20 @@ public abstract class AbstractUserManager implements UserManager {
 		}
 
 		throw new UserExistsException("user " + newUsername + " exists");
+	}
+
+	protected synchronized void renameGroup(Group oldGroup, String newGroupname) throws GroupExistsException, GroupFileException {
+		if (!_groups.containsKey(newGroupname)) {
+			try {
+				getGroupByNameUnchecked(newGroupname);
+			} catch (NoSuchGroupException e) {
+				_groups.remove(oldGroup.getName());
+				_groups.put(newGroupname, new SoftReference<>(oldGroup));
+				return;
+			}
+		}
+
+		throw new GroupExistsException("group " + newGroupname + " exists");
 	}
 
 	/*

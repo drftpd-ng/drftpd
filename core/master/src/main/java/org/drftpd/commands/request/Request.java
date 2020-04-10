@@ -207,7 +207,7 @@ public class Request extends CommandInterface {
         env.put("request.root", requestDir.getPath());
 
         try {
-            requestDir.createDirectoryUnchecked(createdDirName, user.getName(), user.getGroup());
+            requestDir.createDirectoryUnchecked(createdDirName, user.getName(), user.getGroup().getName());
         } catch (FileExistsException e) {
             return new CommandResponse(550, session.jprintf(_bundle, "request.exists", env, user.getName()));
         } catch (FileNotFoundException e) {

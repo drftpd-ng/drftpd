@@ -20,9 +20,7 @@ import java.util.*;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
-import org.drftpd.master.usermanager.NoSuchUserException;
-import org.drftpd.master.usermanager.User;
-import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.usermanager.*;
 import org.drftpd.commands.CommandRequest;
 import org.drftpd.commands.CommandResponse;
 import org.drftpd.plugins.trialmanager.TrialType;
@@ -91,14 +89,26 @@ public class TopTrial extends TrialType {
         if (commands.length > 1) {
             if (commands[0].equalsIgnoreCase("chgrp")) {
                 for (int i = 1; i < commands.length; i++) {
-                    user.toggleGroup(commands[i]);
-                    logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                    try {
+                        user.toggleGroup(user.getUserManager().getGroupByName(commands[i]));
+                        logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                    } catch (NoSuchGroupException e) {
+                        logger.warn("{} Tried to chgrp to a unknown group: {}", user.getName(), commands[i]);
+                    } catch (GroupFileException e) {
+                        logger.warn("There was an error reading the group file while trying to use chgrp", e);
+                    }
                 }
                 return;
             }
             if (commands[0].equalsIgnoreCase("setgrp")) {
-                user.setGroup(commands[1]);
-                logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                try {
+                    user.setGroup(user.getUserManager().getGroupByName(commands[1]));
+                    logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                } catch (NoSuchGroupException e) {
+                    logger.warn("{} Tried to setgrp to a unknown group: {}", user.getName(), commands[1]);
+                } catch (GroupFileException e) {
+                    logger.warn("There was an error reading the group file while trying to use setgrp", e);
+                }
                 return;
             }
         }
@@ -112,14 +122,26 @@ public class TopTrial extends TrialType {
             if (commands.length > 1) {
                 if (commands[0].equalsIgnoreCase("chgrp")) {
                     for (int i = 1; i < commands.length; i++) {
-                        user.toggleGroup(commands[i]);
-                        logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                        try {
+                            user.toggleGroup(user.getUserManager().getGroupByName(commands[i]));
+                            logger.info("{} Toggled Group ('{}')", user.getName(), commands[i]);
+                        } catch (NoSuchGroupException e) {
+                            logger.warn("{} Tried to chgrp to a unknown group: {}", user.getName(), commands[i]);
+                        } catch (GroupFileException e) {
+                            logger.warn("There was an error reading the group file while trying to use chgrp", e);
+                        }
                     }
                     return;
                 }
                 if (commands[0].equalsIgnoreCase("setgrp")) {
-                    user.setGroup(commands[1]);
-                    logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                    try {
+                        user.setGroup(user.getUserManager().getGroupByName(commands[1]));
+                        logger.info("{} Primary Group Set To ('{}')", user.getName(), commands[1]);
+                    } catch (NoSuchGroupException e) {
+                        logger.warn("{} Tried to setgrp to a unknown group: {}", user.getName(), commands[1]);
+                    } catch (GroupFileException e) {
+                        logger.warn("There was an error reading the group file while trying to use setgrp", e);
+                    }
                     return;
                 }
             } else {
@@ -169,17 +191,14 @@ public class TopTrial extends TrialType {
         return top;
     }
 
-    private CommandResponse doTopTrial(CommandRequest request, ResourceBundle bundle, CommandResponse response, boolean top) {
+    private void doTopTrial(CommandRequest request, ResourceBundle bundle, CommandResponse response, boolean top) {
         User requestuser;
         try {
             requestuser = request.getUserObject();
-        } catch (NoSuchUserException e1) {
-            //No Such User Exists - return
-            return response;
-        } catch (UserFileException e1) {
-            // User File Corrupt - return
-            return response;
+        } catch (NoSuchUserException | UserFileException e1) {
+            return;
         }
+
 
         /*
          * Gets the List Size
@@ -253,7 +272,6 @@ public class TopTrial extends TrialType {
             }
             i++;
         }
-        return response;
     }
 
     @Override
@@ -274,9 +292,9 @@ public class TopTrial extends TrialType {
     }
 
 
-    private CommandResponse doTopTrialPassed(CommandRequest request, ResourceBundle bundle, CommandResponse response) {
-        User requestuser = null;
-        User checkuser = null;
+    private void doTopTrialPassed(CommandRequest request, ResourceBundle bundle, CommandResponse response) {
+        User requestuser;
+        User checkuser;
         try {
             requestuser = request.getUserObject();
             if (request.hasArgument()) {
@@ -287,12 +305,8 @@ public class TopTrial extends TrialType {
             } else {
                 checkuser = requestuser;
             }
-        } catch (NoSuchUserException e1) {
-            //No Such User Exists - return
-            return response;
-        } catch (UserFileException e1) {
-            // User File Corrupt - return
-            return response;
+        } catch (NoSuchUserException | UserFileException e1) {
+            return;
         }
 
         boolean found = false;
@@ -340,8 +354,5 @@ public class TopTrial extends TrialType {
             env.put("name", request.getArgument());
             response.addComment(request.getSession().jprintf(bundle,  "toptrial.place.notfound", env, requestuser));
         }
-
-        return response;
     }
-
 }

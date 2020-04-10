@@ -122,6 +122,7 @@ public class GlobalContext {
                 .setScanners(new MethodAnnotationsScanner()));
 
         hooksMethods = reflections.getMethodsAnnotatedWith(CommandHook.class);
+        logger.debug("We have annotated (found) [" + hooksMethods.size() + "] hook methods");
     }
 
     public static Set<Method> getHooksMethods() {
@@ -266,13 +267,12 @@ public class GlobalContext {
      * Depends on root loaded if any slaves connect early.
      */
     private void loadSlaveManager(Properties cfg) throws SlaveFileException {
-        /** register slavemanager * */
+        // register slavemanager
         _slaveManager = new SlaveManager(cfg);
     }
 
     private void listenForSlaves() {
-        new Thread(_slaveManager, "Listening for slave connections - "
-                + _slaveManager.toString()).start();
+        new Thread(_slaveManager, "Listening for slave connections - " + _slaveManager.toString()).start();
     }
 
     protected void loadUserManager(Properties cfg) {
@@ -282,9 +282,7 @@ public class GlobalContext {
             _usermanager = (AbstractUserManager) aClass.getConstructor().newInstance();
             _usermanager.init();
         } catch (Exception e) {
-            throw new FatalException(
-                    "Cannot create instance of usermanager, check 'usermanager' in the configuration file",
-                    e);
+            throw new FatalException( "Cannot create instance of usermanager, check 'usermanager' in the configuration file", e);
         }
     }
 
@@ -308,21 +306,21 @@ public class GlobalContext {
                 logger.info("Waiting for connections to be shutdown...");
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
             }
             while (GlobalContext.getEventService().getQueueSize() > 0) {
                 logger.info("Waiting for queued events to be processed - {} remaining", GlobalContext.getEventService().getQueueSize());
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
             }
             while (CommitManager.getCommitManager().getQueueSize() > 0) {
                 logger.info("Waiting for queued commits to be drained - {} remaining", CommitManager.getCommitManager().getQueueSize());
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
+                } catch (InterruptedException ignored) {
                 }
             }
             logger.info("Shutdown complete, exiting");
@@ -394,6 +392,7 @@ public class GlobalContext {
         loadSectionManager(getConfig().getMainProperties());
         loadIndexingEngine(getConfig().getMainProperties());
         loadPlugins();
+
         // Subscribe to events
         AnnotationProcessor.process(this);
     }
@@ -451,7 +450,7 @@ public class GlobalContext {
             if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -460,7 +459,7 @@ public class GlobalContext {
 
     private static Properties getPropertiesUntilClosed(LineNumberReader reader) throws IOException {
         Properties p = new Properties();
-        String curLine = null;
+        String curLine;
         while (reader.ready()) {
             curLine = reader.readLine();
             if (curLine != null) {

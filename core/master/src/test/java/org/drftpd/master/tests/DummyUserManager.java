@@ -17,9 +17,12 @@
 package org.drftpd.master.tests;
 
 import org.drftpd.master.usermanager.AbstractUserManager;
+import org.drftpd.master.usermanager.Group;
 import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.NoSuchGroupException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.usermanager.GroupFileException;
 
 import java.io.File;
 import java.lang.ref.SoftReference;
@@ -33,33 +36,54 @@ import java.util.Collections;
  */
 public class DummyUserManager extends AbstractUserManager {
     private User _user;
+    private Group _group;
 
     public DummyUserManager() {
         super();
     }
 
-    public User createUser(String username) {
+    public User createUserImpl(String username) {
         throw new UnsupportedOperationException();
     }
 
-    public User create(String username) throws UserFileException {
+    public Group createGroupImpl(String groupname) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Group createGroup(String groupname) throws GroupFileException {
+        DummyGroup g = new DummyGroup(groupname, this);
+        addGroup(g);
+
+        return g;
+    }
+
+    public User createUser(String username) throws UserFileException {
         DummyUser u = new DummyUser(username, this);
-        add(u);
+        addUser(u);
 
         return u;
     }
 
-    public Collection<String> getAllGroups() {
+    public Collection<Group> getAllGroups() {
         throw new UnsupportedOperationException();
     }
 
-    public synchronized void add(User user) {
+    public synchronized void addUser(User user) {
         _users.put(user.getName(), new SoftReference<>(user));
+    }
+
+    public synchronized void addGroup(Group group) {
+        _groups.put(group.getName(), new SoftReference<>(group));
     }
 
     public User getUserByNameUnchecked(String username)
         throws NoSuchUserException, UserFileException {
         return _user;
+    }
+
+    public Group getGroupByNameUnchecked(String groupname)
+        throws NoSuchGroupException, GroupFileException {
+        return _group;
     }
 
     public User getUserByName(String username) {
@@ -77,6 +101,14 @@ public class DummyUserManager extends AbstractUserManager {
     public Collection<User> getAllUsers() {
         return Collections.singletonList(_user);
     }
+
+	protected File getGrouppathFile() {
+		throw new UnsupportedOperationException();
+	}
+
+	protected File getGroupFile(String groupname) {
+		throw new UnsupportedOperationException();
+	}
 
 	protected File getUserpathFile() {
 		throw new UnsupportedOperationException();

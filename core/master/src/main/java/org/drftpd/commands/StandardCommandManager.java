@@ -87,9 +87,7 @@ public class StandardCommandManager implements CommandManagerInterface {
                 commands.put(requiredCmd.getKey(), new CommandInstanceContainer(commandMethod, cmdInstance));
                 logger.debug("Adding command implementation {}", requiredCmd.getKey());
             } catch (Exception e) {
-                /* Should be safe to continue, just means this command class won't be
-                 * available
-                 */
+                // Should be safe to continue, just means this command class won't be available
                 logger.info("Failed to add command handler: {}", requiredCmd, e);
             }
         }
@@ -126,8 +124,7 @@ public class StandardCommandManager implements CommandManagerInterface {
             response = StandardCommandManager.genericResponse("RESPONSE_501_SYNTAX_ERROR");
             String helpString = request.getProperties().getProperty("help.specific");
             if (helpString == null) {
-                response.addComment("Bug your siteop to add help for the \""
-                        + request.getCommand() + "\" command");
+                response.addComment("Bug your siteop to add help for the \"" + request.getCommand() + "\" command");
             } else {
                 Map<String, Object> env = new HashMap<>();
                 env.put("command", request.getCommand().toUpperCase());
@@ -156,9 +153,8 @@ public class StandardCommandManager implements CommandManagerInterface {
         }
     }
 
-    public static CommandResponse genericResponse(String type, DirectoryHandle directory,
-                                                  String user) {
-        CommandResponse response = null;
+    public static CommandResponse genericResponse(String type, DirectoryHandle directory, String user) {
+        CommandResponse response;
         response = genericResponse(type);
         response.setCurrentDirectory(directory);
         response.setUser(user);
@@ -166,135 +162,106 @@ public class StandardCommandManager implements CommandManagerInterface {
     }
 
     private static HashMap<String, CommandResponse> initGenericResponses() {
-        HashMap<String, CommandResponse> genericResponses =
-                new HashMap<>();
+        HashMap<String, CommandResponse> genericResponses = new HashMap<>();
 
-        /** 150 File status okay; about to open data connection. */
-        genericResponses.put("RESPONSE_150_OK",
-                new CommandResponse(150, "File status okay; about to open data connection."));
+        /* 150 File status okay; about to open data connection. */
+        genericResponses.put("RESPONSE_150_OK", new CommandResponse(150, "File status okay; about to open data connection."));
 
-        /** 200 Command okay */
-        genericResponses.put("RESPONSE_200_COMMAND_OK",
-                new CommandResponse(200, "Command okay"));
+        /* 200 Command okay */
+        genericResponses.put("RESPONSE_200_COMMAND_OK", new CommandResponse(200, "Command okay"));
 
-        /** 202 Command not implemented, superfluous at this site. */
-        genericResponses.put("RESPONSE_202_COMMAND_NOT_IMPLEMENTED",
-                new CommandResponse(202, "Command not implemented, superfluous at this site."));
+        /* 202 Command not implemented, superfluous at this site. */
+        genericResponses.put("RESPONSE_202_COMMAND_NOT_IMPLEMENTED", new CommandResponse(202, "Command not implemented, superfluous at this site."));
 
-        /** 215 NAME system type. */
-        genericResponses.put("RESPONSE_215_SYSTEM_TYPE",
-                new CommandResponse(215, "UNIX system type."));
+        /* 215 NAME system type. */
+        genericResponses.put("RESPONSE_215_SYSTEM_TYPE", new CommandResponse(215, "UNIX system type."));
 
-        /** 221 Service closing control connection. */
-        genericResponses.put("RESPONSE_221_SERVICE_CLOSING",
-                new CommandResponse(221, "Service closing control connection."));
+        /* 221 Service closing control connection. */
+        genericResponses.put("RESPONSE_221_SERVICE_CLOSING", new CommandResponse(221, "Service closing control connection."));
 
-        /** 226 Closing data connection */
-        genericResponses.put("RESPONSE_226_CLOSING_DATA_CONNECTION",
-                new CommandResponse(226, "Closing data connection"));
+        /* 226 Closing data connection */
+        genericResponses.put("RESPONSE_226_CLOSING_DATA_CONNECTION", new CommandResponse(226, "Closing data connection"));
 
-        /** 230 User logged in, proceed. */
-        genericResponses.put("RESPONSE_230_USER_LOGGED_IN",
-                new CommandResponse(230, "User logged in, proceed."));
+        /* 230 User logged in, proceed. */
+        genericResponses.put("RESPONSE_230_USER_LOGGED_IN", new CommandResponse(230, "User logged in, proceed."));
 
-        /** 250 Requested file action okay, completed. */
-        genericResponses.put("RESPONSE_250_ACTION_OKAY",
-                new CommandResponse(250, "Requested file action okay, completed."));
+        /* 250 Requested file action okay, completed. */
+        genericResponses.put("RESPONSE_250_ACTION_OKAY", new CommandResponse(250, "Requested file action okay, completed."));
 
-        /** 331 User name okay, need password. */
-        genericResponses.put("RESPONSE_331_USERNAME_OK_NEED_PASS",
-                new CommandResponse(331, "User name okay, need password."));
+        /* 331 User name okay, need password. */
+        genericResponses.put("RESPONSE_331_USERNAME_OK_NEED_PASS", new CommandResponse(331, "User name okay, need password."));
 
-        /** 350 Requested file action pending further information. */
-        genericResponses.put("RESPONSE_350_PENDING_FURTHER_INFORMATION",
-                new CommandResponse(350, "Requested file action pending further information."));
+        /* 350 Requested file action pending further information. */
+        genericResponses.put("RESPONSE_350_PENDING_FURTHER_INFORMATION", new CommandResponse(350, "Requested file action pending further information."));
 
-        /** 425 Can't open data connection. */
-        genericResponses.put("RESPONSE_425_CANT_OPEN_DATA_CONNECTION",
-                new CommandResponse(425, "Can't open data connection.\r\n"));
+        /* 425 Can't open data connection. */
+        genericResponses.put("RESPONSE_425_CANT_OPEN_DATA_CONNECTION", new CommandResponse(425, "Can't open data connection.\r\n"));
 
-        /** 426 Connection closed; transfer aborted. */
-        genericResponses.put("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED",
-                new CommandResponse(426, "Connection closed; transfer aborted."));
+        /* 426 Connection closed; transfer aborted. */
+        genericResponses.put("RESPONSE_426_CONNECTION_CLOSED_TRANSFER_ABORTED", new CommandResponse(426, "Connection closed; transfer aborted."));
 
-        /** 450 Requested file action not taken. */
-        genericResponses.put("RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN",
-                new CommandResponse(450, "Requested file action not taken."));
+        /* 450 Requested file action not taken. */
+        genericResponses.put("RESPONSE_450_REQUESTED_ACTION_NOT_TAKEN", new CommandResponse(450, "Requested file action not taken."));
 
-        /**
+        /*
          * 450 No transfer-slave(s) available author <a
          * href="mailto:drftpd@mog.se">Morgan Christiansson</a>
          */
-        genericResponses.put("RESPONSE_450_SLAVE_UNAVAILABLE",
-                new CommandResponse(450, "No transfer-slave(s) available"));
+        genericResponses.put("RESPONSE_450_SLAVE_UNAVAILABLE", new CommandResponse(450, "No transfer-slave(s) available"));
 
-        /** 500 Syntax error, command unrecognized. */
-        genericResponses.put("RESPONSE_500_SYNTAX_ERROR",
-                new CommandResponse(500, "Syntax error, command unrecognized."));
+        /* 500 Syntax error, command unrecognized. */
+        genericResponses.put("RESPONSE_500_SYNTAX_ERROR", new CommandResponse(500, "Syntax error, command unrecognized."));
 
-        /** 501 Syntax error in parameters or arguments */
-        genericResponses.put("RESPONSE_501_SYNTAX_ERROR",
-                new CommandResponse(501, "Syntax error in parameters or arguments"));
+        /* 501 Syntax error in parameters or arguments */
+        genericResponses.put("RESPONSE_501_SYNTAX_ERROR", new CommandResponse(501, "Syntax error in parameters or arguments"));
 
-        /** 502 Command not implemented. */
-        genericResponses.put("RESPONSE_502_COMMAND_NOT_IMPLEMENTED",
-                new CommandResponse(502, "Command not implemented."));
+        /* 502 Command not implemented. */
+        genericResponses.put("RESPONSE_502_COMMAND_NOT_IMPLEMENTED", new CommandResponse(502, "Command not implemented."));
 
-        /** 503 Bad sequence of commands. */
-        genericResponses.put("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS",
-                new CommandResponse(503, "Bad sequence of commands."));
+        /* 503 Bad sequence of commands. */
+        genericResponses.put("RESPONSE_503_BAD_SEQUENCE_OF_COMMANDS", new CommandResponse(503, "Bad sequence of commands."));
 
-        /** 504 Command not implemented for that parameter. */
-        genericResponses.put("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM",
-                new CommandResponse(504, "Command not implemented for that parameter."));
+        /* 504 Command not implemented for that parameter. */
+        genericResponses.put("RESPONSE_504_COMMAND_NOT_IMPLEMENTED_FOR_PARM", new CommandResponse(504, "Command not implemented for that parameter."));
 
-        /** 530 Access denied */
-        genericResponses.put("RESPONSE_530_ACCESS_DENIED",
-                new CommandResponse(530, "Access denied"));
+        /* 530 Access denied */
+        genericResponses.put("RESPONSE_530_ACCESS_DENIED", new CommandResponse(530, "Access denied"));
 
-        /** 530 Not logged in. */
-        genericResponses.put("RESPONSE_530_NOT_LOGGED_IN",
-                new CommandResponse(530, "Not logged in."));
+        /* 530 Not logged in. */
+        genericResponses.put("RESPONSE_530_NOT_LOGGED_IN", new CommandResponse(530, "Not logged in."));
 
-        genericResponses.put("RESPONSE_530_SLAVE_UNAVAILABLE",
-                new CommandResponse(530, "No transfer-slave(s) available"));
+        genericResponses.put("RESPONSE_530_SLAVE_UNAVAILABLE", new CommandResponse(530, "No transfer-slave(s) available"));
 
-        /**
+        /*
          * 550 Requested action not taken. File unavailable. File unavailable (e.g.,
          * file not found, no access).
          */
-        genericResponses.put("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN",
-                new CommandResponse(550, "Requested action not taken. File unavailable (e.g., file not found, no access)"));
+        genericResponses.put("RESPONSE_550_REQUESTED_ACTION_NOT_TAKEN", new CommandResponse(550, "Requested action not taken. File unavailable (e.g., file not found, no access)"));
 
-        /**
+        /*
          * 553 Requested action not taken. File name not allowed.
          */
-        genericResponses.put("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN",
-                new CommandResponse(553, "Requested action not taken.  File name not allowed"));
+        genericResponses.put("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN", new CommandResponse(553, "Requested action not taken.  File name not allowed"));
 
-        /**
+        /*
          * 550 Requested action not taken. File exists.
          */
-        genericResponses.put("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS",
-                new CommandResponse(553, "Requested action not taken. File exists."));
+        genericResponses.put("RESPONSE_553_REQUESTED_ACTION_NOT_TAKEN_FILE_EXISTS", new CommandResponse(553, "Requested action not taken. File exists."));
 
         return genericResponses;
     }
 
-    public CommandRequestInterface newRequest(String argument,
-                                              String command, DirectoryHandle directory, String user) {
+    public CommandRequestInterface newRequest(String argument, String command, DirectoryHandle directory, String user) {
         return new CommandRequest(argument, command, directory, user);
     }
 
-    public CommandRequestInterface newRequest(String originalCommand, String argument,
-                                              DirectoryHandle directory, String user, Session session, Properties config) {
+    public CommandRequestInterface newRequest(String originalCommand, String argument, DirectoryHandle directory, String user, Session session, Properties config) {
         return new CommandRequest(originalCommand, argument, directory, user, session, config);
     }
 
     public Map<String, CommandInstanceContainer> getCommandHandlersMap() {
         return _commands;
     }
-
 
     public ThemeResourceBundle getResourceBundle() {
         return _theme;

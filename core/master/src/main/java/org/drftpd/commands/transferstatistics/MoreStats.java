@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
+import org.drftpd.master.usermanager.Group;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.util.GroupPosition;
 import org.drftpd.master.util.ReplacerUtils;
@@ -58,11 +59,13 @@ public class MoreStats extends CommandInterface {
     }
 
     public static int getPeriod(String strperiod) {
-        int period = 0;
+        int period = PERIOD_ALL;
 
+        /*
         if (strperiod.equals("AL")) {
-            period = 0;
+            period = PERIOD_ALL;
         }
+        */
 
         if (strperiod.equals("DAY")) {
             period = PERIOD_DAILY;
@@ -145,20 +148,20 @@ public class MoreStats extends CommandInterface {
         Collection<User> users = GlobalContext.getGlobalContext().getUserManager().getAllUsers();
 
         MyGroupPosition stat = null;
-        String groupname = "";
+        Group g;
 
         for (User user : users) {
-            groupname = user.getGroup();
+            g = user.getGroup();
 
             for (MyGroupPosition stat2 : grpList) {
-            	if (stat2.getGroupname().equals(groupname)) {
+            	if (stat2.getGroupname().equals(g.getName())) {
             		stat = stat2;
             		break;
             	}
             }
 
             if (stat == null) {
-                stat = new MyGroupPosition(groupname, 0, 0, 0, 0, 0);
+                stat = new MyGroupPosition(g.getName(), 0, 0, 0, 0);
                 grpList.add(stat);
             }
 
@@ -353,8 +356,7 @@ public class MoreStats extends CommandInterface {
     static class MyGroupPosition extends GroupPosition {
         int members;
 
-        public MyGroupPosition(String groupname, long bytes, int files,
-            long xfertime, int members, int racesWon) {
+        public MyGroupPosition(String groupname, long bytes, int files, long xfertime, int members) {
             super(groupname, bytes, files, xfertime);
             this.members = members;
         }

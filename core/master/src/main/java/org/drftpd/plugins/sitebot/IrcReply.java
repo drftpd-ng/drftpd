@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.commandmanager.CommandResponseInterface;
 
+import java.util.Arrays;
 import java.util.Vector;
 
 /**
@@ -34,7 +35,7 @@ public class IrcReply {
 
 	protected int _code;
 
-	protected Vector<String> _lines = new Vector<>();
+	protected Vector<String> _lines;
 
 	protected String _message;
 
@@ -50,9 +51,7 @@ public class IrcReply {
 		if (resp.indexOf('\n') != -1) {
 			String[] lines = resp.split("\n");
 
-            for (String line : lines) {
-                _lines.add(line);
-            }
+			_lines.addAll(Arrays.asList(lines));
 		} else {
 			_lines.add(resp);
 		}
@@ -90,11 +89,13 @@ public class IrcReply {
 		}
 
 		for (String line: _lines) {
-			sb.append(line + "\n");
+			sb.append(line);
+			sb.append("\n");
 		}
 
 		if (_lines.size() == 0) {
-			sb.append(_message + "\n");
+			sb.append(_message);
+			sb.append("\n");
 		}
 
 		return sb.toString();

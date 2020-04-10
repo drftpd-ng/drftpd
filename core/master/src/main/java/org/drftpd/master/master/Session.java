@@ -22,9 +22,12 @@ import org.drftpd.master.GlobalContext;
 import org.drftpd.master.common.Bytes;
 import org.drftpd.master.common.dynamicdata.Key;
 import org.drftpd.master.common.dynamicdata.KeyedMap;
+import org.drftpd.master.usermanager.Group;
 import org.drftpd.master.usermanager.NoSuchUserException;
+import org.drftpd.master.usermanager.NoSuchGroupException;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.usermanager.UserFileException;
+import org.drftpd.master.usermanager.GroupFileException;
 import org.drftpd.master.util.ReplacerUtils;
 
 import java.util.*;
@@ -83,15 +86,28 @@ public abstract class Session extends KeyedMap<Key<?>, Object> {
 		}
 		try {
 			return GlobalContext.getGlobalContext().getUserManager().getUserByNameUnchecked(user);
-		} catch (NoSuchUserException e) {
-			return null;
-		} catch (UserFileException e) {
+		} catch (NoSuchUserException | UserFileException e) {
 			return null;
 		}
 	}
 	
 	protected User getUserObject(String user) throws NoSuchUserException, UserFileException {
 		return GlobalContext.getGlobalContext().getUserManager().getUserByName(user);
+	}
+
+	public Group getGroupNull(String group) {
+		if (group == null) {
+			return null;
+		}
+		try {
+			return GlobalContext.getGlobalContext().getUserManager().getGroupByNameUnchecked(group);
+		} catch (NoSuchGroupException | GroupFileException e) {
+			return null;
+		}
+	}
+	
+	protected Group getGroupObject(String group) throws NoSuchGroupException, GroupFileException {
+		return GlobalContext.getGlobalContext().getUserManager().getGroupByName(group);
 	}
 
 	public String jprintf(ResourceBundle bundle, String key, String user) {

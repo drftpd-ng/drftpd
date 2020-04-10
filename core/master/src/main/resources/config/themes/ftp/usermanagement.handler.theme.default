@@ -7,6 +7,11 @@ adduser.noslots=Sorry, no more open slots available
 adduser.missingpass=You forgot a password
 adduser.primgroup=Primary group set to ${primgroup}
 adduser.success=User ${targetuser} created
+deluser.success=User ${targetuser} deleted
+purgeuser.success=User ${tagetuser} purged
+
+addgroup.success=Group ${targetgroup} created
+delgroup.success=Group ${targetgroup} deleted
 
 change.specify=You need to specify a value to change
 
@@ -18,10 +23,17 @@ changecomment.success=${targetuser} comment is: ${comment}
 changeidletime.success=Changed idle time to ${newidletime}s
 changeprimgroup.success=Changed primary group to ${primgroup}
 changenumlogins.success=Changed max logins to ${numlogins} and from same IP to ${numloginsip}
-changegroupslots.success=Changed group slots to ${groupslots} and group leech slots to ${groupleechslots}
 changemaxsim.success=Changed max simultaneous download/upload slots to ${maxdn}/${maxup}
-changecreated.success=Reset creation time for ${targetuser}
-changegadminratio.success=Changed gadmin min/max ratio to ${minratio}/${maxratio}
+changeuser.created.success=Reset creation time for ${targetuser}
+
+changegroup.slots.success=Changed group slots to ${groupslots}
+changegroup.leechslots.success=Changed group leech slots to ${leechslots}
+changegroup.created.success=Reset creation time for ${targetgroup}
+changegroup.ratio.success=Changed gorup min/max ratio to ${minratio}/${maxratio}
+
+changegroupadmin.bad.user=User ${targetuser} does not exist
+changegroupadmin.add.user=User ${targetuser} added as group admin to ${targetgroup}
+changegroupadmin.remove.user=User ${targetuser} removed from ${targetgroup} as group admin
 
 debug=Debug now set to ${org.drftpd.commands.UserManagement@debug}
 
@@ -32,8 +44,6 @@ Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.commands.UserManagemen
 Ratio: ${org.drftpd.commands.UserManagement@ratio,-23} Credits: ${credits}\n\
 Max logins: ${org.drftpd.commands.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.commands.UserManagement@maxloginsip}\n\
 Max sim uploads: ${org.drftpd.commands.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.commands.UserManagement@maxsimdn}\n\
-Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
-Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
 Total uploaded: ${uploaded,-14} Total downloaded: ${downloaded}\n\
 Times nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nuked,-17} Bytes nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nukedBytes}\n\
 Requests: ${org.drftpd.commands.request.metadata.RequestUserData@requests,-20} Filled requests: ${org.drftpd.commands.request.metadata.RequestUserData@requestsFilled}\n\
@@ -43,6 +53,9 @@ Extra groups: ${groups,-16} Banned Until: ${org.drftpd.commands.UserManagement@b
 IP masks: ${ipmasks}\n\
 IRC Ident: ${org.drftpd.commands.UserManagement@ircident,-23}\n\
 Tagline: ${org.drftpd.commands.UserManagement@tagline}
+
+mike.saved.group=Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
+Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
 
 bans=${username} banned for another ${timeleft}m until ${org.drftpd.commands.UserManagement@ban_time} (${org.drftpd.commands.UserManagement@ban_reason})
 
@@ -95,6 +108,7 @@ ginfo.tail=\
 |-----------+--------+-----------+--------+-----------+-------+---------|\n\
 |        * = siteop           + = gadmin            ! = deleted         |\n\
 |-----------+--------+-----------+--------+-----------+-------+---------|\n\
-|   Tot Megs Up:${allmbup,10}   Tot Files Up:${allfup,7}   Users in group:${numusers,2}   |\n\
-|   Tot Megs Dn:${allmbdn,10}   Tot Files Dn:${allfdn,7}       With leech:${numleech,2}   |\n\
+|   Tot Megs Up:${allmbup,10}         Tot Files Up:${allfup,7}          |\n\
+|   Tot Megs Dn:${allmbdn,10}         Tot Files Dn:${allfdn,7}          |\n\
+|   Slots(Total/Free): ${slotstotal}/${slotsfree}   Leech Slots(Total/Free): ${leechtotal}/${leechfree}  |\n\
 `-----------------------------------------------------------------------'

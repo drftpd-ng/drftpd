@@ -187,13 +187,11 @@ public class PREBWPostHook {
                         actUser.addBytes(status.getTransfered());
                         actUser.addSpeed(status.getXferSpeed());
                     } else {
-                        preInfo.addUser(new UserInfo(u.getName(), u.getGroup(), 1, status.getTransfered(), status.getXferSpeed()));
+                        preInfo.addUser(new UserInfo(u.getName(), u.getGroup().getName(), 1, status.getTransfered(), status.getXferSpeed()));
                     }
-                    preInfo.addGroup(u.getGroup());
-                } catch (NoSuchUserException e) {
-                    // Strange..
-                } catch (UserFileException e) {
-                    // Strange..
+                    preInfo.addGroup(u.getGroup().getName());
+                } catch (NoSuchUserException | UserFileException ignored) {
+                    // Strange.. and ignore
                 }
             }
         }

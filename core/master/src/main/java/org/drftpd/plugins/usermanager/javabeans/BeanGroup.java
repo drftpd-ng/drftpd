@@ -24,7 +24,7 @@ import org.apache.logging.log4j.LogManager;
 
 import org.drftpd.master.io.SafeFileOutputStream;
 import org.drftpd.master.master.CommitManager;
-import org.drftpd.master.usermanager.AbstractUser;
+import org.drftpd.master.usermanager.AbstractGroup;
 import org.drftpd.master.usermanager.AbstractUserManager;
 import org.drftpd.master.usermanager.UserManager;
 
@@ -34,25 +34,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author mog
+ * @author mikevg
  * @version $Id$
  */
-public class BeanUser extends AbstractUser {
+public class BeanGroup extends AbstractGroup {
 
-	private static final Logger logger = LogManager.getLogger(BeanUser.class);
+	private static final Logger logger = LogManager.getLogger(BeanGroup.class);
 
 	private transient BeanUserManager _um;
 
-	private String _password = "";
-
 	private transient boolean _purged;
 
-	public BeanUser(String username) {
-		super(username);
+	public BeanGroup(String groupname) {
+		super(groupname);
 	}
 
-	public BeanUser(BeanUserManager manager, String username) {
-		super(username);
+	public BeanGroup(BeanUserManager manager, String groupname) {
+		super(groupname);
 		_um = manager;
 	}
 
@@ -64,25 +62,13 @@ public class BeanUser extends AbstractUser {
 		return _um;
 	}
 
-	public boolean checkPassword(String password) {
-		return password.equals(_password);
-	}
-
 	public void commit() {
 		CommitManager.getCommitManager().add(this);
 	}
 
 	public void purge() {
 		_purged = true;
-		_um.deleteUser(getName());
-	}
-
-	public String getPassword() {
-		return _password;
-	}
-
-	public void setPassword(String password) {
-		_password = password;
+		_um.deleteGroup(getName());
 	}
 
 	public void setUserManager(BeanUserManager manager) {
@@ -95,12 +81,12 @@ public class BeanUser extends AbstractUser {
 
 		Map<String,Object> params = new HashMap<>();
 		params.put(JsonWriter.PRETTY_PRINT, true);
-		try (OutputStream out = new SafeFileOutputStream(_um.getUserFile(getName()));
+		try (OutputStream out = new SafeFileOutputStream(_um.getGroupFile(getName()));
 			 JsonWriter writer = new JsonWriter(out, params)) {
 			writer.write(this);
-            logger.debug("Wrote userfile for {}", this.getName());
+		logger.debug("Wrote groupfile for {}", this.getName());
 		} catch (IOException | JsonIoException e) {
-			throw new IOException("Unable to write " + _um.getUserFile(getName()) + " to disk", e);
+			throw new IOException("Unable to write " + _um.getGroupFile(getName()) + " to disk", e);
 		}
 	}
 
