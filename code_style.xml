@@ -1,0 +1,9 @@
+<code_scheme name="drftpd" version="173">
+  <option name="LINE_SEPARATOR" value="&#xA;" />
+  <codeStyleSettings language="JAVA">
+    <option name="RIGHT_MARGIN" value="140" />
+    <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="true" />
+    <option name="KEEP_SIMPLE_METHODS_IN_ONE_LINE" value="true" />
+    <option name="KEEP_SIMPLE_LAMBDAS_IN_ONE_LINE" value="true" />
+  </codeStyleSettings>
+</code_scheme>
