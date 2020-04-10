@@ -113,7 +113,7 @@ public class GroupManagementHandler extends CommandInterface {
 			newGroup.getKeyedMap().setObject(GroupManagement.GROUPSLOTS, 0);
 			newGroup.getKeyedMap().setObject(GroupManagement.LEECHSLOTS, 0);
 
-			logger.info("'{}' added grup '{}'", request.getUser(), newGroup.getName());
+			logger.info("'{}' added group '{}'", request.getUser(), newGroup.getName());
 
 			newGroup.commit();
 			response.addComment(session.jprintf(_bundle, "addgroup.success", env, request.getUser()));
