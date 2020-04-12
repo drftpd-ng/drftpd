@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.drftpd</groupId>
-        <artifactId>drftpd</artifactId>
+        <artifactId>drftpd-core</artifactId>
         <version>4.0-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
