@@ -4,18 +4,13 @@
 *.class
 *.iml
 .idea
+.dev
 target
 build
-dependencies
-logs
-/config
-/site
-userdata/drftpd.key
-userdata/slaves
-userdata/vfs
-userdata/users
-userdata/groups
-userdata/index
+
+site
+runtime
+userdata
 index.bkp
 
 # Log file

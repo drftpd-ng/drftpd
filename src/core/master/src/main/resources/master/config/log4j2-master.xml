@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <RollingFile name="root" fileName="logs/master.log" filePattern="logs/master-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="slave" fileName="logs/remoteslave.log" filePattern="logs/remoteslave-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+    <RollingFile name="sysop" fileName="logs/sysop.log" filePattern="logs/sysop-%d{yyyy-MM-dd}-%i.log.gz">
+      <PatternLayout>
+        <Pattern>%p %d{ISO8601} [%t] %c %x - %m%n</Pattern>
+      </PatternLayout>
+      <Policies>
+        <TimeBasedTriggeringPolicy />
+        <SizeBasedTriggeringPolicy />
+      </Policies>
+      <DefaultRolloverStrategy max="15"/>
+    </RollingFile>
+  </Appenders>
+  <Loggers>
+    <Logger name="org.drftpd.master.commands.usermanagement" level="warn" additivity="false">
+      <AppenderRef ref="sysop"/>
+    </Logger>
+    <Logger name="org.drftpd.master.slavemanagement.RemoteSlave" level="warn" additivity="false">
+      <AppenderRef ref="slave"/>
+    </Logger>
+    <Logger name="org.drftpd.master.slavemanagement.SlaveManager" level="warn" additivity="false">
+      <AppenderRef ref="slave"/>
+    </Logger>
+	<Root level="warn">
+      <AppenderRef ref="root"/>
+    </Root>
+  </Loggers>
+</Configuration>

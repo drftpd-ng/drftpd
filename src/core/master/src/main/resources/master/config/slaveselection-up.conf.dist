@@ -1,0 +1,51 @@
+# Only used if you are using
+# org.drftpd.master.slaveselection.filter.SlaveSelectionManager in drftpd.conf
+
+# the slave that is selected will be an available slave and will have more
+# points(given from the filters) than the other available slaves
+
+# **** Default Config **** (suggested for ultimate bandwidth usage)
+
+1.filter=bandwidth
+1.multiplier=1
+
+2.filter=minfreespace
+2.multiplier=1
+2.minfreespace=1GB
+
+3.filter=minfreespace
+3.minfreespace=100MB
+3.multiplier=0
+
+4.filter=cycle
+
+# **** Sample Config ****
+
+#Bandwidth (SlaveScore - (multiplier * current bw usage of slave))
+#.filter=bandwidth
+#.multiplier=5
+
+#Cycle (If there is a tie in SlaveScore's, Cycle adds one point to the last used slave(in the tie))
+#.filter=cycle
+
+#MatchDir (Sets appropriate settings from "assign" on transfers inside "path")
+#.filter=matchdir
+#.match=/section/*
+#.assign=slave1+500 slave2-500 slave3+remove
+#.assume.remove=false (if true removes all slaves not mentioned in assign)
+#.negate.expression=false (if true negates the glob set in match)
+
+#MatchDirEx (Same as MatchDir but uses regular expression instead of globs)
+#.filter=matchdirex
+#.match=^/section/.*$
+#.assign=slave1+500 slave2-500 slave3+remove
+#.assume.remove=false (if true removes all slaves not mentioned in assign)
+#.negate.expression=false (if true negates the glob set in match)
+
+
+#MaxtransfersPerslave (This will allow 10 transfers on slave1 and 5 on slave2)
+#.filter=MaxtransfersPerslave
+#.assign=slave1+10 slave2+5
+#.match=^/section/.*$
+#.negate.expression=false
+
