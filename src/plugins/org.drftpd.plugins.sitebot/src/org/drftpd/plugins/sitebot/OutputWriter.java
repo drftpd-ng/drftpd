@@ -50,7 +50,7 @@ public class OutputWriter {
 		_maxOutputLen = getMaxLineLength();
 	}
 
-	public void sendMessage(String message) {
+	public synchronized void sendMessage(String message) {
 		for (String line : splitLines(message)) {
 			if (_blowfishEnabled) {
 				// Check if we have a valid cipher before proceeding, this is to cover
