@@ -1,11 +1,11 @@
 package org.drftpd.autonuke.master;
 
-import org.drftpd.master.commands.zipscript.vfs.ZipscriptVFSDataSFV;
-import org.drftpd.master.commands.zipscript.zip.vfs.ZipscriptVFSDataZip;
 import org.drftpd.common.util.PropertyHelper;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.protocol.zipscript.common.SFVStatus;
-import org.drftpd.master.protocol.zipscript.zip.common.DizStatus;
+import org.drftpd.zipscript.common.sfv.SFVStatus;
+import org.drftpd.zipscript.common.zip.DizStatus;
+import org.drftpd.zipscript.master.sfv.ZipscriptVFSDataSFV;
+import org.drftpd.zipscript.master.zip.vfs.ZipscriptVFSDataZip;
 
 import java.util.Properties;
 

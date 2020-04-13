@@ -24,11 +24,24 @@
         <module>speedtest</module>
         <module>speedtest-net</module>
         <module>mediainfo</module>
-        <module>jobmanager</module>
+        <module>jobs</module>
         <module>mirror</module>
         <module>tvmaze</module>
         <module>archive</module>
         <module>find</module>
+		<module>zipscript</module>
+		<module>links</module>
+		<module>raceleader</module>
+		<module>indexation</module>
+		<module>autofreespace</module>
+		<module>dupecheck</module>
+		<module>prebw</module>
+		<module>nukefilter</module>
+		<module>trial</module>
+		<module>traffic</module>
+		<module>statistics</module>
+		<module>request</module>
+		<module>sitebot</module>
     </modules>
 
     <build>

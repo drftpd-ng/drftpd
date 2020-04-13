@@ -18,11 +18,11 @@ package org.drftpd.tvmaze.master.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
+import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.tvmaze.master.event.TvMazeEvent;
 import org.drftpd.master.util.ReplacerUtils;
-import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.master.plugins.sitebot.AnnounceWriter;
-import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
 
 import java.util.ResourceBundle;
 

@@ -21,14 +21,14 @@ import org.bushe.swing.event.annotation.EventSubscriber;
 import org.drftpd.master.GlobalContext;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
+import org.drftpd.master.sitebot.SiteBot;
+import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.mediainfo.common.MediaInfo;
-import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.master.plugins.sitebot.AnnounceWriter;
-import org.drftpd.master.plugins.sitebot.SiteBot;
-import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
 
 import java.util.HashMap;
 import java.util.Map;

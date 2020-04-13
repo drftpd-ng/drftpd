@@ -18,16 +18,16 @@ package org.drftpd.speedtestnet.master.announce;
 
 import org.bushe.swing.event.annotation.AnnotationProcessor;
 import org.bushe.swing.event.annotation.EventSubscriber;
+import org.drftpd.master.sitebot.AbstractAnnouncer;
+import org.drftpd.master.sitebot.AnnounceWriter;
+import org.drftpd.master.sitebot.SiteBot;
+import org.drftpd.master.sitebot.config.AnnounceConfig;
 import org.drftpd.master.util.Time;
 import org.drftpd.common.util.Bytes;
 import org.drftpd.master.util.ReplacerUtils;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.plugins.sitebot.AbstractAnnouncer;
-import org.drftpd.master.plugins.sitebot.AnnounceWriter;
-import org.drftpd.master.plugins.sitebot.SiteBot;
-import org.drftpd.master.plugins.sitebot.config.AnnounceConfig;
-import org.drftpd.speedtestnet.master.event.SpeedTestEvent;
 import org.drftpd.common.slave.TransferStatus;
+import org.drftpd.speedtestnet.master.event.SpeedTestEvent;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -15,7 +15,7 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.archivetypes.ArchiveHandler;
-import org.drftpd.jobmanager.master.Job;
+import org.drftpd.jobs.master.Job;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 import org.drftpd.common.vfs.InodeHandleInterface;
 

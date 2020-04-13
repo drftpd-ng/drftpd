@@ -27,13 +27,13 @@ import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.exceptions.NoAvailableSlaveException;
 import org.drftpd.master.exceptions.SlaveUnavailableException;
 import org.drftpd.master.sections.SectionInterface;
+import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.vfs.index.IndexEngineInterface;
 import org.drftpd.master.vfs.index.IndexException;
-import org.drftpd.master.plugins.sitebot.SiteBot;
 import org.drftpd.imdb.common.IMDBInfo;
 import org.drftpd.imdb.master.index.IMDBQueryParams;
 

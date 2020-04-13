@@ -28,7 +28,7 @@ import org.drftpd.archive.master.DuplicateArchiveException;
 import org.drftpd.archive.master.event.ArchiveFailedEvent;
 import org.drftpd.archive.master.event.ArchiveFinishEvent;
 import org.drftpd.archive.master.event.ArchiveStartEvent;
-import org.drftpd.jobmanager.master.Job;
+import org.drftpd.jobs.master.Job;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,115 +39,114 @@ import java.util.Set;
  * @version $Id$
  */
 public class ArchiveHandler extends Thread {
-	protected static final Logger logger = LogManager.getLogger(ArchiveHandler.class);
+    protected static final Logger logger = LogManager.getLogger(ArchiveHandler.class);
 
-	private ArchiveType _archiveType;
+    private ArchiveType _archiveType;
 
-	private ArrayList<Job> _jobs = null;
+    private ArrayList<Job> _jobs = null;
 
-	public ArchiveHandler(ArchiveType archiveType) {
-		super(archiveType.getClass().getName() + " archiving " + archiveType.getSection().getName());
-		_archiveType = archiveType;
-		AnnotationProcessor.process(this);
-	}
+    public ArchiveHandler(ArchiveType archiveType) {
+        super(archiveType.getClass().getName() + " archiving " + archiveType.getSection().getName());
+        _archiveType = archiveType;
+        AnnotationProcessor.process(this);
+    }
 
-	public ArchiveType getArchiveType() {
-		return _archiveType;
-	}
+    public ArchiveType getArchiveType() {
+        return _archiveType;
+    }
 
-	public SectionInterface getSection() {
-		return _archiveType.getSection();
-	}
+    public SectionInterface getSection() {
+        return _archiveType.getSection();
+    }
 
-	public ArrayList<Job> getJobs() {
-		if (_jobs == null) {
-			return (ArrayList<Job>)Collections.<Job>emptyList();
-		}
-		return new ArrayList<>(_jobs);
-	}
+    public ArrayList<Job> getJobs() {
+        if (_jobs == null) {
+            return (ArrayList<Job>) Collections.<Job>emptyList();
+        }
+        return new ArrayList<>(_jobs);
+    }
 
-	public ArrayList getThreadByName(String threadName) {
-		ArrayList<Thread> threadArrayList = new ArrayList<>();
-		for (Thread t : Thread.getAllStackTraces().keySet()) {
-			if (t.isAlive() && t.getName().equals(threadName)) {
-				threadArrayList.add(t);
-			}
-		}
+    public ArrayList getThreadByName(String threadName) {
+        ArrayList<Thread> threadArrayList = new ArrayList<>();
+        for (Thread t : Thread.getAllStackTraces().keySet()) {
+            if (t.isAlive() && t.getName().equals(threadName)) {
+                threadArrayList.add(t);
+            }
+        }
 
-		return threadArrayList;
-	}
+        return threadArrayList;
+    }
 
-	/*
-	 * Thread for ArchiveHandler
-	 * This will go through and find the oldest non archived dir, then try and archive it
-	 * It will also loop X amount of times defined in .repeat from .conf file.
-	 *
-	 * This also throws events so they can be caught for sitebot announcing.
-	 */
-	public void run() {
-		// Prevent spawning more than 1 active threads
-		ArrayList<Thread>  threadArrayList = getThreadByName(this.getName());
-		if (threadArrayList.size() > 1)
-		{
-			for (Thread t : threadArrayList) {
-				if (t.isAlive())
-					return; // A thread is already running lets skip this cycle
-			}
-		}
+    /*
+     * Thread for ArchiveHandler
+     * This will go through and find the oldest non archived dir, then try and archive it
+     * It will also loop X amount of times defined in .repeat from .conf file.
+     *
+     * This also throws events so they can be caught for sitebot announcing.
+     */
+    public void run() {
+        // Prevent spawning more than 1 active threads
+        ArrayList<Thread> threadArrayList = getThreadByName(this.getName());
+        if (threadArrayList.size() > 1) {
+            for (Thread t : threadArrayList) {
+                if (t.isAlive())
+                    return; // A thread is already running lets skip this cycle
+            }
+        }
 
-		long curtime = System.currentTimeMillis();
-		for (int i=0; i<_archiveType.getRepeat(); i++) {
-			if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
-				//don't want to double archive stuff...so we to check and make sure
-				return;
-			}
-			try {
-				synchronized (_archiveType._parent) {
-					if (_archiveType.getDirectory() == null) {
-						_archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
-					}
+        long curtime = System.currentTimeMillis();
+        for (int i = 0; i < _archiveType.getRepeat(); i++) {
+            if ((System.currentTimeMillis() - curtime) > _archiveType._parent.getCycleTime()) {
+                //don't want to double archive stuff...so we to check and make sure
+                return;
+            }
+            try {
+                synchronized (_archiveType._parent) {
+                    if (_archiveType.getDirectory() == null) {
+                        _archiveType.setDirectory(_archiveType.getOldestNonArchivedDir());
+                    }
 
-					if (_archiveType.getDirectory() == null) {
-						return; // all done
-					}
-					try {
-						_archiveType._parent.addArchiveHandler(this);
-					} catch (DuplicateArchiveException e) {
+                    if (_archiveType.getDirectory() == null) {
+                        return; // all done
+                    }
+                    try {
+                        _archiveType._parent.addArchiveHandler(this);
+                    } catch (DuplicateArchiveException e) {
                         logger.warn("Directory -- {} -- is already being archived ", _archiveType.getDirectory());
-						return;
-					}
-				}
-				if (!_archiveType.moveReleaseOnly()) {
-					Set<RemoteSlave> destSlaves = _archiveType.findDestinationSlaves();
+                        return;
+                    }
+                }
+                if (!_archiveType.moveReleaseOnly()) {
+                    Set<RemoteSlave> destSlaves = _archiveType.findDestinationSlaves();
 
-					if (destSlaves == null) {
-						_archiveType.setDirectory(null);
-						return; // no available slaves to use
-					}
+                    if (destSlaves == null) {
+                        _archiveType.setDirectory(null);
+                        return; // no available slaves to use
+                    }
 
-					_jobs = _archiveType.send();
-				}
+                    _jobs = _archiveType.send();
+                }
 
-				GlobalContext.getEventService().publish(new ArchiveStartEvent(_archiveType,_jobs));
-				long starttime = System.currentTimeMillis();
-				if (_jobs != null) {
-					_archiveType.waitForSendOfFiles(_jobs);
-				}
+                GlobalContext.getEventService().publish(new ArchiveStartEvent(_archiveType, _jobs));
+                long starttime = System.currentTimeMillis();
+                if (_jobs != null) {
+                    _archiveType.waitForSendOfFiles(_jobs);
+                }
 
-				if (!_archiveType.moveRelease(getArchiveType().getDirectory())) {
-					_archiveType.addFailedDir(getArchiveType().getDirectory().getPath());
-					GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType,starttime,"Failed To Move Directory"));
+                if (!_archiveType.moveRelease(getArchiveType().getDirectory())) {
+                    _archiveType.addFailedDir(getArchiveType().getDirectory().getPath());
+                    GlobalContext.getEventService().publish(new ArchiveFailedEvent(_archiveType, starttime, "Failed To Move Directory"));
                     logger.error("Failed to Archiving {} (Failed To Move Directory)", getArchiveType().getDirectory().getPath());
-				} else {
-					GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType,starttime));
+                } else {
+                    GlobalContext.getEventService().publish(new ArchiveFinishEvent(_archiveType, starttime));
                     logger.info("Done archiving {}", getArchiveType().getDirectory().getPath());
-				}
-			} catch (Exception e) {
-				logger.warn("", e);
-			} finally {
-				_archiveType._parent.removeArchiveHandler(this);
-				_archiveType.setDirectory(null);
-			}
-		}
-	}
+                }
+            } catch (Exception e) {
+                logger.warn("", e);
+            } finally {
+                _archiveType._parent.removeArchiveHandler(this);
+                _archiveType.setDirectory(null);
+            }
+        }
+    }
 }

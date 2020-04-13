@@ -29,7 +29,7 @@ delete.collision.files=false
 
 # The name of the UserManager's plugin.
 # Default is: org.drftpd.master.usermanager.encryptedjavabeans
-usermanager=org.drftpd.master.plugins.usermanager.encryptedjavabeans.EncryptedBeanUserManager
+usermanager=org.drftpd.master.usermanager.encryptedjavabeans.EncryptedBeanUserManager
 
 # The name of the CommandManager's plugin.
 # Default is: org.drftpd.master.commandmanager
@@ -50,7 +50,7 @@ slaveselection=org.drftpd.master.slaveselection.filter.SlaveSelectionManager
 sectionmanager=org.drftpd.master.sections.def.SectionManager
 
 # Index engine
-indexingengine=org.drftpd.master.vfs.index.lucene.LuceneEngine
+indexingengine=org.drftpd.indexation.master.LuceneEngine
 
 # Enabled cipher suites
 # If left empty, default set will be used.

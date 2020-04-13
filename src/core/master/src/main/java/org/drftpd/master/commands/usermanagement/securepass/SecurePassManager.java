@@ -103,7 +103,7 @@ public class SecurePassManager implements PluginInterface {
 		LineNumberReader inRead = null;
 		
 		try {
-			File file = ConfigLoader.loadConfigFile("securepass.conf", ConfigType.MASTER, true);
+			File file = ConfigLoader.loadConfigFile("securepass.conf", ConfigType.MASTER, false);
 			inRead = new LineNumberReader(new FileReader(file));
 			String line;
 			while ((line = inRead.readLine()) != null) {

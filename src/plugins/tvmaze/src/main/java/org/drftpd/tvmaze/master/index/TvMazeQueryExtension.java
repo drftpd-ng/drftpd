@@ -23,9 +23,9 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
+import org.drftpd.indexation.master.LuceneUtils;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
-import org.drftpd.master.vfs.index.lucene.LuceneUtils;
-import org.drftpd.master.vfs.index.lucene.extensions.QueryTermExtensionInterface;
+import org.drftpd.indexation.master.extensions.QueryTermExtensionInterface;
 
 /**
  * @author scitz0

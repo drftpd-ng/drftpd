@@ -54,7 +54,7 @@ public class ExpiredUserManager implements UserResetHookInterface {
 	}
 
 	private void loadConf() {
-		Properties cfg = ConfigLoader.loadPluginConfig("expireduser.conf", ConfigType.MASTER);
+		Properties cfg = ConfigLoader.loadConfig("expireduser.conf", ConfigType.MASTER);
 		_delete = cfg.getProperty("delete","false").equalsIgnoreCase("true");
 		_purge = cfg.getProperty("purge","false").equalsIgnoreCase("true");
 		_chgrp = cfg.getProperty("chgrp","");

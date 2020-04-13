@@ -25,8 +25,8 @@ import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.ImproperUsageException;
-import org.drftpd.jobmanager.master.Job;
-import org.drftpd.jobmanager.master.JobManager;
+import org.drftpd.jobs.master.Job;
+import org.drftpd.jobs.master.JobManager;
 
 import java.util.HashSet;
 

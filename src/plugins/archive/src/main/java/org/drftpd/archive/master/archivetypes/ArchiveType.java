@@ -30,8 +30,8 @@ import org.drftpd.master.vfs.ObjectNotValidException;
 import org.drftpd.master.vfs.VirtualFileSystem;
 import org.drftpd.archive.master.Archive;
 import org.drftpd.archive.master.DuplicateArchiveException;
-import org.drftpd.jobmanager.master.Job;
-import org.drftpd.jobmanager.master.JobManager;
+import org.drftpd.jobs.master.Job;
+import org.drftpd.jobs.master.JobManager;
 import org.drftpd.slave.exceptions.FileExistsException;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 

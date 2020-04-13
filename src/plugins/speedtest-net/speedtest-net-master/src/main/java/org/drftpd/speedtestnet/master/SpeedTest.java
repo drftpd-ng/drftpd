@@ -29,7 +29,6 @@ import org.drftpd.speedtestnet.common.SpeedTestInfo;
 import org.drftpd.speedtestnet.master.protocol.SpeedTestCallable;
 import org.drftpd.master.event.ReloadEvent;
 import org.drftpd.master.slavemanagement.RemoteSlave;
-import org.drftpd.master.plugins.sitebot.SiteBot;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.text.DecimalFormat;
@@ -90,7 +89,7 @@ public class SpeedTest extends CommandInterface {
 		boolean wildcardSlaves = slaveName.endsWith("*") && !allSlaves;
 		boolean listservers = false;
 
-		Map<String, Object> env = new HashMap<>(SiteBot.GLOBAL_ENV);
+		Map<String, Object> env = new HashMap<>();
 
 		if (args[0].equals("-refresh")) {
 			_servers = SpeedTestUtils.getClosetsServers();

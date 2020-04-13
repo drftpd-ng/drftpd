@@ -221,7 +221,7 @@ public class UserManagementHandler extends CommandInterface {
             env.put("targetuser", newUsername);
             String pass = st.nextToken();
 
-            Properties cfg = ConfigLoader.loadPluginConfig("defaultuser.conf", ConfigType.MASTER);
+            Properties cfg = ConfigLoader.loadConfig("defaultuser.conf", ConfigType.MASTER);
 
             String ratio = cfg.getProperty("ratio", "3.0");
             String maxlogins = cfg.getProperty("max_logins", "2");

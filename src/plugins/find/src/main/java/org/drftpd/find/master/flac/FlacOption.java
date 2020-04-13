@@ -22,7 +22,7 @@ import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.index.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
-import org.drftpd.master.vfs.index.lucene.extensions.flac.FlacQueryParams;
+import org.drftpd.indexation.master.extensions.flac.FlacQueryParams;
 
 /**
  * @author norox

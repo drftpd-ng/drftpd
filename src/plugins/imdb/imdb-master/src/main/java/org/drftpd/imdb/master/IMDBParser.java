@@ -20,10 +20,8 @@ package org.drftpd.imdb.master;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-
+import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.util.HttpUtils;
-import org.drftpd.master.plugins.sitebot.SiteBot;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;

@@ -33,8 +33,8 @@ import org.drftpd.master.slavemanagement.RemoteSlave;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.commands.CommandRequest;
 import org.drftpd.master.commands.CommandResponse;
-import org.drftpd.jobmanager.master.Job;
-import org.drftpd.jobmanager.master.JobManager;
+import org.drftpd.jobs.master.Job;
+import org.drftpd.jobs.master.JobManager;
 import org.drftpd.slave.exceptions.ObjectNotFoundException;
 
 import java.io.FileNotFoundException;

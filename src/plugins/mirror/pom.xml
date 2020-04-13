@@ -23,7 +23,7 @@
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-jobmanager-master</artifactId>
+            <artifactId>drftpd-jobs-master</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>

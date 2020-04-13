@@ -18,7 +18,6 @@
 
 package org.drftpd.slave.diskselection.filter;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.*;

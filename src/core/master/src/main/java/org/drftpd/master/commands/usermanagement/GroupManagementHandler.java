@@ -103,7 +103,7 @@ public class GroupManagementHandler extends CommandInterface {
 		env.put("targetgroup", newGroupname);
 
 		try {
-			Properties cfg = ConfigLoader.loadPluginConfig("defaultgroup.conf", ConfigType.MASTER);
+			Properties cfg = ConfigLoader.loadConfig("defaultgroup.conf", ConfigType.MASTER);
 			String minratio = cfg.getProperty("min_ratio", "3.0");
 			String maxratio = cfg.getProperty("max_ratio", "3.0");
 			float minratioVal = Float.parseFloat(minratio);

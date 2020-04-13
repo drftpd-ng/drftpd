@@ -17,7 +17,7 @@
 package org.drftpd.archive.master.event;
 
 import org.drftpd.archive.master.archivetypes.ArchiveType;
-import org.drftpd.jobmanager.master.Job;
+import org.drftpd.jobs.master.Job;
 
 import java.util.ArrayList;
 

@@ -34,6 +34,7 @@ import org.drftpd.common.slave.TransferStatus;
 import org.drftpd.master.util.FtpRequest;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.slave.network.Transfer;
+import org.drftpd.slave.network.ActiveConnection;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

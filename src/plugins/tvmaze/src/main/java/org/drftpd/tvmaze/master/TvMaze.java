@@ -24,13 +24,13 @@ import org.bushe.swing.event.annotation.AnnotationProcessor;
 
 import org.drftpd.master.GlobalContext;
 import org.drftpd.master.commands.*;
+import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.tvmaze.master.metadata.TvEpisode;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 import org.drftpd.master.sections.SectionInterface;
 import org.drftpd.master.usermanager.NoSuchUserException;
 import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
-import org.drftpd.master.plugins.sitebot.SiteBot;
 
 import java.io.FileNotFoundException;
 import java.util.*;
