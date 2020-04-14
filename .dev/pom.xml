@@ -27,42 +27,97 @@
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-archive</artifactId>
+            <artifactId>drftpd-archive-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-autonuke</artifactId>
+            <artifactId>drftpd-autofreespace-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-find</artifactId>
+            <artifactId>drftpd-autonuke-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-imdb</artifactId>
+            <artifactId>drftpd-dupecheck-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-jobmanager</artifactId>
+            <artifactId>drftpd-find-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-mediainfo</artifactId>
+            <artifactId>drftpd-imdb-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-mirror</artifactId>
+            <artifactId>drftpd-imdb-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-speedtest</artifactId>
+            <artifactId>drftpd-imdb-slave</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-jobs-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-mediainfo-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-mediainfo-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-mediainfo-slave</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-mirror-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-nukefilter-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-prebw-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-raceleader-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-request-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-sitebot-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-speedtest-master</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -72,7 +127,37 @@
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-tvmaze</artifactId>
+            <artifactId>drftpd-statistics-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-traffic-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-trial-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-tvmaze-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-zipscript-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-zipscript-master</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.drftpd</groupId>
+            <artifactId>drftpd-zipscript-slave</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

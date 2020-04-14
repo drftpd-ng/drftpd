@@ -62,7 +62,7 @@ public class SSLGetContext {
 		KeyStore ks = KeyStore.getInstance("PKCS12");
 		FileInputStream fis = null;
 		try {
-			fis = new FileInputStream("userdata/drftpd.key");
+			fis = new FileInputStream("config/drftpd.key");
 			ks.load(fis, "drftpd".toCharArray());
 		} finally {
 			if (fis != null) {

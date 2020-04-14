@@ -171,7 +171,7 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 ## do not set this, its default value 120s will be used.
 ## This is the time the uploader has to remove the crap he 
 ## uploaded before he gets nuked.
-## global.nuke.delay=
+global.nuke.delay=120
 ##
 ## EXAMPLE:
 ##		global.nuke.delay=120
@@ -203,10 +203,10 @@ nuke.exempt.dirnames.regex=^(?i)(((cd|dvd|dis[ck]|part)[1-9]{1,2})|cover[s]?|sam
 #global.enforce.regex=
 #global.filter.year=
 #global.enforce.year=
-#global.enforce.year.nukex=
+global.enforce.year.nukex=3
 #global.filter.group=
 #global.enforce.group=
-#global.enforce.group.nukex=
+global.enforce.group.nukex=3
 #global.nuke.delay=
 #global.exempt.sections=
 
