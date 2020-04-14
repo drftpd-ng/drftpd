@@ -51,7 +51,6 @@ public class LoginHandler extends CommandInterface {
     
     private ResourceBundle _bundle;
 
-
     public void initialize(String method, String pluginName, StandardCommandManager cManager) {
     	super.initialize(method, pluginName, cManager);
     	_bundle = cManager.getResourceBundle();
@@ -133,7 +132,7 @@ public class LoginHandler extends CommandInterface {
             GlobalContext.getEventService().publishAsync(new UserEvent(
                     conn.getUserNull(), "LOGIN", System.currentTimeMillis()));
 
-            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", request.getUser()));
+            CommandResponse response = new CommandResponse(230, conn.jprintf(_bundle, "pass.success", conn.getUsername()));
             
             try {
                 addTextToResponse(response, "userdata/text/welcome.txt");
@@ -231,7 +230,7 @@ public class LoginHandler extends CommandInterface {
         	InetAddress address = request.getSession().getObject(BaseFtpConnection.ADDRESS, null);
         	String ident = request.getSession().getObject(BaseFtpConnection.IDENT, null);
         	
-        	boolean hostMaskPassed = false;
+        	boolean hostMaskPassed;
         	if (address != null) {
         		// this means that the user is connecting from a BNC.
         		hostMaskPassed = newUser.getHostMaskCollection().check(ident, address, null);
@@ -251,13 +250,10 @@ public class LoginHandler extends CommandInterface {
                 if (ftpResponse != null) {
                 	return new CommandResponse(ftpResponse.getCode(), ftpResponse.getMessage());
                 }
-
-                Map<String, Object> env = new HashMap<>();
-                env.put("user", newUser.getName());
                 
                 request.getSession().setObject(BaseFtpConnection.FAILEDLOGIN, false);
                 return new CommandResponse(331,
-                        conn.jprintf(_bundle, "user.success", env, request.getUser()),
+                        conn.jprintf(_bundle, "user.success", newUser.getName()),
                 		request.getCurrentDirectory(), newUser.getName());
             }
         } catch (PatternSyntaxException e) {

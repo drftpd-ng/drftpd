@@ -52,11 +52,7 @@ public class ExpiredUserPreHook {
 
         try {
             newUser = conn.getGlobalContext().getUserManager().getUserByNameIncludeDeleted(request.getArgument());
-        } catch (NoSuchUserException ex) {
-        	return request;
-        } catch (UserFileException ex) {
-        	return request;
-        } catch (RuntimeException ex) {
+        } catch (NoSuchUserException | UserFileException | RuntimeException ex) {
         	return request;
         }
 

@@ -70,7 +70,7 @@ public class Permission {
 				allow = false;
 				aclUser = aclUser.substring(1);
 			}
-			if (aclUser.equals("%")) {
+			if (aclUser.equals("%") && user == null) {
 				return allow;
 			} else if (aclUser.equals("*") && user != null) {
 				return allow;

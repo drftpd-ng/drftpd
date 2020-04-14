@@ -248,10 +248,6 @@ public class StandardCommandManager implements CommandManagerInterface {
         return genericResponses;
     }
 
-    public CommandRequestInterface newRequest(String argument, String command, DirectoryHandle directory, String user) {
-        return new CommandRequest(argument, command, directory, user);
-    }
-
     public CommandRequestInterface newRequest(String originalCommand, String argument, DirectoryHandle directory, String user, Session session, Properties config) {
         return new CommandRequest(originalCommand, argument, directory, user, session, config);
     }
