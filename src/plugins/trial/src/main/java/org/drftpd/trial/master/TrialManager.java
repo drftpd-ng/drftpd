@@ -111,7 +111,7 @@ public class TrialManager implements PluginInterface {
     public void loadConf() {
         initTypes();
         _trials = new ArrayList<>();
-        Properties props = ConfigLoader.loadPluginConfig("trialmanager.conf", ConfigType.MASTER);
+        Properties props = ConfigLoader.loadPluginConfig("trial.conf", ConfigType.MASTER);
         int count = 1;
         String type;
         while ((type = PropertyHelper.getProperty(props, count + ".type", null)) != null) {

@@ -114,7 +114,7 @@ public class TrafficManager implements PluginInterface {
     public void loadConf() {
         initTypes();
         _traffictypes = new ArrayList<>();
-        Properties props = ConfigLoader.loadPluginConfig("trafficmanager.conf", ConfigType.MASTER);
+        Properties props = ConfigLoader.loadPluginConfig("traffic.conf", ConfigType.MASTER);
         int count = 1;
         String type;
         while ((type = PropertyHelper.getProperty(props, count + ".type", null)) != null) {
