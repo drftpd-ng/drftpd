@@ -56,27 +56,27 @@ changegroupadmin.bad.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${t
 changegroupadmin.add.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} added as group admin to ${targetgroup}
 changegroupadmin.remove.user=${color}15${bold}CHANGEGROUPADMIN${coloroff}: User ${targetuser} removed from ${targetgroup} as group admin
 
-user=Username: ${username,-20} Created: ${org.drftpd.commands.UserManagement@created}\n\
-Comment: ${org.drftpd.commands.UserManagement@comment,-21} Last seen: ${org.drftpd.commands.UserManagement@lastseen}\n\
+user=Username: ${username,-20} Created: ${org.drftpd.master.commands.UserManagement@created}\n\
+Comment: ${org.drftpd.master.commands.UserManagement@comment,-21} Last seen: ${org.drftpd.master.commands.UserManagement@lastseen}\n\
 Total logins: ${org.drftpd.statistics.master.metadata.StatsUserData@logins,-16}\n\
-Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.commands.UserManagement@wkly_allotment}\n\
-Ratio: ${org.drftpd.commands.UserManagement@ratio,-23} Credits: ${credits}\n\
-Max logins: ${org.drftpd.commands.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.commands.UserManagement@maxloginsip}\n\
-Max sim uploads: ${org.drftpd.commands.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.commands.UserManagement@maxsimdn}\n\
+Idle time: ${idletime,-19} Weekly Allotment: ${org.drftpd.master.commands.UserManagement@wkly_allotment}\n\
+Ratio: ${org.drftpd.master.commands.UserManagement@ratio,-23} Credits: ${credits}\n\
+Max logins: ${org.drftpd.master.commands.UserManagement@maxlogins,-18} From same IP: ${org.drftpd.master.commands.UserManagement@maxloginsip}\n\
+Max sim uploads: ${org.drftpd.master.commands.UserManagement@maxsimup,-13} Max sim downloads: ${org.drftpd.master.commands.UserManagement@maxsimdn}\n\
 Total uploaded: ${uploaded,-14} Total downloaded: ${downloaded}\n\
 Times nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nuked,-17} Bytes nuked: ${org.drftpd.commands.nuke.metadata.NukeUserData@nukedBytes}\n\
 Requests: ${org.drftpd.commands.request.metadata.RequestUserData@requests,-20} Filled requests: ${org.drftpd.commands.request.metadata.RequestUserData@requestsFilled}\n\
 Requests this week: ${org.drftpd.commands.request.metadata.RequestUserData@weekReqs}\n\
 Primary group: ${group,-15} Banned: ${isbanned}\n\
-Extra groups: ${groups,-16} Banned Until: ${org.drftpd.commands.UserManagement@ban_time}\n\
+Extra groups: ${groups,-16} Banned Until: ${org.drftpd.master.commands.UserManagement@ban_time}\n\
 IP masks: ${ipmasks}\n\
-IRC Ident: ${org.drftpd.commands.UserManagement@ircident,-23}\n\
-Tagline: ${org.drftpd.commands.UserManagement@tagline}
+IRC Ident: ${org.drftpd.master.commands.UserManagement@ircident,-23}\n\
+Tagline: ${org.drftpd.master.commands.UserManagement@tagline}
 
-mike.saved.group=Group / Leech slots: ${org.drftpd.commands.UserManagement@groupslots,-3} ${org.drftpd.commands.UserManagement@leechslots,-6}\
-Group Min/Max Ratio: ${org.drftpd.commands.UserManagement@minratio}/${org.drftpd.commands.UserManagement@maxratio}\n\
+mike.saved.group=Group / Leech slots: ${org.drftpd.master.commands.UserManagement@groupslots,-3} ${org.drftpd.master.commands.UserManagement@leechslots,-6}\
+Group Min/Max Ratio: ${org.drftpd.master.commands.UserManagement@minratio}/${org.drftpd.master.commands.UserManagement@maxratio}\n\
 
-bans=${color}15${bold}BANS${coloroff}: ${username} banned for another ${timeleft}m until ${org.drftpd.commands.UserManagement@ban_time} (${org.drftpd.commands.UserManagement@ban_reason})
+bans=${color}15${bold}BANS${coloroff}: ${username} banned for another ${timeleft}m until ${org.drftpd.master.commands.UserManagement@ban_time} (${org.drftpd.master.commands.UserManagement@ban_reason})
 
 ginfo.head=\
 .-----------------------------------------------------------------------.\n\

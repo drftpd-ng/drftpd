@@ -78,8 +78,7 @@ public class SectionManager implements SectionManagerInterface {
 
         for (SectionInterface section : _sections.values()) {
             if (string.startsWith(section.getBaseDirectory().getPath())
-                    && (matchlen < section.getCurrentDirectory().getPath()
-                    .length())) {
+                    && (matchlen < section.getCurrentDirectory().getPath().length())) {
                 match = section;
                 matchlen = section.getCurrentDirectory().getPath().length();
             }

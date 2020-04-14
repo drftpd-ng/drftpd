@@ -41,13 +41,12 @@ commandmanager=org.drftpd.master.commands.StandardCommandManager
 slaveselection=org.drftpd.master.slaveselection.filter.SlaveSelectionManager
 
 # There are 2 SectionManagers.
-# 1. org.drftpd.master.sections.conf.SectionManager:
+# 1. org.drftpd.master.sections.def.SectionManager
 #  * You are not able to configure the sections.
 #    All dirs on the root directory will be defined as a section.
-# 2. org.drftpd.master.sections.conf:
-#  * Check conf/sections.conf for more info.
-# Default: org.drftpd.master.sections.def.SectionManager
-sectionmanager=org.drftpd.master.sections.def.SectionManager
+# 2. org.drftpd.master.sections.conf.SectionManager
+#  * Check config/sections.conf for more info.
+sectionmanager=org.drftpd.master.sections.conf.SectionManager
 
 # Index engine
 indexingengine=org.drftpd.master.indexation.LuceneEngine

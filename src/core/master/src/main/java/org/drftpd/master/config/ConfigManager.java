@@ -93,11 +93,8 @@ public class ConfigManager implements ConfigInterface {
         loadMainProperties();
         parseCipherSuites();
         parseSSLProtocols();
-
         initializeKeyedMap();
-
         _bouncerIps = new ArrayList<>();
-
         readConf();
     }
 

@@ -387,9 +387,6 @@ public class GlobalContext {
         AnnotationProcessor.process(this);
     }
 
-    /**
-     * Will return null if SSL/TLS is not configured
-     */
     public SSLContext getSSLContext() {
         return _sslContext;
     }
@@ -491,16 +488,4 @@ public class GlobalContext {
     public static AsyncThreadSafeEventService getEventService() {
         return eventService;
     }
-
-	/*
-	@EventSubscriber
-	public synchronized void onUnloadPluginEvent(Object event) {
-
-	}
-
-	@EventSubscriber
-	public synchronized void onLoadPluginEvent(Object event) {
-
-	}
-	*/
 }

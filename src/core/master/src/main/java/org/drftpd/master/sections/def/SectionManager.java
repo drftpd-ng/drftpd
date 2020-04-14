@@ -35,132 +35,131 @@ import java.util.*;
  * @version $Id$
  */
 public class SectionManager implements SectionManagerInterface {
-	
-	private static final Logger logger = LogManager.getLogger(SectionManager.class);
 
-	public SectionManager() {
-		logger.debug("Loading def section manager");
-	}
+    private static final Logger logger = LogManager.getLogger(SectionManager.class);
 
-	public Master getConnectionManager() {
-		return Master.getConnectionManager();
-	}
+    public SectionManager() {
+        logger.debug("Loading def section manager");
+    }
 
-	public SectionInterface getSection(String name) {
-		try {
-			try {
-				return new Section(getGlobalContext().getRoot()
-						.getDirectoryUnchecked(name));
-			} catch (ObjectNotValidException e) {
+    public Master getConnectionManager() {
+        return Master.getConnectionManager();
+    }
+
+    public SectionInterface getSection(String name) {
+        try {
+            try {
+                return new Section(getGlobalContext().getRoot().getDirectoryUnchecked(name));
+            } catch (ObjectNotValidException e) {
                 logger.error("Section defined {} is not a file", name);
-				return new Section(getGlobalContext().getRoot());
-			}
-		} catch (FileNotFoundException e) {
-			return new Section(getGlobalContext().getRoot());
-		}
-	}
+                return new Section(getGlobalContext().getRoot());
+            }
+        } catch (FileNotFoundException e) {
+            return new Section(getGlobalContext().getRoot());
+        }
+    }
 
-	private GlobalContext getGlobalContext() {
-		return GlobalContext.getGlobalContext();
-	}
+    private GlobalContext getGlobalContext() {
+        return GlobalContext.getGlobalContext();
+    }
 
-	@SuppressWarnings("unchecked")
-	public Collection<SectionInterface> getSections() {
-		ArrayList<SectionInterface> sections = new ArrayList<>();
-		
-		Set<DirectoryHandle> dirs;
-		try {
-			dirs = GlobalContext.getGlobalContext().getRoot().getDirectoriesUnchecked();
-		} catch (FileNotFoundException e) {
-			return Collections.emptySet();
-		}
-		
-		for (DirectoryHandle dir : dirs) {
-			sections.add(new Section(dir));
-		}
+    @SuppressWarnings("unchecked")
+    public Collection<SectionInterface> getSections() {
+        ArrayList<SectionInterface> sections = new ArrayList<>();
 
-		return sections;
-	}
+        Set<DirectoryHandle> dirs;
+        try {
+            dirs = GlobalContext.getGlobalContext().getRoot().getDirectoriesUnchecked();
+        } catch (FileNotFoundException e) {
+            return Collections.emptySet();
+        }
 
-	public void reload() {
-	}
+        for (DirectoryHandle dir : dirs) {
+            sections.add(new Section(dir));
+        }
 
-	public SectionInterface lookup(DirectoryHandle dir) {
-		try {
-			DirectoryHandle parent = dir.getParent();
-			if (parent.isRoot()) {
-				return new Section(dir);
-			}
-			return lookup(parent);
-		} catch (IllegalStateException e) {
-			throw new IllegalStateException(
-					"The RootDirectory does not have a section");
-		}
+        return sections;
+    }
 
-	}
+    public void reload() {
+    }
 
-	static class Section implements SectionInterface {
-		private DirectoryHandle _dir;
+    public SectionInterface lookup(DirectoryHandle dir) {
+        try {
+            DirectoryHandle parent = dir.getParent();
+            if (parent.isRoot()) {
+                return new Section(dir);
+            }
+            return lookup(parent);
+        } catch (IllegalStateException e) {
+            throw new IllegalStateException(
+                    "The RootDirectory does not have a section");
+        }
 
-		public Section(DirectoryHandle lrf) {
-			_dir = lrf;
-		}
+    }
 
-		public DirectoryHandle getCurrentDirectory() {
-			return _dir;
-		}
+    static class Section implements SectionInterface {
+        private DirectoryHandle _dir;
 
-		@SuppressWarnings("unchecked")
-		public Set<DirectoryHandle> getDirectories() {
-			try {
-				return _dir.getDirectoriesUnchecked();
-			} catch (FileNotFoundException e) {
-				return Collections.emptySet();
-			}
-		}
+        public Section(DirectoryHandle lrf) {
+            _dir = lrf;
+        }
 
-		public String getName() {
-			return _dir.getName();
-		}
+        public DirectoryHandle getCurrentDirectory() {
+            return _dir;
+        }
 
-		public String getColor() {
-			return "15";
-		}
+        @SuppressWarnings("unchecked")
+        public Set<DirectoryHandle> getDirectories() {
+            try {
+                return _dir.getDirectoriesUnchecked();
+            } catch (FileNotFoundException e) {
+                return Collections.emptySet();
+            }
+        }
 
-		public String getPath() {
-			return _dir.getPath();
-		}
+        public String getName() {
+            return _dir.getName();
+        }
 
-		public DirectoryHandle getBaseDirectory() {
-			return _dir;
-		}
+        public String getColor() {
+            return "15";
+        }
 
-		public String getBasePath() {
-			return getPath();
-		}
+        public String getPath() {
+            return _dir.getPath();
+        }
 
-		@Override
-		public boolean equals(Object arg0) {
-			if (!(arg0 instanceof Section)) {
-				return false;
-			}
-			Section compareSection = (Section)arg0;
-			return getBaseDirectory().equals(compareSection.getBaseDirectory());
-		}
-	}
+        public DirectoryHandle getBaseDirectory() {
+            return _dir;
+        }
 
-	@SuppressWarnings("unchecked")
-	public Map<String, SectionInterface> getSectionsMap() {
-		HashMap<String, SectionInterface> sections = new HashMap<>();
-		
-		try {
-			for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectoriesUnchecked()) {
-				sections.put(dir.getName(), new Section(dir));
-			}
-		} catch (FileNotFoundException e) {
-			return Collections.emptyMap();
-		}
-		
-		return sections;
-	}
+        public String getBasePath() {
+            return getPath();
+        }
+
+        @Override
+        public boolean equals(Object arg0) {
+            if (!(arg0 instanceof Section)) {
+                return false;
+            }
+            Section compareSection = (Section) arg0;
+            return getBaseDirectory().equals(compareSection.getBaseDirectory());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, SectionInterface> getSectionsMap() {
+        HashMap<String, SectionInterface> sections = new HashMap<>();
+
+        try {
+            for (DirectoryHandle dir : getGlobalContext().getRoot().getDirectoriesUnchecked()) {
+                sections.put(dir.getName(), new Section(dir));
+            }
+        } catch (FileNotFoundException e) {
+            return Collections.emptyMap();
+        }
+
+        return sections;
+    }
 }
