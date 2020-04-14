@@ -20,9 +20,9 @@ package org.drftpd.find.master.flac;
 import org.drftpd.find.master.FindUtils;
 import org.drftpd.find.master.option.OptionInterface;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
-import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
-import org.drftpd.indexation.master.extensions.flac.FlacQueryParams;
+import org.drftpd.zipscript.master.flac.indexation.FlacQueryParams;
 
 /**
  * @author norox

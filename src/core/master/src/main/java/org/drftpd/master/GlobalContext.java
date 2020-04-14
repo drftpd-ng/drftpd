@@ -46,7 +46,7 @@ import org.drftpd.master.usermanager.UserManager;
 import org.drftpd.master.vfs.CommitManager;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.vfs.index.IndexEngineInterface;
+import org.drftpd.master.indexation.IndexEngineInterface;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;

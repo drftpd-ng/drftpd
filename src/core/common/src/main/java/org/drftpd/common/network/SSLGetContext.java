@@ -37,8 +37,7 @@ public class SSLGetContext {
 
 	private static final Logger logger = LogManager.getLogger(SSLGetContext.class);
 
-	public static SSLContext getSSLContext() throws GeneralSecurityException,
-			IOException {
+	public static SSLContext getSSLContext() throws GeneralSecurityException, IOException {
 		// Create a trust manager that does not validate certificate chains
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {

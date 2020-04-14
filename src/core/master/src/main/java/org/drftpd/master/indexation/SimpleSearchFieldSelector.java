@@ -15,23 +15,26 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.find.master.option;
 
-import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.commands.ImproperUsageException;
+package org.drftpd.master.indexation;
+
+import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.FieldSelectorResult;
 
 /**
- * @author scitz0
+ * This field selector helps simple searches (path-only searches)
+ * to be faster, loading only the path from the Index, and making the
+ * other options to be loaded lazily.
+ * @author fr0w
  * @version $Id$
  */
-public class TypeOption implements OptionInterface {
-
-	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
-		if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-		} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
+@SuppressWarnings("serial")
+public class SimpleSearchFieldSelector implements FieldSelector {
+	public FieldSelectorResult accept(String fieldName) {
+		if (fieldName.equals("fullPath")) {
+			return FieldSelectorResult.LOAD;
 		}
+		
+		return FieldSelectorResult.LAZY_LOAD;
 	}
 }

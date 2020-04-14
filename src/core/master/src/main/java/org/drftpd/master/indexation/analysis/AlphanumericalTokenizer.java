@@ -15,23 +15,33 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.find.master.option;
+package org.drftpd.master.indexation.analysis;
 
-import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.commands.ImproperUsageException;
+import java.io.Reader;
+
+import org.apache.lucene.analysis.CharTokenizer;
+import org.apache.lucene.util.Version;
 
 /**
- * @author scitz0
+ * @author fr0w
  * @version $Id$
  */
-public class TypeOption implements OptionInterface {
+public class AlphanumericalTokenizer extends CharTokenizer {
+	public AlphanumericalTokenizer(Reader input) {
+		super(Version.LUCENE_36, input);
+	}
 
 	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
-		if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-		} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		}
+	protected boolean isTokenChar(int c) {
+		return Character.isLetter(c) || Character.isDigit(c) || isWildcardChar(c);
+	}
+	
+	private boolean isWildcardChar(int c) {
+		return c == '?' || c == '*';
+	}
+	
+	@Override
+	protected int normalize(int c) {
+	    return (Character.isLetter(c) ? Character.toLowerCase(c) : c);
 	}
 }

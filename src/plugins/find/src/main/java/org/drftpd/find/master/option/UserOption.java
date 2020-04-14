@@ -17,7 +17,7 @@
  */
 package org.drftpd.find.master.option;
 
-import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
 
 /**

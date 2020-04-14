@@ -32,7 +32,7 @@ import org.drftpd.master.usermanager.UserFileException;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.vfs.index.IndexException;
+import org.drftpd.master.indexation.IndexException;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

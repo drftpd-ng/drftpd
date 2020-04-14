@@ -31,9 +31,9 @@ import org.drftpd.master.sitebot.SiteBot;
 import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.VirtualFileSystem;
-import org.drftpd.master.vfs.index.AdvancedSearchParams;
-import org.drftpd.master.vfs.index.IndexEngineInterface;
-import org.drftpd.master.vfs.index.IndexException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.IndexEngineInterface;
+import org.drftpd.master.indexation.IndexException;
 import org.drftpd.imdb.common.IMDBInfo;
 import org.drftpd.imdb.master.index.IMDBQueryParams;
 

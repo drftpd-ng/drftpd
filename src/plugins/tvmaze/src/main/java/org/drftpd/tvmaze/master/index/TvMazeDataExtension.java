@@ -24,7 +24,7 @@ import org.apache.lucene.document.NumericField;
 import org.drftpd.tvmaze.master.metadata.TvMazeInfo;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
-import org.drftpd.indexation.master.extensions.IndexDataExtensionInterface;
+import org.drftpd.master.indexation.IndexDataExtensionInterface;
 
 public class TvMazeDataExtension implements IndexDataExtensionInterface {
 

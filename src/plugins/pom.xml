@@ -32,7 +32,6 @@
 		<module>zipscript</module>
 		<module>links</module>
 		<module>raceleader</module>
-		<module>indexation</module>
 		<module>autofreespace</module>
 		<module>dupecheck</module>
 		<module>prebw</module>

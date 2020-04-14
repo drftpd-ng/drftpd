@@ -15,23 +15,22 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.find.master.option;
+package org.drftpd.master.indexation;
 
+import org.apache.lucene.search.BooleanQuery;
 import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.commands.ImproperUsageException;
 
 /**
- * @author scitz0
+ * @author djb61
  * @version $Id$
  */
-public class TypeOption implements OptionInterface {
+public interface QueryTermExtensionInterface {
 
-	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
-		if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-		} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		}
-	}
+	/**
+	 * This method is called whenever a query is made to the index.
+	 * If any relevant data is contained within the extension map of
+	 * the search parameters this should be added to the index query
+	 * appropriately.
+	 */
+    void addQueryTerms(BooleanQuery query, AdvancedSearchParams params);
 }

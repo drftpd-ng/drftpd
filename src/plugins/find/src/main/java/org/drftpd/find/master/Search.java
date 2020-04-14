@@ -28,9 +28,9 @@ import org.drftpd.master.usermanager.User;
 import org.drftpd.master.vfs.DirectoryHandle;
 import org.drftpd.master.vfs.FileHandle;
 import org.drftpd.master.vfs.InodeHandle;
-import org.drftpd.master.vfs.index.AdvancedSearchParams;
-import org.drftpd.master.vfs.index.IndexEngineInterface;
-import org.drftpd.master.vfs.index.IndexException;
+import org.drftpd.master.indexation.AdvancedSearchParams;
+import org.drftpd.master.indexation.IndexEngineInterface;
+import org.drftpd.master.indexation.IndexException;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;

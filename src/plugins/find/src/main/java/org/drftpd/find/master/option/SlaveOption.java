@@ -18,7 +18,7 @@
 package org.drftpd.find.master.option;
 
 import org.drftpd.find.master.FindUtils;
-import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 import org.drftpd.master.commands.ImproperUsageException;
 
 import java.util.Arrays;

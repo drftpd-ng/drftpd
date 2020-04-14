@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>org.drftpd</groupId>
-            <artifactId>drftpd-indexation-master</artifactId>
+            <artifactId>drftpd-zipscript-master</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>

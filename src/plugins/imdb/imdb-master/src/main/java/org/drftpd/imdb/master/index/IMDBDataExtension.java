@@ -23,7 +23,7 @@ import org.apache.lucene.document.NumericField;
 import org.drftpd.imdb.common.IMDBInfo;
 import org.drftpd.common.dynamicdata.KeyNotFoundException;
 import org.drftpd.master.vfs.event.ImmutableInodeHandle;
-import org.drftpd.indexation.master.extensions.IndexDataExtensionInterface;
+import org.drftpd.master.indexation.IndexDataExtensionInterface;
 
 /**
  * @author scitz0

@@ -15,23 +15,25 @@
  * along with DrFTPD; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.drftpd.find.master.option;
-
-import org.drftpd.master.indexation.AdvancedSearchParams;
-import org.drftpd.master.commands.ImproperUsageException;
+package org.drftpd.master.indexation;
 
 /**
- * @author scitz0
+ * Any exception throw by a IndexingEngine must be encapsulated in this exception
+ * in order to be handled properly.
+ * @author fr0w
  * @version $Id$
  */
-public class TypeOption implements OptionInterface {
+@SuppressWarnings("serial")
+public class IndexException extends Exception {
+	public IndexException(Throwable cause) {
+		super(cause);
+	}
 
-	@Override
-	public void exec(String option, String[] args, AdvancedSearchParams params) throws ImproperUsageException {
-		if (option.equalsIgnoreCase("-f") || option.equalsIgnoreCase("-file")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.FILE);
-		} else if (option.equalsIgnoreCase("-d") || option.equalsIgnoreCase("-dir")) {
-			params.setInodeType(AdvancedSearchParams.InodeType.DIRECTORY);
-		}
+	public IndexException(String message) {
+		super(message);
+	}
+
+	public IndexException(String message, Throwable cause) {
+		super(message, cause);
 	}
 }

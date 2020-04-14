@@ -19,7 +19,7 @@ package org.drftpd.find.master.option;
 
 import org.drftpd.master.commands.ImproperUsageException;
 import org.drftpd.find.master.FindUtils;
-import org.drftpd.master.vfs.index.AdvancedSearchParams;
+import org.drftpd.master.indexation.AdvancedSearchParams;
 
 /**
  * @author scitz0

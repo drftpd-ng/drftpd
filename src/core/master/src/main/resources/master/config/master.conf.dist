@@ -50,7 +50,7 @@ slaveselection=org.drftpd.master.slaveselection.filter.SlaveSelectionManager
 sectionmanager=org.drftpd.master.sections.def.SectionManager
 
 # Index engine
-indexingengine=org.drftpd.indexation.master.LuceneEngine
+indexingengine=org.drftpd.master.indexation.LuceneEngine
 
 # Enabled cipher suites
 # If left empty, default set will be used.
