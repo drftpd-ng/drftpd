@@ -72,8 +72,10 @@ public class Permission {
 			}
 			if (aclUser.equals("%") && user == null) {
 				return allow;
-			} else if (aclUser.equals("*") && user != null) {
-				return allow;
+			} else if (aclUser.equals("*")) {
+				if (user != null) {
+					return allow;
+				}
 			} else if (aclUser.charAt(0) == '-') {
 				// USER
 				if (user == null) {
