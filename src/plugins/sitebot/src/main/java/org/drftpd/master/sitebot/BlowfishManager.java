@@ -6,7 +6,6 @@ import org.drftpd.master.sitebot.blowfish.Blowfish;
 import org.drftpd.master.sitebot.blowfish.BlowfishCBC;
 import org.drftpd.master.sitebot.blowfish.BlowfishECB;
 
-
 class BlowfishManager {
 
     private static final Logger logger = LogManager.getLogger(Blowfish.class);
@@ -24,17 +23,11 @@ class BlowfishManager {
 	/*
      * Constructor of BlowfishManager class Key param
 	 */
-
     BlowfishManager(String key, String mode) {
-        switch (mode.toLowerCase()) {
-            case CBC:
-                blowfish = new BlowfishCBC(key);
-                break;
-            case ECB:
-                blowfish = new BlowfishECB(key);
-                break;
-            default:
-                blowfish = new BlowfishECB(key);
+        if (CBC.equals(mode.toLowerCase())) {
+            blowfish = new BlowfishCBC(key);
+        } else {
+            blowfish = new BlowfishECB(key);
         }
     }
 

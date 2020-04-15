@@ -49,7 +49,6 @@ public class OutputThread extends Thread {
 		this.setName(bot.getBotName() + "-OutputThread");
 	}
 
-
 	/**
 	 * A static method to write a line to a BufferedOutputStream and then pass
 	 * the line to the log method of the supplied SiteBot instance.
@@ -65,14 +64,14 @@ public class OutputThread extends Thread {
 			try {
 				bwriter.write(line + "\r\n");
 				bwriter.flush();
-                logger.debug(">>>{}", line);
+                logger.debug("[RAW OUTPUT]: " + line);
 			}
 			catch (Exception e) {
+				logger.debug("We were unable to send message due to some exception", e);
 				// Silent response - just lose the line.
 			}
 		}
 	}
-
 
 	/**
 	 * This method starts the Thread consuming from the outgoing message

@@ -117,7 +117,7 @@ public class UserDetails {
 			User user;
 			// Check if we need to identify the user by ident or if we know their username
 			if (_ftpUser == null) {
-				user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(_ident,_bot.getBotName());
+				user = GlobalContext.getGlobalContext().getUserManager().getUserByIdent(_ident, _bot.getBotName());
 				_ftpUser = user.getName();
 				// Force any known blowkey to be flushed into user database
 				if (_blowKey != null) {
@@ -155,6 +155,7 @@ public class UserDetails {
 					}
 				} catch (KeyNotFoundException e1) {
 					// Means this user has never set a blowfish key, is safe to proceed
+					logger.debug("Blowfish key has never been set for " + _ftpUser);
 				}
 			}
 		} catch (NoSuchUserException e) {
@@ -168,9 +169,9 @@ public class UserDetails {
 		String userKeysString = "";
 		try {
 			userKeysString = user.getKeyedMap().getObject(BLOWKEY);
-		}
-		catch (KeyNotFoundException e1) {
+		} catch (KeyNotFoundException e1) {
 			// Means this user has never set a blowfish key, is safe to proceed
+			logger.debug("Blowfish key has never been set for " + _ftpUser);
 		}
 		String[] userKeys = userKeysString.split(",");
 		boolean foundOld = false;
