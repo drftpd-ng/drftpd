@@ -7,6 +7,7 @@ import org.drftpd.master.GlobalContext;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -66,8 +67,8 @@ public class ThemeResourceBundle extends ResourceBundle {
                     ExtendedPropertyResourceBundle childBundle = new ExtendedPropertyResourceBundle(child);
                     childBundle.setParent(bundle);
                     combineBundles(themeFile, childBundle, keys);
-                } catch (Exception e) {
-                    // Nothing to do here, no override available
+                } catch (FileNotFoundException e) {
+                    // Nothing to do here, no override file available
                     combineBundles(themeFile, bundle, keys);
                 }
             }
