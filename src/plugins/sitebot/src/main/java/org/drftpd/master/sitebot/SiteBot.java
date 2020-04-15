@@ -217,6 +217,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         _server = serverConfig.getHostName();
         _port = serverConfig.getPort();
         _password = serverConfig.getPassword();
+        boolean isSSL = serverConfig.isSsl();
         SocketFactory factory = serverConfig.getSocketFactory();
         _inputThread = null;
         _outputThread = null;
@@ -229,7 +230,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         this.removeAllChannels();
 
         String bindAddress = _config.getLocalBindHost();
-        Socket socket = null;
+        Socket socket;
         try {
             // Connect to the server.
             if (factory == null) {
@@ -242,7 +243,7 @@ public class SiteBot implements ReplyConstants, Runnable {
                 socket = factory.createSocket(_server, _port, InetAddress.getByName(bindAddress), 0);
             }
             String[] sslProtocols = GlobalContext.getConfig().getSSLProtocols();
-            if (sslProtocols != null && sslProtocols.length > 0) {
+            if (isSSL && sslProtocols != null && sslProtocols.length > 0) {
                 ((SSLSocket) socket).setEnabledProtocols(GlobalContext.getConfig().getSSLProtocols());
             }
             logger.info("*** Connected to server [" + _server + ":" + _port + "]");

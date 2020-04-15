@@ -64,4 +64,8 @@ public class ServerConfig {
 		}
 		return null;
 	}
+
+	public boolean isSsl() {
+		return _ssl;
+	}
 }
