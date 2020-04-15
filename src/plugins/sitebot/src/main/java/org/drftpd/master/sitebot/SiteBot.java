@@ -275,6 +275,7 @@ public class SiteBot implements ReplyConstants, Runnable {
         _inputThread = new InputThread(this, socket, breader, bwriter);
 
         // During our connect phase we might receive commands we cannot process yet so we store them for later processing
+        // Certain commands expect our _hostMask to be filled with correct data for example
         List<String> storedCommands = new ArrayList<>();
 
         // Read stuff back from the server to see if we connected.
@@ -282,9 +283,8 @@ public class SiteBot implements ReplyConstants, Runnable {
         int tries = 1;
         while ((line = breader.readLine()) != null) {
 
-            // Quickly process PING requests
+            // Quickly process PING requests otherwise we might be kicked offline during our connecting phase
             if (line.startsWith("PING ")) {
-                // Respond to the ping and return immediately.
                 this.onServerPing(line.substring(5));
                 continue;
             }
@@ -326,12 +326,12 @@ public class SiteBot implements ReplyConstants, Runnable {
         String hostMask = "";
         while ((line = breader.readLine()) != null) {
 
-            // Quickly process PING requests
+            // Quickly process PING requests otherwise we might be kicked offline during our connecting phase
             if (line.startsWith("PING ")) {
-                // Respond to the ping and return immediately.
                 this.onServerPing(line.substring(5));
                 continue;
             }
+
             // Store the commands to handle later
             storedCommands.add(line);
 
